@@ -10,13 +10,12 @@
 		"
 	>
 
-	<bean name="ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName" lazy-init="true"/>
+	<bean name="ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName" />
 
 	<bean
 		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="org.frankframework.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
-		lazy-init="true"
 	/>
 
 	<aop:config proxy-target-class="true">

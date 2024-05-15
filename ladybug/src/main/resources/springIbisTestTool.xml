@@ -13,7 +13,10 @@
 	"
 	default-lazy-init="true"
 	>
-	<!-- don't init database related beans when database storage not used / ladybug.jdbc.datasource empty -->
+	<!--
+	default-lazy-init="true" will prevent init of database related beans when ladybug.jdbc.datasource is empty (in which
+	case file storage will be used instead of database storage)
+	-->
 
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>
@@ -77,7 +80,7 @@
 	</task:scheduled-tasks>
 
 	<bean name="dataSourceName" class="java.lang.String">
-		<constructor-arg value="${ladybug.jdbc.datasource:${jdbc.datasource.default}}"/>
+		<constructor-arg value="${ladybug.jdbc.datasource:}"/>
 	</bean>
 
 	<bean name="debugStoragePreferred" class="java.lang.String">
@@ -211,21 +214,23 @@
 	<bean name="messageCapturer" class="org.frankframework.ibistesttool.MessageCapturer" autowire="byName"/>
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
-	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.ProxyDataSourceFactory" />
+	<!-- Find DataSources in resources.yml and JNDI -->
+	<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator"/>
+	<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator"/>
+	<!-- JndiObjectLocator requires JndiContextPrefixFactory -->
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
+
+	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadybugDataSourceFactory" autowire="byType" />
 
 	<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
 	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
-	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource" ref="ladybugDataSource"/>
-	</bean>
-
 	<bean
 		name="ladybugDatabaseChangelog"
 		class="liquibase.integration.spring.SpringLiquibase"
-		depends-on="dataSourceFactory"
+		depends-on="databaseStartupValidator"
 		>
 		<property name="dataSource" ref="ladybugDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
@@ -237,6 +242,10 @@
 			<!-- Don't show "UPDATE SUMMARY" in System.out -->
 			<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
 		</property>
+	</bean>
+
+	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
+		<property name="dataSource" ref="ladybugDataSource"/>
 	</bean>
 
 </beans>
