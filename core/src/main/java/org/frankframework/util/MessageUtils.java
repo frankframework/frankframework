@@ -15,6 +15,8 @@
 */
 package org.frankframework.util;
 
+import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,26 +26,23 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
-import org.springframework.util.DigestUtils;
-import org.springframework.util.MimeType;
-
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
-
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.springframework.util.DigestUtils;
+import org.springframework.util.MimeType;
 
 public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
@@ -237,7 +236,7 @@ public abstract class MessageUtils {
 
 		try {
 			Metadata metadata = new Metadata();
-			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
+			metadata.set(RESOURCE_NAME_KEY, name);
 			byte[] magic = message.getMagic(TIKA_MAGIC_LENGHT);
 			if(magic.length == 0) {
 				return null;
