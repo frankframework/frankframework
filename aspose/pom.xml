@@ -27,6 +27,8 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
 		</dependency>
+
+		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parser-microsoft-module</artifactId>
@@ -40,7 +42,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Tika library -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
