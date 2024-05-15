@@ -17,7 +17,7 @@ package org.frankframework.ibistesttool;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.OptionConverter;
-import org.frankframework.jndi.PoolingJndiDataSourceFactory;
+import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.BeansException;
@@ -104,8 +104,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				}
 			}
 		}
-		if (bean instanceof PoolingJndiDataSourceFactory && !OptionalJtaTransactionManager.isJtaAvailable()) {
-			PoolingJndiDataSourceFactory poolingDataSourceFactory = (PoolingJndiDataSourceFactory)bean;
+		if (bean instanceof PoolingDataSourceFactory && !OptionalJtaTransactionManager.isJtaAvailable()) {
+			PoolingDataSourceFactory poolingDataSourceFactory = (PoolingDataSourceFactory)bean;
 			poolingDataSourceFactory.setPoolXA(true);
 		}
 		if (bean instanceof SpringLiquibase) {
