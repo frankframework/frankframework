@@ -30,7 +30,9 @@
 		</property>
 	</bean>
 
-	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.PoolingDataSourceFactory" autowire="byType" />
+	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.PoolingDataSourceFactory" autowire="byType">
+		<property name="poolXA" value="true" />
+	</bean>
 	<bean
 		id="defaultDataSource"
 		factory-bean="dataSourceFactory"

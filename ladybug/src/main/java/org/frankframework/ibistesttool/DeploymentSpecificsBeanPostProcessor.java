@@ -17,6 +17,7 @@ package org.frankframework.ibistesttool;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.OptionConverter;
+import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.BeansException;
@@ -30,6 +31,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.database.DatabaseStorage;
+import nl.nn.testtool.storage.database.OptionalJtaTransactionManager;
 
 /**
  * @author Jaco de Groot
@@ -101,6 +103,10 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 					throw new BeanCreationException("Default view '" + defaultView + "' not found");
 				}
 			}
+		}
+		if (bean instanceof PoolingDataSourceFactory && !OptionalJtaTransactionManager.isJtaAvailable()) {
+			PoolingDataSourceFactory poolingDataSourceFactory = (PoolingDataSourceFactory)bean;
+			poolingDataSourceFactory.setPoolXA(true);
 		}
 		if (bean instanceof SpringLiquibase) {
 			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
