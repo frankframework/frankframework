@@ -130,20 +130,16 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private @Getter String messageFieldType="";
 	private @Getter String textFieldType="";
 
-
-
 	protected String insertQuery;
-	protected String selectKeyQuery;
 	protected String selectDataQuery2;
 
 	// the following for Oracle
 	private @Getter String sequenceName="seq_ibisstore";
-	protected String updateBlobQuery;
 
 	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
 	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";
 
-	private static final boolean documentQueries=false;
+	private static final boolean DOCUMENT_QUERIES = false;
 
 	protected @Getter @Setter PlatformTransactionManager txManager;
 
@@ -378,7 +374,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		super.createQueryTexts(dbmsSupport);
 		setDataTypes(dbmsSupport);
 		boolean keyFieldsNeedsInsert=dbmsSupport.autoIncrementKeyMustBeInserted();
-		boolean blobFieldsNeedsEmptyBlobInsert=dbmsSupport.mustInsertEmptyBlobBeforeData();
 		insertQuery = "INSERT INTO "+getPrefix()+getTableName()+" ("+
 						(keyFieldsNeedsInsert?getKeyField()+",":"")+
 						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
@@ -394,32 +389,19 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
 						"?,?,?,?,?"+
-						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+
+						(isStoreFullMessage()?",?":"")+
 						(isOnlyStoreWhenMessageIdUnique()?" "+dbmsSupport.getFromForTablelessSelect()+" WHERE NOT EXISTS (SELECT * FROM IBISSTORE WHERE "+getIdField()+" = ?"+(StringUtils.isNotEmpty(getSlotId())?" AND "+getSlotIdField()+" = ?":"")+")":")");
-		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
-		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
-		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+")"+getFromClause(false)+
-							getWhereClause(getIdField()+"=?"+
-										" AND "+getCorrelationIdField()+"=?"+
-										" AND "+getDateField()+"=?",false);
-		}
-		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
-			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField());
-		}
 		selectDataQuery2 = "SELECT " + getMessageField() + " FROM " + getPrefix() + getTableName() + " WHERE " + getIdField() + "=?";
-		if (documentQueries && log.isDebugEnabled()) {
+		if (DOCUMENT_QUERIES && log.isDebugEnabled()) {
 			log.debug(
 					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
 					documentQuery("deleteQuery",deleteQuery,"Verwijder een regel uit de tabel, via de primary key")+
-					documentQuery("selectKeyQuery",selectKeyQuery,"Haal de huidige waarde op van de sequence voor messageKey")+
 					documentQuery("selectContextQuery",selectContextQuery,"Haal de niet blob velden van een regel op, via de primary key")+
 					documentQuery("selectListQuery",getSelectListQuery(dbmsSupport, null, null, null),"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op")+
 					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
 					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
 					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
 					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
-					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")+
 					documentQuery("selectDataQuery2",selectDataQuery2,"Haal de blob van een regel op, via een messageId")
 //					+"\n"
 //					+"\n- slotId en type zou via ? kunnen"
@@ -506,33 +488,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 
-	/**
-	 * Retrieves the value of the primary key for the record just inserted.
-	 */
-	private String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
-		log.debug("preparing key retrieval statement [{}]", selectKeyQuery);
-		try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery)) {
-			if (!selectKeyQueryIsDbmsSupported) {
-				int paramPos=applyStandardParameters(stmt, true, false);
-				JdbcUtil.setParameter(stmt, paramPos++, messageId, getDbmsSupport().isParameterTypeMatchRequired());
-				JdbcUtil.setParameter(stmt, paramPos++, correlationId, getDbmsSupport().isParameterTypeMatchRequired());
-				stmt.setTimestamp(paramPos++, receivedDateTime);
-			}
-
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (!rs.next()) {
-					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
-				}
-				return "<id>" + rs.getString(1) + "</id>";
-			}
-		}
-	}
-
 	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		log.debug("preparing insert statement [{}]", insertQuery);
-		int updateCount;
-		try (PreparedStatement stmt = dbmsSupport.mustInsertEmptyBlobBeforeData() ? conn.prepareStatement(insertQuery) : conn.prepareStatement(insertQuery, new String[]{ getKeyField() });) {
+		try (PreparedStatement stmt = conn.prepareStatement(insertQuery, new String[]{ getKeyField().toLowerCase() });) {
 			stmt.clearParameters();
 			int parPos = 0;
 
@@ -572,90 +531,40 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					stmt.setString(++parPos, getSlotId());
 				}
 				stmt.execute();
-				return null;
-			}
-			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
-				int blobColumnIndex = ++parPos;
-				Object blobHandle = dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
-				try (ObjectOutputStream oos = new ObjectOutputStream(getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
-					oos.writeObject(message);
-				}
-				dbmsSupport.applyBlobParameter(stmt, blobColumnIndex, blobHandle);
-
-				if (isOnlyStoreWhenMessageIdUnique()) {
-					stmt.setString(++parPos, messageId);
-					stmt.setString(++parPos, getSlotId());
-				}
-				stmt.execute();
 				try (ResultSet rs = stmt.getGeneratedKeys()) {
 					if (rs.next() && rs.getString(1) != null) {
 						return "<id>" + rs.getString(1) + "</id>";
 					}
 				}
-
-				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
-				String resultString = createResultString(isMessageDifferent);
-				log.warn("MessageID [{}] already exists", messageId);
-				if (isMessageDifferent) {
-					log.warn("Message with MessageID [{}] is not equal", messageId);
-				}
-				return resultString;
+				log.warn("No keys generated after INSERT statement");
+				return null;
 			}
+			int blobColumnIndex = ++parPos;
+			Object blobHandle = dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
+			try (ObjectOutputStream oos = new ObjectOutputStream(getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
+				oos.writeObject(message);
+			}
+			dbmsSupport.applyBlobParameter(stmt, blobColumnIndex, blobHandle);
+
 			if (isOnlyStoreWhenMessageIdUnique()) {
 				stmt.setString(++parPos, messageId);
 				stmt.setString(++parPos, getSlotId());
 			}
 			stmt.execute();
-			updateCount = stmt.getUpdateCount();
-			if (log.isDebugEnabled()) {
-				log.debug("update count for insert statement: " + updateCount);
-			}
-		}
-		if (updateCount > 0) {
-			if (log.isDebugEnabled()) {
-				log.debug("preparing select statement [{}]", selectKeyQuery);
-			}
-			// retrieve the key
-			String newKey;
-			try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery); ResultSet rs = stmt.executeQuery()) {
-				if (!rs.next()) {
-					throw new SenderException("could not retrieve key of stored message");
+			try (ResultSet rs = stmt.getGeneratedKeys()) {
+				if (rs.next() && rs.getString(1) != null) {
+					return "<id>" + rs.getString(1) + "</id>";
 				}
-				newKey = rs.getString(1);
 			}
+			log.warn("No keys generated after INSERT statement");
 
-			// and update the blob
-			if (log.isDebugEnabled()) {
-				log.debug("preparing update statement [{}]", updateBlobQuery);
+			boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
+			String resultString = createResultString(isMessageDifferent);
+			log.warn("MessageID [{}] already exists", messageId);
+			if (isMessageDifferent) {
+				log.warn("Message with MessageID [{}] is not equal", messageId);
 			}
-			try (PreparedStatement stmt = conn.prepareStatement(updateBlobQuery);){
-				stmt.clearParameters();
-				stmt.setString(1, newKey);
-
-				try (ResultSet rs = stmt.executeQuery()) {
-					if (!rs.next()) {
-						throw new SenderException("could not retrieve row for stored message [" + messageId + "]");
-					}
-					Object blobHandle = dbmsSupport.getBlobHandle(rs, 1);
-					try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, rs, 1, isBlobsCompressed()))) {
-						oos.writeObject(message);
-					}
-					dbmsSupport.updateBlob(rs, 1, blobHandle);
-					return "<id>" + newKey + "</id>";
-				}
-			}
-		} else {
-			if (isOnlyStoreWhenMessageIdUnique()) {
-				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
-				String resultString = createResultString(isMessageDifferent);
-				log.warn("MessageID [{}] already exists", messageId);
-				if (isMessageDifferent) {
-					log.warn("Message with MessageID [{}] is not equal", messageId);
-				}
-				return resultString;
-			} else {
-				throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
-			}
+			return resultString;
 		}
 	}
 
@@ -741,11 +650,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			final String storedComments = StringUtils.truncate(comments, MAXCOMMENTLEN);
 			final String storedLabel = StringUtils.truncate(label, MAXLABELLEN);
 
-			final String result = storeMessageInDatabase(conn, storedMessageId, storedCorrelationId, receivedDateTime, storedComments, storedLabel, message);
-			if (result == null) {
-				return retrieveKey(conn, storedMessageId, storedCorrelationId, receivedDateTime);
-			}
-			return result;
+			return storeMessageInDatabase(conn, storedMessageId, storedCorrelationId, receivedDateTime, storedComments, storedLabel, message);
 		} catch (IOException | JdbcException | SQLException e) {
 			throw new SenderException("cannot serialize message", e);
 		}

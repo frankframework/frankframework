@@ -72,21 +72,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT " + sequenceName + ".CURRVAL FROM DUAL";
-	}
-
-	@Override
-	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
-		return "SELECT " + blobField + " FROM " + table + " WHERE " + keyField + "=?" + " FOR UPDATE";
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "empty_blob()";
-	}
-
-	@Override
 	public String getTextFieldType() {
 		return "VARCHAR2";
 	}

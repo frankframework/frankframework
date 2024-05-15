@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -175,22 +174,16 @@ public class XmlQuerySender extends DirectQuerySender {
 				}
 				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				if (!getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
-					parameter = value.getBytes();
-				}
+				parameter = value.getBytes();
 			} else {
-				if (!(type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) && !type.equalsIgnoreCase(TYPE_FUNCTION)) {
+				if (!type.equalsIgnoreCase(TYPE_FUNCTION)) {
 					parameter = value;
 				}
 			}
 		}
 
 		private void fillQueryValue() {
-			if (type.equalsIgnoreCase(TYPE_BLOB) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
-				queryValue = getDbmsSupport().emptyBlobValue();
-			} else if (type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) {
-				queryValue = getDbmsSupport().emptyClobValue();
-			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
+			if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
 				queryValue = value;
 			} else {
 				queryValue = "?";
@@ -319,7 +312,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		String query ="INSERT INTO " + tableName + " (" + queryColumns + ") VALUES (" + queryValues + ")";
 
 		try {
-			return executeUpdate(connection, tableName, query, columns);
+			return executeUpdate(connection, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command [" + query + "]", t);
 		}
@@ -350,7 +343,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 		try {
 			String query = queryBuilder.toString();
-			return executeUpdate(connection, tableName, query, columns);
+			return executeUpdate(connection, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command [" + queryBuilder + "]", t);
 		}
@@ -382,71 +375,14 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private Message executeUpdate(Connection connection, String tableName, String query, List<Column> columns) throws SenderException {
+	private Message executeUpdate(Connection connection, String query, List<Column> columns) throws SenderException {
 		try {
-			if ((existBlob(columns) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) || (existClob(columns) && getDbmsSupport().mustInsertEmptyClobBeforeData())) {
-				CallableStatement callableStatement = getCallWithRowIdReturned(connection, query);
-				applyParameters(callableStatement, columns);
-				int ri = 1 + countParameters(columns);
-				callableStatement.registerOutParameter(ri, Types.VARCHAR);
-				int numRowsAffected = callableStatement.executeUpdate();
-				String rowId = callableStatement.getString(ri);
-				log.debug(getLogPrefix() + "returning ROWID [" + rowId + "]");
-
-				for (Column column : columns) {
-					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
-						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryType queryType;
-						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryType = QueryType.UPDATEBLOB;
-						} else {
-							queryType = QueryType.UPDATECLOB;
-						}
-						PreparedStatement statement = getStatement(connection, query, queryType);
-						statement.setString(1, rowId);
-						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							executeUpdateBlobQuery(statement, new Message(column.getValue()));
-						} else {
-							executeUpdateClobQuery(statement, new Message(column.getValue()));
-						}
-					}
-				}
-				return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
-			}
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			applyParameters(statement, columns);
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}
-	}
-
-	private boolean existBlob(List<Column> columns) {
-		for (Column column : columns) {
-			if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean existClob(List<Column> columns) {
-		for (Column column : columns) {
-			if (column.getType().equalsIgnoreCase(TYPE_CLOB)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private int countParameters(List<Column> columns) {
-		int parameterCount = 0;
-		for (Column column : columns) {
-			if (column.getParameter() != null) {
-				parameterCount++;
-			}
-		}
-		return parameterCount;
 	}
 
 	private Message alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
