@@ -51,7 +51,7 @@ public class ServerStatistics extends FrankApiBase {
 
 	@PermitAll
 	@GetMapping(value = "/server/health", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getIbisHealth() {
+	public ResponseEntity<?> getFrankHealth() {
 		try {
 			return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
 		} catch(ApiException e) {

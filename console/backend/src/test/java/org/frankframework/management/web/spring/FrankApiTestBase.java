@@ -11,6 +11,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -24,8 +26,7 @@ public abstract class FrankApiTestBase {
 
 	@BeforeEach
 	public void setUp() {
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-				.build();
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 	}
 
 	protected String asJsonString(final Object obj) {
@@ -38,6 +39,14 @@ public abstract class FrankApiTestBase {
 
 	protected MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
 		return new MockMultipartFile(name, originalFilename, MediaType.MULTIPART_FORM_DATA_VALUE, content);
+	}
+
+	protected void testBasicRequest(String url, String topic, String action) throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get(url))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("topic").value(topic))
+				.andExpect(MockMvcResultMatchers.jsonPath("action").value(action));
 	}
 }
 
