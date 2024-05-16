@@ -1,81 +1,36 @@
 package org.frankframework.management.web.spring;
 
-
-import org.frankframework.management.bus.message.MessageBase;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @ContextConfiguration(classes = {WebTestConfig.class, SendJmsMessage.class})
 public class SendJmsMessageTest extends FrankApiTestBase {
 	@Test
 	public void testWrongEncoding() throws Exception {
-//		List<Attachment> attachments = new ArrayList<>();
-//		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("connectionFactory", "qcf/connectionFactory"));
-//		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("destination", "some-queue"));
-//		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("type", "type"));
-//		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("synchronous", "true"));
-//		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("encoding", "fakeEncoding"));
-//		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("message", "inputMessage"));
-
-//		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
-		String content = asJsonString(new SendJmsMessage.JmsMessageMultiPartBody(
-				false,
-				true,
-				false,
-				"some-queue",
-				null,
-				null,
-				"type",
-				"qcf/connectionFactory",
-				"fakeEncoding",
-				null,
-				null
-		));
 		mockMvc.perform(
-				MockMvcRequestBuilders
-						.multipart("/jms/message")
-						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
-						.content("{\"persistent\":false,\"synchronous\":true,\"lookupDestination\":false,\"destination\":\"some-queue\",\"type\":\"type\",\"connectionFactory\":\"qcf/connectionFactory\",\"encoding\":\"fakeEncoding\"}")
-						.accept(MediaType.APPLICATION_JSON)
-						.characterEncoding("UTF-8")
+						MockMvcRequestBuilders
+								.multipart("/jms/message")
+								.file(createMockMultipartFile("message", null, "<dummy-message />".getBytes()))
+								.part(
+										new MockPart("persistent", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("lookupDestination", "false".getBytes()),
+										new MockPart("destination", "some-queue".getBytes()),
+										new MockPart("type", "type".getBytes()),
+										new MockPart("connectionFactory", "qcf/connectionFactory".getBytes()),
+										new MockPart("encoding", "fakeEncoding".getBytes())
+								)
+								.characterEncoding("UTF-8")
 				).andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-		/*ApiException e = assertThrows(ApiException.class, () -> mockMvc.perform(
-				MockMvcRequestBuilders
-						.multipart("/jms/message")
-						.file(createMockMultipartFile("message", null, "inputMessage".getBytes()))
-						.content(asJsonString(new SendJmsMessage.JmsMessageMultiPartBody(
-								false,
-								true,
-								false,
-								"some-queue",
-								null,
-								null,
-								"type",
-								"qcf/connectionFactory",
-								"fakeEncoding",
-								null,
-								null
-						)))
-		));
-		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());*/
 	}
 
 	/*@Test

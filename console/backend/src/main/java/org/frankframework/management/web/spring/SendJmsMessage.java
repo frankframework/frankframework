@@ -15,6 +15,13 @@
 */
 package org.frankframework.management.web.spring;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -32,18 +39,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 @RestController
 public class SendJmsMessage extends FrankApiBase {
 
-	public record JmsMessageMultiPartBody(
+	public record JmsMessageModel(
 		boolean persistent,
 		boolean synchronous,
 		boolean lookupDestination,
@@ -53,29 +52,27 @@ public class SendJmsMessage extends FrankApiBase {
 		String type,
 		String connectionFactory,
 		String encoding,
-
 		MultipartFile message,
-		MultipartFile file
-	) {}
+		MultipartFile file) {}
 
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Relation("jms")
 	@Description("put a JMS message on a queue")
-	public ResponseEntity<?> putJmsMessage(@ModelAttribute JmsMessageMultiPartBody multiPartBody) {
+	public ResponseEntity<?> putJmsMessage(@ModelAttribute JmsMessageModel model) throws ApiException {
 		String message = null;
 		String fileName = null;
 		InputStream file = null;
 
-		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multiPartBody.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", multiPartBody.connectionFactory(), null);
-		String destinationName = RequestUtils.resolveRequiredProperty("destination", multiPartBody.destination(), null);
-		String destinationType = RequestUtils.resolveRequiredProperty("type", multiPartBody.type(), null);
-		String replyTo = RequestUtils.resolveRequiredProperty( "replyTo", multiPartBody.replyTo(), "");
-		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", multiPartBody.persistent(), false);
-		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", multiPartBody.synchronous(), false);
-		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", multiPartBody.lookupDestination(), false);
-		String messageProperty = RequestUtils.resolveRequiredProperty("property", multiPartBody.property(), "");
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", model.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", model.connectionFactory(), null);
+		String destinationName = RequestUtils.resolveRequiredProperty("destination", model.destination(), null);
+		String destinationType = RequestUtils.resolveRequiredProperty("type", model.type(), null);
+		String replyTo = RequestUtils.resolveRequiredProperty( "replyTo", model.replyTo(), "");
+		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", model.persistent(), false);
+		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", model.synchronous(), false);
+		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", model.lookupDestination(), false);
+		String messageProperty = RequestUtils.resolveRequiredProperty("property", model.property(), "");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
@@ -87,7 +84,7 @@ public class SendJmsMessage extends FrankApiBase {
 		builder.addHeader("lookupDestination", lookupDestination);
 		builder.addHeader("messageProperty", messageProperty);
 
-		MultipartFile filePart = multiPartBody.file();
+		MultipartFile filePart = model.file();
 		if(filePart != null) {
 			fileName = filePart.getOriginalFilename();
 			try {
@@ -114,7 +111,7 @@ public class SendJmsMessage extends FrankApiBase {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", multiPartBody.message(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {

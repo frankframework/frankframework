@@ -1,9 +1,9 @@
 package org.frankframework.management.web.spring;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -24,7 +24,8 @@ public abstract class FrankApiTestBase {
 
 	@BeforeEach
 	public void setUp() {
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+				.build();
 	}
 
 	protected String asJsonString(final Object obj) {

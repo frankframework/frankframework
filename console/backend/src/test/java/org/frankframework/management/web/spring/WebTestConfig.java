@@ -21,4 +21,9 @@ public class WebTestConfig {
 	DefaultMessageBuilderFactory messageBuilderFactory() {
 		return new DefaultMessageBuilderFactory();
 	}
+
+	@Bean
+	ApiExceptionHandler apiExceptionHandler() {
+		return new ApiExceptionHandler();
+	}
 }

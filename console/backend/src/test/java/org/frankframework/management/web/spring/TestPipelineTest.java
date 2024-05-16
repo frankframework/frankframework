@@ -5,6 +5,7 @@ import java.net.URL;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -22,7 +23,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("message", null, DUMMY_MESSAGE.getBytes()))
-						.content(asJsonString(getTestPipeLineModel()))
+						.part(getMultiPartParts())
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(MockMvcResultHandlers.print())
@@ -37,7 +38,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "my-file.xml", DUMMY_MESSAGE.getBytes()))
-						.content(asJsonString(getTestPipeLineModel()))
+						.part(getMultiPartParts())
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -52,7 +53,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "archive2.zip", zip.openStream().readAllBytes()))
-						.content(asJsonString(getTestPipeLineModel()))
+						.part(getMultiPartParts())
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -66,14 +67,17 @@ public class TestPipelineTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "archive3.zip", zip.openStream().readAllBytes()))
-						.content(asJsonString(getTestPipeLineModel()))
+						.part(getMultiPartParts())
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("msg-2.xml: SUCCESS\n"));
 	}
 
-	private static TestPipeline.TestPipeLineModel getTestPipeLineModel() {
-		return new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null);
+	private static MockPart[] getMultiPartParts() {
+		return new MockPart[] {
+				new MockPart("configuration", "TestConfiguration".getBytes()),
+				new MockPart("adapter", "HelloWorld".getBytes()),
+		};
 	}
 }

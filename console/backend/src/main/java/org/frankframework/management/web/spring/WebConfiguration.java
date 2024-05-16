@@ -35,7 +35,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
 		Optional<HttpMessageConverter<?>> converterFound = converters.stream().filter(c -> c instanceof AbstractJackson2HttpMessageConverter).findFirst();
-		if(converterFound.isPresent()) {
+		if (converterFound.isPresent()) {
 			AbstractJackson2HttpMessageConverter converter = (AbstractJackson2HttpMessageConverter) converterFound.get();
 			converter.setPrettyPrint(true);
 		}
