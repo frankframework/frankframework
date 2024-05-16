@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.core.StringContains;
@@ -85,16 +88,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		super.setUp();
 	}
 
-	private Message insertStudentRecord() throws Exception {
-		sender.setAction(MongoAction.INSERTONE);
-		sender.setCollection("Students");
-		sender.configure();
-		sender.open();
-
-		JsonObject stud = createStudent("Evert", "1c", 4, 4, 3);
-		return sendMessage(stud.toString());
-	}
-
 	@Override
 	public MongoDbSender createSender() {
 		MongoDbSender result = new MongoDbSender();
@@ -129,31 +122,45 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	}
 
 	@Test
-	void testInsertMany() throws Exception {
+	void testInsertManyAndDeleteMany() throws Exception {
+		// Arrange: insert 4 students
 		sender.setAction(MongoDbSender.MongoAction.INSERTMANY);
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
 
 		JsonArrayBuilder students = Json.createArrayBuilder();
-		students.add(createStudent("Harry", "1a", 4, 5, 6));
-		students.add(createStudent("Klaas", "1b", 5, 7, 9));
+		createStudent(List.of("Harry", "Klaas", "Bruinsma"), "1a", 4, 5, 6)
+				.forEach(students::add);
+		students.add(createStudent(List.of("Ridouan"), "1c", 4, 4, 3).get(0));
+		// Act & assert: insert 4 students
 		result = sendMessage(students.build().toString());
 		assertThat(result.asString(), StringContains.containsString("\"insertedIds\":"));
+		assertThat(result.asString(), StringContains.containsString("\"3\"")); // 4 IDs should be inserted
+
+		// Act & assert: delete 3 students, based on class_id
+		sender.setAction(MongoAction.DELETEMANY);
+		result = sendMessage("{ \"class_id\": \"1a\" }");
+		assertThat(result.asString(), StringContains.containsString("\"acknowledged\":true,\"deleteCount\":3"));
 	}
 
 	@Test
 	void testFindOne() throws Exception {
+		// Arrange: 1 student
 		insertStudentRecord();
-
 		sender.setAction(MongoAction.FINDONE);
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
 
+		// Act & assert 1: find the student
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindOne: [" + result.asString() + "]");
 		assertThat(result.asString(), StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
+
+		// Act & assert 2: delete student
+		sender.setAction(MongoAction.DELETEONE);
+		result = sendMessage("{ \"student_id\": \"Evert\" }");
+		assertThat(result.asString(), StringContains.containsString("\"acknowledged\":true,\"deleteCount\":1"));
 	}
 
 	@Test
@@ -219,7 +226,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindMany: [" + result.asString() + "]");
 		int count = Integer.parseInt(result.asString());
 		assertTrue(count > 0);
 	}
@@ -236,7 +242,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindMany: [" + result.asString() + "]");
 		int count = Integer.parseInt(result.asString());
 		assertEquals(1, count);
 	}
@@ -287,11 +292,25 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		assertThat(result.asString(), StringContains.containsString("<modifiedCount>"));
 	}
 
-	public JsonObject createStudent(String studentId, String classId, Integer... grades) {
-		JsonObjectBuilder builder = Json.createObjectBuilder();
-		builder.add("student_id", studentId).add("class_id", classId);
-		builder.add("scores", getScores(grades));
-		return builder.build();
+	private Message insertStudentRecord() throws Exception {
+		sender.setAction(MongoAction.INSERTONE);
+		sender.setCollection("Students");
+		sender.configure();
+		sender.open();
+
+		List<JsonObject> stud = createStudent(Collections.singletonList("Evert"), "1c", 4, 4, 3);
+		return sendMessage(stud.get(0).toString());
+	}
+
+	public List<JsonObject> createStudent(List<String> studentId, String classId, Integer... grades) {
+		List<JsonObject> students = new ArrayList<>();
+		studentId.forEach(id -> {
+			JsonObjectBuilder builder = Json.createObjectBuilder();
+			builder.add("student_id", id).add("class_id", classId);
+			builder.add("scores", getScores(grades));
+			students.add(builder.build());
+		});
+		return students;
 	}
 
 	public JsonArray getScores(Integer... grades) {
