@@ -2,7 +2,7 @@ package org.frankframework.parameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String, "Expecting to be String but was:" + result.getClass());
+		assertInstanceOf(String.class, result);
 		assertEquals("0000000008", (String) result);
 	}
 
@@ -37,7 +37,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof Long);
+		assertInstanceOf(Long.class, result);
 		assertEquals(8_000L, result);
 	}
 
@@ -54,7 +54,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("0000000005", (String) result);
 	}
 
@@ -71,7 +71,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("0000000005", (String) result);
 
 		assertFalse(p.requiresInputValueForResolution());
@@ -91,7 +91,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("0000000003", (String) result);
 	}
 
@@ -108,7 +108,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("0000000005", (String) result);
 	}
 
@@ -126,7 +126,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("00000005.8", (String) result);
 	}
 
@@ -144,7 +144,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof Double);
+		assertInstanceOf(Double.class, result);
 		assertEquals(5.6, result);
 	}
 
@@ -160,7 +160,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof Double);
+		assertInstanceOf(Double.class, result);
 		assertEquals(5.6, result);
 	}
 
@@ -177,7 +177,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof Long);
+		assertInstanceOf(Long.class, result);
 		assertEquals(5000L, result);
 	}
 }
