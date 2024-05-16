@@ -26,6 +26,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -34,15 +36,13 @@ import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class FrankResources {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	private @Setter List<Resource> jdbc;
 	private @Setter List<Resource> jms;
+	private @Setter List<Resource> other;
 
 	@Getter @Setter
 	public static class Resource {
@@ -89,7 +89,7 @@ public class FrankResources {
 	}
 
 	/**
-	 * Ensure that the driver is loaded, else the DriverManagerDataSource can't it.
+	 * Ensure that the driver is loaded, else the DriverManagerDataSource can not load it.
 	 */
 	private DataSource loadDataSourceThroughDriver(Class<?> clazz, String url, Properties properties) {
 		DriverManagerDataSource dmds = new DriverManagerDataSource(url, properties);
@@ -107,6 +107,8 @@ public class FrankResources {
 				return findResource(jdbc, resourceName);
 			case "jms":
 				return findResource(jms, resourceName);
+			case "mongodb":
+				return findResource(other, resourceName);
 			default:
 				throw new IllegalArgumentException("unexpected lookup type: " + prefix);
 		}
@@ -118,7 +120,7 @@ public class FrankResources {
 		}
 
 		Optional<Resource> optional = resources.stream().filter(e -> name.equals(e.getName())).findFirst();
-		return optional.isPresent() ? optional.get() : null;
+		return optional.orElse(null);
 	}
 
 	/**
