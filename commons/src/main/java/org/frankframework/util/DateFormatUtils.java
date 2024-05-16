@@ -159,6 +159,9 @@ public class DateFormatUtils {
 
 	public static java.time.LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
 		DateTimeFormatter parser = determineDateFormat(dateString);
+		if (parser == null) {
+			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
+		}
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
