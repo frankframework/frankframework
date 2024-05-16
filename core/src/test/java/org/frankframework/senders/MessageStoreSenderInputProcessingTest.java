@@ -12,7 +12,7 @@ import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
 
-public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
+public class MessageStoreSenderInputProcessingTest extends SenderTestBase<MessageStoreSender> {
 
 	@Override
 	public MessageStoreSender createSender() throws Exception {
