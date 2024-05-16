@@ -14,14 +14,15 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	public Path folder;
 
-
 	public LocalFileSystemTestHelper(Path folder2) {
 		this.folder=folder2;
 	}
 
 	@Override
 	public void setUp() throws Exception {
-		FileUtils.cleanDirectory(folder.toFile());
+		if (Files.exists(folder)) {
+			FileUtils.cleanDirectory(folder.toFile());
+		}
 	}
 
 	@Override
