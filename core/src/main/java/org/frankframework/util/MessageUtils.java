@@ -15,8 +15,6 @@
 */
 package org.frankframework.util;
 
-import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.springframework.util.DigestUtils;
@@ -48,7 +47,7 @@ public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final TikaConfig TIKA_CONFIG = createTikaConfig();
-	private static final int TIKA_MAGIC_LENGHT = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
+	private static final int TIKA_MAGIC_LENGTH = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
 
 	private static TikaConfig createTikaConfig() {
 		try {
@@ -214,7 +213,7 @@ public abstract class MessageUtils {
 	/**
 	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGHT} bytes are being read and stored in memory.
+	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGTH} bytes are being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
@@ -236,8 +235,8 @@ public abstract class MessageUtils {
 
 		try {
 			Metadata metadata = new Metadata();
-			metadata.set(RESOURCE_NAME_KEY, name);
-			byte[] magic = message.getMagic(TIKA_MAGIC_LENGHT);
+			metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name);
+			byte[] magic = message.getMagic(TIKA_MAGIC_LENGTH);
 			if(magic.length == 0) {
 				return null;
 			}

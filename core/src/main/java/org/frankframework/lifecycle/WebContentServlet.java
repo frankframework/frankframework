@@ -15,8 +15,6 @@
 */
 package org.frankframework.lifecycle;
 
-import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -37,6 +35,7 @@ import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
@@ -175,7 +174,7 @@ public class WebContentServlet extends HttpServletBase {
 		log.debug("computing MimeType for resource [{}]", resource);
 		Metadata metadata = new Metadata();
 		String name = FilenameUtils.getExtension(resource.toString());
-		metadata.set(RESOURCE_NAME_KEY, name);
+		metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name);
 		try(InputStream in = resource.openStream()) {
 			MimeType type = MimeType.valueOf(detector.detect(TikaInputStream.get(in), metadata).toString());
 			if(!type.getSubtype().contains("x-tika")) {
