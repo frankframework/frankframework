@@ -127,6 +127,12 @@ public class DateFormatUtilsTest {
 	}
 
 	@Test
+	public void testParseAnyDate5() {
+		Date date = DateFormatUtils.parseAnyDate("2013-12-10");
+		assertEquals(1386633600000L, date.getTime());
+	}
+
+	@Test
 	public void testParseGenericDate1() {
 		assertThrows(IllegalArgumentException.class, ()-> DateFormatUtils.parseGenericDate("12-2013-10"));
 	}
@@ -151,6 +157,12 @@ public class DateFormatUtilsTest {
 	public void testParseGenericDate4() throws Exception {
 		Instant date = DateFormatUtils.parseGenericDate("2013-12-10T12:41:43");
 		assertEquals(adjustForTimezone(1386679303000L), date.toEpochMilli());
+	}
+
+	@Test
+	public void testParseGenericDate5() throws Exception {
+		Instant date = DateFormatUtils.parseGenericDate("2013-12-10");
+		assertEquals(1386633600000L, date.toEpochMilli());
 	}
 
 
