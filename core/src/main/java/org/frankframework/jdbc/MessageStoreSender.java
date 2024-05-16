@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import lombok.Getter;
@@ -84,6 +85,9 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			paramList.configure();
 		}
 		setType(StorageType.MESSAGESTORAGE.getCode());
+		if (StringUtils.isBlank(getSlotId())) {
+			throw new ConfigurationException("'slotId' has to be configured");
+		}
 		super.configure();
 	}
 
