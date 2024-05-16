@@ -15,6 +15,17 @@
 */
 package org.frankframework.parameters;
 
-public class NumberParameter extends Parameter {
+import org.frankframework.doc.Protected;
 
+public class NumberParameter extends Parameter { //Extends Parameter should be changed to AbstractParameter once we use IParameter everywhere.
+
+	public NumberParameter() {
+		setType(ParameterType.NUMBER);
+	}
+
+	@Protected //Method to be removed once we use IParameter everywhere.
+	@Override
+	public void setType(ParameterType type) {
+		super.setType(type);
+	}
 }
