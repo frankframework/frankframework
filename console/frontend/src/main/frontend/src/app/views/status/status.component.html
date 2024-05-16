@@ -86,7 +86,7 @@
       <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
         <li [ngClass]="{ active: selectedConfiguration === 'All' }">
           <a
-            [attr.data-cy-status-select-configuration]="'All'"
+            data-cy-status-select-configuration="All"
             (click)="changeConfiguration('All')"
             >All</a
           >
