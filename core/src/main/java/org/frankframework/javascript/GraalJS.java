@@ -23,6 +23,7 @@ import javax.script.ScriptEngineManager;
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
 import org.frankframework.util.flow.ResultHandler;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
@@ -30,27 +31,25 @@ import org.graalvm.polyglot.HostAccess;
 
 /**
  * Javascript engine implementation for GraalJS. If high performance execution of JavaScript code is required, enable the following JVM options:
- * "-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI" or use the GraalVM Java distribution.
+ * "-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI" or use the GraalVM Java distribution. Otherwise, the Javascript code is interpreted on every execution.
  */
 @Log4j2
 public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	private ScriptEngine scriptEngine;
-	private Context context = Context.create("js");
-	private Bindings bindings;
-
+	private Context context;
 	private boolean libraryLoaded = false;
 
 	@Override
 	public void setGlobalAlias(String alias) {
-		// NOOP
+		// Not supported by GraalJS
 	}
 
 	@Override
 	public void startRuntime() throws JavascriptException {
 		if (!libraryLoaded) {
 			scriptEngine = new ScriptEngineManager().getEngineByName("graal.js");
-			bindings = scriptEngine.createBindings();
+			Bindings bindings = scriptEngine.createBindings();
 			bindings.put("polyglot.js.allowHostAccess", true); // essential for evaluation on JVM 17
 			bindings.put("polyglot.js.allowHostClassLookup", true);
 			libraryLoaded = scriptEngine != null;
@@ -93,9 +92,23 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		return scriptEngine;
 	}
 
+	@FunctionalInterface
+	public interface JavaCallback {
+		Object apply(String... arguments);
+	}
+
 	@Override
-	public void registerCallback(ISender sender, PipeLineSession session) {
-		// Does not work with GraalJS yet
+	public void registerCallback(final ISender sender, final PipeLineSession session) {
+		scriptEngine.put(sender.getName(), (JavaCallback) s -> {
+			try {
+				Message msg = Message.asMessage(s[0]);
+				try (Message message = sender.sendMessageOrThrow(msg, session)) {
+					return message.asString();
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
 	}
 
 	@Override

@@ -118,6 +118,10 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		UPDATEMANY,
 		DELETEONE,
 		DELETEMANY;
+
+		public static boolean isFind(MongoAction action) {
+			return action == FINDONE || action == FINDMANY;
+		}
 	}
 
 
@@ -167,7 +171,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		message.closeOnCloseOf(session, this);
 		MongoAction mongoAction = getAction();
-		try (MessageOutputStream target = mongoAction==MongoAction.FINDONE || mongoAction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
+		try (MessageOutputStream target = MongoAction.isFind(mongoAction) ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);

@@ -50,7 +50,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("0", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("0", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	//Test without parameters, returns the result of a subtraction
@@ -65,7 +65,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("1", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("1", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	/*Test with two given parameters. The integer values of the given parameters will be added and the result
@@ -86,7 +86,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("3", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("3", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	/*Test with two parameters. The first parameter is the input of the pipe given using the originalMessage sessionKey. The input is expected to be
@@ -108,7 +108,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("12", sender.sendMessageOrThrow(message,session).asString());
+		assertEquals("12", sender.sendMessageOrThrow(message, session).asString());
 	}
 
 	/* Test with two given parameters, the first parameter being the input of the pipe. Both parameters need to be of type String and the output of the pipe
@@ -124,12 +124,12 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		session.put("originalMessage", dummyInput);
 
 		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage"));
-		sender.addParameter(new Parameter("y"," World!"));
+		sender.addParameter(new Parameter("y", " World!"));
 
 		sender.configure();
 		sender.open();
 
-		assertEquals("Hello World!", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("Hello World!", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
@@ -150,7 +150,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("3", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("3", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
@@ -171,13 +171,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("0", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("0", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	//A ConfigurationException is given when a non existing file is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void invalidFileGivenException(JavaScriptEngines engine) throws  Exception {
+	void invalidFileGivenException(JavaScriptEngines engine) throws Exception {
 		sender.setJsFileName("Nonexisting.js");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -212,7 +212,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		dummyInput = new Message("dummyinput");
-		SenderException e = assertThrows(SenderException.class, ()->sender.sendMessageOrThrow(dummyInput, session));
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 		assertTrue(e.getMessage().startsWith("unable to execute script/function"));
 	}
 
@@ -286,6 +286,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 				Arguments.of(JavaScriptEngines.GRAALJS, "returnArray", "(3)[1, 3, 5]")
 		);
 	}
+
 	@ParameterizedTest
 	@MethodSource
 	void testWithJavaScriptReturningAnObject(JavaScriptEngines engine, String functionName, String expectedOutput) throws Exception {
@@ -308,44 +309,5 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		// Assert
 		assertEquals(expectedOutput, result.asString());
 	}
-
-//	@FunctionalInterface
-//	public interface StringModifier {
-//		String modify(String str);
-//	}
-//
-//	@Test
-//	void testServices(){
-//		Services s = new Services();
-//		try (Context context = Context.newBuilder().allowAllAccess(true).allowHostAccess(HostAccess.SCOPED).build()) {
-//			context.getBindings("js").putMember("services", s);
-//			context.eval("js", "services.callback('Hello from JS', 'foobar');");
-//			System.out.println(s.getResult());
-//		}
-//	}
-//
-//	@Test
-//	public void testMain() throws ScriptException {
-//			// Create a ScriptEngine instance for Graal.js
-//			ScriptEngine engine = new ScriptEngineManager().getEngineByName("js");
-//
-//			Bindings binding = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-//			binding.put("exports", engine.eval("new Object()"));
-//
-//
-//			// Define a Java functional interface implementation (lambda)
-//			StringModifier upperCaseModifier = str -> str.toUpperCase();
-//
-//			// Bind the Java interface with a name in JavaScript context
-//			engine.put("modifier", upperCaseModifier);
-//
-//			// Call the JavaScript function with the bound interface
-//			try {
-//				String result = (String) engine.eval("modifier.modify('hello world')", binding);
-//				System.out.println(result); // Output: HELLO WORLD
-//			} catch (ScriptException e) {
-//				e.printStackTrace();
-//			}
-//	}
 
 }
