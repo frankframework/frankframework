@@ -4,22 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterType;
-import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterType;
+import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
@@ -29,11 +29,21 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		return new JavascriptSender();
 	}
 
+	private Message dummyInput;
+
+	@AfterEach
+	void tearDownCloseMessage() throws Exception {
+		super.tearDown();
+		if (dummyInput != null) {
+			dummyInput.close();
+		}
+	}
+
 	//Test without a given jsFunctionName. Will call the javascript function main as default
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void callMain(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		Message dummyInput = new Message("dummyinput");
+	void callMain(JavaScriptEngines engine) throws Exception {
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setEngineName(engine);
 
@@ -46,8 +56,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//Test without parameters, returns the result of a subtraction
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void noParameters(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		Message dummyInput = new Message("dummyinput");
+	void noParameters(JavaScriptEngines engine) throws Exception {
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -62,9 +72,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	is given as the output of the pipe */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void twoParameters(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
+	void twoParameters(JavaScriptEngines engine) throws Exception {
 
-		Message dummyInput = new Message("dummyinput");
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
@@ -83,8 +93,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	 * an integer. The two parameters will be added and the result is given as the output of the pipe */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void inputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
+	void inputAsFirstParameter(JavaScriptEngines engine) throws Exception {
 		String input = "10";
 		Message message = new Message(input);
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -106,14 +115,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	 * will be the result of concatenating the two parameter strings. */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void concatenateString(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		Message input = new Message("Hello");
+	void concatenateString(JavaScriptEngines engine) throws Exception {
+		dummyInput = new Message("Hello");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		session.put("originalMessage", input);
+		session.put("originalMessage", dummyInput);
 
 		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage"));
 		sender.addParameter(new Parameter("y"," World!"));
@@ -121,7 +129,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("Hello World!", sender.sendMessageOrThrow(input,session).asString());
+		assertEquals("Hello World!", sender.sendMessageOrThrow(dummyInput,session).asString());
 	}
 
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
@@ -129,9 +137,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	set to false, the function will return 0 */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void threeParametersTrue(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		Message dummyInput = new Message("dummyinput");
+	void threeParametersTrue(JavaScriptEngines engine) throws Exception {
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
@@ -151,9 +158,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	set to false, the function will return 0 */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void threeParametersFalse(JavaScriptEngines engine) throws Exception {
-
-		Message dummyInput = new Message("dummyinput");
+	void threeParametersFalse(JavaScriptEngines engine) throws Exception {
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
@@ -171,7 +177,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//A ConfigurationException is given when a non existing file is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void invalidFileGivenException(JavaScriptEngines engine) throws  Exception {
+	void invalidFileGivenException(JavaScriptEngines engine) throws  Exception {
 		sender.setJsFileName("Nonexisting.js");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -184,7 +190,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//A ConfigurationException is given when an empty string is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void emptyFileNameGivenException(JavaScriptEngines engine) throws Exception {
+	void emptyFileNameGivenException(JavaScriptEngines engine) throws Exception {
 		sender.setJsFileName("");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -197,7 +203,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//If the given FunctionName is not a function of the given javascript file a SenderException is thrown.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void invalidFunctionGivenException(JavaScriptEngines engine) throws Exception {
+	void invalidFunctionGivenException(JavaScriptEngines engine) throws Exception {
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("nonexisting");
 		sender.setEngineName(engine);
@@ -205,7 +211,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		Message dummyInput = new Message("dummyinput");
+		dummyInput = new Message("dummyinput");
 		SenderException e = assertThrows(SenderException.class, ()->sender.sendMessageOrThrow(dummyInput, session));
 		assertTrue(e.getMessage().startsWith("unable to execute script/function"));
 	}
@@ -213,7 +219,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//A ConfigurationException is given when an empty string is given as FunctionName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void emptyFunctionGivenException(JavaScriptEngines engine) throws Exception {
+	void emptyFunctionGivenException(JavaScriptEngines engine) throws Exception {
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("");
 		sender.setEngineName(engine);
@@ -226,8 +232,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//If there is a syntax error in the given Javascript file a SenderException is thrown.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException, SenderException {
-		Message dummyInput = new Message("dummyinput");
+	void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException, SenderException {
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/IncorrectJavascript.js");
 		sender.setEngineName(engine);
 
@@ -241,8 +247,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// is thrown if the used javascript function gives an error.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		Message dummyInput = new Message("dummyinput");
+	void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException, SenderException {
+		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/IncorrectJavascript2.js");
 		sender.setEngineName(engine);
 
@@ -255,14 +261,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//The input is expected to be of type integer but an input of type Sting is given.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	public void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		Message input = new Message("Stringinput");
+	void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException {
+		dummyInput = new Message("Stringinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		session.put("originalMessage", input);
+		session.put("originalMessage", dummyInput);
 
 		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage").withType(ParameterType.INTEGER));
 		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
@@ -270,18 +275,20 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(input, session));
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
 
 	static Stream<Arguments> testWithJavaScriptReturningAnObject() {
 		return Stream.of(
 				Arguments.of(JavaScriptEngines.J2V8, "returnObject", "[object Object]"),
-				Arguments.of(JavaScriptEngines.J2V8, "returnArray", "1,3,5")
+				Arguments.of(JavaScriptEngines.J2V8, "returnArray", "1,3,5"),
+				Arguments.of(JavaScriptEngines.GRAALJS, "returnObject", "{answer: 42}"), // Don't understand why this is different in GraalJS
+				Arguments.of(JavaScriptEngines.GRAALJS, "returnArray", "(3)[1, 3, 5]")
 		);
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testWithJavaScriptReturningAnObject(JavaScriptEngines engine, String functionName, String expectedOutput) throws Exception {
+	void testWithJavaScriptReturningAnObject(JavaScriptEngines engine, String functionName, String expectedOutput) throws Exception {
 		// Arrange
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName(functionName);
@@ -293,12 +300,52 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		Message input = Message.nullMessage();
+		dummyInput = Message.nullMessage();
 
 		// Act
-		Message result = sender.sendMessageOrThrow(input, session);
+		Message result = sender.sendMessageOrThrow(dummyInput, session);
 
 		// Assert
 		assertEquals(expectedOutput, result.asString());
 	}
+
+//	@FunctionalInterface
+//	public interface StringModifier {
+//		String modify(String str);
+//	}
+//
+//	@Test
+//	void testServices(){
+//		Services s = new Services();
+//		try (Context context = Context.newBuilder().allowAllAccess(true).allowHostAccess(HostAccess.SCOPED).build()) {
+//			context.getBindings("js").putMember("services", s);
+//			context.eval("js", "services.callback('Hello from JS', 'foobar');");
+//			System.out.println(s.getResult());
+//		}
+//	}
+//
+//	@Test
+//	public void testMain() throws ScriptException {
+//			// Create a ScriptEngine instance for Graal.js
+//			ScriptEngine engine = new ScriptEngineManager().getEngineByName("js");
+//
+//			Bindings binding = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+//			binding.put("exports", engine.eval("new Object()"));
+//
+//
+//			// Define a Java functional interface implementation (lambda)
+//			StringModifier upperCaseModifier = str -> str.toUpperCase();
+//
+//			// Bind the Java interface with a name in JavaScript context
+//			engine.put("modifier", upperCaseModifier);
+//
+//			// Call the JavaScript function with the bound interface
+//			try {
+//				String result = (String) engine.eval("modifier.modify('hello world')", binding);
+//				System.out.println(result); // Output: HELLO WORLD
+//			} catch (ScriptException e) {
+//				e.printStackTrace();
+//			}
+//	}
+
 }

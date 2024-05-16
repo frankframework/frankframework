@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -15,9 +18,6 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-import org.junit.jupiter.api.Test;
-
-import lombok.Getter;
 
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
@@ -93,7 +93,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) {
 			promiseResult = message;
 			return new SenderResult(Message.nullMessage());
 		}

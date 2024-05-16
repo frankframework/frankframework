@@ -12,6 +12,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
+		<graalvm.version>24.0.1</graalvm.version>
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
@@ -506,6 +507,25 @@
 			<groupId>com.eclipsesource.j2v8</groupId>
 			<artifactId>j2v8_win32_x86</artifactId>
 			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>polyglot</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.graalvm.js</groupId>
+			<artifactId>js-scriptengine</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<!-- runtime -->
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>js-community</artifactId>
+			<version>${graalvm.version}</version>
+			<type>pom</type>
 			<scope>runtime</scope>
 		</dependency>
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ParameterException;
@@ -28,6 +29,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Optional;
+import org.frankframework.javascript.GraalJS;
 import org.frankframework.javascript.J2V8;
 import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
@@ -39,10 +41,8 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 
-import lombok.Getter;
-
 /**
- * Sender used to run JavaScript code using J2V8
+ * Sender used to run JavaScript code using J2V8 or GraalJS.
  * <p>
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
@@ -59,7 +59,6 @@ import lombok.Getter;
  *
  * @since 7.4
  */
-
 @Category("Advanced")
 public class JavascriptSender extends SenderSeries {
 
@@ -74,7 +73,8 @@ public class JavascriptSender extends SenderSeries {
 
 
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class);
+		J2V8(J2V8.class),
+		GRAALJS(GraalJS.class);
 
 		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
 		JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
@@ -123,8 +123,6 @@ public class JavascriptSender extends SenderSeries {
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-
-		int numberOfParameters = 0;
 		JavascriptEngine<?> jsInstance = engine.create();
 		try {
 			jsInstance.startRuntime();
@@ -141,6 +139,7 @@ public class JavascriptSender extends SenderSeries {
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + " exception extracting parameters", e);
 		}
+		int numberOfParameters = 0;
 		if (pvl != null) {
 			numberOfParameters = pvl.size();
 		}
