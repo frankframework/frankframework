@@ -45,6 +45,7 @@ app-pages-navigation {
 }
 
 .minimalize {
+  cursor: pointer;
   font-size: 13px;
 }
 

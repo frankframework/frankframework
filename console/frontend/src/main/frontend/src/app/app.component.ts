@@ -40,7 +40,7 @@ import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { SweetalertService } from './services/sweetalert.service';
 import { Title } from '@angular/platform-browser';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { ToastService } from './services/toast.service';
@@ -70,6 +70,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private urlHash$!: Observable<string | null>;
   private _subscriptions = new Subscription();
   private serializedRawAdapterData: Record<string, string> = {};
+  private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
+    modalDialogClass: 'animated fadeInDown',
+    windowClass: 'animated fadeIn',
+  };
 
   constructor(
     private router: Router,
@@ -367,7 +371,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.sessionService.set('IAF-Release', release);
           this.notificationService.add(
             'fa-exclamation-circle',
-            'FF update available!',
+            'FF! update available!',
             false,
             () => {
               this.router.navigate(['iaf-update']);
@@ -598,7 +602,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openInfoModel(): void {
-    this.modalService.open(InformationModalComponent /* { size: 'sm' } */);
+    this.modalService.open(
+      InformationModalComponent,
+      this.MODAL_OPTIONS_CLASSES,
+    );
   }
 
   sendFeedback(rating?: number): void {
@@ -609,7 +616,10 @@ export class AppComponent implements OnInit, OnDestroy {
       this.renderer.removeClass(element, 'fa-star');
     }
 
-    const modalReference = this.modalService.open(FeedbackModalComponent);
+    const modalReference = this.modalService.open(
+      FeedbackModalComponent,
+      this.MODAL_OPTIONS_CLASSES,
+    );
     modalReference.componentInstance.rating = rating;
   }
 }
