@@ -153,7 +153,7 @@ public class NumberParameterTest {
 		NumberParameter p = new NumberParameter();
 		p.setGroupingSeparator(",.");
 		p.setName("number");
-		p.setValue("5,6.00");
+		p.setValue("5,6");
 		p.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
