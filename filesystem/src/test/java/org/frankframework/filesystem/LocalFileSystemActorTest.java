@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,32 +24,21 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	@TempDir
 	public Path folder;
 
-	public Path root;
-
-	@BeforeEach
-	@Override
-	public void setUp() throws Exception {
-		// Append a folder to the test-dir, to make sure that using a root folder
-		// that doesn't exist yet will not fail.
-		root = folder.resolve("testLocalFSRoot");
-		super.setUp();
-	}
-
 	@Override
 	protected LocalFileSystem createFileSystem() {
 		LocalFileSystem result = new LocalFileSystem();
-		result.setRoot(root.toAbsolutePath().toString());
+		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new LocalFileSystemTestHelper(root);
+		return new LocalFileSystemTestHelper(folder);
 	}
 
 	public void fileSystemActorMoveActionTestNoRoot(String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
 		LocalFileSystem localFileSystemNoRoot = new LocalFileSystem();
-		String srcFolder = root.toAbsolutePath().toString();
+		String srcFolder = folder.toAbsolutePath().toString();
 
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
@@ -100,7 +88,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
 		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder", false, false));
-		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [" + root.toAbsolutePath() + "/sendermovefile1.txt]: destination folder [" + root.toAbsolutePath() + "/folder] does not exist"));
+		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [" + folder.toAbsolutePath() + "/sendermovefile1.txt]: destination folder [" + folder.toAbsolutePath() + "/folder] does not exist"));
 	}
 
 	@Test
@@ -109,8 +97,13 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	}
 
 	@Test
-	@DisplayName("The folder is created correctly based on root of the LocalFileSystem")
-	public void testCreateFolderWithRoot() throws Exception {
+	@DisplayName("The folder is created with createRootFolder = true")
+	public void testCreateFolderWithCreateRootFolder() throws Exception {
+		String tmpDir = fileSystem.getRoot() + "/testCreateFolder";
+		fileSystem.setRoot(tmpDir);
+		fileSystem.setCreateRootFolder(true);
+		fileSystem.open();
+
 		String fileName = "b52cc8d5-ee39-4a8f-84b8-f91b72b1c8b7";
 
 		ParameterList params = new ParameterList();
@@ -147,11 +140,36 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message = new Message(tmpDir + "/" + fileName);
+		Message message = new Message(fileName);
 		ParameterValueList pvl = params.getValues(message, session);
 
 		Object result = actor.doAction(message, pvl, session);
 
 		assertNotNull(result, "Could not create new file in " + tmpDir);
+	}
+
+	@Test
+	@DisplayName("The folder is not created with createRootFolder = false")
+	public void testCreateFolderWithoutCreateRootFolder() throws Exception {
+		String tmpDir = fileSystem.getRoot() + "/testCreateRootFolder";
+		fileSystem.setRoot(tmpDir);
+		fileSystem.open();
+
+		String fileName = "b52cc8d5-ee39-4a8f-84b8-f91b72b1c8b7";
+
+		ParameterList params = new ParameterList();
+		params.add(new Parameter("filename", fileName));
+		params.configure();
+
+		actor.setAction(FileSystemAction.WRITE);
+		actor.setCreateFolder(true);
+		actor.setOverwrite(true);
+		actor.configure(fileSystem, params, owner);
+		actor.open();
+
+		Message message = new Message(fileSystem.getRoot() + "/" + fileName);
+		ParameterValueList pvl = params.getValues(message, session);
+
+		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
 	}
 }

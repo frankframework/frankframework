@@ -44,6 +44,8 @@ import org.frankframework.stream.PathMessage;
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
 	private final @Getter String domain = "LocalFilesystem";
 
+	private @Getter boolean createRootFolder = false;
+
 	private String root;
 
 	@Override
@@ -53,13 +55,12 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public void open() throws FileSystemException {
-		if (root != null && !Files.exists(Paths.get(root))) {
+		if (createRootFolder && root != null && !Files.exists(Paths.get(root))) {
 			createFolder(root);
 		}
 
 		super.open();
 	}
-
 	@Override
 	public Path toFile(String filename) {
 		return toFile(null, filename);
@@ -275,4 +276,12 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		return root;
 	}
 
+	/**
+	 * Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.
+	 * @ ff.default false
+	 * @param createRootFolder
+	 */
+	public void setCreateRootFolder(boolean createRootFolder) {
+		this.createRootFolder = createRootFolder;
+	}
 }
