@@ -160,7 +160,7 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Double.class, result);
+		assertInstanceOf(Number.class, result);
 		assertEquals(5.6, result);
 	}
 
