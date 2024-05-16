@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,6 +43,11 @@ import org.frankframework.util.SpringUtils;
  * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
+ *
+ * @ff.forward fileNotFound If the input file was expected to exist, but was not found
+ * @ff.forward folderNotFound If the folder does not exist
+ * @ff.forward fileAlreadyExists If a file that should have been created as new already exists, or if a file already exists when it should have been created as folder
+ * @ff.forward folderAlreadyExists If a folder is to be created that already exists.
  *
  * @author Gerrit van Brakel
  */
