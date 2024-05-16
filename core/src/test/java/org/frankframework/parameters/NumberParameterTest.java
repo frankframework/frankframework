@@ -152,16 +152,17 @@ public class NumberParameterTest {
 	public void testGroupingSeparator() throws Exception {
 		NumberParameter p = new NumberParameter();
 		p.setGroupingSeparator(",.");
+		p.setDecimalSeparator("."); //Unfortunately required when building on American servers...
 		p.setName("number");
-		p.setValue("5,6");
+		p.setValue("5,6.00");
 		p.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Number.class, result);
-		assertEquals(5.6, result);
+		assertInstanceOf(Long.class, result);
+		assertEquals(56L, result);
 	}
 
 	@Test
