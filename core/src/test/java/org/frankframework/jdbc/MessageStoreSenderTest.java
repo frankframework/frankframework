@@ -20,6 +20,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -65,6 +66,32 @@ public class MessageStoreSenderTest {
 		String messageId = UUID.randomUUID().toString();
 		String correlationId = "cid-" + messageId;
 		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertNotNull(result);
+		assertNotNull(result.getResult());
+		assertTrue(result.getResult().asString().matches("<id>\\d+</id>"), "Message [" + result.getResult().asString() + "] did not match pattern [<id>\\d+</id>]");
+
+		assertEquals(1, countRecordsBySlotAndMessageId(sender.getSlotId(), messageId));
+	}
+
+	@DatabaseTest
+	public void testSendMessageMessageIdFromParameter() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+		// Arrange
+		String messageId = UUID.randomUUID().toString();
+		sender.setSlotId("testSendMessageBasic");
+		sender.addParameter(new Parameter(MessageStoreSender.PARAM_MESSAGEID, messageId));
+		sender.configure();
+		sender.open();
+
+		String input = "<dummy/>";
+		Message message = new Message(input);
+
+		String correlationId = "cid-" + messageId;
 		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		// Act
