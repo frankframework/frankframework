@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
@@ -39,8 +40,6 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.receivers.Receiver;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 public class InlineStorage extends BusEndpointBase {

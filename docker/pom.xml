@@ -45,6 +45,7 @@
 								<target>
 									<exec executable="docker" failonerror="true">
 										<arg value="build"/>
+										<arg value="--no-cache"/>
 										<arg value="-t"/>
 										<arg value="${config.image.tag}"/>
 										<arg value="-t"/>

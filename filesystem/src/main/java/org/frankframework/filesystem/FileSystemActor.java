@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -51,8 +51,6 @@ import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
@@ -292,10 +290,22 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
 		String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
-		if(StringUtils.isNotBlank(folder) && isCreateFolder() && !fileSystem.folderExists(folder)) {
+
+		if (StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder)) {
+			if (isCreateFolder()) {
+				fileSystem.createFolder(folder);
+			} else {
+				throw new FileSystemException("folder ["+folder+"] does not exist");
+			}
+		}
+
+		return fileSystem.toFile(filenameWithFolder);
+	}
+
+	private void createFolder(String folder) throws FileSystemException {
+		if (isCreateFolder() && !fileSystem.folderExists(folder)) {
 			fileSystem.createFolder(folder);
 		}
-		return fileSystem.toFile(filenameWithFolder);
 	}
 
 	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {

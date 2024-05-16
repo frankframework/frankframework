@@ -18,7 +18,7 @@ package org.frankframework.jms;
 import java.util.List;
 import java.util.Properties;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
 public interface IConnectionFactoryFactory {

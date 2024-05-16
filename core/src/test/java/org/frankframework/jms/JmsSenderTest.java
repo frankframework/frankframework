@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 
-import javax.jms.BytesMessage;
-import javax.jms.TextMessage;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -79,7 +79,7 @@ class JmsSenderTest {
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertInstanceOf(TextMessage.class, jmsMessage);
 
@@ -98,7 +98,7 @@ class JmsSenderTest {
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertInstanceOf(BytesMessage.class, jmsMessage);
 
@@ -119,7 +119,7 @@ class JmsSenderTest {
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertTrue(jmsMessage instanceof BytesMessage);
 
@@ -139,7 +139,7 @@ class JmsSenderTest {
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertTrue(jmsMessage instanceof TextMessage);
 

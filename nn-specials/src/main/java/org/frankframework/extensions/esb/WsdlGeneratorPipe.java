@@ -28,7 +28,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;

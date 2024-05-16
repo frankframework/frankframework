@@ -19,17 +19,15 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
+import jakarta.jms.TemporaryQueue;
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
@@ -37,6 +35,7 @@ import org.frankframework.util.ClassUtils;
 
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
@@ -178,7 +177,7 @@ public class MessagingSource  {
 		try {
 			managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory != null) {
-				result.append(ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE));
+				result.append(StringUtil.reflectionToString(managedConnectionFactory));
 			}
 		} catch (Exception | NoClassDefFoundError e) {
 			result.append(" ").append(ClassUtils.nameOf(connectionFactory)).append(".getManagedConnectionFactory() (").append(ClassUtils.nameOf(e)).append("): ").append(e.getMessage());
@@ -199,14 +198,15 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof JmsPoolConnectionFactory poolcf) {
+		if (qcfd instanceof JmsPoolConnectionFactory) {
+			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
 			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
 			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
 			result.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
-			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append(CLOSE);
+			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append("]");
 		}
 		return result;
 	}

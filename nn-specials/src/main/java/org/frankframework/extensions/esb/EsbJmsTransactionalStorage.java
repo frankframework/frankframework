@@ -21,9 +21,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -148,7 +148,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 				logRequest = auditLogTp.transform("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
-			javax.jms.Message msg = createMessage(session, null, new Message(logRequest));
+			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));
 			String returnMessage = send(session, getDestination(), msg);
 			log.debug(getLogPrefix() + "sent message [" + logRequest + "] " + "to [" + getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "]");
 			return returnMessage;

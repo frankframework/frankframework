@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.frankframework.util.RunState;
  * Calling configure() should set the state to STARTING.
  * Calling start() should set the state to STARTED.
  */
-public abstract class ConfigurableLifecyleBase implements ConfigurableLifecycle {
+public abstract class AbstractConfigurableLifecyle implements ConfigurableLifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
 	private RunState state = RunState.STOPPED;
 

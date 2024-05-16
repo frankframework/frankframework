@@ -22,13 +22,13 @@
 		<dependency>
 			<groupId>com.tibco</groupId>
 			<artifactId>tibjms</artifactId>
-			<version>4.4.0</version>
+			<version>10.2.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.tibco</groupId>
 			<artifactId>tibjmsadmin</artifactId>
-			<version>5.1.0</version>
+			<version>10.2.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

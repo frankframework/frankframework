@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
@@ -337,14 +336,13 @@ public class AdapterStatus extends BusEndpointBase {
 				if (isRestListener) {
 					RestListener rl = (RestListener) listener;
 					listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-					listenerInfo.put("isView", rl.isView());
 				}
 
 				receiverInfo.put("listener", listenerInfo);
 			}
 
 			if ((listener instanceof JmsListenerBase jlb) && showPendingMsgCount) {
-				JmsBrowser<javax.jms.Message> jmsBrowser;
+				JmsBrowser<jakarta.jms.Message> jmsBrowser;
 				if (StringUtils.isEmpty(jlb.getMessageSelector())) {
 					jmsBrowser = new JmsBrowser<>();
 				} else {

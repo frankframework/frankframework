@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
@@ -51,7 +51,7 @@ public class ServletManagerTest {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
 			@Override
-			public Dynamic addServlet(String servletName, javax.servlet.Servlet servlet) {
+			public Dynamic addServlet(String servletName, jakarta.servlet.Servlet servlet) {
 				return dynamic.compute(servletName, (k,v) -> new DynamicServletRegistration(servletName, servlet));
 			}
 			@Override
@@ -279,7 +279,7 @@ public class ServletManagerTest {
 		private @Getter DummyServletImpl servlet;
 		private @Getter ServletSecurityElement servletSecurity;
 
-		public DynamicServletRegistration(String servletName, javax.servlet.Servlet servlet) {
+		public DynamicServletRegistration(String servletName, jakarta.servlet.Servlet servlet) {
 			this.name = servletName;
 			this.servlet = (DummyServletImpl) servlet;
 		}

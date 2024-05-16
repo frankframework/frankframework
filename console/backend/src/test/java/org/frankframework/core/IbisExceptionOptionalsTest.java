@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test whether the optional dependencies in iaf-common are truly optional.
  */
-public class TestIbisExceptionOptionals {
+public class IbisExceptionOptionalsTest {
 
 	private static class IbisExceptionSubClass extends IbisException {
 		public IbisExceptionSubClass(Throwable t) {
@@ -30,7 +30,7 @@ public class TestIbisExceptionOptionals {
 	}
 
 	@Test
-	public void twoNestedExceptionsWithDifferentMessages() {
+	void twoNestedExceptionsWithDifferentMessages() {
 		IbisExceptionSubClass exception = new IbisExceptionSubClass("Some text here", new NullPointerException("some other text here"));
 		String result = exception.getMessage();
 
@@ -38,7 +38,7 @@ public class TestIbisExceptionOptionals {
 	}
 
 	@Test
-	public void twoNestedExceptionsWithTheSameMessage() {
+	void twoNestedExceptionsWithTheSameMessage() {
 		IbisExceptionSubClass exception = new IbisExceptionSubClass(new NullPointerException("Some other text here"));
 		String result = exception.getMessage();
 
@@ -49,7 +49,7 @@ public class TestIbisExceptionOptionals {
 		try {
 			Class.forName(className);
 			return true;
-		} catch (Throwable ex) {
+		} catch (Throwable ignored) {
 			// Class or one of its dependencies is not present...
 			return false;
 		}

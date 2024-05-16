@@ -18,7 +18,7 @@ package org.frankframework.jndi;
 import java.util.List;
 import java.util.Properties;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
 import org.frankframework.jdbc.datasource.ObjectFactoryBase;

@@ -23,14 +23,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.logging.log4j.LogManager;
 
 public class StringUtil {
 
 	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
+	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
@@ -282,5 +285,28 @@ public class StringUtil {
 		Pattern splitPattern = Pattern.compile("\\s*[" + delim + "]+\\s*");
 		return splitPattern.splitAsStream(input.trim())
 				.filter(StringUtils::isNotBlank);
+	}
+
+	/**
+	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password' or 'secret'.
+	 * 'fail-safe' method, returns toString if it is unable to use reflection.
+	 * Uses the {@link #OMIT_PASSWORD_FIELDS_STYLE OMIT_PASSWORD_FIELDS_STYLE}.
+	 * 
+	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
+	 */
+	@Nonnull
+	public static String reflectionToString(@Nullable Object object) {
+		if(object == null) {
+			return "<null>";
+		}
+
+		try {
+			return new ReflectionToStringBuilder(object, OMIT_PASSWORD_FIELDS_STYLE).toString();
+		} catch (Exception e) { //amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
+			LogManager.getLogger(object).warn("exception getting string representation of object", e);
+
+			// In case this method is called from the objects toString method, we cannot call toString here!
+			return "cannot get toString(): " + e.getMessage();
+		}
 	}
 }

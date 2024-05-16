@@ -18,9 +18,8 @@ package org.frankframework.management.bus;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +45,7 @@ public class BusMessageUtils {
 	public static final String HEADER_PREFIX_PATTERN = "meta-*";
 
 	@SuppressWarnings("unchecked")
-	private static <T> @Nullable T getHeader(Message<?> message, String headerName, Class<T> type) {
+	private static @Nullable <T> T getHeader(Message<?> message, String headerName, Class<T> type) {
 		MessageHeaders headers = message.getHeaders();
 		if(contains(headers, headerName)) {
 			Object rawValue = headers.get(HEADER_PREFIX + headerName);

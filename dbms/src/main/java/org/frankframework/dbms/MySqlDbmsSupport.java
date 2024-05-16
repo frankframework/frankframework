@@ -62,11 +62,6 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getClobFieldType() {
-		return "LONGTEXT";
-	}
-
-	@Override
 	public String getBlobFieldType() {
 		return "LONGBLOB";
 	}

@@ -36,9 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -1760,24 +1758,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		RunState currentRunState = runState.getRunState();
 		log.trace("Receiver [{}] check if runState=[{}] - current runState=[{}]", name, someRunState, currentRunState);
 		return currentRunState==someRunState;
-	}
-
-	//TODO move this to RunState
-	public boolean isStopped() {
-		RunState currentRunState = runState.getRunState();
-		switch (currentRunState) {
-			case STARTING:
-			case EXCEPTION_STARTING:
-			case STARTED:
-			case STOPPING:
-				return false;
-			case STOPPED:
-			case EXCEPTION_STOPPING:
-			case ERROR:
-				return true;
-			default:
-				throw new IllegalStateException("Unhandled receiver run-state [" + currentRunState + "]");
-		}
 	}
 
 	private String sendResultToSender(Message result) {

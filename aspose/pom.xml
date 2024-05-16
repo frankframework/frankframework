@@ -211,18 +211,16 @@
 					<groupId>net.jcip</groupId>
 					<artifactId>jcip-annotations</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-runtime</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
-		<!-- Explicitly here because we want to force 'our' version and not the inherited version from DSN -->
 		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>jakarta.mail</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>dsn</artifactId>
-			<version>2.0.1</version>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
 		</dependency>
 
 		<!-- LOG4J to SLF4J Bridge required for ehcache -->
@@ -276,8 +274,8 @@
 
 		<!-- test scoped dependencies -->
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

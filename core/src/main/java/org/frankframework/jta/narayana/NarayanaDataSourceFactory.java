@@ -20,20 +20,19 @@ import static java.util.Objects.requireNonNull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
-import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
-import org.apache.commons.dbcp2.managed.XAConnectionFactory;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.jdbc.datasource.AbstractXADataSourceFactory;
-import org.frankframework.jdbc.datasource.OpenManagedDataSource;
-import org.frankframework.util.AppConstants;
-
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.managed.DataSourceXAConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.managed.PoolableManagedConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.managed.XAConnectionFactory;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.frankframework.jdbc.datasource.AbstractXADataSourceFactory;
+import org.frankframework.jdbc.datasource.OpenManagedDataSource;
+import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
@@ -56,7 +55,7 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 		this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 		DataSource ds;
-		if(maxPoolSize > 1) {
+		if (maxPoolSize > 1) {
 			XAConnectionFactory cf = new DataSourceXAConnectionFactory(requireNonNull(transactionManager.getTransactionManager()), xaDataSource);
 			PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
 

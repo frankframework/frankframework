@@ -18,16 +18,16 @@ package org.frankframework.extensions.tibco;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -255,7 +255,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				log.debug("start waiting for reply on [" + replyQueue+ "] selector [" + replyCorrelationId + "] for ["+ replyTimeout_work + "] ms");
 
 				connection.start();
-				javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
+				jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
 				if (rawReplyMsg == null) {
 					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
 				}

@@ -15,10 +15,10 @@
 */
 package org.frankframework.jta;
 
-import javax.annotation.Nonnull;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.InitializingBean;

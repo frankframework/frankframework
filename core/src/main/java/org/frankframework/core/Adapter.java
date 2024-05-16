@@ -795,7 +795,7 @@ public class Adapter implements IAdapter, NamedBean {
 						if(receiver.getRunState() == RunState.ERROR) {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
-						while (!receiver.isStopped()) {
+						while (!receiver.getRunState().isStopped()) {
 							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
 								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", name, receiver.getName());
 								receiver.stopRunning();

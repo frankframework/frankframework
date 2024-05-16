@@ -28,10 +28,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import lombok.extern.log4j.Log4j2;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * Utilities for formatting and parsing dates.

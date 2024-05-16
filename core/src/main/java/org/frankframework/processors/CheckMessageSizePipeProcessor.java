@@ -14,9 +14,7 @@
    limitations under the License.
 */
 package org.frankframework.processors;
-
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;

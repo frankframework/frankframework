@@ -19,8 +19,8 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
