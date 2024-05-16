@@ -329,52 +329,23 @@
   </xs:complexType>
   <xs:complexType name="ParamType">
     <xs:annotation>
-      <xs:documentation>Generic parameter definition.
-
- A parameter resembles an attribute. However, while attributes get their value at configuration-time,
- parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
- a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
- can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
- from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
- of the parameter is taken if provided.
- &lt;br/&gt;&lt;br/&gt;
- Examples:
- &lt;pre&gt;&lt;code&gt;
- stored under SessionKey 'TransportInfo':
-  &amp;lt;transportinfo&amp;gt;
-   &amp;lt;to&amp;gt;***@zonnet.nl&amp;lt;/to&amp;gt;
-   &amp;lt;to&amp;gt;***@zonnet.nl&amp;lt;/to&amp;gt;
-   &amp;lt;cc&amp;gt;***@zonnet.nl&amp;lt;/cc&amp;gt;
-  &amp;lt;/transportinfo&amp;gt;
-
- to obtain all 'to' addressees as a parameter:
- sessionKey="TransportInfo"
- xpathExpression="transportinfo/to"
- type="xml"
-
- Result:
-   &amp;lt;to&amp;gt;***@zonnet.nl&amp;lt;/to&amp;gt;
-   &amp;lt;to&amp;gt;***@zonnet.nl&amp;lt;/to&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
-
- N.B. to obtain a fixed value: a non-existing 'dummy' &lt;code&gt;sessionKey&lt;/code&gt; in combination with the fixed value in &lt;code&gt;defaultValue&lt;/code&gt; is used traditionally.
- The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.</xs:documentation>
+      <xs:documentation>Placeholder class to allow old-school &lt;code&gt;&amp;lt;param type='number' /&amp;gt;&lt;/code&gt; in the new Frank!Config XSD.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the parameter</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="type">
       <xs:annotation>
-        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied.</xs:documentation>
+        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. Default: STRING</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the parameter</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="value" type="xs:string">
       <xs:annotation>

@@ -275,18 +275,18 @@
         <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
       </xs:choice>
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the parameter</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="type">
       <xs:annotation>
-        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied.</xs:documentation>
+        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. Default: STRING</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the parameter</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="value" type="xs:string">
       <xs:annotation>

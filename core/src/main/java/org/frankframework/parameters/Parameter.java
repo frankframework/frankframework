@@ -15,7 +15,7 @@
 */
 package org.frankframework.parameters;
 
-import org.frankframework.doc.Mandatory;
+import org.frankframework.doc.Default;
 
 import lombok.Getter;
 
@@ -48,7 +48,7 @@ public class Parameter extends AbstractParameter {
 	}
 
 	@Override
-	@Mandatory
+	@Default("STRING")
 	/** The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. */
 	public void setType(ParameterType type) {
 		this.type = type;
