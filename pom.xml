@@ -592,6 +592,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter-params</artifactId>
 				<version>${junit.version}</version>
 				<scope>test</scope>
@@ -635,6 +641,13 @@
 						<artifactId>ant</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>1.19.8</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -703,9 +716,6 @@
 					<includes>
 						<include>**/*.java</include>
 					</includes>
-					<excludes>
-						<exclude>it.**</exclude>
-					</excludes>
 					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>

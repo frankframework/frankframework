@@ -130,7 +130,7 @@
 		name="mongodb/ibis4test"
 		type="com.mongodb.MongoClient"
 		factory="com.mongodb.client.MongoClientFactory"
-		connectionString="mongodb://testiaf_user:testiaf_user00@${jdbc.hostname:-localhost}"
+		connectionString="mongodb://mongodb:27017"
 		auth="Container"
 		singleton="true"
 	/>
