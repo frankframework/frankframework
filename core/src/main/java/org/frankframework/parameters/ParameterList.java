@@ -139,7 +139,7 @@ public class ParameterList extends ArrayList<Parameter> {
 		return result;
 	}
 
-	public void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	private void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		String parmName = parm.getName();
 		for (String sessionKey: session.keySet()) {
 			if (PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) || PipeLineSession.TS_SENT_KEY.equals(sessionKey) || !sessionKey.startsWith(parmName) && !"*".equals(parmName)) {
