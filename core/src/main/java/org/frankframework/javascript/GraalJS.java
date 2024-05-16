@@ -30,8 +30,9 @@ import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.HostAccess;
 
 /**
- * Javascript engine implementation for GraalJS. If high performance execution of JavaScript code is required, enable the following JVM options:
+ * Javascript engine implementation of GraalJS. If high performance execution of JavaScript code is required, enable the following JVM options:
  * "-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI" or use the GraalVM Java distribution. Otherwise, the Javascript code is interpreted on every execution.
+ * @since 8.2
  */
 @Log4j2
 public class GraalJS implements JavascriptEngine<ScriptEngine> {
@@ -53,7 +54,6 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 			bindings.put("polyglot.js.allowHostAccess", true); // essential for evaluation on JVM 17
 			bindings.put("polyglot.js.allowHostClassLookup", true);
 			libraryLoaded = scriptEngine != null;
-			if (!libraryLoaded) throw new JavascriptException("error initializing runtime GraalJS engine");
 		}
 		context = Context.newBuilder()
 				.allowHostAccess(HostAccess.SCOPED)

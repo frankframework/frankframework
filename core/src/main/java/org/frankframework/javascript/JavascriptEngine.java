@@ -69,8 +69,8 @@ public interface JavascriptEngine<E> {
 	E getEngine();
 
 	/**
-	 * Only used by J2V8, allows for senders to be called by the Javascript function. Sender needs to be given in the adapter configuration,
-	 * a javascript function can call the sender using the name of the sender as a function call.
+	 * Allows for senders to be called by the Javascript function. Sender needs to be given in the adapter configuration,
+	 * a Javascript function can call the sender, using the name of the sender as a function call.
 	 *
 	 * @param sender		The sender given in the adapter configuration
 	 */
