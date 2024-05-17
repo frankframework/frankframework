@@ -15,12 +15,29 @@
 */
 package org.frankframework.parameters;
 
-import org.frankframework.doc.Protected;
+import java.io.IOException;
 
+import org.frankframework.core.ParameterException;
+import org.frankframework.doc.Protected;
+import org.frankframework.stream.Message;
+
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class BooleanParameter extends Parameter { //Extends Parameter should be changed to AbstractParameter once we use IParameter everywhere.
 
 	public BooleanParameter() {
 		setType(ParameterType.BOOLEAN);
+	}
+
+	@Override
+	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+		if (request instanceof Boolean) {
+			return request;
+		}
+		Message requestMessage = Message.asMessage(request);
+		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->requestMessage);
+		return Boolean.parseBoolean(requestMessage.asString());
 	}
 
 	@Protected //Method to be removed once we use IParameter everywhere.

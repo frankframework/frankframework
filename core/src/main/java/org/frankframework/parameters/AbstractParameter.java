@@ -564,15 +564,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				result = XmlUtils.parseXmlDateTime(requestMessage.asString());
 				break;
 			}
-			case BOOLEAN: {
-				if (request instanceof Boolean) {
-					return request;
-				}
-				Message finalRequestMessage = requestMessage;
-				LOG.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->finalRequestMessage);
-				result = Boolean.parseBoolean(requestMessage.asString());
-				break;
-			}
 			default:
 				break;
 		}
