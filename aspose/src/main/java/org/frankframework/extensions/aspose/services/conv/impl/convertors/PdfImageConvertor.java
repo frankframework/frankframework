@@ -101,7 +101,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			try(InputStream is = message.asInputStream()){
+			try(InputStream is = message.asInputStream()) {
 				image = com.aspose.imaging.Image.load(is);
 			}
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
@@ -114,11 +114,11 @@ public class PdfImageConvertor extends AbstractConvertor {
 					page.getParagraphs().add(pdfImage);
 				}
 			} else {
-				try(InputStream is = message.asInputStream()){
+				try(InputStream is = message.asInputStream()) {
 					Files.copy(is, tmpImageFile.toPath());
 				}
 				BufferedImage bufferedImage = ImageExtensions.toJava(image);
-				LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
+				LOGGER.debug("Image info height:{} width:{}", bufferedImage::getHeight, bufferedImage::getWidth);
 
 				float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
 				float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
@@ -144,7 +144,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 
 		} finally {

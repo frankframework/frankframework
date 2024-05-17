@@ -259,7 +259,7 @@ public class CompressPipe extends FixedForwardPipe {
 		resultIsContent = b;
 	}
 	public boolean isResultIsContent() {
-		return Boolean.valueOf(resultIsContent);
+		return resultIsContent != null && resultIsContent == true;
 	}
 
 	/** the pattern for the zipentry name in case a zipfile is read or written */

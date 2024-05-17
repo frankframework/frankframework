@@ -1097,6 +1097,7 @@
 											<exclude>org.eclipse.angus:angus-mail:[1.0.0]</exclude><!-- don't use com.sun.mail packages anymore -->
 											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
 											<exclude>org.glassfish:javax.json</exclude>
+											<exclude>com.google.code.findbugs:jsr305</exclude>
 										</excludes>
 										<message>use jakarta packages instead</message>
 									</bannedDependencies>
