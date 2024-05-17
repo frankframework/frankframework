@@ -20,6 +20,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
+import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
@@ -245,7 +246,7 @@ public class FixedQuerySenderTest {
 	@TxManagerTest
 	public void testAddMonth() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
-		fixedQuerySender.addParameter(ParameterBuilder.create("param", "7").withType(ParameterType.INTEGER));
+		fixedQuerySender.addParameter(NumberParameterBuilder.create("param", 7));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
 		fixedQuerySender.open();

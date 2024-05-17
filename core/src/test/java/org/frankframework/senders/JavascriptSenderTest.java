@@ -11,9 +11,10 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterType;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.BooleanParameterBuilder;
+import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,9 +70,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		sender.addParameter(ParameterBuilder.create("x", "1").withType(ParameterType.INTEGER));
-
-		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(NumberParameterBuilder.create("x", 1));
+		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
 		sender.open();
@@ -93,8 +93,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		session.put("originalMessage", input);
 
-		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(NumberParameterBuilder.create("x").withSessionKey("originalMessage"));
+		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
 		sender.open();
@@ -136,9 +136,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
 
-		sender.addParameter(ParameterBuilder.create("x", "1").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("z", "true").withType(ParameterType.BOOLEAN));
+		sender.addParameter(NumberParameterBuilder.create("x", 1));
+		sender.addParameter(NumberParameterBuilder.create("y", 2));
+		sender.addParameter(BooleanParameterBuilder.create("z", true));
 
 		sender.configure();
 		sender.open();
@@ -158,9 +158,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
 
-		sender.addParameter(ParameterBuilder.create("x", "1").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("z", "false").withType(ParameterType.BOOLEAN));
+		sender.addParameter(NumberParameterBuilder.create("x", 1));
+		sender.addParameter(NumberParameterBuilder.create("y", 2));
+		sender.addParameter(BooleanParameterBuilder.create("z", false));
 
 		sender.configure();
 		sender.open();
@@ -264,8 +264,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		session.put("originalMessage", input);
 
-		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(NumberParameterBuilder.create("x").withSessionKey("originalMessage"));
+		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
 		sender.open();
@@ -287,8 +287,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName(functionName);
 		sender.setEngineName(engine);
 
-		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(NumberParameterBuilder.create("x").withSessionKey("originalMessage"));
+		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
 		sender.open();

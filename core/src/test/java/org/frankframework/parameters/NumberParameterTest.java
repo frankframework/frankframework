@@ -3,7 +3,11 @@ package org.frankframework.parameters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
 
@@ -228,5 +232,78 @@ public class NumberParameterTest {
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
 		assertInstanceOf(Long.class, result);
 		assertEquals(5000L, result);
+	}
+
+	@Test
+	public void testParameterNumberParseException() throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("number");
+		p.setValue("a");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
+	}
+
+	@Test
+	public void testParameterInteger() throws Exception {
+		testParameterTypeHelper(ParameterType.INTEGER, Integer.class);
+	}
+
+	@Test
+	public void testParameterNumber() throws Exception {
+		testParameterTypeHelper(ParameterType.NUMBER, Number.class);
+	}
+
+	public <T> void testParameterTypeHelper(ParameterType type, Class<T> c) throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("integer");
+		p.setValue("8");
+		p.setType(type);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionkey", 8);
+		p = new NumberParameter();
+		p.setName("integer");
+		p.setSessionKey("sessionkey");
+		p.setType(type);
+		p.configure();
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
+
+		session = new PipeLineSession();
+		session.put("sessionkey", "8");
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
+
+		session = new PipeLineSession();
+		session.put("sessionkey", Message.asMessage(8));
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
+
+		session = new PipeLineSession();
+		session.put("sessionkey", "8".getBytes());
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
+
+		session = new PipeLineSession();
+		session.put("sessionkey", Message.asMessage("8".getBytes()));
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
+
 	}
 }
