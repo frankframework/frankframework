@@ -15,13 +15,10 @@
 */
 package org.frankframework.parameters;
 
-import static org.frankframework.functional.FunctionalUtil.logValue;
 import static org.frankframework.util.StringUtil.hide;
 
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -133,19 +130,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter String defaultValueMethods = "defaultValue";
 	private @Getter String value = null;
 	private @Getter String formatString = null;
-	private @Getter String decimalSeparator = null;
-	private @Getter String groupingSeparator = null;
 	private @Getter int minLength = -1;
 	private @Getter int maxLength = -1;
-	private @Getter String minInclusiveString = null;
-	private @Getter String maxInclusiveString = null;
-	private Number minInclusive;
-	private Number maxInclusive;
 	private @Getter boolean hidden = false;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
 
-	private @Getter DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	private TransformerPool tpDynamicSessionKey = null;
 	protected ParameterList paramList = null;
@@ -225,40 +215,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					break;
 			}
 		}
-		if (getType()==ParameterType.NUMBER) {
-			decimalFormatSymbols = new DecimalFormatSymbols();
-			if (StringUtils.isNotEmpty(getDecimalSeparator())) {
-				decimalFormatSymbols.setDecimalSeparator(getDecimalSeparator().charAt(0));
-			}
-			if (StringUtils.isNotEmpty(getGroupingSeparator())) {
-				decimalFormatSymbols.setGroupingSeparator(getGroupingSeparator().charAt(0));
-			}
-		}
+
 		configured = true;
 
-		if (getMinInclusiveString()!=null || getMaxInclusiveString()!=null) {
-			if (getType()!=ParameterType.NUMBER) {
-				throw new ConfigurationException("minInclusive and maxInclusive only allowed in combination with type ["+ParameterType.NUMBER+"]");
-			}
-			if (getMinInclusiveString()!=null) {
-				DecimalFormat df = new DecimalFormat();
-				df.setDecimalFormatSymbols(decimalFormatSymbols);
-				try {
-					minInclusive = df.parse(getMinInclusiveString());
-				} catch (ParseException e) {
-					throw new ConfigurationException("Attribute [minInclusive] could not parse result ["+getMinInclusiveString()+"] to number; decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
-				}
-			}
-			if (getMaxInclusiveString()!=null) {
-				DecimalFormat df = new DecimalFormat();
-				df.setDecimalFormatSymbols(decimalFormatSymbols);
-				try {
-					maxInclusive = df.parse(getMaxInclusiveString());
-				} catch (ParseException e) {
-					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMaxInclusiveString()+"] to number; decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
-				}
-			}
-		}
 		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getPassword())) {
 			cf=new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
@@ -517,146 +476,105 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 		}
 		if (result instanceof String stringResult) {
-			if (getMinLength()>=0 && getType()!=ParameterType.NUMBER) {
+			if (getMinLength()>=0 && !(this instanceof NumberParameter)) { //Numbers are formatted left-pad with leading 0's opposed to right-pad spaces.
 				if (stringResult.length() < getMinLength()) {
 					LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
 					result = StringUtils.rightPad(stringResult, getMinLength());
 				}
 			}
 			if (getMaxLength()>=0) {
-				if (stringResult.length() > getMaxLength()) {
+				if (stringResult.length() > getMaxLength()) { //Still trims length regardless of type
 					LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
 					result = stringResult.substring(0, getMaxLength());
 				}
 			}
 		}
-		if(result !=null && getType().requiresTypeConversion) {
-			result = getValueAsType(result, namespaceAware);
-		}
-		if (result instanceof Number number) {
-			if (getMinInclusiveString()!=null && number.floatValue() < minInclusive.floatValue()) {
-				LOG.debug("Replacing parameter [{}] because value [{}] falls short of minInclusive [{}]", this::getName, logValue(result), this::getMinInclusiveString);
-				result = minInclusive;
-			}
-			if (getMaxInclusiveString()!=null && number.floatValue() > maxInclusive.floatValue()) {
-				LOG.debug("Replacing parameter [{}] because value [{}] exceeds maxInclusive [{}]", this::getName, logValue(result), this::getMaxInclusiveString);
-				result = maxInclusive;
+		if(result != null && getType().requiresTypeConversion) {
+			try {
+				result = getValueAsType(result, namespaceAware);
+			} catch(IOException e) {
+				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
 			}
 		}
-		if (getType()==ParameterType.NUMBER && getMinLength()>=0 && (result+"").length()<getMinLength()) {
-			LOG.debug("Adding leading zeros to parameter [{}]", this::getName);
-			result = StringUtils.leftPad(result+"", getMinLength(), '0');
-		}
+
 		return result;
 	}
 
 	/** Converts raw data to configured parameter type */
-	private Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException {
+	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
 		Message requestMessage = Message.asMessage(request);
 		Object result = request;
-		try {
-			switch(getType()) {
-				case NODE:
-					try {
-						if (isRemoveNamespaces()) {
-							requestMessage = XmlUtils.removeNamespaces(requestMessage);
-						}
-						if(request instanceof Document document) {
-							return document.getDocumentElement();
-						}
-						if(request instanceof Node) {
-							return request;
-						}
-						result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
-						final Object finalResult = result;
-						LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
-					} catch (DomBuilderException | IOException | XmlException e) {
-						throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
+		switch(getType()) {
+			case NODE:
+				try {
+					if (isRemoveNamespaces()) {
+						requestMessage = XmlUtils.removeNamespaces(requestMessage);
 					}
-					break;
-				case DOMDOC:
-					try {
-						if (isRemoveNamespaces()) {
-							requestMessage = XmlUtils.removeNamespaces(requestMessage);
-						}
-						if(request instanceof Document) {
-							return request;
-						}
-						result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
-						final Object finalResult = result;
-						LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
-					} catch (DomBuilderException | IOException | XmlException e) {
-						throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
+					if(request instanceof Document document) {
+						return document.getDocumentElement();
 					}
-					break;
-				case DATE:
-				case DATETIME:
-				case TIMESTAMP:
-				case TIME: {
-					if (request instanceof Date) {
+					if(request instanceof Node) {
 						return request;
 					}
-					Message finalRequestMessage = requestMessage;
-					LOG.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> finalRequestMessage, this::getFormatString);
-					DateFormat df = new SimpleDateFormat(getFormatString());
-					try {
-						result = df.parseObject(requestMessage.asString());
-					} catch (ParseException e) {
-						throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
-					}
-					break;
+					result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
+					final Object finalResult = result;
+					LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
+				} catch (DomBuilderException | IOException | XmlException e) {
+					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
 				}
-				case XMLDATETIME: {
-					if (request instanceof Date) {
+				break;
+			case DOMDOC:
+				try {
+					if (isRemoveNamespaces()) {
+						requestMessage = XmlUtils.removeNamespaces(requestMessage);
+					}
+					if(request instanceof Document) {
 						return request;
 					}
-					Message finalRequestMessage = requestMessage;
-					LOG.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> finalRequestMessage);
-					result = XmlUtils.parseXmlDateTime(requestMessage.asString());
-					break;
+					result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
+					final Object finalResult = result;
+					LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
+				} catch (DomBuilderException | IOException | XmlException e) {
+					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
 				}
-				case NUMBER: {
-					if (request instanceof Number) {
-						return request;
-					}
-					Message finalRequestMessage = requestMessage;
-					LOG.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->finalRequestMessage, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
-					DecimalFormat decimalFormat = new DecimalFormat();
-					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-					try {
-						result = decimalFormat.parse(requestMessage.asString());
-					} catch (ParseException e) {
-						throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
-					}
-					break;
+				break;
+			case DATE:
+			case DATETIME:
+			case TIMESTAMP:
+			case TIME: {
+				if (request instanceof Date) {
+					return request;
 				}
-				case INTEGER: {
-					if (request instanceof Integer) {
-						return request;
-					}
-					Message finalRequestMessage = requestMessage;
-					LOG.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->finalRequestMessage);
-					try {
-						result = Integer.parseInt(requestMessage.asString());
-					} catch (NumberFormatException e) {
-						throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to integer", e);
-					}
-					break;
+				Message finalRequestMessage = requestMessage;
+				LOG.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> finalRequestMessage, this::getFormatString);
+				DateFormat df = new SimpleDateFormat(getFormatString());
+				try {
+					result = df.parseObject(requestMessage.asString());
+				} catch (ParseException e) {
+					throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
 				}
-				case BOOLEAN: {
-					if (request instanceof Boolean) {
-						return request;
-					}
-					Message finalRequestMessage = requestMessage;
-					LOG.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->finalRequestMessage);
-					result = Boolean.parseBoolean(requestMessage.asString());
-					break;
-				}
-				default:
-					break;
+				break;
 			}
-		} catch(IOException e) {
-			throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
+			case XMLDATETIME: {
+				if (request instanceof Date) {
+					return request;
+				}
+				Message finalRequestMessage = requestMessage;
+				LOG.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> finalRequestMessage);
+				result = XmlUtils.parseXmlDateTime(requestMessage.asString());
+				break;
+			}
+			case BOOLEAN: {
+				if (request instanceof Boolean) {
+					return request;
+				}
+				Message finalRequestMessage = requestMessage;
+				LOG.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->finalRequestMessage);
+				result = Boolean.parseBoolean(requestMessage.asString());
+				break;
+			}
+			default:
+				break;
 		}
 
 		return result;
@@ -970,22 +888,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	/**
-	 * Used in combination with type <code>NUMBER</code>
-	 * @ff.default system default
-	 */
-	public void setDecimalSeparator(String string) {
-		decimalSeparator = string;
-	}
-
-	/**
-	 * Used in combination with type <code>NUMBER</code>
-	 * @ff.default system default
-	 */
-	public void setGroupingSeparator(String string) {
-		groupingSeparator = string;
-	}
-
-	/**
 	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded
 	 * @ff.default -1
 	 */
@@ -999,16 +901,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 */
 	public void setMaxLength(int i) {
 		maxLength = i;
-	}
-
-	/** Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken */
-	public void setMaxInclusive(String string) {
-		maxInclusiveString = string;
-	}
-
-	/** Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken */
-	public void setMinInclusive(String string) {
-		minInclusiveString = string;
 	}
 
 	/**

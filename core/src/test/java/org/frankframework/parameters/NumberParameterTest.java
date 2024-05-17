@@ -26,6 +26,54 @@ public class NumberParameterTest {
 	}
 
 	@Test
+	public void testSmallNumberWithMaxLengthShouldLeftTrim() throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("number");
+		p.setValue("0008"); //Smaller then max-length
+		p.setMaxLength(5);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertInstanceOf(Integer.class, result);
+		assertEquals(8, result);
+	}
+
+	@Test
+	public void testSmallNumberWithMaxLength() throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("number");
+		p.setValue("0000008"); //Larger then max-length
+		p.setMaxLength(5);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertInstanceOf(Integer.class, result);
+		assertEquals(0, result);
+	}
+
+	@Test
+	public void testLargeNumberWithMaxLength() throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("number");
+		p.setValue("0008123000");
+		p.setMaxLength(5);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertInstanceOf(Integer.class, result);
+		assertEquals(81, result);
+	}
+
+	@Test
 	public void testLargeNumberWithMinLength() throws Exception {
 		NumberParameter p = new NumberParameter();
 		p.setName("number");
@@ -37,8 +85,8 @@ public class NumberParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Long.class, result);
-		assertEquals(8_000L, result);
+		assertInstanceOf(Integer.class, result);
+		assertEquals(8_000, result);
 	}
 
 	@Test

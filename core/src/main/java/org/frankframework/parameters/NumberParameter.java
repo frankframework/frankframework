@@ -15,17 +15,161 @@
 */
 package org.frankframework.parameters;
 
-import org.frankframework.doc.Protected;
+import static org.frankframework.functional.FunctionalUtil.logValue;
 
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Protected;
+import org.frankframework.stream.Message;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class NumberParameter extends Parameter { //Extends Parameter should be changed to AbstractParameter once we use IParameter everywhere.
 
+	private @Getter String decimalSeparator = null;
+	private @Getter String groupingSeparator = null;
+	private @Getter String minInclusiveString = null;
+	private @Getter String maxInclusiveString = null;
+	private Number minInclusive;
+	private Number maxInclusive;
+
+	private @Getter DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+
 	public NumberParameter() {
-		setType(ParameterType.NUMBER);
+		setType(ParameterType.INTEGER); //Defaults to integer
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getDecimalSeparator()) || StringUtils.isNotEmpty(getGroupingSeparator())) {
+			setType(ParameterType.NUMBER);
+
+			if (StringUtils.isNotEmpty(getDecimalSeparator())) {
+				decimalFormatSymbols.setDecimalSeparator(getDecimalSeparator().charAt(0));
+			}
+			if (StringUtils.isNotEmpty(getGroupingSeparator())) {
+				decimalFormatSymbols.setGroupingSeparator(getGroupingSeparator().charAt(0));
+			}
+		}
+
+		if (StringUtils.isNotEmpty(getMinInclusiveString()) || StringUtils.isNotEmpty(getMaxInclusiveString())) {
+			setType(ParameterType.NUMBER);
+			if (getMinInclusiveString()!=null) {
+				DecimalFormat df = new DecimalFormat();
+				df.setDecimalFormatSymbols(decimalFormatSymbols);
+				try {
+					minInclusive = df.parse(getMinInclusiveString());
+				} catch (ParseException e) {
+					throw new ConfigurationException("Attribute [minInclusive] could not parse result ["+getMinInclusiveString()+"] to number; decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+			}
+			if (getMaxInclusiveString()!=null) {
+				DecimalFormat df = new DecimalFormat();
+				df.setDecimalFormatSymbols(decimalFormatSymbols);
+				try {
+					maxInclusive = df.parse(getMaxInclusiveString());
+				} catch (ParseException e) {
+					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMaxInclusiveString()+"] to number; decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+			}
+		}
+
+		super.configure();
+	}
+
+	@Override
+	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+		Object result = super.getValue(alreadyResolvedParameters, message, session, namespaceAware);
+
+		if (result instanceof Number number) {
+			if (getMinInclusiveString()!=null && number.floatValue() < minInclusive.floatValue()) {
+				log.debug("Replacing parameter [{}] because value [{}] falls short of minInclusive [{}]", this::getName, logValue(result), this::getMinInclusiveString);
+				result = minInclusive;
+			}
+			if (getMaxInclusiveString()!=null && number.floatValue() > maxInclusive.floatValue()) {
+				log.debug("Replacing parameter [{}] because value [{}] exceeds maxInclusive [{}]", this::getName, logValue(result), this::getMaxInclusiveString);
+				result = maxInclusive;
+			}
+		}
+
+		//This turns the result type into a String
+		if (getMinLength()>=0 && (result+"").length() < getMinLength()) {
+			log.debug("Adding leading zeros to parameter [{}]", this::getName);
+			result = StringUtils.leftPad(result+"", getMinLength(), '0');
+		}
+
+		return result;
+	}
+
+	@Override
+	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+		final Message requestMessage = Message.asMessage(request);
+
+		if(getType() == ParameterType.NUMBER) {
+			if (request instanceof Number) {
+				return request;
+			}
+			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->requestMessage, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
+			DecimalFormat decimalFormat = new DecimalFormat();
+			decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
+			try {
+				return decimalFormat.parse(requestMessage.asString());
+			} catch (ParseException e) {
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
+			}
+		}
+		if(getType() == ParameterType.INTEGER) {
+			if (request instanceof Integer) {
+				return request;
+			}
+			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->requestMessage);
+			try {
+				return Integer.parseInt(requestMessage.asString());
+			} catch (NumberFormatException e) {
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to integer", e);
+			}
+		}
+		throw new ParameterException("unexpected type");
 	}
 
 	@Protected //Method to be removed once we use IParameter everywhere.
 	@Override
 	public void setType(ParameterType type) {
 		super.setType(type);
+	}
+
+	/**
+	 * Separate the integer part from the fractional part of a number.
+	 * @ff.default system default
+	 */
+	public void setDecimalSeparator(String string) {
+		decimalSeparator = string;
+	}
+
+	/**
+	 * In the United States, the comma is typically used for the grouping separator; however, several publication standards follow international standards in using either a space or a thin space character.
+	 * @ff.default system default
+	 */
+	public void setGroupingSeparator(String string) {
+		groupingSeparator = string;
+	}
+
+	/** Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken */
+	public void setMaxInclusive(String string) {
+		maxInclusiveString = string;
+	}
+
+	/** Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken */
+	public void setMinInclusive(String string) {
+		minInclusiveString = string;
 	}
 }
