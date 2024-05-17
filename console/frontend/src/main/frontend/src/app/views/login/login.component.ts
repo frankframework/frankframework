@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Alert, AlertService } from 'src/app/services/alert.service';
-import { AuthService } from 'src/app/services/auth.service';
+import {Component, OnInit} from '@angular/core';
+import {Alert, AlertService} from 'src/app/services/alert.service';
+import {AuthService} from 'src/app/services/auth.service';
 
 type Credentials = {
   username: string;
