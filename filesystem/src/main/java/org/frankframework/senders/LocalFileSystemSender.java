@@ -17,6 +17,7 @@ package org.frankframework.senders;
 
 import java.nio.file.Path;
 
+import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.LocalFileSystem;
 
@@ -26,9 +27,13 @@ public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSyste
 		setFileSystem(new LocalFileSystem());
 	}
 
-	/** Optional base folder, that serves as root for all other folders */
+	@ReferTo(LocalFileSystem.class)
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
 
+	@ReferTo(LocalFileSystem.class)
+	public void setCreateRootFolder(boolean createRootFolder) {
+		getFileSystem().setCreateRootFolder(createRootFolder);
+	}
 }

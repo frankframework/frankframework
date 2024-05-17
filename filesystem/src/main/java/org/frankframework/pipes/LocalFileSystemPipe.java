@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import java.nio.file.Path;
 
+import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.FileSystemPipe;
 import org.frankframework.filesystem.LocalFileSystem;
 
@@ -26,9 +27,13 @@ public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
 		setFileSystem(new LocalFileSystem());
 	}
 
-	/** the folder that serves as the root of this virtual filesystem */
+	@ReferTo(LocalFileSystem.class)
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
 
+	@ReferTo(LocalFileSystem.class)
+	public void setCreateRootFolder(boolean createRootFolder) {
+		getFileSystem().setCreateRootFolder(createRootFolder);
+	}
 }
