@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.2">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.3">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -3217,6 +3217,12 @@
         <xs:documentation>If set to true the ibis will automatically create an etag Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="automaticallyTransformToAndFromJson" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
+ Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust! Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="RestListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="RestListenerDeclaredAttributeGroup" />
@@ -4101,8 +4107,8 @@
       </xs:element>
       <xs:element name="IdinSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.06+.
- Compile with Java 1.7+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
+ Compile with Java 1.8+</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -6443,27 +6449,31 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.idin.IdinSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string" />
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration, 
- and is used to unambiguously identify the Merchant. This number is 10-digits long, where the 
+        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
+ and is used to unambiguously identify the Merchant. This number is 10-digits long, where the
  first four digits are equal to the AcquirerID.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantSubID" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN, 
- if operating under different brands or trading entities. The Merchant obtains the SubID 
- from its Acquirer after registration for iDIN. A Merchant can request permission from 
+        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN,
+ if operating under different brands or trading entities. The Merchant obtains the SubID
+ from its Acquirer after registration for iDIN. A Merchant can request permission from
  the Acquirer to use one or more SubIDs.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantReturnUrl" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the 
- Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL 
- does not necessarily begin with http:// or https://, it can also start with an app handler 
+        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the
+ Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL
+ does not necessarily begin with http:// or https://, it can also start with an app handler
  e.g. companyname-nlservice://.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6472,7 +6482,7 @@
     <xs:attribute name="acquirerStatusUrl" type="xs:string" />
     <xs:attribute name="keyStoreLocation" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to 
+        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to
  store all the required certificates</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6506,22 +6516,22 @@
     </xs:attribute>
     <xs:attribute name="acquirerCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="acquirerAlternativeCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sAMLCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information. 
- The Merchant can then use the private key to decrypt that information. The SAML certificate must be in 
+        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
+ The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
  PKCS#12 format which has the extension .p12 or .pfx;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6539,6 +6549,13 @@
     <xs:attribute name="serviceLogsEnabled" type="frankBoolean" />
     <xs:attribute name="serviceLogsLocation" type="xs:string" />
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
+    <xs:attribute name="tls12Enabled" type="frankBoolean" />
+    <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
+    <xs:attribute name="configurationXML" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IdinSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="IdinSenderDeclaredAttributeGroup" />
@@ -8893,8 +8910,8 @@
       </xs:element>
       <xs:element name="IdinErrorSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.06+.
- Compile with Java 1.7+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
+ Compile with Java 1.8+</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15526,7 +15543,7 @@
         <xs:documentation>Action to be taken when pipe is executed.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="recipients" type="xs:string">
@@ -16216,7 +16233,7 @@
         <xs:documentation>Action to be taken when pipe is executed. Default: SIGN</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="algorithm" type="xs:string">
@@ -16710,7 +16727,7 @@
         <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="collectionName" type="xs:string">
@@ -17868,6 +17885,13 @@
       <xs:enumeration value="REPORT" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ActionAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DIRECTORY" />
+      <xs:enumeration value="RESPONSE" />
+      <xs:enumeration value="AUTHENTICATE" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="OperationAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="read">
@@ -18273,7 +18297,7 @@
       <xs:enumeration value="XML2JSON" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_4">
+  <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ENCRYPT">
         <xs:annotation>
@@ -18317,7 +18341,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_5">
+  <xs:simpleType name="ActionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:enumeration value="SIGN">
         <xs:annotation>
@@ -18345,7 +18369,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_4">
     <xs:restriction base="xs:string">
       <xs:enumeration value="OPEN">
         <xs:annotation>
