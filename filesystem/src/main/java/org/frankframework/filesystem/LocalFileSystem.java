@@ -61,6 +61,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 		super.open();
 	}
+
 	@Override
 	public Path toFile(String filename) {
 		return toFile(null, filename);

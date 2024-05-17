@@ -18,16 +18,16 @@
 
 		<jackson.version>2.17.1</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
-		<spring.version>6.1.6</spring.version>
+		<spring.version>6.1.7</spring.version>
 		<spring-security.version>6.2.4</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
 		<spring.boot.version>3.2.5</spring.boot.version>
-		<tomcat.version>10.1.23</tomcat.version>
+		<tomcat.version>10.1.24</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
 		<narayana.version>7.0.1.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.12.5</micrometer.version>
+		<micrometer.version>1.13.0</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.1</frankdoc.version>
@@ -152,7 +152,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.39</version>
+				<version>9.39.1</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -592,6 +592,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter-params</artifactId>
 				<version>${junit.version}</version>
 				<scope>test</scope>
@@ -635,6 +641,13 @@
 						<artifactId>ant</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>1.19.8</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -703,9 +716,6 @@
 					<includes>
 						<include>**/*.java</include>
 					</includes>
-					<excludes>
-						<exclude>it.**</exclude>
-					</excludes>
 					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>
@@ -845,7 +855,7 @@
 				<plugin>
 					<groupId>com.github.hazendaz.maven</groupId>
 					<artifactId>directory-maven-plugin</artifactId>
-					<version>1.1.2</version>
+					<version>1.1.3</version>
 					<executions>
 						<execution>
 							<id>find-project-root-directory</id>

@@ -18,12 +18,10 @@ package org.frankframework.mongodb;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
+import com.mongodb.client.MongoClient;
 
 import org.frankframework.jdbc.datasource.ObjectFactoryBase;
 import org.frankframework.util.AppConstants;
-
-import com.mongodb.client.MongoClient;
 
 /**
  * MongoClientFactory that retrieves its configuration from JNDI.
@@ -41,12 +39,12 @@ public class JndiMongoClientFactory extends ObjectFactoryBase<MongoClient> imple
 	}
 
 	@Override
-	public MongoClient getMongoClient(String name) throws NamingException {
+	public MongoClient getMongoClient(String name) {
 		return getMongoClient(name, null);
 	}
 
 	@Override
-	public MongoClient getMongoClient(String dataSourceName, Properties environment) throws NamingException {
+	public MongoClient getMongoClient(String dataSourceName, Properties environment) {
 		return get(dataSourceName, environment);
 	}
 
