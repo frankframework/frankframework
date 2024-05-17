@@ -1,5 +1,7 @@
 package org.frankframework.management.web.spring;
 
+import org.mockito.Mockito;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -13,8 +15,8 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 @Import(WebConfiguration.class)
 public class WebTestConfig {
 	@Bean
-	SpringUnitTestLocalGateway<String> outboundGateway() {
-		return new SpringUnitTestLocalGateway<>();
+	SpringUnitTestLocalGateway<?> outboundGateway() {
+		return Mockito.mock(SpringUnitTestLocalGateway.class);
 	}
 
 	@Bean

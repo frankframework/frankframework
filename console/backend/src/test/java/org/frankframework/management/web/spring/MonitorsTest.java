@@ -1,35 +1,70 @@
 package org.frankframework.management.web.spring;
 
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.web.RequestMessageBuilder;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.test.context.ContextConfiguration;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
-@ContextConfiguration(classes = {WebTestConfig.class, ServerStatistics.class})
+import org.mockito.MockitoAnnotations;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+@ContextConfiguration(classes = {WebTestConfig.class, Monitors.class})
 public class MonitorsTest extends FrankApiTestBase {
+
+	@Autowired
+	private SpringUnitTestLocalGateway<?> outputGateway;
+
+	@Override
+	@BeforeEach
+	public void setUp() {
+		MockitoAnnotations.initMocks(this);
+		super.setUp();
+	}
 
 	@Test
 	public void testGetMonitors() throws Exception {
-		this.testBasicRequest("/configurations/TestConfiguration/monitors", "MONITORING", "GET");
+		mockMvc.perform(MockMvcRequestBuilders.get("/configurations/{configuration}/monitors/", "TestConfiguration"))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("topic").value("MONITORING"))
+				.andExpect(MockMvcResultMatchers.jsonPath("action").value("GET"));
 	}
 
 	/*@Test
-	public void testAddMonitor() {
-		// Arrange
-		ArgumentCaptor<org.frankframework.management.web.RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(org.frankframework.management.web.RequestMessageBuilder.class);
-		doAnswer(new ShowMonitorsTest.DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
+	public void testAddMonitor() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(new DefaultSuccessAnswer());
 		String jsonInput = "{ \"type\":\"FUNCTIONAL\", \"monitor\":\"MonitorName\", \"destinations\": [\"one\",\"two\",\"three\" ]}";
 
-		// Act
-		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/configurations/TestConfiguration/monitors", jsonInput);
-
-		// Assert
-		Message<?> request = requestMessage.getValue().build();
-		assertAll(
-				() -> assertEquals(200, response.getStatus()),
-				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
-				() -> assertEquals("UPLOAD", request.getHeaders().get("action")),
-				() -> assertEquals("{\"type\":\"FUNCTIONAL\",\"destinations\":[\"one\",\"two\",\"three\"],\"name\":\"MonitorName\"}", request.getPayload())
-		);
+		mockMvc.perform(MockMvcRequestBuilders
+					.post("/configurations/TestConfiguration/monitors")
+					.content(jsonInput))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpectAll(
+						jsonPath("type").value("FUNCTIONAL"),
+						jsonPath("destinations").value("[\"one\",\"two\",\"three\"]"),
+						jsonPath("name").value("MonitorName")
+				);
 	}*/
 
 	/*@Test
@@ -98,5 +133,17 @@ public class MonitorsTest extends FrankApiTestBase {
 				() -> assertEquals(jsonPretty(jsonInput), jsonPretty(String.valueOf(request.getPayload())))
 		);
 	}*/
+
+	private static class DefaultSuccessAnswer implements Answer<Message<String>> {
+
+		@Override
+		public Message<String> answer(InvocationOnMock invocation) {
+			Object input = invocation.getArguments()[0];
+			RequestMessageBuilder request = (RequestMessageBuilder)input;
+			assertEquals(BusTopic.MONITORING, request.getTopic());
+			return new JsonMessage(request);
+		}
+
+	}
 
 }
