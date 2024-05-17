@@ -106,12 +106,13 @@ public class PdfImageConvertor extends AbstractConvertor {
 			}
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				TiffFrame[] frames = ((TiffImage)image).getFrames();
-				PngOptions pngOptions = new PngOptions();
-				for(int i=0; i<frames.length;i++) {
-					Image pdfImage = new Image();
-					frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
-					pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
-					page.getParagraphs().add(pdfImage);
+				try(PngOptions pngOptions = new PngOptions()) {
+					for(int i=0; i<frames.length;i++) {
+						Image pdfImage = new Image();
+						frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
+						pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
+						page.getParagraphs().add(pdfImage);
+					}
 				}
 			} else {
 				try(InputStream is = message.asInputStream()) {
