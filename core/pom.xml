@@ -646,13 +646,7 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.28.5</version>
-			<exclusions>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.9.2</version>
 		</dependency>
 		<!-- explicitly defined because of dependency inheritance -->
 		<dependency>

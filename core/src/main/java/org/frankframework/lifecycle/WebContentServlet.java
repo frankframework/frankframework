@@ -26,7 +26,6 @@ import java.util.WeakHashMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,10 +35,7 @@ import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
@@ -49,6 +45,8 @@ import org.frankframework.http.HttpServletBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 /**
  * This servlet allows the use of WebContent served from {@link Configuration Configurations}.
@@ -176,7 +174,7 @@ public class WebContentServlet extends HttpServletBase {
 		log.debug("computing MimeType for resource [{}]", resource);
 		Metadata metadata = new Metadata();
 		String name = FilenameUtils.getExtension(resource.toString());
-		metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
+		metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name);
 		try(InputStream in = resource.openStream()) {
 			MimeType type = MimeType.valueOf(detector.detect(TikaInputStream.get(in), metadata).toString());
 			if(!type.getSubtype().contains("x-tika")) {
