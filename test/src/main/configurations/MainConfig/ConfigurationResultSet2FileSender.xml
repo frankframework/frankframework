@@ -29,7 +29,7 @@
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
+			<pipe name="readFile" className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="read" filenameSessionKey="fileName">
 				<forward name="success" path="EXIT" />
 			</pipe>
