@@ -101,6 +101,8 @@
 		<Logger name="microsoft.exchange" level="INFO" />
 		<Logger name="org.springframework.security.web" level="INFO" />
 		<Logger name="org.springframework.security.ldap" level="WARN" />
+		<Logger name="org.frankframework.management.gateway" level="INFO" />
+		<Logger name="com.hazelcast" level="WARN" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="systemout"/>
