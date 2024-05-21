@@ -113,7 +113,7 @@
 		<dependency>
 			<groupId>jakarta.xml.soap</groupId>
 			<artifactId>jakarta.xml.soap-api</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.jms</groupId>
@@ -592,7 +592,7 @@
 		<dependency>
 			<groupId>jakarta.xml.ws</groupId>
 			<artifactId>jakarta.xml.ws-api</artifactId>
-			<version>4.0.1</version>
+			<version>4.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
@@ -602,7 +602,7 @@
 		<dependency>
 			<groupId>com.sun.xml.messaging.saaj</groupId>
 			<artifactId>saaj-impl</artifactId>
-			<version>3.0.3</version>
+			<version>3.0.4</version>
 		</dependency>
 
 		<!-- Upgraded version of the Extended StAX API which does not depend on any StAX API. -->
@@ -642,6 +642,10 @@
 					<groupId>org.bouncycastle</groupId>
 					<artifactId>bcpg-jdk15on</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- bouncy-gpg uses an very old version published under a different artifact name -->
@@ -666,13 +670,7 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.28.5</version>
-			<exclusions>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.9.2</version>
 		</dependency>
 		<!-- explicitly defined because of dependency inheritance -->
 		<dependency>

@@ -18,8 +18,8 @@
 
 		<jackson.version>2.17.1</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
-		<spring.version>6.1.6</spring.version>
-		<spring-security.version>6.2.4</spring-security.version>
+		<spring.version>6.1.7</spring.version>
+		<spring-security.version>6.3.0</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
 		<spring.boot.version>3.2.5</spring.boot.version>
 		<tomcat.version>10.1.24</tomcat.version>
@@ -41,7 +41,7 @@
 		<mssql.driver.version>12.6.1.jre11</mssql.driver.version>
 		<mysql.driver.version>8.4.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
-		<mariadb.driver.version>3.3.3</mariadb.driver.version>
+		<mariadb.driver.version>3.4.0</mariadb.driver.version>
 		<postgresql.driver.version>42.7.3</postgresql.driver.version>
 		<mongodb.driver.version>4.11.2</mongodb.driver.version>
 
@@ -1097,6 +1097,7 @@
 											<exclude>org.eclipse.angus:angus-mail:[1.0.0]</exclude><!-- don't use com.sun.mail packages anymore -->
 											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
 											<exclude>org.glassfish:javax.json</exclude>
+											<exclude>com.google.code.findbugs:jsr305</exclude>
 										</excludes>
 										<message>use jakarta packages instead</message>
 									</bannedDependencies>

@@ -302,12 +302,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return fileSystem.toFile(filenameWithFolder);
 	}
 
-	private void createFolder(String folder) throws FileSystemException {
-		if (isCreateFolder() && !fileSystem.folderExists(folder)) {
-			fileSystem.createFolder(folder);
-		}
-	}
-
 	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
@@ -565,7 +559,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	/**
-	 * If set <code>true</code>, the folder to create, write, move or copy the file to is created if it does not exist
+	 * If set to <code>true</code>, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist
 	 * @ff.default false
 	 */
 	public void setCreateFolder(boolean createFolder) {
