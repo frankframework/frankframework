@@ -1,12 +1,9 @@
 package org.frankframework.management.web.spring;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.mock.web.MockMultipartFile;
@@ -21,16 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ContextConfiguration(classes = {WebTestConfig.class, SendJmsMessage.class})
 public class SendJmsMessageTest extends FrankApiTestBase {
-
-	@Autowired
-	private SpringUnitTestLocalGateway<?> outputGateway;
-
-	@Override
-	@BeforeEach
-	public void setUp() {
-		MockitoAnnotations.initMocks(this);
-		super.setUp();
-	}
 
 	@Test
 	public void testWrongEncoding() throws Exception {

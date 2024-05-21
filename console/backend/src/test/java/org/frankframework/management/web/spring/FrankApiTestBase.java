@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.mockito.MockitoAnnotations;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -17,14 +19,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
+
 
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)
@@ -34,8 +37,12 @@ public abstract class FrankApiTestBase {
 	@Autowired
 	private WebApplicationContext webApplicationContext;
 
+	@Autowired
+	protected SpringUnitTestLocalGateway<?> outputGateway;
+
 	@BeforeEach
 	public void setUp() {
+		MockitoAnnotations.initMocks(this);
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 	}
 
@@ -53,6 +60,16 @@ public abstract class FrankApiTestBase {
 
 	protected void testBasicRequest(String url, String topic, String action) throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get(url))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("topic").value(topic))
+				.andExpect(MockMvcResultMatchers.jsonPath("action").value(action));
+	}
+
+	protected void testBasicRequest(String url, String topic, String action, Object... urlParams) throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get(url, urlParams))
+				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("topic").value(topic))

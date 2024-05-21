@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.MessageBase;
+import org.springframework.http.MediaType;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -45,6 +47,8 @@ public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport imple
 				Map<String, Object> headers = new HashMap<>(in.getHeaders());
 				headers.put("state", "SUCCESS");
 				headers.put("meta-state", "SUCCESS");
+				headers.put(MessageBase.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
+				headers.put("meta-" + MessageBase.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
 
 				return new MessageHeaders(headers);
 			}

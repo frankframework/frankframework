@@ -1,52 +1,15 @@
 package org.frankframework.management.web.spring;
 
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.management.web.RequestMessageBuilder;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
-import org.mockito.MockitoAnnotations;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @ContextConfiguration(classes = {WebTestConfig.class, Monitors.class})
 public class MonitorsTest extends FrankApiTestBase {
 
-	@Autowired
-	private SpringUnitTestLocalGateway<?> outputGateway;
-
-	@Override
-	@BeforeEach
-	public void setUp() {
-		MockitoAnnotations.initMocks(this);
-		super.setUp();
-	}
-
 	@Test
 	public void testGetMonitors() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.get("/configurations/{configuration}/monitors/", "TestConfiguration"))
-				.andDo(MockMvcResultHandlers.print())
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("topic").value("MONITORING"))
-				.andExpect(MockMvcResultMatchers.jsonPath("action").value("GET"));
+		this.testBasicRequest("/configurations/{configuration}/monitors/", "MONITORING", "GET", "TestConfiguration");
 	}
 
 	/*@Test
@@ -133,17 +96,5 @@ public class MonitorsTest extends FrankApiTestBase {
 				() -> assertEquals(jsonPretty(jsonInput), jsonPretty(String.valueOf(request.getPayload())))
 		);
 	}*/
-
-	private static class DefaultSuccessAnswer implements Answer<Message<String>> {
-
-		@Override
-		public Message<String> answer(InvocationOnMock invocation) {
-			Object input = invocation.getArguments()[0];
-			RequestMessageBuilder request = (RequestMessageBuilder)input;
-			assertEquals(BusTopic.MONITORING, request.getTopic());
-			return new JsonMessage(request);
-		}
-
-	}
 
 }
