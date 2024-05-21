@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,7 +57,7 @@ public class Monitors extends FrankApiBase {
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, Map<String, Object> json) {
+	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 
@@ -84,7 +85,7 @@ public class Monitors extends FrankApiBase {
 	@Relation("monitoring")
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateMonitor(@PathVariable("configuration") String configName, @PathVariable(value = "monitorName", required = false) String monitorName, Map<String, Object> json) {
+	public ResponseEntity<?> updateMonitor(@PathVariable("configuration") String configName, @PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
@@ -124,7 +125,7 @@ public class Monitors extends FrankApiBase {
 	@Relation("monitoring")
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addTrigger(@PathVariable("configuration") String configName, @PathVariable(value = "monitorName", required = false) String monitorName, Map<String, Object> json) {
+	public ResponseEntity<?> addTrigger(@PathVariable("configuration") String configName, @PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
@@ -149,7 +150,7 @@ public class Monitors extends FrankApiBase {
 	@Relation("monitoring")
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateTrigger(@PathVariable("configuration") String configName, @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int index, Map<String, Object> json) {
+	public ResponseEntity<?> updateTrigger(@PathVariable("configuration") String configName, @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int index, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader(MONITOR_HEADER, monitorName);

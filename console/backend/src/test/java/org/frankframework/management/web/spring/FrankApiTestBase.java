@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.mockito.MockitoAnnotations;
 
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -60,7 +63,6 @@ public abstract class FrankApiTestBase {
 
 	protected void testBasicRequest(String url, String topic, String action) throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get(url))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("topic").value(topic))
@@ -69,7 +71,6 @@ public abstract class FrankApiTestBase {
 
 	protected void testBasicRequest(String url, String topic, String action, Object... urlParams) throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get(url, urlParams))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("topic").value(topic))
@@ -100,5 +101,15 @@ public abstract class FrankApiTestBase {
 				return new MessageHeaders(headers);
 			}
 		};
+	}
+
+	protected class DefaultSuccessAnswer implements Answer<Message<String>> {
+
+		@Override
+		public Message<String> answer(InvocationOnMock invocation) {
+			Message<String> in = invocation.getArgument(0);
+			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
+		}
+
 	}
 }
