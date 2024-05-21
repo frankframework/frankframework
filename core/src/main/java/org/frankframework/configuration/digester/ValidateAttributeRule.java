@@ -16,6 +16,7 @@
 package org.frankframework.configuration.digester;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -23,12 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
-import org.springframework.beans.BeanUtils;
-import org.springframework.core.annotation.AnnotationUtils;
-
 import org.frankframework.doc.Protected;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StringResolver;
+import org.springframework.beans.BeanUtils;
+import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * @author Niels Meijer
@@ -40,24 +40,24 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	 */
 	@Override
 	protected void handleBean() {
-			Class<?> clazz = getBeanClass();
-			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-			if(warning != null) {
-				String msg = "";
-				boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
-				if(isDeprecated) {
-					msg += "is deprecated";
-				}
-				if(StringUtils.isNotEmpty(warning.value())) {
-					msg += ": "+warning.value();
-				}
-
-				if (isDeprecated) {
-					addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
-				} else {
-					addLocalWarning(msg);
-				}
+		Class<?> clazz = getBeanClass();
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
+		if (warning != null) {
+			String msg = "";
+			boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
+			if (isDeprecated) {
+				msg += "is deprecated";
 			}
+			if (StringUtils.isNotEmpty(warning.value())) {
+				msg += ": " + warning.value();
+			}
+
+			if (isDeprecated) {
+				addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+			} else {
+				addLocalWarning(msg);
+			}
+		}
 	}
 
 	/**
@@ -66,10 +66,9 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	 * @param name Name of attribute
 	 * @param value Attribute Value
 	 * @param attributes Map of all attributes
-	 * @throws Exception Can throw any exception in bean property manipulation.
 	 */
 	@Override
-	protected void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception {
+	protected void handleAttribute(String name, String value, Map<String, String> attributes) {
 		PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(getBean().getClass(), name);
 		Method m = null;
 		if (pd != null) {
@@ -123,7 +122,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				defaultValue = values.getSpecialDefaultValue(name, defaultValue, attrs);
 			}
 			if (equals(defaultValue, value)) {
-				addSuppressableWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
+				addSuppressibleWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
 			}
 			// if the default value is null, then it can mean that the real default value is determined in configure(),
 			// so we cannot assume setting it to "" has no effect
@@ -161,7 +160,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 
 			if (isDeprecated) {
-				addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+				addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 			} else {
 				addLocalWarning(msg);
 			}

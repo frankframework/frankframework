@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,6 +20,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -28,15 +36,8 @@ import org.frankframework.doc.Protected;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class ValidateAttributeRuleTest extends Mockito {
 	private TestConfiguration configuration;
@@ -110,7 +111,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("deprecatedValue", bean.getDeprecatedString());
 		assertEquals(3, bean.getTestInteger());
 		assertEquals(3L, bean.getTestLong());
-		assertEquals(true, bean.isTestBoolean());
+		assertTrue(bean.isTestBoolean());
 		assertEquals(TestEnum.TWO, bean.getTestEnum());
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
@@ -138,8 +139,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
 
 		assertEquals("", bean.getTestString(), "empty string value should be empty string");
-		assertEquals(1234, bean.getTestInteger(), "empty int value should be ingored"); //may trigger cannot be converted to int exception
-		assertEquals(false, bean.isTestBoolean(), "empty bool value should be ingored"); //may trigger a default warning exception
+		assertEquals(1234, bean.getTestInteger(), "empty int value should be ignored"); //may trigger cannot be converted to int exception
+		assertFalse(bean.isTestBoolean(), "empty bool value should be ignored"); //may trigger a default warning exception
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: "+configWarnings.getWarnings());

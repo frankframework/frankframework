@@ -2,15 +2,15 @@ package org.frankframework.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestApplicationWarnings {
-	private final Logger log = LogUtil.getLogger(TestApplicationWarnings.class);
+import lombok.extern.log4j.Log4j2;
+import org.frankframework.testutil.TestConfiguration;
+
+@Log4j2
+public class ApplicationWarningsTest {
 
 	private TestConfiguration configuration = null;
 
@@ -28,13 +28,13 @@ public class TestApplicationWarnings {
 	}
 
 	@Test
-	public void testApplicationContextFromSpring() {
+	void testApplicationContextFromSpring() {
 		ApplicationWarnings applWarnings = configuration.getBean("applicationWarnings", ApplicationWarnings.class);
 		assertEquals(configuration, applWarnings.getApplicationContext());
 	}
 
 	@Test
-	public void testApplicationContextStaticInitialized() {
+	void testApplicationContextStaticInitialized() {
 		ApplicationWarnings.add(log, "test message");
 
 		ApplicationWarnings applWarnings = configuration.getBean("applicationWarnings", ApplicationWarnings.class);
@@ -44,7 +44,7 @@ public class TestApplicationWarnings {
 	}
 
 	@Test
-	public void testApplicationContextFromRefreshedSpringContext() {
+	void testApplicationContextFromRefreshedSpringContext() {
 		ApplicationWarnings.add(log, "test message 1");
 
 		configuration.getBean("applicationWarnings", ApplicationWarnings.class);

@@ -21,13 +21,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
 
 public abstract class ApplicationWarningsBase implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private ApplicationContext applicationContext;
@@ -79,11 +78,10 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 
 	private String prefixLogMessage(Object source, String message) {
 		String msg = "";
-		if(source != null) {
-			msg = ClassUtils.nameOf(source)+" ";
+		if (source != null) {
+			msg = ClassUtils.nameOf(source) + " ";
 		}
-
-		return msg += message;
+		return msg + message;
 	}
 
 	/**
