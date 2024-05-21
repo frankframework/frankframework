@@ -504,24 +504,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		if (isOnlyStoreWhenMessageIdUnique()) {
-			log.debug("Preparing select key statement [{}]", selectKeyForMessageQuery);
-			try (PreparedStatement stmt = conn.prepareStatement(selectKeyForMessageQuery)) {
-				stmt.setString(1, getSlotId());
-				stmt.setString(2, messageId);
-				try (ResultSet rs = stmt.executeQuery()) {
-					if (rs.next()) {
-						String keyValue = rs.getString(1);
-						// TODO: Clean this up, can get message from query directly
-						boolean isMessageDifferent = isStoreFullMessage() && isMessageDifferent(rs, 2, messageId, message);
-						String resultString = createResultString(isMessageDifferent);
-						log.warn("MessageID [{}] already exists", messageId);
-						if (isMessageDifferent) {
-							log.warn("Message with MessageID [{}] is not equal", messageId);
-						}
-						return resultString;
-					}
-				}
-			}
+			String resultString = checkIfMessageIdAlreadyStored(conn, messageId, message);
+			if (resultString != null) return resultString;
 		}
 		log.debug("preparing insert statement [{}]", insertQuery);
 		try (PreparedStatement stmt = conn.prepareStatement(insertQuery, new String[]{ getKeyField().toLowerCase() });) { // Field name should be lowercase for PostgreSQL
@@ -579,6 +563,26 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
+	private String checkIfMessageIdAlreadyStored(Connection conn, String messageId, S message) throws SQLException {
+		log.debug("Preparing select key statement [{}]", selectKeyForMessageQuery);
+		try (PreparedStatement stmt = conn.prepareStatement(selectKeyForMessageQuery)) {
+			stmt.setString(1, getSlotId());
+			stmt.setString(2, messageId);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					boolean isMessageDifferent = isStoreFullMessage() && isMessageDifferent(rs, 2, messageId, message);
+					String resultString = createWarningResultString(isMessageDifferent);
+					log.warn("MessageID [{}] already exists", messageId);
+					if (isMessageDifferent) {
+						log.warn("Message with MessageID [{}] is not equal", messageId);
+					}
+					return resultString;
+				}
+			}
+		}
+		return null;
+	}
+
 	private boolean isMessageDifferent(ResultSet rs, int columnIndex, String messageId, S message) {
 		try {
 			String inputMessage;
@@ -595,7 +599,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-	private String createResultString(boolean isMessageDifferent){
+	private String createWarningResultString(boolean isMessageDifferent){
 		String resultStringStart = "<results>";
 		String resultStringEnd = "</results>";
 		String messageIdExistsString = "<result>WARN_MESSAGEID_ALREADY_EXISTS</result>";
