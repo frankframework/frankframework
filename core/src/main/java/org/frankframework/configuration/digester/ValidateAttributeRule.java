@@ -187,7 +187,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			if (o instanceof Enum<?> enumValue) {
 				String configWarning = getEnumConfigurationWarning(enumValue);
 				if (configWarning != null) {
-					addSuppressibleWarning("attribute [" + name + "." + enumValue + "]: " + configWarning, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+					addSuppressibleWarning("attribute [" + name + "." + enumValue + "]: " + configWarning, SuppressKeys.CONFIGURATION_VALIDATION);
 				}
 			}
 		} catch (IllegalArgumentException ignored) {
