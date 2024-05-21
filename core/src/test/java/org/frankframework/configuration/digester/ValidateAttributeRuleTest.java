@@ -171,6 +171,18 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
+	void testEnumAttributeWithConfigWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("queryType", "INSERT");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [queryType.INSERT]: Use queryType 'OTHER' instead", configWarnings.get(0));
+	}
+
+	@Test
 	public void testDeprecatedAttributeWithConfigWarning() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("deprecatedConfigWarningString", "string value here");
@@ -478,6 +490,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Setter String testStringWithoutGetter = "string";
 		private @Setter int testIntegerWithoutGetter = 0;
 		private @Setter boolean testBooleanWithoutGetter = false;
+		private @Setter QueryType queryType = QueryType.INSERT;
 
 		public void setEnumWithDifferentName(TestEnum testEnum) {
 			this.testEnum = testEnum;
@@ -497,6 +510,13 @@ public class ValidateAttributeRuleTest extends Mockito {
 		@Protected
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
+		}
+
+		public enum QueryType {
+			OTHER,
+			/** Deprecated: Use OTHER instead */
+			@ConfigurationWarning("Use queryType 'OTHER' instead")
+			@Deprecated(since = "8.1") INSERT,
 		}
 	}
 

@@ -79,7 +79,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		} else if(AnnotationUtils.findAnnotation(m, Protected.class) != null) {
 			addLocalWarning("attribute ["+name+"] is protected, cannot be set from configuration");
 		} else {
-			checkDeprecationAndConfigurationWarning(name, m); //check if the setter has been deprecated
+			checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
 
 			if(value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
 				value = resolveValue(value);
@@ -106,6 +106,19 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				}
 			}
 		}
+	}
+
+	public static String getEnumConfigurationWarning(Enum<?> value) {
+		Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) value.getClass();
+		try {
+			Field field = enumClass.getField(value.name());
+			ConfigurationWarning configWarning = field.getAnnotation(ConfigurationWarning.class);
+			if (configWarning != null) {
+				return configWarning.value();
+			}
+		} catch (NoSuchFieldException | SecurityException ignored) {
+		}
+		return null;
 	}
 
 	/**
@@ -145,7 +158,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	private void checkDeprecationAndConfigurationWarning(String name, Method m) {
+	private void checkDeprecationAndConfigurationWarning(String name, String value, Method m) {
 		ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
 		if(warning != null) {
 			String msg = "attribute ["+name+"]";
@@ -164,6 +177,21 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			} else {
 				addLocalWarning(msg);
 			}
+			return;
 		}
+		// Check enum Configuration Warnings
+		if (!m.getParameters()[0].getType().isEnum())
+			return; // Skip non-enum setters
+		try {
+			Object o = ClassUtils.parseValueToSet(m, value);
+			if (o instanceof Enum<?> enumValue) {
+				String configWarning = getEnumConfigurationWarning(enumValue);
+				if (configWarning != null) {
+					addSuppressibleWarning("attribute [" + name + "." + enumValue + "]: " + configWarning, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+				}
+			}
+		} catch (IllegalArgumentException ignored) {
+		}
+
 	}
 }
