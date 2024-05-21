@@ -26,6 +26,13 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 	private static final String TEST_PIPELINE_ENDPOINT = "/test-pipeline";
 
+	private static MockPart[] getMultiPartParts() {
+		return new MockPart[]{
+				new MockPart("configuration", "TestConfiguration".getBytes()),
+				new MockPart("adapter", "HelloWorld".getBytes())
+		};
+	}
+
 	@Test
 	public void testPipeLine() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
@@ -120,13 +127,5 @@ public class TestPipelineTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value(expectedValue))
 				.andExpect(MockMvcResultMatchers.jsonPath("message").value(expectedValue));
-
-	}
-
-	private static MockPart[] getMultiPartParts() {
-		return new MockPart[] {
-				new MockPart("configuration", "TestConfiguration".getBytes()),
-				new MockPart("adapter", "HelloWorld".getBytes())
-		};
 	}
 }
