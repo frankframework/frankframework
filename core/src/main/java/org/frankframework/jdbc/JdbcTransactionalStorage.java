@@ -131,7 +131,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	protected String insertQuery;
 	protected String selectKeyForMessageQuery;
-	protected String selectDataQuery2;
 
 	// the following for Oracle
 	private @Getter String sequenceName="seq_ibisstore";
@@ -397,12 +396,15 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						")";
 		if (isOnlyStoreWhenMessageIdUnique()) {
 			try {
-				selectKeyForMessageQuery = dbmsSupport.convertQuery("SELECT " + getKeyField() + " FROM " + getPrefix() + getTableName() + " WHERE " + getSlotIdField() + "=? AND " + getIdField() + "=? FETCH FIRST 1 ROWS ONLY", "Oracle");
+				selectKeyForMessageQuery = dbmsSupport.convertQuery("SELECT " +
+						getKeyField() +
+						(isStoreFullMessage() ? ", " + getMessageField() : "") +
+						" FROM " + getPrefix() + getTableName() +
+						" WHERE " + getSlotIdField() + "=? AND " + getIdField() + "=? FETCH FIRST 1 ROWS ONLY", "Oracle");
 			} catch (Exception e) {
 				throw new ConfigurationException("Cannot convert [selectKeyForMessageQuery]", e);
 			}
 		}
-		selectDataQuery2 = "SELECT " + getMessageField() + " FROM " + getPrefix() + getTableName() + " WHERE " + getIdField() + "=?";
 		if (DOCUMENT_QUERIES && log.isDebugEnabled()) {
 			log.debug(
 					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
@@ -413,8 +415,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
 					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
 					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
-					documentQuery("selectDataQuery2",selectDataQuery2,"Haal de blob van een regel op, via een messageId")
+					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")
 //					+"\n"
 //					+"\n- slotId en type zou via ? kunnen"
 //					+"\n- selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen"
@@ -511,7 +512,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					if (rs.next()) {
 						String keyValue = rs.getString(1);
 						// TODO: Clean this up, can get message from query directly
-						boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
+						boolean isMessageDifferent = isStoreFullMessage() && isMessageDifferent(rs, 2, messageId, message);
 						String resultString = createResultString(isMessageDifferent);
 						log.warn("MessageID [{}] already exists", messageId);
 						if (isMessageDifferent) {
@@ -578,22 +579,16 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-	private boolean isMessageDifferent(Connection conn, String messageId, S message) {
-		int paramPosition=0;
-
-		try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery2)) {
-			stmt.clearParameters();
-			JdbcUtil.setParameter(stmt, ++paramPosition, messageId, getDbmsSupport().isParameterTypeMatchRequired());
-			// executing query, getting message as response in a result set.
-			try (ResultSet rs = stmt.executeQuery()) {
-				// if rs.next() needed as you can not simply call rs.
-				if (rs.next()) {
-					String dataBaseMessage = retrieveObject(messageId, rs, 1).getRawMessage().toString();
-					String inputMessage = message.toString();
-					return !dataBaseMessage.equals(inputMessage);
-				}
-				return true;
+	private boolean isMessageDifferent(ResultSet rs, int columnIndex, String messageId, S message) {
+		try {
+			String inputMessage;
+			if (message instanceof Message msg) {
+				inputMessage = msg.asString();
+			} else {
+				inputMessage = message.toString();
 			}
+			String dataBaseMessage = retrieveObject(messageId, rs, columnIndex).getRawMessage().toString();
+			return !dataBaseMessage.equals(inputMessage);
 		} catch (Exception e) {
 			log.warn("Exception comparing messages", e);
 			return true;
