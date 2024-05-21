@@ -1,10 +1,18 @@
 package org.frankframework.management.web.spring;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import org.frankframework.management.bus.message.BinaryMessage;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -74,10 +82,51 @@ public class TestPipelineTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("msg-2.xml: SUCCESS\n"));
 	}
 
+	@Test
+	public void testPipelineBinaryResponse() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
+				.thenAnswer(i -> new BinaryMessage("dummy data".getBytes()));
+
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_PIPELINE_ENDPOINT)
+						.part(getMultiPartParts())
+						.file(new MockMultipartFile("message", DUMMY_MESSAGE.getBytes()))
+						.accept(MediaType.APPLICATION_JSON))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("dummy data"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE));
+	}
+
+	@Test
+	void testMessageLineEndingsConversion() throws Exception {
+		String input = "\"\n<asdf>asd\rasd\rasd\rasd\rad\rccc\rttt\rbbb\ryyy\ruuu\roooo\r</asdf>\"";
+		InputStream message = new ByteArrayInputStream(input.getBytes()); // Stream is needed to test the line endings conversion
+		GenericMessage<InputStream> genericMessage = new GenericMessage<>(message, new MessageHeaders(null));
+
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
+				.thenAnswer(i -> genericMessage);
+
+		String expectedValue = "\"\n<asdf>asd\nasd\nasd\nasd\nad\nccc\nttt\nbbb\nyyy\nuuu\noooo\n</asdf>\"";
+
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_PIPELINE_ENDPOINT)
+						.part(getMultiPartParts())
+						.file(new MockMultipartFile("message", input.getBytes()))
+						.accept(MediaType.APPLICATION_JSON))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value(expectedValue))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(expectedValue));
+
+	}
+
 	private static MockPart[] getMultiPartParts() {
 		return new MockPart[] {
 				new MockPart("configuration", "TestConfiguration".getBytes()),
-				new MockPart("adapter", "HelloWorld".getBytes()),
+				new MockPart("adapter", "HelloWorld".getBytes())
 		};
 	}
 }

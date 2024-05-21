@@ -23,8 +23,6 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
@@ -56,7 +54,6 @@ public class TestPipeline extends FrankApiBase {
 		MultipartFile file){
 	}
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record TestPipeLineResponse (String result, String state, String message) { }
 
 	@RolesAllowed("IbisTester")
