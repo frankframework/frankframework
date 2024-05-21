@@ -1,11 +1,13 @@
 package org.frankframework.util;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
@@ -104,6 +106,26 @@ public class DateFormatUtilsTest {
 	}
 
 	@Test
+	public void testParseToLocalDate() {
+		LocalDate localDate = DateFormatUtils.parseToLocalDate("2024-05-16");
+		assertAll(
+			()->assertEquals(2024, localDate.getYear()),
+			()->assertEquals(Month.MAY, localDate.getMonth()),
+			()->assertEquals(16, localDate.getDayOfMonth())
+		);
+	}
+
+	@Test
+	public void testParseLocalDateInvalidDatePattern() {
+		assertThrows(IllegalArgumentException.class, ()->DateFormatUtils.parseToLocalDate("not a date"));
+	}
+
+	@Test
+	public void testParseGenericDateInvalidDatePattern() {
+		assertThrows(IllegalArgumentException.class, ()->DateFormatUtils.parseGenericDate("not a date"));
+	}
+
+	@Test
 	public void testParseAnyDate1() {
 		assertThrows(IllegalArgumentException.class, ()-> DateFormatUtils.parseAnyDate("12-2013-10"));
 	}
@@ -124,6 +146,12 @@ public class DateFormatUtilsTest {
 	public void testParseAnyDate4() {
 		Date date = DateFormatUtils.parseAnyDate("2013-12-10T12:41:43");
 		assertEquals(adjustForTimezone(1386679303000L), date.getTime());
+	}
+
+	@Test
+	public void testParseAnyDate5() {
+		Date date = DateFormatUtils.parseAnyDate("2013-12-10");
+		assertEquals(1386633600000L, date.getTime());
 	}
 
 	@Test
@@ -151,6 +179,12 @@ public class DateFormatUtilsTest {
 	public void testParseGenericDate4() throws Exception {
 		Instant date = DateFormatUtils.parseGenericDate("2013-12-10T12:41:43");
 		assertEquals(adjustForTimezone(1386679303000L), date.toEpochMilli());
+	}
+
+	@Test
+	public void testParseGenericDate5() throws Exception {
+		Instant date = DateFormatUtils.parseGenericDate("2013-12-10");
+		assertEquals(1386633600000L, date.toEpochMilli());
 	}
 
 
