@@ -42,7 +42,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 
 /**
- * Sender used to run JavaScript code using J2V8 or GraalJS.
+ * Sender used to run JavaScript code using `JavascriptEngine` implementations.
  * <p>
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
