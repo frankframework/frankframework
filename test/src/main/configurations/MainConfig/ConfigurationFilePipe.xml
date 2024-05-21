@@ -21,7 +21,7 @@
 			<!-- Write file -->
 			<pipe
 				name="write file"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="write"
 	        	filenameSessionKey="filename"
 	        	createDirectory="true">
@@ -34,7 +34,7 @@
 			<!-- Read file / getInputFromSessionKey -->
 			<pipe
 				name="read file via getInputFromSessionKey"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="read"
 	        	getInputFromSessionKey="filename"
 	        	>
@@ -44,7 +44,7 @@
 			<!-- Read file / filenameSessionKey -->
 			<pipe
 				name="read file via filenameSessionKey"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="read"
 	        	filenameSessionKey="filename">
 	        	<forward name="success" path="EXIT"/>
@@ -53,7 +53,7 @@
 			<!-- Read file at classpath -->
 			<pipe
 				name="read file at classpath"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="read"
 	        	getInputFromFixedValue="FilePipe/sample.txt"
 	        	fileSource="classpath">
@@ -63,7 +63,7 @@
 			<!-- Read binary file as bytes -->
 			<pipe
 				name="read binary file as bytes"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="read"
 				outputType="bytes"
 				getInputFromFixedValue="FilePipe/file.pdf"
@@ -76,7 +76,7 @@
 			<!-- Read binary file as stream -->
 			<pipe
 				name="read binary file as stream"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="read"
 				outputType="stream"
 				getInputFromFixedValue="FilePipe/file.pdf"
@@ -89,7 +89,7 @@
 			<!-- Read binary file as base64 -->
 			<pipe
 				name="read binary file as base64"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="read"
 				outputType="base64"
 				getInputFromFixedValue="FilePipe/file.pdf"
@@ -100,7 +100,7 @@
 			<!-- Delete file with use of directory and fileNam e-->
 			<pipe
 				name="delete file"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="delete"
 	        	filename="test.txt"
 	        	directory="${testdata.dir}"
@@ -113,7 +113,7 @@
 			<!-- Delete file without use of directory and filename (filenameSessionKey) -->
 			<pipe
 				name="delete file no directory specified"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="delete"
 	        	filenameSessionKey="filename"
 	        >
@@ -123,7 +123,7 @@
 	        <!-- Delete file no directory no filename (input) -->
 			<pipe
 				name="delete file no directory no filename"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="delete"
 	        	getInputFromFixedValue="${testdata.dir}/test.txt">
 	        	<forward name="success" path="EXIT"/>
@@ -133,7 +133,7 @@
 			<!-- Delete file that does not exist with use of directory -->
 			<pipe
 				name="delete file that does not exists"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="delete"
 	        	filename="none_existing_file.txt"
 	        	testExists="false"
@@ -144,7 +144,7 @@
 			<!-- List files -->
 			<pipe
 				name="list files"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="list"
 	        	filename="dummy*.txt"
 	        	testExists="false"
@@ -155,20 +155,20 @@
 			<!-- List files without use of directory -->
 			<pipe
 				name="list files no directory specified"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="list"
 	        	filename="${testdata.dir}/dummy*.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
 			<!-- Create file and info -->
-			<pipe name="create file" className="org.frankframework.pipes.FilePipe"
+			<pipe name="create file" className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="create" directory="${testdata.dir}" writeSuffix=".abc">
 				<param name="writeSuffix" value=".txt" />
 				<forward name="success" path="info file" />
 			</pipe>
 
-			<pipe name="info file" className="org.frankframework.pipes.FilePipe"
+			<pipe name="info file" className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="info">
 				<forward name="success" path="EXIT" />
 			</pipe>

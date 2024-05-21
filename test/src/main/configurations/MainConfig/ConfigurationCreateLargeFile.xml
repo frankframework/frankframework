@@ -28,12 +28,12 @@
 				<forward name="success" path="CreateFile" />
 			</pipe>
 			<pipe name="CreateFile" actions="create"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${log.dir}" filename="input_big.xml">
 				<forward name="success" path="WriteFile" />
 			</pipe>
 			<pipe name="WriteFile" actions="write"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${log.dir}" getInputFromFixedValue="&lt;dummy&gt;"
 				filename="input_big.xml">
 				<forward name="success" path="SetStartIndex" />
@@ -56,7 +56,7 @@
 				<forward name="success" path="AppendFile" />
 			</pipe>
 			<pipe name="AppendFile" actions="write_append"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${log.dir}" filename="input_big.xml"
 				getInputFromSessionKey="fileContent">
 				<forward name="success" path="IncrementIndex" />
@@ -67,7 +67,7 @@
 				<forward name="success" path="CompareValues" />
 			</pipe>
 			<pipe name="AppendTag" actions="write_append"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${log.dir}" filename="input_big.xml"
 				getInputFromFixedValue="&lt;/dummy&gt;">
 				<forward name="success" path="IncrementIndex" />

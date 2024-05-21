@@ -26,7 +26,7 @@
 			<!-- Write file -->
 			<pipe
 				name="write file"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/test.txt"
 				getInputFromFixedValue="test"
@@ -36,7 +36,7 @@
 
 			<pipe
 				name="write file2"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/test2.txt"
 				getInputFromFixedValue="test2"
@@ -46,7 +46,7 @@
 
 			<pipe
 				name="write file3"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/test3.abc"
 				getInputFromFixedValue="test3"
@@ -56,7 +56,7 @@
 
 			<pipe
 				name="write file4"
-	        	className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/sub/test4.txt"
 				getInputFromFixedValue="test4"
@@ -173,7 +173,7 @@
 	        	<forward name="success" path="list files"/>
 	        </pipe>
 
-			<pipe name="list files" className="org.frankframework.pipes.FilePipe"
+			<pipe name="list files" className="org.frankframework.pipes.LocalFileSystemPipe"
 				actions="list" filename="${testdata.dir}/mfp2/*.*">
 				<forward name="success" path="EXIT" />
 			</pipe>

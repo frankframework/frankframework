@@ -18,7 +18,7 @@
 				<forward name="success" path="writeStartTime" />
 			</pipe>
 			<pipe name="writeStartTime" actions="write"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${testdata.dir}/MemoryLeak"
 				createDirectory="true"
 				filename="startTimeStamp.txt"
@@ -260,7 +260,7 @@
 				<forward name="success" path="writeEndTime" />
 			</pipe>
 			<pipe name="writeEndTime" actions="write"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				getInputFromSessionKey="systemDate"
 				directory="${testdata.dir}/MemoryLeak"
 				filename="endTimeStamp.txt">
@@ -285,14 +285,14 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="getStartTime" actions="read"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${testdata.dir}/MemoryLeak"
 				filename="startTimeStamp.txt"
 				storeResultInSessionKey="startTime">
 				<forward name="success" path="getEndTime" />
 			</pipe>
 			<pipe name="getEndTime" actions="read"
-				className="org.frankframework.pipes.FilePipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				directory="${testdata.dir}/MemoryLeak"
 				filename="endTimeStamp.txt"
 				storeResultInSessionKey="endTime">

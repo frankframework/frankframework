@@ -379,6 +379,11 @@
 					<version>${activemq.driver.version}</version>
 					<scope>runtime</scope>
 				</dependency>
+				<dependency>
+					<groupId>jakarta.jms</groupId>
+					<artifactId>jakarta.jms-api</artifactId>
+					<scope>compile</scope>
+				</dependency>
 			</dependencies>
 			<build>
 				<plugins>
