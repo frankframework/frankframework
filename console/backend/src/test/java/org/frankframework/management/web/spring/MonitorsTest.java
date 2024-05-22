@@ -1,5 +1,21 @@
 package org.frankframework.management.web.spring;
 
+import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
@@ -7,21 +23,8 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.management.web.RequestMessageBuilder;
-
 import org.frankframework.management.web.ShowMonitorsTest;
-
 import org.frankframework.util.StreamUtil;
-
-import org.junit.jupiter.api.Test;
-
-import org.mockito.Mockito;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,23 +33,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-
-@ContextConfiguration(classes = {WebTestConfig.class, Monitors.class})
+@ContextConfiguration(classes = {WebTestConfiguration.class, Monitors.class})
 public class MonitorsTest extends FrankApiTestBase {
 
 	@Test

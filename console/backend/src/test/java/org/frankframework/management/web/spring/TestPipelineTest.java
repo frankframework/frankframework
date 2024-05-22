@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@ContextConfiguration(classes = {WebTestConfig.class, TestPipeline.class})
+@ContextConfiguration(classes = {WebTestConfiguration.class, TestPipeline.class})
 public class TestPipelineTest extends FrankApiTestBase {
 
 	private static final String DUMMY_MESSAGE = "<dummy-message />";

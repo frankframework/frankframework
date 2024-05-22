@@ -1,7 +1,10 @@
 package org.frankframework.management.web.spring;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.ByteArrayInputStream;
+
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.springframework.http.MediaType;
@@ -12,11 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.io.ByteArrayInputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-@ContextConfiguration(classes = {WebTestConfig.class, SendJmsMessage.class})
+@ContextConfiguration(classes = {WebTestConfiguration.class, SendJmsMessage.class})
 public class SendJmsMessageTest extends FrankApiTestBase {
 
 	@Test

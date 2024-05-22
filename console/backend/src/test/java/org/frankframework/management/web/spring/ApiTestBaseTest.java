@@ -52,7 +52,7 @@ public class ApiTestBaseTest extends FrankApiBase {
 	}
 
 	@Nested
-	@ContextConfiguration(classes = {WebTestConfig.class, ApiTestBaseTest.class})
+	@ContextConfiguration(classes = {WebTestConfiguration.class, ApiTestBaseTest.class})
 	public class TestApi extends FrankApiTestBase {
 
 		@Test

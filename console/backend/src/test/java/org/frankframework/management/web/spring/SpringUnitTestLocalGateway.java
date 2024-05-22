@@ -17,7 +17,7 @@ import org.springframework.messaging.MessageHeaders;
 /**
  * Used in the unit tests to just return the input in the correct format to be able to test only the controllers
  *
- * @see WebTestConfig
+ * @see WebTestConfiguration
  * @param <T>
  */
 public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {

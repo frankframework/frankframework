@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.test.context.ContextConfiguration;
 
-@ContextConfiguration(classes = {WebTestConfig.class, ServerStatistics.class})
+@ContextConfiguration(classes = {WebTestConfiguration.class, ServerStatistics.class})
 public class ServerStatisticsTest extends FrankApiTestBase {
 
 	@Test

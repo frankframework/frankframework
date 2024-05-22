@@ -13,7 +13,7 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
  */
 @Configuration
 @Import(WebConfiguration.class)
-public class WebTestConfig {
+public class WebTestConfiguration {
 	@Bean
 	SpringUnitTestLocalGateway<?> outboundGateway() {
 		return Mockito.spy(SpringUnitTestLocalGateway.class);

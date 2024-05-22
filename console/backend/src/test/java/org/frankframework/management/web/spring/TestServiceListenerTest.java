@@ -13,7 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@ContextConfiguration(classes = {WebTestConfig.class, TestServiceListener.class})
+@ContextConfiguration(classes = {WebTestConfiguration.class, TestServiceListener.class})
 public class TestServiceListenerTest extends FrankApiTestBase {
 
 	private static final String INPUT_MESSAGE = "inputMessage";
