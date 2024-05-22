@@ -500,7 +500,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-
+	@Nonnull
 	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		if (isOnlyStoreWhenMessageIdUnique()) {
@@ -557,9 +557,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					return "<id>" + rs.getString(1) + "</id>";
 				}
 			}
-			log.warn("No keys generated after INSERT statement");
+			log.warn("No keys returned after INSERT statement");
 
-			return null;
+			throw new SenderException("Illegal state: No keys returned after INSERT of message with id [" + messageId + "], message not yet present in database.");
 		}
 	}
 
@@ -613,6 +613,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@Override
+	@Nonnull
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		if (messageId == null) {
 			throw new SenderException("messageId cannot be null");
@@ -651,6 +652,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * @return the value of the primary key for the inserted record
 	 * @throws SenderException if there is an error storing the message
 	 */
+	@Nonnull
 	public String storeMessage(@Nonnull Connection conn, @Nonnull String messageId, @Nonnull String correlationId, @Nonnull Date receivedDate, @Nullable String comments, @Nullable String label, @Nonnull S message) throws SenderException {
 		try {
 			final Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
@@ -733,8 +735,15 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		return getDatasourceName()+"|"+getTableName();
 	}
 
-
-
+	/**
+	 * Set the slotId, an identifier to keep separate the messages inserted
+	 * by different JdbcTransactionalStorage instances.
+	 * <br/>
+	 * This field is optional, unless the attribute {@link #onlyStoreWhenMessageIdUnique} is
+	 * set to {@code true}.
+	 *
+	 * @param string The {@code slotID} value for this JdbcTransactionalStorage.
+	 */
 	@Override
 	public void setSlotId(String string) {
 		super.setSlotId(string);
