@@ -15,8 +15,11 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
@@ -32,16 +35,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-
 @RestController
 public class TestServiceListener extends FrankApiBase {
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("testing")
 	@Description("view a list of all available service-listeners")
 	@GetMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,28 +51,28 @@ public class TestServiceListener extends FrankApiBase {
 	@Relation("testing")
 	@Description("send a message to a service listeners, triggering an adapter to process the message")
 	@PostMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> postServiceListener(ServiceListenerMultipartBody multipartBody) throws ApiException {
-		String message = null;
+	public ResponseEntity<?> postServiceListener(TestServiceListenerModel model) throws ApiException {
+		String message;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.UPLOAD);
-		builder.addHeader("service", RequestUtils.resolveRequiredProperty("service", multipartBody.getService(), null));
-		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multipartBody.getEncoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		MultipartFile filePart = multipartBody.getFile();
+		builder.addHeader("service", RequestUtils.resolveRequiredProperty("service", model.service(), null));
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", model.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		MultipartFile filePart = model.file();
 
-		if(filePart != null) {
+		if (filePart != null) {
 			try {
 				InputStream file = filePart.getInputStream();
 				message = XmlEncodingUtils.readXml(file, fileEncoding);
 			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+				throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 			} catch (IOException e) {
 				throw new ApiException("error reading file", e);
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", multipartBody.getMessage(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -83,13 +80,10 @@ public class TestServiceListener extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@Getter
-	@Setter
-	public static class ServiceListenerMultipartBody {
-		private String service;
-		private String encoding;
-		private MultipartFile file;
-		private MultipartFile message;
+	public record TestServiceListenerModel(
+			String service,
+			String encoding,
+			MultipartFile file,
+			MultipartFile message) {
 	}
-
 }

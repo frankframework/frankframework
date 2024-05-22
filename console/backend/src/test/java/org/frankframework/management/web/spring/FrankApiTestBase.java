@@ -1,17 +1,18 @@
 package org.frankframework.management.web.spring;
 
-import org.frankframework.management.bus.message.MessageBase;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import org.frankframework.management.bus.message.MessageBase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -22,15 +23,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-
 
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)
@@ -43,18 +38,15 @@ public abstract class FrankApiTestBase {
 	@Autowired
 	protected SpringUnitTestLocalGateway<?> outputGateway;
 
+	@AfterEach
+	public void afterEach() {
+		Mockito.reset(outputGateway);
+	}
+
 	@BeforeEach
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-	}
-
-	protected String asJsonString(final Object obj) {
-		try {
-			return new ObjectMapper().writeValueAsString(obj);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	protected MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
@@ -104,12 +96,10 @@ public abstract class FrankApiTestBase {
 	}
 
 	protected class DefaultSuccessAnswer implements Answer<Message<String>> {
-
 		@Override
 		public Message<String> answer(InvocationOnMock invocation) {
 			Message<String> in = invocation.getArgument(0);
 			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
 		}
-
 	}
 }

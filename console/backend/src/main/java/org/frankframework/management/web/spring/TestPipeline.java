@@ -54,7 +54,8 @@ public class TestPipeline extends FrankApiBase {
 		MultipartFile file){
 	}
 
-	public record TestPipeLineResponse (String result, String state, String message) { }
+	public record TestPipeLineResponse(String result, String state, String message) {
+	}
 
 	@RolesAllowed("IbisTester")
 	@Relation("testing")
@@ -72,6 +73,7 @@ public class TestPipeline extends FrankApiBase {
 		String fileEncoding = Optional.ofNullable(model.encoding).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		String message;
+
 		if (model.file != null) {
 			String fileNameOrPath = model.file.getOriginalFilename();
 			String fileName = Paths.get(fileNameOrPath).getFileName().toString();

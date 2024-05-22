@@ -7,12 +7,12 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.Response;
-
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.frankframework.management.bus.message.MessageBase;
-import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
@@ -83,5 +83,11 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments);
 		assertEquals("\"inputMessage\"", response.getEntity().toString());
+	}
+
+	@Test
+	public void testGetList() {
+		Response response = dispatcher.dispatchRequest(HttpMethod.GET, "/test-servicelistener");
+		assertEquals("\"{\\\"topic\\\":\\\"SERVICE_LISTENER\\\",\\\"action\\\":\\\"GET\\\"}\"", response.getEntity().toString());
 	}
 }
