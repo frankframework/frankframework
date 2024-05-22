@@ -945,6 +945,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents.trim(), actual.trim());
 	}
 
+
 	@Test
 	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() throws Exception {
 		int numOfWrites = 5;

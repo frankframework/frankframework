@@ -189,13 +189,13 @@ public abstract class ClassUtils {
 		}
 		Class<?> clazz;
 		if(isClassPresent("org.springframework.util.ClassUtils")) {
-			if(o instanceof Class class1) {
+			if(o instanceof Class<?> class1) {
 				clazz = org.springframework.util.ClassUtils.getUserClass(class1);
 			} else {
 				clazz = org.springframework.util.ClassUtils.getUserClass(o);
 			}
 		} else {
-			clazz = o instanceof Class c ? c : o.getClass();
+			clazz = o instanceof Class<?> c ? c : o.getClass();
 		}
 
 		final String simpleName = clazz.getSimpleName();

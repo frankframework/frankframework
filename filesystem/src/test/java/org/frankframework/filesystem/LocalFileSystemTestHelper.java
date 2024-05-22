@@ -14,7 +14,6 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	public Path folder;
 
-
 	public LocalFileSystemTestHelper(Path folder2) {
 		this.folder=folder2;
 	}

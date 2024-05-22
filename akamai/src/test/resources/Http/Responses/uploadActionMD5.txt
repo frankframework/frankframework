@@ -1,7 +1,7 @@
 PUT http://127.0.0.1/cpCode123/my/special/path HTTP/1.1
 X-Akamai-ACS-Action: action=upload&md5=a1658c154b6af0fba9d93aa86e5be06f&version=1
 X-Akamai-ACS-Auth-Data: 5, 0.0.0.0, 0.0.0.0, timestamp, timestamp, myNonce
-X-Akamai-ACS-Auth-Sign: null
+X-Akamai-ACS-Auth-Sign: 
 Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
 
 <dummyFile>

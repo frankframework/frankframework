@@ -291,7 +291,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
 
 		if (StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder)) {
-			if (isCreateFolder() ) {
+			if (isCreateFolder()) {
 				fileSystem.createFolder(folder);
 			} else {
 				throw new FolderNotFoundException("folder ["+folder+"] does not exist");
@@ -555,7 +555,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	/**
-	 * If set <code>true</code>, the folder to create, write, move or copy the file to is created if it does not exist
+	 * If set to <code>true</code>, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist
 	 * @ff.default false
 	 */
 	public void setCreateFolder(boolean createFolder) {
