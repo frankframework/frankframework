@@ -22,23 +22,19 @@ import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 
 public class LadyBugDataSourceFactory extends PoolingDataSourceFactory {
 
-	public LadyBugDataSourceFactory() {
-		super();
-	}
-
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if(dataSource instanceof DataSource && isOracleDataSource(dataSource)) {
+		if(dataSource instanceof DataSource && isNotOracleDataSource(dataSource)) {
 			// Augment the traditional way, with an optional pool.
 			return super.augmentDatasource(dataSource, dataSourceName);
 		}
 
 		// If the DataSource is only XA capable, throw an exception
-		throw new IllegalStateException("DataSource may not be XA capable!");
+		throw new IllegalStateException("DataSource is XA capable and this is not allowed!");
 	}
 
 	// Newer Oracle driver implements both XA and normal DataSource.
-	private boolean isOracleDataSource(CommonDataSource dataSource) {
+	private boolean isNotOracleDataSource(CommonDataSource dataSource) {
 		return !dataSource.getClass().getName().startsWith("oracle.jdbc.xa");
 	}
 }
