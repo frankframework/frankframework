@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,18 +29,21 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import jakarta.annotation.Nullable;
+import lombok.Getter;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileAlreadyExistsException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
-
-import lombok.Getter;
 
 /**
  * Implementation of FTP and FTPs FileSystem
@@ -75,12 +78,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 
 	@Override
-	public FTPFileRef toFile(String filename) throws FileSystemException {
+	public FTPFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public FTPFileRef toFile(String folder, String filename) throws FileSystemException {
+	public FTPFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new FTPFileRef(filename, folder);
 	}
 
@@ -154,10 +157,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public void deleteFile(FTPFileRef f) throws FileSystemException {
+		final String canonicalName = getCanonicalName(f);
 		try {
-			ftpClient.deleteFile(getCanonicalName(f));
+			ftpClient.deleteFile(canonicalName);
 		} catch (IOException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + canonicalName + "]: " + e.getMessage());
 		}
 	}
 
@@ -179,7 +183,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if (folderExists(folder)) {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 		try {
 			String[] folders = folder.split("/");
@@ -203,7 +207,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if(!folderExists(folder)) {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+			throw new FolderNotFoundException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
 			if(removeNonEmptyFolder) {
@@ -262,11 +266,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 		try {
 			if(exists(destination)) {
-				throw new FileSystemException("target already exists");
+				throw new FileAlreadyExistsException("target already exists");
 			}
 			if(ftpClient.rename(getCanonicalName(f), destination.getName())) {
 				return destination;
@@ -278,7 +282,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef copyFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public FTPFileRef copyFile(FTPFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}
@@ -331,7 +335,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		if(file.getTimestamp() == null) {
 			FTPFile fetch = findFile(file);
 			if(fetch == null) {
-				throw new FileSystemException("file does not exist on remote server");
+				throw new FileNotFoundException("file does not exist on remote server");
 			}
 			file.updateFTPFile(fetch);
 		}
@@ -339,6 +343,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(FTPFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("user", f.getUser());
@@ -400,7 +405,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]: {}", getCanonicalName(file), e.getMessage());
+				log.warn("unable to remove file [{}]: {}", ()-> getCanonicalNameOrErrorMessage(file), e::getMessage);
 			}
 		}
 	}

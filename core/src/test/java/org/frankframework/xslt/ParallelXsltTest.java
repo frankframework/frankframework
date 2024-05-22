@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SenderPipe;
@@ -17,11 +23,6 @@ import org.frankframework.senders.XsltSender;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.Arguments;
 
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
@@ -75,7 +76,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		xsltSenders = null;
 		super.tearDown();
 	}
