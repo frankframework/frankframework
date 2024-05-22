@@ -32,9 +32,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import lombok.extern.log4j.Log4j2;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Utilities for formatting and parsing dates.
@@ -158,6 +159,9 @@ public class DateFormatUtils {
 
 	public static java.time.LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
 		DateTimeFormatter parser = determineDateFormat(dateString);
+		if (parser == null) {
+			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
+		}
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 

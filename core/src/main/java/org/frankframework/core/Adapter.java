@@ -196,12 +196,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 		List<String> hrs = new ArrayList<>();
 		for (IPipe pipe : pipeline.getPipes()) {
-			if (pipe instanceof AbstractPipe aPipe) {
-				if (StringUtils.isNotEmpty(aPipe.getHideRegex())) {
-					if (!hrs.contains(aPipe.getHideRegex())) {
-						hrs.add(aPipe.getHideRegex());
-					}
-				}
+			if (pipe instanceof AbstractPipe aPipe && StringUtils.isNotEmpty(aPipe.getHideRegex()) && !hrs.contains(aPipe.getHideRegex())) {
+				hrs.add(aPipe.getHideRegex());
 			}
 		}
 		StringBuilder sb = new StringBuilder();

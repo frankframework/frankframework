@@ -34,6 +34,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
@@ -195,6 +196,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 	protected Configuration createConfiguration() throws ConfigurationException {
 		final Configuration config = new Configuration();
+
 		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
 			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
 			if(defaultIdinConfigXML == null) {
@@ -694,6 +696,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	/**
 	 * Load configuration from XML. Attributes may overwrite this 'default'.
 	 */
+	@Mandatory
 	public void setConfigurationXML(String iDinConfigurationXML) {
 		this.iDinConfigurationXML = iDinConfigurationXML;
 	}

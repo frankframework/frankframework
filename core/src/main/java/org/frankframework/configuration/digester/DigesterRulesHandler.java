@@ -44,8 +44,7 @@ public abstract class DigesterRulesHandler extends DefaultHandler {
 				try {
 					BeanUtils.setProperty(rule, method, value);
 				} catch (IllegalAccessException | InvocationTargetException e) {
-					log.warn("unable to set method ["+method+"] with value ["+value+"]");
-					e.printStackTrace();
+					log.warn("unable to set method [{}] with value [{}]", method, value);
 				}
 			}
 
