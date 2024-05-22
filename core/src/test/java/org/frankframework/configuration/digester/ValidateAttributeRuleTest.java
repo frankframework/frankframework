@@ -171,7 +171,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
-	void testEnumAttributeWithConfigWarning() throws Exception {
+	void testDeprecatedEnumAttributeWithConfigWarning() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("queryType", "INSERT");
 
@@ -180,6 +180,18 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [queryType.INSERT]: Use queryType 'OTHER' instead", configWarnings.get(0));
+	}
+
+	@Test
+	void testEnumAttributeWithConfigWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("queryType", "SELECT");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [queryType.SELECT]: Select might be slow", configWarnings.get(0));
 	}
 
 	@Test
@@ -456,8 +468,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	private AppConstants loadAppConstants(ApplicationContext applicationContext) throws IOException {
-		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass()
-				.getClassLoader());
+		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass().getClassLoader());
 		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
 		return appConstants;
 	}
@@ -477,7 +488,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		}
 	}
 
-	public static class ClassWithEnum extends ExtendsClassWithEnum implements INamedObject, InterfaceWithDefaultMethod {
+	public static class ClassWithEnum extends ClassWithEnumBase implements INamedObject, InterfaceWithDefaultMethod {
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
 		private @Getter @Setter String testString = "test";
@@ -511,16 +522,9 @@ public class ValidateAttributeRuleTest extends Mockito {
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
 		}
-
-		public enum QueryType {
-			OTHER,
-			/** Deprecated: Use OTHER instead */
-			@ConfigurationWarning("Use queryType 'OTHER' instead")
-			@Deprecated(since = "8.1") INSERT,
-		}
 	}
 
-	public static abstract class ExtendsClassWithEnum {
+	public static abstract class ClassWithEnumBase {
 		private @Getter QueryType queryType = QueryType.OTHER;
 
 		public enum QueryType {
@@ -528,6 +532,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 			/** Deprecated: Use OTHER instead */
 			@ConfigurationWarning("Use queryType 'OTHER' instead")
 			@Deprecated(since = "8.1") INSERT,
+			@ConfigurationWarning("Select might be slow")
+			SELECT
 		}
 
 		/**
