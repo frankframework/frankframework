@@ -570,8 +570,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			stmt.setString(2, messageId);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
+					String keyValue = rs.getString(1);
 					boolean isMessageDifferent = isStoreFullMessage() && isMessageDifferent(rs, 2, messageId, message);
-					String resultString = createWarningResultString(isMessageDifferent);
+					String resultString = createWarningResultString(keyValue, isMessageDifferent);
 					log.warn("MessageID [{}] already exists", messageId);
 					if (isMessageDifferent) {
 						log.warn("Message with MessageID [{}] is not equal", messageId);
@@ -599,16 +600,17 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-	private String createWarningResultString(boolean isMessageDifferent){
+	private String createWarningResultString(String keyValue, boolean isMessageDifferent){
 		String resultStringStart = "<results>";
 		String resultStringEnd = "</results>";
+		String messageKeyString = "<id>" + keyValue + "</id>";
 		String messageIdExistsString = "<result>WARN_MESSAGEID_ALREADY_EXISTS</result>";
-		String resultString = resultStringStart+messageIdExistsString;
+		String resultString = resultStringStart + messageKeyString + messageIdExistsString;
 		if(isMessageDifferent){
 			String messageIsDifferentString = "<result>ERROR_MESSAGE_IS_DIFFERENT</result>";
-			resultString = resultString+messageIsDifferentString;
+			resultString = resultString + messageIsDifferentString;
 		}
-		resultString = resultString+resultStringEnd;
+		resultString = resultString + resultStringEnd;
 		return resultString;
 	}
 

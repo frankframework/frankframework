@@ -136,7 +136,9 @@ public class MessageStoreSenderTest {
 		// Assert 2
 		assertNotNull(result2);
 		assertNotNull(result2.getResult());
-		assertEquals("<results><result>WARN_MESSAGEID_ALREADY_EXISTS</result></results>", result2.getResult().asString());
+		String expected = "<results>" + result1.getResult().asString() +
+				"<result>WARN_MESSAGEID_ALREADY_EXISTS</result></results>";
+		assertEquals(expected, result2.getResult().asString());
 		assertEquals(1, countRecordsBySlotAndMessageId(sender.getSlotId(), messageId));
 	}
 
@@ -173,7 +175,9 @@ public class MessageStoreSenderTest {
 		// Assert 2
 		assertNotNull(result2);
 		assertNotNull(result2.getResult());
-		assertEquals("<results><result>WARN_MESSAGEID_ALREADY_EXISTS</result><result>ERROR_MESSAGE_IS_DIFFERENT</result></results>", result2.getResult().asString());
+		String expected = "<results>" + result1.getResult().asString() +
+				"<result>WARN_MESSAGEID_ALREADY_EXISTS</result><result>ERROR_MESSAGE_IS_DIFFERENT</result></results>";
+		assertEquals(expected, result2.getResult().asString());
 		assertEquals(1, countRecordsBySlotAndMessageId(sender.getSlotId(), messageId));
 	}
 
