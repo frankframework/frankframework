@@ -15,13 +15,13 @@ limitations under the License.
 */
 package org.frankframework.http.openapi;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
@@ -32,20 +32,21 @@ import org.frankframework.http.rest.ApiDispatchConfig;
 import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiServiceDispatcher;
 import org.frankframework.http.rest.MediaTypes;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.springframework.util.MimeType;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class OpenApiGenerator {
@@ -124,7 +125,7 @@ public class OpenApiGenerator {
 		// query params
 		Json2XmlValidator inputValidator = ApiServiceDispatcher.getJsonValidator(adapter.getPipeLine(), false);
 		if (inputValidator != null && !inputValidator.getParameterList().isEmpty()) {
-			for (Parameter parameter : inputValidator.getParameterList()) {
+			for (IParameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionKey = parameter.getSessionKey();
 				if (StringUtils.isNotEmpty(parameterSessionKey) && !"headers".equals(parameterSessionKey) && !paramsFromHeaderAndCookie.contains(parameterSessionKey)) {
 					ParameterType parameterType = parameter.getType() != null ? parameter.getType() : ParameterType.STRING;

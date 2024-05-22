@@ -160,7 +160,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -239,12 +239,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return (Document) transformResult.getNode();
 	}
 
-	public boolean isWildcardSessionKey() {
-		return "*".equals(getSessionKey());
-	}
 	/**
 	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
 	 */
+	@Override
 	public boolean requiresInputValueForResolution() {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
@@ -255,6 +253,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				);
 	}
 
+	@Override
 	public boolean requiresInputValueOrContextForResolution() {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
@@ -263,6 +262,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
 	}
 
+	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
 		return StringUtils.isEmpty(getContextKey()) && (
 					sessionKey.equals(getSessionKey())
@@ -274,6 +274,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	/**
 	 * determines the raw value
 	 */
+	@Override
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		LOG.debug("Calculating value for Parameter [{}]", this::getName);
@@ -759,6 +760,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 * parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the
 	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
 	 */
+	@Override
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}

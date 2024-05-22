@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -31,7 +30,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
@@ -40,6 +39,8 @@ import org.frankframework.util.XmlUtils;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
+
+import lombok.Getter;
 
 /**
  * Collection of Senders, that are executed all at the same time.
@@ -58,7 +59,7 @@ public class ParallelSenders extends SenderSeries {
 		super.configure();
 		if (getParameterList() != null && !getParameterList().isEmpty()) {
 			String paramList = getParameterList().stream()
-					.map(Parameter::getName)
+					.map(IParameter::getName)
 					.collect(Collectors.joining(", "));
 
 			ConfigurationWarnings.add(this, log, "parameters [" + paramList + "] of ParallelSenders [" + getName() + "] are not available for use by nested Senders");

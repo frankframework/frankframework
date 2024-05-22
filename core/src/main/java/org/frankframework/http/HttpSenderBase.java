@@ -27,11 +27,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
@@ -50,7 +47,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -62,6 +59,10 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -119,7 +120,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	private TransformerPool transformerPool=null;
 
-	protected Parameter urlParameter;
+	protected IParameter urlParameter;
 
 	protected URI staticUri;
 
@@ -130,7 +131,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	protected ParameterList paramList = null;
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -158,7 +159,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			if (StringUtils.isNotEmpty(getHeadersParams())) {
 				headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
 			}
-			for (Parameter p: paramList) {
+			for (IParameter p: paramList) {
 				String paramName = p.getName();
 				if (!headerParamsSet.contains(paramName)) {
 					requestOrBodyParamsSet.add(paramName);

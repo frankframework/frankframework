@@ -30,7 +30,7 @@ public class ParameterListTest {
 		assertEquals(4, list.size());
 
 		List<String> sortedList2 = new ArrayList<>();
-		for (Parameter param : list) {
+		for (IParameter param : list) {
 			sortedList2.add(param.getName());
 		}
 		assertEquals("[key1, key2, key4, key3]", sortedList2.toString());
@@ -53,10 +53,10 @@ public class ParameterListTest {
 		list.add(new Parameter(null, "dummy-3"));
 		list.add(new Parameter(null, "dummy-4"));
 
-		Parameter key = new Parameter(null, "value");
+		IParameter key = new Parameter(null, "value");
 		list.add(key);
 		list.configure();
-		Parameter keyWithName = list.get(4);
+		IParameter keyWithName = list.get(4);
 		assertEquals("parameter4", keyWithName.getName());
 	}
 }

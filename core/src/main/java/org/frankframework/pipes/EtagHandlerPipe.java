@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -28,12 +27,14 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.http.rest.ApiCacheManager;
 import org.frankframework.http.rest.ApiEhcache;
 import org.frankframework.http.rest.IApiCache;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
+
+import lombok.Getter;
 
 /**
  * Pipe to manage RESTFUL etag caching
@@ -65,7 +66,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		boolean hasUriPatternParameter = false;
 		ParameterList parameterList = getParameterList();
 		for (int i=0; i<parameterList.size(); i++) {
-			Parameter parameter = parameterList.getParameter(i);
+			IParameter parameter = parameterList.getParameter(i);
 			if("uriPattern".equalsIgnoreCase(parameter.getName()))
 				hasUriPatternParameter = true;
 		}

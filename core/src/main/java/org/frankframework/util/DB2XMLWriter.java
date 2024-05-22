@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.StoredProcedureResultWrapper;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
@@ -133,7 +133,7 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition) {
+	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
 			getXML(dbmsSupport, callableStatement, alsoGetResultSets, outputParameters, maxRows, includeFieldDefinition, xmlWriter, true);
@@ -154,7 +154,7 @@ public class DB2XMLWriter {
 		errorElement.endElement();
 	}
 
-	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull ContentHandler handler, boolean prettyPrint) throws SAXException {
+	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull ContentHandler handler, boolean prettyPrint) throws SAXException {
 		// If a negative value is passed, retrieve all rows of each result set
 		if (maxRows < 0) {
 			maxRows = Integer.MAX_VALUE;
@@ -174,7 +174,7 @@ public class DB2XMLWriter {
 		}
 	}
 
-	private void processOutputParameters(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
+	private void processOutputParameters(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, @Nonnull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
 		if (outputParameters.isEmpty()) {
 			return;
 		}
@@ -189,10 +189,10 @@ public class DB2XMLWriter {
 			return;
 		}
 		int index = 1;
-		for (Map.Entry<Integer, Parameter> entry : outputParameters.entrySet()) {
+		for (Map.Entry<Integer, IParameter> entry : outputParameters.entrySet()) {
 			SaxElementBuilder resultElement = parent.startElement(docname);
 			int position = entry.getKey();
-			Parameter param = entry.getValue();
+			IParameter param = entry.getValue();
 			resultElement.addAttribute("param", param.getName());
 			resultElement.addAttribute("type", param.getType().toString());
 

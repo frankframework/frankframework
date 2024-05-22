@@ -48,6 +48,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
@@ -373,7 +374,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
-					Parameter param = newParameterList.getParameter(i);
+					IParameter param = newParameterList.getParameter(i);
 					if (param.getType() == ParameterType.INPUTSTREAM) {
 						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + param.getName() + "]");
 						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
@@ -419,7 +420,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				copyFrom = nextStartPos;
 			} else {
 				String namedParam = query.substring(startPos + UNP_START.length(),endPos);
-				Parameter param = oldParameterList.findParameter(namedParam);
+				IParameter param = oldParameterList.findParameter(namedParam);
 				if (param != null) {
 					parameterList.add(param);
 					buffer.append("?");
@@ -443,7 +444,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	private String parameterListToString(ParameterList parameterList) {
 		return parameterList.stream()
-				.map(Parameter::getName)
+				.map(IParameter::getName)
 				.collect(Collectors.joining(", "));
 	}
 

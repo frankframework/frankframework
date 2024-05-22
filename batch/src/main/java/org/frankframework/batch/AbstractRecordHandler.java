@@ -29,6 +29,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.util.ClassUtils;
@@ -241,7 +242,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
