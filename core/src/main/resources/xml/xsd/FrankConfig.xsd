@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0-RC1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -2980,11 +2980,6 @@
         <xs:documentation>Can be either &lt;code&gt;/rest&lt;/code&gt; or &lt;code&gt;/rest-public&lt;/code&gt; and must correspond with the available RestListenerServlet path(s).</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="view" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Indicates whether this listener supports a view (and a link should be put in the ibis console) Default: if &lt;code&gt;method=get&lt;/code&gt; then &lt;code&gt;true&lt;/code&gt;, else &lt;code&gt;false&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="authRoles" type="xs:string">
       <xs:annotation>
         <xs:documentation>Comma separated list of authorization roles which are granted for this rest service Default: IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</xs:documentation>
@@ -3021,6 +3016,12 @@
     <xs:attribute name="generateEtag" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set to true the ibis will automatically create an etag Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="automaticallyTransformToAndFromJson" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
+ Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust! Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3901,8 +3902,8 @@
       </xs:element>
       <xs:element name="IdinSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.06+.
- Compile with Java 1.7+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
+ Compile with Java 1.8+</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -6177,7 +6178,11 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.idin.IdinSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string" />
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
@@ -6273,6 +6278,13 @@
     <xs:attribute name="serviceLogsEnabled" type="frankBoolean" />
     <xs:attribute name="serviceLogsLocation" type="xs:string" />
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
+    <xs:attribute name="tls12Enabled" type="frankBoolean" />
+    <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
+    <xs:attribute name="configurationXML" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IdinSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="IdinSenderDeclaredAttributeGroup" />
@@ -8653,8 +8665,8 @@
       </xs:element>
       <xs:element name="IdinErrorSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.06+.
- Compile with Java 1.7+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
+ Compile with Java 1.8+</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12431,11 +12443,13 @@
  &lt;ol&gt;
  &lt;li&gt;During execution, this pipe first obtains a string based on attributes &lt;code&gt;returnString&lt;/code&gt;, &lt;code&gt;filename&lt;/code&gt; or &lt;code&gt;filenameSessionKey&lt;/code&gt;.&lt;/li&gt;
  &lt;li&gt;The resulting string is transformed according to attributes &lt;code&gt;replaceFrom&lt;/code&gt; and &lt;code&gt;replaceTo&lt;/code&gt; if set.
- Please note that the plain value of attribute &lt;code&gt;replaceFrom&lt;/code&gt; is matched, no &lt;code&gt;${...}&lt;/code&gt; here.&lt;/li&gt;
+ Please note that the plain value of attribute &lt;code&gt;replaceFrom&lt;/code&gt; is matched, no &lt;code&gt;?{...}&lt;/code&gt; here.&lt;/li&gt;
+ 
  &lt;li&gt;The resulting string is substituted based on the parameters of this pipe. This step depends on attribute &lt;code&gt;replaceFixedParams&lt;/code&gt;.
  Assume that there is a parameter with name &lt;code&gt;xyz&lt;/code&gt;. If &lt;code&gt;replaceFixedParams&lt;/code&gt; is &lt;code&gt;false&lt;/code&gt;, then
- each occurrence of &lt;code&gt;${xyz}&lt;/code&gt; is replaced by the parameter's value. Otherwise, the text &lt;code&gt;xyz&lt;/code&gt;
+ each occurrence of &lt;code&gt;?{xyz}&lt;/code&gt; is replaced by the parameter's value. Otherwise, the text &lt;code&gt;xyz&lt;/code&gt;
  is substituted. See Parameter to see how parameter values are determined.&lt;/li&gt;
+ 
  &lt;li&gt;If attribute &lt;code&gt;substituteVars&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;, then expressions &lt;code&gt;${...}&lt;/code&gt; are substituted using
  system properties, pipelinesession variables and application properties. Please note that
  no &lt;code&gt;${...}&lt;/code&gt; patterns are left if the initial string came from attribute &lt;code&gt;returnString&lt;/code&gt;, because
@@ -12564,19 +12578,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="HashPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="IfMultipartPipe">
-        <xs:annotation>
-          <xs:documentation>Selects an exitState, based on the content-type of a httpServletRequest
- object as input.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="IfMultipartType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -14019,29 +14020,14 @@
         <xs:documentation>if &lt;code&gt;true&lt;/code&gt; the pipe compresses, otherwise it decompress Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="filenamePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>required if result is a file, the pattern for the result filename. Can be set with variables e.g. {file}.{ext}.zip in this example the {file} and {ext} variables are resolved with sessionKeys with the same name</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="messageIsContent" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="outputDirectory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>required if result is a file, the directory in which to store the result file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="resultIsContent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>flag indicates whether the result must be written to the message or to a file (filename = message) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="zipEntryPattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the pattern for the zipentry name in case a zipfile is read or written</xs:documentation>
+        <xs:documentation>flag indicates whether the result must be written to the message or to a file (filename = message) Default: true when outputDirectory is not set.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="fileFormat">
@@ -14271,7 +14257,7 @@
     <xs:attribute name="substituteVars" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Should values between ${ and } be resolved. If true, the search order of replacement values is:
- system properties (1), pipelinesession variables (2), application properties (3). Default: false</xs:documentation>
+ system properties (1), PipelineSession variables (2), application properties (3). Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
@@ -14306,7 +14292,7 @@
     </xs:attribute>
     <xs:attribute name="replaceFixedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;${name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;?{name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14497,19 +14483,6 @@
   <xs:attributeGroup name="HashPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="HashPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="IfMultipartType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="IfMultipartCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.IfMultipart" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="IfMultipartDeclaredAttributeGroup">
-    <xs:attribute name="thenForwardName" type="xs:string" />
-    <xs:attribute name="elseForwardName" type="xs:string" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="IfMultipartCumulativeAttributeGroup">
-    <xs:attributeGroup ref="IfMultipartDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -15181,7 +15154,7 @@
         <xs:documentation>Action to be taken when pipe is executed.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="recipients" type="xs:string">
@@ -15874,7 +15847,7 @@
         <xs:documentation>Action to be taken when pipe is executed. Default: SIGN</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="algorithm" type="xs:string">
@@ -16368,7 +16341,7 @@
         <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="collectionName" type="xs:string">
@@ -17493,6 +17466,13 @@
       <xs:enumeration value="REPORT" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ActionAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DIRECTORY" />
+      <xs:enumeration value="RESPONSE" />
+      <xs:enumeration value="AUTHENTICATE" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="JavaScriptEnginesAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="J2V8" />
@@ -17909,7 +17889,7 @@
       <xs:enumeration value="DEOBFUSCATE" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_4">
+  <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ENCRYPT">
         <xs:annotation>
@@ -17953,7 +17933,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_5">
+  <xs:simpleType name="ActionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:enumeration value="SIGN">
         <xs:annotation>
@@ -17981,7 +17961,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_4">
     <xs:restriction base="xs:string">
       <xs:enumeration value="OPEN">
         <xs:annotation>

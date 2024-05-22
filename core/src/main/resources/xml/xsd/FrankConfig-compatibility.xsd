@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0-RC1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -3491,7 +3491,11 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.idin.IdinSender" />
   </xs:complexType>
   <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string" />
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
@@ -3587,6 +3591,13 @@
     <xs:attribute name="serviceLogsEnabled" type="frankBoolean" />
     <xs:attribute name="serviceLogsLocation" type="xs:string" />
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
+    <xs:attribute name="tls12Enabled" type="frankBoolean" />
+    <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
+    <xs:attribute name="configurationXML" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IdinSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="IdinSenderDeclaredAttributeGroup" />
@@ -7292,7 +7303,11 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcQueryListener" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcQueryListenerDeclaredAttributeGroup">
-    <xs:attribute name="selectQuery" type="xs:string" />
+    <xs:attribute name="selectQuery" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Query that returns a row to be processed. Must contain a key field and optionally a message field.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="updateStatusToProcessedQuery" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>SQL statement to set the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key</xs:documentation>
@@ -7581,11 +7596,6 @@
         <xs:documentation>Can be either &lt;code&gt;/rest&lt;/code&gt; or &lt;code&gt;/rest-public&lt;/code&gt; and must correspond with the available RestListenerServlet path(s).</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="view" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Indicates whether this listener supports a view (and a link should be put in the ibis console) Default: if &lt;code&gt;method=get&lt;/code&gt; then &lt;code&gt;true&lt;/code&gt;, else &lt;code&gt;false&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="authRoles" type="xs:string">
       <xs:annotation>
         <xs:documentation>Comma separated list of authorization roles which are granted for this rest service Default: IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</xs:documentation>
@@ -7622,6 +7632,12 @@
     <xs:attribute name="generateEtag" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set to true the ibis will automatically create an etag Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="automaticallyTransformToAndFromJson" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
+ Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust! Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -12685,7 +12701,7 @@
     </xs:attribute>
     <xs:attribute name="resultIsContent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>flag indicates whether the result must be written to the message or to a file (filename = message) Default: false</xs:documentation>
+        <xs:documentation>flag indicates whether the result must be written to the message or to a file (filename = message) Default: true when outputDirectory is not set.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="zipEntryPattern" type="xs:string">
@@ -13102,7 +13118,7 @@
     <xs:attribute name="substituteVars" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Should values between ${ and } be resolved. If true, the search order of replacement values is:
- system properties (1), pipelinesession variables (2), application properties (3). Default: false</xs:documentation>
+ system properties (1), PipelineSession variables (2), application properties (3). Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
@@ -13137,9 +13153,10 @@
     </xs:attribute>
     <xs:attribute name="replaceFixedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;${name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;?{name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="useOldSubstitutionStartDelimiter" type="frankBoolean" />
   </xs:attributeGroup>
   <xs:attributeGroup name="FixedResultPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FixedResultPipeDeclaredAttributeGroup" />
@@ -14261,7 +14278,7 @@
         <xs:documentation>Action to be taken when pipe is executed.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="recipients" type="xs:string">
@@ -15131,7 +15148,7 @@
         <xs:documentation>Action to be taken when pipe is executed. Default: SIGN</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="algorithm" type="xs:string">
@@ -15701,7 +15718,7 @@
         <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="collectionName" type="xs:string">
@@ -16483,6 +16500,13 @@
       <xs:pattern value="[rR][eE][pP][oO][rR][tT]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ActionAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[dD][iI][rR][eE][cC][tT][oO][rR][yY]" />
+      <xs:pattern value="[rR][eE][sS][pP][oO][nN][sS][eE]" />
+      <xs:pattern value="[aA][uU][tT][hH][eE][nN][tT][iI][cC][aA][tT][eE]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="JavaScriptEnginesAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[jJ][22][vV][88]" />
@@ -16810,7 +16834,7 @@
       <xs:pattern value="[dD][eE][oO][bB][fF][uU][sS][cC][aA][tT][eE]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_4">
+  <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:pattern value="[eE][nN][cC][rR][yY][pP][tT]" />
       <xs:pattern value="[sS][iI][gG][nN]" />
@@ -16830,7 +16854,7 @@
       <xs:pattern value="[fF][fF]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_5">
+  <xs:simpleType name="ActionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][iI][gG][nN]" />
       <xs:pattern value="[vV][eE][rR][iI][fF][yY]" />
@@ -16842,7 +16866,7 @@
       <xs:pattern value="[nN][uU][mM][eE][rR][iI][cC]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_4">
     <xs:restriction base="xs:string">
       <xs:pattern value="[oO][pP][eE][nN]" />
       <xs:pattern value="[wW][rR][iI][tT][eE]" />
