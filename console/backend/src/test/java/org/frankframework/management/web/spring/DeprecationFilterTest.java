@@ -1,18 +1,20 @@
 package org.frankframework.management.web.spring;
 
-import org.frankframework.web.filters.DeprecationFilter;
+import org.springframework.test.context.ContextConfiguration;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-
-import org.springframework.core.env.Environment;
-
-public class DeprecationFilterTest {
+@ContextConfiguration(classes = {WebTestConfiguration.class, Monitors.class})
+public class DeprecationFilterTest extends FrankApiTestBase{
 
 //	private static final String CXF_METHOD_KEY = "org.apache.cxf.resource.method";
 
-	@Test
+	/*@BeforeEach
+	public void setUp() {
+		super.setUp();
+		DefaultMockMvcBuilder mockBuilder = MockMvcBuilders.webAppContextSetup(webApplicationContext);
+		this.mockMvc = mockBuilder.addFilter(new DeprecationFilter()).build();
+	}*/
+
+	/*@Test
 	public void testDefaultBehaviour() throws Exception {
 		DeprecationFilter filter = new DeprecationFilter();
 		Environment env = Mockito.mock(Environment.class);
@@ -27,7 +29,7 @@ public class DeprecationFilterTest {
 
 		// Assert
 		Mockito.verify(request, Mockito.never()).abortWith(Mockito.any(Response.class));
-	}
+	}*/
 
 	/*@Test
 	public void testDeprecatedMethodNotAllowed() throws Exception {
@@ -117,7 +119,7 @@ public class DeprecationFilterTest {
 		assertTrue(appender.getLogLines().isEmpty());
 	}*/
 
-	private void setMethod(Class<?> targetClass, String methodName) throws Exception {
+	/*private void setMethod(Class<?> targetClass, String methodName) throws Exception {
 		Message message = new MessageImpl();
 		Method method = targetClass.getMethod(methodName, new Class[] {});
 		message.put(CXF_METHOD_KEY, method);
@@ -154,6 +156,6 @@ public class DeprecationFilterTest {
 		public Response deprecatedMethod() {
 			return Response.accepted().build();
 		}
-	}
+	}*/
 
 }

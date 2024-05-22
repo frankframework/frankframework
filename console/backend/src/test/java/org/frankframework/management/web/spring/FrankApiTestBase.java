@@ -33,20 +33,20 @@ public abstract class FrankApiTestBase {
 	protected MockMvc mockMvc;
 
 	@Autowired
-	private WebApplicationContext webApplicationContext;
+	protected WebApplicationContext webApplicationContext;
 
 	@Autowired
 	protected SpringUnitTestLocalGateway<?> outputGateway;
-
-	@AfterEach
-	public void afterEach() {
-		Mockito.reset(outputGateway);
-	}
 
 	@BeforeEach
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+	}
+
+	@AfterEach
+	public void afterEach() {
+		Mockito.reset(outputGateway);
 	}
 
 	protected MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
@@ -69,10 +69,10 @@ public abstract class FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.jsonPath("action").value(action));
 	}
 
-	protected <T> Message<T> mockResponseMessage(Message<T> in, Supplier<T> payload, int status, @Nullable MediaType mediaType){
+	protected <T, U> Message<U> mockResponseMessage(Message<T> in, Supplier<U> payload, int status, @Nullable MediaType mediaType){
 		return new Message<>() {
 			@Override
-			public T getPayload() {
+			public U getPayload() {
 				return payload.get();
 			}
 
@@ -83,11 +83,9 @@ public abstract class FrankApiTestBase {
 				headers.put("meta-state", "SUCCESS");
 				headers.put(MessageBase.STATUS_KEY, status);
 				headers.put("meta-" + MessageBase.STATUS_KEY, status);
-				if(mediaType != null){
+				if (mediaType != null) {
 					headers.put(MessageBase.MIMETYPE_KEY, mediaType);
 					headers.put("meta-" + MessageBase.MIMETYPE_KEY, mediaType);
-				} else {
-					headers.remove("meta-" + MessageBase.MIMETYPE_KEY);
 				}
 
 				return new MessageHeaders(headers);

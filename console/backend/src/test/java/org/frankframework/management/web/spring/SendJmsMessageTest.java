@@ -92,7 +92,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
 			Message<String> in = i.getArgument(0);
 			assertEquals("QUEUE", in.getHeaders().get("topic"));
-			return mockResponseMessage(in, in::getPayload, 200, null);
+			return mockResponseMessage(in, in::getPayload, 200, MediaType.TEXT_PLAIN);
 		});
 
 		mockMvc.perform(
