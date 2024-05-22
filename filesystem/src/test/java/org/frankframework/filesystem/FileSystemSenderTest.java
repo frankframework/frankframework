@@ -46,8 +46,14 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	@Override
 	@AfterEach
 	public void tearDown() {
-		CloseUtils.closeSilently(senderResult, fileSystemSender);
-
+		CloseUtils.closeSilently(senderResult);
+		try {
+			if (fileSystemSender != null) {
+				fileSystemSender.close();
+			}
+		} catch (SenderException e) {
+			log.warn("Failed to close fileSystemSender", e);
+		}
 		super.tearDown();
 	}
 

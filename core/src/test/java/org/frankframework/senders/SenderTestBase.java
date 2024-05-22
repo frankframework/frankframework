@@ -34,7 +34,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
-import org.frankframework.util.CloseUtils;
 
 public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBase {
 
@@ -56,7 +55,13 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	@AfterEach
 	@Override
 	public void tearDown() {
-		CloseUtils.closeSilently(sender);
+		try {
+			if (sender != null) {
+				sender.close();
+			}
+		} catch (SenderException e) {
+			log.warn("Error closing Sender", e);
+		}
 		sender = null;
 		super.tearDown();
 	}
