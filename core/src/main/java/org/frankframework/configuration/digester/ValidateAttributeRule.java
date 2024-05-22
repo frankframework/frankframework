@@ -158,11 +158,11 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	private void checkDeprecationAndConfigurationWarning(String name, String value, Method m) {
-		ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
+	private void checkDeprecationAndConfigurationWarning(String name, String value, Method setterMethod) {
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(setterMethod, ConfigurationWarning.class);
 		if(warning != null) {
 			String msg = "attribute ["+name+"]";
-			boolean isDeprecated = AnnotationUtils.findAnnotation(m, Deprecated.class) != null;
+			boolean isDeprecated = AnnotationUtils.findAnnotation(setterMethod, Deprecated.class) != null;
 
 			if(isDeprecated) {
 				msg += " is deprecated";
@@ -180,17 +180,17 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			return;
 		}
 		// Check enum Configuration Warnings
-		if (!m.getParameters()[0].getType().isEnum())
+		if (!setterMethod.getParameters()[0].getType().isEnum()) // only first parameter is relevant to check
 			return; // Skip non-enum setters
 		try {
-			Object o = ClassUtils.parseValueToSet(m, value);
+			Object o = ClassUtils.parseValueToSet(setterMethod, value);
 			if (o instanceof Enum<?> enumValue) {
 				String configWarning = getEnumConfigurationWarning(enumValue);
 				if (configWarning != null) {
 					addSuppressibleWarning("attribute [" + name + "." + enumValue + "]: " + configWarning, SuppressKeys.CONFIGURATION_VALIDATION);
 				}
 			}
-		} catch (IllegalArgumentException ignored) {
+		} catch (IllegalArgumentException ignored) { // Can not happen with enums
 		}
 
 	}

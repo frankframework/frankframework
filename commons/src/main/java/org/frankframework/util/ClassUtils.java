@@ -289,10 +289,10 @@ public abstract class ClassUtils {
 	 * Attempt to parse the attributes value as an Enum.
 	 * @param enumClass The Enum class used to parse the value
 	 * @param value The value to be parsed
-	 * @return The Enum constant or <code>NULL</code>
+	 * @return The Enum constant or <code>null</code>
 	 */
 	@SuppressWarnings("unchecked")
-	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) throws IllegalArgumentException {
+	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
 		return EnumUtils.parse((Class<E>) enumClass, null, value);
 	}
 
