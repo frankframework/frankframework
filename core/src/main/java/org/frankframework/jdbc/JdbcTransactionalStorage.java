@@ -335,7 +335,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			host=Misc.getHostname();
 		}
 		if (isOnlyStoreWhenMessageIdUnique() && StringUtils.isBlank(getSlotId())) {
-			throw new ConfigurationException("'slotId' has to be configured when [onlyStoreWhenMessageIdUnique]=[true]");
+			throw new ConfigurationException("[slotId] has to be configured when [onlyStoreWhenMessageIdUnique]=[true]");
 
 		}
 		super.configure();
