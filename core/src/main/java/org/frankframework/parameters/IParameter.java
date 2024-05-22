@@ -18,9 +18,12 @@ package org.frankframework.parameters;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.parameters.AbstractParameter.ParameterMode;
 import org.frankframework.stream.Message;
 
+@FrankDocGroup(FrankDocGroupValue.PARAMETER)
 public interface IParameter extends IConfigurable {
 
 	ParameterType getType();
