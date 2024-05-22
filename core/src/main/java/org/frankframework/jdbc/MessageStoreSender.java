@@ -86,7 +86,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		}
 		setType(StorageType.MESSAGESTORAGE.getCode());
 		if (StringUtils.isBlank(getSlotId())) {
-			throw new ConfigurationException("'slotId' has to be configured");
+			throw new ConfigurationException("[slotId] has to be configured");
 		}
 		super.configure();
 	}
