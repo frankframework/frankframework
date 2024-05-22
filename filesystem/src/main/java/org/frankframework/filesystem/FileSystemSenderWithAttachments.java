@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,16 +20,13 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
-
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
@@ -37,7 +34,7 @@ import org.frankframework.util.XmlBuilder;
 /**
  * FileSystem Sender extension to handle Attachments.
  */
-public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
+public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,A>> extends FileSystemSender<F,FS> {
 
 	public final FileSystemActor.FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS = {FileSystemActor.FileSystemAction.LISTATTACHMENTS};
 
@@ -65,7 +62,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 			}
 
 			XmlBuilder attachments = new XmlBuilder("attachments");
-			IWithAttachments<F,A> withAttachments = getFileSystem();
+			IMailFileSystem<F,A> withAttachments = getFileSystem();
 			try {
 				Iterator<A> it = withAttachments.listAttachments(file);
 				if (it!=null) {

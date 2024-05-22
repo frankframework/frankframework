@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,17 @@
 */
 package org.frankframework.filesystem;
 
-public class FileNotFoundException extends FileSystemException {
+public class FolderAlreadyExistsException extends FileSystemException {
 
-	public FileNotFoundException(String message, Throwable cause) {
-		super(Forward.FILE_NOT_FOUND, message, cause);
+	public FolderAlreadyExistsException(String message, Throwable cause) {
+		super(Forward.FOLDER_ALREADY_EXISTS, message, cause);
 	}
 
-	public FileNotFoundException(String message) {
-		super(Forward.FILE_NOT_FOUND, message);
+	public FolderAlreadyExistsException(String message) {
+		super(Forward.FOLDER_ALREADY_EXISTS, message);
 	}
 
-	public FileNotFoundException(Throwable cause) {
-		super(Forward.FILE_NOT_FOUND, cause);
+	public FolderAlreadyExistsException(Throwable cause) {
+		super(Forward.FOLDER_ALREADY_EXISTS, cause);
 	}
-
 }

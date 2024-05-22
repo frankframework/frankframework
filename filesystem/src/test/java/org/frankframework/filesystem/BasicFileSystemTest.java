@@ -15,13 +15,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
-import org.frankframework.stream.Message;
-import org.frankframework.util.StreamUtil;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.apache.commons.io.FilenameUtils;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -39,8 +41,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
-		if (fileSystem!=null) fileSystem.close();
+	public void tearDown() {
+		CloseUtils.closeSilently(fileSystem);
 	}
 
 	@Test
@@ -262,7 +264,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F f = fileSystem.toFile(srcFolder, filename);
 		F f2 = fileSystem.toFile(srcFolder, filename);
-		F movedFile =fileSystem.moveFile(f, dstFolder, false, true);
+		F movedFile =fileSystem.moveFile(f, dstFolder, false);
 		waitForActionToFinish();
 
 		assertEquals(filename,fileSystem.getName(movedFile));
@@ -276,7 +278,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse(fileSystem.exists(f2), "original file should not exist anymore after move");
 
 		try {
-			F movedFile2 =fileSystem.moveFile(f2, dstFolder, false, true);
+			F movedFile2 =fileSystem.moveFile(f2, dstFolder, false);
 			assertNull(movedFile2, "File should not be moveable again");
 		} catch (Exception e) {
 			// an exception will do too, to signal that the file cannot be moved again.
@@ -306,7 +308,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F f = fileSystem.toFile(srcFolder, filename);
 
-		assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false, true) );
+		assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false) );
 	}
 
 	@Test
@@ -332,7 +334,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFileDoesNotExist(dstFolder, filename);
 
 		F f = fileSystem.toFile(srcFolder, filename);
-		F copiedFile = fileSystem.copyFile(f, dstFolder, false, true);
+		F copiedFile = fileSystem.copyFile(f, dstFolder, false);
 		waitForActionToFinish();
 
 		assertEquals(filename, fileSystem.getName(copiedFile));

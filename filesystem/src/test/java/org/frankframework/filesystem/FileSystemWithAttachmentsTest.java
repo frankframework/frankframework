@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
+public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IMailFileSystem<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
 
 	protected IFileSystemWithAttachmentsTestHelper<A> getHelper() {
 		return (IFileSystemWithAttachmentsTestHelper<A>)helper;
