@@ -48,7 +48,10 @@ public interface IParameter extends IConfigurable {
 
 	String getSessionKey();
 
-	Object getValue();
+	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
+	void setValue(String value);
+
+	String getValue();
 
 	Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException;
 

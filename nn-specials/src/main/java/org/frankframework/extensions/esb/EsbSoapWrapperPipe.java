@@ -591,9 +591,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 		}
 		if (getMode() != Mode.BIS && parameterList.findParameter(CORRELATIONID_PARAMETER_NAME)==null) {
 			String paradigm;
-			p = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
-			if (p!=null) {
-				paradigm = p.getValue();
+			IParameter ppn = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
+			if (ppn!=null) {
+				paradigm = ppn.getValue();
 				if ("Response".equals(paradigm)) {
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					p.setName(CORRELATIONID_PARAMETER_NAME);
