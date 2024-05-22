@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -23,33 +22,23 @@ import org.frankframework.stream.Message;
 public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem> {
 
 	@TempDir
-	public Path temp;
-	private Path root;
-
-	@BeforeEach
-	@Override
-	public void setUp() throws Exception {
-		// Append a folder to the test-dir, to make sure that using a root folder
-		// that doesn't exist yet will not fail.
-		root = temp.resolve("testLocalFSRoot");
-		super.setUp();
-	}
+	public Path folder;
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
 		LocalFileSystem result = new LocalFileSystem();
-		result.setRoot(root.toAbsolutePath().toString());
+		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new LocalFileSystemTestHelper(root);
+		return new LocalFileSystemTestHelper(folder);
 	}
 
 	public void fileSystemActorMoveActionTestNoRoot(String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
 		LocalFileSystem localFileSystemNoRoot = new LocalFileSystem();
-		String srcFolder = root.toAbsolutePath().toString();
+		String srcFolder = folder.toAbsolutePath().toString();
 
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
@@ -99,7 +88,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
 		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder", false, false));
-		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [" + root.toAbsolutePath() + "/sendermovefile1.txt]: destination folder [" + root.toAbsolutePath() + "/folder] does not exist"));
+		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [" + folder.toAbsolutePath() + "/sendermovefile1.txt]: destination folder [" + folder.toAbsolutePath() + "/folder] does not exist"));
 	}
 
 	@Test
