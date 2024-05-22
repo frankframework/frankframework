@@ -108,8 +108,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 			return new SenderResult(result);
 		} catch (FileSystemException e) {
 			String forwardName = e.getForward().getForwardName();
-
-			log.error("Error from FileSystemActor, will return forward name [{}]",forwardName, e);
+			log.info("error from FileSystemActor, will call forward name [{}]",forwardName, e);
 			return new SenderResult(false, Message.nullMessage(), e.getMessage(), forwardName);
 		}
 	}
