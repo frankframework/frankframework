@@ -37,11 +37,12 @@ import org.apache.logging.log4j.Logger;
 public class SerializableInputStream extends InputStream implements Externalizable {
 
 	private static final long serialVersionUID = 1L;
-	private transient static final int BUFFERSIZE = 20_480;
-	private transient static final Logger LOG = LogManager.getLogger(SerializableInputStream.class);
+	private static final transient int BUFFERSIZE = 20_480;
+	private static final transient Logger LOG = LogManager.getLogger(SerializableInputStream.class);
 
-	private transient volatile InputStream delegate;
-	private transient final Path tmpFile;
+	private final transient Path tmpFile;
+
+	private transient InputStream delegate;
 
 	/**
 	 * Constructor for deserialization.
@@ -140,29 +141,29 @@ public class SerializableInputStream extends InputStream implements Externalizab
 
 	@Override
 	public int read() throws IOException {
-		if(delegate == null) {
-			throw new IOException("error delegate has not been set");
-		}
+		checkIfDelegateExists();
 
 		return delegate.read();
 	}
 
 	@Override
 	public int read(byte[] b) throws IOException {
-		if(delegate == null) {
-			throw new IOException("error delegate has not been set");
-		}
+		checkIfDelegateExists();
 
 		return delegate.read(b);
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		if(delegate == null) {
-			throw new IOException("error delegate has not been set");
-		}
+		checkIfDelegateExists();
 
 		return delegate.read(b, off, len);
+	}
+
+	private void checkIfDelegateExists() throws IOException {
+		if(delegate == null) {
+			throw new IOException("delegate has not been set, unable to read stream");
+		}
 	}
 
 	@Override
