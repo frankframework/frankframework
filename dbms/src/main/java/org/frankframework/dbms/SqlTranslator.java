@@ -78,8 +78,9 @@ public class SqlTranslator implements ISqlTranslator {
 	public String translate(String original) {
 		String query = original;
 		if (sources != null) {
-			for (String label : sources.keySet()) {
-				Matcher matcher = sources.get(label).matcher(query);
+			for (Map.Entry<String, Pattern> entry : sources.entrySet()) {
+				String label = entry.getKey();
+				Matcher matcher = entry.getValue().matcher(query);
 				if (matcher.find()) {
 					if (log.isTraceEnabled()) log.trace("Found a match for label [{}] pattern [{}]", label, sources.get(label));
 					String replacement = targets.get(label);

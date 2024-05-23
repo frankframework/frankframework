@@ -68,11 +68,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT @@IDENTITY";
-	}
-
-	@Override
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
@@ -93,11 +88,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "0x";
 	}
 
 	@Override
