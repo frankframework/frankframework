@@ -442,22 +442,6 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	public void testInsertEmptyClobUsingDbmsSupport() throws Exception {
-		try (Connection connection = env.getConnection()) {
-
-			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (13," + dbmsSupport.emptyClobValue() + ")");
-
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=13", QueryType.SELECT)) {
-				try (ResultSet resultSet = stmt.executeQuery()) {
-					resultSet.next();
-					assertEquals("", JdbcUtil.getClobAsString(dbmsSupport, resultSet, 1, false));
-				}
-			}
-		}
-	}
-
-
-	@DatabaseTest
 	public void testWriteAndReadBlob() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String blobContents = "Dit is de content van de blob";
@@ -565,20 +549,6 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	public void testInsertEmptyBlobUsingDbmsSupport() throws Exception {
-		try (Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (25," + dbmsSupport.emptyBlobValue() + ")");
-
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=25", QueryType.SELECT)) {
-				try (ResultSet resultSet = stmt.executeQuery()) {
-					resultSet.next();
-					assertEquals("", JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false));
-				}
-			}
-		}
-	}
-
-	@DatabaseTest
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String blobContents = "Dit is de content van de blob";
@@ -603,7 +573,6 @@ public class DbmsSupportTest {
 			}
 		}
 	}
-
 
 	@DatabaseTest
 	public void testBooleanHandling() throws Exception {

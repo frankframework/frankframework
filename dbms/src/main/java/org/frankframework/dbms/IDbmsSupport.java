@@ -67,8 +67,6 @@ public interface IDbmsSupport {
 
 	boolean autoIncrementUsesSequenceObject();
 
-	String getInsertedAutoIncrementValueQuery(String sequenceName);
-
 	String getTimestampFieldType();
 
 	String getDatetimeLiteral(Date date);
@@ -76,10 +74,6 @@ public interface IDbmsSupport {
 	String getTimestampAsDate(String columnName);
 
 	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
-
-	boolean mustInsertEmptyClobBeforeData();
-
-	String emptyClobValue();
 
 	Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException;
 
@@ -105,16 +99,9 @@ public interface IDbmsSupport {
 
 	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	boolean mustInsertEmptyBlobBeforeData();
-
-	String emptyBlobValue();
-
 	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, DbmsException;
 
 	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, DbmsException;
-
-	// BLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
-	String getUpdateBlobQuery(String table, String clobField, String keyField);
 
 	Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
 

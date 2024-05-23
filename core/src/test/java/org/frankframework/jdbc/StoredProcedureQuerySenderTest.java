@@ -62,7 +62,7 @@ public class StoredProcedureQuerySenderTest {
 	private String dataSourceName;
 
 	@BeforeEach
-	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) {
 		dataSourceName = databaseTestEnvironment.getDataSourceName();
 
 		sender = databaseTestEnvironment.getConfiguration().createBean(StoredProcedureQuerySender.class);
@@ -73,7 +73,7 @@ public class StoredProcedureQuerySenderTest {
 	}
 
 	@AfterEach
-	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) {
 		if (session != null) {
 			session.close();
 		}
