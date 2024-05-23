@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.springframework.messaging.Message;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -59,6 +59,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.ProcessStateDTO;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.pipes.MessageSendingPipe;
@@ -69,6 +70,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -138,8 +140,8 @@ public class AdapterStatus extends BusEndpointBase {
 		return adapterInfo;
 	}
 
-
-	private Map<String, Object> addCertificateInfo(HasKeystore s) {
+	@Nullable
+	private Map<String, Object> addCertificateInfo(@Nonnull HasKeystore s) {
 		String certificate = s.getKeystore();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
@@ -190,7 +192,8 @@ public class AdapterStatus extends BusEndpointBase {
 		return certificateList;
 	}
 
-	private ArrayList<Object> mapAdapterPipes(Adapter adapter) {
+	@Nullable
+	private ArrayList<Object> mapAdapterPipes(@Nonnull Adapter adapter) {
 		if(!adapter.configurationSucceeded())
 			return null;
 		PipeLine pipeline = adapter.getPipeLine();
@@ -202,14 +205,14 @@ public class AdapterStatus extends BusEndpointBase {
 			IPipe pipe = pipeline.getPipe(i);
 			Map<String, PipeForward> pipeForwards = pipe.getForwards();
 
-			String pipename = pipe.getName();
+			String pipeName = pipe.getName();
 
 			Map<String, String> forwards = new HashMap<>();
 			for (PipeForward fwrd : pipeForwards.values()) {
 				forwards.put(fwrd.getName(), fwrd.getPath());
 			}
 
-			pipesInfo.put("name", pipename);
+			pipesInfo.put("name", pipeName);
 			pipesInfo.put("forwards", forwards);
 			if (pipe instanceof HasKeystore s) {
 				Map<String, Object> certInfo = addCertificateInfo(s);

@@ -9,6 +9,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.unboundid.ldap.listener.InMemoryDirectoryServer;
+import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import com.unboundid.ldap.listener.InMemoryListenerConfig;
+import com.unboundid.ldap.sdk.LDAPConnection;
+
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.Difference;
 import org.custommonkey.xmlunit.DifferenceConstants;
@@ -22,17 +31,9 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-
-import com.unboundid.ldap.listener.InMemoryDirectoryServer;
-import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
-import com.unboundid.ldap.listener.InMemoryListenerConfig;
-import com.unboundid.ldap.sdk.LDAPConnection;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;
@@ -72,7 +73,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
 		}

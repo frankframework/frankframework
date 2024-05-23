@@ -15,10 +15,9 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.parameters.ParameterType;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.NumberParameterBuilder;
 
 class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
@@ -35,8 +34,8 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
+		sender.addParameter(NumberParameterBuilder.create("x", 3));
+		sender.addParameter(NumberParameterBuilder.create("y", 4));
 
 		sender.configure();
 		sender.open();
@@ -53,8 +52,8 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f4");
 		sender.setEngineName(engine);
 
-		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
-		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
+		sender.addParameter(NumberParameterBuilder.create("x", 3));
+		sender.addParameter(NumberParameterBuilder.create("y", 4));
 
 		EchoSender log = new EchoSender();
 		log.setName("myFunction");

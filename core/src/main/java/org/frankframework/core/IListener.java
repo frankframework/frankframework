@@ -20,9 +20,9 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
+import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 

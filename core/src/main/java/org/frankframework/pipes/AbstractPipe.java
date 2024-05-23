@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package org.frankframework.pipes;
 
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -46,9 +47,6 @@ import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -257,20 +255,17 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public Map<String, PipeForward> getForwards(){
-		Map<String, PipeForward> forwards = new Hashtable<>(pipeForwards);
+	@Nonnull
+	public Map<String, PipeForward> getForwards() {
+		Map<String, PipeForward> forwards = new HashMap<>(pipeForwards);
 		PipeLine pipeline = getPipeLine();
-		if (pipeline==null) {
-			return null;
+		if (pipeline == null) {
+			return forwards;
 		}
 
 		//Omit global pipeline-forwards and only return local pipe-forwards
-		List<IPipe> pipes = pipeline.getPipes();
-		for (int i=0; i<pipes.size(); i++) {
-			String pipeName = pipes.get(i).getName();
-			if(forwards.containsKey(pipeName))
-				forwards.remove(pipeName);
-		}
+		pipeline.getPipes()
+				.forEach(pipe -> forwards.remove(pipe.getName()));
 		return forwards;
 	}
 
