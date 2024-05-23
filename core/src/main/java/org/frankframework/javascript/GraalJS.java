@@ -32,6 +32,7 @@ import org.graalvm.polyglot.HostAccess;
 /**
  * Javascript engine implementation of GraalJS. If high performance execution of JavaScript code is required, enable the following JVM options:
  * "-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI" or use the GraalVM Java distribution. Otherwise, the Javascript code is interpreted on every execution.
+ *
  * @since 8.2
  */
 @Log4j2
@@ -94,7 +95,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@FunctionalInterface
 	public interface JavaCallback {
-		Object apply(String... arguments);
+		Object apply(Object... arguments);
 	}
 
 	@Override
