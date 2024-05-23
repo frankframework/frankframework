@@ -1,7 +1,5 @@
 package org.frankframework.management.web.spring;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.MediaType;
@@ -18,7 +16,6 @@ public class UpdateLoggingConfigTest extends FrankApiTestBase {
 						.put("/server/logging")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"logIntermediaryResults\":\"true\"}"))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
@@ -28,7 +25,6 @@ public class UpdateLoggingConfigTest extends FrankApiTestBase {
 						.put("/server/logging")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"maxMessageLength\":50}"))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
@@ -38,7 +34,6 @@ public class UpdateLoggingConfigTest extends FrankApiTestBase {
 						.put("/server/logging")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"enableDebugger\":false}"))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
@@ -48,7 +43,6 @@ public class UpdateLoggingConfigTest extends FrankApiTestBase {
 						.put("/server/logging")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"loglevel\":\"dummy\"}"))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 }

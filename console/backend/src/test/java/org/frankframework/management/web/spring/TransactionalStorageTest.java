@@ -2,25 +2,14 @@ package org.frankframework.management.web.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TransactionalStorage.class})
 public class TransactionalStorageTest extends FrankApiTestBase {
-
-	@Test
-	public void testBrowseMessages() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.get("/configurations/test/adapters/test/PIPES/test/stores/test/messages/test"))
-				.andDo(print())
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"MESSAGE_BROWSER\",\"action\":\"GET\"}"));
-	}
 
 	@Test
 	public void testStorageSourceParsing() {

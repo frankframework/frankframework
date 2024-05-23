@@ -121,7 +121,7 @@ public class MonitorsTest extends FrankApiTestBase {
 			);
 			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
 		});
-		URL jsonInputURL = ShowMonitorsTest.class.getResource("/monitoring/updateTrigger.json");
+		URL jsonInputURL = ShowMonitorsTest.class.getResource("MonitorTest_updateTrigger.json");
 		assertNotNull(jsonInputURL, "unable to find input JSON"); // Check if the file exists to avoid NPE's
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
 

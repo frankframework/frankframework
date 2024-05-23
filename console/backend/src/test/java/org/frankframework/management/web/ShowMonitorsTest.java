@@ -11,15 +11,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.messaging.Message;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -27,11 +22,14 @@ import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.StreamUtil;
+import org.springframework.messaging.Message;
 
 public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 
@@ -135,8 +133,10 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
-		URL jsonInputURL = ShowMonitorsTest.class.getResource("/monitoring/updateTrigger.json");
+
+		URL jsonInputURL = ShowMonitorsTest.class.getResource("MonitorTest_updateTrigger.json");
 		assertNotNull(jsonInputURL, "unable to find input JSON"); // Check if the file exists to avoid NPE's
+
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
 
 		// Act
