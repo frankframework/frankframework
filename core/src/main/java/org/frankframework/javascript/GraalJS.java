@@ -25,6 +25,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.flow.ResultHandler;
 import org.graalvm.polyglot.Context;
@@ -40,6 +41,9 @@ import org.graalvm.polyglot.Engine;
 @Log4j2
 @Deprecated(since = "8.2")
 public class GraalJS implements JavascriptEngine<ScriptEngine> {
+
+	// Fixes some return types and other compatibility issues, but GraphvizJS still does not work. Warning: has security disadvantages and puts ECMAScript 5 compatibility on!
+	private static final String NASHORN_COMPATIBILITY = AppConstants.getInstance().getString("javascript.graaljs.nashorn-compat", "false");
 
 	private ScriptEngine scriptEngine; // Please avoid usage; preferred is through the 'context'
 	private Context context;
@@ -58,7 +62,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 				.allowHostClassLookup(className -> true)
 				.allowAllAccess(true)
 				.currentWorkingDirectory(Path.of(FileUtils.getTempDirectory()))
-//				.option("js.nashorn-compat", "true") // Fixes some return types and other compatibility issues, but GraphvizJS still does not work
+				.option("js.nashorn-compat", NASHORN_COMPATIBILITY)
 				.allowExperimentalOptions(true)
 				.engine(Engine.create("js")).build();
 	}
