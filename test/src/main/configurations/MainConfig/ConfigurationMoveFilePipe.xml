@@ -12,16 +12,22 @@
 				name="cleanup dir"
 				action="rmdir"
 				removeNonEmptyFolder="true"
-				createFolder="true"
+				createFolder="false"
 				inputFolder="${testdata.dir}/mfp/"
-			/>
+			>
+				<Forward name="success" path="cleanup dir2"/>
+				<Forward name="folderNotFound" path="cleanup dir2"/>
+			</LocalFileSystemPipe>
 			<LocalFileSystemPipe
 				name="cleanup dir2"
 				action="rmdir"
 				removeNonEmptyFolder="true"
-				createFolder="true"
+				createFolder="false"
 				inputFolder="${testdata.dir}/mfp2/"
-			/>
+			>
+				<Forward name="success" path="write file"/>
+				<Forward name="folderNotFound" path="write file"/>
+			</LocalFileSystemPipe>
 
 			<!-- Write file -->
 			<pipe
