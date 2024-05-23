@@ -338,11 +338,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return DbmsUtil.executeIntQuery(connection, query);
 	}
 
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT LAST_INSERT_ID()";
-	}
-
 	// DDL related methods, have become more or less obsolete (and untested) with the introduction of Liquibase for table definitions
 	@Override
 	public String getAutoIncrementKeyFieldType() {

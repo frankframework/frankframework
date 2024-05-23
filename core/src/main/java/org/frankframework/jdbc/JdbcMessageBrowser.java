@@ -85,9 +85,6 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	private String selector;
 
-	protected boolean selectKeyQueryIsDbmsSupported;
-
-
 	protected static final String CONTROL_PROPERTY_PREFIX="jdbc.storage.";
 	protected static final String PROPERTY_USE_PARAMETERS=CONTROL_PROPERTY_PREFIX+"useParameters";
 	protected static final String PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE=CONTROL_PROPERTY_PREFIX+"assumePrimaryKeyUnique";

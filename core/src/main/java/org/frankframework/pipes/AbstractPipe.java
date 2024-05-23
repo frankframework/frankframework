@@ -18,10 +18,6 @@ package org.frankframework.pipes;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -38,7 +34,7 @@ import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.stream.Message;
@@ -47,6 +43,11 @@ import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -174,7 +175,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * Add a parameter to the list of parameters
 	 */
 	@Override
-	public void addParameter(Parameter param) {
+	public void addParameter(IParameter param) {
 		log.debug("Pipe [{}] added parameter [{}]", getName(), param);
 		parameterList.add(param);
 	}

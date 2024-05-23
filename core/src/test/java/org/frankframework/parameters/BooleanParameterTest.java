@@ -57,7 +57,6 @@ public class BooleanParameterTest {
 		assertTrue((Boolean) result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("poeh"));
 	}
 }
