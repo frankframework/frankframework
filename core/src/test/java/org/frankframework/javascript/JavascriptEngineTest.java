@@ -2,6 +2,7 @@ package org.frankframework.javascript;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -53,7 +54,33 @@ class JavascriptEngineTest {
 				  return b;
 				}""");
 		Object result = engine.executeFunction("f5", 3, 5);
-		assertEquals("15", result);
+		assertEquals("15", result.toString());
+		engine.closeRuntime();
+	}
+
+	@Test
+	void testGraalJSReturnArray() throws JavascriptException {
+		JavascriptEngine engine = new GraalJS();
+		engine.startRuntime();
+		engine.executeScript("""
+				function f5() {
+					return [1, 3, 5];
+				}""");
+		Object result = engine.executeFunction("f5");
+		assertEquals("(3)[1, 3, 5]", result.toString());
+		engine.closeRuntime();
+	}
+
+	@Test
+	void testGraalJSONParseInput() throws JavascriptException {
+		JavascriptEngine engine = new GraalJS();
+		engine.startRuntime();
+		engine.executeScript("""
+				function returnObject() {
+					return JSON.parse("{\\"answer\\": 42}");
+				}""");
+		Object result = engine.executeFunction("returnObject");
+		assertEquals("{answer: 42}", result.toString());
 		engine.closeRuntime();
 	}
 

@@ -15,8 +15,9 @@
 */
 package org.frankframework.javascript;
 
+import java.nio.file.Path;
+
 import javax.script.Bindings;
-import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
@@ -24,21 +25,23 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.frankframework.util.FileUtils;
 import org.frankframework.util.flow.ResultHandler;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
-import org.graalvm.polyglot.HostAccess;
 
 /**
  * Javascript engine implementation of GraalJS. If high performance execution of JavaScript code is required, enable the following JVM options:
  * "-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI" or use the GraalVM Java distribution. Otherwise, the Javascript code is interpreted on every execution.
- *
+ * <p/>
+ * GraalJS is in Beta phase, so it is not supported by Frank!Framework yet.
  * @since 8.2
  */
 @Log4j2
+@Deprecated(since = "8.2")
 public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
-	private ScriptEngine scriptEngine;
+	private ScriptEngine scriptEngine; // Please avoid usage; preferred is through the 'context'
 	private Context context;
 	private boolean libraryLoaded = false;
 
@@ -48,25 +51,22 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 	}
 
 	@Override
-	public void startRuntime() throws JavascriptException {
-		log.info("Starting GraalJS runtime");
-		if (!libraryLoaded) {
-			scriptEngine = new ScriptEngineManager().getEngineByName("graal.js");
-			Bindings bindings = scriptEngine.createBindings();
-			bindings.put("polyglot.js.allowHostAccess", true); // essential for evaluation on JVM 17
-			bindings.put("polyglot.js.allowHostClassLookup", true);
-			libraryLoaded = scriptEngine != null;
-		}
+	public void startRuntime() {
+		log.info("Creating a new GraalJS context");
+
 		context = Context.newBuilder()
-				.allowHostAccess(HostAccess.SCOPED)
 				.allowHostClassLookup(className -> true)
+				.allowAllAccess(true)
+				.currentWorkingDirectory(Path.of(FileUtils.getTempDirectory()))
+//				.option("js.nashorn-compat", "true") // Fixes some return types and other compatibility issues, but GraphvizJS still does not work
+				.allowExperimentalOptions(true)
 				.engine(Engine.create("js")).build();
 	}
 
 	@Override
 	public void executeScript(String script) throws JavascriptException {
 		try {
-			scriptEngine.eval(script);
+			context.eval("js", script);
 		} catch (Exception e) {
 			throw new JavascriptException("error executing script", e);
 		}
@@ -75,11 +75,30 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 	@Override
 	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
 		try {
-			Invocable inv = (Invocable) scriptEngine;
-			return inv.invokeFunction(name, parameters);
+			String joinedParameters = joinParameters(parameters);
+			return context.eval("js", name + "(" + joinedParameters + ");");
 		} catch (Exception e) {
 			throw new JavascriptException("error executing function [" + name + "]", e);
 		}
+	}
+
+	private static String joinParameters(Object[] parameters) {
+		if (parameters.length == 0) {
+			return "";
+		}
+		StringBuilder parameterBuilder = new StringBuilder();
+		for (int i = 0; i < parameters.length; i++) {
+			Object parameter = parameters[i];
+			if (parameter instanceof String) { // Fixes Strings with quotes or spaces
+				parameterBuilder.append("'").append(parameter).append("'");
+			} else {
+				parameterBuilder.append(parameter);
+			}
+			if (i != parameters.length - 1) {
+				parameterBuilder.append(",");
+			}
+		}
+		return parameterBuilder.toString();
 	}
 
 	@Override
@@ -91,6 +110,13 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public ScriptEngine getEngine() {
+		if (!libraryLoaded) {
+			scriptEngine = new ScriptEngineManager().getEngineByName("graal.js");
+			Bindings bindings = scriptEngine.createBindings();
+			bindings.put("polyglot.js.allowHostAccess", true);
+			bindings.put("polyglot.js.allowHostClassLookup", true);
+			libraryLoaded = scriptEngine != null;
+		}
 		return scriptEngine;
 	}
 
@@ -104,7 +130,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		if (sender.getName() == null) {
 			throw new IllegalStateException("Sender name is required for call backs");
 		}
-		scriptEngine.put(sender.getName(), (JavaCallback) s -> {
+		context.getBindings("js").putMember(sender.getName(), (JavaCallback) s -> {
 			try {
 				Message msg = Message.asMessage(s[0]);
 				try (Message message = sender.sendMessageOrThrow(msg, session)) {
