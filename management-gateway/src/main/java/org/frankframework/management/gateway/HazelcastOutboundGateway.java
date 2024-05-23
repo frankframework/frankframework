@@ -75,12 +75,16 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 	private @Nullable Message<T> doReceive(IQueue<Message<T>> responseQueue, long receiveTimeout) {
 		try {
 			Message<T> response = responseQueue.poll(receiveTimeout, TimeUnit.MILLISECONDS);
+
+			log.trace("received message with id [{}]", () -> response.getHeaders().getId());
 			return response;
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
 			responseQueue.destroy();
 		}
+		log.trace("did not receive response within timeout of [{}] ms", receiveTimeout);
+
 		return null;
 	}
 

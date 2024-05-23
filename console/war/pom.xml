@@ -71,6 +71,11 @@
 			<artifactId>spring-integration-security</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+
 		<!-- Test scoped and provided dependencies -->
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
