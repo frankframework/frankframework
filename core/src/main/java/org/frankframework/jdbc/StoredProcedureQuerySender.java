@@ -37,8 +37,8 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.parameters.AbstractParameter;
 import org.frankframework.parameters.IParameter;
-import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Base64Pipe;
@@ -68,7 +68,7 @@ import jakarta.jms.JMSException;
  * </p>
  * <p>
  *     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
- *     have a corresponding {@link Parameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
+ *     have a corresponding {@link IParameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
  *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
  * <p>
@@ -218,7 +218,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		for (IParameter param : parameterList) {
 			++pos;
 
-			if (param.getMode() == Parameter.ParameterMode.INPUT) {
+			if (param.getMode() == AbstractParameter.ParameterMode.INPUT) {
 				continue;
 			}
 
