@@ -7,28 +7,28 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
-import { Observable, Subscription, filter, first } from 'rxjs';
+import { filter, first, Observable, Subscription } from 'rxjs';
 import {
   Adapter,
   AdapterMessage,
   AppConstants,
+  appInitState,
   AppService,
   ConsoleState,
   MessageLog,
   ServerInfo,
-  appInitState,
 } from './app.service';
 import {
   ActivatedRoute,
+  convertToParamMap,
   Data,
   NavigationEnd,
   NavigationSkipped,
   NavigationStart,
   ParamMap,
   Router,
-  convertToParamMap,
 } from '@angular/router';
-import { ViewportScroller, formatDate } from '@angular/common';
+import { formatDate, ViewportScroller } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
@@ -40,7 +40,7 @@ import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { SweetalertService } from './services/sweetalert.service';
 import { Title } from '@angular/platform-browser';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { ToastService } from './services/toast.service';
@@ -70,6 +70,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private urlHash$!: Observable<string | null>;
   private _subscriptions = new Subscription();
   private serializedRawAdapterData: Record<string, string> = {};
+  private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
+    modalDialogClass: 'animated fadeInDown',
+    windowClass: 'animated fadeIn',
+  };
 
   constructor(
     private router: Router,
@@ -128,7 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         const childRoute = this.route.children.at(-1);
         if (childRoute) {
-          this.routeQueryParams = childRoute.snapshot.queryParamMap;
+          this.handleQueryParams(childRoute.snapshot.queryParamMap);
           this.routeData = childRoute.snapshot.data;
           if (this.router.url === '/login') {
             this.isLoginView = true;
@@ -202,6 +206,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  handleQueryParams(parameters: ParamMap): void {
+    this.routeQueryParams = parameters;
+    const uwu = parameters.get('uwu');
+    if (uwu === 'true') {
+      localStorage.setItem('uwu', uwu);
+    } else if (uwu === 'false') {
+      localStorage.removeItem('uwu');
+    }
   }
 
   initializeFrankConsole(): void {
@@ -357,7 +371,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.sessionService.set('IAF-Release', release);
           this.notificationService.add(
             'fa-exclamation-circle',
-            'FF update available!',
+            'FF! update available!',
             false,
             () => {
               this.router.navigate(['iaf-update']);
@@ -588,7 +602,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openInfoModel(): void {
-    this.modalService.open(InformationModalComponent /* { size: 'sm' } */);
+    this.modalService.open(
+      InformationModalComponent,
+      this.MODAL_OPTIONS_CLASSES,
+    );
   }
 
   sendFeedback(rating?: number): void {
@@ -599,7 +616,10 @@ export class AppComponent implements OnInit, OnDestroy {
       this.renderer.removeClass(element, 'fa-star');
     }
 
-    const modalReference = this.modalService.open(FeedbackModalComponent);
+    const modalReference = this.modalService.open(
+      FeedbackModalComponent,
+      this.MODAL_OPTIONS_CLASSES,
+    );
     modalReference.componentInstance.rating = rating;
   }
 }

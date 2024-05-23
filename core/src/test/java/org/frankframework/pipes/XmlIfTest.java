@@ -5,7 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -16,9 +18,7 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.frankframework.util.CloseUtils;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
 
@@ -27,8 +27,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	private PipeRunResult pipeRunResult;
 
 	@AfterEach
-	public void tearDown() throws InterruptedException, IOException {
-		if (pipeRunResult != null) pipeRunResult.getResult().close();
+	public void tearDown() {
+		CloseUtils.closeSilently(pipeRunResult);
 	}
 
 	@Override

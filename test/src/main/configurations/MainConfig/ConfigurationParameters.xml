@@ -47,6 +47,16 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
+			<pipe name="FixedParamSubstitution" className="org.frankframework.pipes.FixedResultPipe" returnString="result [param]" replaceFixedParams="true">
+				<param name="param" value="xyz" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="ParamSubstitution" className="org.frankframework.pipes.FixedResultPipe" returnString="result [?{param}]">
+				<param name="param" value="xyz" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+
 		</pipeline>
 	</adapter>
 </module>

@@ -18,20 +18,20 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
+
+import lombok.Getter;
 
 /**
  * Provides a base-class for a Pipe that always has the same forward.
@@ -51,7 +51,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	private @Getter String unlessSessionKey;
 	private @Getter String unlessValue;
 
-	private Parameter ifParameter = null;
+	private IParameter ifParameter = null;
 
 	/**
 	 * checks for correct configuration of forward

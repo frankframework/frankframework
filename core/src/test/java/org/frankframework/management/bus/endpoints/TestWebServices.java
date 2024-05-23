@@ -136,10 +136,10 @@ public class TestWebServices extends BusTestBase {
 	@Override
 	public void tearDown() {
 		if(adapterWithRestListener != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithRestListener);
+			getConfiguration().getAdapterManager().removeAdapter(adapterWithRestListener);
 		}
 		if(adapterWithWebServiceListener != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithWebServiceListener);
+			getConfiguration().getAdapterManager().removeAdapter(adapterWithWebServiceListener);
 		}
 		if(apiListener != null) {
 			ApiServiceDispatcher.getInstance().unregisterServiceClient(apiListener);

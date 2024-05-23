@@ -13,18 +13,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileAlreadyExistsException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
@@ -92,20 +96,41 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	private void checkOpenAndExists(String folderName, MockFile f) throws FileSystemException {
 		checkOpen();
-		MockFolder folder=folderName==null?this:getFolders().get(folderName);
+		MockFolder folder= getMockFolder(folderName);
 		if (folder==null) {
-			throw new FileSystemException("folder ["+folderName+"] does not exist");
+			throw new FolderNotFoundException("folder ["+folderName+"] does not exist");
 		}
 		if (f.getOwner()==null) {
 			throw new FileSystemException("file ["+f.getName()+"] has no owner");
 		}
 		if (!folder.getFiles().containsKey(f.getName())) {
-			throw new FileSystemException("file ["+f.getName()+"] does not exist in folder ["+folderName+"]");
+			throw new FileNotFoundException("file ["+f.getName()+"] does not exist in folder ["+folderName+"]");
 		}
 	}
 
+	private String stripParentFolderName(String path) {
+		if (path == null) {
+			return "";
+		}
+		if (this.getName().equalsIgnoreCase(path)) {
+			return "";
+		}
+		if (path.startsWith(this.getName() + "/")) {
+			return path.substring(this.getName().length()+1);
+		}
+		return path;
+	}
+
+	private boolean isRoot(String folderName) {
+		return folderName == null || this.getName().equals(folderName);
+	}
+
+	private MockFolder getMockFolder(String folderName) {
+		return isRoot(folderName) ? this : getFolders().get(stripParentFolderName(folderName));
+	}
+
 	@Override
-	public M toFile(String filename) throws FileSystemException {
+	public M toFile(@Nullable String filename) throws FileSystemException {
 		checkOpen();
 		int slashPos = filename.lastIndexOf('/');
 		if (slashPos>=0) {
@@ -119,11 +144,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(String folderName, String filename) throws FileSystemException {
+	public M toFile(@Nullable String folderName, @Nullable String filename) throws FileSystemException {
 		checkOpen();
-		MockFolder destFolder= folderName==null || "MOCKFILESYSTEM".equals(folderName)?this:getFolders().get(folderName);
+		MockFolder destFolder = getMockFolder(folderName);
 		if (destFolder==null) {
-			throw new FileSystemException("folder ["+folderName+"] does not exist");
+			throw new FolderNotFoundException("folder ["+folderName+"] does not exist");
 		}
 		M result = (M)destFolder.getFiles().get(filename);
 		if (result!=null) {
@@ -135,7 +160,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public int getNumberOfFilesInFolder(String folderName) throws FileSystemException {
 		checkOpen();
-		MockFolder folder=folderName==null?this:getFolders().get(folderName);
+		MockFolder folder= getMockFolder(folderName);
 		if (folder==null) {
 			throw new FileSystemException("folder ["+folderName+"] is null");
 		}
@@ -148,9 +173,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
-		MockFolder folder = folderName==null ? this : getFolders().get(folderName);
+		MockFolder folder = getMockFolder(folderName);
 		if (folder==null) {
-			throw new FileSystemException("folder ["+folderName+"] is null");
+			throw new FolderNotFoundException("folder ["+folderName+"] is does not exist");
 		}
 		Map<String,MockFile> files = folder.getFiles();
 		if (files==null) {
@@ -212,19 +237,19 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M moveFile(M f, String destinationFolderName, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public M moveFile(M f, String destinationFolderName, boolean createFolder) throws FileSystemException {
 		checkOpenAndExists(f);
-		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
+		MockFolder destFolder= getMockFolder(destinationFolderName);
 		if (destFolder==null) {
 			if (!createFolder) {
-				throw new FileSystemException("destination folder ["+destinationFolderName+"] does not exist");
+				throw new FolderNotFoundException("destination folder ["+destinationFolderName+"] does not exist");
 			}
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
 		}
 		M destFile = (M)new MockFile(f.getName(),destFolder);
 		if (destFolder.getFiles().containsKey(f.getName())) {
-			throw new FileSystemException("file ["+f.getName()+"] does already exist in folder ["+destFolder+"]");
+			throw new FileAlreadyExistsException("file ["+f.getName()+"] does already exist in folder ["+destFolder+"]");
 		}
 		destFile.setAdditionalProperties(f.getAdditionalProperties());
 		destFile.setContents(f.getContents());
@@ -235,12 +260,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M copyFile(M f, String destinationFolderName, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public M copyFile(M f, String destinationFolderName, boolean createFolder) throws FileSystemException {
 		checkOpenAndExists(f);
-		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
+		MockFolder destFolder= getMockFolder(destinationFolderName);
 		if (destFolder==null) {
 			if (!createFolder) {
-				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
+				throw new FolderNotFoundException("folder ["+destinationFolderName+"] does not exist");
 			}
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
@@ -267,7 +292,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public String getName(M f) {
-//		checkOpenAndExists(f);
 		return f.getName();
 	}
 
@@ -278,33 +302,32 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public String getCanonicalName(M f) {
-		//checkOpenAndExists(null,f); // cannot check this anymore, canonical name is now used in error messages
 		return f.getOwner().getName()+"/"+f.getName();
 	}
 
 	@Override
 	public Date getModificationTime(M f) {
-//		checkOpenAndExists(f);
 		return f.getLastModified();
 	}
 
 	@Override
-	public boolean folderExists(String folder) throws FileSystemException {
-		return getFolders().containsKey(folder);
+	public boolean folderExists(String folder) {
+		if (isRoot(folder)) {
+			return true;
+		}
+		return getFolders().containsKey(stripParentFolderName(folder));
 	}
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		checkOpen();
-		MockFolder cur = getFolders().get(folder);
+		final String baseFolder = stripParentFolderName(folder);
+		MockFolder cur = getFolders().get(baseFolder);
 		if (cur!=null) {
-			if (cur instanceof MockFolder) {
-				throw new FileSystemException("Directory already exists.");
-			}
-			throw new FileSystemException("Entry already exists.");
+			throw new FolderAlreadyExistsException("Directory already exists.");
 		}
-		MockFolder d = new MockFolder(folder,this);
-		getFolders().put(folder, d);
+		MockFolder d = new MockFolder(baseFolder,this);
+		getFolders().put(baseFolder, d);
 	}
 
 	@Override
@@ -312,10 +335,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		checkOpen();
 		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {
-			throw new FileSystemException("Directory does not exist.");
-		}
-		if (!(cur instanceof MockFolder)) {
-				throw new FileSystemException("Entry is not a directory");
+			throw new FolderNotFoundException("Directory does not exist.");
 		}
 		if(!removeNonEmptyFolder && !cur.getFiles().isEmpty() || !cur.getFolders().isEmpty()) {
 			throw new FileSystemException("Cannot remove folder");
@@ -324,6 +344,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(M f) {
 		checkOpen();
 		return f.getAdditionalProperties();

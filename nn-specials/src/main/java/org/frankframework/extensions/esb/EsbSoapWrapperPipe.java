@@ -16,8 +16,6 @@
 package org.frankframework.extensions.esb;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -29,6 +27,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.doc.Category;
 import org.frankframework.jms.JmsException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.Receiver;
@@ -36,6 +35,8 @@ import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -345,7 +346,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	private String getParameterValue(String key) {
-		Parameter p = getParameterList().findParameter(key);
+		IParameter p = getParameterList().findParameter(key);
 		return p != null ? p.getValue() : "";
 	}
 
@@ -378,7 +379,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	public String getDestination() {
-		Parameter p = getParameterList().findParameter(DESTINATION_PARAMETER_NAME);
+		IParameter p = getParameterList().findParameter(DESTINATION_PARAMETER_NAME);
 		return p == null ? null : p.getValue();
 	}
 
@@ -404,8 +405,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 
 	private void stripDestination() {
 		ParameterList parameterList = getParameterList();
-		Parameter pd = parameterList.findParameter(DESTINATION_PARAMETER_NAME);
-		Parameter ppd = parameterList.findParameter(PHYSICALDESTINATION_PARAMETER_NAME);
+		IParameter pd = parameterList.findParameter(DESTINATION_PARAMETER_NAME);
+		IParameter ppd = parameterList.findParameter(PHYSICALDESTINATION_PARAMETER_NAME);
 		String destination = null;
 		if (isRetrievePhysicalDestination()) {
 			if (ppd!=null) {
@@ -418,7 +419,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				destination = pd.getValue();
 			}
 		}
-		Parameter p;
+		IParameter p;
 		if (StringUtils.isNotEmpty(destination)) {
 			if(destination.startsWith("ESB.") || destination.startsWith("P2P.")
 					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
@@ -590,9 +591,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 		}
 		if (getMode() != Mode.BIS && parameterList.findParameter(CORRELATIONID_PARAMETER_NAME)==null) {
 			String paradigm;
-			p = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
-			if (p!=null) {
-				paradigm = p.getValue();
+			IParameter ppn = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
+			if (ppn!=null) {
+				paradigm = ppn.getValue();
 				if ("Response".equals(paradigm)) {
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					p.setName(CORRELATIONID_PARAMETER_NAME);

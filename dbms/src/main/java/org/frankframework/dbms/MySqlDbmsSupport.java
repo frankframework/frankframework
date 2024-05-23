@@ -62,11 +62,6 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getClobFieldType() {
-		return "LONGTEXT";
-	}
-
-	@Override
 	public String getBlobFieldType() {
 		return "LONGBLOB";
 	}
@@ -142,8 +137,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "INT AUTO_INCREMENT";
 	}
 
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT LAST_INSERT_ID()";
-	}
 }

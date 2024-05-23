@@ -146,11 +146,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 
 	@Override
-	public String getClobFieldType() {
-		return "TEXT";
-	}
-
-	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return rsmeta.getColumnType(colNum) == Types.VARCHAR && "text".equals(rsmeta.getColumnTypeName(colNum));
 	}
@@ -171,11 +166,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return createLob(rs.getStatement());
-	}
-
-	@Override
 	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException {
 		return createLob(stmt);
 	}
@@ -183,12 +173,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	@Override
 	@SneakyThrows(UnsupportedEncodingException.class)
 	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException {
-		return new OutputStreamWriter(openLobOutputStream(rs.getStatement(), clobHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-	}
-
-	@Override
-	@SneakyThrows(UnsupportedEncodingException.class)
-	public Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException {
 		return new OutputStreamWriter(openLobOutputStream(rs.getStatement(), clobHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
@@ -235,22 +219,12 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return createLob(rs.getStatement());
-	}
-
-	@Override
 	public Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException {
 		return createLob(stmt);
 	}
 
 	@Override
 	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException {
-		return openLobOutputStream(rs.getStatement(), blobHandle);
-	}
-
-	@Override
-	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException {
 		return openLobOutputStream(rs.getStatement(), blobHandle);
 	}
 
@@ -362,11 +336,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws DbmsException {
 		String query = "ALTER TABLE " + tableName + " AUTO_INCREMENT=" + startWith;
 		return DbmsUtil.executeIntQuery(connection, query);
-	}
-
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT LAST_INSERT_ID()";
 	}
 
 	// DDL related methods, have become more or less obsolete (and untested) with the introduction of Liquibase for table definitions

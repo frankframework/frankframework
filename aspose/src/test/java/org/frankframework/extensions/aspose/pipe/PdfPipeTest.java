@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.io.FileUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -53,10 +54,11 @@ import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
+import org.springframework.util.MimeType;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.MimeType;
 
 import com.testautomationguru.utility.CompareMode;
 import com.testautomationguru.utility.ImageUtil;
@@ -91,11 +93,14 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		synchronized(pdfOutputLocation) {
-			Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
-
-			Files.deleteIfExists(pdfOutputLocation); //Remove root folder
+			try {
+				Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
+				Files.deleteIfExists(pdfOutputLocation); //Remove root folder
+			} catch (IOException e) {
+				log.warn("Error deleting temporary file", e);
+			}
 		}
 
 		super.tearDown();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,12 +34,14 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.FileUtils;
@@ -56,8 +58,8 @@ public class CompressPipe extends FixedForwardPipe {
 
 	private static final int CHUNK_SIZE = 16384;
 
-	private @Getter boolean messageIsContent;
-	private @Getter boolean resultIsContent;
+	private @Getter boolean messageIsContent = false;
+	private Boolean resultIsContent;
 	private @Getter String outputDirectory;
 	private @Getter String filenamePattern;
 	private @Getter String zipEntryPattern;
@@ -81,7 +83,12 @@ public class CompressPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (!resultIsContent && !messageIsContent && outputDirectory == null) {
+		// Defaults to true, only when outputDirectory has not been set
+		if(resultIsContent == null) {
+			resultIsContent = StringUtils.isEmpty(outputDirectory);
+		}
+
+		if (!resultIsContent && !messageIsContent && StringUtils.isEmpty(outputDirectory)) {
 			throw new ConfigurationException("outputDirectory must be set");
 		}
 	}
@@ -199,7 +206,15 @@ public class CompressPipe extends FixedForwardPipe {
 		}
 	}
 
-	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException {
+	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException, IOException {
+		try (Message pvlInput = new Message(input)) {
+			ParameterValueList pvl = getParameterList().getValues(pvlInput, session);
+			String value = ParameterValueList.getValue(pvl, "zipEntryPattern", (String) null);
+			if(value != null) {
+				return value;
+			}
+		}
+
 		if (messageIsContent) {
 			return FileUtils.getFilename(getParameterList(), session, (File) null, zipEntryPattern);
 		}
@@ -215,6 +230,8 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/** required if result is a file, the pattern for the result filename. Can be set with variables e.g. {file}.{ext}.zip in this example the {file} and {ext} variables are resolved with sessionKeys with the same name */
+	@Deprecated(forRemoval = true, since = "8.1")
+	@ConfigurationWarning("Please use a LocalFileSystemPipe with filename parameter (and optionally a pattern)")
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}
@@ -228,19 +245,26 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/** required if result is a file, the directory in which to store the result file */
+	@Deprecated(forRemoval = true, since = "8.1")
+	@ConfigurationWarning("Please use resultIsContent=true in combination with a LocalFileSystemPipe")
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
 
 	/**
 	 * flag indicates whether the result must be written to the message or to a file (filename = message)
-	 * @ff.default false
+	 * @ff.default true when outputDirectory is not set.
 	 */
 	public void setResultIsContent(boolean b) {
 		resultIsContent = b;
 	}
+	public boolean isResultIsContent() {
+		return resultIsContent != null && resultIsContent;
+	}
 
 	/** the pattern for the zipentry name in case a zipfile is read or written */
+	@Deprecated(forRemoval = true, since = "8.1")
+	@ConfigurationWarning("Please use parameter zipEntryPattern (in combination with the pattern attribute)")
 	public void setZipEntryPattern(String string) {
 		zipEntryPattern = string;
 	}

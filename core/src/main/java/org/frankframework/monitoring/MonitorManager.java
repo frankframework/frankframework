@@ -34,7 +34,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.lifecycle.ConfigurableLifecyleBase;
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.monitoring.events.Event;
 import org.frankframework.monitoring.events.RegisterMonitorEvent;
 import org.frankframework.util.XmlBuilder;
@@ -49,7 +49,7 @@ import org.frankframework.util.XmlBuilder;
  * @version 2.0
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
+public class MonitorManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager

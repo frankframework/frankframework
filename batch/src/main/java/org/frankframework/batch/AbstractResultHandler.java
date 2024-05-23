@@ -17,20 +17,20 @@ package org.frankframework.batch;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
@@ -77,7 +77,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}

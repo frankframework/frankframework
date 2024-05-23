@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -20,8 +23,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
@@ -42,7 +43,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
 		pipe = null;

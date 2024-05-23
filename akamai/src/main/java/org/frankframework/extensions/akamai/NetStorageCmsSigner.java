@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.codec.binary.Base64;
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
 
 import org.frankframework.util.CredentialFactory;
@@ -39,6 +40,7 @@ public class NetStorageCmsSigner {
 	protected static final String ACTION_HEADER = "X-Akamai-ACS-Action";
 	protected static final String AUTH_DATA_HEADER = "X-Akamai-ACS-Auth-Data";
 	protected static final String AUTH_SIGN_HEADER = "X-Akamai-ACS-Auth-Sign";
+	private static final Random RANDOM = new Random();
 
 	/**
 	 * Currently only 3 signing hash types are supported. Each are indicated with a version. They are:
@@ -122,9 +124,9 @@ public class NetStorageCmsSigner {
 	 */
 	protected String getAuthDataHeaderValue() {
 		Date currentTime = new Date();
-		int rand = new Random().nextInt(Integer.MAX_VALUE);
+		int rand = RANDOM.nextInt(Integer.MAX_VALUE);
 
-		return 
+		return
 				"%d, 0.0.0.0, 0.0.0.0, %d, %d, %s".formatted(
 				signType.getValue(),
 				currentTime.getTime() / 1000,
@@ -142,7 +144,7 @@ public class NetStorageCmsSigner {
 	 * @return a base64 encoded return string
 	 */
 	protected String getAuthSignHeaderValue(String action, String authData) {
-		String signData = 
+		String signData =
 				"%s%s\n%s:%s\n".formatted(
 				authData,
 				uri.getPath(),
@@ -150,7 +152,7 @@ public class NetStorageCmsSigner {
 				action);
 		byte[] hash = NetStorageUtils.computeKeyedHash(signData.getBytes(), accessToken, signType.getAlgorithm());
 
-		return NetStorageUtils.encodeBase64(hash);
+		return Base64.encodeBase64String(hash);
 	}
 
 	/**

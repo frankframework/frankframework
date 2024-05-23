@@ -11,8 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
@@ -25,11 +31,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer.MethodName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.frankframework.util.CloseUtils;
 
 @TestMethodOrder(MethodName.class)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -60,13 +62,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
-		if (result != null) {
-			result.close();
-		}
-		if (fileSystem != null) {
-			fileSystem.close();
-		}
+	public void tearDown()  {
+		CloseUtils.closeSilently(result, fileSystem);
 
 		super.tearDown();
 	}
@@ -167,7 +164,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
 
-		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		FolderNotFoundException e = assertThrows(FolderNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [xxx], canonical name ["));
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}
@@ -206,7 +203,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("inputFolder", "folder2"));
 		actor.configure(fileSystem,params,owner);
 
-		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		FolderNotFoundException e = assertThrows(FolderNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [folder1], canonical name ["));
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}
@@ -399,15 +396,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		_createFolder(inputFolder);
-		OutputStream out = _createFile(inputFolder, filename);
-		out.write("some content".getBytes());
-		out.close();
+		createFile(inputFolder, filename, "some content");
 		waitForActionToFinish();
 		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
 
-		OutputStream out2 = _createFile(inputFolder, filename2);
-		out2.write("some content of second file".getBytes());
-		out2.close();
+		createFile(inputFolder, filename2, "some content of second file");
 		waitForActionToFinish();
 		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
 
@@ -916,6 +909,42 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
 		result2.close();
 	}
+
+	@Test
+	public void fileSystemActorWriteActionTestWithCreateFolderButNoFolderInFilename() throws Exception {
+		String filename = UUID.randomUUID().toString();
+		String contents = "Some text content to test upload action\n";
+
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+
+		ParameterList params = new ParameterList();
+		params.add(ParameterBuilder.create().withName("filename").withValue(filename));
+		params.configure();
+
+		actor.setCreateFolder(true);
+		actor.setAction(FileSystemAction.WRITE);
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		result = actor.doAction(message, pvl, session);
+
+		String stringResult = result.asString();
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+
+		waitForActionToFinish();
+
+		String actual = readFile(null, filename);
+		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
+		assertEquals(contents.trim(), actual.trim());
+	}
+
 
 	@Test
 	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() throws Exception {

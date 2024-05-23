@@ -45,6 +45,7 @@ app-pages-navigation {
 }
 
 .minimalize {
+  cursor: pointer;
   font-size: 13px;
 }
 
@@ -247,4 +248,12 @@ div.dataTables_wrapper div.dataTables_paginate {
   cursor: not-allowed;
   background-color: #fff;
   border-color: #ddd;
+}
+
+.monaco-editor .line-numbers {
+    cursor: pointer!important;
+}
+
+.monaco-editor__line--highlighted {
+  background: #fdc30055;
 }

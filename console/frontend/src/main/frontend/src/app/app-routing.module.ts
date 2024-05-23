@@ -353,9 +353,9 @@ export const routes: Routes = [
   {
     path: 'iaf-update',
     component: IafUpdateComponent,
-    title: 'FF Update',
+    title: 'FF! update',
     data: {
-      breadcrumbs: 'FF Update',
+      breadcrumbs: 'FF! update',
     },
   },
   {
@@ -387,7 +387,7 @@ export const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       useHash: true,
-      enableTracing: true,
+      enableTracing: false,
       paramsInheritanceStrategy: 'always',
     }),
   ],

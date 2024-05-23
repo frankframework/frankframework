@@ -1,7 +1,7 @@
 <module>
 	<Adapter name="MongoDbSender" description="Test the functioning of the MongoDbSender" active="${active.mongodb}">
 		<Receiver>
-			<JavaListener serviceName="ibis4test-MongoDbSender" />
+			<JavaListener name="ibis4test-MongoDbSender" serviceName="ibis4test-MongoDbSender" />
 		</Receiver>
 		<pipeline>
 			<exits>
