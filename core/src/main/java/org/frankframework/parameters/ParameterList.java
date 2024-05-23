@@ -39,8 +39,7 @@ import lombok.Setter;
  */
 public class ParameterList extends ArrayList<IParameter> {
 	private AtomicInteger index = new AtomicInteger();
-	private @Getter boolean inputValueRequiredForResolution;
-	private @Getter boolean inputValueOrContextRequiredForResolution;
+	private boolean inputValueRequiredForResolution;
 	private @Getter @Setter boolean namesMustBeUnique;
 
 	@Override
@@ -55,7 +54,6 @@ public class ParameterList extends ArrayList<IParameter> {
 		}
 		index = null; //Once configured there is no need to keep this in memory
 		inputValueRequiredForResolution = parameterEvaluationRequiresInputValue();
-		inputValueOrContextRequiredForResolution = parameterEvaluationRequiresInputValueOrContext();
 		if (isNamesMustBeUnique()) {
 			Set<String> names = new LinkedHashSet<>();
 			Set<String> duplicateNames = new LinkedHashSet<>();
@@ -103,40 +101,37 @@ public class ParameterList extends ArrayList<IParameter> {
 		return false;
 	}
 
-	private boolean parameterEvaluationRequiresInputValueOrContext() {
-		for (IParameter p:this) {
-			if (p.requiresInputValueOrContextForResolution()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
+
 	/**
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		if(isInputValueRequiredForResolution() && message != null) {
+		if(inputValueRequiredForResolution && !Message.isNull(message)) {
 			try {
 				message.preserve();
 			} catch (IOException e) {
 				throw new ParameterException("<input message>", "Cannot preserve message for parameter resolution", e);
 			}
 		}
+
 		ParameterValueList result = new ParameterValueList();
 		for (IParameter parm : this) {
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to
 			// each session variable whose name starts with the name of the original parameter
-			if (parm.isWildcardSessionKey()) {
+			if (isWildcardSessionKey(parm)) {
 				addMatchingSessionKeys(result, parm, message, session, namespaceAware);
 			} else {
 				result.add(getValue(result, parm, message, session, namespaceAware));
 			}
 		}
 		return result;
+	}
+
+	private boolean isWildcardSessionKey(IParameter parm) {
+		return "*".equals(parm.getSessionKey());
 	}
 
 	private void addMatchingSessionKeys(ParameterValueList result, IParameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {

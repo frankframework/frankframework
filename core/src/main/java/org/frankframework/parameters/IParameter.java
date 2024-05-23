@@ -32,12 +32,6 @@ public interface IParameter extends IConfigurable {
 
 	boolean requiresInputValueForResolution();
 
-	boolean requiresInputValueOrContextForResolution();
-
-	default boolean isWildcardSessionKey() {
-		return "*".equals(getSessionKey());
-	}
-
 	boolean consumesSessionVariable(String sessionKey);
 
 	/**
