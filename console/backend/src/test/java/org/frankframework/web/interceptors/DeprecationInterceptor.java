@@ -1,37 +1,33 @@
-package org.frankframework.management.web.spring;
+package org.frankframework.web.interceptors;
 
+import org.frankframework.management.web.spring.FrankApiTestBase;
+import org.frankframework.management.web.spring.Monitors;
+import org.frankframework.management.web.spring.WebTestConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, Monitors.class})
-public class DeprecationFilterTest extends FrankApiTestBase{
+public class DeprecationInterceptor extends FrankApiTestBase {
 
-//	private static final String CXF_METHOD_KEY = "org.apache.cxf.resource.method";
+	/*private static final String CXF_METHOD_KEY = "org.apache.cxf.resource.method";
 
-	/*@BeforeEach
-	public void setUp() {
-		super.setUp();
-		DefaultMockMvcBuilder mockBuilder = MockMvcBuilders.webAppContextSetup(webApplicationContext);
-		this.mockMvc = mockBuilder.addFilter(new DeprecationFilter()).build();
-	}*/
-
-	/*@Test
+	@Test
 	public void testDefaultBehaviour() throws Exception {
 		DeprecationFilter filter = new DeprecationFilter();
-		Environment env = Mockito.mock(Environment.class);
-		Mockito.when(env.getProperty(ArgumentMatchers.eq(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY), Mockito.any(), Mockito.any())).thenReturn(false);
+		Environment env = mock(Environment.class);
+		when(env.getProperty(eq(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY), any(), any())).thenReturn(false);
 		filter.setEnvironment(env);
 
-		ContainerRequestContext request = Mockito.mock(ContainerRequestContext.class);
-		setMethod(DeprecationFilterTest.ClassWithSlash.class, "normalMethod");
+		ContainerRequestContext request = mock(ContainerRequestContext.class);
+		setMethod(TestDeprecationFilter.ClassWithSlash.class, "normalMethod");
 
 		// Act
 		filter.filter(request);
 
 		// Assert
-		Mockito.verify(request, Mockito.never()).abortWith(Mockito.any(Response.class));
-	}*/
+		verify(request, never()).abortWith(any(Response.class));
+	}
 
-	/*@Test
+	@Test
 	public void testDeprecatedMethodNotAllowed() throws Exception {
 		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.setRootLogLevel(Level.WARN);
@@ -59,9 +55,9 @@ public class DeprecationFilterTest extends FrankApiTestBase{
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
 		assertTrue(appender.contains("endpoint [/request/path2] has been deprecated"));
-	}*/
+	}
 
-	/*@Test
+	@Test
 	public void testDeprecatedMethodAllowed() throws Exception {
 		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.setRootLogLevel(Level.WARN);
@@ -88,9 +84,9 @@ public class DeprecationFilterTest extends FrankApiTestBase{
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
 		assertTrue(appender.getLogLines().isEmpty());
-	}*/
+	}
 
-	/*@Test
+	@Test
 	public void testDeprecatedMethodWithCombinedPath() throws Exception {
 		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.setRootLogLevel(Level.WARN);
@@ -117,9 +113,9 @@ public class DeprecationFilterTest extends FrankApiTestBase{
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
 		assertTrue(appender.getLogLines().isEmpty());
-	}*/
+	}
 
-	/*private void setMethod(Class<?> targetClass, String methodName) throws Exception {
+	private void setMethod(Class<?> targetClass, String methodName) throws Exception {
 		Message message = new MessageImpl();
 		Method method = targetClass.getMethod(methodName, new Class[] {});
 		message.put(CXF_METHOD_KEY, method);
