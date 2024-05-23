@@ -17,7 +17,10 @@ package org.frankframework.parameters;
 
 import org.frankframework.configuration.ConfigurationWarning;
 
+import lombok.Getter;
+
 public enum ParameterType {
+
 	/** Renders the contents of the first node (in combination with xslt or xpath). Please note that
 	 * if there are child nodes, only the contents are returned, use <code>XML</code> if the xml tags are required */
 	STRING,
@@ -56,13 +59,13 @@ public enum ParameterType {
 
 	/** Converts the result to a Number, using decimalSeparator and groupingSeparator.
 	 * When applied as a JDBC parameter, the method setDouble() is used */
-	NUMBER(true),
+	NUMBER(NumberParameter.class, true),
 
 	/** Converts the result to an Integer */
-	INTEGER(true),
+	INTEGER(NumberParameter.class, true),
 
 	/** Converts the result to a Boolean */
-	BOOLEAN(true),
+	BOOLEAN(BooleanParameter.class, true),
 
 	/** Only applicable as a JDBC parameter, the method setBinaryStream() is used */
 	@ConfigurationWarning("use type [BINARY] instead")
@@ -90,6 +93,7 @@ public enum ParameterType {
 	/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 	@Deprecated MAP;
 
+	private final @Getter Class<? extends IParameter> typeClass;
 	public final boolean requiresTypeConversion;
 
 	private ParameterType() {
@@ -97,7 +101,11 @@ public enum ParameterType {
 	}
 
 	private ParameterType(boolean requiresTypeConverion) {
-		this.requiresTypeConversion = requiresTypeConverion;
+		this(Parameter.class, requiresTypeConverion);
 	}
 
+	private ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConverion) {
+		this.requiresTypeConversion = requiresTypeConverion;
+		this.typeClass = typeClass;
+	}
 }

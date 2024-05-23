@@ -27,6 +27,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.frankframework.util.StreamUtil;
 
+import jakarta.annotation.Nonnull;
+
 /**
  * General utility functions needed to implement the HTTP SDK.  Many of these functions are also
  * available as standard parts of other libraries, but this package strives to operate without any
@@ -35,11 +37,6 @@ import org.frankframework.util.StreamUtil;
  * @author colinb@akamai.com (Colin Bendell)
  */
 public class NetStorageUtils {
-
-	/**
-	 * Lookup table for base64 encoding.
-	 */
-	private static final char[] BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
 	/**
 	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, NetStorageUtils.KeyedHashAlgorithm)}
@@ -73,8 +70,8 @@ public class NetStorageUtils {
 	 * @param hashType determines which alogirthm to use. The recommendation is to use HMAC-SHA256
 	 * @return a byte[] presenting the HMAC hash of the source data.
 	 */
-	public static byte[] computeKeyedHash(byte[] data, String key, KeyedHashAlgorithm hashType) {
-		if (data == null || key == null) return null;
+	public static byte[] computeKeyedHash(@Nonnull byte[] data, String key, KeyedHashAlgorithm hashType) {
+		if(key == null) return new byte[0];
 
 		try {
 			Mac mac = Mac.getInstance(hashType.getAlgorithm());
@@ -83,37 +80,6 @@ public class NetStorageUtils {
 		} catch (Exception e) {
 			throw new IllegalArgumentException("This should never happen!", e);
 		}
-	}
-
-	/**
-	 * Base64-encode a byte array.
-	 *
-	 * @param value byte array to encode.
-	 * @return Encoded string.
-	 */
-	public static String encodeBase64(byte[] value) {
-		//TODO: JDK8 Use java.util.Base64.Encoder(value);
-		if (value == null) return null;
-
-		StringBuilder result = new StringBuilder("");
-		for (int i = 0; i < value.length; i += 3) {
-			int v;
-			int c = 2;
-			v = (value[i] & 0xff) << 16;
-			if ((i + 1) < value.length) {
-				v |= (value[i + 1] & 0xff) << 8;
-				c = 3;
-			}
-			if ((i + 2) < value.length) {
-				v |= value[i + 2] & 0xff;
-				c = 4;
-			}
-			result.append(BASE64_CHARS[(v >> 18) & 0x3f]);
-			result.append(BASE64_CHARS[(v >> 12) & 0x3f]);
-			result.append((c >= 3 ? BASE64_CHARS[(v >> 6) & 0x3f] : '='));
-			result.append((c == 4 ? BASE64_CHARS[v & 0x3f] : '='));
-		}
-		return result.toString();
 	}
 
 	/**

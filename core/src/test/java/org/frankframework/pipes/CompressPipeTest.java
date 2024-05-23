@@ -218,13 +218,13 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testGetterSetterResultIsContent() {
+		assertFalse(pipe.isResultIsContent()); //Default NULL
+
 		pipe.setResultIsContent(true);
-		boolean checkBoolean = pipe.isResultIsContent();
-		assertTrue(checkBoolean);
+		assertTrue(pipe.isResultIsContent());
 
 		pipe.setResultIsContent(false);
-		checkBoolean = pipe.isResultIsContent();
-		assertFalse(checkBoolean);
+		assertFalse(pipe.isResultIsContent());
 	}
 
 	@Test

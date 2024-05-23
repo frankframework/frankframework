@@ -467,7 +467,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.27.0</version>
+			<version>4.28.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>
@@ -621,6 +621,10 @@
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
 					<artifactId>bcpg-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
