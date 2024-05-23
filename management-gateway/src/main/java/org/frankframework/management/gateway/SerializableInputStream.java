@@ -28,6 +28,12 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * InputStream wrapper to allow streams to be serialized and deserialized so the (raw) binary data can be sent using Hazelcast.
+ * When deserializing the data is temporarily written to disk. The temporary file is removed once the stream is closed.
+ * 
+ * @author Niels Meijer
+ */
 public class SerializableInputStream extends InputStream implements Externalizable {
 
 	private static final long serialVersionUID = 1L;

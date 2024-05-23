@@ -29,17 +29,19 @@ public class SerializableInputStreamTest {
 
 	@Test
 	public void testIfAnInputStreamCanBeSerialized() throws Exception {
-		String inputString = "Tralalal";
+		String inputString = "input string";
 		assertEquals(inputString, testSerialization(inputString), "strings should be equal to prove the testSerialization method works");
 
 		InputStream data = new ByteArrayInputStream(inputString.getBytes());
-		SerializableInputStream sis = new SerializableInputStream(data);
-		InputStream serialized = testSerialization(sis);
-		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		IOUtils.copy(serialized, boas);
+		try (SerializableInputStream sis = new SerializableInputStream(data)) {
+			InputStream serialized = testSerialization(sis);
 
-		assertEquals(inputString.getBytes().length, boas.toByteArray().length, "array's differ in size");
-		assertEquals(new String(inputString.getBytes()), new String(boas.toByteArray()));
+			ByteArrayOutputStream boas = new ByteArrayOutputStream();
+			IOUtils.copy(serialized, boas);
+			serialized.close();
+
+			assertArrayEquals(inputString.getBytes(), boas.toByteArray());
+		}
 	}
 
 	@Test
@@ -80,6 +82,7 @@ public class SerializableInputStreamTest {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T testSerialization(T in) throws Exception {
 		byte[] wire=serialize(in);
 		if (wire==null) {
