@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
-import org.frankframework.web.interceptors.DeprecationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -27,17 +26,14 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * This class is found by the `FrankFrameworkApiContext2.xml` file, is loaded after the xml has been loaded/wired.
+ */
 @Configuration
 @EnableWebMvc
 public class WebConfiguration implements WebMvcConfigurer {
-
-	@Bean
-	protected DeprecationInterceptor getDeprecationInterceptor(){
-		return new DeprecationInterceptor();
-	}
 
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -49,11 +45,6 @@ public class WebConfiguration implements WebMvcConfigurer {
 
 		converters.add(new InputStreamHttpMessageConverter());
 		converters.add(new FormHttpMessageConverter());
-	}
-
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(getDeprecationInterceptor()).addPathPatterns("/**");
 	}
 
 	@Bean
