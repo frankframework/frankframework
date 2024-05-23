@@ -23,8 +23,6 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -37,7 +35,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SaxAbortException;
@@ -62,6 +60,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -138,7 +139,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		StringBuilder paramsString = new StringBuilder();
 		if (getParameterList() != null) {
-			for (Parameter param: getParameterList()) {
+			for (IParameter param: getParameterList()) {
 				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}

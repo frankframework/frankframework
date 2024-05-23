@@ -67,7 +67,6 @@ public class ParameterTest {
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -85,7 +84,6 @@ public class ParameterTest {
 		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test // Should use input value
@@ -101,7 +99,6 @@ public class ParameterTest {
 		assertNull(p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -119,7 +116,6 @@ public class ParameterTest {
 		assertEquals("fakeSessionVariable", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKey"));
 	}
 
@@ -142,7 +138,6 @@ public class ParameterTest {
 		assertEquals("fakeParameterValue", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -167,7 +162,6 @@ public class ParameterTest {
 		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKey"));
 	}
 
@@ -196,7 +190,6 @@ public class ParameterTest {
 		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKey"));
 	}
 
@@ -215,7 +208,6 @@ public class ParameterTest {
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -233,7 +225,6 @@ public class ParameterTest {
 		assertEquals("fakeDefault", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -251,7 +242,6 @@ public class ParameterTest {
 		assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -269,7 +259,6 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -286,7 +275,6 @@ public class ParameterTest {
 		assertEquals("fakeContextValue", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -307,7 +295,6 @@ public class ParameterTest {
 		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
 	}
 
@@ -326,7 +313,6 @@ public class ParameterTest {
 		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -348,7 +334,6 @@ public class ParameterTest {
 		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
 	}
 
@@ -366,7 +351,6 @@ public class ParameterTest {
 		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -384,7 +368,6 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -404,7 +387,6 @@ public class ParameterTest {
 		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -424,7 +406,6 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -446,7 +427,6 @@ public class ParameterTest {
 		assertEquals(sessionMessage, p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
 		assertFalse(p.consumesSessionVariable("test"));
 	}
@@ -474,7 +454,6 @@ public class ParameterTest {
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
 	}
 
@@ -502,7 +481,6 @@ public class ParameterTest {
 		assertEquals("fiets bel appel", stringResult);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
 	}
 
@@ -521,7 +499,6 @@ public class ParameterTest {
 		assertEquals("a", Message.asMessage(result).asString());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -538,7 +515,6 @@ public class ParameterTest {
 		assertEquals("a", Message.asMessage(result).asString());
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -557,7 +533,6 @@ public class ParameterTest {
 		assertEquals("fakeDefault", Message.asMessage(result).asString());
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -649,7 +624,6 @@ public class ParameterTest {
 		assertEquals("fakeDefault", Message.asMessage(result).asString());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("emptySessionKey"));
 	}
 
@@ -873,7 +847,6 @@ public class ParameterTest {
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -951,7 +924,6 @@ public class ParameterTest {
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 		assertTrue(parameter.consumesSessionVariable("originalMessage"));
 	}
 
@@ -993,7 +965,6 @@ public class ParameterTest {
 		assertEquals(expected, DateFormatUtils.format((Date) result));
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1053,7 +1024,6 @@ public class ParameterTest {
 		assertEquals(date, result);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 		assertTrue(parameter.consumesSessionVariable("originalMessage"));
 	}
 
@@ -1167,7 +1137,6 @@ public class ParameterTest {
 		assertEquals("1995-01-23", formattedDate);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1343,7 +1312,6 @@ public class ParameterTest {
 		assertTrue(((String) result).endsWith("-message"));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1537,7 +1505,6 @@ public class ParameterTest {
 		assertEquals("fakeDefaultValue", result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKeyForDefaultValue"));
 		assertTrue(p.consumesSessionVariable("sessionKeyForPattern"));
 	}
@@ -1586,7 +1553,6 @@ public class ParameterTest {
 		assertEquals("fakePatternSessionKey", result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKeyForDefaultValue"));
 		assertTrue(p.consumesSessionVariable("sessionKeyForPattern"));
 	}
@@ -1656,7 +1622,6 @@ public class ParameterTest {
 		assertEquals("<doc/>", result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("sessionKeyForDefaultValue"));
 		assertTrue(p.consumesSessionVariable("sessionKeyForPattern"));
 	}

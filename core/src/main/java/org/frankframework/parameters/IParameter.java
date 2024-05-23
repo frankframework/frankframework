@@ -15,6 +15,43 @@
 */
 package org.frankframework.parameters;
 
-public interface IParameter {
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.parameters.AbstractParameter.ParameterMode;
+import org.frankframework.stream.Message;
+
+@FrankDocGroup(FrankDocGroupValue.PARAMETER)
+public interface IParameter extends IConfigurable {
+
+	ParameterType getType();
+
+	ParameterMode getMode();
+
+	boolean requiresInputValueForResolution();
+
+	boolean consumesSessionVariable(String sessionKey);
+
+	/**
+	 * Key of a PipelineSession-variable. <br/>If specified, the value of the PipelineSession variable is used as input for
+	 * the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are
+	 * specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as
+	 * parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the
+	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
+	 */
+	void setSessionKey(String sessionKey);
+
+	String getSessionKey();
+
+	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
+	void setValue(String value);
+
+	String getValue();
+
+	Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException;
+
+	boolean isHidden();
 
 }

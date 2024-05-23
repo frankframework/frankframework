@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,10 +37,9 @@ import lombok.Setter;
  *
  * @author Gerrit van Brakel
  */
-public class ParameterList extends ArrayList<Parameter> {
+public class ParameterList extends ArrayList<IParameter> {
 	private AtomicInteger index = new AtomicInteger();
-	private @Getter boolean inputValueRequiredForResolution;
-	private @Getter boolean inputValueOrContextRequiredForResolution;
+	private boolean inputValueRequiredForResolution;
 	private @Getter @Setter boolean namesMustBeUnique;
 
 	@Override
@@ -50,16 +49,15 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	public void configure() throws ConfigurationException {
-		for(Parameter param : this) {
+		for(IParameter param : this) {
 			param.configure();
 		}
 		index = null; //Once configured there is no need to keep this in memory
 		inputValueRequiredForResolution = parameterEvaluationRequiresInputValue();
-		inputValueOrContextRequiredForResolution = parameterEvaluationRequiresInputValueOrContext();
 		if (isNamesMustBeUnique()) {
 			Set<String> names = new LinkedHashSet<>();
 			Set<String> duplicateNames = new LinkedHashSet<>();
-			for(Parameter param : this) {
+			for(IParameter param : this) {
 				if (names.contains(param.getName())) {
 					duplicateNames.add(param.getName());
 				}
@@ -72,7 +70,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	@Override
-	public boolean add(Parameter param) {
+	public boolean add(IParameter param) {
 		int i = index.getAndIncrement();
 		if (StringUtils.isEmpty(param.getName())) {
 			param.setName("parameter" + i);
@@ -81,12 +79,12 @@ public class ParameterList extends ArrayList<Parameter> {
 		return super.add(param);
 	}
 
-	public Parameter getParameter(int i) {
+	public IParameter getParameter(int i) {
 		return get(i);
 	}
 
-	public Parameter findParameter(String name) {
-		for (Parameter p : this) {
+	public IParameter findParameter(String name) {
+		for (IParameter p : this) {
 			if (p != null && p.getName().equals(name)) {
 				return p;
 			}
@@ -95,17 +93,8 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	private boolean parameterEvaluationRequiresInputValue() {
-		for (Parameter p:this) {
+		for (IParameter p:this) {
 			if (p.requiresInputValueForResolution()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean parameterEvaluationRequiresInputValueOrContext() {
-		for (Parameter p:this) {
-			if (p.requiresInputValueOrContextForResolution()) {
 				return true;
 			}
 		}
@@ -115,22 +104,24 @@ public class ParameterList extends ArrayList<Parameter> {
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
+
 	/**
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		if(isInputValueRequiredForResolution() && message != null) {
+		if(inputValueRequiredForResolution && !Message.isNull(message)) {
 			try {
 				message.preserve();
 			} catch (IOException e) {
 				throw new ParameterException("<input message>", "Cannot preserve message for parameter resolution", e);
 			}
 		}
+
 		ParameterValueList result = new ParameterValueList();
-		for (Parameter parm : this) {
+		for (IParameter parm : this) {
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to
 			// each session variable whose name starts with the name of the original parameter
-			if (parm.isWildcardSessionKey()) {
+			if (isWildcardSessionKey(parm)) {
 				addMatchingSessionKeys(result, parm, message, session, namespaceAware);
 			} else {
 				result.add(getValue(result, parm, message, session, namespaceAware));
@@ -139,13 +130,17 @@ public class ParameterList extends ArrayList<Parameter> {
 		return result;
 	}
 
-	private void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	private boolean isWildcardSessionKey(IParameter parm) {
+		return "*".equals(parm.getSessionKey());
+	}
+
+	private void addMatchingSessionKeys(ParameterValueList result, IParameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		String parmName = parm.getName();
 		for (String sessionKey: session.keySet()) {
 			if (PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) || PipeLineSession.TS_SENT_KEY.equals(sessionKey) || !sessionKey.startsWith(parmName) && !"*".equals(parmName)) {
 				continue;
 			}
-			Parameter newParm = new Parameter();
+			IParameter newParm = new Parameter();
 			newParm.setName(sessionKey);
 			newParm.setSessionKey(sessionKey); // TODO: Should also set the parameter.type, based on the type of the session key.
 			try {
@@ -157,12 +152,12 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 	}
 
-	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
-		for (Parameter p:this) {
+		for (IParameter p:this) {
 			if (p.consumesSessionVariable(sessionKey)) {
 				return true;
 			}

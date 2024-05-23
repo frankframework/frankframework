@@ -24,22 +24,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderBase;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -47,6 +44,9 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 
 /**
  * Sender for Akamai NetStorage (HTTP based).
@@ -125,7 +125,7 @@ public class NetStorageSender extends HttpSenderBase {
 		//hashValue  parameterList
 		for(HashAlgorithm algorithm : HashAlgorithm.values()) {
 			String simpleName = algorithm.name().toLowerCase();
-			Parameter hashValue = parameterList.findParameter(simpleName);
+			IParameter hashValue = parameterList.findParameter(simpleName);
 
 			if(hashValue != null) {
 				setHashAlgorithm(algorithm);

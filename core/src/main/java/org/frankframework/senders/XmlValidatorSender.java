@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,19 +15,18 @@
 */
 package org.frankframework.senders;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ISenderWithParameters;
+import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.XercesXmlValidator;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
@@ -39,7 +38,7 @@ import org.frankframework.validation.XercesXmlValidator;
  * @since
  */
 @Category("Advanced")
-public class XmlValidatorSender extends XercesXmlValidator implements ISenderWithParameters {
+public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 
 	private @Getter @Setter String name;
 
@@ -53,17 +52,6 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 	@Override
 	public void open() throws SenderException {
-	}
-
-	@Override
-	public void addParameter(Parameter p) {
-		// class doesn't really have parameters, but implements ISenderWithParameters to get ParameterResolutionContext in sendMessage(), to obtain session
-	}
-
-	@Override
-	public ParameterList getParameterList() {
-		// class doesn't really have parameters, but implements ISenderWithParameters to get ParameterResolutionContext in sendMessage(), to obtain session
-		return null;
 	}
 
 	@Override

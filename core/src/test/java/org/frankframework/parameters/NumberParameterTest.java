@@ -127,7 +127,6 @@ public class NumberParameterTest {
 		assertEquals("0000000005", (String) result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
