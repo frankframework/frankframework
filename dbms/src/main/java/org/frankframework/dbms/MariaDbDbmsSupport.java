@@ -107,17 +107,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return rs.getStatement().getConnection().createClob();
-	}
-
-	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
-		return rs.getStatement().getConnection().createBlob();
-	}
-
-	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 

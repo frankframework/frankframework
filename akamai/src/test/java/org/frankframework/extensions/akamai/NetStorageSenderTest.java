@@ -21,13 +21,13 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
-import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderTestBase;
 import org.frankframework.parameters.Parameter;
@@ -46,7 +46,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		AppConstants.getInstance().remove("http.headers.messageid");
 	}
 

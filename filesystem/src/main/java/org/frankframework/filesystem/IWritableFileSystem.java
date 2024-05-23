@@ -36,7 +36,7 @@ import org.frankframework.util.StreamUtil;
  */
 public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 
-	public OutputStream createFile(F f) throws FileSystemException, IOException;
+	OutputStream createFile(F f) throws FileSystemException, IOException;
 
 	/**
 	 * @param file FileSystem file reference
@@ -48,7 +48,7 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 		}
 	}
 
-	public OutputStream appendFile(F f) throws FileSystemException, IOException;
+	OutputStream appendFile(F f) throws FileSystemException, IOException;
 
 	default void appendFile(F f, InputStream content) throws FileSystemException, IOException {
 		try (OutputStream out = appendFile(f)) {
@@ -60,6 +60,5 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 	 * Renames the file to a new name, possibly in a another folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 */
-	public F renameFile(F source, F destination) throws FileSystemException;
-
+	F renameFile(F source, F destination) throws FileSystemException;
 }

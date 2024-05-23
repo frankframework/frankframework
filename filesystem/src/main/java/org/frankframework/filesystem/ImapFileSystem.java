@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nullable;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
@@ -95,12 +96,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 					folder = (IMAPFolder)store.getFolder(baseFolder);
 				}
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+baseFolder+"]");
+					throw new FolderNotFoundException("Could not find baseFolder ["+baseFolder+"]");
 				}
 			} else {
 				folder = inbox;
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+folder+"]");
+					throw new FolderNotFoundException("Could not find baseFolder ["+folder+"]");
 				}
 			}
 			return folder;
@@ -151,12 +152,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message toFile(String filename) throws FileSystemException {
+	public Message toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Message toFile(String defaultFolder, String filename) throws FileSystemException {
+	public Message toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -245,12 +246,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		try {
 			f.setFlag(Flags.Flag.DELETED, true);
 		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 
 	@Override
-	public Message moveFile(Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -278,7 +279,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -329,7 +330,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		try {
 			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (folder == null) {
-				throw new FileSystemException("Could not find folder object [" + folderName + "]");
+				throw new FolderNotFoundException("Could not find folder object [" + folderName + "]");
 			}
 			if (!folder.delete(removeNonEmptyFolder)) {
 				throw new FileSystemException("Could not delete folder [" + folderName + "]");
@@ -519,15 +520,16 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
 			Map<String, Object> result = new LinkedHashMap<>();
-			result.put(TO_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
-			result.put(CC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
-			result.put(BCC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
+			result.put(TO_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
+			result.put(CC_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
+			result.put(BCC_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
 			result.put(FROM_ADDRESS_KEY, InternetAddress.toUnicodeString(f.getFrom()));
 			// result.put(IMailFileSystem.SENDER_ADDRESS_KEY, f.getS);
-			result.put(REPLY_TO_RECEPIENTS_KEY, getReplyTo(f));
+			result.put(REPLY_TO_RECIPIENTS_KEY, getReplyTo(f));
 			result.put(DATETIME_SENT_KEY, f.getSentDate());
 			result.put(DATETIME_RECEIVED_KEY, f.getReceivedDate());
 			for (Enumeration<Header> headerEnum = f.getAllHeaders(); headerEnum.hasMoreElements();) {

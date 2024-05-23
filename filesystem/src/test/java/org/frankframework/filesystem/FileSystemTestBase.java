@@ -9,6 +9,7 @@ import java.io.OutputStream;
 
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 
@@ -82,7 +83,7 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 	public String readFile(String folder, String filename) throws Exception {
 		try (InputStream in = _readFile(folder, filename)) {
-			return Message.asString(in);
+			return StreamUtil.streamToString(in);
 		}
 	}
 

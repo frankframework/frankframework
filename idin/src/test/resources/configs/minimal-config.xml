@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<appSettings>
+		<add key="BankId.Merchant.SubID" value="0" />
+
+		<add key="BankId.KeyStore.Location" value="certificates/custom/AcquirerCertificateBankId2020.Libs.sha256.2048.csp.jks" />
+		<add key="BankId.KeyStore.Password" value="wrong-password" />
+
+		<add key="BankId.Merchant.Certificate.Alias" value="idin libraries test certificate 2020" />
+		<add key="BankId.Merchant.Certificate.Password" value="123456" />
+		<add key="BankId.Acquirer.Certificate.Alias" value="idin libraries test certificate 2020" />
+		<add key="BankId.Acquirer.AlternateCertificate.Alias" value="dummy_alias" />
+		<add key="BankId.SAML.Certificate.Alias" value="idin libraries test certificate 2020" />
+		<add key="BankId.SAML.Certificate.Password" value="123456" />
+
+		<add key="BankId.Logs.Enabled" value="false" />
+		<add key="BankId.ServiceLogs.Enabled" value="false" />
+		<add key="BankId.ServiceLogs.Location" value="" />
+		<add key="BankId.ServiceLogs.Pattern" value="" />
+	</appSettings>
+</configuration>

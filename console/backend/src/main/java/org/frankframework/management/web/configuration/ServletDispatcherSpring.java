@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.web.spring;
+package org.frankframework.management.web.configuration;
 
 import java.io.IOException;
 
@@ -104,7 +104,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 
 	@Override
 	public int loadOnStartUp() {
-		return 1;
+		return 0;
 	}
 
 	@Override

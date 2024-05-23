@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.util.JdbcUtil;
 
 import jakarta.annotation.Nonnull;
@@ -53,7 +53,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	@Nonnull private final IDbmsSupport dbmsSupport;
 	@Nonnull private final CallableStatement delegate;
 	@Nonnull private final ParameterMetaData parameterMetaData;
-	@Nonnull private final List<Map.Entry<Integer, Parameter>> parameterPositions;
+	@Nonnull private final List<Map.Entry<Integer, IParameter>> parameterPositions;
 
 	private boolean hasNext;
 
@@ -66,7 +66,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	 */
 	public StoredProcedureResultWrapper(
 			@Nonnull IDbmsSupport dbmsSupport,
-			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, Parameter> parameterPositions) {
+			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, IParameter> parameterPositions) {
 		this.dbmsSupport = dbmsSupport;
 		this.delegate = delegate;
 		this.parameterMetaData = parameterMetaData;
@@ -289,7 +289,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	@Override
 	public int findColumn(String columnLabel) throws SQLException {
 		int idx = 1;
-		for (Map.Entry<Integer, Parameter> entry : parameterPositions) {
+		for (Map.Entry<Integer, IParameter> entry : parameterPositions) {
 			if (entry.getValue().getName().equalsIgnoreCase(columnLabel)) {
 				return idx;
 			}

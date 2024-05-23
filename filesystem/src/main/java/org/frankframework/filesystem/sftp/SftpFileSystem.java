@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -33,11 +32,16 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileAlreadyExistsException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
@@ -82,19 +86,19 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef toFile(String filename) throws FileSystemException {
+	public SftpFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public SftpFileRef toFile(String folder, String filename) throws FileSystemException {
+	public SftpFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new SftpFileRef(filename, folder);
 	}
 
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
-			LinkedList<LsEntry> files = list(folder);
+			List<LsEntry> files = list(folder);
 			return (int) files.stream().filter(f -> !f.getAttrs().isDir()).count();
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -121,7 +125,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	private SftpFileRef findFile(SftpFileRef file) throws SftpException {
 		try {
-			LinkedList<LsEntry> files = list(file.getName());
+			List<LsEntry> files = list(file.getName());
 			if(!files.isEmpty()) {
 				return SftpFileRef.fromLsEntry(files.get(0));
 			}
@@ -133,9 +137,9 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		return null;
 	}
 
-	private LinkedList<LsEntry> list(String folder) throws SftpException {
+	private List<LsEntry> list(String folder) throws SftpException {
 		String path = folder == null ? "*" : folder;
-		return new LinkedList<>(ftpClient.ls(path));
+		return new ArrayList<>(ftpClient.ls(path));
 	}
 
 	@Override
@@ -169,10 +173,14 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void deleteFile(SftpFileRef f) throws FileSystemException {
+		final String canonicalName = getCanonicalName(f);
+		if (!exists(f)) {
+			throw new FileNotFoundException("Cannot delete file [" + canonicalName + "] from SFTP filesystem because it does not exist");
+		}
 		try {
-			ftpClient.rm(getCanonicalName(f));
+			ftpClient.rm(canonicalName);
 		} catch (SftpException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + canonicalName + "]: " + e.getMessage());
 		}
 	}
 
@@ -213,7 +221,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if(folderExists(folder)) {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 
 		try {
@@ -235,7 +243,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if(!folderExists(folder)) {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+			throw new FolderNotFoundException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
 			if(removeNonEmptyFolder) {
@@ -257,7 +265,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	 */
 	private void removeDirectoryContent(String folder) throws SftpException, FileSystemException {
 		String pwd = ftpClient.pwd();
-		LinkedList<LsEntry> files;
+		List<LsEntry> files;
 		if (StringUtils.isNotEmpty(folder) && folder.startsWith("/")) {
 			files = list(folder);
 		} else {
@@ -304,10 +312,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 		if(exists(destination)) {
-			throw new FileSystemException("target already exists");
+			throw new FileAlreadyExistsException("target already exists");
+		} else if(createFolder && !folderExists(destinationFolder)) {
+			createFolder(destinationFolder);
 		}
 
 		try {
@@ -319,7 +329,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef copyFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SftpFileRef copyFile(SftpFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}
@@ -379,6 +389,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SftpFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		SftpATTRS attrs = getFileAttributes(f);
@@ -410,7 +421,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		private final List<SftpFileRef> files;
 		private int i = 0;
 
-		SftpFilePathIterator(String folder, LinkedList<LsEntry> fileEnties) {
+		SftpFilePathIterator(String folder, List<LsEntry> fileEnties) {
 			files = new ArrayList<>();
 			for (LsEntry ftpFile : fileEnties) {
 				if(!ftpFile.getAttrs().isDir()) {
@@ -441,7 +452,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]", getCanonicalName(file), e);
+				log.warn("unable to remove file [{}]", getCanonicalNameOrErrorMessage(file), e);
 			}
 		}
 	}

@@ -43,8 +43,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
-import jakarta.xml.soap.MessageFactory;
-import jakarta.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -79,7 +77,7 @@ import org.apache.xmlbeans.GDate;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.RootValidations;
@@ -111,8 +109,11 @@ import org.xml.sax.ext.LexicalHandler;
 
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPException;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
 /**
@@ -790,7 +791,7 @@ public class XmlUtils {
 
 		StringBuilder paramsString = new StringBuilder();
 		if (params != null) {
-			for (Parameter param: params) {
+			for (IParameter param: params) {
 				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}

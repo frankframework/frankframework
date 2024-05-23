@@ -18,8 +18,8 @@ package org.frankframework.jdbc.datasource;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 

@@ -70,8 +70,10 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 				}
 
 				final int isolationLevel = connection.getTransactionIsolation();
+				log.info("was successfully able to get a connection with default isolation level [{}]", isolationLevel);
+
 				if(isolationLevel == Connection.TRANSACTION_NONE) {
-					log.info("expected a transacted connection got isolation level [{}]", isolationLevel);
+					log.warn("expected a transacted connection but got isolation level [{}]", isolationLevel);
 				}
 			}
 
@@ -98,7 +100,9 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 	private @Nonnull DataSource getDefaultDataSource() {
 		try {
 			IDataSourceFactory dsf = applicationContext.getBean(IDataSourceFactory.class);
-			return dsf.getDataSource(defaultDatasource);
+			DataSource dataSource = dsf.getDataSource(defaultDatasource);
+			log.info("found default datasource [{}]", dataSource);
+			return dataSource;
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new IllegalStateException("no DataSourceFactory found or configured", e);
 		}

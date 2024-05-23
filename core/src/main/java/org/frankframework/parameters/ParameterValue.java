@@ -37,29 +37,29 @@ public class ParameterValue {
 	private static final Logger LOG = LogManager.getLogger(ParameterValue.class);
 
 	private Object value;
-	private Parameter definition;
+	private IParameter definition;
 
-	protected ParameterValue(Parameter type, Object value) {
+	protected ParameterValue(IParameter type, Object value) {
 		this.definition = type;
 		this.value = value;
 	}
 
 	/**
-	 * Returns the description of the parameter
+	 * Returns the description of the IParameter
 	 */
-	public Parameter getDefinition() {
+	public IParameter getDefinition() {
 		return definition;
 	}
 
 	/**
-	 * Returns the name of the parameter
+	 * Returns the name of the IParameter
 	 */
 	public String getName() {
 		return definition.getName();
 	}
 
 	/**
-	 * Returns the value of the parameter
+	 * Returns the value of the IParameter
 	 */
 	public Object getValue() {
 		return value;
@@ -68,12 +68,12 @@ public class ParameterValue {
 		return Message.asMessage(value);
 	}
 
-	public void setDefinition(Parameter parameterDef) {
-		this.definition = parameterDef;
+	public void setDefinition(IParameter IParameterDef) {
+		this.definition = IParameterDef;
 	}
 
 	/**
-	 * Sets value for the parameter
+	 * Sets value for the IParameter
 	 */
 	public void setValue(Object value) {
 		this.value = value;
@@ -165,11 +165,11 @@ public class ParameterValue {
 			return Collections.emptyList();
 		}
 		try {
-			LOG.debug("rendering Parameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
+			LOG.debug("rendering IParameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
-			throw new ParameterException(getDefinition().getName(), "Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
+			throw new ParameterException(getDefinition().getName(), "IParameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
 		}
 	}
 }

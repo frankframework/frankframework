@@ -196,12 +196,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 		List<String> hrs = new ArrayList<>();
 		for (IPipe pipe : pipeline.getPipes()) {
-			if (pipe instanceof AbstractPipe aPipe) {
-				if (StringUtils.isNotEmpty(aPipe.getHideRegex())) {
-					if (!hrs.contains(aPipe.getHideRegex())) {
-						hrs.add(aPipe.getHideRegex());
-					}
-				}
+			if (pipe instanceof AbstractPipe aPipe && StringUtils.isNotEmpty(aPipe.getHideRegex()) && !hrs.contains(aPipe.getHideRegex())) {
+				hrs.add(aPipe.getHideRegex());
 			}
 		}
 		StringBuilder sb = new StringBuilder();
@@ -795,7 +791,7 @@ public class Adapter implements IAdapter, NamedBean {
 						if(receiver.getRunState() == RunState.ERROR) {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
-						while (!receiver.isStopped()) {
+						while (!receiver.getRunState().isStopped()) {
 							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
 								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", name, receiver.getName());
 								receiver.stopRunning();

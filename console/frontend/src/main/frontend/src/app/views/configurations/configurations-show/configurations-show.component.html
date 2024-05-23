@@ -52,7 +52,12 @@
             </button>
           </div>
           <div class="clearfix"></div>
-          <pre [text]="configuration" appFormatCode></pre>
+        </div>
+        <div class="summary editor">
+          <app-monaco-editor
+            #editor
+            [options]="{ readOnly: true }"
+          ></app-monaco-editor>
         </div>
       </div>
     </div>

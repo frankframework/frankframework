@@ -63,7 +63,6 @@ import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { PagesTitleStrategy } from './pages-title-strategy';
 import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
-import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
@@ -84,6 +83,7 @@ import { ToastsContainerComponent } from './components/toasts-container/toasts-c
 import { ThSortableDirective } from './components/th-sortable.directive';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 import { HumanFileSizePipe } from './pipes/human-file-size.pipe';
+import { MonacoEditorComponent } from './components/monaco-editor/monaco-editor.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -150,7 +150,6 @@ const windowProvider: ValueProvider = {
     MarkDownPipe,
 
     // directives
-    FormatCodeDirective,
     QuickSubmitFormDirective,
   ],
   imports: [
@@ -184,6 +183,7 @@ const windowProvider: ValueProvider = {
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
     HumanFileSizePipe,
+    MonacoEditorComponent,
   ],
   providers: [
     windowProvider,

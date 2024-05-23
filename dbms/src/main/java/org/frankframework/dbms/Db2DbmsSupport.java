@@ -48,16 +48,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String emptyBlobValue() {
-		return "EMPTY_BLOB";
-	}
-
-	@Override
-	public String emptyClobValue() {
-		return "EMPTY_CLOB";
-	}
-
-	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
@@ -68,11 +58,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
 		return selectQuery + " SKIP LOCKED DATA";
-	}
-
-	@Override
-	public String getFirstRecordQuery(String tableName) throws DbmsException {
-		return "select * from " + tableName + " fetch first 1 rows only";
 	}
 
 	@Override

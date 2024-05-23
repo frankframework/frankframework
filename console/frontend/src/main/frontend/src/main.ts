@@ -2,10 +2,6 @@
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
-import * as Prism from 'prismjs';
-import 'prismjs/plugins/line-numbers/prism-line-numbers';
-import 'prismjs/plugins/line-highlight/prism-line-highlight';
-import 'prismjs/plugins/custom-class/prism-custom-class';
 
 declare global {
   let ff_version: string;
@@ -107,31 +103,6 @@ if (
   );
 }
 
-// this stinks but blame prismjs for the bad support for how its handling / giving content
-function customClassFunction({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  language,
-  type,
-  content,
-}: {
-  language: string;
-  type: string;
-  content: string;
-}): string | void {
-  if (
-    type === 'tag' &&
-    content.endsWith('<span class="token punctuation">></span>') &&
-    content.includes('adapter')
-  ) {
-    const nameRegex =
-      /<span class="token attr-value"><span class="token punctuation attr-equals">=<\/span><span class="token punctuation">"<\/span>(?<value>[^<]+)<span class="token punctuation">"<\/span><\/span>/g.exec(
-        content,
-      );
-    if (nameRegex?.groups) return `adapter-tag ${nameRegex?.groups['value']}`;
-    return 'adapter-tag';
-  }
-}
-
 // Automatically minimalize menu when screen is less than 768px
 $(function () {
   $(window).on('load resize', function () {
@@ -152,31 +123,4 @@ $(function () {
       scroll2top.animate({ opacity: 0, 'z-index': -1 }, 50, 'linear');
     }
   });
-
-  Prism.hooks.add('after-highlight', function (environment) {
-    // works only for <code> wrapped inside <pre data-line-numbers> (not inline)
-    const pre = environment.element.parentNode as HTMLElement;
-    if (
-      !pre ||
-      !/pre/i.test(pre.nodeName) ||
-      !pre.className.includes('line-numbers')
-    ) {
-      return;
-    }
-
-    const linesNumber = environment.code.split('\n').length;
-
-    const lines = Array.from({ length: linesNumber });
-    //See https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
-    for (let index = 0; index < linesNumber; ++index)
-      lines[index] = `<span id="L${index + 1}"></span>`;
-
-    const lineNumbersWrapper = document.createElement('span');
-    lineNumbersWrapper.className = 'line-numbers-rows';
-    lineNumbersWrapper.innerHTML = lines.join('');
-
-    environment.element.append(lineNumbersWrapper);
-  });
-
-  Prism.plugins['customClass'].add(customClassFunction);
 });

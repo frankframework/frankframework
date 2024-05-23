@@ -55,7 +55,7 @@ public class TestConnectionOverview extends BusTestBase {
 	@Override
 	public void tearDown() {
 		if(adapter != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
+			getConfiguration().getAdapterManager().removeAdapter(adapter);
 		}
 		super.tearDown();
 	}

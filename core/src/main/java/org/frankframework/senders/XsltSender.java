@@ -31,7 +31,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
@@ -127,7 +127,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				for (int i=0; i<parameterList.size(); i++) {
-					Parameter parameter = parameterList.getParameter(i);
+					IParameter parameter = parameterList.getParameter(i);
 					if (parameter.getType()==ParameterType.NODE) {
 						throw new ConfigurationException(getLogPrefix() + "type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
 					}
