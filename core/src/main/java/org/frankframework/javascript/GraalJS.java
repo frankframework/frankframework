@@ -49,6 +49,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public void startRuntime() throws JavascriptException {
+		log.info("Starting GraalJS runtime");
 		if (!libraryLoaded) {
 			scriptEngine = new ScriptEngineManager().getEngineByName("graal.js");
 			Bindings bindings = scriptEngine.createBindings();
@@ -100,6 +101,9 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public void registerCallback(final ISender sender, final PipeLineSession session) {
+		if (sender.getName() == null) {
+			throw new IllegalStateException("Sender name is required for call backs");
+		}
 		scriptEngine.put(sender.getName(), (JavaCallback) s -> {
 			try {
 				Message msg = Message.asMessage(s[0]);
