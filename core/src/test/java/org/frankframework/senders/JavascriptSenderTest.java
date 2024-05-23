@@ -282,8 +282,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		return Stream.of(
 				Arguments.of(JavaScriptEngines.J2V8, "returnObject", "[object Object]"),
 				Arguments.of(JavaScriptEngines.J2V8, "returnArray", "1,3,5"),
-				Arguments.of(JavaScriptEngines.GRAALJS, "returnObject", "{answer: 42}"), // Don't understand why this is different in GraalJS
-				Arguments.of(JavaScriptEngines.GRAALJS, "returnArray", "(3)[1, 3, 5]")
+				Arguments.of(JavaScriptEngines.GRAALJS, "returnObject", "{answer: 42}"),
+				Arguments.of(JavaScriptEngines.GRAALJS, "returnArray", "(3)[1, 3, 5]") // Different .toString() methods on PolyglotList
 		);
 	}
 
