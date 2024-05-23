@@ -44,13 +44,13 @@ import org.frankframework.util.StreamUtil;
 /**
  * Sender used to run JavaScript code using `JavascriptEngine` implementations.
  * <p>
- * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
- * The parameters of the javascript function to run are given as parameters by the adapter configuration
+ * This sender can execute a function of a given Javascript file, the result of the function will be the output of the sender.
+ * The parameters of the Javascript function to run are given as parameters by the adapter configuration
  * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method,
  * you will need to create a parameter on the sender.
  * </p>
  * <p>
- * The result of the javascript function should be of type String, or directly convertible to String from a primitive type
+ * The result of the Javascript function should be of type String, or directly convertible to String from a primitive type
  * or an array of primitive types / strings, as the output of the sender will be of type String.
  * </p>
  * <p>
@@ -187,13 +187,16 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given
+	 * J2V8 engine does not support the ES6's "const" or "let" literals. This method adapts the given
 	 * helper source written in ES6 to work (by converting let/const to var).
 	 *
 	 * @param source the helper source.
 	 * @return the adapted helper source.
 	 **/
 	private String adaptES6Literals(final String source) {
+		if (engine != JavaScriptEngines.J2V8) {
+			return source;
+		}
 		Matcher m = es6VarPattern.matcher(source);
 		StringBuilder sb = new StringBuilder();
 		while (m.find()) {
@@ -218,7 +221,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * the name of the JavaScript engine to be used.
+	 * the name of the JavaScript engine to use.
 	 * @ff.default J2V8
 	 */
 	public void setEngineName(JavaScriptEngines engineName) {

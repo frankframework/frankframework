@@ -49,7 +49,7 @@ class JavascriptEngineTest {
 		engine.registerCallback(echoSender, new PipeLineSession());
 		engine.executeScript("""
 				function f5(x, y){
-				  var a = x * y;
+				  let a = x * y;
 				  var b = echoFunction(a);
 				  return b;
 				}""");
