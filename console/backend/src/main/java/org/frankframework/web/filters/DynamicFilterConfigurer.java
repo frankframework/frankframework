@@ -44,8 +44,9 @@ public class DynamicFilterConfigurer implements ServletContextListener {
 	public enum DynamicFilters {
 		CORS_FILTER(CorsFilter.class, "/iaf/api/*"),
 		CACHE_CONTROL_FILTER(CacheControlFilter.class, "/iaf/api/*"),
-		ETAG_FILTER(WeakShallowEtagHeaderFilter.class, "/iaf/spring-api/*"),
-		CSP_FILTER(CspFilter.class, "/iaf/gui/*");
+		CSP_FILTER(CspFilter.class, "/iaf/gui/*"),
+
+		ETAG_FILTER(WeakShallowEtagHeaderFilter.class, "/iaf/spring-api/*");
 
 		private @Getter Class<? extends Filter> filterClass;
 		private @Getter String endpoints;

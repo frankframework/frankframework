@@ -76,17 +76,22 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
-			inputMessage.setPayload(new FileInputStream(filePath));
-			Message<?> msg = inputMessage.build();
-			MessageHeaders headers = msg.getHeaders();
+			Message<?> assessMsg = inputMessage.build();
+			MessageHeaders headers = assessMsg.getHeaders();
 			assertEquals("FILE_VIEWER", headers.get("topic"));
 			assertEquals("octet-stream", headers.get("meta-resultType"));
-			return msg;
+
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.CONTENT_DISPOSITION_KEY, "attachment; filename=\"" + fileName + "\"");
+			inputMessage.addHeader(MessageBase.MIMETYPE_KEY, "application/" + headers.get("meta-resultType"));
+			inputMessage.setPayload(new FileInputStream(filePath));
+			return inputMessage.build();
 		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		String requestUrl = "/file-viewer?file=" + fileName + "&accept=application/octet-stream"; // ignore accept header & use parameter
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, requestUrl, null, IbisRole.IbisTester, Map.of("Accept", MediaType.TEXT_PLAIN));
+		assertEquals("attachment; filename=\"" + fileName + "\"", response.getHeaderString("Content-Disposition"));
+		assertEquals(MediaType.APPLICATION_OCTET_STREAM_TYPE, response.getMediaType());
 		InputStream result = (InputStream) response.getEntity();
 		assertNotNull(result);
 
