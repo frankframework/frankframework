@@ -25,7 +25,6 @@ public class DeprecationInterceptor implements HandlerInterceptor, EnvironmentAw
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		log.error("preHandle - {}", handler);
 		HandlerMethod handlerMethod = (HandlerMethod) handler;
 		Method method = handlerMethod.getMethod();
 
