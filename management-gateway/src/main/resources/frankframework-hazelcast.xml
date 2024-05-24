@@ -57,9 +57,9 @@
                 walk through all available discovery strategies and detect the correct one for the
                 current runtime environment.
             -->
-            <auto-detection enabled="true"/>
+            <auto-detection enabled="false"/>
             <!-- Enables/disables the multicast discovery mechanism. The default value is disabled. -->
-            <multicast enabled="false">
+            <multicast enabled="true">
                 <!--
                     Specifies the multicast group IP address when you want to create clusters
                     within the same network. Its default value is 224.2.2.3.
@@ -90,10 +90,10 @@
             </eureka>
             <discovery-strategies>
             	<discovery-strategy enabled="false" class="com.hazelcast.aws.AwsDiscoveryStrategy"/>
-            	<discovery-strategy enabled="false" class="com.hazelcast.aws.AzureDiscoveryStrategy"/>
-            	<discovery-strategy enabled="false" class="com.hazelcast.aws.GcpDiscoveryStrategy"/>
-            	<discovery-strategy enabled="false" class="com.hazelcast.aws.HazelcastKubernetesDiscoveryStrategy"/>
-            	<discovery-strategy enabled="false" class="com.hazelcast.aws.MulticastDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.azure.AzureDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.gcp.GcpDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.kubernetes.HazelcastKubernetesDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.spi.discovery.multicast.MulticastDiscoveryStrategy"/>
             </discovery-strategies>
         </join>
 
@@ -418,7 +418,7 @@
         </raft-algorithm>
     </cp-subsystem>
 
-    <metrics enabled="true">
+    <metrics enabled="false">
         <management-center enabled="true">
             <retention-seconds>5</retention-seconds>
         </management-center>
