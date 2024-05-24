@@ -4,11 +4,11 @@ import { AppService } from 'src/app/app.service';
 import { BaseIframeComponent } from '../iframe.base';
 
 @Component({
-  selector: 'app-iframe-ladybug-beta',
+  selector: 'app-iframe-ladybug-legacy',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })
-export class IframeLadybugBetaComponent
+export class IframeLadybugLegacyComponent
   extends BaseIframeComponent
   implements OnInit
 {
@@ -17,6 +17,6 @@ export class IframeLadybugBetaComponent
   }
 
   ngOnInit(): void {
-    this.setIframeSource('ladybug');
+    this.setIframeSource('testtool');
   }
 }

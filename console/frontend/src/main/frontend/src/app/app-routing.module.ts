@@ -17,9 +17,9 @@ import { InlinestoreComponent } from './views/inlinestore/inlinestore.component'
 import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
-import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
+import { IframeLadybugLegacyComponent } from './views/iframe/iframe-ladybug-legacy/iframe-ladybug-legacy.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
-import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
+import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
@@ -328,20 +328,20 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'testing/ladybug-legacy',
+    component: IframeLadybugLegacyComponent,
+    title: 'Ladybug (legacy)',
+    data: {
+      breadcrumbs: 'Testing > Ladybug (legacy)',
+      iframe: true,
+    },
+  },
+  {
     path: 'testing/ladybug',
     component: IframeLadybugComponent,
     title: 'Ladybug',
     data: {
       breadcrumbs: 'Testing > Ladybug',
-      iframe: true,
-    },
-  },
-  {
-    path: 'testing/ladybug-beta',
-    component: IframeLadybugBetaComponent,
-    title: 'Ladybug (beta)',
-    data: {
-      breadcrumbs: 'Testing > Ladybug (beta)',
       iframe: true,
     },
   },

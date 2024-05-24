@@ -17,6 +17,6 @@ export class IframeLadybugComponent
   }
 
   ngOnInit(): void {
-    this.setIframeSource('testtool');
+    this.setIframeSource('ladybug');
   }
 }
