@@ -109,7 +109,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	public void testToAddress() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-		List<String> adresses = (List<String>)properties.get(IMailFileSystem.TO_RECEPIENTS_KEY);
+		List<String> adresses = (List<String>)properties.get(IMailFileSystem.TO_RECIPIENTS_KEY);
 		String address = adresses.get(0);
 		String expected = "frankframework/frankframework <iaf@noreply.github.com>";
 		assertEquals(expected, address);

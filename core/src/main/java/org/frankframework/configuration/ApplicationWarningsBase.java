@@ -43,7 +43,7 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		warnings.clear();
 	}
 

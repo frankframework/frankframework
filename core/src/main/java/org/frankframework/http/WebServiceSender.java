@@ -20,18 +20,18 @@ import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
+
+import lombok.Getter;
 
 /**
  * Sender that sends a message via a WebService.
@@ -59,8 +59,8 @@ public class WebServiceSender extends HttpSender {
 
 	private SoapWrapper soapWrapper;
 	private CredentialFactory wsscf=null;
-	private Parameter soapActionParameter;
-	private Parameter serviceNamespaceURIParameter;
+	private IParameter soapActionParameter;
+	private IParameter serviceNamespaceURIParameter;
 
 	public WebServiceSender() {
 		super();

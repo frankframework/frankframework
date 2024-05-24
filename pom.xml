@@ -18,10 +18,10 @@
 
 		<jackson.version>2.17.1</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
-		<spring.version>6.1.7</spring.version>
+		<spring.version>6.1.8</spring.version>
 		<spring-security.version>6.3.0</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
-		<spring.boot.version>3.2.5</spring.boot.version>
+		<spring.boot.version>3.3.0</spring.boot.version>
 		<tomcat.version>10.1.24</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
@@ -132,12 +132,12 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.26.1</version>
+				<version>4.27.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.109.Final</version>
+				<version>4.1.110.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>

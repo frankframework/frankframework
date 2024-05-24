@@ -252,7 +252,7 @@ public class JdbcTransactionalStorageTest {
 	@DatabaseTest
 	public void testGetContext() throws Exception {
 		storage.configure();
-		String key = null;
+		String key;
 
 		String message = createMessage();
 		try (Connection connection = env.getConnection()) {

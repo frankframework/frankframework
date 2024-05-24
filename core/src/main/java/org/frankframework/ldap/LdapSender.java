@@ -39,8 +39,6 @@ import javax.naming.directory.SearchResult;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ISenderWithParameters;
@@ -52,12 +50,14 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jndi.JndiBase;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
+
+import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -303,15 +303,15 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		if (getOperation() == Operation.CHALLENGE && paramList.findParameter("principal") == null) {
 			throw new ConfigurationException("principal should be specified using a parameter when using operation challenge");
 		}
-		Parameter credentials = paramList.findParameter("credentials");
+		IParameter credentials = paramList.findParameter("credentials");
 		if (credentials != null && !credentials.isHidden()) {
 			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter credentials.");
 		}
-		Parameter oldPassword = paramList.findParameter("oldPassword");
+		IParameter oldPassword = paramList.findParameter("oldPassword");
 		if (oldPassword != null && !oldPassword.isHidden()) {
 			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter oldPassword.");
 		}
-		Parameter newPassword = paramList.findParameter("newPassword");
+		IParameter newPassword = paramList.findParameter("newPassword");
 		if (newPassword != null && !newPassword.isHidden()) {
 			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter newPassword.");
 		}
@@ -1177,7 +1177,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList == null) {
 			paramList = new ParameterList();
 		}

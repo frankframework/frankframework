@@ -49,6 +49,10 @@ import javax.xml.transform.dom.DOMSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import lombok.Getter;
+import lombok.Lombok;
+
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -63,6 +67,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
@@ -71,9 +76,6 @@ import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Lombok;
 
 public class Message implements Serializable, Closeable {
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
@@ -383,26 +385,11 @@ public class Message implements Serializable, Closeable {
 			messageNotClosedAction.calledByClose = true;
 			cleanable.clean();
 		}
-		try {
-			if (request instanceof AutoCloseable closeable) {
-				try {
-					closeable.close();
-				} catch (Exception e) {
-					LOG.warn("Could not close request", e);
-				}
-			}
-			request = null;
-		} finally {
-			if (resourcesToClose != null) {
-				resourcesToClose.forEach(r -> {
-					try {
-						r.close();
-					} catch (Exception e) {
-						LOG.warn("Could not close resource", e);
-					}
-				});
-			}
+		if (request instanceof AutoCloseable closeable) {
+			CloseUtils.closeSilently(closeable);
 		}
+		request = null;
+		CloseUtils.closeSilently(resourcesToClose);
 	}
 
 	private void closeOnClose(@Nonnull AutoCloseable resource) {

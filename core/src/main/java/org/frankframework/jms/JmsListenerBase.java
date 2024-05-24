@@ -23,14 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.jms.Destination;
-import jakarta.jms.JMSException;
-import jakarta.jms.Session;
-
-import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -46,12 +39,18 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
+
+import jakarta.annotation.Nonnull;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
+import lombok.Getter;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -366,7 +365,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList == null) {
 			paramList = new ParameterList();
 		}
@@ -389,7 +388,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	private Map<String, Object> evaluateParameters(Map<String, Object> threadContext) {
 		Map<String, Object> result = new HashMap<>();
 		if (threadContext != null && paramList != null) {
-			for (Parameter param : paramList) {
+			for (IParameter param : paramList) {
 				Object value = param.getValue();
 
 				if (StringUtils.isNotEmpty(param.getSessionKey())) {

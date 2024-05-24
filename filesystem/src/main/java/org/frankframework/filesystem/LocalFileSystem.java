@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.filesystem;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -63,38 +65,36 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Path toFile(String filename) {
+	public Path toFile(@Nullable String filename) {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Path toFile(String folder, String filename) {
+	public Path toFile(@Nullable String folder, @Nullable String filename) {
 		if (filename==null) {
 			filename="";
 		}
 		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
-			filename = folder +"/" + filename;
+			filename = folder + "/" + filename;
 		}
 		if (StringUtils.isNotEmpty(getRoot())) {
 			Path result = Paths.get(filename);
 			if (result.isAbsolute()) {
 				return result;
 			}
-			filename = getRoot()+"/"+ filename;
+			filename = getRoot()+ "/" + filename;
 		}
 		return Paths.get(filename);
 	}
 
 	@Override
 	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
+		if (!folderExists(folder)) {
+			throw new FolderNotFoundException("Cannot list files in ["+folder+"], no such folder found");
+		}
 		final Path dir = toFile(folder);
 
-		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<>() {
-			@Override
-			public boolean accept(Path file) throws IOException {
-				return !Files.isDirectory(file);
-			}
-		};
+		DirectoryStream.Filter<Path> filter = file -> !Files.isDirectory(file);
 		try {
 			return Files.newDirectoryStream(dir, filter);
 		} catch (IOException e) {
@@ -119,6 +119,9 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public Message readFile(Path f, String charset) throws FileSystemException {
+		if (!Files.exists(f)) {
+			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file ["+f+"].");
+		}
 		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
@@ -126,8 +129,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void deleteFile(Path f) throws FileSystemException {
 		try {
 			Files.delete(f);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file [" + f + "] to delete", e);
 		} catch (IOException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 
@@ -142,35 +147,33 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
-		if (!folderExists(folder)) {
-			try {
-				Files.createDirectories(toFile(folder));
-			} catch (IOException e) {
-				throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
-			}
-		} else {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+		if (folderExists(folder)) {
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
+		}
+		try {
+			Files.createDirectories(toFile(folder));
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
 		}
 	}
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
-		if (folderExists(folder)) {
-			try {
-				if(removeNonEmptyFolder) {
-					try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
-						directoryStream.sorted(Comparator.reverseOrder())
-						.map(Path::toFile)
-						.forEach(File::delete);
-					}
-				} else {
-					Files.delete(toFile(folder));
+		if (!folderExists(folder)) {
+			throw new FolderNotFoundException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+		}
+		try {
+			if(removeNonEmptyFolder) {
+				try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
+					directoryStream.sorted(Comparator.reverseOrder())
+					.map(Path::toFile)
+					.forEach(File::delete);
 				}
-			} catch (IOException e) {
-				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
+			} else {
+				Files.delete(toFile(folder));
 			}
-		}else {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
 		}
 	}
 
@@ -178,13 +181,15 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public Path renameFile(Path source, Path destination) throws FileSystemException {
 		try {
 			return Files.move(source, destination);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
+			throw new FileSystemException("Cannot rename file ["+ source +"] to ["+ destination +"]", e);
 		}
 	}
 
 	@Override
-	public Path moveFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -194,12 +199,14 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 		try {
 			return Files.move(f, toFile(destinationFolder, getName(f)));
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot move file ["+ f.toString() +"] to ["+ destinationFolder+"]", e);
+			throw new FileSystemException("Cannot move file ["+ f +"] to ["+ destinationFolder+"]", e);
 		}
 	}
 	@Override
-	public Path copyFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -210,8 +217,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot copy file ["+ f.toString()+"] to ["+ destinationFolder+"]", e);
+			throw new FileSystemException("Cannot copy file ["+ f +"] to ["+ destinationFolder+"]", e);
 		}
 		return target;
 	}
@@ -220,6 +229,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public long getFileSize(Path f) throws FileSystemException {
 		try {
 			return Files.size(f);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -257,6 +268,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Path f) {
 		return null;
 	}

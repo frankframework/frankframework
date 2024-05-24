@@ -35,7 +35,9 @@ public enum FrankDocGroupValue {
 	@EnumLabel("Monitoring")
 	MONITORING,
 	@EnumLabel("Scheduling")
-	JOB
+	JOB,
+	@EnumLabel("Parameters")
+	PARAMETER
 	// We omit the others group to simplify the implementation.
 	// You cannot explicitly assign FrankElement's to the others group
 }

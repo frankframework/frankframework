@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,14 +26,11 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.SAXException;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.HasPhysicalDestination;
@@ -55,6 +51,8 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.SAXException;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
@@ -255,7 +253,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 			}
 			return wrapRawMessage(file, originalFilename, threadContext);
-		} catch (IOException | FileSystemException e) {
+		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
 	}
@@ -403,7 +401,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return wrap(FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false), message);
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
-				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, true);
+				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
 				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
@@ -418,7 +416,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				//noinspection unchecked
 				return wrap(FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0), message);
 			}
-			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, toState==ProcessState.INPROCESS), message);
+			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false), message);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message.getRawMessage())+"]", e);
 		}
