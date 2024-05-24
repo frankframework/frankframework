@@ -73,7 +73,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 	public void testStoredZipMessage() throws Exception {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		URL zip = TestPipelineTest.class.getResource("/TestPipeline/stored.zip");
+		URL zip = TestPipelineTest.class.getResource("/management/web/TestPipeline/stored.zip");
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
@@ -90,7 +90,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 	public void testDeflatedZipMessage() throws Exception {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		URL zip = TestPipelineTest.class.getResource("/TestPipeline/deflated.zip");
+		URL zip = TestPipelineTest.class.getResource("/management/web/TestPipeline/deflated.zip");
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));

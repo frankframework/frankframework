@@ -63,7 +63,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 	@Test
 	public void testStoredZipMessage() throws Exception {
-		URL zip = org.frankframework.management.web.TestPipelineTest.class.getResource("/TestPipeline/stored.zip");
+		URL zip = org.frankframework.management.web.TestPipelineTest.class.getResource("/management/web/TestPipeline/stored.zip");
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
@@ -77,7 +77,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 	@Test
 	public void testDeflatedZipMessage() throws Exception {
-		URL zip = org.frankframework.management.web.TestPipelineTest.class.getResource("/TestPipeline/deflated.zip");
+		URL zip = org.frankframework.management.web.TestPipelineTest.class.getResource("/management/web/TestPipeline/deflated.zip");
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)

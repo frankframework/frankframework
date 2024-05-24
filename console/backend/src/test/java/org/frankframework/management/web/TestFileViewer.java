@@ -35,7 +35,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
 	@Test
 	public void testRetrievingHtmlProcessedFile() throws IOException {
-		URL fileUrl = TestFileViewer.class.getResource("/FileViewer/FileViewer.txt");
+		URL fileUrl = TestFileViewer.class.getResource("/management/web/FileViewer.txt");
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 
@@ -53,7 +53,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
 	@Test
 	public void testRetrievingTextFile() throws IOException {
-		URL fileUrl = TestFileViewer.class.getResource("/FileViewer/FileViewer.txt");
+		URL fileUrl = TestFileViewer.class.getResource("/management/web/FileViewer.txt");
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 
@@ -70,7 +70,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
 	@Test
 	public void testDownloadFile() throws IOException {
-		URL fileUrl = TestFileViewer.class.getResource("/FileViewer/FileViewer.txt");
+		URL fileUrl = TestFileViewer.class.getResource("/management/web/FileViewer.txt");
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 

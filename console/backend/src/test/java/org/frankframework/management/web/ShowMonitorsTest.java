@@ -134,7 +134,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
 
-		URL jsonInputURL = ShowMonitorsTest.class.getResource("MonitorTest_updateTrigger.json");
+		URL jsonInputURL = ShowMonitorsTest.class.getResource("/management/web/MonitorTest_updateTrigger.json");
 		assertNotNull(jsonInputURL, "unable to find input JSON"); // Check if the file exists to avoid NPE's
 
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());

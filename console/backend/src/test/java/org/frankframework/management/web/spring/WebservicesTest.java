@@ -20,7 +20,7 @@ public class WebservicesTest extends FrankApiTestBase {
 
 	@Test
 	public void testWebservices() throws Exception {
-		URL resource = WebservicesTest.class.getResource("testWebservices.json");
+		URL resource = WebservicesTest.class.getResource("/management/web/testWebservices.json");
 		String jsonString = FileUtils.readFileToString(new File(resource.toURI()), Charset.defaultCharset());
 
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
