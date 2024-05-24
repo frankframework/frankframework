@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -102,7 +103,19 @@ public class SpringBusExceptionHandler {
 		}
 
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);
-		return ApiException.formatExceptionResponse(mhe.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, null);
+		return ApiException.formatExceptionResponse(buildMessage(mhe.getMessage(), mhe.getCause()), HttpStatus.INTERNAL_SERVER_ERROR, null);
+	}
+
+	private static String buildMessage(@Nullable String message, @Nullable Throwable cause) {
+		if (cause == null) {
+			return message;
+		}
+		StringBuilder sb = new StringBuilder(64);
+		if (message != null) {
+			sb.append(message).append("; ");
+		}
+		sb.append("nested exception is ").append(cause);
+		return sb.toString();
 	}
 
 }
