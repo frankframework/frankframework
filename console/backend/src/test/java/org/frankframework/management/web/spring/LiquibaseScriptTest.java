@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.io.ByteArrayInputStream;
@@ -101,7 +102,7 @@ public class LiquibaseScriptTest extends FrankApiTestBase {
 						.part(
 								new MockPart("configuration", "TestConfiguration".getBytes())
 						))
-				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.status().isCreated())
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("dummy"));
 	}
 
@@ -113,11 +114,12 @@ public class LiquibaseScriptTest extends FrankApiTestBase {
 						.part(
 								new MockPart("configuration", "TestConfiguration".getBytes())
 						))
-				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+				.andExpect(MockMvcResultMatchers.jsonPath("error").value("uploading zip files is not supported!"))
 				.andReturn();
 
 		assertInstanceOf(ApiException.class, mockResult.getResolvedException());
-		assertEquals("uploading zip files is not supported!", mockResult.getResponse().getContentAsString());
 	}
 
 }
