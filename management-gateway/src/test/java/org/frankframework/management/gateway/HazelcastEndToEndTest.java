@@ -53,7 +53,7 @@ public class HazelcastEndToEndTest {
 	}
 
 	@Test
-	public void testHazelcastInboundGateway() throws Exception {
+	public void testHazelcastGateways() throws Exception {
 		Message<String> request = new GenericMessage<>("request-string", new MessageHeaders(null));
 		Message<String> response = outboundGateway.sendSyncMessage(request);
 

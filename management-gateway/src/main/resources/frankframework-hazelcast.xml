@@ -89,6 +89,11 @@
                 <namespace>hazelcast</namespace>
             </eureka>
             <discovery-strategies>
+            	<discovery-strategy enabled="false" class="com.hazelcast.aws.AwsDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.aws.AzureDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.aws.GcpDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.aws.HazelcastKubernetesDiscoveryStrategy"/>
+            	<discovery-strategy enabled="false" class="com.hazelcast.aws.MulticastDiscoveryStrategy"/>
             </discovery-strategies>
         </join>
 
