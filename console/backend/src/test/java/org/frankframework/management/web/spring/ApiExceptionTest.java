@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.frankframework.core.IbisException;
 
+import org.frankframework.util.JacksonUtils;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -97,8 +99,8 @@ public class ApiExceptionTest {
 
 	private String asJsonString(final Object obj) {
 		try {
-			String json = new ObjectMapper().writeValueAsString(obj);
-			ApiErrorResponse response = new ObjectMapper().readValue(json, ApiErrorResponse.class);
+			String json = JacksonUtils.convertToJson(obj);
+			ApiErrorResponse response = JacksonUtils.convertToDTO(json, ApiErrorResponse.class);
 			return response.error();
 		} catch (Exception e) {
 			throw new RuntimeException(e);

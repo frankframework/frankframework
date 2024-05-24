@@ -3,11 +3,9 @@ package org.frankframework.management.web.spring;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.JacksonUtils;
 import org.springframework.http.MediaType;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
@@ -34,12 +32,7 @@ public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport imple
 						getHeaders().get("topic", String.class), getHeaders().get("action", String.class)
 				);
 
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					return (T) mapper.writeValueAsString(messageResponse);
-				} catch (JsonProcessingException e) {
-					throw new RuntimeException(e);
-				}
+				return (T) JacksonUtils.convertToJson(messageResponse);
 			}
 
 			@Override

@@ -6,6 +6,8 @@ import org.frankframework.core.IbisException;
 
 import org.frankframework.management.bus.BusException;
 
+import org.frankframework.util.JacksonUtils;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.HttpHeaders;
@@ -171,8 +173,8 @@ public class SpringBusExceptionHandlerTest {
 
 	private String asJsonString(final Object obj) {
 		try {
-			String json = new ObjectMapper().writeValueAsString(obj);
-			ApiExceptionTest.ApiErrorResponse response = new ObjectMapper().readValue(json, ApiExceptionTest.ApiErrorResponse.class);
+			String json = JacksonUtils.convertToJson(obj);
+			ApiExceptionTest.ApiErrorResponse response = JacksonUtils.convertToDTO(json, ApiExceptionTest.ApiErrorResponse.class);
 			return response.error();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
