@@ -16,7 +16,6 @@
 package org.frankframework.management.gateway;
 
 import java.io.Externalizable;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -60,7 +59,7 @@ public class SerializableInputStream extends InputStream implements Externalizab
 				Files.createDirectory(tmpDir);
 			}
 
-			tmpFile = File.createTempFile("msg", ".dat", tmpDir.toFile()).toPath();
+			tmpFile = Files.createTempFile(tmpDir, "msg", ".dat");
 			LOG.trace("determined temporary file location [{}]", tmpFile);
 		} catch (IOException e) {
 			throw new IllegalStateException("unable to create temp file to de-serialize stream", e);

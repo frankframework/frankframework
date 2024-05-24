@@ -28,7 +28,7 @@ public class HazelcastConfig {
 	static Config createHazelcastConfig() {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		String resource = "/frankframework-hazelcast.xml";
+		String resource = "frankframework-hazelcast.xml";
 		Properties properties = new PropertyLoader("hazelcast.properties");
 		return Config.loadFromClasspath(classLoader, resource, properties);
 	}

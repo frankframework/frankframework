@@ -43,7 +43,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	@Override
 	protected void onInit() {
 		hzInstance = HazelcastInstanceFactory.newHazelcastInstance(HazelcastConfig.createHazelcastConfig(), "worker-node", new DefaultNodeContext());
-		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInstance", hzInstance);
+		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
 		if(getRequestChannel() == null) {
@@ -82,7 +82,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 				if(response.getPayload() instanceof InputStream inputStream) {
 					response = MessageBuilder.withPayload(new SerializableInputStream(inputStream)).copyHeaders(response.getHeaders()).build();
 				}
-	
+
 				log.trace("sending response message with id [{}] to reply-channel [{}]", responseId, tempReplyChannel);
 				IQueue<Message<?>> responseQueue = hzInstance.getQueue(tempReplyChannel);
 				if(!responseQueue.offer(response)) {
