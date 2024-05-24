@@ -15,6 +15,7 @@
 */
 package org.frankframework.util;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,5 +120,23 @@ public abstract class EnumUtils {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Check if the Enum value is deprecated.
+	 * @param value Enum value
+	 * @return true if @Deprecated annotation is present on the Enum value
+	 */
+	public static boolean isEnumDeprecated(Enum<?> value) {
+		if (value == null) {
+			return false;
+		}
+		try {
+			Field field = value.getClass().getField(value.name());
+			Deprecated annotation = field.getAnnotation(Deprecated.class);
+			return annotation != null;
+		} catch (NoSuchFieldException | SecurityException ignored) {
+		}
+		return false;
 	}
 }

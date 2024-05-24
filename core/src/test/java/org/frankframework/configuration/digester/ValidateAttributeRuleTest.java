@@ -147,7 +147,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
-	public void testAttributeThatDoesntExist() throws Exception {
+	public void testAttributeThatDoesNotExist() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("do-not-exist", "string value here");
 
@@ -171,15 +171,16 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
-	void testDeprecatedEnumAttributeWithConfigWarning() throws Exception {
+	void testEnumAttributeWithConfigWarningAndDefaultValueWarning() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("queryType", "INSERT");
 
 		runRule(ClassWithEnum.class, attr);
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [queryType.INSERT]: Use queryType 'OTHER' instead", configWarnings.get(0));
+		assertEquals(2, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [queryType.INSERT] is deprecated: Use queryType 'OTHER' instead", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [queryType] already has a default value [INSERT]", configWarnings.get(1));
 	}
 
 	@Test
@@ -501,7 +502,6 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Setter String testStringWithoutGetter = "string";
 		private @Setter int testIntegerWithoutGetter = 0;
 		private @Setter boolean testBooleanWithoutGetter = false;
-		private @Setter QueryType queryType = QueryType.INSERT;
 
 		public void setEnumWithDifferentName(TestEnum testEnum) {
 			this.testEnum = testEnum;
@@ -525,7 +525,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	public static abstract class ClassWithEnumBase {
-		private @Getter QueryType queryType = QueryType.OTHER;
+		private @Setter @Getter QueryType queryType = QueryType.INSERT;
 
 		public enum QueryType {
 			OTHER,
@@ -534,13 +534,6 @@ public class ValidateAttributeRuleTest extends Mockito {
 			@Deprecated(since = "8.1") INSERT,
 			@ConfigurationWarning("Select might be slow")
 			SELECT
-		}
-
-		/**
-		 * Type of query to be executed
-		 */
-		public void setQueryType(QueryType queryType) {
-			this.queryType = queryType;
 		}
 	}
 

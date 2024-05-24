@@ -292,7 +292,7 @@ public abstract class ClassUtils {
 	 * @return The Enum constant or <code>null</code>
 	 */
 	@SuppressWarnings("unchecked")
-	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
+	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) throws IllegalArgumentException {
 		return EnumUtils.parse((Class<E>) enumClass, null, value);
 	}
 

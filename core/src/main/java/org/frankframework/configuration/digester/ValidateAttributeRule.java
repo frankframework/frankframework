@@ -26,6 +26,7 @@ import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.doc.Protected;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringResolver;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -109,15 +110,14 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	}
 
 	public static String getEnumConfigurationWarning(Enum<?> value) {
-		Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) value.getClass();
 		try {
-			Field field = enumClass.getField(value.name());
+			Field field = value.getClass().getField(value.name());
 			ConfigurationWarning configWarning = field.getAnnotation(ConfigurationWarning.class);
 			if (configWarning != null) {
 				return configWarning.value();
 			}
 		} catch (NoSuchFieldException | SecurityException ignored) {
-		}
+		} // No field found or not accessible, no warning
 		return null;
 	}
 
@@ -160,25 +160,10 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 
 	private void checkDeprecationAndConfigurationWarning(String name, String value, Method setterMethod) {
 		ConfigurationWarning warning = AnnotationUtils.findAnnotation(setterMethod, ConfigurationWarning.class);
-		if(warning != null) {
-			String msg = "attribute ["+name+"]";
-			boolean isDeprecated = AnnotationUtils.findAnnotation(setterMethod, Deprecated.class) != null;
+		String warningMessage = warning != null ? warning.value() : null;
+		boolean isDeprecated = AnnotationUtils.findAnnotation(setterMethod, Deprecated.class) != null;
+		addWarningForField(warningMessage, isDeprecated, name);
 
-			if(isDeprecated) {
-				msg += " is deprecated";
-			}
-
-			if(StringUtils.isNotEmpty(warning.value())) {
-				msg += ": " + warning.value();
-			}
-
-			if (isDeprecated) {
-				addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
-			} else {
-				addLocalWarning(msg);
-			}
-			return;
-		}
 		// Check enum Configuration Warnings
 		if (!setterMethod.getParameters()[0].getType().isEnum()) // only first parameter is relevant to check
 			return; // Skip non-enum setters
@@ -186,12 +171,31 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			Object o = ClassUtils.parseValueToSet(setterMethod, value);
 			if (o instanceof Enum<?> enumValue) {
 				String configWarning = getEnumConfigurationWarning(enumValue);
-				if (configWarning != null) {
-					addSuppressibleWarning("attribute [" + name + "." + enumValue + "]: " + configWarning, SuppressKeys.CONFIGURATION_VALIDATION);
-				}
+				isDeprecated = EnumUtils.isEnumDeprecated(enumValue);
+				addWarningForField(configWarning, isDeprecated, name + "." + enumValue);
 			}
 		} catch (IllegalArgumentException ignored) { // Can not happen with enums
 		}
+	}
 
+	private void addWarningForField(String warningMessage, boolean isDeprecated, String fieldName) {
+		if (warningMessage == null) {
+			return;
+		}
+		String msg = "attribute [" + fieldName + "]";
+
+		if (isDeprecated) {
+			msg += " is deprecated";
+		}
+
+		if (StringUtils.isNotEmpty(warningMessage)) {
+			msg += ": " + warningMessage;
+		}
+
+		if (isDeprecated) {
+			addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+		} else {
+			addLocalWarning(msg);
+		}
 	}
 }
