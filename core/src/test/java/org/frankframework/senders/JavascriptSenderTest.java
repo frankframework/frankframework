@@ -23,14 +23,14 @@ import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
+class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
+
+	private Message dummyInput;
 
 	@Override
 	public JavascriptSender createSender() {
 		return new JavascriptSender();
 	}
-
-	private Message dummyInput;
 
 	@AfterEach
 	void tearDownCloseMessage() throws Exception {
