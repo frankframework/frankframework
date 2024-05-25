@@ -136,7 +136,7 @@ public abstract class EnumUtils {
 			Deprecated annotation = field.getAnnotation(Deprecated.class);
 			return annotation != null;
 		} catch (NoSuchFieldException | SecurityException ignored) {
+			return false;
 		}
-		return false;
 	}
 }
