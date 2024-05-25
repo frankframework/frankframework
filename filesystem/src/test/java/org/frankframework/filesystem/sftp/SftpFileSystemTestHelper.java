@@ -12,6 +12,14 @@ import java.util.Collections;
 import java.util.Vector;
 import java.util.random.RandomGenerator;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.SftpException;
+
+import lombok.extern.log4j.Log4j2;
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
@@ -22,14 +30,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.util.LogUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
-import com.jcraft.jsch.SftpException;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
@@ -170,7 +170,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 			String path = folder != null ? folder + "/" + filename : filename;
 			ftpClient.rm(path);
 		} catch (SftpException e) {
-			throw new FileSystemException("", e);
+			throw new FileSystemException(e);
 		}
 	}
 

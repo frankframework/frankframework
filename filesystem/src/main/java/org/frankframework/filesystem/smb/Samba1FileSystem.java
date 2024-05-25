@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import jakarta.annotation.Nullable;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -32,10 +31,17 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileAlreadyExistsException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemBase;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -89,7 +95,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile toFile(String filename) throws FileSystemException {
+	public SmbFile toFile(@Nullable String filename) throws FileSystemException {
 		try {
 			return new SmbFile(smbContext, filename);
 		} catch (IOException e) {
@@ -98,7 +104,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile toFile(String folder, String filename) throws FileSystemException {
+	public SmbFile toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return toFile(folder+"/"+filename);
 	}
 
@@ -147,7 +153,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void deleteFile(SmbFile f) throws FileSystemException {
 		try {
 			if (!f.exists()) {
-				throw new FileSystemException("File ["+f.getName()+"] not found");
+				throw new FileNotFoundException("File ["+f.getName()+"] not found");
 			}
 			if (f.isFile()) {
 				f.delete();
@@ -156,7 +162,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 						"Trying to remove [" + f.getName() + "] which is a directory instead of a file");
 			}
 		} catch (SmbException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage(), e);
 		}
 	}
 
@@ -177,7 +183,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void createFolder(String folder) throws FileSystemException {
 		try {
 			if(folderExists(folder)) {
-				throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+				throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 			}
 			if (isForce) {
 				toFile(folder).mkdirs();
@@ -193,15 +199,14 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		String normalized = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 		try {
-			if (folderExists(normalized)) {
-				if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
-					throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
-				}
-
-				toFile(normalized).delete();
-			} else {
-				throw new FileSystemException("Cannot remove folder [" + normalized + "]. Directory does not exist.");
+			if (!folderExists(normalized)) {
+				throw new FolderNotFoundException("Cannot remove folder [" + normalized + "]. Directory does not exist.");
 			}
+			if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+			}
+
+			toFile(normalized).delete();
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
 		}
@@ -209,6 +214,12 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public SmbFile renameFile(SmbFile source, SmbFile destination) throws FileSystemException {
+		if (!exists(source)) {
+			throw new FileNotFoundException("Cannot find file [" + getName(source) + "], cannot rename.");
+		}
+		if (exists(destination)) {
+			throw new FileAlreadyExistsException("Cannot rename [" + getName(source) + "], destination [" + getName(destination) + "] already exists");
+		}
 		try {
 			source.renameTo(destination);
 			return destination;
@@ -218,7 +229,18 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if (!exists(f)) {
+			throw new FileNotFoundException("Cannot find file [" + getName(f) + "], cannot move.");
+		}
+		if (!folderExists(destinationFolder)) {
+			if(createFolder) {
+				createFolder(destinationFolder);
+			} else {
+				throw new FolderNotFoundException("destination does not exist");
+			}
+		}
+
 		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.renameTo(dest);
@@ -229,12 +251,15 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if (!exists(f)) {
+			throw new FileNotFoundException("Cannot find file [" + getName(f) + "], cannot copy.");
+		}
 		if (!folderExists(destinationFolder)) {
 			if(createFolder) {
 				createFolder(destinationFolder);
 			} else {
-				throw new FileSystemException("destination does not exist");
+				throw new FolderNotFoundException("destination does not exist");
 			}
 		}
 
@@ -255,17 +280,11 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	private class SmbFileIterator implements Iterator<SmbFile> {
 
-		private SmbFile[] files;
+		private final SmbFile[] files;
 		private int i = 0;
 
 		public SmbFileIterator(String folder) throws IOException {
-			SmbFileFilter filter = new SmbFileFilter() {
-
-				@Override
-				public boolean accept(SmbFile file) throws SmbException {
-					return (!isListHiddenFiles() && !file.isHidden()) && file.isFile();
-				}
-			};
+			SmbFileFilter filter = file -> (!isListHiddenFiles() && !file.isHidden()) && file.isFile();
 			SmbFile f = smbContext;
 			if(StringUtils.isNotBlank(folder)) {
 				String normalizedFolder = FilenameUtils.normalizeNoEndSeparator(folder, true)+"/";
@@ -281,6 +300,9 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 		@Override
 		public SmbFile next() {
+			if (i >= files.length) {
+				throw new NoSuchElementException();
+			}
 			return files[i++];
 		}
 
@@ -290,7 +312,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to delete file ["+getCanonicalName(file)+"]", e);
+				log.warn("unable to delete file [{}]", (Supplier<?>) ()-> getCanonicalNameOrErrorMessage(file), e);
 			}
 		}
 	}
@@ -325,6 +347,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SmbFile file) {
 		return null;
 	}

@@ -184,8 +184,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			if (getAction() == FileSystemAction.DOWNLOAD) {
 				ConfigurationWarnings.add(owner, log, "action ["+FileSystemAction.DOWNLOAD+"] has been replaced with ["+FileSystemAction.READ+"]");
 				action=FileSystemAction.READ;
-			}
-			if (getAction()==FileSystemAction.UPLOAD) {
+			} else if (getAction() == FileSystemAction.UPLOAD) {
 				ConfigurationWarnings.add(owner, log, "action ["+FileSystemAction.UPLOAD+"] has been replaced with ["+FileSystemAction.WRITE+"]");
 				action=FileSystemAction.WRITE;
 			}
@@ -240,16 +239,16 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && getAction()!=FileSystemAction.MKDIR) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && getAction() != FileSystemAction.MKDIR && getAction() != FileSystemAction.RMDIR) {
 			if (isCreateFolder()) {
-				log.debug("creating inputFolder ["+getInputFolder()+"]");
+				log.debug("creating inputFolder [{}]", this::getInputFolder);
 				fileSystem.createFolder(getInputFolder());
 			} else {
 				F file = fileSystem.toFile(getInputFolder());
-				if (file!=null && fileSystem.exists(file)) {
-					throw new FileNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
+				if (file != null && fileSystem.exists(file)) {
+					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
 				}
-				throw new FileNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist");
+				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(fileSystem.toFile(getInputFolder()))+"], does not exist");
 			}
 		}
 	}
@@ -288,14 +287,14 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
-		String filenameWithFolder = determineFilename(input, pvl);
+		final String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
 
 		if (StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder)) {
 			if (isCreateFolder()) {
 				fileSystem.createFolder(folder);
 			} else {
-				throw new FileSystemException("folder ["+folder+"] does not exist");
+				throw new FolderNotFoundException("folder ["+folder+"] does not exist");
 			}
 		}
 
@@ -360,32 +359,30 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 				case READDELETE: {
 					final F file = getFile(input, pvl);
-					try {
-						Message result = fileSystem.readFile(file, getCharset());
-						// Make a copy of a local file, otherwise the file is deleted after this method returns.
-						if (fileSystem instanceof LocalFileSystem) {
-							return result.copyMessage();
-						}
+					Message result = fileSystem.readFile(file, getCharset());
+					// Make a copy of a local file, otherwise the file is deleted after this method returns.
+					if (fileSystem instanceof LocalFileSystem) {
+						result = result.copyMessage();
+					} else {
 						result.preserve();
-						return result;
-					} finally {
-						fileSystem.deleteFile(file);
-						deleteEmptyFolder(file);
 					}
+					fileSystem.deleteFile(file);
+					deleteEmptyFolder(file);
+					return result;
 				}
 				case LIST: {
 					String folder = arrangeFolder(determineInputFoldername(input, pvl));
+
 					ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
-					try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
+					try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
+
 						Iterator<F> it = stream.iterator();
-						while(it.hasNext()) {
+						while (it.hasNext()) {
 							F file = it.next();
-							try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
+							try (INodeBuilder nodeBuilder = directoryBuilder.addElement()) {
 								FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
 							}
 						}
-					} finally {
-						directoryBuilder.close();
 					}
 					return Message.asMessage(directoryBuilder.toString());
 				}
@@ -393,7 +390,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					F file = getFileAndCreateFolder(input, pvl);
 					if (fileSystem.exists(file)) {
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
-						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 					}
 
 					((IWritableFileSystem<F>)fileSystem).createFile(file, getContents(input, pvl, charset));
@@ -403,11 +400,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					F file=getFile(input, pvl);
 					if (getRotateDays()>0 && fileSystem.exists(file)) {
 						FileSystemUtils.rolloverByDay((IWritableFileSystem<F>)fileSystem, file, getInputFolder(), getRotateDays());
-						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 					}
 					if (getRotateSize()>0 && fileSystem.exists(file)) {
 						FileSystemUtils.rolloverBySize((IWritableFileSystem<F>)fileSystem, file, getRotateSize(), getNumberOfBackups());
-						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 					}
 
 					((IWritableFileSystem<F>)fileSystem).appendFile(file, getContents(input, pvl, charset));
@@ -461,16 +458,15 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 
 	private interface FileAction<F> {
-		public F execute(F f) throws FileSystemException;
+		F execute(F f) throws FileSystemException;
 	}
 
 	/**
 	 * Helper method to process delete, move and copy actions.
 	 * @throws FileSystemException
-	 * @throws IOException
 	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
+	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
 			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");
@@ -502,7 +498,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				if (file!=null && fileSystem.exists(file)) {
 					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist as a folder, but is a file");
 				}
-				throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist");
+				throw new FolderNotFoundException("folder ["+determinedFolderName+"], does not exist");
 			}
 		}
 		return determinedFolderName;

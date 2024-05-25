@@ -26,6 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.frankframework.cache.ICache;
@@ -45,10 +49,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Locker;
 import org.frankframework.util.Misc;
 import org.springframework.context.ApplicationContext;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Required in each {@link Adapter} to transform incoming messages. A pipeline
@@ -625,7 +625,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);
-		log.debug("added pipe [" + pipe + "]");
+		log.debug("added pipe [{}]", pipe);
 	}
 
 	/**

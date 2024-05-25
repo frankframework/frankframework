@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.transform.TransformerException;
-import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +61,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.MessageStoreSender;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.processors.PipeProcessor;
@@ -82,6 +82,7 @@ import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -219,7 +220,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
 			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
-				for (Parameter p:getParameterList()) {
+				for (IParameter p:getParameterList()) {
 					if (!p.getName().equals(STUBFILENAME)) {
 						((ISenderWithParameters)getSender()).addParameter(p);
 					}

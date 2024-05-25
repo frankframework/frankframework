@@ -66,9 +66,13 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
-		if (result != null) {
-			result.close();
+	public void tearDown() {
+		try {
+			if (result != null) {
+				result.close();
+			}
+		} catch (IOException e) {
+			log.warn("Error when closing MongoDB connection", e);
 		}
 	}
 

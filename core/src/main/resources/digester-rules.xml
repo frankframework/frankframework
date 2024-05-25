@@ -48,7 +48,7 @@
 	<rule pattern="configuration/scheduler" registerMethod="setScheduleManager"/>
 	<rule pattern="*/job" factory="org.frankframework.configuration.digester.JobFactory" registerMethod="registerScheduledJob"/>
 	<rule pattern="*/locker" registerMethod="setLocker" beanClass="org.frankframework.util.Locker"/>
-	<rule pattern="*/param" registerMethod="addParameter" beanClass="org.frankframework.parameters.Parameter"/>
+	<rule pattern="*/param" factory="org.frankframework.configuration.digester.ParameterFactory" registerMethod="addParameter"/>
 	<rule pattern="*/directoryCleaner" registerMethod="addDirectoryCleaner" beanClass="org.frankframework.util.DirectoryCleaner"/>
 
 	<!-- batch related rules -->

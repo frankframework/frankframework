@@ -17,17 +17,17 @@
 package org.frankframework.extensions.mqtt;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -65,7 +65,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList = new ParameterList();
 		}

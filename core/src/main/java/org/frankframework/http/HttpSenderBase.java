@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +47,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -61,6 +60,7 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -120,7 +120,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	private TransformerPool transformerPool=null;
 
-	protected Parameter urlParameter;
+	protected IParameter urlParameter;
 
 	protected URI staticUri;
 
@@ -131,7 +131,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	protected ParameterList paramList = null;
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -159,7 +159,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			if (StringUtils.isNotEmpty(getHeadersParams())) {
 				headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
 			}
-			for (Parameter p: paramList) {
+			for (IParameter p: paramList) {
 				String paramName = p.getName();
 				if (!headerParamsSet.contains(paramName)) {
 					requestOrBodyParamsSet.add(paramName);
@@ -338,19 +338,21 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		ParameterValueList pvl = null;
-		try {
-			if (paramList !=null) {
-				pvl=paramList.getValues(message, session);
+		ParameterValueList pvl;
+		if (paramList != null) {
+			try {
+				pvl = paramList.getValues(message, session);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+		} else {
+			pvl = null;
 		}
 
 		URI targetUri;
 		final HttpRequestBase httpRequestBase;
 		try {
-			if (urlParameter != null) {
+			if (urlParameter != null && pvl != null) {
 				String url = pvl.get(getUrlParam()).asStringValue();
 				targetUri = getURI(url);
 			} else {
@@ -359,8 +361,8 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (!headerParamsSet.isEmpty() && pvl!=null) {
-				log.debug("appending header parameters "+headersParams);
+			if (!headerParamsSet.isEmpty() && pvl != null) {
+				log.debug("appending header parameters {}", headersParams);
 				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
 					if(paramValue != null) {
@@ -385,8 +387,8 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
 				}
 			}
-			for (String param: headersParamsMap.keySet()) {
-				httpRequestBase.setHeader(param, headersParamsMap.get(param));
+			for (Map.Entry<String, String> param: headersParamsMap.entrySet()) {
+				httpRequestBase.setHeader(param.getKey(), param.getValue());
 			}
 
 			log.info("configured httpclient for host [{}]", targetUri::getHost);

@@ -20,10 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-
-import lombok.Getter;
-import lombok.SneakyThrows;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ITransactionalStorage;
@@ -33,10 +31,14 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ExcludeFromType;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
+import lombok.SneakyThrows;
 
 /**
  * Send messages to the IBISSTORE database table to have them processed exactly-once by another
@@ -84,6 +86,9 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			paramList.configure();
 		}
 		setType(StorageType.MESSAGESTORAGE.getCode());
+		if (StringUtils.isBlank(getSlotId())) {
+			throw new ConfigurationException("[slotId] has to be configured");
+		}
 		super.configure();
 	}
 
@@ -93,7 +98,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList == null) {
 			paramList = new ParameterList();
 		}
@@ -167,4 +172,17 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		super.setOnlyStoreWhenMessageIdUnique(onlyStoreWhenMessageIdUnique);
 	}
 
+	/**
+	 * Set the slotId, an identifier to keep separate the messages inserted
+	 * by different MessageStoreSenders.
+	 * <br/>
+	 * This field should be set.
+	 *
+	 * @param string The {@code slotID} value for this MessageStoreSender.
+	 */
+	@Mandatory
+	@Override
+	public void setSlotId(String string) {
+		super.setSlotId(string);
+	}
 }

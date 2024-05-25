@@ -111,11 +111,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return false;
 	}
 
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return null;
-	}
-
 
 	@Override
 	public String getTimestampFieldType() {
@@ -145,16 +140,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			default:
 				return false;
 		}
-	}
-
-	@Override
-	public boolean mustInsertEmptyClobBeforeData() {
-		return false;
-	}
-
-	@Override
-	public String emptyClobValue() {
-		return "''";
 	}
 
 	@Override
@@ -228,21 +213,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			default:
 				return false;
 		}
-	}
-
-	@Override
-	public boolean mustInsertEmptyBlobBeforeData() {
-		return false;
-	}
-
-	@Override
-	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
-		return null;
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "''";
 	}
 
 	@Override

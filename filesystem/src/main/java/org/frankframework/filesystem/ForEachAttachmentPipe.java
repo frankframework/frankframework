@@ -32,7 +32,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
-public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> extends IteratingPipe<A> {
+public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extends IteratingPipe<A> {
 
 	private Set<String> onlyProperties;
 	private Set<String> excludeProperties;

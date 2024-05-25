@@ -16,21 +16,21 @@
 package org.frankframework.extensions.sap.jco3;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
+
+import lombok.Getter;
 
 /**
  * Base class for functions that call SAP.
@@ -135,7 +135,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}

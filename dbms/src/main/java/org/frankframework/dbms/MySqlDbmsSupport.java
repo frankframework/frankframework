@@ -137,8 +137,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "INT AUTO_INCREMENT";
 	}
 
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT LAST_INSERT_ID()";
-	}
 }

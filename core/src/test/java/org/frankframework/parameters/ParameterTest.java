@@ -67,7 +67,6 @@ public class ParameterTest {
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -85,7 +84,6 @@ public class ParameterTest {
 		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test // Should use input value
@@ -101,7 +99,6 @@ public class ParameterTest {
 		assertNull(p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -119,7 +116,6 @@ public class ParameterTest {
 		assertEquals("fakeSessionVariable", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKey"));
 	}
 
@@ -142,7 +138,6 @@ public class ParameterTest {
 		assertEquals("fakeParameterValue", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -167,7 +162,6 @@ public class ParameterTest {
 		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKey"));
 	}
 
@@ -196,7 +190,6 @@ public class ParameterTest {
 		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKey"));
 	}
 
@@ -215,7 +208,6 @@ public class ParameterTest {
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -233,7 +225,6 @@ public class ParameterTest {
 		assertEquals("fakeDefault", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -251,7 +242,6 @@ public class ParameterTest {
 		assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -269,7 +259,6 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, null, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -286,7 +275,6 @@ public class ParameterTest {
 		assertEquals("fakeContextValue", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -307,7 +295,6 @@ public class ParameterTest {
 		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
 	}
 
@@ -326,7 +313,6 @@ public class ParameterTest {
 		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -348,7 +334,6 @@ public class ParameterTest {
 		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
 	}
 
@@ -366,7 +351,6 @@ public class ParameterTest {
 		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -384,7 +368,6 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -404,7 +387,6 @@ public class ParameterTest {
 		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -424,7 +406,6 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -446,7 +427,6 @@ public class ParameterTest {
 		assertEquals(sessionMessage, p.getValue(alreadyResolvedParameters, message, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
 		assertFalse(p.consumesSessionVariable("test"));
 	}
@@ -474,7 +454,6 @@ public class ParameterTest {
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
 	}
 
@@ -502,7 +481,6 @@ public class ParameterTest {
 		assertEquals("fiets bel appel", stringResult);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
 	}
 
@@ -521,7 +499,6 @@ public class ParameterTest {
 		assertEquals("a", Message.asMessage(result).asString());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -538,7 +515,6 @@ public class ParameterTest {
 		assertEquals("a", Message.asMessage(result).asString());
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("test"));
 	}
 
@@ -557,7 +533,6 @@ public class ParameterTest {
 		assertEquals("fakeDefault", Message.asMessage(result).asString());
 
 		assertTrue(p.requiresInputValueForResolution());
-		assertTrue(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -649,62 +624,7 @@ public class ParameterTest {
 		assertEquals("fakeDefault", Message.asMessage(result).asString());
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("emptySessionKey"));
-	}
-
-	@Test
-	public void testParameterNumberBoolean() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("1");
-		p.setType(ParameterType.BOOLEAN);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Boolean.class, result);
-		assertFalse((Boolean) result);
-	}
-
-	@Test
-	public void testParameterBooleanToConvert() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("boolean");
-		p.setValue("true");
-		p.setType(ParameterType.BOOLEAN);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Boolean.class, result);
-		assertTrue((Boolean) result);
-	}
-
-	@Test
-	public void testParameterBooleanAsInput() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("boolean");
-		p.setSessionKey("poeh");
-		p.setType(ParameterType.BOOLEAN);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = Message.asMessage(true);
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("poeh", true);
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertInstanceOf(Boolean.class, result);
-		assertTrue((Boolean) result);
-
-		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
-		assertTrue(p.consumesSessionVariable("poeh"));
 	}
 
 	@Test
@@ -733,172 +653,6 @@ public class ParameterTest {
 
 		String stringResult = Message.asMessage(result).asString();
 		assertEquals("value value2 value4 value3", stringResult);
-	}
-
-	@Test
-	public void testParameterNumberParseException() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("a");
-		p.setType(ParameterType.NUMBER);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
-	}
-
-	@Test
-	public void testParameterInteger() throws Exception {
-		testParameterTypeHelper(ParameterType.INTEGER, Integer.class);
-	}
-
-	@Test
-	public void testParameterNumber() throws Exception {
-		testParameterTypeHelper(ParameterType.NUMBER, Number.class);
-	}
-
-	public <T> void testParameterTypeHelper(ParameterType type, Class<T> c) throws Exception {
-		Parameter p = new Parameter();
-		p.setName("integer");
-		p.setValue("8");
-		p.setType(type);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("sessionkey", 8);
-		p = new Parameter();
-		p.setName("integer");
-		p.setSessionKey("sessionkey");
-		p.setType(type);
-		p.configure();
-
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-
-		session = new PipeLineSession();
-		session.put("sessionkey", "8");
-
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-
-		session = new PipeLineSession();
-		session.put("sessionkey", Message.asMessage(8));
-
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-
-		session = new PipeLineSession();
-		session.put("sessionkey", "8".getBytes());
-
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-
-		session = new PipeLineSession();
-		session.put("sessionkey", Message.asMessage("8".getBytes()));
-
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-
-	}
-
-	@Test
-	public void testNumberWithLeftPadding() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("8");
-		p.setMinLength(10);
-		p.setType(ParameterType.NUMBER);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String, "Expecting to be String but was:" + result.getClass());
-		assertEquals("0000000008", (String) result);
-	}
-
-	@Test
-	public void testNumberWithLeftPaddingAndMinExclusive() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("3");
-		p.setMinLength(10);
-		p.setMinInclusive("5");
-		p.setType(ParameterType.NUMBER);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
-		assertEquals("0000000005", (String) result);
-	}
-
-	@Test
-	public void testNumberWithLeftPaddingAndMaxExclusive() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("8");
-		p.setMinLength(10);
-		p.setMaxInclusive("5");
-		p.setType(ParameterType.NUMBER);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
-		assertEquals("0000000005", (String) result);
-
-		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
-	}
-
-	@Test
-	public void testNumberWithLeftPaddingAndMaxExclusiveNotExceeding() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("3");
-		p.setMinLength(10);
-		p.setMaxInclusive("5");
-		p.setType(ParameterType.NUMBER);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
-		assertEquals("0000000003", (String) result);
-	}
-
-	@Test
-	public void testNumberWithLeftPaddingAndMinExclusiveNotExceeding() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("number");
-		p.setValue("5");
-		p.setMinLength(10);
-		p.setMinInclusive("3");
-		p.setType(ParameterType.NUMBER);
-		p.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
-		assertEquals("0000000005", (String) result);
 	}
 
 	@Test
@@ -1093,7 +847,6 @@ public class ParameterTest {
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1171,7 +924,6 @@ public class ParameterTest {
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 		assertTrue(parameter.consumesSessionVariable("originalMessage"));
 	}
 
@@ -1213,7 +965,6 @@ public class ParameterTest {
 		assertEquals(expected, DateFormatUtils.format((Date) result));
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1273,7 +1024,6 @@ public class ParameterTest {
 		assertEquals(date, result);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-		assertFalse(parameter.requiresInputValueOrContextForResolution());
 		assertTrue(parameter.consumesSessionVariable("originalMessage"));
 	}
 
@@ -1387,7 +1137,6 @@ public class ParameterTest {
 		assertEquals("1995-01-23", formattedDate);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1563,7 +1312,6 @@ public class ParameterTest {
 		assertTrue(((String) result).endsWith("-message"));
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 	}
 
 	@Test
@@ -1757,7 +1505,6 @@ public class ParameterTest {
 		assertEquals("fakeDefaultValue", result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKeyForDefaultValue"));
 		assertTrue(p.consumesSessionVariable("sessionKeyForPattern"));
 	}
@@ -1806,7 +1553,6 @@ public class ParameterTest {
 		assertEquals("fakePatternSessionKey", result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertTrue(p.consumesSessionVariable("sessionKeyForDefaultValue"));
 		assertTrue(p.consumesSessionVariable("sessionKeyForPattern"));
 	}
@@ -1876,7 +1622,6 @@ public class ParameterTest {
 		assertEquals("<doc/>", result);
 
 		assertFalse(p.requiresInputValueForResolution());
-		assertFalse(p.requiresInputValueOrContextForResolution());
 		assertFalse(p.consumesSessionVariable("sessionKeyForDefaultValue"));
 		assertTrue(p.consumesSessionVariable("sessionKeyForPattern"));
 	}
