@@ -65,7 +65,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("messageId", messageId.toString())) {
 			String tempReplyChannel = (String) message.getHeaders().getReplyChannel();
 
-			log.debug("received message [{}] {} reply-channel", message, tempReplyChannel == null ? "with" : "without");
+			log.debug("received message [{}] {} reply-channel", message, tempReplyChannel == null ? "without" : "with");
 			processMessage(message, tempReplyChannel);
 		}
 	}

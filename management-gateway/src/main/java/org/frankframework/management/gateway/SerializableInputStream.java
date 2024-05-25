@@ -26,6 +26,7 @@ import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.CloseUtils;
 
 /**
  * InputStream wrapper to allow streams to be serialized and deserialized so the (raw) binary data can be sent using Hazelcast.
@@ -168,9 +169,7 @@ public class SerializableInputStream extends InputStream implements Externalizab
 	@Override
 	public void close() throws IOException {
 		try {
-			if(delegate != null) {
-				delegate.close();
-			}
+			CloseUtils.closeSilently(delegate);
 		} finally {
 			if(tmpFile != null) {
 				LOG.trace("removing temporary file location [{}]", tmpFile);
