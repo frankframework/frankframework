@@ -231,7 +231,7 @@ public abstract class ClassUtils {
 		}
 	}
 
-	public static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
+	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
 
 		//Try to parse as primitive

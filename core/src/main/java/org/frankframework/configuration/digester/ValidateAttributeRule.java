@@ -16,7 +16,6 @@
 package org.frankframework.configuration.digester;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -109,18 +108,6 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	public static String getEnumConfigurationWarning(Enum<?> value) {
-		try {
-			Field field = value.getClass().getField(value.name());
-			ConfigurationWarning configWarning = field.getAnnotation(ConfigurationWarning.class);
-			if (configWarning != null) {
-				return configWarning.value();
-			}
-		} catch (NoSuchFieldException | SecurityException ignored) {
-		} // No field found or not accessible, no warning
-		return null;
-	}
-
 	/**
 	 * Check if the value:,
 	 * - Can be parsed to match the Getters return type,
@@ -165,13 +152,15 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		addWarningForField(warningMessage, isDeprecated, name);
 
 		// Check enum Configuration Warnings
-		if (!setterMethod.getParameters()[0].getType().isEnum()) // only first parameter is relevant to check
+		Class<?> setterArgumentClass = setterMethod.getParameters()[0].getType();
+		if (!setterArgumentClass.isEnum()) // only first parameter is relevant to check
 			return; // Skip non-enum setters
 		try {
-			Object o = ClassUtils.parseValueToSet(setterMethod, value);
+			Object o = ClassUtils.convertToType(setterArgumentClass, value);
 			if (o instanceof Enum<?> enumValue) {
-				String configWarning = getEnumConfigurationWarning(enumValue);
-				isDeprecated = EnumUtils.isEnumDeprecated(enumValue);
+				warning = EnumUtils.findAnnotation(enumValue, ConfigurationWarning.class);
+				String configWarning = warning != null ? warning.value() : null;
+				isDeprecated = EnumUtils.findAnnotation(enumValue, Deprecated.class) != null;
 				addWarningForField(configWarning, isDeprecated, name + "." + enumValue);
 			}
 		} catch (IllegalArgumentException ignored) { // Can not happen with enums

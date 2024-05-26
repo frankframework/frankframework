@@ -15,6 +15,7 @@
 */
 package org.frankframework.util;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.frankframework.doc.DocumentedEnum;
+
+import jakarta.annotation.Nullable;
 
 /**
  * @author Niels Meijer
@@ -123,20 +126,18 @@ public abstract class EnumUtils {
 	}
 
 	/**
-	 * Check if the Enum value is deprecated.
-	 * @param value Enum value
-	 * @return true if @Deprecated annotation is present on the Enum value
+	 * Find a single {@link Annotation} of {@code annotationType} on the supplied {@link Enum}.
+	 * @param enumValue the enum field to look for annotations on
+	 * @param annotationType the type of annotation to look for
+	 * @return the first matching annotation, or {@code null} if not found
 	 */
-	public static boolean isEnumDeprecated(Enum<?> value) {
-		if (value == null) {
-			return false;
-		}
+	@Nullable
+	public static <A extends Annotation> A findAnnotation(Enum<?> enumValue, @Nullable Class<A> annotationType) {
 		try {
-			Field field = value.getClass().getField(value.name());
-			Deprecated annotation = field.getAnnotation(Deprecated.class);
-			return annotation != null;
+			Field field = enumValue.getClass().getField(enumValue.name());
+			return field.getAnnotation(annotationType);
 		} catch (NoSuchFieldException | SecurityException ignored) {
-			return false;
-		}
+			return null;
+		} // No field found or not accessible, no warning
 	}
 }
