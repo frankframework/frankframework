@@ -223,7 +223,8 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				query.append(metadataName);
 			}
 		}
-		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
+//		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
+		String rowNumber = null;
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			if (first) {
 				first = false;
@@ -283,7 +284,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		query.append(")");
 		if (StringUtils.isNotEmpty(rowNumber)) {
-			query.append(" where " + dbmsSupport.getRowNumberShortName() + " < ?");
+//			query.append(" where " + dbmsSupport.getRowNumberShortName() + " < ?");
 			args.add(maxNumberOfRecords + 1);
 			argTypes.add(Types.INTEGER);
 		}

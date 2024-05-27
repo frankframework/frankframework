@@ -77,7 +77,7 @@
 	</task:scheduled-tasks>
 
 	<bean name="dataSourceName" class="java.lang.String">
-		<constructor-arg value="${ladybug.jdbc.datasource:${jdbc.datasource.default}}"/>
+		<!-- constructor-arg value="${ladybug.jdbc.datasource:${jdbc.datasource.default}}"/ -->
 	</bean>
 
 	<bean name="debugStoragePreferred" class="java.lang.String">

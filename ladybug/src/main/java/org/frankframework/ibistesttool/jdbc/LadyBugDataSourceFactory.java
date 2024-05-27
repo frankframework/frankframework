@@ -15,20 +15,20 @@
 */
 package org.frankframework.ibistesttool.jdbc;
 
-import java.sql.Connection;
-import java.time.Duration;
+//import java.sql.Connection;
+//import java.time.Duration;
 
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DataSourceConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+//import org.apache.commons.lang3.StringUtils;
+//import org.apache.commons.pool2.ObjectPool;
+//import org.apache.commons.pool2.impl.GenericObjectPool;
+//import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
+//import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
+//import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
+//import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+//import org.apache.tomcat.dbcp.dbcp2.PoolingDataSource;
 import org.frankframework.jdbc.datasource.ObjectFactoryBase;
 import org.frankframework.util.AppConstants;
 
@@ -77,44 +77,44 @@ public class LadyBugDataSourceFactory extends ObjectFactoryBase<DataSource> {
 	}
 
 	private DataSource createPool(DataSource dataSource, String dataSourceName) {
-		if (isPooledDataSource(dataSource)) {
+//		if (isPooledDataSource(dataSource)) {
 			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
 			return dataSource;
-		}
-		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
-		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
-
-		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
-		PoolingDataSource<PoolableConnection> ds = new PoolingDataSource<>(connectionPool);
-		log.info("registered PoolingDataSource [{}]", ds);
-		return ds;
+//		}
+//		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
+//		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
+//
+//		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+//		PoolingDataSource<PoolableConnection> ds = new PoolingDataSource<>(connectionPool);
+//		log.info("registered PoolingDataSource [{}]", ds);
+//		return ds;
 	}
 
-	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
-		poolableConnectionFactory.setAutoCommitOnReturn(false);
-		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		if (maxLifeTime > 0) {
-			poolableConnectionFactory.setMaxConn(Duration.ofSeconds(maxLifeTime));
-		}
-		poolableConnectionFactory.setRollbackOnReturn(true);
-		if (StringUtils.isNotBlank(testQuery)) {
-			poolableConnectionFactory.setValidationQuery(testQuery);
-			poolableConnectionFactory.setValidationQueryTimeout(Duration.ofSeconds(5));
-		}
-		poolableConnectionFactory.setFastFailValidation(true);
-		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
-		connectionPool.setMinIdle(minIdle);
-		connectionPool.setMaxTotal(maxPoolSize);
-		connectionPool.setMaxIdle(maxIdle);
-		connectionPool.setTestOnBorrow(true);
-		connectionPool.setTestWhileIdle(true);
-		if (connectionCheckInterval > 0) {
-			connectionPool.setDurationBetweenEvictionRuns(Duration.ofSeconds(connectionCheckInterval));
-		}
-		connectionPool.setBlockWhenExhausted(true);
-		poolableConnectionFactory.setPool(connectionPool);
-		return connectionPool;
-	}
+//	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
+//		poolableConnectionFactory.setAutoCommitOnReturn(false);
+//		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//		if (maxLifeTime > 0) {
+//			poolableConnectionFactory.setMaxConn(Duration.ofSeconds(maxLifeTime));
+//		}
+//		poolableConnectionFactory.setRollbackOnReturn(true);
+//		if (StringUtils.isNotBlank(testQuery)) {
+//			poolableConnectionFactory.setValidationQuery(testQuery);
+//			poolableConnectionFactory.setValidationQueryTimeout(Duration.ofSeconds(5));
+//		}
+//		poolableConnectionFactory.setFastFailValidation(true);
+//		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+//		connectionPool.setMinIdle(minIdle);
+//		connectionPool.setMaxTotal(maxPoolSize);
+//		connectionPool.setMaxIdle(maxIdle);
+//		connectionPool.setTestOnBorrow(true);
+//		connectionPool.setTestWhileIdle(true);
+//		if (connectionCheckInterval > 0) {
+//			connectionPool.setDurationBetweenEvictionRuns(Duration.ofSeconds(connectionCheckInterval));
+//		}
+//		connectionPool.setBlockWhenExhausted(true);
+//		poolableConnectionFactory.setPool(connectionPool);
+//		return connectionPool;
+//	}
 
 	public DataSource getDataSource(String dataSourceName) {
 		return get(dataSourceName, null);
