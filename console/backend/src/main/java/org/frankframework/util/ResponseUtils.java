@@ -15,6 +15,9 @@
 */
 package org.frankframework.util;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import jakarta.ws.rs.core.EntityTag;
@@ -23,6 +26,7 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -68,6 +72,19 @@ public class ResponseUtils {
 
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message) {
 		return convertToSpringResponse(message, null);
+	}
+
+	public static ResponseEntity<StreamingResponseBody> convertToSpringStreamingResponse(Message<InputStream> message) {
+		StreamingResponseBody response = outputStream -> {
+			InputStream inputStream = message.getPayload();
+			int numberOfBytesToWrite;
+			byte[] data = new byte[1024];
+			while ((numberOfBytesToWrite = inputStream.read(data, 0, data.length)) != -1) {
+				outputStream.write(data, 0, numberOfBytesToWrite);
+			}
+			inputStream.close();
+		};
+		return (ResponseEntity<StreamingResponseBody>) convertToSpringResponse(message, response);
 	}
 
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message, StreamingResponseBody response) {
