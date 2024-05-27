@@ -35,7 +35,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DateParameter extends AbstractParameter {
 	private @Getter String formatString = null;
-	private DateFormatType formatType = DateFormatType.DATE;
+	private DateFormatType formatType;
 
 	public DateParameter() {
 		setType(ParameterType.DATE); //Defaults to Date
@@ -108,5 +108,6 @@ public class DateParameter extends AbstractParameter {
 
 	public void setFormatType(DateFormatType formatType) {
 		this.formatType = formatType;
+		super.setType(EnumUtils.parse(ParameterType.class, formatType.name()));
 	}
 }
