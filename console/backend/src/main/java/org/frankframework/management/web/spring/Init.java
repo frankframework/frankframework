@@ -54,7 +54,7 @@ public class Init extends FrankApiBase {
 		List<Object> JSONresources = new ArrayList<>();
 		Map<String, Object> HALresources = new HashMap<>();
 		Map<String, Object> resources = new HashMap<>(1);
-		boolean hal = "hal".equalsIgnoreCase(hateoasImpl);
+		boolean hateoasSupport = "hal".equalsIgnoreCase(hateoasImpl);
 
 		String requestPath = getServletRequest().getRequestURL().toString();
 		if(requestPath.endsWith("/")) {
@@ -79,10 +79,6 @@ public class Init extends FrankApiBase {
 				continue;
 			}
 
-			if(method.getName().equalsIgnoreCase("browseMessages")){
-				var x = 0;
-			}
-
 			PathPattern[] paths = mappingInfo.getPathPatternsCondition().getPatterns().toArray(new PathPattern[0]);
 			RequestMethod methodType = mappingInfo.getMethodsCondition().getMethods().toArray(new RequestMethod[0])[0];
 			RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
@@ -92,7 +88,7 @@ public class Init extends FrankApiBase {
 				rolesAllowed.value() : null;
 			String descriptionText = description != null ? description.value() : null;
 			boolean hasRelation = method.isAnnotationPresent(Relation.class);
-			String rel = !hal && hasRelation ? method.getAnnotation(Relation.class).value() : null;
+			String rel = !hateoasSupport && hasRelation ? method.getAnnotation(Relation.class).value() : null;
 
 			for (PathPattern path : paths) {
 				Map<String, Object> resource = new HashMap<>(6);
@@ -106,7 +102,7 @@ public class Init extends FrankApiBase {
 				if (descriptionText != null)
 					resource.put("description", descriptionText);
 
-				if (hal) {
+				if (hateoasSupport) {
 					if (hasRelation)
 						relation = method.getAnnotation(Relation.class).value();
 
@@ -135,7 +131,7 @@ public class Init extends FrankApiBase {
 			}
 		}
 
-		if(hal)
+		if(hateoasSupport)
 			resources.put("_links", HALresources);
 		else
 			resources.put("links", JSONresources);

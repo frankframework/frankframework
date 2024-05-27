@@ -24,6 +24,7 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.lifecycle.DynamicRegistration;
@@ -38,12 +39,12 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+@Log4j2
 public class ServletDispatcherSpring extends DispatcherServlet implements DynamicRegistration.Servlet {
 
 	private static final long serialVersionUID = 1L;
 
 	private final Logger secLog = LogManager.getLogger("SEC");
-	private final Logger log = LogManager.getLogger(this);
 
 	@Value("${iaf-api.enabled:true}")
 	private boolean isEnabled;
@@ -78,7 +79,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 			try {
 				response.sendError(404, "api backend not enabled");
 			} catch (IOException e) {
-				log.debug("unable to send 404 error to client", e);
+				log.trace("unable to send 404 error to client", e);
 			}
 
 			return;

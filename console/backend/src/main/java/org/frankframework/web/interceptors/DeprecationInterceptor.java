@@ -29,7 +29,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.lang.reflect.Method;
 
-/* does work for some reason */
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class DeprecationInterceptor implements HandlerInterceptor, EnvironmentAware {
 

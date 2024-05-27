@@ -56,7 +56,7 @@ public class BrowseQueue extends FrankApiBase {
 		String type = RequestUtils.getValue(json, "type");
 
 		if (StringUtils.isNotEmpty(destination))
-			throw new org.frankframework.management.web.ApiException("No destination provided");
+			throw new ApiException("No destination provided");
 		if (StringUtils.isNotEmpty(type))
 			throw new ApiException("No type provided");
 

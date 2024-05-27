@@ -58,11 +58,11 @@ public class Configuration extends FrankApiBase {
 		if(StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
-		} else {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
-			if(loaded) builder.addHeader("loaded", loaded);
-			return callSyncGateway(builder);
 		}
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
+		if(loaded) builder.addHeader("loaded", loaded);
+		return callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisAdmin", "IbisTester"})

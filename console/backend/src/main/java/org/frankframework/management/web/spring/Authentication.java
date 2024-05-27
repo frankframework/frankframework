@@ -15,8 +15,7 @@
 */
 package org.frankframework.management.web.spring;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.management.web.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,9 +29,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
+@Log4j2
 public class Authentication extends FrankApiBase {
-
-	protected Logger log = LogManager.getLogger(this);
 
 	@PermitAll
 	@GetMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
