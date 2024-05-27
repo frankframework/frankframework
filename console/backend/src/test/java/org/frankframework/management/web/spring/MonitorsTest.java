@@ -23,7 +23,6 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.web.ShowMonitorsTest;
 import org.frankframework.util.StreamUtil;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -121,7 +120,7 @@ public class MonitorsTest extends FrankApiTestBase {
 			);
 			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
 		});
-		URL jsonInputURL = ShowMonitorsTest.class.getResource("/management/web/MonitorTest_updateTrigger.json");
+		URL jsonInputURL = MonitorsTest.class.getResource("/management/web/MonitorTest_updateTrigger.json");
 		assertNotNull(jsonInputURL, "unable to find input JSON"); // Check if the file exists to avoid NPE's
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
 

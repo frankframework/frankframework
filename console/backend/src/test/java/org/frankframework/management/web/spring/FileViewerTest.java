@@ -2,7 +2,6 @@ package org.frankframework.management.web.spring;
 
 import org.apache.commons.io.FilenameUtils;
 import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.web.TestFileViewer;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +26,7 @@ public class FileViewerTest extends FrankApiTestBase {
 
 	@Test
 	public void testRetrievingTextFile() throws Exception {
-		URL fileUrl = TestFileViewer.class.getResource("/management/web/FileViewer.txt");
+		URL fileUrl = FileViewerTest.class.getResource("/management/web/FileViewer.txt");
 		assert fileUrl != null;
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
@@ -57,7 +56,7 @@ public class FileViewerTest extends FrankApiTestBase {
 
 	@Test
 	public void testDownloadFile() throws Exception {
-		URL fileUrl = TestFileViewer.class.getResource("/management/web/FileViewer.txt");
+		URL fileUrl = FileViewerTest.class.getResource("/management/web/FileViewer.txt");
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 		String requestUrl = "/file-viewer?file=" + fileName + "&accept=application/octet-stream"; // ignore accept header & use parameter

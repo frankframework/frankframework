@@ -1,9 +1,7 @@
 package org.frankframework.web.interceptors;
 
 import org.apache.logging.log4j.Level;
-import org.frankframework.management.web.TestDeprecationFilter;
 import org.frankframework.management.web.spring.FrankApiTestBase;
-import org.frankframework.management.web.spring.Monitors;
 import org.frankframework.management.web.spring.WebTestConfiguration;
 
 import org.frankframework.util.TestAppender;
