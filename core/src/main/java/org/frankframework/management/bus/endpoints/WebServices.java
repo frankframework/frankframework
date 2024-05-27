@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -245,20 +246,28 @@ public class WebServices extends BusEndpointBase {
 	@JsonInclude(Include.NON_NULL)
 	public class ListenerDAO {
 		private final @Getter String name;
-		private final @Getter String method;
+		private final @Getter List<HttpMethod> method;
 		private final @Getter String uriPattern;
 		private @Getter String receiver;
 		private @Getter String adapter;
 
 		public ListenerDAO(RestListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getMethod();
+
+			HttpMethod tempMethod;
+			try {
+				tempMethod = HttpMethod.valueOf(listener.getMethod().toUpperCase());
+			} catch (IllegalArgumentException e) {
+				tempMethod = HttpMethod.GET; // Default to GET, when parsing of enum fails
+			}
+			this.method = List.of(tempMethod);
+
 			this.uriPattern = listener.getUriPattern();
 		}
 
 		public ListenerDAO(ApiListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getMethods(); //TODO: method now glues all method names together
+			this.method = listener.getAllMethods();
 			this.uriPattern = listener.getUriPattern();
 		}
 
