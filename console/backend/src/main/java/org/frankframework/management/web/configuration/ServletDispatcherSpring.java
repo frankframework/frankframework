@@ -51,7 +51,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 
 
 	public ServletDispatcherSpring() {
-		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext2.xml");
+		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext.xml");
 		setDetectAllHandlerMappings(false); //Else it will use the parent's (EnvironmentContext) Spring Integration mapping
 	}
 
@@ -100,7 +100,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 
 	@Override
 	public String getName() {
-		return "IAF-API-SPRING";
+		return "IAF-API";
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 
 	@Override
 	public String getUrlMapping() {
-		return "iaf/spring-api/*";
+		return "iaf/api/*";
 	}
 
 }
