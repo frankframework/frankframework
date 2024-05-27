@@ -276,7 +276,7 @@ public class TransactionalStorage extends FrankApiBase {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			} catch (org.frankframework.management.web.ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
 			} catch (Exception e) {
 				errorMessages.add(e.getMessage());

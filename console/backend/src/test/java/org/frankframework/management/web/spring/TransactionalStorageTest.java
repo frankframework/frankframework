@@ -16,7 +16,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		Assertions.assertEquals(TransactionalStorage.StorageSource.RECEIVERS, TransactionalStorage.StorageSource.fromString("receivers"));
 		Assertions.assertEquals(TransactionalStorage.StorageSource.RECEIVERS, TransactionalStorage.StorageSource.fromString("Receivers"));
 		Assertions.assertEquals(TransactionalStorage.StorageSource.RECEIVERS, TransactionalStorage.StorageSource.fromString("RECEIVERS"));
-		IllegalArgumentException i = assertThrows(IllegalArgumentException.class, () -> org.frankframework.management.web.TransactionalStorage.StorageSource.fromString(""));
+		IllegalArgumentException i = assertThrows(IllegalArgumentException.class, () -> TransactionalStorage.StorageSource.fromString(""));
 		assertEquals("no StorageSource option supplied", i.getMessage());
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> TransactionalStorage.StorageSource.fromString("dummy"));
 		assertEquals("invalid StorageSource option", e.getMessage());

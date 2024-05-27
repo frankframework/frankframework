@@ -1,8 +1,6 @@
 package org.frankframework.management.web.spring;
 
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.management.web.RequestMessageBuilder;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,9 +18,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

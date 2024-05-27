@@ -153,14 +153,14 @@ public class Configuration extends FrankApiBase {
 			if(obj instanceof Boolean) {
 				builder.addHeader("activate", (Boolean) json.get("activate"));
 			} else {
-				throw new org.frankframework.management.web.ApiException("activate must be of type boolean");
+				throw new ApiException("activate must be of type boolean");
 			}
 		} else if(json.containsKey("autoreload")) {
 			Object obj = json.get("autoreload");
 			if(obj instanceof Boolean) {
 				builder.addHeader("autoreload", (Boolean) json.get("autoreload"));
 			} else {
-				throw new org.frankframework.management.web.ApiException("autoreload must be of type boolean");
+				throw new ApiException("autoreload must be of type boolean");
 			}
 		}
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);

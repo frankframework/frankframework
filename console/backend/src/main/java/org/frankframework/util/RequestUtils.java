@@ -22,73 +22,17 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import jakarta.annotation.Nullable;
-import org.frankframework.management.web.ApiException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.web.spring.ApiException;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.web.multipart.MultipartFile;
 
 public abstract class RequestUtils {
 	private static final Logger LOG = LogManager.getLogger(RequestUtils.class);
-
-	public static String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
-		return resolveStringFromMap(inputDataMap, key, null);
-	}
-
-	public static String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
-		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
-		if(StringUtils.isEmpty(result)) {
-			if(defaultValue != null) {
-				return defaultValue;
-			}
-			throw new ApiException("Key ["+key+"] may not be empty");
-		}
-		return result;
-	}
-
-	public static String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
-		Attachment msg = inputDataMap.getAttachment(key);
-		if(msg != null) {
-			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
-				String charset = msg.getContentType().getParameters().get("charset");
-				if(StringUtils.isNotEmpty(charset)) {
-					encoding = charset;
-				}
-			}
-			InputStream is = msg.getObject(InputStream.class);
-
-			try {
-				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
-				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
-			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+encoding+"]");
-			} catch (IOException e) {
-				throw new ApiException("error parsing value of key ["+key+"]", e);
-			}
-		}
-		return null;
-	}
-
-	public static <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
-		try {
-			Attachment attachment = inputDataMap.getAttachment(key);
-			if(attachment != null) {
-				return convert(clazz, attachment.getObject(InputStream.class));
-			}
-		} catch (Exception e) {
-			LOG.debug("Failed to parse parameter ["+key+"]", e);
-		}
-		if(defaultValue != null) {
-			return defaultValue;
-		}
-		throw new ApiException("Key ["+key+"] not defined", 400);
-	}
 
 	@SuppressWarnings("unchecked")
 	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
@@ -141,7 +85,7 @@ public abstract class RequestUtils {
 		if(defaultValue != null) {
 			return defaultValue;
 		}
-		throw new org.frankframework.management.web.spring.ApiException("Key ["+key+"] not defined", 400);
+		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
 
 	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding) {
@@ -161,9 +105,9 @@ public abstract class RequestUtils {
 				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
 				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
 			} catch (UnsupportedEncodingException e) {
-				throw new org.frankframework.management.web.spring.ApiException("unsupported file encoding ["+encoding+"]");
+				throw new ApiException("unsupported file encoding ["+encoding+"]");
 			} catch (IOException e) {
-				throw new org.frankframework.management.web.spring.ApiException("error parsing value of key ["+key+"]", e);
+				throw new ApiException("error parsing value of key ["+key+"]", e);
 			}
 		}
 		return null;

@@ -18,7 +18,6 @@ package org.frankframework.web;
 import jakarta.servlet.Filter;
 
 import org.frankframework.console.ConsoleFrontend;
-import org.frankframework.management.web.ServletDispatcher;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.web.filters.DynamicFilterConfigurer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
