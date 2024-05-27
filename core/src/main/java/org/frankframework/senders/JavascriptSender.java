@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ParameterException;
@@ -28,6 +29,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Optional;
+import org.frankframework.javascript.GraalJS;
 import org.frankframework.javascript.J2V8;
 import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
@@ -39,18 +41,16 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 
-import lombok.Getter;
-
 /**
- * Sender used to run JavaScript code using J2V8
+ * Sender used to run JavaScript code using `JavascriptEngine` implementations.
  * <p>
- * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
- * The parameters of the javascript function to run are given as parameters by the adapter configuration
+ * This sender can execute a function of a given Javascript file, the result of the function will be the output of the sender.
+ * The parameters of the Javascript function to run are given as parameters by the adapter configuration
  * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method,
  * you will need to create a parameter on the sender.
  * </p>
  * <p>
- * The result of the javascript function should be of type String, or directly convertible to String from a primitive type
+ * The result of the Javascript function should be of type String, or directly convertible to String from a primitive type
  * or an array of primitive types / strings, as the output of the sender will be of type String.
  * </p>
  * <p>
@@ -59,7 +59,6 @@ import lombok.Getter;
  *
  * @since 7.4
  */
-
 @Category("Advanced")
 public class JavascriptSender extends SenderSeries {
 
@@ -74,7 +73,8 @@ public class JavascriptSender extends SenderSeries {
 
 
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class);
+		J2V8(J2V8.class),
+		GRAALJS(GraalJS.class);
 
 		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
 		JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
@@ -123,8 +123,6 @@ public class JavascriptSender extends SenderSeries {
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-
-		int numberOfParameters = 0;
 		JavascriptEngine<?> jsInstance = engine.create();
 		try {
 			jsInstance.startRuntime();
@@ -141,6 +139,7 @@ public class JavascriptSender extends SenderSeries {
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + " exception extracting parameters", e);
 		}
+		int numberOfParameters = 0;
 		if (pvl != null) {
 			numberOfParameters = pvl.size();
 		}
@@ -188,13 +187,16 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given
+	 * J2V8 engine does not support the ES6's "const" or "let" literals. This method adapts the given
 	 * helper source written in ES6 to work (by converting let/const to var).
 	 *
 	 * @param source the helper source.
 	 * @return the adapted helper source.
 	 **/
 	private String adaptES6Literals(final String source) {
+		if (engine != JavaScriptEngines.J2V8) {
+			return source;
+		}
 		Matcher m = es6VarPattern.matcher(source);
 		StringBuilder sb = new StringBuilder();
 		while (m.find()) {
@@ -219,7 +221,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * the name of the JavaScript engine to be used.
+	 * the name of the JavaScript engine to use.
 	 * @ff.default J2V8
 	 */
 	public void setEngineName(JavaScriptEngines engineName) {
