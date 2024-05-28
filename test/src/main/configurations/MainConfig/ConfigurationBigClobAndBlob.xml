@@ -13,7 +13,7 @@
 				xpathExpression="request/@action"></pipe>
 
 			<!-- insertBigClob -->
-			<pipe name="insertBigClob" className="org.frankframework.pipes.LocalFileSystemPipe"
+			<pipe name="insertBigClob" className="org.frankframework.pipes.FilePipe"
 				actions="read" getInputFromFixedValue="BigClobAndBlob/file.pdf"
 				fileSource="classpath" outputType="bytes">
 				<forward name="success" path="encodeBigClobPdf" />
@@ -54,7 +54,7 @@
 			</pipe>
 
 			<!-- insertBigBlobText -->
-			<pipe name="insertBigBlobText" className="org.frankframework.pipes.LocalFileSystemPipe"
+			<pipe name="insertBigBlobText" className="org.frankframework.pipes.FilePipe"
 				actions="read" getInputFromFixedValue="BigClobAndBlob/file.pdf"
 				fileSource="classpath" outputType="bytes">
 				<forward name="success" path="encodeBigBlobPdf" />
@@ -95,7 +95,7 @@
 			</pipe>
 
 			<!-- insertBigBlobBinary -->
-			<pipe name="insertBigBlobBinary" className="org.frankframework.pipes.LocalFileSystemPipe"
+			<pipe name="insertBigBlobBinary" className="org.frankframework.pipes.FilePipe"
 				actions="read" getInputFromFixedValue="BigClobAndBlob/file.pdf"
 				fileSource="classpath" outputType="stream" storeResultInSessionKey="fileContent">
 				<forward name="success" path="insertBigBlobBinary1" />
