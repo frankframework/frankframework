@@ -1,4 +1,0 @@
-<directory name="TESTDATA_DIR" count="2">
-	<file name="dummy2.txt" size="25" fSize="25 B" directory="false" canonicalName="TESTDATA_DIR\dummy2.txt" modificationDate="25-06-15" modificationTime="10:15:09"/>
-	<file name="dummy.txt" size="25" fSize="25 B" directory="false" canonicalName="TESTDATA_DIR\dummy.txt" modificationDate="25-06-15" modificationTime="10:15:09"/>
-</directory>
