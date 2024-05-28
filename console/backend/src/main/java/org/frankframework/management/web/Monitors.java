@@ -45,7 +45,7 @@ public class Monitors extends FrankApiBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Relation("monitoring")
 	@Description("view all available monitors")
-	@GetMapping(value = "/")
+	@GetMapping(value = { "", "/" })
 	public ResponseEntity<?> getMonitors(@PathVariable("configuration") String configurationName, @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -56,7 +56,7 @@ public class Monitors extends FrankApiBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Relation("monitoring")
 	@Description("add a new monitor")
-	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = { "", "/" }, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);

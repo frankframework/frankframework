@@ -48,7 +48,7 @@ public class Init extends FrankApiBase {
 		return getProperty("monitoring.enabled", false);
 	}
 
-	@GetMapping(value = "/", produces = "application/json")
+	@GetMapping(value = { "", "/"}, produces = "application/json")
 	@PermitAll
 	public ResponseEntity<?> getAllResources(@RequestParam(value = "allowedRoles", required = false) boolean displayAllowedRoles, @RequestParam(value = "hateoas", defaultValue = "default") String hateoasImpl) {
 		List<Object> JSONresources = new ArrayList<>();
