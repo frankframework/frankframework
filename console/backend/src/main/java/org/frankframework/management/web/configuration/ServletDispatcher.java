@@ -40,7 +40,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Log4j2
-public class ServletDispatcherSpring extends DispatcherServlet implements DynamicRegistration.Servlet {
+public class ServletDispatcher extends DispatcherServlet implements DynamicRegistration.Servlet {
 
 	private static final long serialVersionUID = 1L;
 
@@ -50,7 +50,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 	private boolean isEnabled;
 
 
-	public ServletDispatcherSpring() {
+	public ServletDispatcher() {
 		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext.xml");
 		setDetectAllHandlerMappings(false); //Else it will use the parent's (EnvironmentContext) Spring Integration mapping
 	}
