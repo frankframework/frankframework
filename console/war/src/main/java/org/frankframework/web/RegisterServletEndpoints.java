@@ -29,11 +29,6 @@ import org.springframework.context.annotation.Configuration;
 public class RegisterServletEndpoints {
 
 	@Bean
-	public ServletRegistration backendServletBean() {
-		return new ServletRegistration(ServletDispatcher.class);
-	}
-
-	@Bean
 	public ServletRegistration frontendServletBean() {
 		ServletRegistration registration = new ServletRegistration(ConsoleFrontend.class);
 		registration.addUrlMappings("/*"); //Also host the console on the ROOT
