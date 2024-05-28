@@ -20,17 +20,11 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.extensions.CustomReportActionResult;
 
-import nu.studer.java.util.OrderedProperties;
-import org.apache.commons.lang3.function.TriConsumer;
-import org.apache.commons.lang3.function.TriFunction;
-import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.XmlUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,10 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Properties;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ConvertToLarvaAction implements CustomReportAction {
@@ -64,210 +58,27 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 	@Override
 	public CustomReportActionResult handleReports(List<Report> reports) {
-		List<Report> successReports = new ArrayList<>();
 		CustomReportActionResult customReportActionResult = new CustomReportActionResult();
-		StringBuilder additionalErrors = new StringBuilder();
 
-		for (Report report : reports) {
-			HashMap<Path, String> originalFiles = new HashMap<>();
-			HashSet<Path> newFiles = new HashSet<>();
-			String reportName = report.getName();
-
-			BiConsumer<List<Map.Entry<Path, String>>, List<Path>> addModifiedFiles = (or, nr) -> {
-				nr.forEach(path -> {
-					if (!originalFiles.containsKey(path)) newFiles.add(path);
-				});
-				or.forEach(entry -> {
-					if (!newFiles.contains(entry.getKey())) originalFiles.putIfAbsent(entry.getKey(), entry.getValue());
-				});
-			};
-
-			Function<ActionResponse<?>, Boolean> handleActionResponse = (actionResponse) -> {
-				addModifiedFiles.accept(actionResponse.originalResources, actionResponse.newResources);
-				if (actionResponse.error != null) {
-					addErrorToResult(customReportActionResult, reportName, actionResponse.error, cleanupModifiedFiles(originalFiles, newFiles));
-					return false;
-				}
-				return true;
-			};
-
-			ActionResponse<Boolean> checkReportType = checkReportType(reportName);
-			if (!handleActionResponse.apply(checkReportType)) continue;
-
-			String adapterName = reportName.substring(9);
-			Path testDir = dir.resolve(adapterName);
-			ActionResponse<Boolean> tryCreateDir = tryCreateDir(testDir);
-			if (!handleActionResponse.apply(tryCreateDir)) continue;
-
-			ActionResponse<String> tryGetScenarioSuffix = tryGetScenarioSuffix(testDir);
-			if (!handleActionResponse.apply(tryGetScenarioSuffix)) continue;
-			String scenarioSuffix = tryGetScenarioSuffix.response;
-
-			Path scenarioDir = testDir.resolve(scenarioSuffix);
-			Path scenarioFile = testDir.resolve("scenario" + scenarioSuffix + ".properties");
-			Path commonFile = testDir.resolve("common.properties");
-			ActionResponse<Boolean> checkScenarioDirNotInUse = checkScenarioDirNotInUse(scenarioDir);
-			if (!handleActionResponse.apply(checkScenarioDirNotInUse)) continue;
-			ActionResponse<Boolean> tryCreateCommonFile = tryCreateCommonFile(commonFile);
-			if (!handleActionResponse.apply(tryCreateCommonFile)) continue;
-
-			// Create scenario with the properties resolved earlier
-			Scenario scenario = new Scenario(report, scenarioDir, scenarioFile, commonFile, adapterName, addModifiedFiles);
-			// If creating the scenario created additional errors, add them to the list of additional errors
-			if (!scenario.errors.isEmpty()) {
-				additionalErrors.append("\t[").append(report).append("]: ").append(String.join("\r\n", scenario.errors));
-			}
-			successReports.add(report);
+		List<Scenario> scenarios = reports.stream()
+				.map(report -> new Scenario(report, dir))
+				.collect(Collectors.toList());
+		String successResultsString = scenarios.stream().filter(scenario -> scenario.error == null)
+				.map(scenario -> "<br/>&nbsp;&nbsp;[" + scenario.reportName + "]")
+				.collect(Collectors.joining(""));
+		String errorResultsString = scenarios.stream().filter(scenario -> scenario.error != null)
+				.map(scenario -> scenario.error)
+				.collect(Collectors.joining(""));
+		if (!successResultsString.isEmpty()) {
+			customReportActionResult.setSuccessMessage("Successfully generated larva test scenario(s) for reports:" + successResultsString);
 		}
-
-		//If there are additional errors, append them to the existing error message
-		if (additionalErrors.length() != 0) {
-			String oldError = customReportActionResult.getErrorMessage();
-			customReportActionResult.setErrorMessage(
-					(oldError != null && !oldError.isEmpty() ? oldError + "\r\n" : "") +
-							"Errors while generating test scenarios: \r\n" +
-							additionalErrors
-			);
+		if (!errorResultsString.isEmpty()) {
+			customReportActionResult.setErrorMessage("Following reports could not be converted:" + errorResultsString);
 		}
-		customReportActionResult.setSuccessMessage("Generated larva test scenario(s) for reports: " + successReports);
 		return customReportActionResult;
 	}
 
-	private ActionResponse<Boolean> checkReportType(String reportName) {
-		if (!reportName.startsWith("Pipeline ")) {
-			return ActionResponse.ActionResponseError("This not a pipeline report. Test generation isn't implemented for this type of report.");
-		}
-		return new ActionResponse<>();
-	}
-
-	private ActionResponse<Boolean> tryCreateDir(Path testDir) {
-		try {
-			// Tries to create dir and parents. Does not throw error if it/they already exist(s)
-			Files.createDirectories(testDir);
-		} catch (IOException e) {
-			return ActionResponse.ActionResponseError("Could not create test directory [" + testDir.toAbsolutePath().normalize() + "]");
-		}
-		return new ActionResponse<>();
-	}
-
-	private ActionResponse<String> tryGetScenarioSuffix(Path testDir) {
-		String scenarioSuffix;
-		try (Stream<Path> list = Files.list(testDir)) {
-			//Get the highest suffix found in the directory, both in file and directory names
-			OptionalInt maxSuffix = list.mapToInt(path -> {
-				String fileName = path.getFileName().toString();
-				if (Files.isDirectory(path)) {
-					if (fileName.matches("\\d+")) {
-						return Integer.parseInt(fileName);
-					}
-				} else if (fileName.matches("scenario\\d+.properties")) {
-					return Integer.parseInt(fileName.substring(8,fileName.indexOf(".")));
-				}
-				return -1;
-			}).max();
-			if (maxSuffix.isPresent()) {
-				scenarioSuffix = String.format("%0" + 2 + "d", maxSuffix.getAsInt() + 1);
-			} else {
-				scenarioSuffix = "01";
-			}
-		} catch (IOException e) {
-			return ActionResponse.ActionResponseError("Could not count existing scenarios in test directory [" + testDir.toAbsolutePath().normalize() + "]");
-		}
-		return new ActionResponse<>(scenarioSuffix);
-	}
-
-	private ActionResponse<Boolean> checkScenarioDirNotInUse(Path scenarioDir) {
-		if (!Files.exists(scenarioDir)) {
-			try {
-				Files.createDirectory(scenarioDir);
-			} catch (IOException e) {
-				return ActionResponse.ActionResponseError("Could not create scenario directory [" + scenarioDir.toAbsolutePath().normalize() + "]");
-			}
-		} else {
-			try(Stream<Path> files = Files.list(scenarioDir)) {
-				if (files.findAny().isPresent()) {
-					return ActionResponse.ActionResponseError("Scenario directory [" + scenarioDir.toAbsolutePath().normalize() + "] already exists and is not empty");
-				}
-			} catch (IOException e) {
-				return ActionResponse.ActionResponseError("Scenario directory [" + scenarioDir.toAbsolutePath().normalize() + "] already exists and could not be checked for files inside of it");
-			}
-		}
-		return new ActionResponse<>();
-	}
-
-	private ActionResponse<Boolean> tryCreateCommonFile(Path commonFile) {
-		try {
-			Files.createFile(commonFile);
-		} catch (FileAlreadyExistsException e) {
-			return new ActionResponse<>();
-		} catch (IOException e) {
-			return ActionResponse.ActionResponseError("Could not create common file [" + commonFile.toAbsolutePath().normalize() + "]");
-		}
-		return new ActionResponse<Boolean>().setNewResources(commonFile);
-	}
-
-	private void addErrorToResult(CustomReportActionResult customReportActionResult, String reportName, String reason, String cleanupResult) {
-		String oldError = customReportActionResult.getErrorMessage();
-		customReportActionResult.setErrorMessage(
-				(oldError != null && !oldError.isEmpty() ? oldError : "Following reports could not be converted:") +
-						"\r\n\t[" + reportName + "]: " + reason + "\r\n" + cleanupResult
-		);
-	}
-
-	public static String stepPadding(int i) {
-		return String.format("%0" + 2 + "d", i);
-	}
-
-	private String cleanupModifiedFiles(HashMap<Path, String> originalResources, HashSet<Path> newResources) {
-		List<String> errors = new ArrayList<>();
-		originalResources.forEach((path, original) -> {
-			try {
-				Files.writeString(path, original);
-			} catch (IOException e) {
-				errors.add("Modified file [" + path + "] could not be reverted.");
-			}
-		});
-		newResources.forEach(path -> {
-			try {
-				Files.delete(path);
-			} catch (IOException e) {
-				errors.add("Created file [" + path + "] could not be deleted.");
-			}
-		});
-		if (errors.isEmpty()) return "\t\tChanges were reverted successfully";
-		return "\t\tSome changes could not be reverted:\r\n\t\t\t" + String.join("\r\n\t\t\t", errors);
-	}
-
-	private static class ActionResponse<T> {
-		String error;
-		T response;
-		List<Path> newResources = new ArrayList<>();
-		List<Map.Entry<Path, String>> originalResources = new ArrayList<>();
-
-		public static <T> ActionResponse<T> ActionResponseError(String error) {
-			ActionResponse<T> ar = new ActionResponse<>();
-			ar.error = error;
-			return ar;
-		}
-
-		public ActionResponse() {}
-		public ActionResponse(T response) {
-			this.response = response;
-		}
-
-		public ActionResponse<T> setNewResources(Path ...newResources) {
-			this.newResources = List.of(newResources);
-			return this;
-		}
-
-		public ActionResponse<T> setOriginalResources(Map.Entry<Path, String> ...originalResources) {
-			this.originalResources = List.of(originalResources);
-			return this;
-		}
-	}
-
 	private static class Scenario {
-
 
 		private static final HashSet<String> allowedSenders = new HashSet<>(Arrays.asList(
 				"org.frankframework.senders.DelaySender",
@@ -308,43 +119,62 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				"__isManualRetry"
 		));
 
-		public List<String> errors = new ArrayList<>();
+		private static final Set<String> ignorePropNames = Set.of(
+				"ignoreRegularExpressionKey",
+				"removeRegularExpressionKey",
+				"decodeUnzipContentBetweenKeys",
+				"canonicaliseFilePathContentBetweenKeys",
+				"replaceRegularExpressionKeys",
+				"ignoreContentBetweenKeys",
+				"ignoreKeysAndContentBetweenKeys",
+				"removeKeysAndContentBetweenKeys",
+				"ignoreKey",
+				"removeKey",
+				"replaceKey",
+				"replaceEverywhereKey",
+				"ignoreCurrentTimeBetweenKeys",
+				"ignoreContentBeforeKey",
+				"ignoreContentAfterKey"
+		);
 
-		public Scenario(Report report, Path scenarioDir, Path scenario, Path common, String adapterName, BiConsumer<List<Map.Entry<Path, String>>, List<Path>> addModfiedFiles) {
-			Map<String, String> existingStubs = new HashMap<>();
+		private final String reportName;
+		private final HashMap<Path, String> originalFiles = new HashMap<>();
+		private final HashSet<Path> newFiles = new HashSet<>();
+		Map<String, String> existingStubs = new HashMap<>();
+		private final TreeMap<String, String> scenarioPropertiesMap = new TreeMap<>(new MultipleComparators<>(new ScenarioPropertiesComparator(), String.CASE_INSENSITIVE_ORDER));
+		private final TreeMap<String, String> commonPropertiesMap =   new TreeMap<>(new MultipleComparators<>(new CommonPropertiesComparator(), String.CASE_INSENSITIVE_ORDER));
+		private Path scenarioDirPath = null;
+		private Path scenarioFilePath = null;
+		private Path commonFilePath = null;
+		private int longestCommonPropertyName = 0;
+		private int longestScenarioPropertyName = 0;
 
-			String scenarioDirPrefix = scenarioDir.getFileName().toString() + "/";
-			File scenarioFile = scenario.toFile();
-			File commonFile = common.toFile();
+		public String error = null;
 
-			OrderedProperties.OrderedPropertiesBuilder commonBuilder = new OrderedProperties.OrderedPropertiesBuilder();
-			commonBuilder.withOrdering(new CommonPropertiesComparator());
-			commonBuilder.withSuppressDateInComment(true);
-			OrderedProperties commonProperties = commonBuilder.build();
+		public Scenario(Report report, Path baseDir) {
+			reportName = report.getName();
 
-			Properties currentCommonProps = new Properties();
-			try {
-				InputStream stream = Files.newInputStream(common);
-				currentCommonProps.load(stream);
-			} catch (IOException e) {
-				errors.add("Could not read common.properties [" + common + "]");
-			}
-			currentCommonProps.forEach((key, value) -> {
-				if (key instanceof String && value instanceof String) {
-					commonProperties.setProperty((String) key, (String) value);
-					if (((String) key).matches("\\.stub.[a-zA-Z0-9-_.]+\\.serviceName")) {
-						existingStubs.put((String) value, ((String) key).substring(5, ((String) key).lastIndexOf('.')));
-					}
-				}
-			});
+			if (!checkReportType()) return;
 
-			OrderedProperties.OrderedPropertiesBuilder scenarioBuilder = new OrderedProperties.OrderedPropertiesBuilder();
-			scenarioBuilder.withOrdering(new ScenarioPropertiesComparator());
-			scenarioBuilder.withSuppressDateInComment(true);
-			OrderedProperties scenarioProperties = scenarioBuilder.build();
+			String adapterName = reportName.substring(9);
+			Path testDir = baseDir.resolve(adapterName);
+			if (!tryCreateDir(testDir)) return;
 
-			scenarioProperties.setProperty("scenario.description", "Test scenario for adapter " + adapterName + ", automatically generated based on a ladybug report");
-			scenarioProperties.setProperty("include", "common.properties");
+			String scenarioSuffix = tryGetScenarioSuffix(testDir);
+			if (scenarioSuffix == null) return;
+
+			scenarioDirPath = testDir.resolve(scenarioSuffix);
+			scenarioFilePath = testDir.resolve("scenario" + scenarioSuffix + ".properties");
+			commonFilePath = testDir.resolve("common.properties");
+			if (!checkScenarioDirNotInUse()) return;
+			if (!tryCreateCommonFile()) return;
+
+			String scenarioDirPrefix = scenarioDirPath.getFileName().toString() + "/";
+
+			if (!tryLoadCommonProps()) return;
+
+			putScenarioProperty("scenario.description", "Test scenario for adapter " + adapterName + ", automatically generated based on a ladybug report");
+			putScenarioProperty("include", "common.properties");
 			String adapterProperty = "adapter." + adapterName.replaceAll("\\s","-");
 
 			List<Checkpoint> checkpoints = report.getCheckpoints();
@@ -352,13 +182,13 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			int current_step_nr = 1;
 
 			String adapterInputMessage = checkpoints.get(0).getMessage();
-			String adapterInputFileName = createFileName(current_step_nr, "adapter", adapterName, true, adapterInputMessage);
-			scenarioProperties.setProperty("step" + current_step_nr + "." + adapterProperty + ".write", scenarioDirPrefix + adapterInputFileName);
-			createInputOutputFile(scenarioDir, adapterInputFileName, adapterInputMessage);
+			String adapterInputFileName = getFileName(current_step_nr, "adapter", adapterName, true, adapterInputMessage);
+			putScenarioProperty("step" + current_step_nr + "." + adapterProperty + ".write", scenarioDirPrefix + adapterInputFileName);
+			createInputOutputFile(scenarioDirPath, adapterInputFileName, adapterInputMessage);
 
-			commonProperties.setProperty(adapterProperty + ".className", "org.frankframework.senders.IbisJavaSender");
-			commonProperties.setProperty(adapterProperty + ".serviceName", "testtool-" + adapterName);
-			commonProperties.setProperty(adapterProperty + ".convertExceptionToMessage", "true");
+			putCommonProperty(adapterProperty + ".className", "org.frankframework.senders.IbisJavaSender");
+			putCommonProperty(adapterProperty + ".serviceName", "testtool-" + adapterName);
+			putCommonProperty(adapterProperty + ".convertExceptionToMessage", "true");
 
 			boolean skipUntilEndOfSender = false;
 			String skipUntilEndOfSenderName = "";
@@ -370,42 +200,33 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					String checkpointName = checkpoint.getName().substring(7);
 					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == Checkpoint.TYPE_ENDPOINT && checkpointName.equals(skipUntilEndOfSenderName)) {
 						String senderResponseMessage = checkpoint.getMessage();
-						String senderResponseFileName = createFileName(++current_step_nr, "stub", checkpointName, false, senderResponseMessage);
-						scenarioProperties.setProperty(
-								"step" + current_step_nr + ".stub." + checkpointName.replaceAll("\\s","-") + ".write",
+						String senderResponseFileName = getFileName(++current_step_nr, "stub", checkpointName, false, senderResponseMessage);
+						putScenarioProperty(
+								"step" + current_step_nr + ".stub." + existingStubs.get("testtool-" + checkpointName) + ".write",
 								scenarioDirPrefix + senderResponseFileName);
-						createInputOutputFile(scenarioDir, senderResponseFileName, senderResponseMessage);
+						if (!createInputOutputFile(scenarioDirPath, senderResponseFileName, senderResponseMessage)) {
+							return;
+						}
 						skipUntilEndOfSender = false;
 					}
 				} else if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT && checkpoint.getName().startsWith("Sender ")) {
 					if (!allowedSenders.contains(checkpoint.getSourceClassName())) {
 						//If sender should be stubbed:
 						String senderName = checkpoint.getName().substring(7, checkpoint.getName().length() - 7);
-						String senderProperty = "stub." + senderName.replaceAll("\\s","-");
-						String senderInputMessage = checkpoint.getMessage();
-						String senderInputFileName = createFileName(++current_step_nr, "stub", senderName, true, senderInputMessage);
-						scenarioProperties.setProperty(
-								"step" + current_step_nr + ".stub" + senderProperty + ".read",
-								scenarioDirPrefix + senderInputFileName);
-						createInputOutputFile(scenarioDir, senderInputFileName, senderInputMessage);
-
 						String serviceName = "testtool-" + senderName;
-						String existingStubName = existingStubs.get(serviceName.toLowerCase());
-						if (!senderProperty.equals(existingStubName)) {
-							existingStubs.put(serviceName.toLowerCase(), senderProperty);
-							commonProperties.setProperty(senderProperty + ".className", "org.frankframework.receivers.JavaListener");
-							commonProperties.setProperty(senderProperty + ".serviceName", serviceName);
-
-							if (existingStubName != null) {
-								commonProperties.removeProperty(existingStubName + ".className");
-								commonProperties.removeProperty(existingStubName + ".serviceName");
-								try {
-									replaceStubName(scenario.getParent(), existingStubName, senderProperty);
-								} catch (IOException e) {
-									errors.add("Could not replace old stub name [" + existingStubName + "] with new stub name [" + senderProperty + "]");
-								}
-							}
+						//if sender is already being stubbed, use existing stub name
+						String stubName = existingStubs.computeIfAbsent(serviceName.toLowerCase(), k -> senderName.replaceAll("\\s","-"));
+						String senderInputMessage = checkpoint.getMessage();
+						String senderInputFileName = getFileName(++current_step_nr, "stub.", stubName, true, senderInputMessage);
+						putScenarioProperty(
+								"step" + current_step_nr + ".stub" + stubName + ".read",
+								scenarioDirPrefix + senderInputFileName);
+						if (!createInputOutputFile(scenarioDirPath, senderInputFileName, senderInputMessage)) {
+							return;
 						}
+
+						putCommonProperty(stubName + ".className  ", "org.frankframework.receivers.JavaListener");
+						putCommonProperty(stubName + ".serviceName", serviceName);
 
 						skipUntilEndOfSender = true;
 						skipUntilEndOfSenderName = senderName;
@@ -415,53 +236,140 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					//SessionKey for listener found
 					String sessionKeyName = checkpoint.getName().substring(11);
 					if (!ignoredSessionKeys.contains(sessionKeyName)) {
-						scenarioProperties.setProperty(adapterProperty + ".param" + paramI + ".name", sessionKeyName);
-						scenarioProperties.setProperty(adapterProperty + ".param" + paramI + ".value", checkpoint.getMessage());
+						String paramPropertyName = adapterProperty + ".param" + paramI;
+						putScenarioProperty(paramPropertyName + ".name ", sessionKeyName);
+						putScenarioProperty(paramPropertyName + ".value", checkpoint.getMessage());
 						paramI++;
 					}
 				}
 			}
 			if (skipUntilEndOfSender) {
-				errors.add("Response of sender: [" + skipUntilEndOfSenderName + "] could not be found. Cause is likely a faulty ladybug report");
-			}
-			String adapterOutputMessage = checkpoints.get(checkpoints.size() - 1).getMessage();
-			String adapterOutputFileName = createFileName(++current_step_nr, "adapter", adapterName, false, adapterOutputMessage);
-			scenarioProperties.setProperty("step" + current_step_nr + "." + adapterProperty + ".read", scenarioDirPrefix + adapterOutputFileName);
-			createInputOutputFile(scenarioDir, adapterOutputFileName, adapterOutputMessage);
-
-			try (OutputStreamWriter scenarioWriter = new OutputStreamWriter(Files.newOutputStream(scenarioFile.toPath()), StandardCharsets.UTF_8);) {
-				scenarioProperties.store(scenarioWriter, null);
-			} catch (IOException e) {
-				errors.add("Could not write properties to file [" + scenarioFile + "]");
-			}
-			try (OutputStreamWriter commonWriter = new OutputStreamWriter(Files.newOutputStream(commonFile.toPath()), StandardCharsets.UTF_8)) {
-				commonProperties.store(commonWriter, null);
-			} catch (IOException e) {
-				errors.add("Could not write properties to file [" + commonFile + "]");
-			}
-		}
-
-		private static void replaceStubName(Path folder, String oldStubName, String newStubName) throws IOException {
-			if (oldStubName.equals(newStubName)) {
+				handleError( "Response of sender: [" + skipUntilEndOfSenderName + "] could not be found. Likely caused by a faulty ladybug report");
 				return;
 			}
-			File[] scenarios = folder.toFile().listFiles((dir, name) -> name.matches("scenario\\d*\\.properties"));
-			assert scenarios != null;
-			for (File scenario : scenarios) {
-				List<String> result = Files.readAllLines(scenario.toPath());
-				boolean changed = false;
-				for (int i = 0; i < result.size(); i++) {
-					String line = result.get(i);
-					if (line.contains(oldStubName + ".read") || line.contains(oldStubName + ".write")) {
-						result.set(i, line.replace(oldStubName, newStubName));
-						changed = true;
+			String adapterOutputMessage = checkpoints.get(checkpoints.size() - 1).getMessage();
+			String adapterOutputFileName = getFileName(++current_step_nr, "adapter", adapterName, false, adapterOutputMessage);
+			putScenarioProperty(
+					"step" + current_step_nr + "." + adapterProperty + ".read",
+					scenarioDirPrefix + adapterOutputFileName);
+			createInputOutputFile(scenarioDirPath, adapterOutputFileName, adapterOutputMessage);
+
+			try {
+				Files.writeString(scenarioFilePath, scenarioPropertiesToString());
+				newFiles.add(scenarioFilePath);
+			} catch (IOException e) {
+				handleError("Could not write properties to file [" + scenarioFilePath.toAbsolutePath().normalize() + "]");
+				return;
+			}
+			try {
+				if (!newFiles.contains(commonFilePath)) {
+					try {
+						addModifiedFile(commonFilePath, Files.readString(commonFilePath));
+					} catch (IOException ex) {
+						handleError("Could not read existing common file [" + commonFilePath.toAbsolutePath().normalize() + "]");
+						return;
 					}
 				}
-				if (changed) Files.write(scenario.toPath(), result);
+				Files.writeString(commonFilePath, commonPropertiesToString());
+				newFiles.add(commonFilePath);
+			} catch (IOException e) {
+				handleError("Could not write properties to file [" + commonFilePath.toAbsolutePath().normalize() + "]");
 			}
 		}
 
-		private String createFileName(int step, String type, String name, boolean startPoint, String message) {
+		private void putCommonProperty(String name, String value) {
+			commonPropertiesMap.put(name, value);
+			longestCommonPropertyName = Math.max(longestCommonPropertyName, name.length());
+		}
+
+		private void putScenarioProperty(String name, String value) {
+			scenarioPropertiesMap.put(name, value);
+			longestScenarioPropertyName = Math.max(longestScenarioPropertyName, name.length());
+
+		}
+
+		private boolean checkReportType() {
+			if (!reportName.startsWith("Pipeline ")) {
+				handleError("This not a pipeline report. Test generation isn't implemented for this type of report.");
+				return false;
+			}
+			return true;
+		}
+
+		private boolean tryCreateDir(Path testDir) {
+			try {
+				// Tries to create dir and parents. Does not throw error if it/they already exist(s)
+				Files.createDirectories(testDir);
+			} catch (IOException e) {
+				handleError("Could not create test directory [" + testDir.toAbsolutePath().normalize() + "]");
+				return false;
+			}
+			return true;
+		}
+
+		private String tryGetScenarioSuffix(Path testDir) {
+			String scenarioSuffix;
+			try (Stream<Path> list = Files.list(testDir)) {
+				//Get the highest suffix found in the directory, both in file and directory names
+				OptionalInt maxSuffix = list.mapToInt(path -> {
+					String fileName = path.getFileName().toString();
+					if (Files.isDirectory(path)) {
+						if (fileName.matches("\\d+")) {
+							return Integer.parseInt(fileName);
+						}
+					} else if (fileName.matches("scenario\\d+.properties")) {
+						return Integer.parseInt(fileName.substring(8,fileName.indexOf(".")));
+					}
+					return -1;
+				}).max();
+				if (maxSuffix.isPresent()) {
+					scenarioSuffix = String.format("%0" + 2 + "d", maxSuffix.getAsInt() + 1);
+				} else {
+					scenarioSuffix = "01";
+				}
+			} catch (IOException e) {
+				handleError("Could not count existing scenarios in test directory [" + testDir.toAbsolutePath().normalize() + "]");
+				return null;
+			}
+			return scenarioSuffix;
+		}
+
+		private boolean checkScenarioDirNotInUse() {
+			if (!Files.exists(scenarioDirPath)) {
+				try {
+					Files.createDirectory(scenarioDirPath);
+				} catch (IOException e) {
+					handleError("Could not create scenario directory [" + scenarioDirPath.toAbsolutePath().normalize() + "]");
+					return false;
+				}
+			} else {
+				try(Stream<Path> files = Files.list(scenarioDirPath)) {
+					if (files.findAny().isPresent()) {
+						handleError("Scenario directory [" + scenarioDirPath.toAbsolutePath().normalize() + "] already exists and is not empty");
+						return false;
+					}
+				} catch (IOException e) {
+					handleError("Scenario directory [" + scenarioDirPath.toAbsolutePath().normalize() + "] already exists and could not be checked for files inside of it");
+					return false;
+				}
+			}
+			return true;
+		}
+
+		private boolean tryCreateCommonFile() {
+			try {
+				Files.createFile(commonFilePath);
+			} catch (FileAlreadyExistsException e) {
+				return true;
+			} catch (IOException e) {
+				handleError("Could not create common file [" + commonFilePath.toAbsolutePath().normalize() + "]");
+				return false;
+			}
+			newFiles.add(commonFilePath);
+			return true;
+		}
+
+		private String getFileName(int step, String type, String name, boolean startPoint, String message) {
 			return String.format("%s-%s-%s-%s%s",
 					stepPadding(step),
 					type,
@@ -471,15 +379,125 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			);
 		}
 
-		private void createInputOutputFile(Path folder, String fileName, String message) {
-			File messageFile = folder.resolve(fileName).toFile();
+		public static String stepPadding(int i) {
+			return String.format("%0" + 2 + "d", i);
+		}
+
+		private boolean createInputOutputFile(Path folder, String fileName, String message) {
+			Path messageFilePath = folder.resolve(fileName);
+			File messageFile = messageFilePath.toFile();
 			try {
 				if (messageFile.createNewFile()) {
+					newFiles.add(messageFilePath);
 					Files.writeString(messageFile.toPath(), message);
+				} else {
+					handleError("Message file: [" + messageFilePath.toAbsolutePath().normalize() + "] already exists");
+					return false;
 				}
 			} catch (IOException e) {
-				errors.add("Could not create message file: [" + messageFile + "]");
+				handleError("Could not create message file: [" + messageFilePath.toAbsolutePath().normalize() + "]");
+				return false;
 			}
+			return true;
+		}
+
+		private boolean tryLoadCommonProps() {
+			Properties currentCommonProps = new Properties();
+			try {
+				InputStream stream = Files.newInputStream(commonFilePath);
+				currentCommonProps.load(stream);
+			} catch (IOException e) {
+				handleError("Could not read common.properties [" + commonFilePath.toAbsolutePath().normalize() + "]");
+				return false;
+			}
+
+			currentCommonProps.forEach((key, value) -> {
+				if (key instanceof String && value instanceof String) {
+					putCommonProperty((String) key, (String) value);
+					if (((String) key).matches("stub.[a-zA-Z0-9-_.]+\\.serviceName")) {
+						existingStubs.put(((String) value).toLowerCase(), ((String) key).substring(5, ((String) key).lastIndexOf('.')));
+					}
+				}
+			});
+
+			return true;
+		}
+
+		private String commonPropertiesToString() {
+			Function<String, String> getPropGroup = propName -> {
+				int lastDotIndex;
+				if (propName.equals("include")) {
+					return "0";
+				} else if ((lastDotIndex = propName.lastIndexOf('.')) != -1) {
+					return "1" + propName.substring(0, lastDotIndex);
+				}
+				return "";
+			};
+			return propertiesToString(commonPropertiesMap, getPropGroup, longestCommonPropertyName);
+		}
+
+		private String scenarioPropertiesToString() {
+			Function<String, String> getPropGroup = propName -> {
+				if (propName.equals("scenario.description") || propName.equals("include")) {
+					return "0";
+				} else if (propName.startsWith("step")) {
+					return "1";
+				} else if (propName.matches("\\.param\\.(name|value)$")) {
+					return "2";
+				} else if (ignorePropNames.contains(propName)) {
+					return "3";
+				}
+				return "";
+			};
+			return propertiesToString(scenarioPropertiesMap, getPropGroup, longestScenarioPropertyName);
+		}
+
+		private String propertiesToString(TreeMap<String, String> props, Function<String, String> getPropGroup, Integer maxPropNameLength) {
+			List<String> propStrings = new ArrayList<>();
+			String lastPropGroup = "";
+			for (Map.Entry<String, String> entry : props.entrySet()) {
+				String propName = entry.getKey();
+				String value = entry.getValue();
+				String propGroup = getPropGroup.apply(propName);
+				boolean isNewPropGroup = !propGroup.equals(lastPropGroup) && !propStrings.isEmpty();
+				lastPropGroup = propGroup;
+				propStrings.add((isNewPropGroup ? "\r\n" : "")
+						+ propName
+						+ " ".repeat(Math.max(0, maxPropNameLength - propName.length()))
+						+ " = "
+						+ value);
+			}
+			return String.join("\r\n", propStrings);
+		}
+
+		private void addModifiedFile(Path modifiedFilePath, String original) {
+			if (!newFiles.contains(modifiedFilePath)) {
+				originalFiles.putIfAbsent(modifiedFilePath, original);
+			}
+		}
+
+		private void handleError(String reason) {
+			error = "<br/>&nbsp;&nbsp;[" + reportName + "]: " + reason + "<br/>" + cleanupModifiedFiles();
+		}
+
+		private String cleanupModifiedFiles() {
+			List<String> errors = new ArrayList<>();
+			originalFiles.forEach((path, original) -> {
+				try {
+					Files.writeString(path, original);
+				} catch (IOException e) {
+					errors.add("Changes to file [" + path.toAbsolutePath().normalize() + "] could not be reverted.");
+				}
+			});
+			newFiles.forEach(path -> {
+				try {
+					Files.delete(path);
+				} catch (IOException e) {
+					errors.add("Newly created file [" + path.toAbsolutePath().normalize() + "] could not be deleted.");
+				}
+			});
+			if (errors.isEmpty()) return "&nbsp;&nbsp;&nbsp;&nbsp;Changes were reverted successfully";
+			return "&nbsp;&nbsp;Some changes could not be reverted:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + String.join("<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", errors);
 		}
 	}
 

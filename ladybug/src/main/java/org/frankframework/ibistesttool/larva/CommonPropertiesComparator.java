@@ -21,14 +21,7 @@ public class CommonPropertiesComparator implements Comparator<String> {
 
 	@Override
 	public int compare(String o1, String o2) {
-		int rank1 = getRank(o1), rank2 = getRank(o2);
-//        if (rank1 == -1 || rank2 == -1) return -1;
-		int rankDiff = Integer.compare(rank1, rank2);
-		if (rankDiff != 0) {
-			return rankDiff;
-		} else {
-			return String.CASE_INSENSITIVE_ORDER.compare(o1, o2);
-		}
+		return Integer.compare(getRank(o1), getRank(o2));
 	}
 
 	private static int getRank(String s) {
