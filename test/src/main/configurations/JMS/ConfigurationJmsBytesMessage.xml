@@ -20,7 +20,7 @@
 			<!-- Should ideally use LocalFileSystemPipe but cannot seem to get that working with classpath resources -->
 			<pipe
 					name="read binary file as bytes"
-				className="org.frankframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.FilePipe"
 					actions="read"
 					outputType="bytes"
 					getInputFromFixedValue="BinaryData/test-data.zip"

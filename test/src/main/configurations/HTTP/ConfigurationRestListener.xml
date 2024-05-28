@@ -31,7 +31,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="readFile" className="org.frankframework.pipes.LocalFileSystemPipe"
+			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
 				actions="read" outputType="stream" getInputFromFixedValue="RestListener/pdf/sample.pdf"
 				fileSource="classpath" storeResultInSessionKey="fileContent"
 				preserveInput="true">
@@ -222,7 +222,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="readFile" className="org.frankframework.pipes.LocalFileSystemPipe"
+			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
 				actions="read" outputType="stream" getInputFromFixedValue="RestListener/pdf/sample.pdf"
 				fileSource="classpath" streamResultToServlet="true">
 				<forward name="success" path="EXIT" />
