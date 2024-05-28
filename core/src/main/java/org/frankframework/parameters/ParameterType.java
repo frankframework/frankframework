@@ -40,22 +40,22 @@ public enum ParameterType {
 
 	/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>.
 	 * When applied as a JDBC parameter, the method setDate() is used */
-	DATE(true),
+	DATE(DateParameter.class, true),
 
 	/** Converts the result to a Date, by default using formatString <code>HH:mm:ss</code>.
 	 * When applied as a JDBC parameter, the method setTime() is used */
-	TIME(true),
+	TIME(DateParameter.class, true),
 
 	/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>.
 	 * When applied as a JDBC parameter, the method setTimestamp() is used */
-	DATETIME(true),
+	DATETIME(DateParameter.class, true),
 
 	/** Similar to <code>DATETIME</code>, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default */
-	TIMESTAMP(true),
+	TIMESTAMP(DateParameter.class, true),
 
 	/** Converts the result from a XML formatted dateTime to a Date.
 	 * When applied as a JDBC parameter, the method setTimestamp() is used */
-	XMLDATETIME(true),
+	XMLDATETIME(DateParameter.class, true),
 
 	/** Converts the result to a Number, using decimalSeparator and groupingSeparator.
 	 * When applied as a JDBC parameter, the method setDouble() is used */
