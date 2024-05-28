@@ -23,7 +23,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +61,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if(!isEnabled) {
+		if (!isEnabled) {
 			return;
 		}
 		ServletRegistration.Dynamic servletRegistration = (ServletRegistration.Dynamic) servletConfig.getServletContext().getServletRegistration(getName());
@@ -75,7 +74,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 	@Override
 	public void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		if(!isEnabled) {
+		if (!isEnabled) {
 			try {
 				response.sendError(404, "api backend not enabled");
 			} catch (IOException e) {
@@ -89,7 +88,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 		 * Log POST, PUT and DELETE requests
 		 */
 		final String method = request.getMethod();
-		if(!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
+		if (!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
 			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
 		}
 

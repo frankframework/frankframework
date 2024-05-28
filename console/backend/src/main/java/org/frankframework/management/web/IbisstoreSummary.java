@@ -15,18 +15,15 @@
 */
 package org.frankframework.management.web;
 
+import java.util.Map;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.security.RolesAllowed;
-
-import java.util.Map;
 
 @RestController
 public class IbisstoreSummary extends FrankApiBase {
@@ -42,10 +39,10 @@ public class IbisstoreSummary extends FrankApiBase {
 
 		for (Map.Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if("datasource".equalsIgnoreCase(key)) {
+			if ("datasource".equalsIgnoreCase(key)) {
 				datasource = entry.getValue().toString();
 			}
-			if("query".equalsIgnoreCase(key)) {
+			if ("query".equalsIgnoreCase(key)) {
 				query = entry.getValue().toString();
 			}
 		}

@@ -23,8 +23,6 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;

@@ -15,13 +15,16 @@
 */
 package org.frankframework.management.web;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,12 +34,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
-
-import java.util.ArrayList;
-import java.util.Map;
 
 @RestController
 public class ConfigurationStatus extends FrankApiBase {
@@ -90,26 +87,26 @@ public class ConfigurationStatus extends FrankApiBase {
 		ArrayList<String> adapters = new ArrayList<>();
 
 		String value = RequestUtils.getValue(json, "action");
-		if(StringUtils.isNotEmpty(value)) {
-			if("stop".equals(value)) { action = IbisAction.STOPADAPTER; }
-			if("start".equals(value)) { action = IbisAction.STARTADAPTER; }
+		if (StringUtils.isNotEmpty(value)) {
+			if ("stop".equals(value)) {action = IbisAction.STOPADAPTER;}
+			if ("start".equals(value)) {action = IbisAction.STARTADAPTER;}
 		}
-		if(action == null) {
+		if (action == null) {
 			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 		}
 
 		Object adapterList = json.get("adapters");
-		if(adapterList != null) {
+		if (adapterList != null) {
 			try {
 				adapters.addAll((ArrayList<String>) adapterList);
-			} catch(Exception e) {
+			} catch (Exception e) {
 				throw new ApiException(e);
 			}
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
-		if(adapters.isEmpty()) {
+		if (adapters.isEmpty()) {
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*ALL*");
 			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, "*ALL*");
 			callAsyncGateway(builder);
@@ -138,11 +135,11 @@ public class ConfigurationStatus extends FrankApiBase {
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, Map<String, Object> json) {
 		Object value = json.get("action");
-		if(value instanceof String) {
+		if (value instanceof String) {
 			IbisAction action = null;
-			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
-			if(action == null) {
+			if (value.equals("stop")) {action = IbisAction.STOPADAPTER;}
+			if (value.equals("start")) {action = IbisAction.STARTADAPTER;}
+			if (action == null) {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 			}
 
@@ -163,13 +160,12 @@ public class ConfigurationStatus extends FrankApiBase {
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @PathVariable("receiver") String receiver, Map<String, Object> json) {
 		Object value = json.get("action");
-		if(value instanceof String) {
+		if (value instanceof String) {
 			IbisAction action = null;
-			if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
-			else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
-			else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
-			else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
-			if(action == null) {
+			if (value.equals("stop")) {action = IbisAction.STOPRECEIVER;} else if (value.equals("start")) {
+				action = IbisAction.STARTRECEIVER;
+			} else if (value.equals("incthread")) {action = IbisAction.INCTHREADS;} else if (value.equals("decthread")) {action = IbisAction.DECTHREADS;}
+			if (action == null) {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 			}
 

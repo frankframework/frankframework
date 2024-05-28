@@ -15,6 +15,10 @@
 */
 package org.frankframework.management.web;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import jakarta.annotation.security.PermitAll;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.HttpStatus;
@@ -23,10 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.security.PermitAll;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 public class ServerStatistics extends FrankApiBase {
@@ -54,10 +54,10 @@ public class ServerStatistics extends FrankApiBase {
 	public ResponseEntity<?> getFrankHealth() {
 		try {
 			return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
-		} catch(ApiException e) {
+		} catch (ApiException e) {
 			Map<String, Object> response = new HashMap<>();
 			response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
-			response.put("error", "unable to connect to backend system: "+e.getMessage());
+			response.put("error", "unable to connect to backend system: " + e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		} catch (MessageHandlingException e) {
 			throw e; //Spring gateway exchange exceptions are handled by the SpringBusExceptionHandler

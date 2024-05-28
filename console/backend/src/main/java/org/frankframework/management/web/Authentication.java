@@ -15,17 +15,16 @@
 */
 package org.frankframework.management.web;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.security.PermitAll;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @Log4j2
@@ -35,11 +34,11 @@ public class Authentication extends FrankApiBase {
 	@GetMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 
-		if(httpServletRequest.getUserPrincipal() != null) {
+		if (httpServletRequest.getUserPrincipal() != null) {
 			String user = httpServletRequest.getUserPrincipal().getName();
 			try {
 				httpServletRequest.logout();
-				log.debug("successfully logged out user ["+user+"]");
+				log.debug("successfully logged out user [" + user + "]");
 			} catch (ServletException e) {
 				throw new ApiException(e);
 			}

@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
@@ -30,8 +31,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
@@ -50,9 +49,9 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	@NonNull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
 		Message<?> message = getGateway().sendSyncMessage(input.build());
-		if(message == null) {
-			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic ["+input.getTopic()+"]");
-			if(input.getAction() != null) {
+		if (message == null) {
+			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
+			if (input.getAction() != null) {
 				errorMessage.append(" with action [");
 				errorMessage.append(input.getAction());
 				errorMessage.append("]");

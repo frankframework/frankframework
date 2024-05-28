@@ -16,11 +16,12 @@
 
 package org.frankframework.management.web;
 
+import java.util.Map;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +29,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.util.Map;
-
 @RestController
-public class ExecuteJdbcQuery extends FrankApiBase{
+public class ExecuteJdbcQuery extends FrankApiBase {
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/jdbc", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a list of all JDBC DataSources")
@@ -54,7 +51,7 @@ public class ExecuteJdbcQuery extends FrankApiBase{
 		String query = RequestUtils.getValue(json, "query");
 		String resultType = RequestUtils.getValue(json, "resultType");
 
-		if(resultType == null || query == null) {
+		if (resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 		builder.addHeader("query", query);
@@ -64,12 +61,12 @@ public class ExecuteJdbcQuery extends FrankApiBase{
 		builder.addHeader("trimSpaces", RequestUtils.getBooleanValue(json, "trimSpaces"));
 
 		String queryType = RequestUtils.getValue(json, "queryType");
-		if("AUTO".equals(queryType)) {
+		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
-			String[] commands = new String[] {"select", "show"}; //if it matches, set it to select
+			String[] commands = new String[]{"select", "show"}; //if it matches, set it to select
 			for (String command : commands) {
-				if(query.toLowerCase().startsWith(command)) {
+				if (query.toLowerCase().startsWith(command)) {
 					queryType = "select";
 					break;
 				}

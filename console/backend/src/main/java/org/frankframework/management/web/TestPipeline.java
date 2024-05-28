@@ -29,8 +29,6 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -45,13 +43,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class TestPipeline extends FrankApiBase {
 
-	public record TestPipeLineModel (
-		String configuration,
-		String adapter,
-		String sessionKeys,
-		String encoding,
-		MultipartFile message,
-		MultipartFile file){
+	public record TestPipeLineModel(
+			String configuration,
+			String adapter,
+			String sessionKeys,
+			String encoding,
+			MultipartFile message,
+			MultipartFile file) {
 	}
 
 	public record TestPipeLineResponse(String result, String state, String message) {
@@ -86,13 +84,12 @@ public class TestPipeline extends FrankApiBase {
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
-			}
-			else {
+			} else {
 				try {
 					InputStream file = model.file.getInputStream();
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
-					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
 					throw new ApiException("error reading file", e);
 				}
@@ -113,19 +110,19 @@ public class TestPipeline extends FrankApiBase {
 
 	private String getPayload(Message<?> response) {
 		Object payload = response.getPayload();
-		if(payload instanceof String string) {
+		if (payload instanceof String string) {
 			return string;
-		} else if(payload instanceof byte[] bytes) {
+		} else if (payload instanceof byte[] bytes) {
 			return new String(bytes);
-		} else if(payload instanceof InputStream stream) {
+		} else if (payload instanceof InputStream stream) {
 			try {
 				// Convert line endings to \n to show them in the browser as real line feeds
-				return StreamUtil.streamToString(stream,  "\n", false);
+				return StreamUtil.streamToString(stream, "\n", false);
 			} catch (IOException e) {
 				throw new ApiException("unable to read response payload", e);
 			}
 		}
-		throw new ApiException("unexpected response payload type ["+payload.getClass().getCanonicalName()+"]");
+		throw new ApiException("unexpected response payload type [" + payload.getClass().getCanonicalName() + "]");
 	}
 
 	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {
@@ -133,15 +130,15 @@ public class TestPipeline extends FrankApiBase {
 	}
 
 	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload, String state, String message) {
-			return ResponseEntity.status(200)
-					.body(new TestPipeLineResponse(payload, state, message));
+		return ResponseEntity.status(200)
+				.body(new TestPipeLineResponse(payload, state, message));
 	}
 
 	// cannot call callAsyncGateway, backend calls are not synchronous
 	private String processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		StringBuilder result = new StringBuilder();
 
-		try(ZipInputStream archive = new ZipInputStream(file)) {
+		try (ZipInputStream archive = new ZipInputStream(file)) {
 			ZipEntry zipEntry;
 			while ((zipEntry = archive.getNextEntry()) != null) {
 				String name = zipEntry.getName();

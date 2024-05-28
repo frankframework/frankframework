@@ -15,6 +15,10 @@
 */
 package org.frankframework.management.web;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
@@ -24,10 +28,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ApiException extends RuntimeException implements Serializable {
 
@@ -64,7 +64,7 @@ public class ApiException extends RuntimeException implements Serializable {
 	private ApiException(String msg, Throwable t, HttpStatus status) {
 		super(msg, t);
 		this.status = status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR;
-		if(msg == null && t == null) {
+		if (msg == null && t == null) {
 			this.expandedMessage = null;
 		} else {
 			this.expandedMessage = IbisException.expandMessage(super.getMessage(), this, e -> e instanceof IbisException || e instanceof ApiException);
@@ -79,7 +79,7 @@ public class ApiException extends RuntimeException implements Serializable {
 	}
 
 	public ResponseEntity<Object> getResponse() {
-		if(response == null) {
+		if (response == null) {
 			response = formatExceptionResponse(expandedMessage, status, null);
 		}
 		return response;
@@ -88,12 +88,12 @@ public class ApiException extends RuntimeException implements Serializable {
 	protected static ResponseEntity<Object> formatExceptionResponse(String message, HttpStatusCode status, @Nullable HttpHeaders headers) {
 		ResponseEntity.BodyBuilder builder = ResponseEntity.status(status).contentType(MediaType.TEXT_PLAIN);
 
-		if(headers != null) {
+		if (headers != null) {
 			builder.headers(headers);
 		}
 
-		if(message != null) {
-			Map<String,String> json = new HashMap<>();
+		if (message != null) {
+			Map<String, String> json = new HashMap<>();
 			json.put("status", HttpStatus.valueOf(status.value()).getReasonPhrase());
 			//Replace non ASCII characters, tabs, spaces and newlines.
 			json.put("error", message.replace("\n", " ").replace(System.lineSeparator(), " "));

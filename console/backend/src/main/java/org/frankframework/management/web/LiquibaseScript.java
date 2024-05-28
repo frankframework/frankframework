@@ -15,6 +15,12 @@
 */
 package org.frankframework.management.web;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.util.HashMap;
+
+import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +39,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.HashMap;
-
 @RestController
 public class LiquibaseScript extends FrankApiBase {
 
@@ -57,7 +56,7 @@ public class LiquibaseScript extends FrankApiBase {
 		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.getConfiguration(), null);
 		MultipartFile filePart = multipartBody.getFile();
 
-		if(filePart == null) {
+		if (filePart == null) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
@@ -81,8 +80,8 @@ public class LiquibaseScript extends FrankApiBase {
 		Message<?> response = sendSyncMessage(builder);
 		String result = (String) response.getPayload();
 
-		if(StringUtils.isEmpty(result)) {
-			throw new ApiException("Make sure liquibase xml script exists for configuration ["+configuration+"]");
+		if (StringUtils.isEmpty(result)) {
+			throw new ApiException("Make sure liquibase xml script exists for configuration [" + configuration + "]");
 		}
 
 		HashMap<String, Object> resultMap = new HashMap<>();

@@ -15,11 +15,12 @@
 */
 package org.frankframework.management.web;
 
+import java.util.Map;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,20 +33,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.util.Map;
-
 @RestController
 @RequestMapping("/configurations/{configuration}/monitors")
 public class Monitors extends FrankApiBase {
 	private static final String MONITOR_HEADER = "monitor";
 	private static final String TRIGGER_HEADER = "trigger";
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("view all available monitors")
-	@GetMapping(value = { "", "/" })
+	@GetMapping(value = {"", "/"})
 	public ResponseEntity<?> getMonitors(@PathVariable("configuration") String configurationName, @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -53,10 +50,10 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("add a new monitor")
-	@PostMapping(value = { "", "/" }, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -69,7 +66,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("get a specific monitor")
 	@GetMapping(value = "/{monitorName}")
@@ -81,7 +78,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -91,7 +88,7 @@ public class Monitors extends FrankApiBase {
 		builder.addHeader(MONITOR_HEADER, monitorName);
 
 		Object state = json.remove("action");
-		if(state != null) {
+		if (state != null) {
 			builder.addHeader("state", String.valueOf(state));
 		}
 		builder.setJsonPayload(json);
@@ -99,7 +96,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("delete a specific monitor")
 	@DeleteMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,7 +107,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("view specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -121,7 +118,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -134,7 +131,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("view all triggers for a specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -146,7 +143,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -160,7 +157,7 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("delete a specific monitor trigger")
 	@DeleteMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)

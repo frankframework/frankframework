@@ -15,21 +15,18 @@
 */
 package org.frankframework.management.web;
 
+import java.util.Map;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.security.RolesAllowed;
-
-import java.util.Map;
 
 @RestController
 public class BrowseJdbcTable extends FrankApiBase {
@@ -48,12 +45,12 @@ public class BrowseJdbcTable extends FrankApiBase {
 		Integer minRow = RequestUtils.getIntegerValue(json, "minRow");
 		Integer maxRow = RequestUtils.getIntegerValue(json, "maxRow");
 
-		if(tableName == null) {
+		if (tableName == null) {
 			throw new ApiException("tableName not defined.", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
-		if(StringUtils.isNotEmpty(datasource)) {
+		if (StringUtils.isNotEmpty(datasource)) {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		builder.addHeader("table", tableName);

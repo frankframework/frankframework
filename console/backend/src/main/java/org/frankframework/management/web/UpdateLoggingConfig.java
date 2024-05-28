@@ -15,27 +15,24 @@
 */
 package org.frankframework.management.web;
 
+import java.util.Map;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.logging.log4j.Level;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 @RestController
 public class UpdateLoggingConfig extends FrankApiBase {
 
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("logging")
 	@Description("view the application log configuration")
 	@GetMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,7 +51,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		Boolean enableDebugger = RequestUtils.getBooleanValue(json, "enableDebugger");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
-		builder.addHeader("logLevel", loglevel==null?null:loglevel.name());
+		builder.addHeader("logLevel", loglevel == null ? null : loglevel.name());
 		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
 		builder.addHeader("maxMessageLength", maxMessageLength);
 		builder.addHeader("enableDebugger", enableDebugger);
@@ -81,16 +78,16 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		for (Map.Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			if("level".equalsIgnoreCase(key)) {
-				Level level = Level.toLevel(""+value, null);
-				if(level != null) {
+			if ("level".equalsIgnoreCase(key)) {
+				Level level = Level.toLevel("" + value, null);
+				if (level != null) {
 					request.addHeader("level", level.name());
 				}
-			} else if("logger".equalsIgnoreCase(key)) {
+			} else if ("logger".equalsIgnoreCase(key)) {
 				String logPackage = (String) value;
 				request.addHeader("logPackage", logPackage);
-			} else if("reconfigure".equalsIgnoreCase(key)) {
-				boolean reconfigure = Boolean.parseBoolean(""+value);
+			} else if ("reconfigure".equalsIgnoreCase(key)) {
+				boolean reconfigure = Boolean.parseBoolean("" + value);
 				request.addHeader("reconfigure", reconfigure);
 			}
 		}

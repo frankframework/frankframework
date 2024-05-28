@@ -21,8 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Retention annotation to specify the relation between two or more resources
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Retention(RetentionPolicy.RUNTIME)

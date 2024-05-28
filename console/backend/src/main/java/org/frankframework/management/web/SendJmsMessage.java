@@ -26,8 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -43,17 +41,18 @@ import org.springframework.web.multipart.MultipartFile;
 public class SendJmsMessage extends FrankApiBase {
 
 	public record JmsMessageModel(
-		boolean persistent,
-		boolean synchronous,
-		boolean lookupDestination,
-		String destination,
-		String replyTo,
-		String property,
-		String type,
-		String connectionFactory,
-		String encoding,
-		MultipartFile message,
-		MultipartFile file) {}
+			boolean persistent,
+			boolean synchronous,
+			boolean lookupDestination,
+			String destination,
+			String replyTo,
+			String property,
+			String type,
+			String connectionFactory,
+			String encoding,
+			MultipartFile message,
+			MultipartFile file) {
+	}
 
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -68,7 +67,7 @@ public class SendJmsMessage extends FrankApiBase {
 		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", model.connectionFactory(), null);
 		String destinationName = RequestUtils.resolveRequiredProperty("destination", model.destination(), null);
 		String destinationType = RequestUtils.resolveRequiredProperty("type", model.type(), null);
-		String replyTo = RequestUtils.resolveRequiredProperty( "replyTo", model.replyTo(), "");
+		String replyTo = RequestUtils.resolveRequiredProperty("replyTo", model.replyTo(), "");
 		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", model.persistent(), false);
 		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", model.synchronous(), false);
 		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", model.lookupDestination(), false);
@@ -85,7 +84,7 @@ public class SendJmsMessage extends FrankApiBase {
 		builder.addHeader("messageProperty", messageProperty);
 
 		MultipartFile filePart = model.file();
-		if(filePart != null) {
+		if (filePart != null) {
 			fileName = filePart.getOriginalFilename();
 			try {
 				file = filePart.getInputStream();
@@ -100,12 +99,11 @@ public class SendJmsMessage extends FrankApiBase {
 				} catch (IOException e) {
 					throw new ApiException("error processing zip file", e);
 				}
-			}
-			else {
+			} else {
 				try {
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
-					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
 					throw new ApiException("error reading file", e);
 				}
@@ -114,7 +112,7 @@ public class SendJmsMessage extends FrankApiBase {
 			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -125,18 +123,18 @@ public class SendJmsMessage extends FrankApiBase {
 
 	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
-		for (ZipEntry entry = archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
-			int size = (int)entry.getSize();
-			if (size>0) {
-				byte[] b=new byte[size];
-				int rb=0;
-				int chunk=0;
+		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
+			int size = (int) entry.getSize();
+			if (size > 0) {
+				byte[] b = new byte[size];
+				int rb = 0;
+				int chunk = 0;
 				while ((size - rb) > 0) {
-					chunk=archive.read(b,rb,size - rb);
-					if (chunk==-1) {
+					chunk = archive.read(b, rb, size - rb);
+					if (chunk == -1) {
 						break;
 					}
-					rb+=chunk;
+					rb += chunk;
 				}
 				String currentMessage = XmlEncodingUtils.readXml(b, null);
 

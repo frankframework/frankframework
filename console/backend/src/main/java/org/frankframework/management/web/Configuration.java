@@ -15,6 +15,14 @@
 */
 package org.frankframework.management.web;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.security.Principal;
+import java.util.Map;
+
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +30,6 @@ import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.RequestUtils;
 import org.springframework.http.HttpStatus;
@@ -38,15 +44,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.security.Principal;
-import java.util.Map;
-
 @RestController
 public class Configuration extends FrankApiBase {
 
@@ -55,13 +52,13 @@ public class Configuration extends FrankApiBase {
 	@Description("view all the loaded/original configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<?> getConfigurationXML(@RequestParam(value = "loadedConfiguration", required = false) boolean loaded, @RequestParam(value = "flow", required = false) String flow) throws ApiException {
-		if(StringUtils.isNotEmpty(flow)) {
+		if (StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
-		if(loaded) builder.addHeader("loaded", loaded);
+		if (loaded) builder.addHeader("loaded", loaded);
 		return callSyncGateway(builder);
 	}
 
@@ -71,7 +68,7 @@ public class Configuration extends FrankApiBase {
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> fullReload(Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
-		if(value instanceof String && "reload".equals(value)) {
+		if (value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", IbisAction.FULLRELOAD.name());
 			callAsyncGateway(builder);
@@ -88,7 +85,7 @@ public class Configuration extends FrankApiBase {
 	public ResponseEntity<?> getConfigurationByName(@PathVariable("configuration") String configurationName, @RequestParam(value = "loadedConfiguration", required = false) boolean loaded) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader("configuration", configurationName);
-		if(loaded) builder.addHeader("loaded", loaded);
+		if (loaded) builder.addHeader("loaded", loaded);
 		return callSyncGateway(builder);
 	}
 
@@ -118,7 +115,7 @@ public class Configuration extends FrankApiBase {
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> reloadConfiguration(@PathVariable("configuration") String configurationName, Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
-		if(value instanceof String && "reload".equals(value)) {
+		if (value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", IbisAction.RELOAD.name());
 			builder.addHeader("configuration", configurationName);
@@ -148,16 +145,16 @@ public class Configuration extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));
-		if(json.containsKey("activate")) {
+		if (json.containsKey("activate")) {
 			Object obj = json.get("activate");
-			if(obj instanceof Boolean) {
+			if (obj instanceof Boolean) {
 				builder.addHeader("activate", (Boolean) json.get("activate"));
 			} else {
 				throw new ApiException("activate must be of type boolean");
 			}
-		} else if(json.containsKey("autoreload")) {
+		} else if (json.containsKey("autoreload")) {
 			Object obj = json.get("autoreload");
-			if(obj instanceof Boolean) {
+			if (obj instanceof Boolean) {
 				builder.addHeader("autoreload", (Boolean) json.get("autoreload"));
 			} else {
 				throw new ApiException("autoreload must be of type boolean");
@@ -172,9 +169,9 @@ public class Configuration extends FrankApiBase {
 	@Description("upload a new configuration versions")
 	@PostMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> uploadConfiguration(Principal principal, ConfigurationMultipartBody multipartBody) throws ApiException {
-		String datasource = RequestUtils.resolveRequiredProperty( "datasource", multipartBody.getDatasource(), "");
+		String datasource = RequestUtils.resolveRequiredProperty("datasource", multipartBody.getDatasource(), "");
 		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multipartBody.isMultiple_configs(), false);
-		boolean activateConfig  = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.isActivate_config(), true);
+		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.isActivate_config(), true);
 		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", multipartBody.isAutomatic_reload(), false);
 		MultipartFile filePart = multipartBody.getFile();
 		InputStream file = null;
@@ -185,7 +182,7 @@ public class Configuration extends FrankApiBase {
 		}
 
 		String user = RequestUtils.resolveRequiredProperty("user", multipartBody.getUser(), "");
-		if(StringUtils.isEmpty(user)) {
+		if (StringUtils.isEmpty(user)) {
 			user = principal.getName();
 		}
 
@@ -199,7 +196,7 @@ public class Configuration extends FrankApiBase {
 		builder.addHeader("activate_config", activateConfig);
 		builder.addHeader("automatic_reload", automaticReload);
 		builder.addHeader("user", user);
-		if(StringUtils.isNotEmpty(datasource)) {
+		if (StringUtils.isNotEmpty(datasource)) {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		return callSyncGateway(builder);

@@ -15,14 +15,12 @@
 */
 package org.frankframework.management.web;
 
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.core.MediaType;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.web.Relation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.core.MediaType;
 
 @RestController
 public class SecurityItems extends FrankApiBase {

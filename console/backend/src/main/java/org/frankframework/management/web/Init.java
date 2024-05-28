@@ -15,8 +15,14 @@
 */
 package org.frankframework.management.web;
 
-import org.frankframework.management.web.Description;
-import org.frankframework.management.web.Relation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,16 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.web.util.pattern.PathPattern;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 public class Init extends FrankApiBase {
@@ -48,7 +45,7 @@ public class Init extends FrankApiBase {
 		return getProperty("monitoring.enabled", false);
 	}
 
-	@GetMapping(value = { "", "/"}, produces = "application/json")
+	@GetMapping(value = {"", "/"}, produces = "application/json")
 	@PermitAll
 	public ResponseEntity<?> getAllResources(@RequestParam(value = "allowedRoles", required = false) boolean displayAllowedRoles, @RequestParam(value = "hateoas", defaultValue = "default") String hateoasImpl) {
 		List<Object> JSONresources = new ArrayList<>();
@@ -57,8 +54,8 @@ public class Init extends FrankApiBase {
 		boolean hateoasSupport = "hal".equalsIgnoreCase(hateoasImpl);
 
 		String requestPath = getServletRequest().getRequestURL().toString();
-		if(requestPath.endsWith("/")) {
-			requestPath = requestPath.substring(0, requestPath.length()-1);
+		if (requestPath.endsWith("/")) {
+			requestPath = requestPath.substring(0, requestPath.length() - 1);
 		}
 
 		Map<RequestMappingInfo, HandlerMethod> handlerMethods = this.handlerMapping.getHandlerMethods();
@@ -68,14 +65,14 @@ public class Init extends FrankApiBase {
 			final HandlerMethod handlerMethod = mappingHandler.getValue();
 			String relation = null;
 
-			if(handlerMethod.getBeanType().getName().endsWith("Monitors") && !isMonitoringEnabled()) {
+			if (handlerMethod.getBeanType().getName().endsWith("Monitors") && !isMonitoringEnabled()) {
 				continue;
 			}
 
 			final Method method = handlerMethod.getMethod();
 			boolean deprecated = method.getAnnotation(Deprecated.class) != null;
 
-			if(deprecated && !allowDeprecatedEndpoints()) {
+			if (deprecated && !allowDeprecatedEndpoints()) {
 				continue;
 			}
 
@@ -85,7 +82,7 @@ public class Init extends FrankApiBase {
 			Description description = method.getAnnotation(Description.class);
 
 			String[] allowedRolesList = displayAllowedRoles && rolesAllowed != null ?
-				rolesAllowed.value() : null;
+					rolesAllowed.value() : null;
 			String descriptionText = description != null ? description.value() : null;
 			boolean hasRelation = method.isAnnotationPresent(Relation.class);
 			String rel = !hateoasSupport && hasRelation ? method.getAnnotation(Relation.class).value() : null;
@@ -107,10 +104,10 @@ public class Init extends FrankApiBase {
 						relation = method.getAnnotation(Relation.class).value();
 
 					if (relation != null) {
-						if(HALresources.containsKey(relation)) {
+						if (HALresources.containsKey(relation)) {
 							Object prevRelation = HALresources.get(relation);
 							List<Object> tmpList = null;
-							if(prevRelation instanceof List)
+							if (prevRelation instanceof List)
 								tmpList = (List) prevRelation;
 							else {
 								tmpList = new ArrayList<>();
@@ -119,19 +116,18 @@ public class Init extends FrankApiBase {
 
 							tmpList.add(resource);
 							HALresources.put(relation, tmpList);
-						}
-						else
+						} else
 							HALresources.put(relation, resource);
 					}
 				} else {
-					if(hasRelation)
+					if (hasRelation)
 						resource.put("rel", rel);
 					JSONresources.add(resource);
 				}
 			}
 		}
 
-		if(hateoasSupport)
+		if (hateoasSupport)
 			resources.put("_links", HALresources);
 		else
 			resources.put("links", JSONresources);
