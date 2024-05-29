@@ -25,7 +25,7 @@ import jakarta.servlet.ServletContext;
  * Add the SpringSecurity filter to enable authentication.
  * Has a high precedence so it's loaded before the EnvironmentInitializer starts.
  * 
- * Spring Security provides a base class provides all initialization.
+ * Spring Security provides a base class which provides all initialization.
  * 
  * @author Niels Meijer
  */

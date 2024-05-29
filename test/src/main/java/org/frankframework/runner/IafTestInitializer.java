@@ -28,6 +28,7 @@ import jakarta.servlet.ServletException;
 
 import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
+import org.frankframework.ibistesttool.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
@@ -59,8 +60,8 @@ public class IafTestInitializer {
 		@Override
 		public void onStartup(ServletContext servletContext) throws ServletException {
 			System.setProperty("ladybug.jdbc.datasource", "");
-//			LadybugWarInitializer init = new LadybugWarInitializer(); //TODO enable again
-//			init.onStartup(servletContext);
+			LadybugWarInitializer init = new LadybugWarInitializer();
+			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Ladybug");
 		}
 	}

@@ -19,7 +19,17 @@
 	<context:property-placeholder/>
 
 	<!-- scan both the original and overridden configuration -->
-	<context:component-scan base-package="org.frankframework.ibistesttool"/>
+	<context:component-scan base-package="org.frankframework.ibistesttool">
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\.runner\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\.web\..*"/>
+	</context:component-scan>
+
+	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
+	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean">
+		<property name="filter" ref="springSecurityFilterChain" />
+		<property name="enabled" value="false" />
+	</bean>
+
 	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<bean

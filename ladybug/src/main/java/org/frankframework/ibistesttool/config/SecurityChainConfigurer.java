@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,25 +31,51 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+import org.springframework.web.context.ServletContextAware;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.ServletContext;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
+/**
+ * Enables WebSecurity, still depends on the existence of the {@link AbstractSecurityWebApplicationInitializer#DEFAULT_FILTER_NAME}.
+ * Spring Boot's auto creation of the Filter has been disabled (see springIbisTestTool.xml) because the {@link Filter} may not exist twice.
+ * 
+ * When running standalone this Filter will need to be added manually, by either a bean definition or by using the {@link AbstractSecurityWebApplicationInitializer}.
+ * 
+ * <pre><code>
+ * public FilterRegistrationBean<DelegatingFilterProxy> securityFilterChainRegistration() {
+ * 	DelegatingFilterProxy delegatingFilterProxy = new DelegatingFilterProxy();
+ * 	delegatingFilterProxy.setTargetBeanName(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
+ * 	FilterRegistrationBean<DelegatingFilterProxy> registrationBean = new FilterRegistrationBean<>(delegatingFilterProxy);
+ * 	registrationBean.addUrlPatterns("/*");
+ * 	return registrationBean;
+ * }
+ * </code></pre>
+ */
+@Log4j2
 @Configuration
 @EnableWebSecurity //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurity>, ApplicationContextAware, EnvironmentAware, ServletContextAware {
+	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
+
 	private @Setter ApplicationContext applicationContext;
 	private @Setter Environment environment;
+	private @Setter ServletContext servletContext;
 
 	private IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.testtool.authentication.";
@@ -78,18 +104,34 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		return authenticator;
 	}
 
-	@Bean
-	public SecurityFilterChain configureChain(HttpSecurity http) {
-		IAuthenticator authenticator = createAuthenticator();
+	@Override
+	public void init(WebSecurity webSecurity) {
+		if(servletContext != null) servletContext.log("Enabling Ladybug Security");
+	}
 
+	@Override
+	public void configure(WebSecurity webSecurity) throws Exception {
+		webSecurity.debug(log.isTraceEnabled());
+
+		SecurityFilterChain chain = configureChain();
+		log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
+		webSecurity.addSecurityFilterChainBuilder(() -> chain);
+	}
+
+	public SecurityFilterChain configureChain() {
+		IAuthenticator authenticator = createAuthenticator();
 
 		authenticator.registerServlet(createServletConfig("backendServletBean"));
 		authenticator.registerServlet(createServletConfig("frontendServletBean"));
 		authenticator.registerServlet(createServletConfig("testtoolServletBean"));
 
-		return authenticator.configureHttpSecurity(http);
+		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
+		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 
+	/**
+	 * Create a dummy servletConfig wrapper to determine the default url-mapping and roles, and allow users to overwrite these using properties.
+	 */
 	private ServletConfiguration createServletConfig(String servletBeanName) {
 		ServletRegistrationBean<?> bean = applicationContext.getBean(servletBeanName, ServletRegistrationBean.class);
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
