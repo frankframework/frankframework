@@ -719,6 +719,13 @@ public class DbmsSupportTest {
 		}
 	}
 
+	@DatabaseTest
+	public void testSkipLockedSupportPresent() {
+		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
+		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
+
+		assertEquals(expectSkipLockedSupport, dbmsSupport.hasSkipLockedFunctionality());
+	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);
