@@ -60,7 +60,7 @@
 			<xsl:copy-of select="@*"/>
 			<exits>
 				<xsl:apply-templates select="//exit" mode="#current"/>
-				<xsl:if test="not(//exit)">
+				<xsl:if test="not(//exit[lower-case(@state) = 'success'])">
 					<exit name="READY" state="success"/>
 				</xsl:if>
 			</exits>
