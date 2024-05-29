@@ -147,6 +147,8 @@ export class Poller<T> {
       this.intervalTime,
     );
     this.state = 'WAITING';
+
+    this.run();
   }
 
   stop(): void {
