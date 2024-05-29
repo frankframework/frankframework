@@ -16,7 +16,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TestPipeline.class})
@@ -41,7 +40,6 @@ public class TestPipelineTest extends FrankApiTestBase {
 						.part(getMultiPartParts())
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
@@ -99,7 +97,6 @@ public class TestPipelineTest extends FrankApiTestBase {
 						.part(getMultiPartParts())
 						.file(new MockMultipartFile("message", DUMMY_MESSAGE.getBytes()))
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("dummy data"))
@@ -122,7 +119,6 @@ public class TestPipelineTest extends FrankApiTestBase {
 						.part(getMultiPartParts())
 						.file(new MockMultipartFile("message", input.getBytes()))
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value(expectedValue))

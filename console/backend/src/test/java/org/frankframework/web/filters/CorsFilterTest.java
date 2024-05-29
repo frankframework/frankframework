@@ -8,11 +8,12 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Properties;
 
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import org.frankframework.util.SpringUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -20,8 +21,6 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import org.frankframework.util.SpringUtils;
 
 public class CorsFilterTest {
 	public static final String STUBBED_SPRING_BUS_CONFIGURATION = "stubbedBusApplicationContext.xml";

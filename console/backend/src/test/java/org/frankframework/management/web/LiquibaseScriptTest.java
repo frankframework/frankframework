@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 
-import org.frankframework.management.bus.BusMessageUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -17,7 +18,6 @@ import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, LiquibaseScript.class})
@@ -103,7 +103,6 @@ public class LiquibaseScriptTest extends FrankApiTestBase {
 						.part(
 								new MockPart("configuration", "TestConfiguration".getBytes())
 						))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("uploading zip files is not supported!"))
 				.andReturn();

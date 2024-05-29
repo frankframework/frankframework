@@ -1,15 +1,16 @@
 package org.frankframework.web.interceptors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.apache.logging.log4j.Level;
 import org.frankframework.management.web.FrankApiTestBase;
 import org.frankframework.management.web.WebTestConfiguration;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.TestAppender;
-
-import org.junit.jupiter.api.Test;
-
-import org.mockito.Mockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, DeprecationInterceptorTest.ClassWithSlash.class})
 public class DeprecationInterceptorTest extends FrankApiTestBase {

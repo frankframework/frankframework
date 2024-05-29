@@ -1,7 +1,5 @@
 package org.frankframework.management.web;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -77,7 +75,6 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 	@Test
 	public void testListServiceListeners() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get(TEST_SERVICE_LISTENER_ENDPOINT))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"SERVICE_LISTENER\",\"action\":\"GET\"}"));
 	}
