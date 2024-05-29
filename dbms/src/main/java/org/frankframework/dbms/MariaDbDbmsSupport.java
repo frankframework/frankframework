@@ -62,7 +62,10 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	private boolean determineSkipLockedCapability(String productVersion) {
 		String[] productVersionArr = productVersion.split("-");
-		String strippedProductVersion = productVersionArr.length > 1 ? productVersionArr[1] : productVersion;
+		String strippedProductVersion = switch (productVersionArr.length) {
+			case 1, 2, 3 -> productVersionArr[0]; // MariaDB with MariaDB driver
+			default -> productVersionArr[1]; // MariaDB with MySQL driver, first version nr is version of the MySQL driver
+		};
 		DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
 		DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
 		boolean result = thisVersion.compareTo(targetVersion) >= 0;
