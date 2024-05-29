@@ -43,7 +43,6 @@ describe('QuickSubmitFormDirective', () => {
     });
     directiveElement.nativeElement.dispatchEvent(event);
 
-    console.log(fixture.componentInstance.triggered);
     expect(fixture.componentInstance.triggered).toBe(true);
   }));
 });
