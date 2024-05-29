@@ -36,7 +36,7 @@ describe('QuickSubmitFormDirective', () => {
     );
   });
 
-  it('emits event when ctrl+enter is pressed', fakeAsync(() => {
+  it('emits event when ctrl+enter is pressed', () => {
     const event = new KeyboardEvent('keydown', {
       ctrlKey: true,
       key: 'Enter',
@@ -44,5 +44,5 @@ describe('QuickSubmitFormDirective', () => {
     directiveElement.nativeElement.dispatchEvent(event);
 
     expect(fixture.componentInstance.triggered).toBe(true);
-  }));
+  });
 });
