@@ -1,7 +1,5 @@
 package org.frankframework.management.web;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

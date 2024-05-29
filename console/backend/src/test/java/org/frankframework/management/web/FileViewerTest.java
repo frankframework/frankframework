@@ -1,25 +1,23 @@
 package org.frankframework.management.web;
 
-import org.apache.commons.io.FilenameUtils;
-import org.frankframework.management.bus.message.BinaryMessage;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+
+import java.io.FileInputStream;
+import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import org.apache.commons.io.FilenameUtils;
+import org.frankframework.management.bus.message.BinaryMessage;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.io.FileInputStream;
-import java.net.URL;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, FileViewer.class})
 public class FileViewerTest extends FrankApiTestBase {
