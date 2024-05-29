@@ -25,7 +25,7 @@
 	<Include ref="ConfigurationSenders.xml"/>
 	<Include ref="ConfigurationBase64Pipe.xml"/>
 	<Include ref="ConfigurationFilePipe.xml"/>
-	<Include ref="ConfigurationMoveFilePipe.xml"/>
+	<Include ref="ConfigurationMoveFiles.xml"/>
 	<Include ref="ConfigurationStringResolver.xml"/>
 	<Include ref="ConfigurationCorrelationMessageId.xml"/>
 	<Include ref="ConfigurationXmlBuilderThreadSafety.xml"/>
