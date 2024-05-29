@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
@@ -35,9 +38,6 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.BeforeEach;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = DbmsSupportTest.TEST_TABLE)
@@ -718,6 +718,13 @@ public class DbmsSupportTest {
 		}
 	}
 
+	@DatabaseTest
+	public void testSkipLockedSupportPresent() {
+		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
+		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
+
+		assertEquals(expectSkipLockedSupport, dbmsSupport.hasSkipLockedFunctionality());
+	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);
