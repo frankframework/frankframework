@@ -21,7 +21,7 @@
 		<spring.version>6.1.8</spring.version>
 		<spring-security.version>6.3.0</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
-		<spring.boot.version>3.2.5</spring.boot.version>
+		<spring.boot.version>3.3.0</spring.boot.version>
 		<tomcat.version>10.1.24</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
@@ -132,7 +132,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.26.1</version>
+				<version>4.27.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -716,7 +716,7 @@
 					<includes>
 						<include>**/*.java</include>
 					</includes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -984,7 +984,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.16.0</version>
+							<version>10.17.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -1136,7 +1136,7 @@
 											<exclude>com.sun.activation:jakarta.activation</exclude>
 											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>Don't though versions, we should use jakarta.activation-api:2.1.3</message>
+										<message>Don't touch versions, we should use jakarta.activation-api:2.1.3</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
@@ -1279,7 +1279,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
+						<version>1.7.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>

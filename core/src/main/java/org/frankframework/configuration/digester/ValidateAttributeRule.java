@@ -23,12 +23,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
-import org.springframework.beans.BeanUtils;
-import org.springframework.core.annotation.AnnotationUtils;
-
 import org.frankframework.doc.Protected;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringResolver;
+import org.springframework.beans.BeanUtils;
+import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * @author Niels Meijer
@@ -40,24 +40,24 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	 */
 	@Override
 	protected void handleBean() {
-			Class<?> clazz = getBeanClass();
-			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-			if(warning != null) {
-				String msg = "";
-				boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
-				if(isDeprecated) {
-					msg += "is deprecated";
-				}
-				if(StringUtils.isNotEmpty(warning.value())) {
-					msg += ": "+warning.value();
-				}
-
-				if (isDeprecated) {
-					addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
-				} else {
-					addLocalWarning(msg);
-				}
+		Class<?> clazz = getBeanClass();
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
+		if (warning != null) {
+			String msg = "";
+			boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
+			if (isDeprecated) {
+				msg += "is deprecated";
 			}
+			if (StringUtils.isNotEmpty(warning.value())) {
+				msg += ": " + warning.value();
+			}
+
+			if (isDeprecated) {
+				addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+			} else {
+				addLocalWarning(msg);
+			}
+		}
 	}
 
 	/**
@@ -66,10 +66,9 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	 * @param name Name of attribute
 	 * @param value Attribute Value
 	 * @param attributes Map of all attributes
-	 * @throws Exception Can throw any exception in bean property manipulation.
 	 */
 	@Override
-	protected void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception {
+	protected void handleAttribute(String name, String value, Map<String, String> attributes) {
 		PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(getBean().getClass(), name);
 		Method m = null;
 		if (pd != null) {
@@ -80,7 +79,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		} else if(AnnotationUtils.findAnnotation(m, Protected.class) != null) {
 			addLocalWarning("attribute ["+name+"] is protected, cannot be set from configuration");
 		} else {
-			checkDeprecationAndConfigurationWarning(name, m); //check if the setter has been deprecated
+			checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
 
 			if(value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
 				value = resolveValue(value);
@@ -123,7 +122,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				defaultValue = values.getSpecialDefaultValue(name, defaultValue, attrs);
 			}
 			if (equals(defaultValue, value)) {
-				addSuppressableWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
+				addSuppressibleWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
 			}
 			// if the default value is null, then it can mean that the real default value is determined in configure(),
 			// so we cannot assume setting it to "" has no effect
@@ -146,25 +145,46 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	private void checkDeprecationAndConfigurationWarning(String name, Method m) {
-		ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
-		if(warning != null) {
-			String msg = "attribute ["+name+"]";
-			boolean isDeprecated = AnnotationUtils.findAnnotation(m, Deprecated.class) != null;
+	private void checkDeprecationAndConfigurationWarning(String name, String value, Method setterMethod) {
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(setterMethod, ConfigurationWarning.class);
+		String warningMessage = warning != null ? warning.value() : null;
+		boolean isDeprecated = AnnotationUtils.findAnnotation(setterMethod, Deprecated.class) != null;
+		addWarningForField(warningMessage, isDeprecated, name);
 
-			if(isDeprecated) {
-				msg += " is deprecated";
+		// Check enum Configuration Warnings
+		Class<?> setterArgumentClass = setterMethod.getParameters()[0].getType();
+		if (!setterArgumentClass.isEnum()) // only first parameter is relevant to check
+			return; // Skip non-enum setters
+		try {
+			Object o = ClassUtils.convertToType(setterArgumentClass, value);
+			if (o instanceof Enum<?> enumValue) {
+				warning = EnumUtils.findAnnotation(enumValue, ConfigurationWarning.class);
+				String configWarning = warning != null ? warning.value() : null;
+				isDeprecated = EnumUtils.findAnnotation(enumValue, Deprecated.class) != null;
+				addWarningForField(configWarning, isDeprecated, name + "." + enumValue);
 			}
+		} catch (IllegalArgumentException ignored) { // Can not happen with enums
+		}
+	}
 
-			if(StringUtils.isNotEmpty(warning.value())) {
-				msg += ": " + warning.value();
-			}
+	private void addWarningForField(String warningMessage, boolean isDeprecated, String fieldName) {
+		if (warningMessage == null) {
+			return;
+		}
+		String msg = "attribute [" + fieldName + "]";
 
-			if (isDeprecated) {
-				addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
-			} else {
-				addLocalWarning(msg);
-			}
+		if (isDeprecated) {
+			msg += " is deprecated";
+		}
+
+		if (StringUtils.isNotEmpty(warningMessage)) {
+			msg += ": " + warningMessage;
+		}
+
+		if (isDeprecated) {
+			addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+		} else {
+			addLocalWarning(msg);
 		}
 	}
 }

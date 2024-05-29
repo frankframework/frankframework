@@ -5,16 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.doc.DocumentedEnum;
-import org.frankframework.doc.EnumLabel;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.frankframework.doc.DocumentedEnum;
+import org.frankframework.doc.EnumLabel;
 
 public class EnumUtilsTest {
 
-	static enum TestEnumWithField {
+	enum TestEnumWithField {
 		AVAILABLE("Available"),
 		INPROCESS("InProcess"),
 		DONE("Done"),
@@ -29,7 +29,7 @@ public class EnumUtilsTest {
 		}
 	}
 
-	static enum DocumentedTestEnum implements DocumentedEnum {
+	enum DocumentedTestEnum implements DocumentedEnum {
 		@EnumLabel("FTP") FTP(null, true),
 		@EnumLabel("SFTP") SFTP(null, true),
 		@EnumLabel("FTPSI") FTPS_IMPLICIT("TLS", true),

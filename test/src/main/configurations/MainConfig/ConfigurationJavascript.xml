@@ -1,4 +1,5 @@
 <module>
+	<!-- J2V8 engine -->
 	<adapter name="Javascript" description="Execute javascript using the JavascriptSender">
 		<receiver>
 			<listener
@@ -90,4 +91,98 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+
+	<!-- GraalJS engine -->
+	<adapter name="GraalJSJavascript" description="Execute Javascript using the JavascriptSender (GraalJS)">
+		<receiver>
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="GraalJS-Javascript"
+			/>
+		</receiver>
+		<pipeline firstPipe="Javascript">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="Javascript"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.JavascriptSender"
+					jsFileName="JavaScript/JavascriptTest.js"
+					jsFunctionName="f2"
+					engineName="GraalJS">
+					<param name="x" type="integer" sessionKey="originalMessage"/>
+					<param name="y" type="integer" value="2"/>
+				</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="GraalJSJavascriptDouble" description="Execute Javascript using the JavascriptSender (GraalJS)">
+		<receiver>
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="GraalJS-JavascriptDouble"
+			/>
+		</receiver>
+		<pipeline firstPipe="Javascript">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="Javascript"
+				className="org.frankframework.pipes.SenderPipe"
+				storeResultInSessionKey = "resultSessionKey">
+				<sender className="org.frankframework.senders.JavascriptSender"
+					jsFileName="JavaScript/JavascriptTest.js"
+					jsFunctionName="f2"
+					engineName="GraalJS">
+					<param name="x" type="integer" sessionKey="originalMessage"/>
+					<param name="y" type="integer" value="2"/>
+				</sender>
+				<forward name="success" path="Javascript2" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+			<pipe name="Javascript2"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.JavascriptSender"
+					jsFileName="JavaScript/JavascriptTest.js"
+					jsFunctionName="f2"
+					engineName="GraalJS">
+					<param name="x" type="integer" sessionKey="resultSessionKey"/>
+					<param name="y" type="integer" value="5"/>
+				</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="GraalJSJavascriptCallback" description="Call a sender with Javascript code (GraalJS)">
+		<receiver>
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="GraalJS-JavascriptCallback"
+			/>
+		</receiver>
+		<pipeline firstPipe="JavascriptCallback">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="JavascriptCallback"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.JavascriptSender"
+					jsFileName="JavaScript/JavascriptTest.js"
+					jsFunctionName="f5"
+					engineName="GraalJS">
+					<param name="x" type="integer" sessionKey="originalMessage"/>
+					<param name="y" type="integer" value="2"/>
+					<sender name = "echoFunction"
+						className="org.frankframework.senders.EchoSender">
+					</sender>
+				</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
 </module>

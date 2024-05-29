@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -14,21 +18,17 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.NumberParameterBuilder;
-import org.junit.jupiter.api.Test;
 
-import lombok.Getter;
-
-public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
-
-	private final JavaScriptEngines engine = JavaScriptEngines.J2V8;
+class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 	@Override
 	public JavascriptSender createSender() {
 		return new JavascriptSender();
 	}
 
-	@Test
-	public void simpleParameterizedSenderNoCallbacks() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	void simpleParameterizedSenderNoCallbacks(JavaScriptEngines engine) throws Exception {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
@@ -44,8 +44,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 	}
 
 	//An EchoSender will be called in the javascript code.
-	@Test
-	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	void javaScriptSenderWithNestedEchoSender(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f4");
@@ -65,8 +66,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		assertEquals("true", sender.sendMessageOrThrow(dummyInput,session).asString());
 	}
 
-	@Test
-	public void promise() throws Exception {
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	void promise(JavaScriptEngines engine) throws Exception {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("promise");
@@ -90,7 +92,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) {
 			promiseResult = message;
 			return new SenderResult(Message.nullMessage());
 		}

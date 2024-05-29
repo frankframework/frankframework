@@ -19,11 +19,10 @@ import java.util.List;
 
 import jakarta.annotation.Priority;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.LogUtil;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 
 @IbisInitializer
 @Priority(Integer.MAX_VALUE)
@@ -43,14 +42,14 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	}
 
 	/**
-	 * Add an AppplicationWarning
+	 * Add an ApplicationWarning
 	 */
 	public static void add(Logger log, String message) {
 		add(log, message, null);
 	}
 
 	/**
-	 * Add an AppplicationWarning and log the exception stack
+	 * Add an ApplicationWarning and log the exception stack
 	 */
 	public static void add(Logger log, String message, Throwable t) {
 		getInstance().doAdd(null, log, message, t);

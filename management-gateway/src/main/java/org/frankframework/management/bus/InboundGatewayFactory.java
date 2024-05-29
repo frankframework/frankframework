@@ -69,7 +69,7 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 
 				log.info("created inbound gateway [{}]", gateway);
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-				log.warn("unable to create inbound gateway [{}]", gateway);
+				log.warn("unable to create inbound gateway [{}]", gateway, e);
 			}
 		}
 	}
