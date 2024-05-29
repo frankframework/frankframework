@@ -32,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -81,7 +82,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Relation("adapter")
 	@Description("start/stop multiple adapters")
 	@PutMapping(value = "/adapters/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapters(Map<String, Object> json) {
+	public ResponseEntity<?> updateAdapters(@RequestBody Map<String, Object> json) {
 
 		IbisAction action = null;
 		ArrayList<String> adapters = new ArrayList<>();
@@ -133,7 +134,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Relation("adapter")
 	@Description("start/stop an adapter")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, Map<String, Object> json) {
+	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @RequestBody Map<String, Object> json) {
 		Object value = json.get("action");
 		if (value instanceof String) {
 			IbisAction action = null;
@@ -158,7 +159,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Relation("adapter")
 	@Description("start/stop an adapter receivers")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @PathVariable("receiver") String receiver, Map<String, Object> json) {
+	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @PathVariable("receiver") String receiver, @RequestBody Map<String, Object> json) {
 		Object value = json.get("action");
 		if (value instanceof String) {
 			IbisAction action = null;
