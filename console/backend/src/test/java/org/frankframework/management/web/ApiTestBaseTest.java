@@ -63,7 +63,6 @@ public class ApiTestBaseTest extends FrankApiBase {
 									.param("bool", "false")
 									.accept(MediaType.APPLICATION_JSON)
 					)
-//					.andDo(print())
 					.andExpect(MockMvcResultMatchers.status().isOk())
 					.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 					.andReturn();
@@ -75,7 +74,6 @@ public class ApiTestBaseTest extends FrankApiBase {
 		@Test
 		public void testGetWithJson() throws Exception {
 			mockMvc.perform(MockMvcRequestBuilders.get("/test/json").accept(MediaType.APPLICATION_JSON))
-//					.andDo(print())
 					.andExpect(MockMvcResultMatchers.status().isOk())
 					.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 					.andExpect(MockMvcResultMatchers.jsonPath("one").value("uno"))
@@ -92,7 +90,6 @@ public class ApiTestBaseTest extends FrankApiBase {
 							.contentType(MediaType.APPLICATION_JSON)
 							.accept(MediaType.APPLICATION_JSON)
 					)
-//					.andDo(print())
 					.andExpect(MockMvcResultMatchers.status().isOk())
 					.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 					.andExpect(MockMvcResultMatchers.jsonPath("one").value("uno"))

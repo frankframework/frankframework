@@ -47,7 +47,6 @@ public class FileViewerTest extends FrankApiTestBase {
 						.accept(MediaType.TEXT_PLAIN))
 				.andExpect(request().asyncStarted())
 				.andDo(MvcResult::getAsyncResult)
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_PLAIN))
 				.andExpect(MockMvcResultMatchers.header().string("Content-Disposition", "inline; filename=\"FileViewer.txt\""))

@@ -103,7 +103,6 @@ public class LiquibaseScriptTest extends FrankApiTestBase {
 						.part(
 								new MockPart("configuration", "TestConfiguration".getBytes())
 						))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("uploading zip files is not supported!"))
 				.andReturn();
