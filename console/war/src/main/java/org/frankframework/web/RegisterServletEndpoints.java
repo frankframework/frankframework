@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.web;
 
-import jakarta.servlet.Filter;
-
 import org.frankframework.console.ConsoleFrontend;
+import org.frankframework.management.web.configuration.ServletDispatcher;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.web.filters.DynamicFilterConfigurer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -25,8 +24,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import jakarta.servlet.Filter;
+
 @Configuration
 public class RegisterServletEndpoints {
+
+	@Bean
+	public ServletRegistration backendServletBean() {
+		return new ServletRegistration(ServletDispatcher.class);
+	}
 
 	@Bean
 	public ServletRegistration frontendServletBean() {
@@ -48,6 +54,11 @@ public class RegisterServletEndpoints {
 	@Bean
 	public FilterRegistrationBean<Filter> createCacheControlFilter(ApplicationContext ac) {
 		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CACHE_CONTROL_FILTER);
+	}
+
+	@Bean
+	public FilterRegistrationBean<Filter> createWeakShallowEtagFilter(ApplicationContext ac) {
+		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.ETAG_FILTER);
 	}
 
 	private FilterRegistrationBean<Filter> createFilter(ApplicationContext ac, DynamicFilterConfigurer.DynamicFilters df) {

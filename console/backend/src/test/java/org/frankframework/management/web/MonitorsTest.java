@@ -133,7 +133,7 @@ public class MonitorsTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andReturn();
 
-		assertEquals(jsonInput, jsonPretty(result.getResponse().getContentAsString()));
+		assertEquals(jsonPretty(jsonInput), jsonPretty(result.getResponse().getContentAsString()));
 	}
 
 	private static String jsonPretty(String json) {
