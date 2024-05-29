@@ -15,14 +15,11 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
-import org.frankframework.web.filters.DeprecationFilter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +28,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import lombok.NonNull;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
@@ -89,6 +90,6 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	protected final boolean allowDeprecatedEndpoints() {
-		return getProperty(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
+		return getProperty(DeprecationInterceptor.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
 	}
 }

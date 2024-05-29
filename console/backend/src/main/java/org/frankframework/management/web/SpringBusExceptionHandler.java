@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessageHandlingException;
@@ -60,8 +61,8 @@ public class SpringBusExceptionHandler {
 			return messageConverter.apply(cause);
 		}
 
-		public static SpringBusExceptionHandler.ManagedException parse(Throwable cause) {
-			for (SpringBusExceptionHandler.ManagedException me : SpringBusExceptionHandler.ManagedException.values()) {
+		public static ManagedException parse(Throwable cause) {
+			for (ManagedException me : ManagedException.values()) {
 				if (me.exceptionClass.isAssignableFrom(cause.getClass())) {
 					return me;
 				}
@@ -73,9 +74,10 @@ public class SpringBusExceptionHandler {
 		 * Returns the StatusCode + reason phrase for the given status code.
 		 */
 		private static ResponseEntity<?> convertHttpClientError(HttpClientErrorException e) {
-			HttpStatus status = HttpStatus.valueOf(e.getRawStatusCode());
+			HttpStatusCode status = e.getStatusCode();
 			if (status.is5xxServerError() || status == HttpStatus.NOT_FOUND) {
-				return ApiException.formatExceptionResponse(status.value() + " - " + status.getReasonPhrase(), status, null);
+				String reasonPhrase = HttpStatus.valueOf(status.value()).getReasonPhrase();
+				return ApiException.formatExceptionResponse(status.value() + " - " + reasonPhrase, status, null);
 			}
 			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status, null);
 		}
@@ -89,14 +91,11 @@ public class SpringBusExceptionHandler {
 		}
 	}
 
-
-	@ExceptionHandler({
-			MessageHandlingException.class
-	})
+	@ExceptionHandler(MessageHandlingException.class)
 	public ResponseEntity<?> toResponse(MessageHandlingException mhe) {
 		Throwable cause = mhe.getCause();
 		for (int i = 0; i < 5 && cause != null; i++) {
-			SpringBusExceptionHandler.ManagedException mex = SpringBusExceptionHandler.ManagedException.parse(cause);
+			ManagedException mex = ManagedException.parse(cause);
 			if (mex != null) { //If a ManagedException is found, throw it directly
 				return mex.toResponse(cause);
 			}

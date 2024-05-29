@@ -127,25 +127,25 @@ public class FileHandler implements IScopeProvider {
 		while (tok.hasMoreTokens()) {
 			String token = tok.nextToken();
 
-			if ("write".equalsIgnoreCase(token)) //
+			if ("write".equalsIgnoreCase(token))
 				transformers.add(new FileWriter(false));
-			else if ("write_append".equalsIgnoreCase(token)) //
+			else if ("write_append".equalsIgnoreCase(token))
 				transformers.add(new FileWriter(true));
-			else if ("create".equalsIgnoreCase(token)) //
+			else if ("create".equalsIgnoreCase(token))
 				transformers.add(new FileCreater());
-			else if ("read".equalsIgnoreCase(token)) //
+			else if ("read".equalsIgnoreCase(token))
 				transformers.add(new FileReader());
-			else if ("delete".equalsIgnoreCase(token)) //
+			else if ("delete".equalsIgnoreCase(token))
 				transformers.add(new FileDeleter());
-			else if ("read_delete".equalsIgnoreCase(token)) //
+			else if ("read_delete".equalsIgnoreCase(token))
 				transformers.add(new FileReader(true));
 			else if ("encode".equalsIgnoreCase(token))
 				transformers.add(new Encoder());
 			else if ("decode".equalsIgnoreCase(token))
 				transformers.add(new Decoder());
-			else if ("list".equalsIgnoreCase(token)) //
+			else if ("list".equalsIgnoreCase(token))
 				transformers.add(new FileLister());
-			else if ("info".equalsIgnoreCase(token)) //
+			else if ("info".equalsIgnoreCase(token))
 				transformers.add(new FileInfoProvider());
 			else
 				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");

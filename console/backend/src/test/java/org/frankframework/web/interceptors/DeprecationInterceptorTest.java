@@ -3,7 +3,7 @@ package org.frankframework.web.interceptors;
 import org.apache.logging.log4j.Level;
 import org.frankframework.management.web.FrankApiTestBase;
 import org.frankframework.management.web.WebTestConfiguration;
-
+import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.TestAppender;
 
 import org.junit.jupiter.api.Test;

@@ -17,12 +17,9 @@ package org.frankframework.management.web;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.HashMap;
 
-import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
-import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -38,6 +35,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.annotation.security.RolesAllowed;
+import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 public class LiquibaseScript extends FrankApiBase {
@@ -64,7 +65,7 @@ public class LiquibaseScript extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 
 		String filenameOrPath = filePart.getOriginalFilename();
-		String filename = Paths.get(filenameOrPath).getFileName().toString();
+		String filename = FilenameUtils.getName(filenameOrPath);
 		try {
 			InputStream file = filePart.getInputStream();
 			String payload = StreamUtil.streamToString(file);

@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusAction;
@@ -119,6 +121,11 @@ public class RequestMessageBuilder {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 
+		// Optional target query param, to target a specific backend node.
+		String targetHost = base.getServletRequest().getParameter("target");
+		if(StringUtils.isNotEmpty(targetHost)) {
+			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
+		}
 
 		for (Map.Entry<String, Object> customHeader : customHeaders.entrySet()) {
 			String key = BusMessageUtils.HEADER_PREFIX + customHeader.getKey();

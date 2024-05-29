@@ -9,11 +9,11 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.frankframework.management.web">
-		<!-- make sure we don't load CXF in this context ;) -->
+		<!-- make sure only load the Spring MVC controllers ;) -->
 	</context:component-scan>
 
 	<mvc:interceptors>
-		<bean id="loggerInterceptor" class="org.frankframework.web.interceptors.DeprecationInterceptor" />
+		<bean id="deprecationInterceptor" class="org.frankframework.management.web.configuration.DeprecationInterceptor" />
 	</mvc:interceptors>
 
 	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />

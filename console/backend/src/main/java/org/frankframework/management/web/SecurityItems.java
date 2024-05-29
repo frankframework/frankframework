@@ -15,17 +15,18 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.core.MediaType;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.annotation.security.RolesAllowed;
+
 @RestController
 public class SecurityItems extends FrankApiBase {
 
-	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {

@@ -41,7 +41,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 @Log4j2
 public class ServletDispatcher extends DispatcherServlet implements DynamicRegistration.Servlet {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 4L;
 
 	private final Logger secLog = LogManager.getLogger("SEC");
 
@@ -119,7 +119,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 	@Override
 	public String getUrlMapping() {
-		return "iaf/api/*";
+		return "iaf/api/*,!/iaf/api/server/health";
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,56 +16,17 @@
 package org.frankframework.util;
 
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
-import jakarta.ws.rs.core.EntityTag;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
-import jakarta.ws.rs.core.StreamingOutput;
-
-import org.apache.commons.lang3.NotImplementedException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.message.MessageBase;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.util.DigestUtils;
-
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.message.MessageBase;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 public class ResponseUtils {
-
-	public static ResponseBuilder convertToJaxRsResponse(Message<?> message) {
-		return convertToJaxRsResponse(message, null);
-	}
-
-	public static ResponseBuilder convertToJaxRsResponse(Message<?> message, StreamingOutput response) {
-		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
-		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
-		ResponseBuilder builder = Response.status(status);
-
-		if (mimeType != null) {
-			builder.type(mimeType);
-		}
-
-		if (status == 200 || status > 204) {
-			if(response != null) {
-				builder.entity(response);
-			} else {
-				builder.entity(message.getPayload());
-			}
-		}
-
-		String contentDisposition = BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY, null);
-		if (contentDisposition != null) {
-			builder.header("Content-Disposition", contentDisposition);
-		}
-
-		return builder;
-	}
 
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message) {
 		return convertToSpringResponse(message, null);
@@ -109,28 +70,5 @@ public class ResponseUtils {
 		}
 
 		return responseEntity.build();
-	}
-
-	/** Shallow eTag generation, saves bandwidth but not computing power */
-	public static EntityTag generateETagHeaderValue(Message<?> response) {
-		MessageHeaders headers = response.getHeaders();
-		String mime = headers.get(MessageBase.MIMETYPE_KEY, String.class);
-		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
-			return generateETagHeaderValue(response.getPayload(), true);
-		}
-		return null;
-	}
-
-	private static EntityTag generateETagHeaderValue(Object payload, boolean isWeak) {
-		byte[] bytes;
-		if(payload instanceof String string) {
-			bytes = string.getBytes(StandardCharsets.UTF_8);
-		} else if (payload instanceof byte[] bytes1) {
-			bytes = bytes1;
-		} else {
-			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
-		}
-
-		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
 	}
 }
