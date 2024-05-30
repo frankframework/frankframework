@@ -1337,7 +1337,7 @@
 				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
-<!--				<module>ladybug</module>-->
+				<module>ladybug</module>
 				<module>dbms</module>
 				<module>bundle-minimal</module>
 
