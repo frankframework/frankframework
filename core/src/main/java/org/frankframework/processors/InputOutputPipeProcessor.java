@@ -34,6 +34,7 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.RestoreMovedElementsHandler;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
@@ -49,9 +50,6 @@ import org.xml.sax.InputSource;
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
-
-	private static final String ME_START = "{sessionKey:";
-	private static final String ME_END = "}";
 
 	/**
 	 * Processes the pipe in the pipeline.
@@ -119,10 +117,10 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pipe.isRestoreMovedElements()) {
 				log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pipe::getName);
 				Message result = pipeRunResult.getResult();
-				if (!result.isEmpty()) {
+				if (result != null && !result.isEmpty()) {
 					try {
 						String resultString = result.asString();
-						pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
+						pipeRunResult.setResult(RestoreMovedElementsHandler.process(resultString, pipeLineSession));
 					} catch (IOException e) {
 						throw new PipeRunException(pipe, "cannot open stream of result", e);
 					}
@@ -198,40 +196,4 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 
-	private String restoreMovedElements(String inputString, PipeLineSession pipeLineSession) {
-		StringBuilder buffer = new StringBuilder();
-		int startPos = inputString.indexOf(ME_START);
-		if (startPos == -1) {
-			return inputString;
-		}
-		char[] inputChars = inputString.toCharArray();
-		int copyFrom = 0;
-		while (startPos != -1) {
-			buffer.append(inputChars, copyFrom, startPos - copyFrom);
-			int nextStartPos = inputString.indexOf(ME_START, startPos + ME_START.length());
-			if (nextStartPos == -1) {
-				nextStartPos = inputString.length();
-			}
-			int endPos = inputString.indexOf(ME_END, startPos + ME_START.length());
-			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn("Found a start delimiter without an end delimiter while restoring from compacted result at position [{}] in [{}]", startPos, inputString);
-				buffer.append(inputChars, startPos, nextStartPos - startPos);
-				copyFrom = nextStartPos;
-			} else {
-				String movedElementSessionKey = inputString.substring(startPos + ME_START.length(),endPos);
-				if (pipeLineSession.containsKey(movedElementSessionKey)) {
-					String movedElementValue = pipeLineSession.getString(movedElementSessionKey);
-					buffer.append(movedElementValue);
-					copyFrom = endPos + ME_END.length();
-				} else {
-					log.warn("Did not find sessionKey [{}] while restoring from compacted result", movedElementSessionKey);
-					buffer.append(inputChars, startPos, nextStartPos - startPos);
-					copyFrom = nextStartPos;
-				}
-			}
-			startPos = inputString.indexOf(ME_START, copyFrom);
-		}
-		buffer.append(inputChars, copyFrom, inputChars.length - copyFrom);
-		return buffer.toString();
-	}
 }

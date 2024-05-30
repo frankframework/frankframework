@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.frankframework.configuration.ConfigurationException;
@@ -25,8 +28,6 @@ import org.frankframework.pipes.FixedResultPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class InputOutputPipeProcessorTest {
 
@@ -133,8 +134,7 @@ public class InputOutputPipeProcessorTest {
 		assertEquals(testOutputFile, prr2.getResult().asString());
 	}
 
-	public void testRestoreMovedElement(Object sessionVarContents) throws Exception {
-
+	private void testRestoreMovedElement(Object sessionVarContents) throws Exception {
 		FixedResultPipe pipe = new FixedResultPipe();
 		pipe.setRestoreMovedElements(true);
 		pipe.setReturnString("result [{sessionKey:replaceThis}]");
@@ -145,13 +145,10 @@ public class InputOutputPipeProcessorTest {
 		pipe.start();
 
 		Message input = new Message("input");
-
 		session.put("replaceThis", sessionVarContents);
-
 		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
 
 		assertEquals("result [ReplacedValue]", prr.getResult().asString());
-
 	}
 
 	@Test
