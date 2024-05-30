@@ -99,7 +99,7 @@ public class TibcoLogJmsListener extends JmsListener {
 								} else {
 									sb.append(",");
 								}
-								sb.append("[" + mapName + "]=[" + mapValue + "]");
+								sb.append("[").append(mapName).append("]=[").append(mapValue).append("]");
 							}
 						}
 					}

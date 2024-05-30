@@ -165,14 +165,14 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				if(recordnr != null) {
 					result.append(recordnr);
 					if(recordindex != null && !"".equals(recordindex))
-						result.append("[" + recordindex + "]");
+						result.append("[").append(recordindex).append("]");
 					result.append(",");
 				}
 				result.append(nummer);
 				if(index != null && !"".equals(index)) {
-					result.append("[" + index + "]");
+					result.append("[").append(index).append("]");
 				}
-				result.append(":" + waarde + ";" + SystemUtils.LINE_SEPARATOR);
+				result.append(":").append(waarde).append(";").append(SystemUtils.LINE_SEPARATOR);
 			} else if("adios".equals(elementName)) {
 				result.append(attributes.getValue("rekenbox") + ":;" + SystemUtils.LINE_SEPARATOR);
 			}

@@ -43,7 +43,7 @@ public class Parameter extends AbstractParameter {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(type != null) builder.append(" type ["+type+"]");
+		if(type != null) builder.append(" type [").append(type).append("]");
 		return builder.toString();
 	}
 

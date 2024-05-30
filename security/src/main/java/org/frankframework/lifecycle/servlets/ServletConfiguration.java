@@ -192,13 +192,13 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(" servlet ["+name+"]");
-		builder.append(" url(s) "+urlMapping);
-		builder.append(" loadOnStartup ["+loadOnStartup+"]");
-		builder.append(" protocol "+(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]"));
-		builder.append(" authenticatior ["+authenticatorName+"]");
+		builder.append(" url(s) ").append(urlMapping);
+		builder.append(" loadOnStartup [").append(loadOnStartup).append("]");
+		builder.append(" protocol ").append(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]");
+		builder.append(" authenticatior [").append(authenticatorName).append("]");
 
 		if(isAuthenticationEnabled()) {
-			builder.append(" roles "+getSecurityRoles());
+			builder.append(" roles ").append(getSecurityRoles());
 		} else {
 			builder.append(" with no authentication enabled!");
 		}
