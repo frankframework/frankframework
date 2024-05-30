@@ -3,6 +3,7 @@ package org.frankframework.pipes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -24,14 +25,14 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 	@Test
 	public void testGetSetNotFoundForwardName() throws Exception {
 		pipe.setNotFoundForwardName("input_not_found");
-		assertEquals(pipe.getNotFoundForwardName(), "input_not_found");
+		assertEquals("input_not_found", pipe.getNotFoundForwardName());
 		pipe.configure();
 	}
 
 	@Test
 	public void testSetToLowercase() throws Exception {
 		pipe.setToLowercase(true);
-		assertEquals(pipe.isToLowercase(), true);
+		assertTrue(pipe.isToLowercase());
 		pipe.configure();
 	}
 

@@ -305,7 +305,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeCreateFileInFolder() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder1", false, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertEquals(FileSystemException.class, e.getCause().getClass());
 		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder1/createfile1.txt]"));
 	}
 
@@ -317,14 +317,14 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeCreatingFileThatAlreadyExists() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder3", true, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertEquals(FileSystemException.class, e.getCause().getClass());
 		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder3/createfile1.txt]"));
 	}
 
 	@Test
 	public void fileSystemPipeCreatingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder4", true, true));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertEquals(FileSystemException.class, e.getCause().getClass());
 		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder4/createfile1.txt]"));
 	}
 
@@ -372,7 +372,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeWriteNewFileInFolder() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder1", false, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertEquals(FileSystemException.class, e.getCause().getClass());
 		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
 	}
 
@@ -384,14 +384,14 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@Test
 	public void fileSystemPipeWritingFileThatAlreadyExistsNoForwardsConfiguration() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder3", true, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertEquals(FileSystemException.class, e.getCause().getClass());
 		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
 	}
 
 	@Test
 	public void fileSystemPipeWritingFileThatAlreadyExistsAndCreateFolderAttributeEnabledNoForwardsConfiguration() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder3", true, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertEquals(FileSystemException.class, e.getCause().getClass());
 		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
 	}
 

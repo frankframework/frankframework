@@ -26,6 +26,10 @@ import java.util.UUID;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.ParameterException;
@@ -45,9 +49,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.XmlUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -228,7 +229,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testPatternUnknownSessionVariableOrParameter() throws ConfigurationException, ParameterException {
+	public void testPatternUnknownSessionVariableOrParameter() throws ConfigurationException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.setPattern("{unknown}");
@@ -1119,7 +1120,7 @@ public class ParameterTest {
 
 		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
-		assertEquals(null, result);
+		assertNull(result);
 	}
 
 	@Test
@@ -1294,7 +1295,7 @@ public class ParameterTest {
 
 		String result = (String) p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
 
-		assertEquals(null, result);
+		assertNull(result);
 	}
 
 	@Test

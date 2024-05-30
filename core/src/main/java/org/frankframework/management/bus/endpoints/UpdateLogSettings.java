@@ -85,7 +85,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 			LoggerContext logContext = LoggerContext.getContext(false);
 			org.apache.logging.log4j.core.Logger rootLogger = logContext.getRootLogger();
 			if(rootLogger.getLevel() != loglevel) {
-				msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+				msg.append("LogLevel changed from [").append(rootLogger.getLevel()).append("] to [").append(loglevel).append("]");
 				Configurator.setLevel(rootLogger.getName(), loglevel);
 			}
 		}
@@ -94,17 +94,17 @@ public class UpdateLogSettings extends BusEndpointBase {
 		if(logIntermediaryResults != null && logIntermediary != logIntermediaryResults) {
 			AppConstants.getInstance().put(LOG_INTERMEDIARY_RESULTS_PROPERTY, "" + logIntermediaryResults);
 
-			if(msg.length() > 0)
-				msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+			if(!msg.isEmpty())
+				msg.append(", logIntermediaryResults from [").append(logIntermediary).append("] to [").append(logIntermediaryResults).append("]");
 			else
-				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+				msg.append("logIntermediaryResults changed from [").append(logIntermediary).append("] to [").append(logIntermediaryResults).append("]");
 		}
 
 		if (maxMessageLength != null && maxMessageLength != IbisMaskingLayout.getMaxLength()) {
-			if(msg.length() > 0)
-				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			if(!msg.isEmpty())
+				msg.append(", logMaxMessageLength from [").append(IbisMaskingLayout.getMaxLength()).append("] to [").append(maxMessageLength).append("]");
 			else
-				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+				msg.append("logMaxMessageLength changed from [").append(IbisMaskingLayout.getMaxLength()).append("] to [").append(maxMessageLength).append("]");
 			IbisMaskingLayout.setMaxLength(maxMessageLength);
 		}
 
@@ -116,10 +116,10 @@ public class UpdateLogSettings extends BusEndpointBase {
 				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
-					if(msg.length() > 0)
-						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
+					if(!msg.isEmpty())
+						msg.append(", enableDebugger from [").append(testtoolEnabled).append("] to [").append(enableDebugger).append("]");
 					else
-						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
+						msg.append("enableDebugger changed from [").append(testtoolEnabled).append("] to [").append(enableDebugger).append("]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
 					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");

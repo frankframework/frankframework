@@ -173,14 +173,14 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
 		StringBuilder query = new StringBuilder("select count(*) from sys.indexes si");
 		for (int i = 1; i <= columns.size(); i++) {
-			query.append(", sys.index_columns sic" + i);
+			query.append(", sys.index_columns sic").append(i);
 		}
-		query.append(" where si.object_id = object_id('" + tableName + "')");
+		query.append(" where si.object_id = object_id('").append(tableName).append("')");
 		for (int i = 1; i <= columns.size(); i++) {
-			query.append(" and si.object_id=sic" + i + ".object_id");
-			query.append(" and si.index_id=sic" + i + ".index_id");
-			query.append(" and col_name(sic" + i + ".object_id, sic" + i + ".column_id)='" + columns.get(i - 1) + "'");
-			query.append(" and sic" + i + ".index_column_id=" + i);
+			query.append(" and si.object_id=sic").append(i).append(".object_id");
+			query.append(" and si.index_id=sic").append(i).append(".index_id");
+			query.append(" and col_name(sic").append(i).append(".object_id, sic").append(i).append(".column_id)='").append(columns.get(i - 1)).append("'");
+			query.append(" and sic").append(i).append(".index_column_id=").append(i);
 		}
 		try {
 			return DbmsUtil.executeIntQuery(conn, query.toString()) >= 1;

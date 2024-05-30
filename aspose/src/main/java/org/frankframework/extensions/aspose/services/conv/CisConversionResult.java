@@ -107,7 +107,7 @@ public class CisConversionResult {
 		if (filename != null) {
 			msg.append(filename);
 		}
-		msg.append(" " + PASSWORD_MESSAGE);
+		msg.append(" ").append(PASSWORD_MESSAGE);
 		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString(), null);
 	}
 

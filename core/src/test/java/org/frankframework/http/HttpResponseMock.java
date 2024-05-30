@@ -121,8 +121,8 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private InputStream doGet(HttpHost host, HttpGet request, HttpContext context) {
 		assertEquals("GET", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		response.append("HOST " + host.toHostString() + lineSeparator);
-		response.append(request.toString() + lineSeparator);
+		response.append("HOST ").append(host.toHostString()).append(lineSeparator);
+		response.append(request).append(lineSeparator);
 
 		appendHeaders(request, response);
 
@@ -145,14 +145,14 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 				int end = headerValue.lastIndexOf(",");
 				headerValue = headerValue.substring(0, start) + ", timestamp, timestamp" + headerValue.substring(end);
 			}
-			response.append(headerName + ": " + headerValue + lineSeparator);
+			response.append(headerName + ": ").append(headerValue).append(lineSeparator);
 		}
 	}
 
 	private InputStream doPost(HttpHost host, HttpPost request, HttpContext context) throws IOException {
 		assertEquals("POST", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		response.append(request.toString() + lineSeparator);
+		response.append(request).append(lineSeparator);
 
 		appendHeaders(request, response);
 
@@ -163,7 +163,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String contentType = multipartEntity.getContentType().getValue();
 			String boundary = getBoundary(contentType);
 			contentType = contentType.replaceAll(boundary, "IGNORE");
-			response.append("Content-Type: " + contentType + lineSeparator);
+			response.append("Content-Type: ").append(contentType).append(lineSeparator);
 
 			response.append(lineSeparator);
 			String content = new String(baos.toByteArray());
@@ -173,7 +173,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		else if(entity != null) {
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null) {
-				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 			}
 
 			response.append(lineSeparator);
@@ -191,14 +191,14 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
 		assertEquals("PUT", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		response.append(request.toString() + lineSeparator);
+		response.append(request.toString()).append(lineSeparator);
 
 		appendHeaders(request, response);
 
 		if(request.getEntity() != null) { //If an entity is present
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null) {
-				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 			}
 
 			response.append(lineSeparator);
@@ -211,13 +211,13 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	public InputStream doPatch(HttpHost host, HttpPatch request, HttpContext context) throws IOException {
 		assertEquals("PATCH", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		response.append(request.toString() + lineSeparator);
+		response.append(request.toString()).append(lineSeparator);
 
 		appendHeaders(request, response);
 
 		Header contentTypeHeader = request.getEntity().getContentType();
 		if(contentTypeHeader != null) {
-			response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+			response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 		}
 
 		response.append(lineSeparator);
@@ -228,7 +228,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private InputStream doDelete(HttpHost host, HttpDelete request, HttpContext context) {
 		assertEquals("DELETE", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		response.append(request.toString() + lineSeparator);
+		response.append(request.toString()).append(lineSeparator);
 
 		appendHeaders(request, response);
 

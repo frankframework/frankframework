@@ -434,10 +434,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
-		if(name != null) builder.append(" name ["+name+"]");
-		if(jobGroup != null) builder.append(" jobGroup ["+jobGroup+"]");
-		if(cronExpression != null) builder.append(" cronExpression ["+cronExpression+"]");
-		if(interval > -1) builder.append(" interval ["+interval+"]");
+		if (name != null) builder.append(" name [").append(name).append("]");
+		if (jobGroup != null) builder.append(" jobGroup [").append(jobGroup).append("]");
+		if (cronExpression != null) builder.append(" cronExpression [").append(cronExpression).append("]");
+		if (interval > -1) builder.append(" interval [").append(interval).append("]");
 		return builder.toString();
 	}
 

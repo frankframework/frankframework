@@ -158,10 +158,10 @@ public class BridgedCmisService extends FilterCmisService {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" close ["+CMIS_BRIDGE_CLOSE_CONNECTION+"]");
+		builder.append(getClass().getSimpleName() + "@").append(Integer.toHexString(hashCode()));
+		builder.append(" close [").append(CMIS_BRIDGE_CLOSE_CONNECTION).append("]");
 		if(clientBinding != null) {
-			builder.append(" session ["+clientBinding.getSessionId()+"]");
+			builder.append(" session [").append(clientBinding.getSessionId()).append("]");
 		}
 		return builder.toString();
 	}

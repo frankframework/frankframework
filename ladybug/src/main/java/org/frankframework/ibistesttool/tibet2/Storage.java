@@ -220,7 +220,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				query.append(", ");
 			}
 			if (bigValueColumns.contains(metadataName)) {
-				query.append("substr(" + metadataName + ", 1, 100)");
+				query.append("substr(").append(metadataName).append(", 1, 100)");
 			} else {
 				query.append(metadataName);
 			}
@@ -234,7 +234,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 			}
 			query.append(rowNumber);
 		}
-		query.append(" from " + table);
+		query.append(" from ").append(table);
 		// According to SimpleDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
 		// instantiate it here instead of instantiating it at class level and synchronizing it.
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
@@ -343,9 +343,9 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		StringBuilder query = new StringBuilder("select "
 				+ reportColumnNames.get(0));
 		for (int i = 1; i < reportColumnNames.size(); i++) {
-			query.append(", " + reportColumnNames.get(i));
+			query.append(", ").append(reportColumnNames.get(i));
 		}
-		query.append(" from " + table + " where LOGID = ?");
+		query.append(" from ").append(table).append(" where LOGID = ?");
 		try {
 			jdbcTemplate.query(query.toString(),
 					new Object[]{storageId},
@@ -483,9 +483,9 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 
 	private void addExpression(StringBuilder query, String expression) {
 		if (query.charAt(query.length() - 1) == ' ') {
-			query.append("and " + expression + " ");
+			query.append("and ").append(expression).append(" ");
 		} else {
-			query.append(" where " + expression + " ");
+			query.append(" where ").append(expression).append(" ");
 		}
 	}
 

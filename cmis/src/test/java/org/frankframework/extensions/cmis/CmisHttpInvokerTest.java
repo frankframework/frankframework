@@ -85,7 +85,7 @@ public class CmisHttpInvokerTest {
 	}
 	private void assertResponse(String string, String result) throws IOException {
 		String expected = TestFileUtils.getTestFile(string);
-		assertNotNull("cannot find test file", expected);
+		assertNotNull(expected, "cannot find test file");
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
