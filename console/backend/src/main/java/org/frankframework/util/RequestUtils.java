@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,7 +78,7 @@ public abstract class RequestUtils {
 		return null;
 	}
 
-	@NonNull
+	@Nonnull
 	public static <T> T resolveRequiredProperty(String key, T multiFormProperty, T defaultValue) throws ApiException {
 		if (multiFormProperty != null) {
 			return multiFormProperty;

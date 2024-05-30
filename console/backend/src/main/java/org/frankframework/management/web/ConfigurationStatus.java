@@ -165,7 +165,11 @@ public class ConfigurationStatus extends FrankApiBase {
 			IbisAction action = null;
 			if (value.equals("stop")) {action = IbisAction.STOPRECEIVER;} else if (value.equals("start")) {
 				action = IbisAction.STARTRECEIVER;
-			} else if (value.equals("incthread")) {action = IbisAction.INCTHREADS;} else if (value.equals("decthread")) {action = IbisAction.DECTHREADS;}
+			} else if (value.equals("incthread")) {
+				action = IbisAction.INCTHREADS;
+			} else if (value.equals("decthread")) {
+				action = IbisAction.DECTHREADS;
+			}
 			if (action == null) {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 			}

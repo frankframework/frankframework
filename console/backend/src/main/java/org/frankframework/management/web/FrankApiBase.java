@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.web;
 
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
@@ -31,7 +32,6 @@ import org.springframework.messaging.Message;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
-import lombok.NonNull;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
@@ -47,7 +47,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
 	}
 
-	@NonNull
+	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
 		Message<?> message = getGateway().sendSyncMessage(input.build());
 		if (message == null) {
