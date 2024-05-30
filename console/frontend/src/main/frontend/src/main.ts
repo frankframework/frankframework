@@ -1,6 +1,7 @@
 /// <reference types="@angular/localize" />
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { WebSocket } from 'ws';
 import { AppModule } from './app/app.module';
 
 declare global {
@@ -13,6 +14,8 @@ declare global {
 }
 
 function main(): void {
+  Object.assign(global, { WebSocket });
+
   platformBrowserDynamic()
     .bootstrapModule(AppModule)
     .catch((error) => console.error(error));

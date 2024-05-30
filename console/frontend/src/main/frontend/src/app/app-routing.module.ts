@@ -39,8 +39,14 @@ import { ConnectionsComponent } from './views/connections/connections.component'
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
+import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
 
 export const routes: Routes = [
+  {
+    path: 'websocket-test',
+    component: WebsocketTestComponent,
+    title: 'Websocket Test',
+  },
   {
     path: 'login',
     component: LoginComponent,
