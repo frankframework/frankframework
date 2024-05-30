@@ -151,7 +151,7 @@
 				action="list"
 				inputFolder="${testdata.dir}/mfp2/"
 				wildcard="*.*"
-				createFolder="true">
+				skipCheckDirectoryExists="true">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
