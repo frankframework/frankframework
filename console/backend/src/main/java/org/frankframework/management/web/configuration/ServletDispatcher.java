@@ -43,10 +43,10 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 	private static final long serialVersionUID = 4L;
 
-	private final Logger secLog = LogManager.getLogger("SEC");
+	private final transient Logger secLog = LogManager.getLogger("SEC");
 
 	@Value("${iaf-api.enabled:true}")
-	private boolean isEnabled;
+	private transient boolean isEnabled;
 
 
 	public ServletDispatcher() {

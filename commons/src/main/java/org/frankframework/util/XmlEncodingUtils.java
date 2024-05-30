@@ -199,7 +199,7 @@ public class XmlEncodingUtils {
 				counter++;
 			}
 		}
-		if (counter>0 && log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+ REPLACE_NON_XML_CHAR+"] in char array of length ["+len+"]");
+		log.debug("replaced [{}] non valid xml characters to [{}] in char array of length [{}]", counter, REPLACE_NON_XML_CHAR, len);
 		return writePos>0 ? writePos : readPos;
 	}
 
@@ -233,7 +233,7 @@ public class XmlEncodingUtils {
 			}
 		}
 		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
+			log.debug("replaced [{}] non valid xml characters to [{}] in string of length [{}]", counter, to, length);
 		}
 		return encoded.toString();
 	}
@@ -252,9 +252,7 @@ public class XmlEncodingUtils {
 				counter++;
 			}
 		}
-		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("stripped ["+counter+"] non valid xml characters in string of length ["+length+"]");
-		}
+		log.debug("stripped [{}] non valid xml characters in string of length [{}]", counter, length);
 		return encoded.toString();
 	}
 
@@ -306,7 +304,7 @@ public class XmlEncodingUtils {
 				int encodingEnd=declaration.indexOf("\"", encodingStart);
 				if (encodingEnd > 0) {
 					charset=declaration.substring(encodingStart, encodingEnd);
-					log.debug("parsed charset []", charset);
+					log.debug("parsed charset [{}]", charset);
 				} else {
 					log.warn("no end in encoding attribute in declaration [{}]", declaration);
 				}

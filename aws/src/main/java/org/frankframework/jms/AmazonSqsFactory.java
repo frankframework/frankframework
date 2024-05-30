@@ -82,10 +82,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 		ProviderConfiguration providerConfiguration = new ProviderConfiguration();
 
 		SqsClient client = createSqsClient();
-
-		SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, client);
-
-		return connectionFactory;
+		return new SQSConnectionFactory(providerConfiguration, client);
 	}
 
 	// A dirty workaround to create queues, should use JmsMessagingSource#createDestination
