@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -268,8 +267,7 @@ public abstract class ClassUtils {
 		}
 		// Unbox an array to its component type. Convert string input to values. Put back into an array with the right type
 		if (type.isArray()) {
-			List<Object> list = Arrays.stream(value.split(","))
-					.map(String::trim)
+			List<Object> list = StringUtil.splitToStream(value)
 					.map(part -> convertToTypeRawTyped(type.getComponentType(), part))
 					.toList();
 

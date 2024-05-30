@@ -9,7 +9,7 @@
 				name="SimpleInsertListener"
 				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="insert"
-				methods="post,get"
+				methods="post,put"
 			/>
 			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
