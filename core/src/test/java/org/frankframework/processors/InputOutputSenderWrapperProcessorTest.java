@@ -1,6 +1,7 @@
 package org.frankframework.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -67,7 +68,7 @@ public class InputOutputSenderWrapperProcessorTest {
 
 		assertEquals(expectedSecondSenderOutput, secondSenderOutput, "unexpected output of last sender");
 		assertEquals(expectedWrapperOutput, actual.getResult().asString(), "unexpected wrapper output");
-		assertEquals(true, actual.isSuccess(), "unexpected wrapper output");
+		assertTrue(actual.isSuccess(), "unexpected wrapper output");
 		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")), "unexpected session variable value");
 	}
 

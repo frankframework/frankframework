@@ -3,6 +3,7 @@ package org.frankframework.pipes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -31,7 +32,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 	@Test
 	public void testSetToLowercase() throws Exception {
 		pipe.setToLowercase(true);
-		assertEquals(true, pipe.isToLowercase());
+		assertTrue(pipe.isToLowercase());
 		pipe.configure();
 	}
 

@@ -1,8 +1,10 @@
 package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -59,12 +61,12 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
-		assertEquals(true, repeatableMessage.isRepeatable());
-		assertEquals(true, bae.isRepeatable());
-		assertEquals(false, ise.isRepeatable());
-		assertEquals(true, hmeRepeatable.isRepeatable());
-		assertEquals(false, hmeNonRepeatable.isRepeatable());
-		assertEquals(true, hmeUrlRepeatable.isRepeatable());
+		assertTrue(repeatableMessage.isRepeatable());
+		assertTrue(bae.isRepeatable());
+		assertFalse(ise.isRepeatable());
+		assertTrue(hmeRepeatable.isRepeatable());
+		assertFalse(hmeNonRepeatable.isRepeatable());
+		assertTrue(hmeUrlRepeatable.isRepeatable());
 	}
 
 	@Test
@@ -75,12 +77,12 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
-		assertEquals(false, repeatableMessage.requiresStream());
-		assertEquals(false, bae.isStreaming());
-		assertEquals(true, ise.isStreaming());
-		assertEquals(false, hmeRepeatable.isStreaming());
-		assertEquals(true, hmeNonRepeatable.isStreaming());
-		assertEquals(true, hmeUrlRepeatable.isStreaming());
+		assertFalse(repeatableMessage.requiresStream());
+		assertFalse(bae.isStreaming());
+		assertTrue(ise.isStreaming());
+		assertFalse(hmeRepeatable.isStreaming());
+		assertTrue(hmeNonRepeatable.isStreaming());
+		assertTrue(hmeUrlRepeatable.isStreaming());
 	}
 
 	@Test
