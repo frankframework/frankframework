@@ -24,14 +24,14 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 	@Test
 	public void testGetSetNotFoundForwardName() throws Exception {
 		pipe.setNotFoundForwardName("input_not_found");
-		assertEquals(pipe.getNotFoundForwardName(), "input_not_found");
+		assertEquals("input_not_found", pipe.getNotFoundForwardName());
 		pipe.configure();
 	}
 
 	@Test
 	public void testSetToLowercase() throws Exception {
 		pipe.setToLowercase(true);
-		assertEquals(pipe.isToLowercase(), true);
+		assertEquals(true, pipe.isToLowercase());
 		pipe.configure();
 	}
 

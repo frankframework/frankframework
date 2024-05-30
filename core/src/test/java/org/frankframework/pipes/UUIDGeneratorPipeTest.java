@@ -31,7 +31,7 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().asString();
 		assertNotNull(result);
-		assertEquals(result.length(), 31);
+		assertEquals(31, result.length());
 	}
 
 	@Test
