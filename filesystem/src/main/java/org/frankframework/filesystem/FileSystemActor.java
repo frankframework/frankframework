@@ -106,7 +106,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private @Getter int rotateSize=0;
 	private @Getter boolean overwrite=false;
 	private @Getter int numberOfBackups=0;
-	private @Getter boolean skipCheckDirectoryExists;
 	private @Getter String wildcard=null;
 	private @Getter String excludeWildcard=null;
 	private @Getter boolean removeNonEmptyFolder=false;
@@ -240,11 +239,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	public void open() throws FileSystemException {
-		if (skipCheckDirectoryExists) {
-			return;
-		}
-
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && getAction() != FileSystemAction.MKDIR) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && getAction() != FileSystemAction.MKDIR && getAction() != FileSystemAction.RMDIR) {
 			if (isCreateFolder()) {
 				log.debug("creating inputFolder [{}]", this::getInputFolder);
 				fileSystem.createFolder(getInputFolder());
@@ -656,14 +651,4 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		this.outputFormat = outputFormat;
 	}
 
-	/**
-	 * For some actions a check for an existing directory is not needed on startup. For instance {@value #ACTION_LIST}
-	 * and {@value #ACTION_RMDIR}.
-	 *
-	 * @param skipCheckDirectoryExists
-	 * @ff.default false
-	 */
-	public void setSkipCheckDirectoryExists(boolean skipCheckDirectoryExists) {
-		this.skipCheckDirectoryExists = skipCheckDirectoryExists;
-	}
 }
