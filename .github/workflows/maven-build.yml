@@ -108,8 +108,10 @@ jobs:
       run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       continue-on-error: true #ignore failure when unable to upload the artifacts
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage to Codacy when Java == 17
       if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}

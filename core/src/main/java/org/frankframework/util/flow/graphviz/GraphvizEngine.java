@@ -25,6 +25,7 @@ import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.flow.FlowGenerationException;
@@ -204,8 +205,7 @@ public class GraphvizEngine {
 				String engine = engines[i];
 				try {
 					log.debug("Trying Javascript engine [{}] for Graphviz.", engine);
-					Class<?> clazz = Class.forName(engine);
-					JavascriptEngine<?> javascriptEngine = (JavascriptEngine<?>) clazz.getDeclaredConstructor().newInstance();
+					JavascriptEngine<?> javascriptEngine = ClassUtils.newInstance(engine, JavascriptEngine.class);
 					ResultHandler handler = new ResultHandler();
 
 					startEngine(javascriptEngine, handler, initScript, graphvisJsLibrary);

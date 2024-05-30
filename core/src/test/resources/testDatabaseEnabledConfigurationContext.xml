@@ -20,7 +20,7 @@
 	<import resource="testConfigurationContext.xml"/>
 
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
-	<bean id="dataSourceFactory" class="${URLDataSourceFactory}" />
+	<bean id="dataSourceFactory" class="${TestDataSourceFactory}" autowire="byType"/>
 	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory" />
 
 	<bean

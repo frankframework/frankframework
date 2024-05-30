@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppRoutingModule } from 'src/app/app-routing.module';
 import { AppConstants, AppService } from 'src/app/app.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss'],
   standalone: true,
-  imports: [CommonModule, AppRoutingModule],
+  imports: [CommonModule, RouterModule],
 })
 export class CustomViewsComponent implements OnInit, OnDestroy {
   appConstants: AppConstants = this.appService.APP_CONSTANTS;

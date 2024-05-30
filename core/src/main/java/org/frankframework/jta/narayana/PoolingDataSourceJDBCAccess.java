@@ -29,7 +29,7 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.jndi.ObjectLocator;
+import org.springframework.jndi.JndiTemplate;
 
 import com.arjuna.ats.arjuna.exceptions.FatalError;
 import com.arjuna.ats.arjuna.objectstore.jdbc.JDBCAccess;
@@ -85,7 +85,8 @@ public class PoolingDataSourceJDBCAccess implements JDBCAccess {
 	public void initialise(StringTokenizer stringTokenizer) {
 		String jndiName = stringTokenizer.nextToken();
 		try {
-			DataSource dataSource = ObjectLocator.lookup(jndiName, null, DataSource.class);
+			JndiTemplate locator = new JndiTemplate();
+			DataSource dataSource = locator.lookup(jndiName, DataSource.class);
 			this.datasource = augmentDataSource(dataSource);
 		} catch (NamingException e) {
 			throw new FatalError("unable to lookup datasource ["+jndiName+"]", e);

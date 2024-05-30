@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { ToDateDirective } from './to-date.directive';
 
 @Component({
-  // standalone: true,
+  standalone: true,
   template: `
     <span appToDate [time]="1710111600000"></span>
     <span appToDate [time]="'Mon Mar 11 2024 00:00:00 GMT+0100'"></span>
@@ -19,8 +19,7 @@ describe('ToDateDirective', () => {
   let directiveElements: DebugElement[];
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [TestComponent, ToDateDirective],
+      imports: [HttpClientTestingModule, TestComponent, ToDateDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding

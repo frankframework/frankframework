@@ -1,5 +1,7 @@
 package org.frankframework.testutil;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,6 +29,8 @@ public class SerializationTester<T> {
 	}
 
 	public T deserialize(byte[] wire) throws Exception {
+		assumeTrue(TestAssertions.isRunningWithAddOpens(), "skipped test because --add-opens has not been set");
+
 		try (ByteArrayInputStream bais = new ByteArrayInputStream(wire); ObjectInputStream in = new RenamingObjectInputStream(bais)) {
 			Object obj = in.readObject();
 			return (T) obj;

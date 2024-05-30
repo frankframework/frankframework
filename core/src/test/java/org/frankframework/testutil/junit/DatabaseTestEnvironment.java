@@ -1,14 +1,11 @@
 package org.frankframework.testutil.junit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
@@ -17,11 +14,9 @@ import javax.sql.DataSource;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.JdbcFacade;
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.URLDataSourceFactory;
 import org.frankframework.util.SpringUtils;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
@@ -44,7 +39,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DatabaseTestEnvironment implements Store.CloseableResource {
 
-	private String name;
 	private final @Getter String dataSourceName;
 	private final DataSource dataSource;
 	private @Getter IDbmsSupport dbmsSupport;
@@ -95,17 +89,6 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		TestConfiguration config = type.getConfigurationContext(productKey);
 		dataSource = type.getDataSource(productKey);
 
-		String dsInfo; //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
-		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
-			dsInfo = proxy.getTargetDataSource().toString();
-		} else {
-			dsInfo = dataSource.toString();
-		}
-		Properties dataSourceInfo = parseDataSourceInfo(dsInfo);
-
-		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
-		assertEquals(productKey, dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY), "DataSourceName does not match ProductKey");
-
 		configuration = type.getConfigurationContext(productKey);
 		DbmsSupportFactory dbmsSupportFactory = config.getBean(DbmsSupportFactory.class, "dbmsSupportFactory");
 		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
@@ -128,20 +111,6 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 			return getTargetDataSource(source.getTargetDataSource());
 		}
 		return dataSource;
-	}
-
-	private Properties parseDataSourceInfo(String dsInfo) {
-		Properties props = new Properties();
-		String[] parts = dsInfo.split("\\] ");
-		for (String part : parts) {
-			String[] kvPair = part.split(" \\[");
-			String key = kvPair[0];
-			String value = kvPair.length == 1 ? "" : kvPair[1];
-			if(!props.containsKey(key)) {
-				props.put(key, value);
-			}
-		}
-		return props;
 	}
 
 	/** Populates all database related fields that are normally wired through Spring */

@@ -20,6 +20,8 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
 public enum AuthenticationScheme {
@@ -38,8 +40,8 @@ public enum AuthenticationScheme {
 
 	public AuthSchemeBase createScheme() {
 		try {
-			return schemeClass.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			return ClassUtils.newInstance(schemeClass);
+		} catch (ReflectiveOperationException | SecurityException e) {
 			log.warn("Cannot Instantiate object from class "+schemeClass.getName(), e);
 			return null;
 		}

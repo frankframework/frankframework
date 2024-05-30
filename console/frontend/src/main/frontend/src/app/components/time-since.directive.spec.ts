@@ -5,7 +5,7 @@ import { TimeSinceDirective } from './time-since.directive';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  // standalone: true,
+  standalone: true,
   template: `
     <span appTimeSince [time]="fiveMinAgo"></span>
     <span appTimeSince [time]="oneHourAgo"></span>
@@ -24,8 +24,7 @@ describe('TimeSinceDirective', () => {
   let directiveElements: DebugElement[];
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [TestComponent, TimeSinceDirective],
+      imports: [HttpClientTestingModule, TestComponent, TimeSinceDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
