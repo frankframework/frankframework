@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,93 +18,87 @@ package org.frankframework.management.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
-import org.frankframework.util.RequestUtils;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Test a PipeLine.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
-
-@Path("/")
+@RestController
 public class TestPipeline extends FrankApiBase {
 
-	@POST
+	public record TestPipeLineModel(
+			String configuration,
+			String adapter,
+			String sessionKeys,
+			String encoding,
+			MultipartFile message,
+			MultipartFile file) {
+	}
+
+	public record TestPipeLineResponse(String result, String state, String message) {
+	}
+
 	@RolesAllowed("IbisTester")
-	@Path("/test-pipeline")
 	@Relation("testing")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Description("send a message to an Adapters pipeline, bypassing the receiver")
-	public Response testPipeLine(MultipartBody inputDataMap) throws ApiException {
+	@PostMapping(value = "/test-pipeline", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<TestPipeLineResponse> testPipeLine(@ModelAttribute TestPipeLineModel model) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
-		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration");
-		builder.addHeader("configuration", configuration);
-		String adapterName = RequestUtils.resolveStringFromMap(inputDataMap, "adapter");
-		builder.addHeader("adapter", adapterName);
 
-		// resolve session keys
-		String sessionKeys = RequestUtils.resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
-		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
-			builder.addHeader("sessionKeys", sessionKeys);
-		}
+		builder.addHeader("configuration", model.configuration);
+		builder.addHeader("adapter", model.adapter);
 
-		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		Optional.ofNullable(model.sessionKeys)
+				.ifPresent(sessionKeys -> builder.addHeader("sessionKeys", sessionKeys));
+
+		String fileEncoding = Optional.ofNullable(model.encoding).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		String message;
-		Attachment filePart = inputDataMap.getAttachment("file");
-		if(filePart != null) {
-			String fileName = filePart.getContentDisposition().getParameter("filename");
-			InputStream file = filePart.getObject(InputStream.class);
+
+		if (model.file != null) {
+			String fileNameOrPath = model.file.getOriginalFilename();
+			String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
+					InputStream file = model.file.getInputStream();
 					String zipResults = processZipFile(file, builder);
 					return testPipelineResponse(zipResults);
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
-			}
-			else {
+			} else {
 				try {
+					InputStream file = model.file.getInputStream();
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
-					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
 					throw new ApiException("error reading file", e);
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -116,39 +110,35 @@ public class TestPipeline extends FrankApiBase {
 
 	private String getPayload(Message<?> response) {
 		Object payload = response.getPayload();
-		if(payload instanceof String string) {
+		if (payload instanceof String string) {
 			return string;
-		} else if(payload instanceof byte[] bytes) {
+		} else if (payload instanceof byte[] bytes) {
 			return new String(bytes);
-		} else if(payload instanceof InputStream stream) {
+		} else if (payload instanceof InputStream stream) {
 			try {
 				// Convert line endings to \n to show them in the browser as real line feeds
-				return StreamUtil.streamToString(stream,  "\n", false);
+				return StreamUtil.streamToString(stream, "\n", false);
 			} catch (IOException e) {
 				throw new ApiException("unable to read response payload", e);
 			}
 		}
-		throw new ApiException("unexpected response payload type ["+payload.getClass().getCanonicalName()+"]");
+		throw new ApiException("unexpected response payload type [" + payload.getClass().getCanonicalName() + "]");
 	}
 
-	private Response testPipelineResponse(String payload) {
+	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {
 		return testPipelineResponse(payload, "SUCCESS", null);
 	}
-	private Response testPipelineResponse(String payload, String state, String message) {
-		Map<String, Object> result = new HashMap<>();
-		result.put("state", state);
-		result.put("result", payload);
-		if(message != null) {
-			result.put("message", message);
-		}
-		return Response.status(200).entity(result).build();
+
+	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload, String state, String message) {
+		return ResponseEntity.status(200)
+				.body(new TestPipeLineResponse(payload, state, message));
 	}
 
 	// cannot call callAsyncGateway, backend calls are not synchronous
 	private String processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		StringBuilder result = new StringBuilder();
 
-		try(ZipInputStream archive = new ZipInputStream(file)) {
+		try (ZipInputStream archive = new ZipInputStream(file)) {
 			ZipEntry zipEntry;
 			while ((zipEntry = archive.getNextEntry()) != null) {
 				String name = zipEntry.getName();
@@ -165,4 +155,5 @@ public class TestPipeline extends FrankApiBase {
 
 		return result.toString();
 	}
+
 }

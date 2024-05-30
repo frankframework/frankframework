@@ -1,0 +1,40 @@
+{
+    "services": [],
+    "wsdls": [
+        {
+            "name": "ManageDatabase",
+            "configuration": "IAF_Util",
+            "adapter": "ManageDatabase"
+        }
+    ],
+    "apiListeners": [
+        {
+            "name": "HelloBeautifulWorld",
+            "method": "GET",
+            "uriPattern": "/hello-beautiful-world",
+            "receiver": "HelloBeautifulWorld",
+            "adapter": "HelloBeautifulWorld"
+        },
+        {
+            "name": "HelloWorld",
+            "method": "GET",
+            "uriPattern": "/hello-world",
+            "receiver": "HelloWorld",
+            "adapter": "HelloWorld"
+        },
+        {
+            "name": "HelloWorlds",
+            "method": "GET",
+            "uriPattern": "/hello-worlds",
+            "receiver": "HelloWorlds",
+            "adapter": "HelloWorlds"
+        },
+        {
+            "name": "ManualExerciseMundo",
+            "method": "POST",
+            "uriPattern": "/mundo",
+            "receiver": "ApiListener [ManualExerciseMundo]",
+            "adapter": "ManualExerciseMundo"
+        }
+    ]
+}

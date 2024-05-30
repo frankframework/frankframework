@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,100 +13,88 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.web;
+package org.frankframework.management.web.configuration;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
+import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.cxf.Bus;
-import org.apache.cxf.transport.servlet.CXFServlet;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
-
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.util.HttpUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.servlet.DispatcherServlet;
 
-/**
- * Main dispatcher for all API resources.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
+@Log4j2
+public class ServletDispatcher extends DispatcherServlet implements DynamicRegistration.Servlet {
 
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 4L;
 
 	private final Logger secLog = LogManager.getLogger("SEC");
-	private final Logger log = LogManager.getLogger(this);
 
 	@Value("${iaf-api.enabled:true}")
 	private boolean isEnabled;
 
+
+	public ServletDispatcher() {
+		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext.xml");
+		setDetectAllHandlerMappings(false); //Else it will use the parent's (EnvironmentContext) Spring Integration mapping
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		//don't wire the ApplicationContext,
+	}
+
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if(!isEnabled) {
+		if (!isEnabled) {
 			return;
 		}
+		ServletRegistration.Dynamic servletRegistration = (ServletRegistration.Dynamic) servletConfig.getServletContext().getServletRegistration(getName());
+		servletRegistration.setAsyncSupported(true);
+		servletRegistration.setMultipartConfig(new MultipartConfigElement(""));
 
 		log.debug("initialize {} servlet", this::getName);
 		super.init(servletConfig);
 	}
 
 	@Override
-	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-		if(!isEnabled) {
+	public void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		if (!isEnabled) {
 			try {
 				response.sendError(404, "api backend not enabled");
 			} catch (IOException e) {
-				log.debug("unable to send 404 error to client", e);
+				log.trace("unable to send 404 error to client", e);
 			}
 
 			return;
 		}
 
-
 		/**
 		 * Log POST, PUT and DELETE requests
 		 */
 		final String method = request.getMethod();
-		if(!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
+		if (!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
 			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
 		}
 
 		//TODO add X-Rate-Limit to prevent possible clients to flood the IAF API
 
-		super.invoke(request, response);
-	}
-
-	@Override
-	public void setBus(Bus bus) {
-		if(bus != null) {
-			String busInfo = "Successfully created %s with SpringBus [%s]".formatted(getName(), bus.getId());
-			log.info(busInfo);
-			getServletContext().log(busInfo);
-		}
-
-		super.setBus(bus);
-	}
-
-	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
-		// This event listens to all Spring refresh events.
-		// When adding new Spring contexts (with this as a parent) refresh events originating from other contexts will also trigger this method.
-		// Since we never want to reinitialize this servlet, we can ignore the 'refresh' event completely!
+		super.doService(request, response);
 	}
 
 	@Override
@@ -134,11 +122,4 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		return "iaf/api/*,!/iaf/api/server/health";
 	}
 
-	@Override
-	public Map<String, String> getParameters() {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("config-location", "FrankFrameworkApiContext.xml");
-		parameters.put("bus", "ff-api-bus");
-		return parameters;
-	}
 }

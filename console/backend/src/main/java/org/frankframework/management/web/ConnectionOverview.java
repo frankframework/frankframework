@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,20 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/")
-public final class ShowInlineMessageStoreOverview extends FrankApiBase {
+@RestController
+public class ConnectionOverview extends FrankApiBase {
 
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("inlinestores/overview")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Relation("messagebrowser")
-	@Description("view available messagebrowsers")
-	public Response getMessageBrowsers() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.INLINESTORAGE_SUMMARY));
+	@GetMapping(value = "/connections", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getConnections() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.CONNECTION_OVERVIEW));
 	}
+
 }
