@@ -29,12 +29,12 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.ibistesttool.IbisDebugger;
@@ -45,6 +45,8 @@ import org.frankframework.util.StreamUtil;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -223,8 +225,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				query.append(metadataName);
 			}
 		}
-//		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
-		String rowNumber = null;
+		String rowNumber = getRowNumber(metadataNames.get(0));
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			if (first) {
 				first = false;
@@ -284,7 +285,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		query.append(")");
 		if (StringUtils.isNotEmpty(rowNumber)) {
-//			query.append(" where " + dbmsSupport.getRowNumberShortName() + " < ?");
+			query.append(" where rn < ?");
 			args.add(maxNumberOfRecords + 1);
 			argTypes.add(Types.INTEGER);
 		}
@@ -319,6 +320,14 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 			}
 		}
 		return metadata;
+	}
+
+	private @Nullable String getRowNumber(String metadataName) {
+		Dbms dbms = getDbmsSupport().getDbms();
+		if (dbms == Dbms.ORACLE || dbms == Dbms.MSSQL) {
+			return "row_number() over (order by "+metadataName+("desc"==null?"":" "+"desc")+") rn";
+		}
+		return null;
 	}
 
 	@Override
