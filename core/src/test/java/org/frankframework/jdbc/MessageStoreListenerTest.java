@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Date;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
@@ -20,8 +23,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 @WithLiquibase(tableName = MessageStoreListenerTest.TEST_TABLE_NAME)
 public class MessageStoreListenerTest {
@@ -123,6 +124,16 @@ public class MessageStoreListenerTest {
 		String expected = "DELETE FROM "+TEST_TABLE_NAME+" WHERE MESSAGEKEY = ?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
+	}
+
+	@DatabaseTest
+	public void testUpdateStatusQueryErrorNoMoveToMessageLog() throws ConfigurationException {
+		listener.setMoveToMessageLog(false);
+		listener.configure();
+
+		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
 
 	@DatabaseTest

@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
@@ -35,9 +38,6 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.BeforeEach;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = DbmsSupportTest.TEST_TABLE)
@@ -593,6 +593,7 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testQueueHandling() throws Exception {
+		assumeTrue(dbmsSupport.hasSkipLockedFunctionality(), "This test works only when locked records can be skipped, not supported for DBMS [" + dbmsSupport.getDbmsName() + "]");
 		try (Connection connection = env.getConnection()) {
 			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
 
@@ -607,14 +608,15 @@ public class DbmsSupportTest {
 			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, readQueueQuery));
 			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, peekQueueQuery));
 
-			try (Statement stmt1 = connection.createStatement()) {
-				stmt1.setFetchSize(1);
-				log.debug("Read queue using query [" + readQueueQuery + "]");
-				try (ResultSet rs1 = stmt1.executeQuery(readQueueQuery)) {
-					assertTrue(rs1.next());
-					assertEquals(40, rs1.getInt(1));            // find the first record
+			try (Connection lockingReadConnection = env.getConnection()) {
+				lockingReadConnection.setAutoCommit(false);
+				try (Statement stmt1 = lockingReadConnection.createStatement()) {
+					stmt1.setFetchSize(1);
+					log.debug("Read queue using query [" + readQueueQuery + "]");
+					try (ResultSet rs1 = stmt1.executeQuery(readQueueQuery)) {
+						assertTrue(rs1.next());
+						assertEquals(40, rs1.getInt(1));            // find the first record
 
-					if (dbmsSupport.hasSkipLockedFunctionality()) {
 						try (Connection workConn2 = env.getConnection()) {
 							workConn2.setAutoCommit(false);
 							try (Statement stmt2 = workConn2.createStatement()) {
@@ -624,8 +626,9 @@ public class DbmsSupportTest {
 										fail("readQueueQuery [" + readQueueQuery + "] should not have found record [" + rs2.getString(1) + "] that is already locked");
 									}
 								}
+							} finally {
+								workConn2.commit();
 							}
-							workConn2.commit();
 						}
 
 						// insert another record
@@ -641,15 +644,13 @@ public class DbmsSupportTest {
 									assertTrue(rs2.next());
 									assertEquals(41, rs2.getInt(1));    // find the second record
 								}
+							} finally {
+								workConn2.rollback();
 							}
-							workConn2.rollback();
 						}
-					} else {
-						// Next best behaviour for DBMSes that have no skip lock functionality (like MariaDB):
-						// another thread must find the next record when the thread that has the current record moves it out of the way
-
-						// A proper test could/should be created
 					}
+				} finally {
+					lockingReadConnection.commit();
 				}
 			}
 		}
@@ -718,6 +719,13 @@ public class DbmsSupportTest {
 		}
 	}
 
+	@DatabaseTest
+	public void testSkipLockedSupportPresent() {
+		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
+		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
+
+		assertEquals(expectSkipLockedSupport, dbmsSupport.hasSkipLockedFunctionality());
+	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);

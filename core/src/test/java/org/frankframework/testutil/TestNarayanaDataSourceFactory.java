@@ -7,12 +7,18 @@ import javax.sql.XADataSource;
 
 import org.frankframework.jta.narayana.NarayanaDataSourceFactory;
 import org.frankframework.jta.xa.XaDatasourceCommitStopper;
+import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 
+/**
+ * Here to prefix the names with jdbc/ (or else we must change all the tests..)
+ * And amend the DataSource to use the 'xa' variant
+ */
 public class TestNarayanaDataSourceFactory extends NarayanaDataSourceFactory {
 
 	@Override
 	public DataSource getDataSource(String jndiName, Properties jndiEnvironment) {
-		return super.getDataSource("jdbc/" + jndiName, jndiEnvironment);
+		String enrichedDataSourceName = TestDatasource.valueOf(jndiName).getXaDataSourceName();
+		return super.getDataSource(enrichedDataSourceName, jndiEnvironment);
 	}
 
 	@Override

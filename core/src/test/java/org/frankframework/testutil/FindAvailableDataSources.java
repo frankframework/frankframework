@@ -19,14 +19,30 @@ public class FindAvailableDataSources {
 	private static List<String> availableDataSources = null;
 	private static final ResourceObjectLocator objectLocator = new ResourceObjectLocator();
 
-	protected enum TestDatasource {
+	public enum TestDatasource {
 		H2,
-		DB2,
-		Oracle,
+		DB2("DB2-xa"),
+		Oracle("Oracle-xa"),
 		MS_SQL,
 		MySQL,
 		MariaDB,
-		PostgreSQL
+		PostgreSQL("PostgreSQL-xa");
+
+		private final String dataSourceName;
+		TestDatasource() {
+			this(null);
+		}
+		TestDatasource(String xaDataSource) {
+			dataSourceName = xaDataSource;
+		}
+
+		public String getDataSourceName() {
+			return "jdbc/" + this.name();
+		}
+
+		public String getXaDataSourceName() {
+			return "jdbc/" + (dataSourceName != null ? dataSourceName : this.name());
+		}
 	}
 
 	public FindAvailableDataSources() {
