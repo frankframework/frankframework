@@ -1,6 +1,7 @@
 package org.frankframework.collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.SenderTestBase;
@@ -28,7 +29,7 @@ class CollectionSenderTest extends SenderTestBase<CollectorSenderBase<TestCollec
 		String input = "testWrite";
 		sendMessage(input);
 
-		assertEquals(true, collector.open);
+		assertTrue(collector.open);
 		assertEquals(input, collector.getInput());
 	}
 }

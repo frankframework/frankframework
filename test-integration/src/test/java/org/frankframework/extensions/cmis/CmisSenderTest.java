@@ -206,7 +206,7 @@ public class CmisSenderTest {
     	testGet();
     	testGet();
     	testGet();
-    	results.append("msgsize"+separator+"#threads"+separator+"totcycles"+separator+"totalTime"+separator+"totalTimeTesting\n");
+    	results.append("msgsize").append(separator).append("#threads").append(separator).append("totcycles").append(separator).append("totalTime").append(separator).append("totalTimeTesting\n");
     	for (int i=0; i<threadCount.length; i++) {
         	testParallel(threadCount[i]);
     	}

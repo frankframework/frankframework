@@ -440,7 +440,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F file = fileSystem.toFile(filename);
 		String canonicalName=fileSystem.getCanonicalName(file);
 
-		assertNotNull("Canonical name should not be null", canonicalName);
+		assertNotNull(canonicalName, "Canonical name should not be null");
 	}
 
 	@Test

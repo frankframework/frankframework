@@ -2,8 +2,10 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
 
@@ -25,9 +27,9 @@ class ClassUtilsTest {
 			() -> assertEquals(7L, ClassUtils.convertToType(long.class, "7")),
 			() -> assertEquals(7L, ClassUtils.convertToType(Long.class, "7")),
 			() -> assertEquals("7", ClassUtils.convertToType(String.class, "7")),
-			() -> assertEquals(true, ClassUtils.convertToType(boolean.class, "true")),
-			() -> assertEquals(true, ClassUtils.convertToType(Boolean.class, "true")),
-			() -> assertEquals(false, ClassUtils.convertToType(Boolean.class, "niet true")),
+			() -> assertTrue(ClassUtils.convertToType(boolean.class, "true")),
+			() -> assertTrue(ClassUtils.convertToType(Boolean.class, "true")),
+			() -> assertFalse(ClassUtils.convertToType(Boolean.class, "niet true")),
 			() -> assertEquals(TestEnum.ONE, ClassUtils.convertToType(TestEnum.class, "one")),
 
 			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Object.class, "dummy")),

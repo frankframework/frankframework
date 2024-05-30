@@ -2350,10 +2350,10 @@ public class LarvaTool {
 			BufferedReader br = new BufferedReader(reader);
 			String l;
 			while ((l = br.readLine()) != null) {
-				if (sb.length()==0) {
+				if (sb.isEmpty()) {
 					sb.append(l);
 				} else {
-					sb.append(System.getProperty("line.separator") + l);
+					sb.append(System.getProperty("line.separator")).append(l);
 				}
 			}
 			br.close();

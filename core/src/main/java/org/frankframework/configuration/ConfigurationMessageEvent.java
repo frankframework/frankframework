@@ -58,11 +58,11 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 		StringBuilder m = new StringBuilder();
 
 		String configurationName = getSource().getName();
-		m.append("Configuration [" + configurationName + "] ");
+		m.append("Configuration [").append(configurationName).append("] ");
 
 		String version = getSource().getVersion();
 		if (version != null) {
-			m.append("[" + version + "] ");
+			m.append("[").append(version).append("] ");
 		}
 
 		m.append(message);
@@ -77,7 +77,7 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 		}
 
 		if (e != null) {
-			m.append(": " + e.getMessage());
+			m.append(": ").append(e.getMessage());
 		}
 
 		Date date = new Date(getTimestamp());

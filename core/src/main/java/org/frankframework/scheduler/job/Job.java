@@ -42,7 +42,7 @@ public class Job extends JobDef {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(function != null) builder.append(" function ["+function+"]");
+		if(function != null) builder.append(" function [").append(function).append("]");
 		return builder.toString();
 	}
 

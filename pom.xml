@@ -713,9 +713,6 @@
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<reuseForks>true</reuseForks>
-					<includes>
-						<include>**/*.java</include>
-					</includes>
 					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 				</configuration>
 			</plugin>
@@ -1164,6 +1161,7 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
+											<!-- Once testcontainers finally starts using junit5 remove this comment.. <exclude>junit:junit</exclude>-->
 											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>

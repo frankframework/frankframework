@@ -182,7 +182,7 @@ public class StreamPipe extends FixedForwardPipe {
 								} else {
 									String sessionKeyName = "part_string" + (++stringCounter > 1 ? stringCounter : "");
 									addSessionKey(session, sessionKeyName, fieldValue);
-									partsString.append("<part type=\"string\" name=\"" + fieldName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + fieldValue.length() + "\"/>");
+									partsString.append("<part type=\"string\" name=\"").append(fieldName).append("\" sessionKey=\"").append(sessionKeyName).append("\" size=\"").append(fieldValue.length()).append("\"/>");
 								}
 							}
 						} else {
@@ -204,7 +204,7 @@ public class StreamPipe extends FixedForwardPipe {
 								addSessionKey(session, sessionKeyName, null);
 							}
 							MimeType mimeType = (MimeType) bodyPartMessage.getContext().get(MessageContext.METADATA_MIMETYPE);
-							partsString.append("<part type=\"file\" name=\"" + fileName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + size + "\" mimeType=\"" + mimeType + "\"/>");
+							partsString.append("<part type=\"file\" name=\"").append(fileName).append("\" sessionKey=\"").append(sessionKeyName).append("\" size=\"").append(size).append("\" mimeType=\"").append(mimeType).append("\"/>");
 							lastFoundFileName = fileName;
 						}
 					}
