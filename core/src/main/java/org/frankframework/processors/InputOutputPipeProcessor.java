@@ -117,7 +117,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pipe.isRestoreMovedElements()) {
 				log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pipe::getName);
 				Message result = pipeRunResult.getResult();
-				if (result != null && !result.isEmpty()) {
+				if (!Message.isEmpty(result)) {
 					try {
 						String resultString = result.asString();
 						pipeRunResult.setResult(RestoreMovedElementsHandler.process(resultString, pipeLineSession));
