@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,41 +15,119 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.ConversionNotSupportedException;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.lang.Nullable;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-/**
- * Custom errorHandler for the FF!API to unpack and re-pack {@link WebApplicationException}s.
- * Has to be explicitly configured to override the CXF default {@link WebApplicationException}Listener.
- *
- * @author	Niels Meijer
- */
+@RestControllerAdvice
+public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-@Provider
-public class ApiExceptionHandler implements ExceptionMapper<WebApplicationException> {
-
-	private final Logger log = LogManager.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	@Override
-	public Response toResponse(WebApplicationException exception) {
-		//If the message has already been wrapped in an exception we don't need to `convert` it!
-		if(exception instanceof ApiException apiException) {
-			return apiException.getResponse();
-		}
-
-		log.warn("Caught unhandled WebApplicationException while executing FF!API call", exception);
-
-		Status status = Status.INTERNAL_SERVER_ERROR;
-		Response response = exception.getResponse();
-		if(response != null && response.getStatus() > 0) {
-			status = Status.fromStatusCode(response.getStatus());
-		}
-		return ApiException.formatExceptionResponse(exception.getMessage(), status);
+	protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		ResponseEntity<Object> internalResponse = super.handleHttpRequestMethodNotSupported(ex, headers, status, request);
+		return handleSpringException(ex, status, internalResponse.getHeaders());
 	}
+
+	@Override
+	protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		ResponseEntity<Object> internalResponse = super.handleHttpMediaTypeNotSupported(ex, headers, status, request);
+		return handleSpringException(ex, status, internalResponse.getHeaders());
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleConversionNotSupported(ConversionNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return handleSpringException(ex, status, null);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpHeaders headers, HttpStatusCode status, WebRequest webRequest) {
+		super.handleAsyncRequestTimeoutException(ex, headers, status, webRequest);
+		return handleSpringException(ex, status, null);
+	}
+
+	@ExceptionHandler({
+			ApiException.class
+	})
+	private ResponseEntity<?> handleApiException(ApiException exception, WebRequest request) {
+		return exception.getResponse();
+	}
+
+	private ResponseEntity<Object> handleSpringException(Exception exception, HttpStatusCode status, @Nullable HttpHeaders headers) {
+		log.warn("Caught unhandled exception while executing FF!API call", exception);
+		return ApiException.formatExceptionResponse(exception.getMessage(), status, null);
+	}
+
 }

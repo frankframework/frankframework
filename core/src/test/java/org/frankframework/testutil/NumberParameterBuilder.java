@@ -35,4 +35,11 @@ public class NumberParameterBuilder extends NumberParameter {
 		numberParam.setValue(""+value);
 		return numberParam;
 	}
+
+	public static NumberParameterBuilder create(String name, Long value) {
+		NumberParameterBuilder numberParam = new NumberParameterBuilder();
+		numberParam.setName(name);
+		numberParam.setValue(""+value);
+		return numberParam;
+	}
 }

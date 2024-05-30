@@ -37,8 +37,8 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterType;
+import org.frankframework.parameters.DateParameter;
+import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.JobDef;
@@ -112,10 +112,11 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
-				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
-				qs.setQuery(query);
-				Parameter param = new Parameter("now", DateFormatUtils.now());
-				param.setType(ParameterType.TIMESTAMP);
+				qs.setQuery("DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?");
+				DateParameter param = new DateParameter();
+				param.setName("now");
+				param.setValue(DateFormatUtils.now());
+				param.setFormatType(DateFormatType.TIMESTAMP);
 				qs.addParameter(param);
 				qs.configure();
 				qs.open();
@@ -158,8 +159,10 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 
-				Parameter param = new Parameter("now", DateFormatUtils.format(instant));
-				param.setType(ParameterType.TIMESTAMP);
+				DateParameter param = new DateParameter();
+				param.setName("now");
+				param.setValue(DateFormatUtils.format(instant));
+				param.setFormatType(DateFormatType.TIMESTAMP);
 				qs.addParameter(param);
 
 				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows, qs.getDbmsSupport().getDbms());

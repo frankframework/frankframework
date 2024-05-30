@@ -20,7 +20,9 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.NumberParameterBuilder;
@@ -96,7 +98,7 @@ public class JdbcUtilTest {
 		params.add(NumberParameterBuilder.create().withValue(6));
 		params.add(ParameterBuilder.create().withValue("5th text"));
 		params.add(ParameterBuilder.create().withValue("15092002"));
-		params.add(ParameterBuilder.create().withValue("2018-04-12 03:05:06").withType(ParameterType.DATETIME));
+		params.add(DateParameterBuilder.create().withValue("2018-04-12 03:05:06").withFormatType(DateFormatType.DATETIME));
 		params.add(ParameterBuilder.create().withSessionKey("clobParam").withType(ParameterType.CHARACTER));
 		params.add(ParameterBuilder.create().withSessionKey("blobParam").withType(ParameterType.BINARY));
 

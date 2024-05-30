@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,61 +17,53 @@ package org.frankframework.management.web;
 
 import java.util.function.Function;
 
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.Response.Status.Family;
-import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import org.frankframework.management.bus.BusException;
-
-/**
- * Catch Spring Channel exceptions. Some Exceptions may be thrown direct, see {@link ManagedException}.
- *
- * @author	Niels Meijer
- */
-
-@Provider
-public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlingException> {
+@RestControllerAdvice
+public class SpringBusExceptionHandler {
 
 	private Logger log = LogManager.getLogger(this);
 
 	public enum ManagedException {
-		AUTHENTICATION(AuthenticationException.class, Status.UNAUTHORIZED), //Authentication exception
-		AUTHORIZATION(AccessDeniedException.class, Status.FORBIDDEN), // Authorization exception
-		BUS_EXCEPTION(BusException.class, ManagedException::convertBusException), // Managed BUS exception
-		BACKEND_UNAVAILABLE(ResourceAccessException.class, Status.SERVICE_UNAVAILABLE), // Server doesn't exist
-		REQUEST_EXCEPTION(HttpClientErrorException.class, ManagedException::convertHttpClientError); // Server refused connection
+		AUTHENTICATION(AuthenticationException.class, HttpStatus.UNAUTHORIZED), //Authentication exception
+		AUTHORIZATION(AccessDeniedException.class, HttpStatus.FORBIDDEN), // Authorization exception
+		BUS_EXCEPTION(BusException.class, SpringBusExceptionHandler.ManagedException::convertBusException), // Managed BUS exception
+		BACKEND_UNAVAILABLE(ResourceAccessException.class, HttpStatus.SERVICE_UNAVAILABLE), // Server doesn't exist
+		REQUEST_EXCEPTION(HttpClientErrorException.class, SpringBusExceptionHandler.ManagedException::convertHttpClientError); // Server refused connection
 
 		private final Class<? extends Throwable> exceptionClass;
-		private final Function<Throwable, Response> messageConverter;
+		private final Function<Throwable, ResponseEntity<?>> messageConverter;
 
-		private ManagedException(final Class<? extends Throwable> exceptionClass, final Status status) {
-			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status));
+		private ManagedException(final Class<? extends Throwable> exceptionClass, final HttpStatus status) {
+			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status, null));
 		}
 
 		@SuppressWarnings("unchecked")
-		private <T extends Throwable> ManagedException(final Class<T> exceptionClass, final Function<T, Response> messageConverter) {
+		private <T extends Throwable> ManagedException(final Class<T> exceptionClass, final Function<T, ResponseEntity<?>> messageConverter) {
 			this.exceptionClass = exceptionClass;
-			this.messageConverter = (Function<Throwable, Response>) messageConverter;
+			this.messageConverter = (Function<Throwable, ResponseEntity<?>>) messageConverter;
 		}
 
-		public Response toResponse(Throwable cause) {
+		public ResponseEntity<?> toResponse(Throwable cause) {
 			return messageConverter.apply(cause);
 		}
 
 		public static ManagedException parse(Throwable cause) {
-			for(ManagedException me : ManagedException.values()) {
-				if(me.exceptionClass.isAssignableFrom(cause.getClass())) {
+			for (ManagedException me : ManagedException.values()) {
+				if (me.exceptionClass.isAssignableFrom(cause.getClass())) {
 					return me;
 				}
 			}
@@ -81,36 +73,37 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		/**
 		 * Returns the StatusCode + reason phrase for the given status code.
 		 */
-		private static Response convertHttpClientError(HttpClientErrorException e) {
-			Status status = Status.fromStatusCode(e.getRawStatusCode());
-			if(Family.SERVER_ERROR == status.getFamily() || status == Status.NOT_FOUND) {
-				return ApiException.formatExceptionResponse(status.getStatusCode() + " - " + status.getReasonPhrase(), status);
+		private static ResponseEntity<?> convertHttpClientError(HttpClientErrorException e) {
+			HttpStatusCode status = e.getStatusCode();
+			if (status.is5xxServerError() || status == HttpStatus.NOT_FOUND) {
+				String reasonPhrase = HttpStatus.valueOf(status.value()).getReasonPhrase();
+				return ApiException.formatExceptionResponse(status.value() + " - " + reasonPhrase, status, null);
 			}
-			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status);
+			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status, null);
 		}
 
 		/**
 		 * Returns the StatusCode + reason phrase for the given status code.
 		 */
-		private static Response convertBusException(BusException e) {
-			Status status = Status.fromStatusCode(e.getStatusCode());
-			return ApiException.formatExceptionResponse(e.getMessage(), status);
+		private static ResponseEntity<?> convertBusException(BusException e) {
+			HttpStatus status = HttpStatus.valueOf(e.getStatusCode());
+			return ApiException.formatExceptionResponse(e.getMessage(), status, null);
 		}
 	}
 
-	@Override
-	public Response toResponse(MessageHandlingException mhe) {
+	@ExceptionHandler(MessageHandlingException.class)
+	public ResponseEntity<?> toResponse(MessageHandlingException mhe) {
 		Throwable cause = mhe.getCause();
-		for(int i = 0; i < 5 && cause != null; i++) {
+		for (int i = 0; i < 5 && cause != null; i++) {
 			ManagedException mex = ManagedException.parse(cause);
-			if(mex != null) { //If a ManagedException is found, throw it directly
+			if (mex != null) { //If a ManagedException is found, throw it directly
 				return mex.toResponse(cause);
 			}
 			cause = cause.getCause();
 		}
 
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);
-		return ApiException.formatExceptionResponse(buildMessage(mhe.getMessage(), mhe.getCause()), Status.INTERNAL_SERVER_ERROR);
+		return ApiException.formatExceptionResponse(buildMessage(mhe.getMessage(), mhe.getCause()), HttpStatus.INTERNAL_SERVER_ERROR, null);
 	}
 
 	private static String buildMessage(@Nullable String message, @Nullable Throwable cause) {
@@ -124,4 +117,5 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		sb.append("nested exception is ").append(cause);
 		return sb.toString();
 	}
+
 }

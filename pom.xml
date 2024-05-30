@@ -152,7 +152,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.39.1</version>
+				<version>9.39.2</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -1279,7 +1279,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
+						<version>1.7.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -1337,7 +1337,7 @@
 				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
-<!--				<module>ladybug</module>-->
+				<module>ladybug</module>
 				<module>dbms</module>
 				<module>bundle-minimal</module>
 
