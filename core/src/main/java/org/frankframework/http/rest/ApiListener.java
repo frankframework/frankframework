@@ -266,7 +266,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * HTTP method(s) to listen to.
+	 * HTTP method(s) to listen to. Inside XML Configurations: for multiple values, use a comma as separator.
 	 *
 	 * @ff.default GET
 	 */

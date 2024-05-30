@@ -2,22 +2,23 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Method;
 
-import org.frankframework.core.INamedObject;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.frankframework.core.INamedObject;
 
-public class ClassUtilsTest {
+class ClassUtilsTest {
 
 	private static enum TestEnum {ONE,TWO};
 
 	@Test
-	public void testConvertToType() {
+	void testConvertToType() {
 		assertAll(
 			() -> assertEquals(7, ClassUtils.convertToType(int.class, "7")),
 			() -> assertEquals(7, ClassUtils.convertToType(Integer.class, "7")),
@@ -35,21 +36,56 @@ public class ClassUtilsTest {
 		);
 	}
 
-	private static class DummyClassWithSetter {
+	private class DummyClassWithSetter {
 		private @Getter @Setter String field;
+		private @Getter Object[] testEnums;
+		private @Getter String[] testStrings;
+		public void setEnumVarArgs(TestEnum... testEnum) {
+			this.testEnums = testEnum;
+		}
+		public void setTestStrings(String... testStrings) {
+			this.testStrings = testStrings;
+		}
 	}
 
 	@Test
-	public void testInvokeSetter() throws Exception {
+	void testInvokeStringSetter() throws Exception {
 		DummyClassWithSetter clazz = new DummyClassWithSetter();
-		Method method = clazz.getClass().getDeclaredMethod("setField", new Class[] {String.class});
+		Method method = clazz.getClass().getDeclaredMethod("setField", String.class);
 		ClassUtils.invokeSetter(clazz, method, "value");
 		assertEquals("value", clazz.getField());
 	}
 
+	@Test
+	void testInvokeWithNullSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setEnumVarArgs", TestEnum[].class);
+		ClassUtils.invokeSetter(clazz, method, null);
+		assertNull(clazz.getField());
+	}
+
+	@Test
+	void testInvokeEnumVarArgsSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setEnumVarArgs", TestEnum[].class);
+		ClassUtils.invokeSetter(clazz, method, "ONE, TWO");
+		assertEquals(TestEnum.ONE, clazz.getTestEnums()[0]);
+		assertEquals(TestEnum.TWO, clazz.getTestEnums()[1]);
+	}
+
+	@Test
+	void testInvokeStringVarArgsSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setTestStrings", String[].class);
+
+		ClassUtils.invokeSetter(clazz, method, "AAA, BBB");
+		assertEquals("AAA", clazz.getTestStrings()[0]);
+		assertEquals("BBB", clazz.getTestStrings()[1]);
+	}
+
 	/** see CredentialProvider ClassUtilsTest to test results without Spring present */
 	@Test
-	public void testNameOf() {
+	void testNameOf() {
 		assertEquals("String", ClassUtils.nameOf("test"));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
