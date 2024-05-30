@@ -51,6 +51,11 @@
 			com.unboundid.util.NotNull,
 			" />
 		</module>
+		<module name="IllegalImport">
+			<property name="regexp" value="true" />
+			<!-- Reject any org.junit import that's not also org.junit.jupiter: -->
+			<property name="illegalClasses" value="^org\.junit\.(?!jupiter\.).+" />
+		</module>
 		<module name="RegexpSinglelineJava">
 			<property name="format" value="\.deleteOnExit()" />
 			<property name="message" value="You shouldn't use file.deleteOnExit()!" />
