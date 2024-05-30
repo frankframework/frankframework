@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,52 +17,34 @@ package org.frankframework.management.web;
 
 import java.util.Map;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Send a message with JMS.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@RestController
+public class BrowseQueue extends FrankApiBase {
 
-@Path("/")
-public final class BrowseQueue extends FrankApiBase {
-
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("jms")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/jms", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of all JMS QueueConnectionFactories")
-	public Response getQueueConnectionFactories() {
+	public ResponseEntity<?> getQueueConnectionFactories() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.GET));
 	}
 
-	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("jms/browse")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/jms/browse", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of messages on a specific JMS queue")
-	public Response browseQueue(Map<String, Object> json) {
-
+	public ResponseEntity<?> browseQueue(Map<String, Object> json) {
 		String connectionFactory = RequestUtils.getValue(json, "connectionFactory");
 		String destination = RequestUtils.getValue(json, "destination");
 		Boolean rowNumbersOnly = RequestUtils.getBooleanValue(json, "rowNumbersOnly");
@@ -70,24 +52,25 @@ public final class BrowseQueue extends FrankApiBase {
 		Boolean lookupDestination = RequestUtils.getBooleanValue(json, "lookupDestination");
 		String type = RequestUtils.getValue(json, "type");
 
-		if(StringUtils.isNotEmpty(destination))
+		if (StringUtils.isNotEmpty(destination))
 			throw new ApiException("No destination provided");
-		if(StringUtils.isNotEmpty(type))
+		if (StringUtils.isNotEmpty(type))
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destination);
 		builder.addHeader("type", type);
-		if(rowNumbersOnly != null) {
+		if (rowNumbersOnly != null) {
 			builder.addHeader("rowNumbersOnly", rowNumbersOnly);
 		}
-		if(showPayload != null) {
+		if (showPayload != null) {
 			builder.addHeader("showPayload", showPayload);
 		}
-		if(lookupDestination != null) {
+		if (lookupDestination != null) {
 			builder.addHeader("lookupDestination", lookupDestination);
 		}
 		return callSyncGateway(builder);
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,60 +13,45 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package org.frankframework.management.web;
 
 import java.util.Map;
-
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Executes a query.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@RestController
+public class ExecuteJdbcQuery extends FrankApiBase {
 
-@Path("/")
-public final class ExecuteJdbcQuery extends FrankApiBase {
-
-	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
-	@Path("/jdbc")
-	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/jdbc", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a list of all JDBC DataSources")
-	public Response getJdbcDataSources() throws ApiException {
+	public ResponseEntity<?> getJdbcDataSources() throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.GET);
 		return callSyncGateway(builder);
 	}
 
-	@POST
 	@RolesAllowed({"IbisTester"})
-	@Path("/jdbc/query")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/jdbc/query", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("execute a JDBC query on a datasource")
-	public Response executeJdbcQuery(Map<String, Object> json) {
+	public ResponseEntity<?> executeJdbcQuery(Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String query = RequestUtils.getValue(json, "query");
 		String resultType = RequestUtils.getValue(json, "resultType");
 
-		if(resultType == null || query == null) {
+		if (resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 		builder.addHeader("query", query);
@@ -76,12 +61,12 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		builder.addHeader("trimSpaces", RequestUtils.getBooleanValue(json, "trimSpaces"));
 
 		String queryType = RequestUtils.getValue(json, "queryType");
-		if("AUTO".equals(queryType)) {
+		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
-			String[] commands = new String[] {"select", "show"}; //if it matches, set it to select
+			String[] commands = new String[]{"select", "show"}; //if it matches, set it to select
 			for (String command : commands) {
-				if(query.toLowerCase().startsWith(command)) {
+				if (query.toLowerCase().startsWith(command)) {
 					queryType = "select";
 					break;
 				}
@@ -92,4 +77,5 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		builder.addHeader("queryType", queryType);
 		return callSyncGateway(builder);
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2017 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.web;
+package org.frankframework.web.filters;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
 
-/**
- * Retention annotation to specify the relation between two or more resources
- *
- * @since 7.0-B1
- * @author Niels Meijer
- */
+/** Generate an ETag identifier for each request so the client knows that the contents are not modified if they match */
+public class WeakShallowEtagHeaderFilter extends ShallowEtagHeaderFilter {
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Relation {
-	String value() default "";
+	WeakShallowEtagHeaderFilter(){
+		super();
+		this.setWriteWeakETag(true);
+	}
+
 }

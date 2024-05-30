@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2021 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,68 +15,51 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Shows all monitors.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@RestController
+public class Webservices extends FrankApiBase {
 
-@Path("/")
-public final class Webservices extends FrankApiBase {
-
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/webservices")
-	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("webservices")
 	@Description("view a list of all available webservices")
-	public Response getWebServices() {
+	@GetMapping(value = "/webservices", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getWebServices() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.GET));
 	}
 
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/webservices/openapi.json")
-	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("webservices")
 	@Description("view OpenAPI specificiation")
-	public Response getOpenApiSpec(@QueryParam("uri") String uri) {
+	@GetMapping(value = "/webservices/openapi.json", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getOpenApiSpec(@RequestParam(value = "uri", required = false) String uri) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("type", "openapi");
-		if(StringUtils.isNotBlank(uri)) {
+		if (StringUtils.isNotBlank(uri)) {
 			request.addHeader("uri", uri);
 		}
 		return callSyncGateway(request);
 	}
 
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/webservices/{configuration}/{resourceName}")
-	@Produces(MediaType.APPLICATION_XML)
 	@Relation("webservices")
 	@Description("view WDSL specificiation")
-	public Response getWsdl(
-			@PathParam("configuration") String configuration,
-			@PathParam("resourceName") String resourceName,
-			@DefaultValue("true") @QueryParam("indent") boolean indent,
-			@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) {
+	@GetMapping(value = "/webservices/{configuration}/{resourceName}", produces = MediaType.APPLICATION_XML_VALUE)
+	public ResponseEntity<?> getWsdl(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("resourceName") String resourceName,
+			@RequestParam(value = "indent", defaultValue = "true") boolean indent,
+			@RequestParam(value = "useIncludes", defaultValue = "false") boolean useIncludes) {
 
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("indent", indent);
@@ -84,9 +67,9 @@ public final class Webservices extends FrankApiBase {
 		request.addHeader("type", "wsdl");
 
 		String adapterName;
-		int dotPos=resourceName.lastIndexOf('.');
-		if (dotPos>=0) {
-			adapterName = resourceName.substring(0,dotPos);
+		int dotPos = resourceName.lastIndexOf('.');
+		if (dotPos >= 0) {
+			adapterName = resourceName.substring(0, dotPos);
 			boolean zip = ".zip".equals(resourceName.substring(dotPos));
 			request.addHeader("zip", zip);
 		} else {

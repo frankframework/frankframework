@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,32 +15,22 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Shows the used certificate.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@RestController
+public class EnvironmentVariables extends FrankApiBase {
 
-@Path("/")
-public final class ShowSecurityItems extends FrankApiBase {
-
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/securityitems")
-	@Relation("securityitems")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSecurityItems() {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SECURITY_ITEMS);
-		return callSyncGateway(builder);
+	@Relation("debug")
+	@Description("view all system/environment/application properties")
+	@GetMapping(value = "/environmentvariables", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getEnvironmentVariables() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.ENVIRONMENT));
 	}
+
 }

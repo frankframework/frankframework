@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,37 +15,27 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Shows directory of logfiles
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@RestController
+public class Logging extends FrankApiBase {
 
-@Path("/")
-public class ShowLogging extends FrankApiBase {
-
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/logging")
 	@Relation("logging")
-	@Produces(MediaType.APPLICATION_JSON)
 	@Description("view files/folders inside the log directory")
-	public Response getLogDirectory(@QueryParam("directory") String directory, @QueryParam("wildcard") String wildcard) {
+	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getLogDirectory(@RequestParam(value = "directory", required = false) String directory, @RequestParam(value = "wildcard", required = false) String wildcard) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
 		builder.addHeader("wildcard", wildcard);
 		return callSyncGateway(builder);
 	}
+
 }

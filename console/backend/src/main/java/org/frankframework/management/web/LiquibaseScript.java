@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,61 +19,55 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
-import jakarta.annotation.security.RolesAllowed;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-@Path("/")
-public class ShowLiquibaseScript extends FrankApiBase {
+import jakarta.annotation.security.RolesAllowed;
+import lombok.Getter;
+import lombok.Setter;
 
-	@GET
+@RestController
+public class LiquibaseScript extends FrankApiBase {
+
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/jdbc/liquibase")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadScript(@QueryParam("configuration") String configuration) {
+	@GetMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	public ResponseEntity<?> downloadScript(@RequestParam(value = "configuration", required = false) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		return callSyncGateway(builder);
 	}
 
-	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/jdbc/liquibase")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response generateSQL(MultipartBody inputDataMap) throws ApiException {
+	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> generateSQL(LiquibaseMultipartBody multipartBody) throws ApiException {
+		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.getConfiguration(), null);
+		MultipartFile filePart = multipartBody.getFile();
 
-		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration", null);
-
-		Attachment filePart = inputDataMap.getAttachment("file");
-		if(configuration == null || filePart == null) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+		if (filePart == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 
-		String filename = filePart.getContentDisposition().getParameter("filename");
-		InputStream file = filePart.getObject(InputStream.class);
+		String filenameOrPath = filePart.getOriginalFilename();
+		String filename = FilenameUtils.getName(filenameOrPath);
 		try {
+			InputStream file = filePart.getInputStream();
 			String payload = StreamUtil.streamToString(file);
 			builder.setPayload(payload);
 		} catch (IOException e) {
@@ -87,14 +81,21 @@ public class ShowLiquibaseScript extends FrankApiBase {
 		Message<?> response = sendSyncMessage(builder);
 		String result = (String) response.getPayload();
 
-		if(StringUtils.isEmpty(result)) {
-			throw new ApiException("Make sure liquibase xml script exists for configuration ["+configuration+"]");
+		if (StringUtils.isEmpty(result)) {
+			throw new ApiException("Make sure liquibase xml script exists for configuration [" + configuration + "]");
 		}
 
 		HashMap<String, Object> resultMap = new HashMap<>();
 		resultMap.put("result", result);
 
-		return Response.status(Response.Status.CREATED).entity(resultMap).build();
+		return ResponseEntity.status(HttpStatus.CREATED).body(resultMap);
+	}
+
+	@Getter
+	@Setter
+	public static class LiquibaseMultipartBody {
+		private String configuration;
+		private MultipartFile file;
 	}
 
 }

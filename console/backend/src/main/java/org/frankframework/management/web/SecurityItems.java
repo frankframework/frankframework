@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,23 +15,23 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.frankframework.management.bus.BusTopic;
 
-@Path("/")
-public class ShowConnectionOverview extends FrankApiBase {
+@RestController
+public class SecurityItems extends FrankApiBase {
 
-	@GET
+	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/connections")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getConnections() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.CONNECTION_OVERVIEW));
+	@Relation("securityitems")
+	public ResponseEntity<?> getSecurityItems() {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SECURITY_ITEMS);
+		return callSyncGateway(builder);
 	}
+
 }

@@ -1,99 +1,115 @@
 package org.frankframework.management.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.frankframework.management.bus.message.MessageBase;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
+@ContextConfiguration(classes = {WebTestConfiguration.class, SendJmsMessage.class})
+public class SendJmsMessageTest extends FrankApiTestBase {
 
-	@Override
-	public SendJmsMessage createJaxRsResource() {
-		return new SendJmsMessage();
+	@Test
+	public void testWrongEncoding() throws Exception {
+		mockMvc.perform(
+						MockMvcRequestBuilders
+								.multipart("/jms/message")
+								.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
+								.part(
+										new MockPart("persistent", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("lookupDestination", "false".getBytes()),
+										new MockPart("destination", "some-queue".getBytes()),
+										new MockPart("type", "type".getBytes()),
+										new MockPart("connectionFactory", "qcf/connectionFactory".getBytes()),
+										new MockPart("encoding", "fakeEncoding".getBytes())
+								)
+				)
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("error").value("unsupported file encoding [fakeEncoding]"));
 	}
 
 	@Test
-	public void testWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
-		attachments.add(new StringAttachment("destination", "some-queue"));
-		attachments.add(new StringAttachment("type", "type"));
-		attachments.add(new StringAttachment("synchronous", "true"));
-		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
-		attachments.add(new StringAttachment("message", "inputMessage"));
-
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
-		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
+	public void testFileWrongEncoding() throws Exception {
+		mockMvc.perform(
+						MockMvcRequestBuilders
+								.multipart("/jms/message")
+								.file(new MockMultipartFile("message", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes())))
+								.part(
+										new MockPart("persistent", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("lookupDestination", "false".getBytes()),
+										new MockPart("destination", "some-queue".getBytes()),
+										new MockPart("type", "type".getBytes()),
+										new MockPart("connectionFactory", "qcf/connectionFactory".getBytes()),
+										new MockPart("encoding", "fakeEncoding".getBytes())
+								)
+				)
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("error").value("unsupported file encoding [fakeEncoding]"));
 	}
 
 	@Test
-	public void testFileWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
-		attachments.add(new StringAttachment("destination", "some-queue"));
-		attachments.add(new StringAttachment("type", "type"));
-		attachments.add(new StringAttachment("synchronous", "true"));
-		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
-		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
+	public void testWithMessage() throws Exception {
 
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
-		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertEquals("QUEUE", in.getHeaders().get("topic"));
+			return mockResponseMessage(in, in::getPayload, 200, MediaType.TEXT_PLAIN);
+		});
+
+		mockMvc.perform(
+						MockMvcRequestBuilders
+								.multipart("/jms/message")
+								.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
+								.part(
+										new MockPart("persistent", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("lookupDestination", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("destination", "some-queue".getBytes()),
+										new MockPart("type", "type".getBytes()),
+										new MockPart("connectionFactory", "qcf/connectionFactory".getBytes())
+								)
+				)
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().string("inputMessage"));
 	}
 
 	@Test
-	public void testWithMessage() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
-		attachments.add(new StringAttachment("destination", "some-queue"));
-		attachments.add(new StringAttachment("type", "type"));
-		attachments.add(new StringAttachment("synchronous", "true"));
-		attachments.add(new StringAttachment("message", "inputMessage"));
+	public void testWithFile() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertEquals("QUEUE", in.getHeaders().get("topic"));
+			return mockResponseMessage(in, in::getPayload, 200, MediaType.TEXT_PLAIN);
+		});
 
-		doAnswer(i -> {
-			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
-			Message<?> msg = inputMessage.build();
-			MessageHeaders headers = msg.getHeaders();
-			assertEquals("QUEUE", headers.get("topic"));
-
-			return msg;
-		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments);
-		assertEquals("\"inputMessage\"", response.getEntity().toString());
-	}
-
-	@Test
-	public void testWithFile() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
-		attachments.add(new StringAttachment("destination", "some-queue"));
-		attachments.add(new StringAttachment("type", "type"));
-		attachments.add(new StringAttachment("synchronous", "true"));
-		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
-
-		doAnswer(i -> {
-			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
-			Message<?> msg = inputMessage.build();
-			MessageHeaders headers = msg.getHeaders();
-			assertEquals("QUEUE", headers.get("topic"));
-
-			return msg;
-		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments);
-		assertEquals("\"inputMessage\"", response.getEntity().toString());
+		mockMvc.perform(
+						MockMvcRequestBuilders
+								.multipart("/jms/message")
+								.file(new MockMultipartFile("message", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes())))
+								.part(
+										new MockPart("persistent", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("lookupDestination", "false".getBytes()),
+										new MockPart("synchronous", "true".getBytes()),
+										new MockPart("destination", "some-queue".getBytes()),
+										new MockPart("type", "type".getBytes()),
+										new MockPart("connectionFactory", "qcf/connectionFactory".getBytes())
+								)
+				)
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().string("inputMessage"));
 	}
 }
