@@ -27,7 +27,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
+
+import jakarta.annotation.Nullable;
 
 public class ApiException extends RuntimeException implements Serializable {
 
