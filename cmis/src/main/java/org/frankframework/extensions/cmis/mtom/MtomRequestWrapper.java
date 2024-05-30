@@ -51,7 +51,7 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 		String contentType = super.getHeader("content-type");
 		if("POST".equalsIgnoreCase(request.getMethod())) {
 			try {
-				if(log.isTraceEnabled()) log.trace("found message with ContentType ["+contentType+"]");
+				log.trace("found message with ContentType [{}]", contentType);
 				boolean isMultipartRequest = contentType.contains("multipart");
 				MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
 				multipart.setMtomMultipart();
@@ -73,7 +73,7 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 						}
 
 						ContentType partType = ContentType.parse(bp.getContentType());
-						if(log.isTraceEnabled()) log.trace("FileName ["+fileName+"] PartName ["+bodyPartName+"] ContentType [" + partType + "]");
+						log.trace("FileName [{}] PartName [{}] ContentType [{}]", fileName, bodyPartName, partName);
 						multipart.addBinaryBody(bodyPartName, bp.getInputStream(), partType, fileName);
 
 					}

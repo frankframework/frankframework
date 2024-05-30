@@ -59,14 +59,14 @@ public class CmisEventDispatcher {
 		if(event == null)
 			throw new ListenerException("cannot register EventListener without event to listen on");
 
-		log.info("registering CmisEvent ["+event.name()+"] on dispatcher");
+		log.info("registering CmisEvent [{}] on dispatcher", event::name);
 		eventListeners.put(event, listener);
 	}
 
 	public void unregisterEventListener(CmisEventListener listener) {
 		CmisEvent event = listener.getEvent();
 		eventListeners.remove(event);
-		log.info("unregistered CmisEvent ["+event.name()+"] from dispatcher");
+		log.info("unregistered CmisEvent [{}] from dispatcher", event::name);
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class CmisEventDispatcher {
 		if(!eventListeners.containsKey(event))
 			throw new CmisRuntimeException("event ["+event.name()+"] not registered");
 
-		if(log.isDebugEnabled()) log.debug("bridging CmisEvent ["+event.name()+"]");
+		if(log.isDebugEnabled()) log.debug("bridging CmisEvent [{}]", event::name);
 		CmisUtils.populateCmisAttributes(messageContext);
 
 		try {
@@ -104,10 +104,9 @@ public class CmisEventDispatcher {
 
 		//Try and catch the original CMIS exception and throw that instead
 		catch (ListenerException e) {
-			if(e.getCause() instanceof PipeRunException) {
-				PipeRunException pre = (PipeRunException) e.getCause();
-				if(pre != null && pre.getCause() instanceof CmisBaseException)
-					throw (CmisBaseException)pre.getCause();
+			if(e.getCause() instanceof PipeRunException pre) {
+				if(pre != null && pre.getCause() instanceof CmisBaseException cbe)
+					throw cbe;
 			}
 			throw new CmisRuntimeException(e.getMessage(), e);
 		}
@@ -118,7 +117,7 @@ public class CmisEventDispatcher {
 
 	public boolean contains(CmisEvent event) {
 		if(StringUtils.isNotEmpty(dispatcherName)) {
-			JavaListener listener = JavaListener.getListener(dispatcherName);
+			JavaListener<?> listener = JavaListener.getListener(dispatcherName);
 			if(listener == null) {
 				throw new CmisRuntimeException("unable to bridge cmis request, dispatcher offline"); //Adapter registered but not started
 			}
