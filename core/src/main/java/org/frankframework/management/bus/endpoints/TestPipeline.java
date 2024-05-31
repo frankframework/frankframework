@@ -105,7 +105,12 @@ public class TestPipeline extends BusEndpointBase {
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 
 			try {
-				PipeLineResult plr = adapter.processMessage(messageId, new org.frankframework.stream.Message(payload), pls);
+				org.frankframework.stream.Message message = org.frankframework.stream.Message.nullMessage();
+				if (!StringUtils.isEmpty(payload)){
+					message = new org.frankframework.stream.Message(payload);
+				}
+
+				PipeLineResult plr = adapter.processMessage(messageId, message, pls);
 
 				if(!expectsReply) {
 					return null; //Abort here, we do not need a reply.

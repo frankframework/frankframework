@@ -5,6 +5,10 @@ services:
         image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-wildfly
         build: WildFly
         ports:
+            - "8009:8009"
             - "8080:8080"
+            - "8443:8443"
+            - "9990:9990"
+            - "9993:9993"
         environment:
             larva.adapter.active: false
