@@ -208,11 +208,9 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	}
 
 	@Override
-	public void generateFlow(String xml, OutputStream outputStream, String name) throws FlowGenerationException {
+	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
 		try {
-			log.debug("Generating flow for the following XML: [{}]", xml);
 			String flow = generateMermaid(xml);
-			log.debug("Have the following Mermaid code to draw Configuration or Adapter [{}]: {}", name, flow);
 			outputStream.write(flow.getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
 			throw new FlowGenerationException(e);
