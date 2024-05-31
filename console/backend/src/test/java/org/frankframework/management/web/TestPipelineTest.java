@@ -47,6 +47,20 @@ public class TestPipelineTest extends FrankApiTestBase {
 	}
 
 	@Test
+	public void testPipeLineNullMessage() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_PIPELINE_ENDPOINT)
+						.file(createMockMultipartFile("message", null, "".getBytes()))
+						.part(getMultiPartParts())
+						.characterEncoding("UTF-8")
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(""));
+	}
+
+	@Test
 	public void testFileMessage() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)

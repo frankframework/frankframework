@@ -113,7 +113,9 @@ export class TestPipelineComponent implements OnInit {
     }
     if (this.form.encoding && this.form.encoding != '')
       fd.append('encoding', this.form.encoding);
-    if (this.form.message && this.form.message != '') {
+    if (this.file) {
+      fd.append('file', this.file, this.file.name);
+    } else {
       const encoding =
         this.form.encoding && this.form.encoding != ''
           ? `;charset=${this.form.encoding}`
@@ -124,7 +126,6 @@ export class TestPipelineComponent implements OnInit {
         'message',
       );
     }
-    if (this.file) fd.append('file', this.file, this.file.name);
 
     if (this.formSessionKeys.length > 1) {
       this.formSessionKeys.pop();
