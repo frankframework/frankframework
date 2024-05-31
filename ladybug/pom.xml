@@ -28,11 +28,6 @@
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>woodstox-core-asl</artifactId>
 				</exclusion>
-				<exclusion>
-					<!-- excluded because it uses an old cxf version that introduces javax.annotation -->
-					<groupId>org.apache.cxf</groupId>
-					<artifactId>cxf-rt-rs-client</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
