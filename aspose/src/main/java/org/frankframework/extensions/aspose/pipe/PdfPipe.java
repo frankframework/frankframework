@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -68,7 +67,6 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String conversionResultDocumentSessionKey = "documents";
 	private @Getter String conversionResultFilesSessionKey = "pdfConversionResultFiles";
 	private @Getter String charset = null;
-	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
 	private @Getter boolean loadExternalResources = false;
 
@@ -122,7 +120,7 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		}
 
-		fontManager = new AsposeFontManager(getFontsDirectory());
+		AsposeFontManager fontManager = new AsposeFontManager(getFontsDirectory());
 		try {
 			fontManager.load(isUnpackDefaultFonts());
 		} catch (IOException e) {
@@ -237,12 +235,6 @@ public class PdfPipe extends FixedForwardPipe {
 	 */
 	public void setConversionResultFilesSessionKey(String conversionResultFilesSessionKey) {
 		this.conversionResultFilesSessionKey = conversionResultFilesSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileNameToAttachSessionKey' is replaced with 'filenameToAttachSessionKey'")
-	public void setFileNameToAttachSessionKey(String filenameToAttachSessionKey) {
-		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
 	}
 
 	/**

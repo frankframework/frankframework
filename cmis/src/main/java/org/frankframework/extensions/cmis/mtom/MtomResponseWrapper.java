@@ -63,7 +63,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 	public ServletOutputStream getOutputStream() throws IOException {
 
 		contentType = ContentType.parse(getContentType());
-		if(log.isTraceEnabled()) log.trace("recieved response with ContentType ["+contentType+"]");
+		log.trace("recieved response with ContentType [{}]", contentType);
 
 		// Als mimeType == text/html dan geen multipart doen :)
 		if(!contentType.getMimeType().contains("multipart")) {
@@ -141,7 +141,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 				}
 
 				Header determinedContentType = entity.getContentType();
-				if(log.isTraceEnabled()) log.trace("writing response with ContentType ["+determinedContentType.getValue()+"]");
+				log.trace("writing response with ContentType [{}]", determinedContentType::getValue);
 
 				setContentType(determinedContentType.getValue());
 				entity.writeTo(out);

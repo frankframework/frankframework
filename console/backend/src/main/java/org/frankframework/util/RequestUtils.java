@@ -88,7 +88,7 @@ public abstract class RequestUtils {
 		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
 
-	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding) {
+	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding, boolean nullOnEmpty) {
 		if(message != null) {
 			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			String messageContentType = message.getContentType();
@@ -103,7 +103,10 @@ public abstract class RequestUtils {
 			try {
 				InputStream is = message.getInputStream();
 				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
-				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
+				if(nullOnEmpty) {
+					return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
+				}
+				return inputMessage;
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+encoding+"]");
 			} catch (IOException e) {

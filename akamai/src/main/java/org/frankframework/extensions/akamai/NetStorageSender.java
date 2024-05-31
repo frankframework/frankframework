@@ -69,6 +69,8 @@ public class NetStorageSender extends HttpSenderBase {
 	public static final String MTIME_PARAM_KEY = "mtime";
 	public static final String HASHVALUE_PARAM_KEY = "hashValue";
 
+	private static final String PATH_SEPARATOR = "/";
+
 	private @Getter Action action = null;
 	public enum Action {
 		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD;
@@ -144,7 +146,7 @@ public class NetStorageSender extends HttpSenderBase {
 	 */
 	@Override
 	protected URI getURI(String path) throws URISyntaxException {
-		if (!path.startsWith("/")) path = "/" + path;
+		if (!path.startsWith(PATH_SEPARATOR)) path = PATH_SEPARATOR + path;
 		String url = getUrl() + getCpCode();
 
 		if(getRootDir() != null)
@@ -152,7 +154,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 		url += path;
 
-		if(url.endsWith("/")) //The path should never end with a '/'
+		if(url.endsWith(PATH_SEPARATOR)) //The path should never end with a '/'
 			url = url.substring(0, url.length() -1);
 
 		return new URIBuilder(url).build();
@@ -187,7 +189,7 @@ public class NetStorageSender extends HttpSenderBase {
 		}
 
 		setMethodType(request.getMethodType()); //For logging purposes
-		if(log.isDebugEnabled()) log.debug("opening ["+request.getMethodType()+"] connection to ["+uri+"] with action ["+getAction()+"]");
+		log.debug("opening [{}] connection to [{}] with action [{}]", request::getMethodType, () -> uri, this::getAction);
 
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
 		request.sign(signer);
@@ -197,7 +199,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 	@Override
 	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
-		int statusCode = responseHandler.getStatusLine().getStatusCode();
+		final int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
@@ -228,9 +230,7 @@ public class NetStorageSender extends HttpSenderBase {
 			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
 
-			String responseString = getResponseBodyAsString(responseHandler, true);
-			responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
-			responseString = XmlUtils.skipXmlDeclaration(responseString);
+			final String responseString = getSanitizedResponseBodyAsString(responseHandler);
 
 			if (statusCode == HttpURLConnection.HTTP_OK) {
 				XmlBuilder message = new XmlBuilder("message");
@@ -258,12 +258,18 @@ public class NetStorageSender extends HttpSenderBase {
 				message.setValue(responseString);
 				result.addSubElement(message);
 
-				log.warn("Unexpected Response from Server: %d %s\n%s".formatted(
-						statusCode, responseString, responseHandler.getHeaderFields()));
+				log.warn("Unexpected Response from Server: {} {}\n{}", () -> statusCode, () -> responseString, responseHandler::getHeaderFields);
 			}
 		}
 
 		return Message.asMessage(result.toXML());
+	}
+
+	private String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+		String responseString = getResponseBodyAsString(responseHandler, true);
+		responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
+		responseString = XmlUtils.skipXmlDeclaration(responseString);
+		return responseString;
 	}
 
 	/**
@@ -272,7 +278,7 @@ public class NetStorageSender extends HttpSenderBase {
 	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		String charset = responseHandler.getCharset();
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+		log.debug("response body uses charset [{}]", charset);
 
 		Message response = responseHandler.getResponseMessage();
 

@@ -62,7 +62,7 @@ public class BridgedCmisService extends FilterCmisService {
 	public CmisBinding getCmisBinding() {
 		if(clientBinding == null) {
 			clientBinding = createCmisBinding();
-			log.info("initialized "+toString());
+			log.info("initialized {}", this);
 		}
 
 		return clientBinding;
@@ -81,18 +81,19 @@ public class BridgedCmisService extends FilterCmisService {
 
 			//Remove set from the method name
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter);
+			String propertyName = RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter;
+			String value = APP_CONSTANTS.getProperty(propertyName);
 			if(value == null)
 				continue;
 
 			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = ClassUtils.convertToType(method.getParameterTypes()[0], value);
-			log.debug("trying to set property ["+RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder+"]");
+			log.debug("trying to set property [{}] with value [{}] of type [{}] on [{}]", () -> propertyName, () -> value, () -> castValue.getClass().getCanonicalName(), sessionBuilder::toString);
 
 			try {
 				method.invoke(sessionBuilder, castValue);
 			} catch (Exception e) {
-				throw new CmisConnectionException("error while calling method ["+setter+"] on CmisSessionBuilder ["+sessionBuilder.toString()+"]", e);
+				throw new CmisConnectionException("error while calling method ["+setter+"] on CmisSessionBuilder ["+sessionBuilder+"]", e);
 			}
 		}
 
@@ -172,7 +173,7 @@ public class BridgedCmisService extends FilterCmisService {
 
 		if(CMIS_BRIDGE_CLOSE_CONNECTION) {
 			clientBinding = null;
-			log.info("closed "+toString());
+			log.info("closed {}", this);
 		}
 	}
 }

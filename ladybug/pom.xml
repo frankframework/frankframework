@@ -28,17 +28,12 @@
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>woodstox-core-asl</artifactId>
 				</exclusion>
-				<exclusion>
-					<!-- excluded because it uses an old cxf version that introduces javax.annotation -->
-					<groupId>org.apache.cxf</groupId>
-					<artifactId>cxf-rt-rs-client</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
-			<version>1.9.22</version>
+			<version>1.9.22.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
@@ -73,7 +68,7 @@
 		<dependency><!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
 			<groupId>jakarta.enterprise</groupId>
 			<artifactId>jakarta.enterprise.cdi-api</artifactId>
-			<version>4.0.1</version>
+			<version>4.1.0</version>
 			<scope>provided</scope>
 		</dependency>
 
