@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
-import { AppConstants, AppService } from '../app.service';
-import { DebugService } from './debug.service';
-import { Subscription } from 'rxjs';
-import { Injectable } from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {AppConstants, AppService} from '../app.service';
+import {DebugService} from './debug.service';
+import {Subscription} from 'rxjs';
+import {Injectable} from '@angular/core';
 
 type PollerState = 'RUNNING' | 'WAITING' | 'STOPPED';
 
@@ -147,6 +147,8 @@ export class Poller<T> {
       this.intervalTime,
     );
     this.state = 'WAITING';
+
+    this.run();
   }
 
   stop(): void {

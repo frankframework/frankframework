@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lombok.Setter;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -29,19 +30,9 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.IAdapter;
-import org.frankframework.core.SharedResource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
-
-import lombok.Setter;
-
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IbisException;
-
+import org.frankframework.core.SharedResource;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.scheduler.job.IbisActionJob;
 import org.frankframework.scheduler.job.Job;
@@ -49,6 +40,12 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringResolver;
+import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
 
 /**
  * @author Niels Meijer
@@ -92,12 +89,12 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 	/**
 	 * Add a warning message to the current configuration, unless the suppression key is
-	 * supporessed in the configuration.
+	 * suppressed in the configuration.
 	 *
 	 * @param msg Message to add
 	 * @param suppressionKey {@link SuppressKeys} to check.
 	 */
-	protected final void addSuppressableWarning(String msg, SuppressKeys suppressionKey) {
+	protected final void addSuppressibleWarning(String msg, SuppressKeys suppressionKey) {
 		configurationWarnings.add(getBean(), log, getLocationString() + msg, suppressionKey, currentAdapter);
 	}
 

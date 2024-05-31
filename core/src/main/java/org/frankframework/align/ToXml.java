@@ -67,7 +67,7 @@ import org.frankframework.xml.XmlWriter;
  */
 public abstract class ToXml<C,N> extends XmlAligner {
 
-	public final String XSI_PREFIX_MAPPING="xsi";
+	public static final String XSI_PREFIX_MAPPING="xsi";
 
 	public static final String MSG_EXPECTED_ELEMENT="expected element";
 	public static final String MSG_INVALID_CONTENT="Invalid content";
@@ -80,7 +80,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	private @Getter @Setter boolean deepSearch=false;
 	private @Getter @Setter boolean failOnWildcards=false;
 
-	private final String prefixPrefix = "ns";
+	private static final String NAMESPACE_PREFIX = "ns";
 	private int prefixPrefixCounter=1;
 	private final Map<String, String> prefixMap = new HashMap<>();
 
@@ -610,7 +610,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	public String getNamespacePrefix(String uri) throws SAXException {
 		String prefix=prefixMap.get(uri);
 		if (prefix==null) {
-			prefix=prefixPrefix+prefixPrefixCounter++;
+			prefix = NAMESPACE_PREFIX + prefixPrefixCounter++;
 			prefixMap.put(uri, prefix);
 			validatorHandler.startPrefixMapping(prefix, uri);
 		}

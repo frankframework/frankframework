@@ -129,7 +129,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter String defaultValue = null;
 	private @Getter String defaultValueMethods = "defaultValue";
 	private @Getter String value = null;
-	private @Getter String formatString = null;
 	private @Getter int minLength = -1;
 	private @Getter int maxLength = -1;
 	private @Getter boolean hidden = false;
@@ -160,7 +159,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -197,24 +196,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			LOG.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
-		if(StringUtils.isEmpty(getFormatString())) {
-			switch(getType()) {
-				case DATE:
-					setFormatString(TYPE_DATE_PATTERN);
-					break;
-				case DATETIME:
-					setFormatString(TYPE_DATETIME_PATTERN);
-					break;
-				case TIMESTAMP:
-					setFormatString(TYPE_TIMESTAMP_PATTERN);
-					break;
-				case TIME:
-					setFormatString(TYPE_TIME_PATTERN);
-					break;
-				default:
-					break;
-			}
-		}
 
 		configured = true;
 
@@ -239,12 +220,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return (Document) transformResult.getNode();
 	}
 
-	public boolean isWildcardSessionKey() {
-		return "*".equals(getSessionKey());
-	}
 	/**
 	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
 	 */
+	@Override
 	public boolean requiresInputValueForResolution() {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
@@ -255,14 +234,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				);
 	}
 
-	public boolean requiresInputValueOrContextForResolution() {
-		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
-			return true;
-		}
-		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
-					|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
-	}
-
+	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
 		return StringUtils.isEmpty(getContextKey()) && (
 					sessionKey.equals(getSessionKey())
@@ -274,6 +246,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	/**
 	 * determines the raw value
 	 */
+	@Override
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		LOG.debug("Calculating value for Parameter [{}]", this::getName);
@@ -538,32 +511,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
 				}
 				break;
-			case DATE:
-			case DATETIME:
-			case TIMESTAMP:
-			case TIME: {
-				if (request instanceof Date) {
-					return request;
-				}
-				Message finalRequestMessage = requestMessage;
-				LOG.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> finalRequestMessage, this::getFormatString);
-				DateFormat df = new SimpleDateFormat(getFormatString());
-				try {
-					result = df.parseObject(requestMessage.asString());
-				} catch (ParseException e) {
-					throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
-				}
-				break;
-			}
-			case XMLDATETIME: {
-				if (request instanceof Date) {
-					return request;
-				}
-				Message finalRequestMessage = requestMessage;
-				LOG.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> finalRequestMessage);
-				result = XmlUtils.parseXmlDateTime(requestMessage.asString());
-				break;
-			}
 			default:
 				break;
 		}
@@ -647,8 +594,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		if (substitutionValue == null) {
 			Object substitutionValueMessage = session.get(name);
 			if (substitutionValueMessage != null) {
-				if (substitutionValueMessage instanceof Date) {
-					substitutionValue = preFormatDateType(substitutionValueMessage, formatType, formatString);
+				if (substitutionValueMessage instanceof Date substitutionValueDate) {
+					substitutionValue = preFormatDateType(substitutionValueDate, formatType, formatString);
 				} else {
 					if (substitutionValueMessage instanceof String) {
 						substitutionValue = substitutionValueMessage;
@@ -748,6 +695,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
+	@Override
 	public void setValue(String value) {
 		this.value = value;
 	}
@@ -759,6 +707,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 * parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the
 	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
 	 */
+	@Override
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
@@ -868,14 +817,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	/** If set <code>true</code> pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string */
 	public void setIgnoreUnresolvablePatternElements(boolean b) {
 		ignoreUnresolvablePatternElements = b;
-	}
-
-	/**
-	 * Used in combination with types <code>DATE</code>, <code>TIME</code>, <code>DATETIME</code> and <code>TIMESTAMP</code> to parse the raw parameter string data into an object of the respective type
-	 * @ff.default depends on type
-	 */
-	public void setFormatString(String string) {
-		formatString = string;
 	}
 
 	/**

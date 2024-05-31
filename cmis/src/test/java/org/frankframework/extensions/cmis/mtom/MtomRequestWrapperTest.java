@@ -7,11 +7,11 @@ import java.net.URL;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 public class MtomRequestWrapperTest {
 	private static final String BASEPATH = "/proxy/";
@@ -53,7 +53,7 @@ public class MtomRequestWrapperTest {
 		String result = StreamUtil.streamToString(wrapper.getInputStream());
 
 		String boundary = getBoundary(contentType);
-		assertNotNull("no boundary found", boundary);
+		assertNotNull(boundary, "no boundary found");
 		result = result.replace(boundary, "IGNORE"); //Replace the multipart boundary with IGNORE
 
 		TestAssertions.assertEqualsIgnoreCRLF(getOutputFile(testFileName), result);

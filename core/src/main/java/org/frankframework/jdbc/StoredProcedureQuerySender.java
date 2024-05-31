@@ -37,7 +37,8 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.AbstractParameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Base64Pipe;
@@ -67,7 +68,7 @@ import jakarta.jms.JMSException;
  * </p>
  * <p>
  *     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
- *     have a corresponding {@link Parameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
+ *     have a corresponding {@link IParameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
  *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
  * <p>
@@ -153,7 +154,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * All stored procedure OUT parameters indexed by their position
 	 * in the query parameter list (1-based).
 	 */
-	private Map<Integer, Parameter> outputParameters;
+	private Map<Integer, IParameter> outputParameters;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -197,7 +198,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * @param query The query that is configured
 	 * @return Output-parameters indexed by position in the query parameter-list.
 	 */
-	private Map<Integer, Parameter> buildOutputParameterMap(ParameterList parameterList, String query) {
+	private Map<Integer, IParameter> buildOutputParameterMap(ParameterList parameterList, String query) {
 		if (parameterList == null) {
 			return Collections.emptyMap();
 		}
@@ -212,12 +213,12 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			queryParameterMap.put(queryParameterNames.get(i), i+1);
 		}
 
-		Map<Integer, Parameter> result = new HashMap<>();
+		Map<Integer, IParameter> result = new HashMap<>();
 		int pos = 0;
-		for (Parameter param : parameterList) {
+		for (IParameter param : parameterList) {
 			++pos;
 
-			if (param.getMode() == Parameter.ParameterMode.INPUT) {
+			if (param.getMode() == AbstractParameter.ParameterMode.INPUT) {
 				continue;
 			}
 
@@ -231,9 +232,9 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
 		ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-		for (Map.Entry<Integer, Parameter> entry : outputParameters.entrySet()) {
+		for (Map.Entry<Integer, IParameter> entry : outputParameters.entrySet()) {
 			final int position = entry.getKey();
-			final Parameter param = entry.getValue();
+			final IParameter param = entry.getValue();
 			final int typeNr;
 			// Parameter metadata are more accurate than our parameter type mapping and
 			// for some databases, this can cause exceptions.

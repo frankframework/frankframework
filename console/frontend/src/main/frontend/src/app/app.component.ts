@@ -6,8 +6,8 @@ import {
   OnInit,
   Renderer2,
 } from '@angular/core';
-import { Idle } from '@ng-idle/core';
-import { filter, first, Observable, Subscription } from 'rxjs';
+import {Idle} from '@ng-idle/core';
+import {filter, first, Subscription} from 'rxjs';
 import {
   Adapter,
   AdapterMessage,
@@ -28,22 +28,26 @@ import {
   ParamMap,
   Router,
 } from '@angular/router';
-import { formatDate, ViewportScroller } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import {formatDate} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
-import { NotificationService } from './services/notification.service';
-import { MiscService } from './services/misc.service';
-import { DebugService } from './services/debug.service';
-import { PollerService } from './services/poller.service';
-import { AuthService } from './services/auth.service';
-import { SessionService } from './services/session.service';
-import { SweetalertService } from './services/sweetalert.service';
-import { Title } from '@angular/platform-browser';
-import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
-import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
-import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
-import { ToastService } from './services/toast.service';
+import {NotificationService} from './services/notification.service';
+import {MiscService} from './services/misc.service';
+import {DebugService} from './services/debug.service';
+import {PollerService} from './services/poller.service';
+import {AuthService} from './services/auth.service';
+import {SessionService} from './services/session.service';
+import {SweetalertService} from './services/sweetalert.service';
+import {Title} from '@angular/platform-browser';
+import {NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-bootstrap';
+import {
+  InformationModalComponent
+} from './components/pages/information-modal/information-modal.component';
+import {
+  FeedbackModalComponent
+} from './components/pages/feedback-modal/feedback-modal.component';
+import {ToastService} from './services/toast.service';
 
 @Component({
   selector: 'app-root',
@@ -67,7 +71,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private appConstants: AppConstants;
   private consoleState: ConsoleState;
-  private urlHash$!: Observable<string | null>;
   private _subscriptions = new Subscription();
   private serializedRawAdapterData: Record<string, string> = {};
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
@@ -80,7 +83,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private renderer: Renderer2,
     private title: Title,
-    private viewportScroller: ViewportScroller,
     private authService: AuthService,
     private pollerService: PollerService,
     private notificationService: NotificationService,
@@ -103,7 +105,6 @@ export class AppComponent implements OnInit, OnDestroy {
       ajax: false,
     });
 
-    this.urlHash$ = this.route.fragment;
     this.router.events
       .pipe(
         filter(

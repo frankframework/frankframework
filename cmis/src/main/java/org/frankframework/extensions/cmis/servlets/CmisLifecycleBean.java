@@ -18,7 +18,6 @@ package org.frankframework.extensions.cmis.servlets;
 import java.util.HashMap;
 
 import jakarta.servlet.ServletContext;
-
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.logging.log4j.Logger;
@@ -63,10 +62,10 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 			String key = CmisRepositoryContextListener.SERVICES_FACTORY;
 			servletContext.setAttribute(key, factory);
 
-			if(log.isDebugEnabled()) log.debug("created and stored CmisServiceFactory in ServletContext under key ["+key+"]");
+			log.debug("created and stored CmisServiceFactory in ServletContext under key [{}]", key);
 		}
 		else {
-			log.error("failed to initialize ["+this.getClass().getSimpleName()+"]");
+			log.error("failed to initialize CMIS RepositoryConnector [{}]", () -> RepositoryConnectorFactory.class.getSimpleName());
 		}
 	}
 
@@ -78,8 +77,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 		try {
 			return ClassUtils.newInstance(RepositoryConnectorFactory.class);
 		} catch (Exception e) {
-			log.warn("Could not create a services factory instance", e);
-			return null;
+			throw new IllegalStateException("could not create a CMIS RepositoryConnector", e);
 		}
 	}
 }

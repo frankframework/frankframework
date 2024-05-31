@@ -17,10 +17,9 @@ package org.frankframework.configuration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.IConfigurationAware;
+import org.springframework.context.ApplicationContext;
 
 public class ConfigurationWarnings extends ApplicationWarningsBase {
 
@@ -44,14 +43,14 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	}
 
 	/**
-	 * Add a (globally-)suppressable ConfigurationWarning with INamedObject prefix
+	 * Add a (globally-)suppressible ConfigurationWarning with INamedObject prefix
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey) {
 		add(source, log, message, suppressionKey, null);
 	}
 
 	/**
-	 * Add a suppressable ConfigurationWarning with INamedObject prefix
+	 * Add a suppressible ConfigurationWarning with INamedObject prefix
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.

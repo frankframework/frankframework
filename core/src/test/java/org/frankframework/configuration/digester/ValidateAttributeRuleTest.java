@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,6 +20,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -28,15 +36,8 @@ import org.frankframework.doc.Protected;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class ValidateAttributeRuleTest extends Mockito {
 	private TestConfiguration configuration;
@@ -44,8 +45,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 	//Convenience method to create an Attribute list to be parsed
 	private Attributes copyMapToAttrs(Map<String, String> map) {
 		List<String[]> attList = new LinkedList<>();
-		for(String key : map.keySet()) {
-			attList.add(new String[] {key , map.get(key)});
+		for (String key : map.keySet()) {
+			attList.add(new String[]{key, map.get(key)});
 		}
 
 		Attributes attrs = spy(Attributes.class);
@@ -82,10 +83,10 @@ public class ValidateAttributeRuleTest extends Mockito {
 		rule.begin(null, beanClass.getSimpleName(), copyMapToAttrs(attributes));
 
 		//Test the bean name with and without INamedObject interface
-		if(topBean instanceof ConfigWarningTestClass) {
+		if (topBean instanceof ConfigWarningTestClass) {
 			assertEquals("ConfigWarningTestClass [name here]", rule.getObjectName());
 		}
-		if(topBean instanceof DeprecatedTestClass) {
+		if (topBean instanceof DeprecatedTestClass) {
 			assertEquals("DeprecatedTestClass", rule.getObjectName());
 		}
 
@@ -110,7 +111,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("deprecatedValue", bean.getDeprecatedString());
 		assertEquals(3, bean.getTestInteger());
 		assertEquals(3L, bean.getTestLong());
-		assertEquals(true, bean.isTestBoolean());
+		assertTrue(bean.isTestBoolean());
 		assertEquals(TestEnum.TWO, bean.getTestEnum());
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
@@ -138,15 +139,15 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
 
 		assertEquals("", bean.getTestString(), "empty string value should be empty string");
-		assertEquals(1234, bean.getTestInteger(), "empty int value should be ingored"); //may trigger cannot be converted to int exception
-		assertEquals(false, bean.isTestBoolean(), "empty bool value should be ingored"); //may trigger a default warning exception
+		assertEquals(1234, bean.getTestInteger(), "empty int value should be ignored"); //may trigger cannot be converted to int exception
+		assertFalse(bean.isTestBoolean(), "empty bool value should be ignored"); //may trigger a default warning exception
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: "+configWarnings.getWarnings());
+		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: " + configWarnings.getWarnings());
 	}
 
 	@Test
-	public void testAttributeThatDoesntExist() throws Exception {
+	public void testAttributeThatDoesNotExist() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("do-not-exist", "string value here");
 
@@ -167,6 +168,31 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [configWarningString]: my test warning", configWarnings.get(0));
+	}
+
+	@Test
+	void testEnumAttributeWithConfigWarningAndDefaultValueWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("queryType", "INSERT");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(2, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [queryType.INSERT] is deprecated: Use queryType 'OTHER' instead", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [queryType] already has a default value [INSERT]", configWarnings.get(1));
+	}
+
+	@Test
+	void testEnumAttributeWithConfigWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("queryType", "SELECT");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [queryType.SELECT]: Select might be slow", configWarnings.get(0));
 	}
 
 	@Test
@@ -463,8 +489,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		}
 	}
 
-	public static class ClassWithEnum implements INamedObject, InterfaceWithDefaultMethod {
-
+	public static class ClassWithEnum extends ClassWithEnumBase implements INamedObject, InterfaceWithDefaultMethod {
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
 		private @Getter @Setter String testString = "test";
@@ -496,6 +521,19 @@ public class ValidateAttributeRuleTest extends Mockito {
 		@Protected
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
+		}
+	}
+
+	public static abstract class ClassWithEnumBase {
+		private @Setter @Getter QueryType queryType = QueryType.INSERT;
+
+		public enum QueryType {
+			OTHER,
+			/** Deprecated: Use OTHER instead */
+			@ConfigurationWarning("Use queryType 'OTHER' instead")
+			@Deprecated(since = "8.1") INSERT,
+			@ConfigurationWarning("Select might be slow")
+			SELECT
 		}
 	}
 

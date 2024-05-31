@@ -1,20 +1,22 @@
-import { Component, DebugElement } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { QuickSubmitFormDirective } from './quick-submit-form.directive';
-import { By } from '@angular/platform-browser';
+import {Component, DebugElement} from '@angular/core';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {QuickSubmitFormDirective} from './quick-submit-form.directive';
+import {By} from '@angular/platform-browser';
 
 @Component({
   // standalone: true,
-  template: `<textarea
-    appQuickSubmitForm
-    (quickSubmit)="changeTrigger()"
-  ></textarea>`,
+  template: `<form>
+    <textarea appQuickSubmitForm></textarea>
+    <button type="submit" (click)="changeTrigger($event)">Submit</button>
+  </form>`,
   imports: [QuickSubmitFormDirective],
 })
 class TestComponent {
   triggered = false;
-  changeTrigger(): void {
+  changeTrigger(event: Event): void {
+    event.preventDefault();
     this.triggered = true;
+    event.stopPropagation();
   }
 }
 

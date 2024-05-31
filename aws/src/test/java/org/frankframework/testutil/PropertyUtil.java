@@ -5,14 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.LogUtil;
 
+@Log4j2
 public class PropertyUtil {
-	protected static Logger log = LogUtil.getLogger(PropertyUtil.class);
 
 	public static Map<String,Properties> propertiesMap = new HashMap<>();
 
@@ -23,7 +21,7 @@ public class PropertyUtil {
 			try {
 				properties.load(ClassLoaderUtils.getResourceURL(propertyFile).openStream());
 			} catch (IOException e) {
-				log.warn("Could not load property file ["+propertyFile+"]",e);
+				log.warn("Could not load property file [{}]", propertyFile, e);
 			}
 			propertiesMap.put(propertyFile, properties);
 		}

@@ -20,12 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ListenerException;
@@ -123,7 +122,6 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		} else {
 			String query = "DELETE FROM "+getTableName()+" WHERE "+getKeyField()+" = ?";
 			setUpdateStatusQuery(ProcessState.DONE, query);
-			setUpdateStatusQuery(ProcessState.ERROR, query);
 		}
 	}
 

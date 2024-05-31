@@ -78,11 +78,10 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 
 	private String prefixLogMessage(Object source, String message) {
 		String msg = "";
-		if(source != null) {
-			msg = ClassUtils.nameOf(source)+" ";
+		if (source != null) {
+			msg = ClassUtils.nameOf(source) + " ";
 		}
-
-		return msg += message;
+		return msg + message;
 	}
 
 	/**

@@ -22,20 +22,19 @@ import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.MediaType;
-
 import org.frankframework.collection.CollectionException;
 import org.frankframework.collection.CollectorPipeBase.Action;
 import org.frankframework.collection.ICollector;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.FileUtils;
+import org.springframework.http.MediaType;
 
 public class ZipWriter implements ICollector<MessageZipEntry> {
 
@@ -55,8 +54,8 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 				if(parameterList == null) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
 				}
-				Parameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
-				Parameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
+				IParameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
+				IParameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
 				if (filenameParameter==null && contentsParameter==null) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
 				}

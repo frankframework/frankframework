@@ -84,7 +84,7 @@ public abstract class ClassUtils {
 		} catch (NoSuchMethodException e) {
 			StringBuilder builder = new StringBuilder("cannot create constructor for Class [" + clas.getName() + "]");
 			for (int i = 0; i < parameterTypes.length; i++) {
-				builder.append(", parameter ["+i+"] type [" + parameterTypes[i].getName()+"]");
+				builder.append(", parameter [").append(i).append("] type [").append(parameterTypes[i].getName()).append("]");
 			}
 			log.error(builder.toString(), e);
 			throw e;
@@ -289,7 +289,7 @@ public abstract class ClassUtils {
 	 * Attempt to parse the attributes value as an Enum.
 	 * @param enumClass The Enum class used to parse the value
 	 * @param value The value to be parsed
-	 * @return The Enum constant or <code>NULL</code>
+	 * @return The Enum constant or <code>null</code>
 	 */
 	@SuppressWarnings("unchecked")
 	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) throws IllegalArgumentException {
@@ -377,11 +377,11 @@ public abstract class ClassUtils {
 				} catch (Exception e) {
 					value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
 				}
-				result.append("  field["+i+"] "+f.getName()+"("+f.getType().getName()+"): ["+value+"]\n");
+				result.append("  field[").append(i).append("] ").append(f.getName()).append("(").append(f.getType().getName()).append("): [").append(value).append("]\n");
 			}
 			for (int i=0; i<methods.length; i++) {
 				Method m=methods[i];
-				result.append("  method["+i+"] "+m.getName());
+				result.append("  method[").append(i).append("] ").append(m.getName());
 				result.append("\n");
 			}
 			result.append("}");
@@ -404,7 +404,7 @@ public abstract class ClassUtils {
 			appendFieldsAndMethods(result,o,"Class",c);
 			c=c.getSuperclass();
 		}
-		result.append("toString=["+o.toString()+"]\n");
+		result.append("toString=[").append(o.toString()).append("]\n");
 		return result.toString();
 	}
 

@@ -18,28 +18,25 @@ package org.frankframework.jms;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import jakarta.jms.Connection;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import org.frankframework.aws.AwsBase;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.amazon.sqs.javamessaging.AmazonSQSMessagingClientWrapper;
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnection;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
 import lombok.Getter;
 import lombok.Setter;
-
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.aws.AwsBase;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
@@ -82,10 +79,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 		ProviderConfiguration providerConfiguration = new ProviderConfiguration();
 
 		SqsClient client = createSqsClient();
-
-		SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, client);
-
-		return connectionFactory;
+		return new SQSConnectionFactory(providerConfiguration, client);
 	}
 
 	// A dirty workaround to create queues, should use JmsMessagingSource#createDestination

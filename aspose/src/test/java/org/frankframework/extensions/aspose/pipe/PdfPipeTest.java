@@ -32,13 +32,20 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
-import jakarta.annotation.Nonnull;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.testautomationguru.utility.CompareMode;
+import com.testautomationguru.utility.ImageUtil;
+import com.testautomationguru.utility.PDFUtil;
+
+import jakarta.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -56,14 +63,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.springframework.util.MimeType;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.testautomationguru.utility.CompareMode;
-import com.testautomationguru.utility.ImageUtil;
-import com.testautomationguru.utility.PDFUtil;
-
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.
  *
@@ -74,8 +73,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*?(?=\")";
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
-
-	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("Europe/Amsterdam");
 
 	private Path pdfOutputLocation;
 
@@ -135,7 +132,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			assertNotNull(expectedFileUrl, "cannot find expected file ["+expectedFile+"]");
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+			log.debug("converted relative path [{}] to absolute file [{}]", expectedFile, expectedFilePath);
 
 			PDFUtil pdfUtil = createPdfUtil(CompareMode.VISUAL_MODE);
 			double compare = pdfUtil.compare(convertedFilePath, expectedFilePath);
@@ -291,7 +288,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
-//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
@@ -508,7 +504,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
-//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
@@ -518,7 +513,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithAttachmentSaveSeparateFiles() throws Exception {
-//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		pipe.setSaveSeparate(true);
 
 		expectSuccessfulConversion("mailWithAttachmentSaveSeparateFiles", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachmentSaveSeparate.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
@@ -532,7 +526,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithAttachmentDifferentSessionKeyNames() throws Exception {
-//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		pipe.setSaveSeparate(true);
 		pipe.setConversionResultDocumentSessionKey("output");
 		pipe.setConversionResultFilesSessionKey("pdf");

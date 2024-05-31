@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { AppService } from 'src/app/app.service';
-import { BaseIframeComponent } from '../iframe.base';
+import {Component, OnInit} from '@angular/core';
+import {DomSanitizer} from '@angular/platform-browser';
+import {AppService} from 'src/app/app.service';
+import {BaseIframeComponent} from '../iframe.base';
 
 @Component({
   selector: 'app-iframe-ladybug',
@@ -17,6 +17,6 @@ export class IframeLadybugComponent
   }
 
   ngOnInit(): void {
-    this.setIframeSource('testtool');
+    this.setIframeSource('ladybug');
   }
 }

@@ -26,14 +26,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class NumberParameter extends Parameter { //Extends Parameter should be changed to AbstractParameter once we use IParameter everywhere.
+public class NumberParameter extends AbstractParameter {
 
 	private @Getter String decimalSeparator = null;
 	private @Getter String groupingSeparator = null;
@@ -139,12 +138,6 @@ public class NumberParameter extends Parameter { //Extends Parameter should be c
 			}
 		}
 		throw new ParameterException("unexpected type");
-	}
-
-	@Protected //Method to be removed once we use IParameter everywhere.
-	@Override
-	public void setType(ParameterType type) {
-		super.setType(type);
 	}
 
 	/**

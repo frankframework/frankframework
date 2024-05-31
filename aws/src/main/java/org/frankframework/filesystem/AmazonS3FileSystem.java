@@ -53,7 +53,6 @@ import com.amazonaws.services.s3.model.StorageClass;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.aws.AwsUtil;
@@ -388,7 +387,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(0);
 		metadata.setContentType("binary/octet-stream");
-		InputStream emptyContent = NullInputStream.nullInputStream();
+		InputStream emptyContent = InputStream.nullInputStream();
 
 		PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName, emptyContent, metadata);
 		s3Client.putObject(putObjectRequest);

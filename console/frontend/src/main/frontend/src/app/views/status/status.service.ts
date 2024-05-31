@@ -1,8 +1,8 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { AppService } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
+import {HttpClient, HttpResponse} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {AppService} from 'src/app/app.service';
+import {MiscService} from 'src/app/services/misc.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,8 +15,7 @@ export class StatusService {
   ) {}
 
   getConfigurationFlowDiagramUrl(flowUrl: string): string {
-    const baseUrl = `${this.appService.getServerPath()}iaf/api/configurations/`;
-    return baseUrl + flowUrl;
+    return `${this.appService.getServerPath()}iaf/api/configurations${flowUrl}`;
   }
 
   getAdapterFlowDiagram(flowUrl: string): Observable<HttpResponse<string>> {

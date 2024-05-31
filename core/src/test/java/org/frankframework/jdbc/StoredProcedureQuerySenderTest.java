@@ -30,23 +30,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.parameters.NumberParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
-import lombok.extern.log4j.Log4j2;
 
 @WithLiquibase(tableName = StoredProcedureQuerySenderTest.TABLE_NAME, file = "Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml")
 @Log4j2
@@ -62,7 +64,7 @@ public class StoredProcedureQuerySenderTest {
 	private String dataSourceName;
 
 	@BeforeEach
-	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) {
 		dataSourceName = databaseTestEnvironment.getDataSourceName();
 
 		sender = databaseTestEnvironment.getConfiguration().createBean(StoredProcedureQuerySender.class);
@@ -73,7 +75,7 @@ public class StoredProcedureQuerySenderTest {
 	}
 
 	@AfterEach
-	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) {
 		if (session != null) {
 			session.close();
 		}
@@ -168,8 +170,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 		sender.setScalar(true);
 
-		Parameter p1 = new Parameter("id", String.valueOf(id));
-		p1.setType(ParameterType.NUMBER);
+		NumberParameter p1 = NumberParameterBuilder.create("id", id);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("data", null);
 		p2.setSessionKey("data");
@@ -202,8 +203,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 		sender.setScalar(true);
 
-		Parameter p1 = new Parameter("id", String.valueOf(id));
-		p1.setType(ParameterType.NUMBER);
+		NumberParameter p1 = NumberParameterBuilder.create("id", id);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("data", null);
 		p2.setSessionKey("data");
@@ -236,8 +236,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 		sender.setScalar(true);
 
-		Parameter p1 = new Parameter("id", String.valueOf(id));
-		p1.setType(ParameterType.NUMBER);
+		NumberParameter p1 = NumberParameterBuilder.create("id", id);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("data", null);
 		p2.setSessionKey("data");
@@ -548,19 +547,19 @@ public class StoredProcedureQuerySenderTest {
 		inParam.setMode(Parameter.ParameterMode.INOUT);
 		sender.addParameter(inParam);
 
-		Parameter outParam1 = new Parameter("r1", null);
+		NumberParameter outParam1 = NumberParameterBuilder.create("r1");
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(ParameterType.INTEGER);
 		sender.addParameter(outParam1);
 
-		Parameter outParam2 = new Parameter("r2", null);
+		NumberParameter outParam2 = NumberParameterBuilder.create("r2");
 		outParam2.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam2.setType(ParameterType.INTEGER);
 		sender.addParameter(outParam2);
 
-		Parameter outParam3 = new Parameter("r3", null);
+		NumberParameter outParam3 = NumberParameterBuilder.create("r3");
+		// Setting these makes it a type NUMBER (which translates to Number, Double, in the JDBC mappings, so we test that code-path)
+		outParam3.setDecimalSeparator(".");
+		outParam3.setGroupingSeparator(",");
 		outParam3.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam3.setType(ParameterType.NUMBER);
 		sender.addParameter(outParam3);
 
 		sender.configure();
@@ -664,10 +663,9 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
-		Parameter count = new Parameter();
+		NumberParameter count = new NumberParameter();
 		count.setName("count");
 		count.setMode(Parameter.ParameterMode.OUTPUT);
-		count.setType(ParameterType.INTEGER);
 		sender.addParameter(count);
 
 		sender.configure();
@@ -744,9 +742,8 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
-		Parameter countParam = new Parameter();
+		NumberParameter countParam = new NumberParameter();
 		countParam.setName("count");
-		countParam.setType(ParameterType.INTEGER);
 		countParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(countParam);
 		Parameter cursorParam = new Parameter();
@@ -783,9 +780,8 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
-		Parameter countParam = new Parameter();
+		NumberParameter countParam = new NumberParameter();
 		countParam.setName("count");
-		countParam.setType(ParameterType.INTEGER);
 		countParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(countParam);
 		Parameter cursorParam = new Parameter();
@@ -814,15 +810,13 @@ public class StoredProcedureQuerySenderTest {
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 		sender.setScalar(true);
 
-		Parameter resultParam = new Parameter("result", "0");
-		resultParam.setType(ParameterType.INTEGER);
+		// NB: All these parameters were originally INTEGER. Perhaps need new type IntegerParameter?
+		NumberParameter resultParam = NumberParameterBuilder.create("result", 0);
 		resultParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(resultParam);
-		Parameter p1 = new Parameter("one", "1");
-		p1.setType(ParameterType.INTEGER);
+		NumberParameter p1 = NumberParameterBuilder.create("one", 1);
 		sender.addParameter(p1);
-		Parameter p2 = new Parameter("two", "2");
-		p2.setType(ParameterType.INTEGER);
+		NumberParameter p2 = NumberParameterBuilder.create("two", 2);
 		sender.addParameter(p2);
 
 		sender.configure();

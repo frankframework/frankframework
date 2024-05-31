@@ -507,7 +507,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				if(isRecipientWhitelisted(recipient)) {
 					addRecipientToMessage(recipient);
 					if (log.isDebugEnabled()) {
-						logBuffer.append("[recipient [" + recipient + "]]");
+						logBuffer.append("[recipient [").append(recipient).append("]]");
 					}
 				} else {
 					log.warn("Recipient [" + recipient + "] ignored, not in domain whitelist [" + getDomainWhitelist() + "]");

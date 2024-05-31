@@ -25,10 +25,10 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-larva</artifactId>
 		</dependency>
-		<!--<dependency>
+		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-ladybug</artifactId>
-		</dependency>-->
+		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-console-frontend</artifactId>

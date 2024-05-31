@@ -19,6 +19,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
@@ -28,9 +31,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.http.HttpResponseMock;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
@@ -85,7 +85,7 @@ public class CmisHttpInvokerTest {
 	}
 	private void assertResponse(String string, String result) throws IOException {
 		String expected = TestFileUtils.getTestFile(string);
-		assertNotNull("cannot find test file", expected);
+		assertNotNull(expected, "cannot find test file");
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}

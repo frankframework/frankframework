@@ -66,7 +66,7 @@ public class CollectorPipeTest extends PipeTestBase<CollectorPipeBase<TestCollec
 		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals("testWrite", collector.getInput());
 		assertNull(prr.getResult().asString());
-		assertEquals(true, collector.open);
+		assertTrue(collector.open);
 	}
 
 	@Test

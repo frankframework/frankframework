@@ -18,10 +18,10 @@
 
 		<jackson.version>2.17.1</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
-		<spring.version>6.1.7</spring.version>
+		<spring.version>6.1.8</spring.version>
 		<spring-security.version>6.3.0</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
-		<spring.boot.version>3.2.5</spring.boot.version>
+		<spring.boot.version>3.3.0</spring.boot.version>
 		<tomcat.version>10.1.24</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
@@ -132,12 +132,12 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.26.1</version>
+				<version>4.27.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.109.Final</version>
+				<version>4.1.110.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -152,7 +152,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.39.1</version>
+				<version>9.39.2</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -713,10 +713,7 @@
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<reuseForks>true</reuseForks>
-					<includes>
-						<include>**/*.java</include>
-					</includes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -984,7 +981,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.16.0</version>
+							<version>10.17.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -1136,7 +1133,7 @@
 											<exclude>com.sun.activation:jakarta.activation</exclude>
 											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>Don't though versions, we should use jakarta.activation-api:2.1.3</message>
+										<message>Don't touch versions, we should use jakarta.activation-api:2.1.3</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
@@ -1164,6 +1161,7 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
+											<!-- Once testcontainers finally starts using junit5 remove this comment.. <exclude>junit:junit</exclude>-->
 											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
@@ -1279,7 +1277,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
+						<version>1.7.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -1337,7 +1335,7 @@
 				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
-<!--				<module>ladybug</module>-->
+				<module>ladybug</module>
 				<module>dbms</module>
 				<module>bundle-minimal</module>
 

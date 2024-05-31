@@ -27,6 +27,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
@@ -53,6 +54,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
+
 		builder.bannerMode(Mode.OFF);
 		return super.configure(builder);
 	}
@@ -82,6 +84,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		Set<String> set = new HashSet<>();
 		set.add(getConfigFile(file));
 		application.setSources(set);
+		application.setWebApplicationType(WebApplicationType.NONE);
 		application.setDefaultProperties(properties);
 		return super.run(application);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,33 +17,25 @@ package org.frankframework.management.web;
 
 import java.util.Map;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/")
-public final class BrowseJdbcTable extends FrankApiBase {
+@RestController
+public class BrowseJdbcTable extends FrankApiBase {
 
-	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/jdbc/browse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a specific JDBC table")
-	public Response browseJdbcTable(Map<String, Object> json) {
+	public ResponseEntity<?> browseJdbcTable(Map<String, Object> json) {
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String tableName = RequestUtils.getValue(json, "table");
 		String where = RequestUtils.getValue(json, "where");
@@ -53,12 +45,12 @@ public final class BrowseJdbcTable extends FrankApiBase {
 		Integer minRow = RequestUtils.getIntegerValue(json, "minRow");
 		Integer maxRow = RequestUtils.getIntegerValue(json, "maxRow");
 
-		if(tableName == null) {
+		if (tableName == null) {
 			throw new ApiException("tableName not defined.", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
-		if(StringUtils.isNotEmpty(datasource)) {
+		if (StringUtils.isNotEmpty(datasource)) {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		builder.addHeader("table", tableName);
@@ -69,4 +61,5 @@ public final class BrowseJdbcTable extends FrankApiBase {
 		builder.addHeader("maxRow", maxRow);
 		return callSyncGateway(builder);
 	}
+
 }

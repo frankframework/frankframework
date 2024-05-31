@@ -27,7 +27,6 @@ import java.util.Vector;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -35,11 +34,11 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
-
 import org.frankframework.util.StreamUtil;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.SmartClassLoader;
-import org.springframework.lang.Nullable;
+
+import jakarta.annotation.Nullable;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.

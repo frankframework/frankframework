@@ -2,6 +2,7 @@ package org.frankframework.dbms;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -93,21 +94,21 @@ public class SqlTranslatorOracleToH2Test {
 	public void testSetDefineOff() throws JdbcException {
 		String query = "Set define off;";
 		String result = convertQuery(query);
-		assertEquals(null, result, query);
+		assertNull(result, query);
 	}
 
 	@Test
 	public void testIgnoreCreateOrReplaceTrigger() throws JdbcException {
 		String query = "create or replace TRIGGER TRIGGER1 AFTER DELETE ON FIELD1 FOR EACH ROW DECLARE BEGIN DELETE FROM TABEL2 WHERE FIELD3 = FIELD1; END;";
 		String result = convertQuery(query);
-		assertEquals(null, result, query);
+		assertNull(result, query);
 	}
 
 	@Test
 	public void testIgnoreAlterTrigger() throws JdbcException {
 		String query = "ALTER TRIGGER TRIGGER1 ENABLE;";
 		String result = convertQuery(query);
-		assertEquals(null, result, query);
+		assertNull(result, query);
 	}
 
 	@Disabled("too hard for SqlTranslator to create identity column")
@@ -115,14 +116,14 @@ public class SqlTranslatorOracleToH2Test {
 	public void testIgnoreAlterTableIbisStore() throws JdbcException {
 		String query = "ALTER TABLE IBISSTORE ADD (CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY));";
 		String result = convertQuery(query);
-		assertEquals(null, result, query);
+		assertNull(result, query);
 	}
 
 	@Test
 	public void testExit() throws JdbcException {
 		String query = "exit;";
 		String result = convertQuery(query);
-		assertEquals(null, result, query);
+		assertNull(result, query);
 	}
 
 	@Test
