@@ -1,0 +1,27 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+	xmlns:flow="urn:frank-flow"
+	flow:gridSize="50"
+>
+	<Adapter name="Update temperature">
+		<Receiver name="Update temperature" flow:y="100" flow:x="100">
+			<JavaListener name="Update temperature" />
+		</Receiver>
+		<Receiver name="ApiListenerReceiver" flow:y="250" flow:x="100">
+			<ApiListener name="ApiListener" uriPattern="temp" />
+		</Receiver>
+		<Pipeline>
+			<SenderPipe
+				name="Get temperature from OpenWeather"
+				flow:y="100"
+				flow:x="450"
+			>
+				<HttpSender>
+					<Param name="url"
+						value="http://api.openweathermap.org/data/2.5/weather?q=Amsterdam&amp;units=metric&amp;mode=xml&amp;appid=fd7031d5e258629ce81b0cffff3678c5" />
+				</HttpSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</Configuration>
