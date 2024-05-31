@@ -61,6 +61,11 @@ public class RegisterServletEndpoints {
 		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.ETAG_FILTER);
 	}
 
+	@Bean
+	public FilterRegistrationBean<Filter> createCsrfCookieFilter(ApplicationContext ac) {
+		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CSRF_COOKIE_FILTER);
+	}
+
 	private FilterRegistrationBean<Filter> createFilter(ApplicationContext ac, DynamicFilterConfigurer.DynamicFilters df) {
 		Class<? extends Filter> filter = df.getFilterClass();
 		Filter filterInstance = SpringUtils.createBean(ac, filter);

@@ -39,12 +39,13 @@ import org.springframework.security.authorization.AuthenticatedAuthorizationMana
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer;
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -165,7 +166,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
-			http.csrf(CsrfConfigurer::disable); //Disable because the front-end doesn't support CSFR tokens (yet!)
+			http.csrf((csrf) -> csrf
+					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+					.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+			);
 			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
 			http.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
