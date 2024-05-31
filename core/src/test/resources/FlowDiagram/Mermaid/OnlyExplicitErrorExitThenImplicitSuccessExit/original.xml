@@ -11,8 +11,6 @@
 		<pipe name="Get temperature from OpenWeather"
 			className="org.frankframework.pipes.SenderPipe">
 			<sender className="org.frankframework.http.HttpSender">
-				<param name="url"
-					value="http://api.openweathermap.org/data/2.5/weather?q=Amsterdam&amp;units=metric&amp;mode=xml&amp;appid=fd7031d5e258629ce81b0cffff3678c5" />
 			</sender>
 			<forward name="error" path="error" />
 		</pipe>
