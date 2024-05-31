@@ -36,19 +36,17 @@ public class ParameterFactory extends GenericFactory {
 		if(StringUtils.isEmpty(className) || className.equals(Parameter.class.getCanonicalName())) { //Default empty, filled when using new pre-parsing
 			String type = attrs.get("type");
 
-			if(StringUtils.isNotEmpty(type)) {
-				className = determineClassNameFromCategory(type);
-				log.debug("overwriting default parameter class with [{}] and remove type attribute", className);
-				attrs.remove("type");
-			} else {
-				className = Parameter.class.getCanonicalName();
-			}
+			className = determineClassNameFromCategory(type);
 			attrs.put("className", className);
 		}
 		return super.createObject(attrs);
 	}
 
 	private String determineClassNameFromCategory(String typeName) {
+		if(StringUtils.isEmpty(typeName)) { //StringParameter
+			return Parameter.class.getCanonicalName();
+		}
+
 		ParameterType type = EnumUtils.parse(ParameterType.class, typeName);
 		Class<?> clazz = type.getTypeClass();
 

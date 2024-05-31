@@ -167,8 +167,8 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			map.remove("function");
 		}
 
-		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
-		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
+		//Since we are directly instantiating the correct param (by className), types are no longer required by the digester's attribute handler.
+		//They are however still required for the ParameterFactory to determine the correct type class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IParameter && !(top instanceof Parameter)) {
 			map.remove("type");
 		}
