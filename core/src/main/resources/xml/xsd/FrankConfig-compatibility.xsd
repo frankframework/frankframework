@@ -272,7 +272,7 @@
   <xs:complexType name="ParamType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+        <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="type">
@@ -288,11 +288,7 @@
         <xs:documentation>Name of the parameter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="value" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="value" />
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>Key of a PipelineSession-variable. &lt;br/&gt;If specified, the value of the PipelineSession variable is used as input for
@@ -302,16 +298,8 @@
  value '*' then all existing sessionkeys are added as parameter (except tsReceived)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="contextKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>key of message context variable to use as source, instead of the message found from input message or sessionKey itself</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sessionKeyXPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Instead of a fixed &lt;code&gt;sessionKey&lt;/code&gt; it's also possible to use a XPath expression applied to the input message to extract the name of the session-variable.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="contextKey" />
+    <xs:attribute ref="sessionKeyXPath" />
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</xs:documentation>
@@ -338,44 +326,9 @@
         <xs:documentation>When set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="defaultValue" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="defaultValueMethods" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Comma separated list of methods (&lt;code&gt;defaultValue&lt;/code&gt;, &lt;code&gt;sessionKey&lt;/code&gt;, &lt;code&gt;pattern&lt;/code&gt;, &lt;code&gt;value&lt;/code&gt; or &lt;code&gt;input&lt;/code&gt;) to use as default value. Used in the order they appear until a non-null value is found. Default: &lt;code&gt;defaultValue&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="pattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
- to &lt;code&gt;session-variables&lt;/code&gt; or other &lt;code&gt;parameters&lt;/code&gt; using the {name-of-parameter} and is formatted using java.text.MessageFormat.
- &lt;br/&gt;&lt;b&gt;NB: When referencing other &lt;code&gt;parameters&lt;/code&gt; these MUST be defined before the parameter using pattern substitution.&lt;/b&gt;
- &lt;br/&gt;
- &lt;br/&gt;
- If for instance &lt;code&gt;fname&lt;/code&gt; is a parameter or session-variable that resolves to Eric, then the pattern
- 'Hi {fname}, how do you do?' resolves to 'Hi Eric, do you do?'.&lt;br/&gt;
- The following predefined reference can be used in the expression too:&lt;ul&gt;
- &lt;li&gt;{now}: the current system time&lt;/li&gt;
- &lt;li&gt;{uid}: an unique identifier, based on the IP address and java.rmi.server.UID&lt;/li&gt;
- &lt;li&gt;{uuid}: an unique identifier, based on the IP address and java.util.UUID&lt;/li&gt;
- &lt;li&gt;{hostname}: the name of the machine the application runs on&lt;/li&gt;
- &lt;li&gt;{username}: username from the credentials found using authAlias, or the username attribute&lt;/li&gt;
- &lt;li&gt;{password}: password from the credentials found using authAlias, or the password attribute&lt;/li&gt;
- &lt;li&gt;{fixeddate}: fake date, for testing only&lt;/li&gt;
- &lt;li&gt;{fixeduid}: fake uid, for testing only&lt;/li&gt;
- &lt;li&gt;{fixedhostname}: fake hostname, for testing only&lt;/li&gt;
- &lt;/ul&gt;
- A guid can be generated using {hostname}_{uid}, see also
- &lt;a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html"&gt;http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html&lt;/a&gt; for more information about (g)uid's or
- &lt;a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html"&gt;http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html&lt;/a&gt; for more information about uuid's.
- &lt;br/&gt;
- When combining a date or time &lt;code&gt;pattern&lt;/code&gt; like {now} or {fixeddate} with a DATE, TIME, DATETIME or TIMESTAMP &lt;code&gt;type&lt;/code&gt;, the effective value of the attribute
- &lt;code&gt;formatString&lt;/code&gt; must match the effective value of the formatString in the &lt;code&gt;pattern&lt;/code&gt;.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="defaultValueMethods" />
+    <xs:attribute ref="pattern" />
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias used to obtain username and password, used when a &lt;code&gt;pattern&lt;/code&gt; containing {username} or {password} is specified</xs:documentation>
@@ -391,66 +344,12 @@
         <xs:documentation>Default password that is used when a &lt;code&gt;pattern&lt;/code&gt; containing {password} is specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="ignoreUnresolvablePatternElements" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="formatString" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used in combination with types &lt;code&gt;DATE&lt;/code&gt;, &lt;code&gt;TIME&lt;/code&gt;, &lt;code&gt;DATETIME&lt;/code&gt; and &lt;code&gt;TIMESTAMP&lt;/code&gt; to parse the raw parameter string data into an object of the respective type Default: depends on type</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="decimalSeparator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used in combination with type &lt;code&gt;NUMBER&lt;/code&gt; Default: system default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="groupingSeparator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used in combination with type &lt;code&gt;NUMBER&lt;/code&gt; Default: system default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="minLength" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter falls short of this minimum length, the value is padded Default: -1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxLength" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length Default: -1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxInclusive" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used in combination with type &lt;code&gt;number&lt;/code&gt;; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="minInclusive" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used in combination with type &lt;code&gt;number&lt;/code&gt;; if set and the value of the parameter falls short of this minimum value, this minimum value is taken</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="hidden" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="mode">
-      <xs:annotation>
-        <xs:documentation>Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or INOUT.
- This parameter only has effect for StoredProcedureQuerySender.
- An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
- Parameter values will not be updated, but output values will be put into the result of the
- StoredProcedureQuerySender.
- &lt;b/&gt;
- If not specified, the default is INPUT.</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="ParameterModeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.Parameter" use="prohibited" />
+    <xs:attribute ref="ignoreUnresolvablePatternElements" />
+    <xs:attribute ref="minLength" />
+    <xs:attribute ref="maxLength" />
+    <xs:attribute ref="hidden" />
+    <xs:attribute ref="mode" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.Parameter" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="param" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -974,7 +873,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -987,6 +886,204 @@
       <xs:group ref="ListenerElementGroupBase" />
     </xs:choice>
   </xs:group>
+  <xs:group name="ParamElementGroup">
+    <xs:choice>
+      <xs:element name="Param">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:group ref="ParamElementGroup" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="param" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.parameters.Parameter" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="ParamElementGroupBase_2" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="ParamElementGroupBase_2">
+    <xs:choice>
+      <xs:element name="BooleanParam">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="BooleanParameterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="param" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DateParam">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DateParameterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="param" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NumberParam">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="NumberParameterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="param" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="BooleanParameterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractParameterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.BooleanParameter" />
+  </xs:complexType>
+  <xs:group name="AbstractParameterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractParameterDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the parameter</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="value" />
+    <xs:attribute name="sessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key of a PipelineSession-variable. &lt;br/&gt;If specified, the value of the PipelineSession variable is used as input for
+ the xpathExpression or stylesheet, instead of the current input message. &lt;br/&gt;If no xpathExpression or stylesheet are
+ specified, the value itself is returned. &lt;br/&gt;If the value '*' is specified, all existing sessionkeys are added as
+ parameter of which the name starts with the name of this parameter. &lt;br/&gt;If also the name of the parameter has the
+ value '*' then all existing sessionkeys are added as parameter (except tsReceived)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="contextKey" />
+    <xs:attribute ref="sessionKeyXPath" />
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>the XPath expression to extract the parameter value from the (xml formatted) input or session-variable.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
+ &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="defaultValueMethods" />
+    <xs:attribute ref="pattern" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain username and password, used when a &lt;code&gt;pattern&lt;/code&gt; containing {username} or {password} is specified</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default username that is used when a &lt;code&gt;pattern&lt;/code&gt; containing {username} is specified</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password that is used when a &lt;code&gt;pattern&lt;/code&gt; containing {password} is specified</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="ignoreUnresolvablePatternElements" />
+    <xs:attribute ref="minLength" />
+    <xs:attribute ref="maxLength" />
+    <xs:attribute ref="hidden" />
+    <xs:attribute ref="mode" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="DateParameterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractParameterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="DateParameterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.DateParameter" />
+  </xs:complexType>
+  <xs:attributeGroup name="DateParameterDeclaredAttributeGroup">
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="formatString" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Used in combination with types &lt;code&gt;DATE&lt;/code&gt;, &lt;code&gt;TIME&lt;/code&gt;, &lt;code&gt;DATETIME&lt;/code&gt; and &lt;code&gt;TIMESTAMP&lt;/code&gt; to parse the raw parameter string data into an object of the respective type Default: depends on type</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="formatType">
+      <xs:simpleType>
+        <xs:union memberTypes="DateFormatTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DateParameterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DateParameterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="NumberParameterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractParameterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="NumberParameterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.NumberParameter" />
+  </xs:complexType>
+  <xs:attributeGroup name="NumberParameterDeclaredAttributeGroup">
+    <xs:attribute name="decimalSeparator" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Separate the integer part from the fractional part of a number. Default: system default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="groupingSeparator" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>In the United States, the comma is typically used for the grouping separator; however, several publication standards follow international standards in using either a space or a thin space character. Default: system default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxInclusive" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Used in combination with type &lt;code&gt;number&lt;/code&gt;; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="minInclusive" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Used in combination with type &lt;code&gt;number&lt;/code&gt;; if set and the value of the parameter falls short of this minimum value, this minimum value is taken</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="NumberParameterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="NumberParameterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:group name="SenderElementGroup">
     <xs:choice>
       <xs:element name="Sender">
@@ -994,7 +1091,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -1792,7 +1889,7 @@
   </xs:attributeGroup>
   <xs:group name="SenderWithParametersBaseDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="SenderBaseDeclaredAttributeGroup">
@@ -1830,7 +1927,7 @@
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the folder to create, write, move or copy the file to is created if it does not exist Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
@@ -1931,7 +2028,7 @@
   </xs:complexType>
   <xs:group name="JmsSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JmsSenderDeclaredAttributeGroup">
@@ -2326,7 +2423,7 @@
   </xs:complexType>
   <xs:group name="JdbcSenderBaseDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JdbcSenderBaseDeclaredAttributeGroup">
@@ -2792,7 +2889,7 @@
   </xs:complexType>
   <xs:group name="FileSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="FileSenderDeclaredAttributeGroup">
@@ -3198,7 +3295,7 @@
   </xs:attributeGroup>
   <xs:group name="HttpSenderBaseDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="HttpSenderBaseDeclaredAttributeGroup">
@@ -3595,7 +3692,7 @@
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
     <xs:attribute name="tls12Enabled" type="frankBoolean" />
     <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
-    <xs:attribute name="configurationXML" type="xs:string">
+    <xs:attribute name="configurationXML" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
       </xs:annotation>
@@ -3616,7 +3713,7 @@
   </xs:complexType>
   <xs:group name="SapSenderBaseDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="SapSenderBaseDeclaredAttributeGroup">
@@ -3740,7 +3837,7 @@
     </xs:attribute>
     <xs:attribute name="engineName">
       <xs:annotation>
-        <xs:documentation>the name of the JavaScript engine to be used. Default: J2V8</xs:documentation>
+        <xs:documentation>the name of the JavaScript engine to use. Default: J2V8</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="JavaScriptEnginesAttributeValuesType variableRef" />
@@ -4051,7 +4148,7 @@
   </xs:complexType>
   <xs:group name="LdapSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="LdapSenderDeclaredAttributeGroup">
@@ -4128,7 +4225,13 @@
   <xs:attributeGroup name="LocalFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Optional base folder, that serves as root for all other folders</xs:documentation>
+        <xs:documentation>Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
+ When the root is left unspecified, absolute paths to files and folders can be used</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="createRootFolder" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4240,7 +4343,7 @@
   </xs:complexType>
   <xs:group name="MessageStoreSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
@@ -4254,10 +4357,17 @@
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the message is stored only if the MessageId is not present in the store yet. Default: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="slotId" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Set the slotId, an identifier to keep separate the messages inserted
+ by different MessageStoreSenders.
+ &lt;br/&gt;
+ This field should be set.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="MessageStoreSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="MessageStoreSenderDeclaredAttributeGroup" />
-    <xs:attribute ref="slotId" />
     <xs:attribute ref="type" />
     <xs:attribute ref="slotIdField" />
     <xs:attribute ref="typeField" />
@@ -4285,7 +4395,15 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTransactionalStorage" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcTransactionalStorageDeclaredAttributeGroup">
-    <xs:attribute ref="slotId" />
+    <xs:attribute name="slotId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Set the slotId, an identifier to keep separate the messages inserted
+ by different JdbcTransactionalStorage instances.
+ &lt;br/&gt;
+ This field is optional, unless the attribute #onlyStoreWhenMessageIdUnique is
+ set to {@code true}.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="type" />
     <xs:attribute ref="slotIdField" />
     <xs:attribute ref="typeField" />
@@ -4482,7 +4600,7 @@
   </xs:complexType>
   <xs:group name="MqttSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:complexType name="MqttFacadeType">
@@ -5812,19 +5930,9 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.XmlQuerySender" />
   </xs:complexType>
   <xs:complexType name="XmlValidatorSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="XmlValidatorSenderDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
     <xs:attributeGroup ref="XmlValidatorSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.XmlValidatorSender" />
   </xs:complexType>
-  <xs:group name="XmlValidatorSenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
-    </xs:sequence>
-  </xs:group>
   <xs:attributeGroup name="XmlValidatorSenderDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -6377,7 +6485,7 @@
   <xs:group name="JmsListenerBaseDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JmsListenerBaseDeclaredAttributeGroup">
@@ -7943,7 +8051,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -8817,7 +8925,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -8936,7 +9044,7 @@
   </xs:attributeGroup>
   <xs:group name="AbstractPipeDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
       <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
     </xs:sequence>
@@ -9542,7 +9650,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -9647,7 +9755,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -10009,7 +10117,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -10087,7 +10195,7 @@
               <xs:group ref="MessageLogElementGroup" />
               <xs:group ref="OutputValidatorElementGroup" />
               <xs:group ref="OutputWrapperElementGroup" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="ReaderFactoryElementGroup" />
               <xs:group ref="RecordHandlerElementGroup" />
               <xs:group ref="ResultHandlerElementGroup" />
@@ -10113,7 +10221,7 @@
               <xs:element name="Flow" type="FlowType" />
               <xs:element name="InputFields" type="InputFieldsType" />
               <xs:element name="OutputFields" type="OutputFieldsType" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -10282,7 +10390,7 @@
         <xs:group ref="ChildElementGroup_2" />
         <xs:element name="InputFields" type="InputFieldsType" />
         <xs:element name="OutputFields" type="OutputFieldsType" />
-        <xs:element name="Param" type="ParamType" />
+        <xs:group ref="ParamElementGroup" />
       </xs:choice>
     </xs:sequence>
   </xs:group>
@@ -10305,7 +10413,7 @@
   <xs:group name="AbstractRecordHandlerDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="InputFields" minOccurs="0" maxOccurs="unbounded" type="InputFieldsType" />
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractRecordHandlerDeclaredAttributeGroup">
@@ -10498,7 +10606,7 @@
   </xs:attributeGroup>
   <xs:group name="AbstractResultHandlerDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractResultHandlerDeclaredAttributeGroup">
@@ -10778,7 +10886,7 @@
               <xs:group ref="ChildElementGroup_2" />
               <xs:element name="InputFields" type="InputFieldsType" />
               <xs:element name="OutputFields" type="OutputFieldsType" />
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -10828,7 +10936,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -11364,6 +11472,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LabelFormatType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="LadybugPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="LadybugPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12075,7 +12192,7 @@
         <xs:element name="Forward" type="ForwardType" />
         <xs:element name="Locker" type="LockerType" />
         <xs:group ref="ManagerElementGroup" />
-        <xs:element name="Param" type="ParamType" />
+        <xs:group ref="ParamElementGroup" />
         <xs:group ref="ReaderFactoryElementGroup" />
         <xs:group ref="RecordHandlerElementGroup" />
         <xs:group ref="ResultHandlerElementGroup" />
@@ -12196,7 +12313,11 @@
         <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="namespaceDefs" />
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
         <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
@@ -12549,7 +12670,11 @@
         <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="namespaceDefs" />
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
         <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
@@ -13583,7 +13708,11 @@
         <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="sessionKey" />
+    <xs:attribute name="sessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XsltPipeType">
@@ -13671,7 +13800,11 @@
         <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="sessionKey" />
+    <xs:attribute name="sessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="XsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="XsltPipeDeclaredAttributeGroup" />
@@ -13730,6 +13863,49 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="LabelFormatCumulativeAttributeGroup">
     <xs:attributeGroup ref="LabelFormatDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="LadybugPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="LadybugPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ibistesttool.LadybugPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="LadybugPipeDeclaredAttributeGroup">
+    <xs:attribute name="writeToLog" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>whether or not to write results to the logfile (testtool4&amp;lt;instance.name&amp;gt;) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="writeToSystemOut" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>whether or not to write results to system out Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="checkRoles" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Set to &lt;code&gt;true&lt;/code&gt; when the pipeline is triggered by a user (e.g. using an http based listener
+ that will add a securityHandler session key) and you don't want the listener to check whether the user
+ is autorised and/or you want the enforce the roles as configured for the Ladybug Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="enableReportGenerator" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Set to &lt;code&gt;true&lt;/code&gt; to enable Ladybug's report generator for the duration of the scheduled report runs
+ then revert it to its original setting Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="exclude" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When set, reports with a full path (path + name) that matches with the specified regular expression are skipped. For example, \"/Unscheduled/.*\" or \".*SKIP\".</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="LadybugPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="LadybugPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LarvaPipeType">
@@ -13932,7 +14108,13 @@
   <xs:attributeGroup name="LocalFileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the folder that serves as the root of this virtual filesystem</xs:documentation>
+        <xs:documentation>Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
+ When the root is left unspecified, absolute paths to files and folders can be used</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="createRootFolder" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -13966,7 +14148,7 @@
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the folder to create, write, move or copy the file to is created if it does not exist Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
@@ -14370,7 +14552,6 @@
  &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="fileNameToAttachSessionKey" type="xs:string" />
     <xs:attribute name="filenameToAttachSessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>session key that contains the filename to be attached. Only used when the action is set to 'combine' Default: defaultFileNameToAttachSessionKey</xs:documentation>
@@ -14432,7 +14613,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -15025,7 +15206,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
+              <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -16224,6 +16405,13 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:simpleType name="ParameterModeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[iI][nN][pP][uU][tT]" />
+      <xs:pattern value="[oO][uU][tT][pP][uU][tT]" />
+      <xs:pattern value="[iI][nN][oO][uU][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="ParameterTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][tT][rR][iI][nN][gG]" />
@@ -16246,11 +16434,13 @@
       <xs:pattern value="[mM][aA][pP]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ParameterModeAttributeValuesType">
+  <xs:simpleType name="DateFormatTypeAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[iI][nN][pP][uU][tT]" />
-      <xs:pattern value="[oO][uU][tT][pP][uU][tT]" />
-      <xs:pattern value="[iI][nN][oO][uU][tT]" />
+      <xs:pattern value="[dD][aA][tT][eE]" />
+      <xs:pattern value="[dD][aA][tT][eE][tT][iI][mM][eE]" />
+      <xs:pattern value="[tT][iI][mM][eE][sS][tT][aA][mM][pP]" />
+      <xs:pattern value="[tT][iI][mM][eE]" />
+      <xs:pattern value="[xX][mM][lL][dD][aA][tT][eE][tT][iI][mM][eE]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OutputTypeAttributeValuesType">
@@ -16436,6 +16626,7 @@
   <xs:simpleType name="JavaScriptEnginesAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[jJ][22][vV][88]" />
+      <xs:pattern value="[gG][rR][aA][aA][lL][jJ][sS]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OperationAttributeValuesType">
@@ -16847,6 +17038,93 @@
       <xs:pattern value="[cC][lL][eE][aA][rR][iI][nN][gG]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attribute name="value" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="contextKey" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>key of message context variable to use as source, instead of the message found from input message or sessionKey itself</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="sessionKeyXPath" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Instead of a fixed &lt;code&gt;sessionKey&lt;/code&gt; it's also possible to use a XPath expression applied to the input message to extract the name of the session-variable.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="defaultValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="defaultValueMethods" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Comma separated list of methods (&lt;code&gt;defaultValue&lt;/code&gt;, &lt;code&gt;sessionKey&lt;/code&gt;, &lt;code&gt;pattern&lt;/code&gt;, &lt;code&gt;value&lt;/code&gt; or &lt;code&gt;input&lt;/code&gt;) to use as default value. Used in the order they appear until a non-null value is found. Default: &lt;code&gt;defaultValue&lt;/code&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="pattern" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
+ to &lt;code&gt;session-variables&lt;/code&gt; or other &lt;code&gt;parameters&lt;/code&gt; using the {name-of-parameter} and is formatted using java.text.MessageFormat.
+ &lt;br/&gt;&lt;b&gt;NB: When referencing other &lt;code&gt;parameters&lt;/code&gt; these MUST be defined before the parameter using pattern substitution.&lt;/b&gt;
+ &lt;br/&gt;
+ &lt;br/&gt;
+ If for instance &lt;code&gt;fname&lt;/code&gt; is a parameter or session-variable that resolves to Eric, then the pattern
+ 'Hi {fname}, how do you do?' resolves to 'Hi Eric, do you do?'.&lt;br/&gt;
+ The following predefined reference can be used in the expression too:&lt;ul&gt;
+ &lt;li&gt;{now}: the current system time&lt;/li&gt;
+ &lt;li&gt;{uid}: an unique identifier, based on the IP address and java.rmi.server.UID&lt;/li&gt;
+ &lt;li&gt;{uuid}: an unique identifier, based on the IP address and java.util.UUID&lt;/li&gt;
+ &lt;li&gt;{hostname}: the name of the machine the application runs on&lt;/li&gt;
+ &lt;li&gt;{username}: username from the credentials found using authAlias, or the username attribute&lt;/li&gt;
+ &lt;li&gt;{password}: password from the credentials found using authAlias, or the password attribute&lt;/li&gt;
+ &lt;li&gt;{fixeddate}: fake date, for testing only&lt;/li&gt;
+ &lt;li&gt;{fixeduid}: fake uid, for testing only&lt;/li&gt;
+ &lt;li&gt;{fixedhostname}: fake hostname, for testing only&lt;/li&gt;
+ &lt;/ul&gt;
+ A guid can be generated using {hostname}_{uid}, see also
+ &lt;a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html"&gt;http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html&lt;/a&gt; for more information about (g)uid's or
+ &lt;a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html"&gt;http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html&lt;/a&gt; for more information about uuid's.
+ &lt;br/&gt;
+ When combining a date or time &lt;code&gt;pattern&lt;/code&gt; like {now} or {fixeddate} with a DATE, TIME, DATETIME or TIMESTAMP &lt;code&gt;type&lt;/code&gt;, the effective value of the attribute
+ &lt;code&gt;formatString&lt;/code&gt; must match the effective value of the formatString in the &lt;code&gt;pattern&lt;/code&gt;.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="ignoreUnresolvablePatternElements" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="minLength" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>If set (&gt;=0) and the length of the value of the parameter falls short of this minimum length, the value is padded Default: -1</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="maxLength" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>If set (&gt;=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length Default: -1</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="hidden" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="mode">
+    <xs:annotation>
+      <xs:documentation>Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or INOUT.
+ This parameter only has effect for StoredProcedureQuerySender.
+ An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
+ Parameter values will not be updated, but output values will be put into the result of the
+ StoredProcedureQuerySender.
+ &lt;b/&gt;
+ If not specified, the default is INPUT.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="ParameterModeAttributeValuesType variableRef" />
+    </xs:simpleType>
+  </xs:attribute>
   <xs:attribute name="destinationParam" type="xs:string">
     <xs:annotation>
       <xs:documentation>Parameter that is used, if specified and not empty, to determine the destination. Overrides the &lt;code&gt;destination&lt;/code&gt; attribute</xs:documentation>
@@ -17506,11 +17784,6 @@
       <xs:documentation>Comma separated list of domains to which mails can be send, domains not on the list are filtered out. Empty allows all domains</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="slotId" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="type" type="xs:string">
     <xs:annotation>
       <xs:documentation>Possible values are &lt;code&gt;E&lt;/code&gt; (error store), &lt;code&gt;M&lt;/code&gt; (message store), &lt;code&gt;L&lt;/code&gt; (message log for Pipe) or &lt;code&gt;A&lt;/code&gt; (message log for Receiver).&lt;br/&gt;
@@ -18023,11 +18296,6 @@
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the failure forward is replaced by the success forward (like a warning mode)</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="namespaceDefs" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="itemNoSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1.</xs:documentation>
@@ -18080,11 +18348,6 @@
   <xs:attribute name="maxChildThreads" type="frankInt">
     <xs:annotation>
       <xs:documentation>Maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe). Use &lt;code&gt;0&lt;/code&gt; for unlimited threads Default: 0</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="sessionKey" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:simpleType name="frankBoolean">
