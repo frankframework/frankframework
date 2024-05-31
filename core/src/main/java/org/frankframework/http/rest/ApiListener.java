@@ -83,7 +83,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
 
-	private List<HttpMethod> methods = List.of(HttpMethod.GET);
+	private @Getter List<HttpMethod> methods = List.of(HttpMethod.GET);
 
 	public enum HttpMethod {
 		GET, PUT, POST, PATCH, DELETE, HEAD, OPTIONS;
@@ -166,7 +166,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (StringUtils.isNotEmpty(claimAttributeToValidate)) {
 			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
 					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
-					.collect(Collectors.toList());
+					.toList();
 
 			if (!invalidClaims.isEmpty()) {
 				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
@@ -203,7 +203,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (config != null) {
 				List<String> modifiedUrls = config.getUrlMapping().stream()
 						.map(url -> url.replace("/*", ""))
-						.collect(Collectors.toList());
+						.toList();
 				if (modifiedUrls.size() == 1) {
 					// Replace /api/* with /api. Doing this in ApiListenerServlet.getUrlMapping() is not possible.
 					builder.append(modifiedUrls.get(0));
@@ -213,7 +213,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		builder.append("; method: ").append(getAllMethods().stream().map(Enum::name).collect(Collectors.joining(",")));
+		builder.append("; method: ").append(getMethods().stream().map(Enum::name).collect(Collectors.joining(",")));
 
 		if (MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -275,10 +275,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (hasMethod(HttpMethod.OPTIONS)) {
 			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
-	}
-
-	public List<HttpMethod> getAllMethods() {
-		return methods;
 	}
 
 	/**

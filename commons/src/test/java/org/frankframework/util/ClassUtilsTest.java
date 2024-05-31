@@ -40,7 +40,7 @@ class ClassUtilsTest {
 
 	private class DummyClassWithSetter {
 		private @Getter @Setter String field;
-		private @Getter Object[] testEnums;
+		private @Getter TestEnum[] testEnums;
 		private @Getter String[] testStrings;
 		public void setEnumVarArgs(TestEnum... testEnum) {
 			this.testEnums = testEnum;
