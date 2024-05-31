@@ -148,14 +148,14 @@
 			<!-- Create file and info -->
 			<pipe name="create file" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="create"
-				overwrite="true"
-				filename="${testdata.dir}/created.txt">
+				overwrite="true">
+				<param name="filename" pattern="${testdata.dir}/{UUID}.txt"/>
 				<forward name="success" path="info file" />
 			</pipe>
 
 			<pipe name="info file" className="org.frankframework.pipes.LocalFileSystemPipe"
-				action="info"
-				filename="${testdata.dir}/created.txt">
+				action="info">
+				<param name="filename" xpathExpression="concat('${testdata.dir}/', /file/@name)"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
