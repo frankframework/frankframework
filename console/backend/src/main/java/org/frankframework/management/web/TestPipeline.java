@@ -95,11 +95,7 @@ public class TestPipeline extends FrankApiBase {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding);
-		}
-
-		if (StringUtils.isEmpty(message)) {
-			throw new ApiException("Neither a file nor a message was supplied", 400);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding, false);
 		}
 
 		builder.setPayload(message);

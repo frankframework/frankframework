@@ -67,7 +67,7 @@ public class TestServiceListener extends FrankApiBase {
 				throw new ApiException("error reading file", e);
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding, true);
 		}
 
 		if (StringUtils.isEmpty(message)) {
