@@ -83,7 +83,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
 
-	private @Getter List<HttpMethod> methods = List.of(HttpMethod.GET);
+	private List<HttpMethod> methods = List.of(HttpMethod.GET);
 
 	public enum HttpMethod {
 		GET, PUT, POST, PATCH, DELETE, HEAD, OPTIONS;
@@ -213,7 +213,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		builder.append("; method: ").append(getMethods().stream().map(Enum::name).collect(Collectors.joining(",")));
+		builder.append("; method: ").append(getAllMethods().stream().map(Enum::name).collect(Collectors.joining(",")));
 
 		if (MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -263,6 +263,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public void setMethod(HttpMethod method) {
 		setMethods(method);
+	}
+
+	// Can not rename this method to getMethods (or use @Getter), as it will conflict with the types (List vs varargs)
+	public List<HttpMethod> getAllMethods() {
+		return methods;
 	}
 
 	/**

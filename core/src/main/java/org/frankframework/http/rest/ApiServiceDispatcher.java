@@ -242,7 +242,7 @@ public class ApiServiceDispatcher {
 			throw new ListenerException("uriPattern cannot be null or empty");
 
 		synchronized(patternClients) {
-			for(ApiListener.HttpMethod method : listener.getMethods()){
+			for(ApiListener.HttpMethod method : listener.getAllMethods()){
 				patternClients.computeIfAbsent(uriPattern, ApiDispatchConfig::new).register(method, listener);
 				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
 			}
@@ -255,7 +255,7 @@ public class ApiServiceDispatcher {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
-			for(ApiListener.HttpMethod method : listener.getMethods()){
+			for(ApiListener.HttpMethod method : listener.getAllMethods()){
 				boolean success = false;
 				synchronized (patternClients) {
 					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
