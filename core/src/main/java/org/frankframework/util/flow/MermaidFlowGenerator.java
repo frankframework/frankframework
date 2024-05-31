@@ -65,7 +65,6 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
-
 	// List that contains all class patterns that extend FileSystemListener or FileSystemSender
 	private static final List<String> extendsFileSystem = List.of("FileSystem", "Directory", "Samba", "Ftp", "Imap", "Sftp", "S3", "Exchange", "Mail");
 
@@ -211,6 +210,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
 		try {
 			String flow = generateMermaid(xml);
+
 			outputStream.write(flow.getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
 			throw new FlowGenerationException(e);
