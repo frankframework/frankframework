@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -187,18 +186,14 @@ public class WebServices extends BusEndpointBase {
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
+			ApiListener listener = config.getApiListener(config.getMethods().iterator().next()); // The first httpMethod will resolve in the right listener
+			Receiver<?> receiver = listener.getReceiver();
+			IAdapter adapter = receiver == null ? null : receiver.getAdapter();
+			ListenerDAO dao = new ListenerDAO(listener);
+			if (adapter != null) dao.setAdapter(adapter);
+			if (receiver != null) dao.setReceiver(receiver);
 
-			Set<HttpMethod> methods = config.getMethods();
-			for (HttpMethod method : methods) {
-				ApiListener listener = config.getApiListener(method);
-				Receiver<?> receiver = listener.getReceiver();
-				IAdapter adapter = receiver == null? null : receiver.getAdapter();
-				ListenerDAO dao = new ListenerDAO(listener);
-				if (adapter!=null) dao.setAdapter(adapter);
-				if (receiver!=null) dao.setReceiver(receiver);
-
-				apiListeners.add(dao);
-			}
+			apiListeners.add(dao);
 		}
 		return apiListeners;
 	}
