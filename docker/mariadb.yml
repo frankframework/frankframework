@@ -1,10 +1,12 @@
-services:
-    ff-test:
-        environment:
-            jdbc.dbms.default: mariadb
-            jdbc.hostname: mariadb
+version: ''
 
-    mariadb:
-        image: private.docker.nexus.frankframework.org/ff-test/dbms/mariadb
-        ports:
-            - "3306:3306"
+services:
+  ff-test:
+    environment:
+      jdbc.dbms.default: mariadb
+      jdbc.hostname: mariadb
+
+  mariadb:
+    image: private.docker.nexus.frankframework.org/ff-test/dbms/mariadb
+    ports:
+      - "3306:3306"

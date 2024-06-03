@@ -1,12 +1,14 @@
-services:
-    ff-test:
-        environment:
-            jms.provider.default: artemis
-            jms.destination.suffix: -artemis
-            jms.hostname: artemis
+version: ''
 
-    artemis:
-        image: private.docker.nexus.frankframework.org/ff-test/mq/artemis
-        ports:
-            - "8160:8160"
-            - "61615:61615"
+services:
+  ff-test:
+    environment:
+      jms.provider.default: artemis
+      jms.destination.suffix: -artemis
+      jms.hostname: artemis
+
+  artemis:
+    image: private.docker.nexus.frankframework.org/ff-test/mq/artemis
+    ports:
+      - "8160:8160"
+      - "61615:61615"
