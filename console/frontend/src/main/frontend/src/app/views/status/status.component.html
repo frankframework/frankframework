@@ -41,6 +41,7 @@
       </li>
       <li
         *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1"
+        data-cy-status-alert="true"
         class="list-group-item alert-warning"
       >
         <i class="m-r-md fa fa-info-circle"></i>
@@ -51,7 +52,6 @@
       </li>
       <ng-container *ngFor="let alert of alerts">
         <li
-          data-cy-status-alert="true"
           *ngIf="
             alert.configuration === '' ||
             selectedConfiguration === alert.configuration ||
