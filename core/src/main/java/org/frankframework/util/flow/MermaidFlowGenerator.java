@@ -84,7 +84,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		String frankElementsList = compileFrankElementList();
-		log.debug("Initialized frankElementList to be [{}]", frankElementsList);
+		log.trace("generated frankElementList [{}]", frankElementsList);
 		frankElements = XmlUtils.buildDomDocument(new InputSource(new StringReader(frankElementsList)), true);
 
 		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2MERMAID_XSLT);
