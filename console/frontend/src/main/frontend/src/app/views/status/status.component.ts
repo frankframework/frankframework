@@ -305,7 +305,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   updateConfigurationFlowDiagram(configurationName: string): void {
     const flowUrl =
-      configurationName == 'All' ? '?flow=true' : `${configurationName}/flow`;
+      configurationName == 'All' ? '?flow=true' : `/${configurationName}/flow`;
     this.configurationFlowDiagram =
       this.statusService.getConfigurationFlowDiagramUrl(flowUrl);
   }

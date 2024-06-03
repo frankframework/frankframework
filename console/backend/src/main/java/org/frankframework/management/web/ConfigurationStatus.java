@@ -81,7 +81,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
 	@Description("start/stop multiple adapters")
-	@PutMapping(value = "/adapters/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapters(@RequestBody Map<String, Object> json) {
 
 		IbisAction action = null;
