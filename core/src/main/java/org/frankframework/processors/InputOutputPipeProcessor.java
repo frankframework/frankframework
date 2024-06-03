@@ -118,11 +118,22 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pipe::getName);
 				Message result = pipeRunResult.getResult();
 				if (!Message.isEmpty(result)) {
+					InputSource inputSource;
 					try {
-						String resultString = result.asString();
-						pipeRunResult.setResult(RestoreMovedElementsHandler.process(resultString, pipeLineSession));
+						// Preserve the message so that it can be read again, in case there was an error during restoring
+						result.preserve();
+						inputSource = result.asInputSource();
 					} catch (IOException e) {
-						throw new PipeRunException(pipe, "cannot open stream of result", e);
+						throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] could not read received message during restoring of moved elements: " + e.getMessage(), e);
+					}
+					XmlWriter xmlWriter = new XmlWriter();
+					RestoreMovedElementsHandler handler = new RestoreMovedElementsHandler(xmlWriter);
+					handler.setSession(pipeLineSession);
+					try {
+						XmlUtils.parseXml(inputSource, handler);
+						pipeRunResult.setResult(xmlWriter.getWriter());
+					} catch (Exception e) {
+						log.warn("Pipeline of adapter [{}] could not restore moved elements on the received message: {}", owner.getName(), e.getMessage());
 					}
 				}
 			}
@@ -130,11 +141,10 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pipe.getChompCharSize() != null || pipe.getElementToMove() != null || pipe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
 				Message result = pipeRunResult.getResult();
-				if (result != null && !result.isEmpty()) {
+				if (!Message.isEmpty(result)) {
 					InputSource inputSource;
 					try {
-						// Preserve the message so that it can be read again
-						// in case there was an error during compacting
+						// Preserve the message so that it can be read again, in case there was an error during compacting
 						result.preserve();
 						inputSource = result.asInputSource();
 					} catch (IOException e) {
@@ -150,7 +160,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					handler.setContext(pipeLineSession);
 					try {
 						XmlUtils.parseXml(inputSource, handler);
-						pipeRunResult.setResult(xmlWriter.toString());
+						pipeRunResult.setResult(xmlWriter.getWriter());
 					} catch (Exception e) {
 						log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
 					}
