@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.scheduler.job.CheckReloadJob;
-import org.frankframework.testutil.junit.DatabaseTestEnvironment;
-import org.frankframework.testutil.junit.TxManagerTest;
-import org.frankframework.testutil.junit.WithLiquibase;
 import org.junit.jupiter.api.BeforeEach;
+
+import org.frankframework.scheduler.job.CheckReloadJob;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
 
 @WithLiquibase
 public class CheckReloadJobTest {
@@ -31,7 +32,7 @@ public class CheckReloadJobTest {
 		databaseTestEnvironment.autowire(jobDef);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWithEmptyTable() throws Exception {
 		jobDef.configure();
 
@@ -40,7 +41,7 @@ public class CheckReloadJobTest {
 		assertTrue(jobDef.getMessageKeeper().getMessage(0).getMessageText().contains("job successfully configured"));
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testBeforeExecuteJobWithEmptyTable() throws Exception {
 		jobDef.configure();
 
