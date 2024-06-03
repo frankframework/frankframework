@@ -11,11 +11,7 @@
 		"
 	>
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
-	<integration:publish-subscribe-channel id="frank-management-bus">
-		<integration:interceptors>
-			<bean class="org.springframework.integration.security.channel.SecurityContextPropagationChannelInterceptor"/>
-		</integration:interceptors>
-	</integration:publish-subscribe-channel>
+	<integration:publish-subscribe-channel id="frank-management-bus" />
 
 	<context:property-placeholder />
 
@@ -25,7 +21,6 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
-		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Configuration"/>
 
 		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>

@@ -94,6 +94,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 		//TODO add X-Rate-Limit to prevent possible clients to flood the IAF API
 
+		// Exceptions should be caught using a HandlerExceptionResolver
 		super.doService(request, response);
 	}
 
