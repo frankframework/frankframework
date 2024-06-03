@@ -122,7 +122,10 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 	@Override
 	public void sendAsyncMessage(Message<T> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
-		Message<T> requestMessage = MessageBuilder.fromMessage(in).setReplyChannelName(null).build();
+		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+				.setReplyChannelName(null)
+				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
+				.build();
 
 		requestTopic.publishAsync(requestMessage);
 	}
