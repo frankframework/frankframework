@@ -32,41 +32,41 @@
 			<!-- Write file -->
 			<pipe
 				name="write file"
-				className="org.frankframework.pipes.FilePipe"
-				actions="write"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
 				filename="${testdata.dir}/mfp/test.txt"
 				getInputFromFixedValue="test"
-				createDirectory="true">
+				createFolder="true">
 				<forward name="success" path="write file2"/>
 			</pipe>
 
 			<pipe
 				name="write file2"
-				className="org.frankframework.pipes.FilePipe"
-				actions="write"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
 				filename="${testdata.dir}/mfp/test2.txt"
 				getInputFromFixedValue="test2"
-				createDirectory="true">
+				createFolder="true">
 				<forward name="success" path="write file3"/>
 			</pipe>
 
 			<pipe
 				name="write file3"
-				className="org.frankframework.pipes.FilePipe"
-				actions="write"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
 				filename="${testdata.dir}/mfp/test3.abc"
 				getInputFromFixedValue="test3"
-				createDirectory="true">
+				createFolder="true">
 				<forward name="success" path="write file4"/>
 			</pipe>
 
 			<pipe
 				name="write file4"
-				className="org.frankframework.pipes.FilePipe"
-				actions="write"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
 				filename="${testdata.dir}/mfp/sub/test4.txt"
 				getInputFromFixedValue="test4"
-				createDirectory="true">
+				createFolder="true">
 				<forward name="success" path="switchAction"/>
 			</pipe>
 

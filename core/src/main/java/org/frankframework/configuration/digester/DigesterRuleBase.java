@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import lombok.Setter;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +32,8 @@ import org.frankframework.core.IAdapter;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IbisException;
 import org.frankframework.core.SharedResource;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.scheduler.job.IbisActionJob;
 import org.frankframework.scheduler.job.Job;
@@ -46,6 +47,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
+
+import lombok.Setter;
 
 /**
  * @author Niels Meijer
@@ -162,6 +165,12 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
 			map.remove("function");
+		}
+
+		//Since we are directly instantiating the correct param (by className), types are no longer required by the digester's attribute handler.
+		//They are however still required for the ParameterFactory to determine the correct type class, in order to avoid ConfigurationWarnings.
+		if(top instanceof IParameter && !(top instanceof Parameter)) {
+			map.remove("type");
 		}
 
 		handleBean();
