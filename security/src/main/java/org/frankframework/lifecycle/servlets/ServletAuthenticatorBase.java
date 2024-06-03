@@ -174,7 +174,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
 			if(csrfEnabled){
-				CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+				CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
 				if(StringUtils.isEmpty(csrfCookiePath)) {
 					csrfTokenRepository.setCookiePath(csrfCookiePath);
 				}
