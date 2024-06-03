@@ -250,7 +250,7 @@
 	</bean>
 
 	<bean name="customReportAction" class="org.frankframework.ibistesttool.larva.ConvertToLarvaAction">
-		<property name="reportsFolder" value="${ibistesttool.directory}"/>
+		<property name="reportsFolder" value="${larva.generator.dir}"/>
 	</bean>
 
 </beans>
