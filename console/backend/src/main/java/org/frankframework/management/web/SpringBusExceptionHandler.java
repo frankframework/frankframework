@@ -49,7 +49,7 @@ public class SpringBusExceptionHandler {
 		private final Function<Throwable, ResponseEntity<?>> messageConverter;
 
 		private ManagedException(final Class<? extends Throwable> exceptionClass, final HttpStatus status) {
-			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status, null));
+			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status));
 		}
 
 		@SuppressWarnings("unchecked")
@@ -62,7 +62,7 @@ public class SpringBusExceptionHandler {
 			return messageConverter.apply(cause);
 		}
 
-		public static ManagedException parse(Throwable cause) {
+		public static @Nullable ManagedException parse(Throwable cause) {
 			for (ManagedException me : ManagedException.values()) {
 				if (me.exceptionClass.isAssignableFrom(cause.getClass())) {
 					return me;
@@ -78,9 +78,9 @@ public class SpringBusExceptionHandler {
 			HttpStatusCode status = e.getStatusCode();
 			if (status.is5xxServerError() || status == HttpStatus.NOT_FOUND) {
 				String reasonPhrase = HttpStatus.valueOf(status.value()).getReasonPhrase();
-				return ApiException.formatExceptionResponse(status.value() + " - " + reasonPhrase, status, null);
+				return ApiException.formatExceptionResponse(status.value() + " - " + reasonPhrase, status);
 			}
-			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status, null);
+			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status);
 		}
 
 		/**
@@ -88,8 +88,14 @@ public class SpringBusExceptionHandler {
 		 */
 		private static ResponseEntity<?> convertBusException(BusException e) {
 			HttpStatus status = HttpStatus.valueOf(e.getStatusCode());
-			return ApiException.formatExceptionResponse(e.getMessage(), status, null);
+			return ApiException.formatExceptionResponse(e.getMessage(), status);
 		}
+	}
+
+	@ExceptionHandler(BusException.class)
+	public ResponseEntity<?> toResponse(BusException be) {
+		HttpStatus status = HttpStatus.valueOf(be.getStatusCode());
+		return ApiException.formatExceptionResponse(be.getMessage(), status);
 	}
 
 	@ExceptionHandler(MessageHandlingException.class)
@@ -104,7 +110,7 @@ public class SpringBusExceptionHandler {
 		}
 
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);
-		return ApiException.formatExceptionResponse(buildMessage(mhe.getMessage(), mhe.getCause()), HttpStatus.INTERNAL_SERVER_ERROR, null);
+		return ApiException.formatExceptionResponse(buildMessage(mhe.getMessage(), mhe.getCause()), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	private static String buildMessage(@Nullable String message, @Nullable Throwable cause) {

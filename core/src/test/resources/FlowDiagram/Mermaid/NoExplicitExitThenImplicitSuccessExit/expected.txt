@@ -1,0 +1,11 @@
+flowchart
+	d2e2("<b>Update temperature</b><br/>JavaListener"):::normal
+	d2e4("<b>ApiListenerReceiver</b><br/>ApiListener"):::normal
+	d2e9("<b>Get temperature from OpenWeather</b><br/>SenderPipe"):::normal
+	d2e8("<b>success</b>"):::normal
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
+	d2e2 --> |success| d2e9
+	d2e4 --> |success| d2e9
+	d2e9 --> |success| d2e8
+	linkStyle 0,1,2 stroke:#8bc34a,stroke-width:3px,fill:none;

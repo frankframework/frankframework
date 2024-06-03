@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
@@ -108,27 +110,27 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleSpringException(ex, status, null);
 	}
 
+	/**
+	 * When a {@link RestController} cannot be found, Spring MVC throws this Exception.
+	 */
 	@Override
 	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return ApiException.formatExceptionResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpHeaders headers, HttpStatusCode status, WebRequest webRequest) {
-		super.handleAsyncRequestTimeoutException(ex, headers, status, webRequest);
 		return handleSpringException(ex, status, null);
 	}
 
-	@ExceptionHandler({
-			ApiException.class
-	})
+	@ExceptionHandler(ApiException.class)
 	private ResponseEntity<?> handleApiException(ApiException exception, WebRequest request) {
 		return exception.getResponse();
 	}
 
 	private ResponseEntity<Object> handleSpringException(Exception exception, HttpStatusCode status, @Nullable HttpHeaders headers) {
 		log.warn("Caught unhandled exception while executing FF!API call", exception);
-		return ApiException.formatExceptionResponse(exception.getMessage(), status, null);
+		return ApiException.formatExceptionResponse(exception.getMessage(), status, headers);
 	}
 
 }

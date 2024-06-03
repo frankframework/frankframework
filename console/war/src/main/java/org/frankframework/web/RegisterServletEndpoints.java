@@ -17,14 +17,8 @@ package org.frankframework.web;
 
 import org.frankframework.console.ConsoleFrontend;
 import org.frankframework.management.web.configuration.ServletDispatcher;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.web.filters.DynamicFilterConfigurer;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import jakarta.servlet.Filter;
 
 @Configuration
 public class RegisterServletEndpoints {
@@ -38,39 +32,6 @@ public class RegisterServletEndpoints {
 	public ServletRegistration frontendServletBean() {
 		ServletRegistration registration = new ServletRegistration(ConsoleFrontend.class);
 		registration.addUrlMappings("/*"); //Also host the console on the ROOT
-		return registration;
-	}
-
-	@Bean
-	public FilterRegistrationBean<Filter> createCorsFilter(ApplicationContext ac) {
-		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CORS_FILTER);
-	}
-
-	@Bean
-	public FilterRegistrationBean<Filter> createCSPFilter(ApplicationContext ac) {
-		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CSP_FILTER);
-	}
-
-	@Bean
-	public FilterRegistrationBean<Filter> createCacheControlFilter(ApplicationContext ac) {
-		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CACHE_CONTROL_FILTER);
-	}
-
-	@Bean
-	public FilterRegistrationBean<Filter> createWeakShallowEtagFilter(ApplicationContext ac) {
-		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.ETAG_FILTER);
-	}
-
-	@Bean
-	public FilterRegistrationBean<Filter> createCsrfCookieFilter(ApplicationContext ac) {
-		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CSRF_COOKIE_FILTER);
-	}
-
-	private FilterRegistrationBean<Filter> createFilter(ApplicationContext ac, DynamicFilterConfigurer.DynamicFilters df) {
-		Class<? extends Filter> filter = df.getFilterClass();
-		Filter filterInstance = SpringUtils.createBean(ac, filter);
-		FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filterInstance);
-		registration.addUrlPatterns(df.getEndpoints());
 		return registration;
 	}
 }

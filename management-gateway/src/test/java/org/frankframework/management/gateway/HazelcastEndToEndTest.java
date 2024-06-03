@@ -1,6 +1,7 @@
 package org.frankframework.management.gateway;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.util.SpringRootInitializer;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +16,8 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -33,7 +36,7 @@ public class HazelcastEndToEndTest {
 
 	@BeforeEach
 	public void setup() {
-		MessageHandler handler = new MessageHandler() {
+		handler = new MessageHandler() {
 			@Override
 			@RolesAllowed("IbisTester")
 			public void handleMessage(Message<?> message) throws MessagingException {
@@ -53,7 +56,15 @@ public class HazelcastEndToEndTest {
 	}
 
 	@Test
-	public void testHazelcastGateways() throws Exception {
+	public void testHazelcastGatewaysWithoutAuthObject() {
+		Message<String> request = new GenericMessage<>("request-string", new MessageHeaders(null));
+		AuthenticationException ex = assertThrows(AuthenticationException.class, () -> outboundGateway.sendSyncMessage(request));
+		assertEquals("no Authentication object found in SecurityContext", ex.getMessage());
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void testHazelcastGateways() {
 		Message<String> request = new GenericMessage<>("request-string", new MessageHeaders(null));
 		Message<String> response = outboundGateway.sendSyncMessage(request);
 
