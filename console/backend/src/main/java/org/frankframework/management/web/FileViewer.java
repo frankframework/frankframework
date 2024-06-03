@@ -12,8 +12,10 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package org.frankframework.management.web;
+
+import java.io.InputStream;
 
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
@@ -21,55 +23,32 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HeaderParam;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-@Path("/")
+@RestController
 public class FileViewer extends FrankApiBase {
 
-	@GET
+	@GetMapping(value = "/file-viewer", produces = {"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/file-viewer")
-	@Produces({"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
 	@Relation("logging")
 	@Description("view or download a (log)file")
-	public Response getFileContent(@QueryParam("file") String file, @QueryParam("accept") String acceptParam, @HeaderParam("Accept") String acceptHeader) {
+	public ResponseEntity<StreamingResponseBody> getFileContent(@RequestParam("file") String file, @RequestParam(value = "accept", required = false) String acceptParam, @RequestHeader("Accept") String acceptHeader) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
+
 		if (StringUtils.isEmpty(acceptHeader)) acceptHeader = "*/*";
 		String acceptType = !StringUtils.isEmpty(acceptParam) ? acceptParam : acceptHeader.split(",")[0];
 		String wantedType = MediaType.valueOf(acceptType).getSubtype();
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
 
-		if ("html".equalsIgnoreCase(wantedType)) {
-			return processHtmlMessage(builder);
-		}
-		return callSyncGateway(builder);
-	}
-
-	private Response processHtmlMessage(RequestMessageBuilder builder) {
-		Message<?> fileContentsMessage = sendSyncMessage(builder);
-		StreamingOutput stream = outputStream -> {
-			BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
-			String line;
-			while ((line = fileContentsReader.readLine()) != null) {
-				String formattedLine = StringUtils.replace(line, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-				outputStream.write((formattedLine + "<br>").getBytes());
-			}
-			outputStream.flush();
-		};
-		return ResponseUtils.convertToJaxRsStreamingResponse(fileContentsMessage, stream).build();
+		Message<InputStream> inputStreamMessage = (Message<InputStream>) sendSyncMessage(builder);
+		return ResponseUtils.convertToSpringStreamingResponse(inputStreamMessage);
 	}
 
 }

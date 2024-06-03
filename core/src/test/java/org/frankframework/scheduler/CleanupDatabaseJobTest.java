@@ -135,9 +135,9 @@ public class CleanupDatabaseJobTest {
 			} else {
 				sb.append("(");
 				if(dbmsSupport.autoIncrementKeyMustBeInserted()) {
-					sb.append(i+",");
+					sb.append(i).append(",");
 				}
-				sb.append("'A', 'test', 'localhost', 'messageId', 'correlationId', "+dbmsSupport.getDatetimeLiteral(date)+", 'comments', "+dbmsSupport.getDatetimeLiteral(expiryDate)+", 'label')");
+				sb.append("'A', 'test', 'localhost', 'messageId', 'correlationId', ").append(dbmsSupport.getDatetimeLiteral(date)).append(", 'comments', ").append(dbmsSupport.getDatetimeLiteral(expiryDate)).append(", 'label')");
 			}
 			if(i != numRows) {
 				if(dbmsSupport.getDbms() == Dbms.ORACLE) {

@@ -15,8 +15,7 @@ export class StatusService {
   ) {}
 
   getConfigurationFlowDiagramUrl(flowUrl: string): string {
-    const baseUrl = `${this.appService.getServerPath()}iaf/api/configurations/`;
-    return baseUrl + flowUrl;
+    return `${this.appService.getServerPath()}iaf/api/configurations${flowUrl}`;
   }
 
   getAdapterFlowDiagram(flowUrl: string): Observable<HttpResponse<string>> {

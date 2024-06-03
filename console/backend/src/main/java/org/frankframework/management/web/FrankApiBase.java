@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,55 +15,31 @@
 */
 package org.frankframework.management.web;
 
-import java.security.Principal;
-
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.EntityTag;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
-import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.core.UriInfo;
-
 import jakarta.annotation.Nonnull;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
-import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.web.configuration.DeprecationInterceptor;
+import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
-
-import org.frankframework.management.bus.OutboundGateway;
-
-import org.frankframework.util.ResponseUtils;
-import org.frankframework.web.filters.DeprecationFilter;
-
-/**
- * Base class for API endpoints.
- * Contains helper methods to read JAX-RS multiparts and handle message conversions to JAX-RS Responses.
- * @author	Niels Meijer
- */
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
-	@Context protected ServletConfig servletConfig;
-	@Context protected @Getter SecurityContext securityContext;
-	@Context protected @Getter HttpServletRequest servletRequest;
-	private @Getter ApplicationContext applicationContext;
-	@Context protected @Getter UriInfo uriInfo;
-	@Context private Request rsRequest;
-	private @Getter Environment environment;
+	@Autowired
+	protected @Getter HttpServletRequest servletRequest;
 
-	private JAXRSServiceFactoryBean serviceFactory = null;
+	private @Getter ApplicationContext applicationContext;
+	private @Getter Environment environment;
 
 	protected Logger log = LogManager.getLogger(this);
 
@@ -74,9 +50,9 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
 		Message<?> message = getGateway().sendSyncMessage(input.build());
-		if(message == null) {
-			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic ["+input.getTopic()+"]");
-			if(input.getAction() != null) {
+		if (message == null) {
+			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
+			if (input.getAction() != null) {
 				errorMessage.append(" with action [");
 				errorMessage.append(input.getAction());
 				errorMessage.append("]");
@@ -86,29 +62,16 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		return message;
 	}
 
-	public Response callSyncGateway(RequestMessageBuilder input) throws ApiException {
-		return callSyncGateway(input, false);
-	}
-
-	public Response callSyncGateway(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
+	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input) throws ApiException {
 		Message<?> response = sendSyncMessage(input);
-		EntityTag eTag = null;
-		if(evaluateEtag) {
-			eTag = ResponseUtils.generateETagHeaderValue(response);
-		}
-		if(eTag != null) {
-			ResponseBuilder builder = rsRequest.evaluatePreconditions(eTag);
-			if(builder != null) { //If the eTag matches the response will be non-null
-				return builder.tag(eTag).build(); //Append the tag and force a 304 (Not Modified) or 412 (Precondition Failed)
-			}
-		}
-		return ResponseUtils.convertToJaxRsResponse(response).tag(eTag).build();
+		// Build the reponse or do some final checks / return a different response
+		return ResponseUtils.convertToSpringResponse(response);
 	}
 
-	public Response callAsyncGateway(RequestMessageBuilder input) {
+	public ResponseEntity<?> callAsyncGateway(RequestMessageBuilder input) {
 		OutboundGateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build());
-		return Response.ok().build();
+		return ResponseEntity.ok().build();
 	}
 
 	@Override
@@ -117,9 +80,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	@Override
-	public final void afterPropertiesSet() throws Exception {
-		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("JAXRS-IAF-API");
-		serviceFactory = server.getServiceFactory();
+	public final void afterPropertiesSet() {
 		environment = applicationContext.getEnvironment();
 	}
 
@@ -129,18 +90,6 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	protected final boolean allowDeprecatedEndpoints() {
-		return getProperty(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
-	}
-
-	protected JAXRSServiceFactoryBean getJAXRSService() {
-		return serviceFactory;
-	}
-
-	protected String getUserPrincipalName() {
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
-			return principal.getName();
-		}
-		return null;
+		return getProperty(DeprecationInterceptor.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
 	}
 }

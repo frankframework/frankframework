@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,84 +19,69 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Test Service Listeners.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
-
-@Path("/")
+@RestController
 public class TestServiceListener extends FrankApiBase {
 
-	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
-	@Path("/test-servicelistener")
-	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("testing")
 	@Description("view a list of all available service-listeners")
-	public Response getServiceListeners() throws ApiException {
+	@GetMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getServiceListeners() throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.GET);
 		return callSyncGateway(builder);
 	}
 
-	@POST
 	@RolesAllowed("IbisTester")
-	@Path("/test-servicelistener")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Relation("testing")
 	@Description("send a message to a service listeners, triggering an adapter to process the message")
-	public Response postServiceListener(MultipartBody inputDataMap) throws ApiException {
-		if(inputDataMap == null) {
-			throw new ApiException("Missing post parameters");
-		}
-
-		String message = null;
+	@PostMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> postServiceListener(TestServiceListenerModel model) throws ApiException {
+		String message;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.UPLOAD);
-		builder.addHeader("service", RequestUtils.resolveStringFromMap(inputDataMap, "service"));
-		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		Attachment filePart = inputDataMap.getAttachment("file");
-		if(filePart != null) {
-			InputStream file = filePart.getObject(InputStream.class);
+		builder.addHeader("service", RequestUtils.resolveRequiredProperty("service", model.service(), null));
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", model.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		MultipartFile filePart = model.file();
 
+		if (filePart != null) {
 			try {
+				InputStream file = filePart.getInputStream();
 				message = XmlEncodingUtils.readXml(file, fileEncoding);
 			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+				throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 			} catch (IOException e) {
 				throw new ApiException("error reading file", e);
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding, true);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
 		builder.setPayload(message);
 		return callSyncGateway(builder);
+	}
+
+	public record TestServiceListenerModel(
+			String service,
+			String encoding,
+			MultipartFile file,
+			MultipartFile message) {
 	}
 }

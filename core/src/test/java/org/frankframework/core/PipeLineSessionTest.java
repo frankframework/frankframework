@@ -205,15 +205,15 @@ public class PipeLineSessionTest {
 		session.put("key9e", "false");
 
 		// Act / Assert
-		assertEquals(true, session.getBoolean("key9"));
-		assertEquals(true, session.getBoolean("key9d"));
-		assertEquals(false, session.getBoolean("key9e"));
+		assertTrue(session.getBoolean("key9"));
+		assertTrue(session.getBoolean("key9d"));
+		assertFalse(session.getBoolean("key9e"));
 		assertNull(session.getBoolean("key-not-there"));
 	}
 
 	@Test
 	public void testBooleanWithDefault() {
-		assertEquals(true, session.get("key9"));
+		assertTrue((Boolean) session.get("key9"));
 		assertTrue(session.get("key9", false));
 		assertFalse(session.get("key9a", false));
 		assertTrue(session.get("key9b", false));

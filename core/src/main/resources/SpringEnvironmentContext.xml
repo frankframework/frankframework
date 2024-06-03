@@ -25,6 +25,9 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Configuration"/>
+
+		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
 	</context:component-scan>
 

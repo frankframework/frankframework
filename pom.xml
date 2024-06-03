@@ -152,7 +152,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.39.1</version>
+				<version>9.39.3</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -713,9 +713,6 @@
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<reuseForks>true</reuseForks>
-					<includes>
-						<include>**/*.java</include>
-					</includes>
 					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 				</configuration>
 			</plugin>
@@ -1082,7 +1079,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>3.5.0</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -1164,6 +1161,7 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
+											<!-- Once testcontainers finally starts using junit5 remove this comment.. <exclude>junit:junit</exclude>-->
 											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
@@ -1337,7 +1335,7 @@
 				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
-<!--				<module>ladybug</module>-->
+				<module>ladybug</module>
 				<module>dbms</module>
 				<module>bundle-minimal</module>
 

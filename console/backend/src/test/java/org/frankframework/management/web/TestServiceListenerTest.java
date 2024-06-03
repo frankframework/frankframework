@@ -1,87 +1,85 @@
 package org.frankframework.management.web;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.frankframework.management.bus.message.MessageBase;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import org.frankframework.management.bus.message.StringMessage;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
+import org.springframework.mock.web.MockPart;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListener>{
+@ContextConfiguration(classes = {WebTestConfiguration.class, TestServiceListener.class})
+public class TestServiceListenerTest extends FrankApiTestBase {
 
-	@Override
-	public TestServiceListener createJaxRsResource() {
-		return new TestServiceListener();
+	private static final String INPUT_MESSAGE = "inputMessage";
+
+	private static final String TEST_SERVICE_LISTENER_ENDPOINT = "/test-servicelistener";
+
+	@Test
+	public void testWrongEncoding() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
+						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes()))
+						.part(getMockParts("service", "dummyService123"))
+						.part(getMockParts("encoding", "fakeEncoding"))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("error").value("unsupported file encoding [fakeEncoding]"));
 	}
 
 	@Test
-	public void testWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("service", "dummyService123"));
-		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
-		attachments.add(new StringAttachment("message", "inputMessage"));
-
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments));
-		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
+	public void testFileWrongEncoding() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
+						.file(createMockMultipartFile("file", "script.xml", INPUT_MESSAGE.getBytes()))
+						.part(getMockParts("service", "dummyService123"))
+						.part(getMockParts("encoding", "fakeEncoding"))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("error").value("unsupported file encoding [fakeEncoding]"));
 	}
 
 	@Test
-	public void testFileWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("service", "dummyService123"));
-		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
-		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
+	public void testMessageServiceListeners() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
+				.thenAnswer(i -> new StringMessage(INPUT_MESSAGE));
 
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments));
-		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
+						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes()))
+						.part(getMockParts("service", "dummyService123"))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().string(INPUT_MESSAGE));
 	}
 
 	@Test
-	public void testMessageServiceListeners() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("service", "dummyService123"));
-		attachments.add(new StringAttachment("message", "inputMessage"));
+	public void testFileServiceListeners() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
+				.thenAnswer(i -> new StringMessage(INPUT_MESSAGE));
 
-		doAnswer(i -> {
-			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
-			Message<?> msg = inputMessage.build();
-			MessageHeaders headers = msg.getHeaders();
-			assertEquals("SERVICE_LISTENER", headers.get("topic"));
-
-			return msg;
-		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments);
-		assertEquals("\"inputMessage\"", response.getEntity().toString());
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
+						.file(createMockMultipartFile("file", null, INPUT_MESSAGE.getBytes()))
+						.part(getMockParts("service", "dummyService123"))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().string(INPUT_MESSAGE));
 	}
 
 	@Test
-	public void testFileServiceListeners() {
-		List<Attachment> attachments = new ArrayList<>();
-		attachments.add(new StringAttachment("service", "dummyService123"));
-		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
+	public void testListServiceListeners() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get(TEST_SERVICE_LISTENER_ENDPOINT))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"SERVICE_LISTENER\",\"action\":\"GET\"}"));
+	}
 
-		doAnswer(i -> {
-			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
-			Message<?> msg = inputMessage.build();
-			MessageHeaders headers = msg.getHeaders();
-			assertEquals("SERVICE_LISTENER", headers.get("topic"));
-
-			return msg;
-		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
-
-		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments);
-		assertEquals("\"inputMessage\"", response.getEntity().toString());
+	private MockPart getMockParts(String name, String value) {
+		return new MockPart(name, value.getBytes());
 	}
 }

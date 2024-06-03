@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,31 +15,24 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * API to get class information
- */
-@Path("/")
+@RestController
 public class ClassInfo extends FrankApiBase {
 
-	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/classinfo/{className}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/classinfo/{className}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("debug")
 	@Description("view a specific class introspection")
-	public Response getClassInfo(@PathParam("className") String className, @QueryParam("base") String baseClassName) {
+	public ResponseEntity<?> getClassInfo(@PathVariable("className") String className, @RequestParam(value = "base", required = false) String baseClassName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG, BusAction.GET);
 		builder.addHeader("className", className);
 		builder.addHeader("baseClassName", baseClassName);

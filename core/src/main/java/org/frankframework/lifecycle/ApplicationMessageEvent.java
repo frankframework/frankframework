@@ -54,11 +54,11 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 		StringBuilder m = new StringBuilder();
 
 		String applicationName = source.getId();
-		m.append("Application [" + applicationName + "] ");
+		m.append("Application [").append(applicationName).append("] ");
 
 		String version = ConfigurationUtils.getApplicationVersion();
 		if (version != null) {
-			m.append("[" + version + "] ");
+			m.append("[").append(version).append("] ");
 		}
 
 		m.append(message);
@@ -73,7 +73,7 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 		}
 
 		if (e != null) {
-			m.append(": (" + ClassUtils.nameOf(e) +") "+ e.getMessage());
+			m.append(": (").append(ClassUtils.nameOf(e)).append(") ").append(e.getMessage());
 		}
 
 		Date date = new Date(getTimestamp());

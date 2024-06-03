@@ -82,8 +82,8 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(datasourceName != null) builder.append(" datasourceName ["+datasourceName+"]");
-		if(configuration != null && getFileName() != null) builder.append(" fileName ["+getFileName()+"]");
+		if(datasourceName != null) builder.append(" datasourceName [").append(datasourceName).append("]");
+		if(configuration != null && getFileName() != null) builder.append(" fileName [").append(getFileName()).append("]");
 		return builder.toString();
 	}
 }

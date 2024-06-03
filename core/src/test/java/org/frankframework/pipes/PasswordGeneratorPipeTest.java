@@ -26,7 +26,7 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
     public void testGenerate() throws Exception {
         pipe.configure();
         String res = pipe.generate(3, 4, 2, 1);
-        assertEquals(res.length(), 10);
+		assertEquals(10, res.length());
         assertFalse(res.isEmpty());
     }
 

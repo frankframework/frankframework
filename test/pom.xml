@@ -34,11 +34,11 @@
 		</dependency>
 
 		<!-- provided scoped dependencies -->
-<!--		<dependency>-->
-<!--			<groupId>org.frankframework</groupId>-->
-<!--			<artifactId>frankframework-ladybug</artifactId>-->
-<!--			<scope>provided</scope>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<dependency><!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
 			<groupId>jakarta.jms</groupId>
 			<artifactId>jakarta.jms-api</artifactId>
@@ -264,10 +264,10 @@
 					<artifactId>frankframework-larva</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-<!--				<dependency>-->
-<!--					<groupId>org.frankframework</groupId>-->
-<!--					<artifactId>frankframework-ladybug</artifactId>-->
-<!--				</dependency>-->
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-ladybug</artifactId>
+				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-console-frontend</artifactId>
@@ -389,6 +389,11 @@
 					<artifactId>activemq-client</artifactId>
 					<version>${activemq.driver.version}</version>
 					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>jakarta.jms</groupId>
+					<artifactId>jakarta.jms-api</artifactId>
+					<scope>compile</scope>
 				</dependency>
 			</dependencies>
 			<build>

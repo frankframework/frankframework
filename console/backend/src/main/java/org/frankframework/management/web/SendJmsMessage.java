@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,68 +15,63 @@
 */
 package org.frankframework.management.web;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Send a message with JMS.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
-
-@Path("/")
+@RestController
 public class SendJmsMessage extends FrankApiBase {
 
-	@POST
+	public record JmsMessageModel(
+			boolean persistent,
+			boolean synchronous,
+			boolean lookupDestination,
+			String destination,
+			String replyTo,
+			String property,
+			String type,
+			String connectionFactory,
+			String encoding,
+			MultipartFile message,
+			MultipartFile file) {
+	}
+
 	@RolesAllowed("IbisTester")
-	@Path("jms/message")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Relation("jms")
 	@Description("put a JMS message on a queue")
-	public Response putJmsMessage(MultipartBody inputDataMap) {
-
+	public ResponseEntity<?> putJmsMessage(@ModelAttribute JmsMessageModel model) throws ApiException {
 		String message = null;
 		String fileName = null;
 		InputStream file = null;
-		if(inputDataMap == null) {
-			throw new ApiException("Missing post parameters");
-		}
 
-		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String connectionFactory = RequestUtils.resolveStringFromMap(inputDataMap, "connectionFactory");
-		String destinationName = RequestUtils.resolveStringFromMap(inputDataMap, "destination");
-		String destinationType = RequestUtils.resolveStringFromMap(inputDataMap, "type");
-		String replyTo = RequestUtils.resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
-		boolean persistent = RequestUtils.resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
-		boolean synchronous = RequestUtils.resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
-		boolean lookupDestination = RequestUtils.resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
-		String messageProperty = RequestUtils.resolveTypeFromMap(inputDataMap, "property", String.class, "");
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", model.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", model.connectionFactory(), null);
+		String destinationName = RequestUtils.resolveRequiredProperty("destination", model.destination(), null);
+		String destinationType = RequestUtils.resolveRequiredProperty("type", model.type(), null);
+		String replyTo = RequestUtils.resolveRequiredProperty("replyTo", model.replyTo(), "");
+		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", model.persistent(), false);
+		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", model.synchronous(), false);
+		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", model.lookupDestination(), false);
+		String messageProperty = RequestUtils.resolveRequiredProperty("property", model.property(), "");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
@@ -88,33 +83,36 @@ public class SendJmsMessage extends FrankApiBase {
 		builder.addHeader("lookupDestination", lookupDestination);
 		builder.addHeader("messageProperty", messageProperty);
 
-		Attachment filePart = inputDataMap.getAttachment("file");
-		if(filePart != null) {
-			fileName = filePart.getContentDisposition().getParameter( "filename" );
-			file = filePart.getObject(InputStream.class);
+		MultipartFile filePart = model.file();
+		if (filePart != null) {
+			fileName = filePart.getOriginalFilename();
+			try {
+				file = filePart.getInputStream();
+			} catch (IOException e) {
+				throw new ApiException("error preparing file content", e);
+			}
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
 					processZipFile(file, builder);
-					return Response.status(Response.Status.OK).build();
+					return ResponseEntity.status(HttpStatus.OK).build();
 				} catch (IOException e) {
 					throw new ApiException("error processing zip file", e);
 				}
-			}
-			else {
+			} else {
 				try {
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
-					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
 					throw new ApiException("error reading file", e);
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding, false);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -125,18 +123,18 @@ public class SendJmsMessage extends FrankApiBase {
 
 	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
-		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
-			int size = (int)entry.getSize();
-			if (size>0) {
-				byte[] b=new byte[size];
-				int rb=0;
-				int chunk=0;
+		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
+			int size = (int) entry.getSize();
+			if (size > 0) {
+				byte[] b = new byte[size];
+				int rb = 0;
+				int chunk = 0;
 				while ((size - rb) > 0) {
-					chunk=archive.read(b,rb,size - rb);
-					if (chunk==-1) {
+					chunk = archive.read(b, rb, size - rb);
+					if (chunk == -1) {
 						break;
 					}
-					rb+=chunk;
+					rb += chunk;
 				}
 				String currentMessage = XmlEncodingUtils.readXml(b, null);
 
@@ -147,4 +145,5 @@ public class SendJmsMessage extends FrankApiBase {
 		}
 		archive.close();
 	}
+
 }

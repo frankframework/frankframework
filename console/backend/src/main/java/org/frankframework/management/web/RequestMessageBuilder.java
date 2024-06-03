@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.frankframework.management.web;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import lombok.Getter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -32,8 +33,6 @@ import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-
-import lombok.Getter;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
@@ -71,7 +70,7 @@ public class RequestMessageBuilder {
 	}
 
 	private void addCustomHeader(String key, Object value) {
-		if(BusTopic.TOPIC_HEADER_NAME.equals(key)) {
+		if (BusTopic.TOPIC_HEADER_NAME.equals(key)) {
 			throw new IllegalStateException("unable to override topic header");
 		}
 		customHeaders.put(key, value);
@@ -101,23 +100,24 @@ public class RequestMessageBuilder {
 	}
 
 	public Message<?> build() {
-		if(SEC_LOG.isInfoEnabled()) {
+		if (SEC_LOG.isInfoEnabled()) {
 			String method = base.getServletRequest().getMethod();
 			String issuedBy = sanitizeForLog(HttpUtils.getCommandIssuedBy(base.getServletRequest()));
-			if("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
-				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getUriInfo().getRequestUri(), issuedBy);
+			if ("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
+				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getServletRequest().getRequestURI(), issuedBy);
 			} else {
 				String headers = customHeaders.entrySet().stream()
 						.map(this::mapHeaderForLog)
-						.collect(Collectors.joining (", "));
-				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, base.getUriInfo().getRequestUri(), issuedBy, headers, payload);
+						.collect(Collectors.joining(", "));
+				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, base.getServletRequest()
+						.getRequestURI(), issuedBy, headers, payload);
 			}
 		}
 
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<?> builder = factory.withPayload(payload);
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		if(action != null) {
+		if (action != null) {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 
@@ -127,8 +127,7 @@ public class RequestMessageBuilder {
 			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
 		}
 
-
-		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
+		for (Map.Entry<String, Object> customHeader : customHeaders.entrySet()) {
 			String key = BusMessageUtils.HEADER_PREFIX + customHeader.getKey();
 			builder.setHeader(key, customHeader.getValue());
 		}
@@ -136,7 +135,7 @@ public class RequestMessageBuilder {
 		return builder.build();
 	}
 
-	private String mapHeaderForLog(Entry<String, Object> entry) {
+	private String mapHeaderForLog(Map.Entry<String, Object> entry) {
 		StringBuilder builder = new StringBuilder(entry.getKey());
 		builder.append("=");
 
