@@ -175,11 +175,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
 			if(csrfEnabled){
 				CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
-				if(StringUtils.isEmpty(csrfCookiePath)) {
+				if(!StringUtils.isEmpty(csrfCookiePath)) {
 					csrfTokenRepository.setCookiePath(csrfCookiePath);
 				}
 
-				http.csrf((csrf) -> csrf
+				http.csrf(csrf -> csrf
 						.csrfTokenRepository(csrfTokenRepository)
 						.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
 				);
