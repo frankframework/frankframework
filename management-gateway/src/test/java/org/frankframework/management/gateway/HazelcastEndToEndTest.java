@@ -56,7 +56,7 @@ public class HazelcastEndToEndTest {
 	}
 
 	@Test
-	public void testHazelcastGatewaysWithoutAuthObject() throws Exception {
+	public void testHazelcastGatewaysWithoutAuthObject() {
 		Message<String> request = new GenericMessage<>("request-string", new MessageHeaders(null));
 		AuthenticationException ex = assertThrows(AuthenticationException.class, () -> outboundGateway.sendSyncMessage(request));
 		assertEquals("no Authentication object found in SecurityContext", ex.getMessage());
@@ -64,7 +64,7 @@ public class HazelcastEndToEndTest {
 
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
-	public void testHazelcastGateways() throws Exception {
+	public void testHazelcastGateways() {
 		Message<String> request = new GenericMessage<>("request-string", new MessageHeaders(null));
 		Message<String> response = outboundGateway.sendSyncMessage(request);
 

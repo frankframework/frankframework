@@ -62,7 +62,7 @@ public class SpringBusExceptionHandler {
 			return messageConverter.apply(cause);
 		}
 
-		public static ManagedException parse(Throwable cause) {
+		public static @Nullable ManagedException parse(Throwable cause) {
 			for (ManagedException me : ManagedException.values()) {
 				if (me.exceptionClass.isAssignableFrom(cause.getClass())) {
 					return me;
@@ -94,7 +94,8 @@ public class SpringBusExceptionHandler {
 
 	@ExceptionHandler(BusException.class)
 	public ResponseEntity<?> toResponse(BusException be) {
-		return ManagedException.parse(be).toResponse(be);
+		HttpStatus status = HttpStatus.valueOf(be.getStatusCode());
+		return ApiException.formatExceptionResponse(be.getMessage(), status);
 	}
 
 	@ExceptionHandler(MessageHandlingException.class)
