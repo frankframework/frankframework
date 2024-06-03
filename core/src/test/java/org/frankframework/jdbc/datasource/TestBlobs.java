@@ -15,7 +15,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.frankframework.dbms.IDbmsSupport;
@@ -33,21 +32,9 @@ public class TestBlobs {
 	protected static final String TABLE_NAME = "testBlobs_TABLE";
 	boolean testBigBlobs = false;
 
-	public static void getBigString(int numBlocks, int blockSize, Consumer<String> consumer) {
-		String tenChars="0123456789";
-		StringBuilder block = new StringBuilder(blockSize);
-		for (int i=0; i<(blockSize+9)/10; i++) {
-			block.append(tenChars);
-		}
-		for (int i=0; i<numBlocks; i++) {
-			consumer.accept(block.toString());
-		}
-	}
-
 	public static String getBigString(int numBlocks, int blockSize) {
-		StringBuilder result = new StringBuilder(numBlocks*blockSize);
-		getBigString(numBlocks, blockSize, s -> result.append(s));
-		return result.toString();
+		String tenChars="0123456789";
+		return tenChars.repeat( numBlocks * (blockSize + 9) / 10);
 	}
 
 	public static int readStream(InputStream inputStream) throws IOException {
