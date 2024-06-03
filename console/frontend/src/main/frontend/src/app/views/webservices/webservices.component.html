@@ -12,7 +12,7 @@
                 <tr>
                   <th>&nbsp;</th>
                   <th>Name</th>
-                  <th>Method</th>
+                  <th>Method(s)</th>
                   <th>IsView</th>
                   <th>UriPattern</th>
                 </tr>
@@ -21,7 +21,7 @@
                 <tr *ngFor="let service of services; index as index">
                   <td>{{ index }}</td>
                   <td>{{ service.name }}</td>
-                  <td>{{ service.method }}</td>
+                  <td>{{ service.methods }}</td>
                   <td>{{ service.view }}</td>
                   <td>
                     <a
@@ -61,7 +61,7 @@
                 <tr *ngFor="let apiListener of apiListeners; index as index">
                   <td>{{ index }}</td>
                   <td>{{ apiListener.uriPattern }}</td>
-                  <td>{{ apiListener.method }}</td>
+                  <td>{{ apiListener.methods }}</td>
                   <td *ngIf="apiListener.error">{{ apiListener.error }}</td>
                   <td class="hideBtn1170">
                     <a

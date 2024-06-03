@@ -2,7 +2,7 @@
     "services": [
         {
             "name": "TestRestListener",
-            "method": [
+            "methods": [
                 "GET"
             ],
             "uriPattern": "rest-uri-pattern",
@@ -19,7 +19,7 @@
     ],
     "apiListeners": [
         {
-            "method": [
+            "methods": [
                 "POST"
             ],
             "uriPattern": "/api-uri-pattern",

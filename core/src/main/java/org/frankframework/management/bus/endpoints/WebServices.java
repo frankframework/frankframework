@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,7 @@ import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.soap.WsdlGeneratorUtils;
+import org.frankframework.util.EnumUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
@@ -246,7 +248,7 @@ public class WebServices extends BusEndpointBase {
 	@JsonInclude(Include.NON_NULL)
 	public class ListenerDAO {
 		private final @Getter String name;
-		private final @Getter List<HttpMethod> method;
+		private final @Getter List<HttpMethod> methods;
 		private final @Getter String uriPattern;
 		private @Getter String receiver;
 		private @Getter String adapter;
@@ -254,20 +256,20 @@ public class WebServices extends BusEndpointBase {
 		public ListenerDAO(RestListener listener) {
 			this.name = listener.getName();
 
-			HttpMethod tempMethod;
+			HttpMethod tempMethod = null;
 			try {
-				tempMethod = HttpMethod.valueOf(listener.getMethod().toUpperCase());
+				tempMethod = EnumUtils.parse(HttpMethod.class, listener.getMethod());
 			} catch (IllegalArgumentException e) {
-				tempMethod = HttpMethod.GET; // Default to GET, when parsing of enum fails
+				log.warn("Invalid method supplied [{}] for listener [{}]", listener.getMethod(), listener.getName());
 			}
-			this.method = List.of(tempMethod);
+			methods = tempMethod != null ? List.of(tempMethod) : Collections.emptyList();
 
 			this.uriPattern = listener.getUriPattern();
 		}
 
 		public ListenerDAO(ApiListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getAllMethods();
+			this.methods = listener.getAllMethods();
 			this.uriPattern = listener.getUriPattern();
 		}
 
