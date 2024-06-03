@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.NumberParameter;
 import org.frankframework.parameters.Parameter;
@@ -61,15 +62,15 @@ public class StoredProcedureQuerySenderTest {
 
 	private PipeLineSession session;
 
-	private String dataSourceName;
+	private Dbms databaseUnderTest;
 
 	@BeforeEach
 	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) {
-		dataSourceName = databaseTestEnvironment.getDataSourceName();
+		databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
 
 		sender = databaseTestEnvironment.getConfiguration().createBean(StoredProcedureQuerySender.class);
 		sender.setSqlDialect("Oracle");
-		sender.setDatasourceName(dataSourceName);
+		sender.setDatasourceName(databaseTestEnvironment.getDataSourceName());
 
 		session = new PipeLineSession();
 	}
@@ -83,7 +84,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureNoResultNoParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
-		assumeFalse("H2".equals(dataSourceName), "H2 driver gives incorrect results for this test case");
+		assumeFalse(Dbms.H2 == databaseUnderTest, "H2 driver gives incorrect results for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -161,7 +162,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureBlobInputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(Set.of("H2", "PostgreSQL", "DB2").contains(dataSourceName), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL, Dbms.DB2).contains(databaseUnderTest), "H2, PSQL, DB2 not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -194,7 +195,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureClobInputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(Set.of("H2", "PostgreSQL", "DB2").contains(dataSourceName), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL, Dbms.DB2).contains(databaseUnderTest), "H2, PSQL, DB2 not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -227,7 +228,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureClobInputParameter2(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(Set.of("H2", "PostgreSQL", "DB2").contains(dataSourceName), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL, Dbms.DB2).contains(databaseUnderTest), "H2, PSQL, DB2 not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -263,7 +264,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureInputAndOutputParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse(Dbms.H2 == databaseUnderTest, "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -297,7 +298,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureInputAndOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse(Dbms.H2 == databaseUnderTest, "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		long id = insertRowWithMessageValue(null, databaseTestEnvironment);
@@ -349,7 +350,7 @@ public class StoredProcedureQuerySenderTest {
 
 	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(Set.of("H2", "PostgreSQL").contains(dataSourceName), "H2, PSQL not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL).contains(databaseUnderTest), "H2, PSQL not supported for this test case");
 
 
 		// Arrange
@@ -386,7 +387,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureClobOutputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(Set.of("H2", "PostgreSQL").contains(dataSourceName), "H2, PSQL not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL).contains(databaseUnderTest), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -420,7 +421,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureBlobOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(Set.of("H2", "PostgreSQL").contains(dataSourceName), "H2, PSQL not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL).contains(databaseUnderTest), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -458,7 +459,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureClobOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(Set.of("H2", "PostgreSQL").contains(dataSourceName), "H2, PSQL not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.POSTGRESQL).contains(databaseUnderTest), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -492,7 +493,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureInputAndOutputParametersXmlOutput(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse(Dbms.H2 == databaseUnderTest, "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -534,7 +535,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureOutputParameterConversion(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse(Dbms.H2 == databaseUnderTest, "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -581,7 +582,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningResultSetQueryTypeSelect(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(Set.of("Oracle", "PostgreSQL").contains(dataSourceName), "Oracle, PSQL not supported for this test case");
+		assumeFalse(Set.of(Dbms.ORACLE, Dbms.POSTGRESQL).contains(databaseUnderTest), "Oracle, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -615,7 +616,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningResultSetQueryTypeOther(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(Set.of("Oracle", "PostgreSQL").contains(dataSourceName), "Oracle, PSQL not supported for this test case");
+		assumeFalse(Set.of(Dbms.ORACLE, Dbms.POSTGRESQL).contains(databaseUnderTest), "Oracle, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -649,7 +650,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningResultSetAndOutParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(Set.of("H2", "Oracle", "PostgreSQL").contains(dataSourceName), "H2, PSQL, Oracle not supported for this test case");
+		assumeFalse(Set.of(Dbms.H2, Dbms.ORACLE, Dbms.POSTGRESQL).contains(databaseUnderTest), "H2, PSQL, Oracle not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -687,7 +688,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningCursorSingleOutParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
-		assumeTrue(dataSourceName.contains("Oracle"), "REFCURSOR not supported, skipping test");
+		assumeTrue(Dbms.ORACLE == databaseUnderTest, "REFCURSOR not supported, skipping test");
 
 		// NOTE: This test only works on a clean database as it selects all rows and matches that against fixed expectation.
 		int rowCount = countAllRows(databaseTestEnvironment);
@@ -728,7 +729,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningCursorInOutParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeTrue(dataSourceName.contains("Oracle"), "REFCURSOR not supported, skipping test");
+		assumeTrue(Dbms.ORACLE == databaseUnderTest, "REFCURSOR not supported, skipping test");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -771,7 +772,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningCursorNotSupported() throws Exception {
-		assumeTrue("MS_SQL".equals(dataSourceName));
+		assumeTrue(Dbms.MSSQL == databaseUnderTest);
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -803,7 +804,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testCallFunction() throws Exception {
-		assumeTrue("Oracle".equalsIgnoreCase(dataSourceName), "CALL to custom function only tested on Oracle so far");
+		assumeTrue(Dbms.ORACLE == databaseUnderTest, "CALL to custom function only tested on Oracle so far");
 
 		// Arrange
 		sender.setQuery("{ ? = call add_numbers(?, ?) }");

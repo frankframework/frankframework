@@ -5,10 +5,17 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+
+import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.frankframework.stream.Message;
@@ -17,14 +24,8 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-
-import lombok.Getter;
 
 public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManager> {
 
@@ -40,7 +41,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws IOException {
 		assumeFalse("DATASOURCE".equals(env.getName()));
-		assumeFalse("H2".equals(env.getDataSourceName()));
+		assumeFalse(Dbms.H2 == env.getDbmsSupport().getDbms());
 
 		// Release any hanging commits that might be from previous tests
 		XaDatasourceCommitStopper.stop(false);

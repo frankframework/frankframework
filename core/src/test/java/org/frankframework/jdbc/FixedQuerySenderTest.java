@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.functional.ThrowingConsumer;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
@@ -41,18 +42,18 @@ public class FixedQuerySenderTest {
 
 	private PipeLineSession session;
 
-	private String dataSourceName;
+	private Dbms databaseUnderTest;
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		this.dataSourceName = databaseTestEnvironment.getDataSourceName();
+		this.databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
 		TestConfiguration configuration = databaseTestEnvironment.getConfiguration();
 		session = new PipeLineSession();
 		session.put(PipeLineSession.MESSAGE_ID_KEY, ConfiguredTestBase.testMessageId);
 		session.put(PipeLineSession.CORRELATION_ID_KEY, ConfiguredTestBase.testCorrelationId);
 
 		fixedQuerySender = new FixedQuerySender();
-		fixedQuerySender.setDatasourceName(dataSourceName);
+		fixedQuerySender.setDatasourceName(databaseUnderTest.getProductName());
 		fixedQuerySender.setName("FQS_TABLE");
 		fixedQuerySender.setIncludeFieldDefinition(false);
 		configuration.autowireByName(fixedQuerySender);
@@ -66,24 +67,24 @@ public class FixedQuerySenderTest {
 		session.close();
 	}
 
-	private void assertSenderException(String dataSourceName, SenderException ex) {
-		switch (dataSourceName) {
-			case "H2":
+	private void assertSenderException(Dbms database, SenderException ex) {
+		switch (database) {
+			case H2:
 				assertThat(ex.getMessage(), containsString("Syntax error in SQL statement"));
 				break;
-			case "DB2":
+			case DB2:
 				assertThat(ex.getMessage(), containsString("SQLSTATE=42601"));
 				break;
-			case "PostgreSQL":
+			case POSTGRESQL:
 				assertThat(ex.getMessage(), containsString("No value specified for parameter 1"));
 				break;
-			case "Oracle":
+			case ORACLE:
 				assertThat(ex.getMessage(), containsString("errorCode [17041]"));
 				break;
-			case "MS_SQL":
+			case MSSQL:
 				assertThat(ex.getMessage(), containsString("The value is not set for the parameter number 1"));
 				break;
-			case "MariaDB":
+			case MARIADB:
 				assertThat(ex.getMessage(), containsString(" escape sequence "));
 				break;
 			default:
@@ -174,7 +175,7 @@ public class FixedQuerySenderTest {
 
 		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
-		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
+		assertSenderException(databaseTestEnvironment.getDbmsSupport().getDbms(), ex);
 	}
 
 	@DatabaseTest
@@ -186,7 +187,7 @@ public class FixedQuerySenderTest {
 
 		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
-		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
+		assertSenderException(databaseTestEnvironment.getDbmsSupport().getDbms(), ex);
 	}
 
 	@DatabaseTest
@@ -197,12 +198,12 @@ public class FixedQuerySenderTest {
 
 		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
-		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
+		assertSenderException(databaseTestEnvironment.getDbmsSupport().getDbms(), ex);
 	}
 
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
-		assumeTrue("H2".equals(dataSourceName) || "Oracle".equals(dataSourceName));
+		assumeTrue(Dbms.H2 == databaseUnderTest || Dbms.ORACLE == databaseUnderTest);
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -217,7 +218,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
-		assumeTrue("H2".equals(dataSourceName) || "Oracle".equals(dataSourceName));
+		assumeTrue(Dbms.H2 == databaseUnderTest || Dbms.ORACLE == databaseUnderTest);
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -232,7 +233,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturned() throws Exception {
-		assumeTrue("H2".equals(dataSourceName) || "Oracle".equals(dataSourceName));
+		assumeTrue(Dbms.H2 == databaseUnderTest || Dbms.ORACLE == databaseUnderTest);
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -258,7 +259,7 @@ public class FixedQuerySenderTest {
 
 
 	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
-		assumeTrue("H2".equals(dataSourceName));
+		assumeTrue(Dbms.H2 == databaseUnderTest);
 		fixedQuerySender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM " + TABLE_NAME + " WHERE 1=0");
 		fixedQuerySender.setOutputFormat(outputFormat);
 		fixedQuerySender.setIncludeFieldDefinition(includeFieldDefinition);
@@ -307,15 +308,8 @@ public class FixedQuerySenderTest {
 	}
 
 	public String getLongString(int sizeInK) {
-		StringBuilder result=new StringBuilder();
-		for(int i=0; i<16; i++) {
-			result.append("0123456789ABCDEF");
-		}
-		String block=result.toString();
-		for(int i=1; i<sizeInK; i++) {
-			result.append(block);
-		}
-		return result.toString();
+		String block="0123456789ABCDEF".repeat(16);
+		return block.repeat(sizeInK);
 	}
 
 	@DatabaseTest
