@@ -768,4 +768,11 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 
+	@Test
+	public void testSkipLockedSupportPresent() {
+		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
+		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
+
+		assertEquals(expectSkipLockedSupport, dbmsSupport.hasSkipLockedFunctionality());
+	}
 }
