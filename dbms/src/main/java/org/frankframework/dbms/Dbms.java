@@ -17,7 +17,6 @@ package org.frankframework.dbms;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.util.ClassUtils;
 
 @Log4j2
 public enum Dbms {
