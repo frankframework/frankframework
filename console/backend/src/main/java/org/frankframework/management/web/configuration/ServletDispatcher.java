@@ -43,10 +43,10 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 	private static final long serialVersionUID = 4L;
 
-	private final Logger secLog = LogManager.getLogger("SEC");
+	private final transient Logger secLog = LogManager.getLogger("SEC");
 
 	@Value("${iaf-api.enabled:true}")
-	private boolean isEnabled;
+	private transient boolean isEnabled;
 
 
 	public ServletDispatcher() {
@@ -94,6 +94,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 		//TODO add X-Rate-Limit to prevent possible clients to flood the IAF API
 
+		// Exceptions should be caught using a HandlerExceptionResolver
 		super.doService(request, response);
 	}
 

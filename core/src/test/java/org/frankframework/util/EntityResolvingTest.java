@@ -147,7 +147,7 @@ public class EntityResolvingTest {
 
 			@Override
 			public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-				sb.append("<"+localName);
+				sb.append("<").append(localName);
 				sb.append(" xmlns=\"").append(uri).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
 				for (int i=0;i<atts.getLength();i++) {
 					sb.append(' ').append(atts.getLocalName(i)).append("=\"").append(atts.getValue(i)).append('"');
@@ -161,7 +161,7 @@ public class EntityResolvingTest {
 					sb.append("/>");
 					elementOpen=false;
 				} else {
-					sb.append("</"+localName+">");
+					sb.append("</").append(localName).append(">");
 				}
 			}
 

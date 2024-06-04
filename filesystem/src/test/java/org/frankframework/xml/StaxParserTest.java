@@ -44,7 +44,7 @@ public class StaxParserTest {
 		impl.read(new XmlNodeType(XmlNodeType.START_DOCUMENT));
 		impl.read(new XmlNodeType(XmlNodeType.START_ELEMENT));
 		String content = impl.readValue();
-		assertEquals(content, "testContent");
+		assertEquals("testContent", content);
 		impl.read(new XmlNodeType(XmlNodeType.END_DOCUMENT));
 	}
 
@@ -55,7 +55,7 @@ public class StaxParserTest {
 		impl.read(new XmlNodeType(XmlNodeType.START_DOCUMENT));
 		impl.read(new XmlNodeType(XmlNodeType.START_ELEMENT));
 		String content = impl.readValue();
-		assertEquals(content, "test\u0003Content");
+		assertEquals("test\u0003Content", content);
 		impl.read(new XmlNodeType(XmlNodeType.END_DOCUMENT));
 	}
 }

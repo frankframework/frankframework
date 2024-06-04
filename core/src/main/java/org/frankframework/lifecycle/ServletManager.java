@@ -252,13 +252,13 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
 		StringBuilder builder = new StringBuilder("registered");
-		builder.append(" servlet ["+serv.getName()+"]");
+		builder.append(" servlet [").append(serv.getName()).append("]");
 		builder.append(" configuration ");
 		builder.append(config);
 
 		getServletContext().log(builder.toString());
 
-		if(log.isDebugEnabled()) builder.append(" class ["+serv.getClassName()+"]");
+		if(log.isDebugEnabled()) builder.append(" class [").append(serv.getClassName()).append("]");
 		log.info(builder::toString);
 	}
 

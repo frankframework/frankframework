@@ -109,7 +109,7 @@ public class SendJmsMessage extends FrankApiBase {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message(), fileEncoding, false);
 		}
 
 		if (StringUtils.isEmpty(message)) {

@@ -24,7 +24,7 @@ class UUIDUtilTest {
 	@Test
 	public void testCreateRandomUUIDRemoveDashes() {
 		String uuid = UUIDUtil.createRandomUUID(true);
-		assertNotEquals(uuid.substring(8, 9), "-"); // assert that dashes are removed
+		assertNotEquals("-", uuid.substring(8, 9)); // assert that dashes are removed
 		assertEquals(32, uuid.length());
 	}
 

@@ -27,7 +27,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
+
+import jakarta.annotation.Nullable;
 
 public class ApiException extends RuntimeException implements Serializable {
 
@@ -80,9 +81,13 @@ public class ApiException extends RuntimeException implements Serializable {
 
 	public ResponseEntity<Object> getResponse() {
 		if (response == null) {
-			response = formatExceptionResponse(expandedMessage, status, null);
+			response = formatExceptionResponse(expandedMessage, status);
 		}
 		return response;
+	}
+
+	protected static ResponseEntity<Object> formatExceptionResponse(String message, HttpStatusCode status) {
+		return formatExceptionResponse(message, status, null);
 	}
 
 	protected static ResponseEntity<Object> formatExceptionResponse(String message, HttpStatusCode status, @Nullable HttpHeaders headers) {

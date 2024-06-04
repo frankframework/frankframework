@@ -1116,7 +1116,7 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(request);
 
 		String sessionAuthToken = (String) session.get("authorizationToken");
-		assertNotNull("session should contain auth token", sessionAuthToken);
+		assertNotNull(sessionAuthToken, "session should contain auth token");
 		assertEquals(authToken, sessionAuthToken, "auth tokens should match");
 
 		assertEquals(200, result.getStatus());
@@ -1155,7 +1155,7 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
 		String sessionAuthToken = (String) session.get("authorizationToken");
-		assertNotNull("session should contain auth token", sessionAuthToken);
+		assertNotNull(sessionAuthToken, "session should contain auth token");
 		assertEquals(authToken, sessionAuthToken, "auth tokens should match");
 
 		assertEquals(200, result.getStatus());

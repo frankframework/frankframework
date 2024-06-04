@@ -23,9 +23,9 @@ public class RequestUtilsTest {
 		InputStream boolNull = new ByteArrayInputStream("".getBytes());
 
 		assertEquals("string", RequestUtils.convert(String.class, string));
-		assertEquals(true, RequestUtils.convert(boolean.class, boolTrue));
-		assertEquals(false, RequestUtils.convert(Boolean.class, boolFalse));
-		assertEquals(false, RequestUtils.convert(boolean.class, boolNull));
+		assertTrue(RequestUtils.convert(boolean.class, boolTrue));
+		assertFalse(RequestUtils.convert(Boolean.class, boolFalse));
+		assertFalse(RequestUtils.convert(boolean.class, boolNull));
 		assertEquals(50, RequestUtils.convert(Integer.class, number).intValue());
 		assertEquals(string, RequestUtils.convert(InputStream.class, string));
 	}

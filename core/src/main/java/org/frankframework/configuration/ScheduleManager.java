@@ -178,11 +178,11 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" state ["+getState()+"]");
-		builder.append(" schedules ["+schedules.size()+"]");
+		builder.append(getClass().getSimpleName() + "@").append(Integer.toHexString(hashCode()));
+		builder.append(" state [").append(getState()).append("]");
+		builder.append(" schedules [").append(schedules.size()).append("]");
 		if(applicationContext != null) {
-			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");
+			builder.append(" applicationContext [").append(applicationContext.getDisplayName()).append("]");
 		}
 		return builder.toString();
 	}

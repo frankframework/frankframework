@@ -29,6 +29,9 @@ import org.springframework.integration.IntegrationPatternType;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
@@ -36,6 +39,7 @@ import com.hazelcast.instance.impl.DefaultNodeContext;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.topic.ITopic;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 
@@ -61,7 +65,10 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 		// Create the response queue here, before sending the request.
 		IQueue<Message<T>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
 
-		Message<T> requestMessage = MessageBuilder.fromMessage(in).setReplyChannelName(tempReplyChannelName).build();
+		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+				.setReplyChannelName(tempReplyChannelName)
+				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
+				.build();
 		requestTopic.publish(requestMessage);
 
 		Message<T> replyMessage = doReceive(responseQueue, receiveTimeout);
@@ -90,6 +97,14 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 		return null;
 	}
 
+	private @Nonnull Authentication getAuthentication() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if(authentication == null) {
+			throw new AuthenticationServiceException("no Authentication object found in SecurityContext"); //This should technically not be possible but...
+		}
+		return authentication;
+	}
+
 	private long receiveTimeout(Message<?> requestMessage) {
 		Long receiveTimeout = headerToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_RECEIVE_TIMEOUT_HEADER));
 		return (receiveTimeout != null ? receiveTimeout : 5000);
@@ -107,7 +122,10 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 	@Override
 	public void sendAsyncMessage(Message<T> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
-		Message<T> requestMessage = MessageBuilder.fromMessage(in).setReplyChannelName(null).build();
+		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+				.setReplyChannelName(null)
+				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
+				.build();
 
 		requestTopic.publishAsync(requestMessage);
 	}
