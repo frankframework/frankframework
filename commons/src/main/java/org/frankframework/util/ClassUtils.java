@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -223,7 +224,8 @@ public abstract class ClassUtils {
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
-			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, ()->valueToSet, ()->castValue.getClass().getCanonicalName(), ()->ClassUtils.nameOf(bean));
+			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue.getClass()
+					.getCanonicalName(), () -> ClassUtils.nameOf(bean));
 
 			method.invoke(bean, castValue);
 		} catch (IllegalAccessException | InvocationTargetException e) {
@@ -231,14 +233,14 @@ public abstract class ClassUtils {
 		}
 	}
 
-	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
-		Class<?> setterArgumentClass = m.getParameters()[0].getType();
+	private static Object parseValueToSet(Method method, String value) throws IllegalArgumentException {
+		Class<?> setterArgumentClass = method.getParameters()[0].getType();
 
 		//Try to parse as primitive
 		try {
 			return convertToType(setterArgumentClass, value);
 		} catch (IllegalArgumentException e) {
-			String fieldName = StringUtil.lcFirst(m.getName().substring(3));
+			String fieldName = StringUtil.lcFirst(method.getName().substring(3));
 			throw new IllegalArgumentException("cannot set field ["+fieldName+"]: " + e.getMessage(), e);
 		}
 	}
@@ -256,9 +258,20 @@ public abstract class ClassUtils {
 	}
 
 	private static Object convertToTypeRawTyped(Class<?> type, String value) throws IllegalArgumentException {
+		if (value == null) {
+			return null;
+		}
 		//Try to parse the value as an Enum
 		if(type.isEnum()) {
 			return parseAsEnum(type, value);
+		}
+		// Unbox an array to its component type. Convert string input to values. Put back into an array with the right type
+		if (type.isArray()) {
+			List<Object> list = StringUtil.splitToStream(value)
+					.map(part -> convertToTypeRawTyped(type.getComponentType(), part))
+					.toList();
+
+			return list.toArray((Object[]) Array.newInstance(type.getComponentType(), 1));
 		}
 
 		try {

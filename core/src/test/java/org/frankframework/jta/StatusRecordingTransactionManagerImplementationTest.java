@@ -17,6 +17,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.frankframework.stream.Message;

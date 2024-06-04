@@ -19,8 +19,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.nimbusds.jose.proc.SecurityContext;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -36,14 +40,8 @@ import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
 import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.proc.SecurityContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 
@@ -168,7 +166,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (StringUtils.isNotEmpty(claimAttributeToValidate)) {
 			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
 					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
-					.collect(Collectors.toList());
+					.toList();
 
 			if (!invalidClaims.isEmpty()) {
 				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
@@ -205,7 +203,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (config != null) {
 				List<String> modifiedUrls = config.getUrlMapping().stream()
 						.map(url -> url.replace("/*", ""))
-						.collect(Collectors.toList());
+						.toList();
 				if (modifiedUrls.size() == 1) {
 					// Replace /api/* with /api. Doing this in ApiListenerServlet.getUrlMapping() is not possible.
 					builder.append(modifiedUrls.get(0));
@@ -215,7 +213,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		builder.append("; method: ").append(getMethods());
+		builder.append("; method: ").append(getAllMethods().stream().map(Enum::name).collect(Collectors.joining(",")));
 
 		if (MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -228,7 +226,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	private boolean hasMethod(HttpMethod method) {
-		return this.methods.contains(method);
+		return methods.contains(method);
 	}
 
 	/**
@@ -264,32 +262,24 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @ff.default GET
 	 */
 	public void setMethod(HttpMethod method) {
-		setMethods(method.name());
+		setMethods(method);
+	}
+
+	// Can not rename this method to getMethods (or use @Getter), as it will conflict with the types (List vs varargs)
+	public List<HttpMethod> getAllMethods() {
+		return methods;
 	}
 
 	/**
-	 * HTTP method(s) to listen to, separated by comma
+	 * HTTP method(s) to listen to. Inside XML Configurations: for multiple values, use a comma as separator.
 	 *
 	 * @ff.default GET
 	 */
-	public void setMethods(String methods) { // Using an Enum array would be better (issue #6149).
-		this.methods = StringUtil.splitToStream(methods)
-				.map(s -> EnumUtils.parse(HttpMethod.class, s))
-				.collect(Collectors.toList());
-
+	public void setMethods(HttpMethod... methods) {
+		this.methods = List.of(methods);
 		if (hasMethod(HttpMethod.OPTIONS)) {
 			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
-	}
-
-	public String getMethods() {
-		return methods.stream()
-				.map(HttpMethod::name)
-				.collect(Collectors.joining(","));
-	}
-
-	public List<HttpMethod> getAllMethods() {
-		return methods;
 	}
 
 	/**
