@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.stream.IntStream;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -100,10 +101,8 @@ public class ReplacingInputStream extends FilterInputStream {
 	 * @see InputStream#read(byte[], int, int)
 	 */
 	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
-		if (b == null) {
-			throw new NullPointerException();
-		} else if (off < 0 || len < 0 || len > b.length - off) {
+	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
+		if (off < 0 || len < 0 || len > b.length - off) {
 			throw new IndexOutOfBoundsException();
 		} else if (len == 0) {
 			return 0;
