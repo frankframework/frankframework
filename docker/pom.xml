@@ -103,6 +103,12 @@
 
 	<profiles>
 		<profile>
+			<id>embedded</id>
+			<modules>
+				<module>embedded</module>
+			</modules>
+		</profile>
+		<profile>
 			<id>Tomcat</id>
 			<modules>
 				<module>Tomcat</module>

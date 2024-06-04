@@ -1,10 +1,12 @@
-services:
-    ff-test:
-        environment:
-            jdbc.dbms.default: postgres-xa
-            jdbc.hostname: postgres
+version: ''
 
-    postgres:
-        image: private.docker.nexus.frankframework.org/ff-test/dbms/postgresql
-        ports:
-            - "5432:5432"
+services:
+  ff-test:
+    environment:
+      jdbc.dbms.default: postgres-xa
+      jdbc.hostname: postgres
+
+  postgres:
+    image: private.docker.nexus.frankframework.org/ff-test/dbms/postgresql
+    ports:
+      - "5432:5432"
