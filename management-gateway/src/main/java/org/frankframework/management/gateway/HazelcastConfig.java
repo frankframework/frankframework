@@ -17,6 +17,7 @@ package org.frankframework.management.gateway;
 
 import java.util.Properties;
 
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.PropertyLoader;
 
 import com.hazelcast.config.Config;
@@ -24,6 +25,7 @@ import com.hazelcast.config.Config;
 public class HazelcastConfig {
 
 	public static final String REQUEST_TOPIC_NAME = "frank_integration_request_topic";
+	public static final String AUTHENTICATION_HEADER_KEY = BusMessageUtils.HEADER_PREFIX+"user";
 
 	static Config createHazelcastConfig() {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
