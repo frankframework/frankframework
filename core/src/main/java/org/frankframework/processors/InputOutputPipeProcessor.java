@@ -173,8 +173,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		handler.setContext(pipeLineSession);
 		try {
 			XmlUtils.parseXml(inputSource, handler);
+			result.closeOnCloseOf(pipeLineSession, owner); // Directly closing the result fails, because the message can also exist and used in the session
 			pipeRunResult.setResult(xmlWriter.toString());
-			result.close();
 		} catch (Exception e) {
 			log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
 		}
@@ -192,8 +192,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		handler.setSession(pipeLineSession);
 		try {
 			XmlUtils.parseXml(inputSource, handler);
+			result.closeOnCloseOf(pipeLineSession, owner);
 			pipeRunResult.setResult(xmlWriter.toString());
-			result.close();
 		} catch (Exception e) {
 			log.warn("Pipeline of adapter [{}] could not restore moved elements on the received message: {}", owner.getName(), e.getMessage());
 		}
