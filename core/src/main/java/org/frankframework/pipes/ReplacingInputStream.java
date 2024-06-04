@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.XmlEncodingUtils;
@@ -51,7 +52,8 @@ public class ReplacingInputStream extends FilterInputStream {
 	private final Queue<Integer> outQueue;
 	private final String replaceNonXmlChar;
 	private final boolean replaceNonXmlChars;
-	private final byte[] search, replacement;
+	private final byte[] replacement;
+	private final byte[] search;
 
 	public ReplacingInputStream(InputStream in, String search, String replacement, boolean replaceNonXmlChars,
 								String replaceNonXmlChar, boolean allowUnicodeSupplementaryCharacters) {
@@ -73,14 +75,13 @@ public class ReplacingInputStream extends FilterInputStream {
 		while (outQueue.isEmpty()) {
 			readAhead();
 
-			if (search.length > 0 && isMatchFound()) {
-				for (byte a : search) {
-					inQueue.remove();
-				}
+			int length = search.length;
+			if (length > 0 && isMatchFound()) {
+				IntStream.range(0, length)
+						.forEach(a -> inQueue.remove());
 
-				for (byte b : replacement) {
-					outQueue.offer((int) b);
-				}
+				IntStream.range(0, replacement.length)
+						.forEach(b -> outQueue.offer((int) replacement[b]));
 			} else {
 				outQueue.add(inQueue.remove());
 			}
@@ -131,14 +132,12 @@ public class ReplacingInputStream extends FilterInputStream {
 	private int getNextValue() throws IOException {
 		int next = super.read();
 
-		if (next != -1 && replaceNonXmlChars) {
-			if (!XmlEncodingUtils.isPrintableUnicodeChar(next, allowUnicodeSupplementaryCharacters)) {
-				if (!StringUtils.isEmpty(replaceNonXmlChar)) {
-					next = replaceNonXmlChar.charAt(0);
-				} else {
-					// If the character needs to be replaced, but no replacementChar was defined, skip to next.
-					next = getNextValue();
-				}
+		if (next != -1 && replaceNonXmlChars && !XmlEncodingUtils.isPrintableUnicodeChar(next, allowUnicodeSupplementaryCharacters)) {
+			if (!StringUtils.isEmpty(replaceNonXmlChar)) {
+				next = replaceNonXmlChar.charAt(0);
+			} else {
+				// If the character needs to be replaced, but no replacementChar was defined, skip to next.
+				next = getNextValue();
 			}
 		}
 		return next;
