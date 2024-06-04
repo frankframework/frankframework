@@ -47,7 +47,7 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.2</activemq.driver.version>
-		<artemis.driver.version>2.33.0</artemis.driver.version>
+		<artemis.driver.version>2.34.0</artemis.driver.version>
 
 		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
 
