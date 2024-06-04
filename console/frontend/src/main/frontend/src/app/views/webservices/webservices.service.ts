@@ -5,13 +5,13 @@ import { AppService } from 'src/app/app.service';
 
 export interface Service {
   name: string;
-  methods: string;
+  methods: string[];
   view: string;
   uriPattern: string;
 }
 
 export interface ApiListener {
-  methods: string;
+  methods: string[];
   uriPattern: string;
   error: string;
 }
