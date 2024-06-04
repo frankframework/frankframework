@@ -367,6 +367,28 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
+	void testVarArgsIntegerSetter() throws Exception {
+		ClassWithEnum bean = new ClassWithEnum();
+		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, "integerVarArgs");
+		Method writeMethod = pd.getWriteMethod();
+		writeMethod.invoke(bean, new Object[]{new Integer[]{8, 3}});
+		assertNotNull(writeMethod);
+		assertEquals("Integer[]", writeMethod.getParameters()[0].getType().getSimpleName());
+		assertEquals(11, bean.getTestInteger());
+	}
+
+	@Test
+	void testVarArgsEnumSetter() throws Exception {
+		ClassWithEnum bean = new ClassWithEnum();
+		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, "enumVarArgs");
+		Method writeMethod = pd.getWriteMethod();
+		writeMethod.invoke(bean, new Object[]{new TestEnum[]{TestEnum.TWO}});
+		assertNotNull(writeMethod);
+		assertEquals("TestEnum[]", writeMethod.getParameters()[0].getType().getSimpleName());
+		assertEquals(TestEnum.TWO, bean.getTestEnum());
+	}
+
+	@Test
 	public void testSuppressAttribute() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 
@@ -505,6 +527,14 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		public void setEnumWithDifferentName(TestEnum testEnum) {
 			this.testEnum = testEnum;
+		}
+
+		public void setEnumVarArgs(TestEnum... testEnum) {
+			this.testEnum = testEnum[0];
+		}
+
+		public void setIntegerVarArgs(Integer... integerVarArgs) {
+			testInteger = integerVarArgs[0] + integerVarArgs[1];
 		}
 
 		@ConfigurationWarning("my test warning")

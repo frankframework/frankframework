@@ -1,22 +1,21 @@
 package org.frankframework.http.rest;
 
+import static org.frankframework.http.rest.ApiListener.HttpMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.ListenerException;
-import org.frankframework.http.rest.ApiListener.HttpMethod;
-import org.frankframework.util.EnumUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.core.ListenerException;
 
 public class ApiServiceDispatcherTest {
 
@@ -84,19 +83,15 @@ public class ApiServiceDispatcherTest {
 		}
 	}
 
-	private ApiListener createServiceClient(ApiListenerServletTest.Methods method, String uri) {
+	private ApiListener createServiceClient(HttpMethod method, String uri) {
 		return createServiceClient(List.of(method), uri);
 	}
 
-	private ApiListener createServiceClient(List<ApiListenerServletTest.Methods> method, String uri) {
+	private ApiListener createServiceClient(List<HttpMethod> method, String uri) {
 		ApiListener listener = new ApiListener();
 		listener.setName("Listener4Uri["+uri+"]");
 
-		String methods = method.stream()
-				.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
-				.collect(Collectors.joining(","));
-
-		listener.setMethods(methods);
+		listener.setMethods(method.toArray(new HttpMethod[0]));
 		listener.setUriPattern(uri);
 		return listener;
 	}
@@ -104,21 +99,21 @@ public class ApiServiceDispatcherTest {
 	@Test
 	void testMultipleMethodsSameEndpoint() throws Exception {
 		String uri = "testEndpoint1";
-		dispatcher.registerServiceClient(createServiceClient(ApiListenerServletTest.Methods.GET, uri));
-		dispatcher.registerServiceClient(createServiceClient(ApiListenerServletTest.Methods.POST, uri));
+		dispatcher.registerServiceClient(createServiceClient(HttpMethod.GET, uri));
+		dispatcher.registerServiceClient(createServiceClient(HttpMethod.POST, uri));
 		testMultipleMethods(uri);
 	}
 
 	@Test
 	void testMultipleMethodsSameEndpointSameListener() throws Exception {
 		String uri = "testEndpoint1";
-		dispatcher.registerServiceClient(createServiceClient(List.of(ApiListenerServletTest.Methods.GET, ApiListenerServletTest.Methods.POST), uri));
+		dispatcher.registerServiceClient(createServiceClient(List.of(HttpMethod.GET, HttpMethod.POST), uri));
 		testMultipleMethods(uri);
 	}
 
 	@Test
 	void testFindMatchSingleAsterisk() throws ListenerException {
-		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/*/addresses/345");
+		ApiListener listener = createServiceClient(HttpMethod.GET, "/customers/*/addresses/345");
 		dispatcher.registerServiceClient(listener);
 
 		List<ApiDispatchConfig> matchingConfig = dispatcher.findAllMatchingConfigsForUri("/customers/123/addresses/345");
@@ -138,7 +133,7 @@ public class ApiServiceDispatcherTest {
 	void testFindPartialPatternMatchWithWildcards(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
 		// Arrange
 		for (String uriPattern : uriPatterns.split("\\|")) {
-			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
+			ApiListener listener = createServiceClient(HttpMethod.GET, uriPattern);
 			dispatcher.registerServiceClient(listener);
 		}
 
@@ -167,11 +162,11 @@ public class ApiServiceDispatcherTest {
 		// Arrange
 		for (String uriPattern : uriPatterns.split("\\|")) {
 			String[] methodAndPattern = uriPattern.split(":");
-			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.valueOf(methodAndPattern[0]), methodAndPattern[1]);
+			ApiListener listener = createServiceClient(HttpMethod.valueOf(methodAndPattern[0]), methodAndPattern[1]);
 			dispatcher.registerServiceClient(listener);
 		}
 
-		ApiListener.HttpMethod method = ApiListener.HttpMethod.valueOf(requestMethod);
+		HttpMethod method = HttpMethod.valueOf(requestMethod);
 
 		// Act
 		ApiDispatchConfig matchingConfig = dispatcher.findConfigForRequest(method, requestUri);
@@ -192,13 +187,13 @@ public class ApiServiceDispatcherTest {
 		assertEquals("[GET, POST]", config.getMethods().toString());
 
 		//Test what happens after we remove 1 ServiceClient
-		dispatcher.unregisterServiceClient(createServiceClient(ApiListenerServletTest.Methods.POST, uri));
+		dispatcher.unregisterServiceClient(createServiceClient(HttpMethod.POST, uri));
 		ApiDispatchConfig config2 = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNotNull(config2);
 		assertEquals("[GET]", config2.getMethods().toString());
 
 		//Test what happens after we remove both ServiceClient in the same DispatchConfig
-		dispatcher.unregisterServiceClient(createServiceClient(ApiListenerServletTest.Methods.GET, uri));
+		dispatcher.unregisterServiceClient(createServiceClient(HttpMethod.GET, uri));
 		ApiDispatchConfig config3 = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNull(config3);
 	}
