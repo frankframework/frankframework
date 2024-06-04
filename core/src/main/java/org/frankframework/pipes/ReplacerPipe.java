@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -62,6 +63,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.getProperty("line.separator")) : null;
 			}
 		}
+
 		if (isReplaceNonXmlChars()) {
 			if (getReplaceNonXmlChar() != null) {
 				if (getReplaceNonXmlChar().length() > 1) {
@@ -73,27 +75,22 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String input;
+		ReplacingInputStream inputStream = getReplacingInputStream(message, getFind(), getReplace());
+
+		Message result = new Message(inputStream, message.copyContext().withoutSize().withCharset(StandardCharsets.US_ASCII.name()));
+		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
+		message.unscheduleFromCloseOnExitOf(session);
+		result.closeOnCloseOf(session, this);
+
+		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	private ReplacingInputStream getReplacingInputStream(Message message, String find, String replace) throws PipeRunException {
 		try {
-			input = message.asString();
+			return new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(), getReplaceNonXmlChar(), isAllowUnicodeSupplementaryCharacters());
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		if (StringUtils.isEmpty(input)) {
-			return new PipeRunResult(getSuccessForward(), input);
-		}
-
-		if (StringUtils.isNotEmpty(getFind())) {
-			input = input.replace(getFind(), getReplace());
-		}
-		if (isReplaceNonXmlChars()) {
-			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
-				input = XmlEncodingUtils.stripNonValidXmlCharacters(input, isAllowUnicodeSupplementaryCharacters());
-			} else {
-				input = XmlEncodingUtils.replaceNonValidXmlCharacters(input, getReplaceNonXmlChar().charAt(0), false, isAllowUnicodeSupplementaryCharacters());
-			}
-		}
-		return new PipeRunResult(getSuccessForward(), input);
 	}
 
 	/**

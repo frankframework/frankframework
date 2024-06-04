@@ -37,7 +37,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "dsf", session);
 		assertFalse(res.getPipeForward().getName().isEmpty());
-
 	}
 
 	@Test
@@ -94,5 +93,4 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.containsString("replaceNonXmlChar [klkl] has to be one character"));
 	}
-
 }

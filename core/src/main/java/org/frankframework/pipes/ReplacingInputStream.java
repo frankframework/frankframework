@@ -1,0 +1,158 @@
+package org.frankframework.pipes;
+
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.util.XmlEncodingUtils;
+
+/**
+ * Created by simon on 8/29/17.
+ * Copyright 2017 Simon Haoran Liang
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the
+ * following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+ * NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+public class ReplacingInputStream extends FilterInputStream {
+
+	private final boolean allowUnicodeSupplementaryCharacters;
+	private final Queue<Integer> inQueue;
+	private final Queue<Integer> outQueue;
+	private final String replaceNonXmlChar;
+	private final boolean replaceNonXmlChars;
+	private final byte[] search, replacement;
+
+	public ReplacingInputStream(InputStream in, String search, String replacement, boolean replaceNonXmlChars,
+								String replaceNonXmlChar, boolean allowUnicodeSupplementaryCharacters) {
+
+		super(in);
+		this.replaceNonXmlChars = replaceNonXmlChars;
+		this.replaceNonXmlChar = replaceNonXmlChar == null ? "" : replaceNonXmlChar;
+		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
+
+		this.inQueue = new LinkedList<>();
+		this.outQueue = new LinkedList<>();
+
+		this.search = (search == null) ? "".getBytes() : search.getBytes();
+		this.replacement = (replacement == null) ? "".getBytes() : replacement.getBytes();
+	}
+
+	@Override
+	public int read() throws IOException {
+		while (outQueue.isEmpty()) {
+			readAhead();
+
+			if (search.length > 0 && isMatchFound()) {
+				for (byte a : search) {
+					inQueue.remove();
+				}
+
+				for (byte b : replacement) {
+					outQueue.offer((int) b);
+				}
+			} else {
+				outQueue.add(inQueue.remove());
+			}
+		}
+
+		return outQueue.remove();
+	}
+
+	@Override
+	public int read(byte[] b) throws IOException {
+		return read(b, 0, b.length);
+	}
+
+	/**
+	 * copied straight from InputStream implementation, just needed to use {@link #read()} from this class
+	 * @see InputStream#read(byte[], int, int)
+	 */
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		if (b == null) {
+			throw new NullPointerException();
+		} else if (off < 0 || len < 0 || len > b.length - off) {
+			throw new IndexOutOfBoundsException();
+		} else if (len == 0) {
+			return 0;
+		}
+
+		int c = read();
+		if (c == -1) {
+			return -1;
+		}
+		b[off] = (byte) c;
+
+		int i = 1;
+		try {
+			for (; i < len; i++) {
+				c = read();
+				if (c == -1) {
+					break;
+				}
+				b[off + i] = (byte) c;
+			}
+		} catch (IOException ee) {
+		}
+		return i;
+	}
+
+	private int getNextValue() throws IOException {
+		int next = super.read();
+
+		if (next != -1 && replaceNonXmlChars) {
+			if (!XmlEncodingUtils.isPrintableUnicodeChar(next, allowUnicodeSupplementaryCharacters)) {
+				if (!StringUtils.isEmpty(replaceNonXmlChar)) {
+					next = replaceNonXmlChar.charAt(0);
+				} else {
+					// If the character needs to be replaced, but no replacementChar was defined, skip to next.
+					next = getNextValue();
+				}
+			}
+		}
+		return next;
+	}
+
+	private boolean isMatchFound() {
+		Iterator<Integer> iterator = inQueue.iterator();
+
+		for (byte b : search) {
+			if (!iterator.hasNext() || b != iterator.next()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private void readAhead() throws IOException {
+		// Work up some look-ahead with a sensible default if search is empty
+		int searchLength = (search.length == 0) ? 1: search.length;
+
+		while (inQueue.size() < searchLength) {
+			int next = getNextValue();
+
+			inQueue.offer(next);
+
+			if (next == -1) {
+				break;
+			}
+		}
+	}
+}
