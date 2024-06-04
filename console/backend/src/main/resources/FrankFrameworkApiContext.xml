@@ -12,6 +12,10 @@
 		<!-- make sure only load the Spring MVC controllers ;) -->
 	</context:component-scan>
 
+	<context:component-scan base-package="org.frankframework.management.websocket">
+		<!-- lets not mix MVC controllers with websocket handlers/controllers -->
+	</context:component-scan>
+
 	<mvc:interceptors>
 		<bean id="deprecationInterceptor" class="org.frankframework.management.web.configuration.DeprecationInterceptor" />
 	</mvc:interceptors>
