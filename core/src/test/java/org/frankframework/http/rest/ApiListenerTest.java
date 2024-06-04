@@ -31,16 +31,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 public class ApiListenerTest {
 
@@ -318,7 +319,7 @@ public class ApiListenerTest {
 	@Test
 	public void testCannotConsumeGETMultiMethod(){
 		// Given
-		listener.setMethods(methodsAsString(HttpMethod.GET, HttpMethod.POST));
+		listener.setMethods(HttpMethod.GET, HttpMethod.POST);
 		listener.setConsumes(MediaTypes.JSON);
 
 		// Expect/When
@@ -338,7 +339,7 @@ public class ApiListenerTest {
 	@Test
 	public void testCannotConsumeDELETEMultiMethod(){
 		// Given
-		listener.setMethods(methodsAsString(HttpMethod.DELETE, HttpMethod.POST));
+		listener.setMethods(HttpMethod.DELETE, HttpMethod.POST);
 		listener.setConsumes(MediaTypes.JSON);
 
 		// Expect/When

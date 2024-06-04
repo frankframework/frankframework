@@ -53,7 +53,7 @@ public class FixedQuerySenderTest {
 		session.put(PipeLineSession.CORRELATION_ID_KEY, ConfiguredTestBase.testCorrelationId);
 
 		fixedQuerySender = new FixedQuerySender();
-		fixedQuerySender.setDatasourceName(databaseUnderTest.getProductName());
+		fixedQuerySender.setDatasourceName(databaseTestEnvironment.getDataSourceName());
 		fixedQuerySender.setName("FQS_TABLE");
 		fixedQuerySender.setIncludeFieldDefinition(false);
 		configuration.autowireByName(fixedQuerySender);
@@ -69,27 +69,13 @@ public class FixedQuerySenderTest {
 
 	private void assertSenderException(Dbms database, SenderException ex) {
 		switch (database) {
-			case H2:
-				assertThat(ex.getMessage(), containsString("Syntax error in SQL statement"));
-				break;
-			case DB2:
-				assertThat(ex.getMessage(), containsString("SQLSTATE=42601"));
-				break;
-			case POSTGRESQL:
-				assertThat(ex.getMessage(), containsString("No value specified for parameter 1"));
-				break;
-			case ORACLE:
-				assertThat(ex.getMessage(), containsString("errorCode [17041]"));
-				break;
-			case MSSQL:
-				assertThat(ex.getMessage(), containsString("The value is not set for the parameter number 1"));
-				break;
-			case MARIADB:
-				assertThat(ex.getMessage(), containsString(" escape sequence "));
-				break;
-			default:
-				assertThat(ex.getMessage(), containsString("parameter"));
-				break;
+			case H2 -> assertThat(ex.getMessage(), containsString("Syntax error in SQL statement"));
+			case DB2 -> assertThat(ex.getMessage(), containsString("SQLSTATE=42601"));
+			case POSTGRESQL -> assertThat(ex.getMessage(), containsString("No value specified for parameter 1"));
+			case ORACLE -> assertThat(ex.getMessage(), containsString("errorCode [17041]"));
+			case MSSQL -> assertThat(ex.getMessage(), containsString("The value is not set for the parameter number 1"));
+			case MARIADB -> assertThat(ex.getMessage(), containsString(" escape sequence "));
+			default -> assertThat(ex.getMessage(), containsString("parameter"));
 		}
 	}
 

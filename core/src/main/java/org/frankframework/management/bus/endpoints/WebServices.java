@@ -19,18 +19,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 
 import javax.xml.stream.XMLStreamException;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -63,6 +64,7 @@ import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.soap.WsdlGeneratorUtils;
+import org.frankframework.util.EnumUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
@@ -184,18 +186,14 @@ public class WebServices extends BusEndpointBase {
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
+			ApiListener listener = config.getApiListener(config.getMethods().iterator().next()); // The first httpMethod will resolve in the right listener
+			Receiver<?> receiver = listener.getReceiver();
+			IAdapter adapter = receiver == null ? null : receiver.getAdapter();
+			ListenerDAO dao = new ListenerDAO(listener);
+			if (adapter != null) dao.setAdapter(adapter);
+			if (receiver != null) dao.setReceiver(receiver);
 
-			Set<HttpMethod> methods = config.getMethods();
-			for (HttpMethod method : methods) {
-				ApiListener listener = config.getApiListener(method);
-				Receiver<?> receiver = listener.getReceiver();
-				IAdapter adapter = receiver == null? null : receiver.getAdapter();
-				ListenerDAO dao = new ListenerDAO(listener);
-				if (adapter!=null) dao.setAdapter(adapter);
-				if (receiver!=null) dao.setReceiver(receiver);
-
-				apiListeners.add(dao);
-			}
+			apiListeners.add(dao);
 		}
 		return apiListeners;
 	}
@@ -245,20 +243,28 @@ public class WebServices extends BusEndpointBase {
 	@JsonInclude(Include.NON_NULL)
 	public class ListenerDAO {
 		private final @Getter String name;
-		private final @Getter String method;
+		private final @Getter List<HttpMethod> methods;
 		private final @Getter String uriPattern;
 		private @Getter String receiver;
 		private @Getter String adapter;
 
 		public ListenerDAO(RestListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getMethod();
+
+			HttpMethod tempMethod = null;
+			try {
+				tempMethod = EnumUtils.parse(HttpMethod.class, listener.getMethod());
+			} catch (IllegalArgumentException e) {
+				log.warn("Invalid method supplied [{}] for listener [{}]", listener.getMethod(), listener.getName());
+			}
+			methods = tempMethod != null ? List.of(tempMethod) : Collections.emptyList();
+
 			this.uriPattern = listener.getUriPattern();
 		}
 
 		public ListenerDAO(ApiListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getMethods(); //TODO: method now glues all method names together
+			this.methods = listener.getAllMethods();
 			this.uriPattern = listener.getUriPattern();
 		}
 
