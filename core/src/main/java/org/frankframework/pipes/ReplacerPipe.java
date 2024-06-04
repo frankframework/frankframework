@@ -77,7 +77,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ReplacingInputStream inputStream = getReplacingInputStream(message, getFind(), getReplace());
 
-		Message result = new Message(inputStream, message.copyContext().withoutSize().withCharset(StandardCharsets.US_ASCII.name()));
+		Message result = new Message(inputStream, message.copyContext().withoutSize());
 		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
 		message.unscheduleFromCloseOnExitOf(session);
 		result.closeOnCloseOf(session, this);
