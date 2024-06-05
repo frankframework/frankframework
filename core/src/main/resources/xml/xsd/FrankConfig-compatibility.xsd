@@ -6320,10 +6320,13 @@
         <xs:union memberTypes="HttpMethodAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="methods" type="xs:string">
+    <xs:attribute name="methods">
       <xs:annotation>
-        <xs:documentation>HTTP method(s) to listen to, separated by comma Default: GET</xs:documentation>
+        <xs:documentation>HTTP method(s) to listen to. Inside XML Configurations: for multiple values, use a comma as separator. Default: GET</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HttpMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="uriPattern" type="xs:string" use="required">
       <xs:annotation>
@@ -11549,15 +11552,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="MoveFilePipe">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MoveFilePipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="ObfuscatePipe">
         <xs:complexType>
           <xs:complexContent>
@@ -14248,106 +14242,6 @@
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.MailSenderPipe" />
   </xs:complexType>
-  <xs:complexType name="MoveFilePipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="MoveFilePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.MoveFilePipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="MoveFilePipeDeclaredAttributeGroup">
-    <xs:attribute name="filename" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="directory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>base directory where files are moved from</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="wildcardSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key that contains the name of the filter to use (only used if wildcard is not set)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="wildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to replace</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="move2dir" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>destination directory</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="move2file" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the destination file (if not specified, the name of the file to move is taken)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="move2fileSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key that contains the name of the file to use (only used if move2file is not set)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="numberOfAttempts" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>maximum number of attempts before throwing an exception Default: 10</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="waitBeforeRetry" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Time &lt;i&gt;in milliseconds&lt;/i&gt; between attempts Default: 1000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="numberOfBackups" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept. Default: 5</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="overwrite" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists. when set &lt;code&gt;false&lt;/code&gt; and &lt;code&gt;numberofbackups&lt;/code&gt; set to 0, a counter is added to the destination filename ('basename_###.ext') Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="append" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; and the destination file already exists, the content of the file to move is written to the end of the destination file. this implies &lt;code&gt;overwrite=false&lt;/code&gt; Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="deleteEmptyDirectory" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the directory from which a file is moved is deleted when it contains no other files Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="createDirectory" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the directory to move to is created if it does not exist Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="prefix" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string which is inserted at the start of the destination file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="suffix" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string which is inserted at the end of the destination file (and replaces the extension if present)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="throwException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;numberofbackups&lt;/code&gt; is set to 0 and the destination file already exists a piperunexception is thrown (instead of adding a counter to the destination filename) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="MoveFilePipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="MoveFilePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="ObfuscatePipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
