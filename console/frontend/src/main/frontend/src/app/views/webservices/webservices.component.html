@@ -69,7 +69,7 @@
                 <tr *ngFor="let apiListener of apiListeners; index as index">
                   <td>{{ index }}</td>
                   <td>{{ apiListener.uriPattern }}</td>
-                  <td>{{ apiListener.methods }}</td>
+                  <td>{{ apiListener.methods.join(', ') }}</td>
                   <td *ngIf="apiListener.error">{{ apiListener.error }}</td>
                   <td class="hideBtn1170">
                     <a

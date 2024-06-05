@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -252,11 +254,12 @@ public abstract class ClassUtils {
 	 * @throws IllegalArgumentException (or NumberFormatException) when the value cannot be converted to the given type T.
 	 */
 	@SuppressWarnings("unchecked")
-	@Nonnull
+	@Nullable
 	public static <T> T convertToType(Class<T> type, String value) throws IllegalArgumentException {
 		return (T) convertToTypeRawTyped(type, value);
 	}
 
+	@Nullable
 	private static Object convertToTypeRawTyped(Class<?> type, String value) throws IllegalArgumentException {
 		if (value == null) {
 			return null;

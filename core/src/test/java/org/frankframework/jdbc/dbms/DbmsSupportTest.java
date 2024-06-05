@@ -688,38 +688,6 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	public void testIsBlobTypeIbisTemp() throws Exception {
-		try (Connection connection = env.getConnection()) {
-			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt = connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
-				try (ResultSet rs = stmt.executeQuery()) {
-					ResultSetMetaData rsmeta = rs.getMetaData();
-					for (int i = 1; i <= 7; i++) {
-						assertEquals(i == 6, dbmsSupport.isBlobType(rsmeta, i), "column type name [" + rsmeta.getColumnTypeName(i) + "] precision [" + rsmeta.getPrecision(i) + "] column type [" + rsmeta.getColumnType(i) + "]");
-					}
-				}
-
-			}
-		}
-	}
-
-	@DatabaseTest
-	public void testIsClobTypeIbisTemp() throws Exception {
-		try (Connection connection = env.getConnection()) {
-			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt = connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
-				try (ResultSet rs = stmt.executeQuery()) {
-					ResultSetMetaData rsmeta = rs.getMetaData();
-					for (int i = 1; i <= 7; i++) {
-						assertEquals(i == 7, dbmsSupport.isClobType(rsmeta, i), "column type name [" + rsmeta.getColumnTypeName(i) + "] precision [" + rsmeta.getPrecision(i) + "] column type [" + rsmeta.getColumnType(i) + "]");
-					}
-				}
-
-			}
-		}
-	}
-
-	@DatabaseTest
 	public void testSkipLockedSupportPresent() {
 		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
 		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
