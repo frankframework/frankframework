@@ -10,7 +10,7 @@
 			</exits>
 
 			<!-- Set FileName -->
-			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test.txt" >
+			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test1.txt" >
  			 <forward name="success" path="setFileData"/>
 			</pipe>
 
@@ -102,7 +102,7 @@
 				name="delete file"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	action="delete"
-	        	filename="${testdata.dir}/test.txt"
+	        	filename="${testdata.dir}/test1.txt"
 	        	deleteEmptyFolder="true">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
@@ -121,7 +121,7 @@
 				name="delete file no directory no filename"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	action="delete"
-	        	filename="${testdata.dir}/test.txt">
+	        	filename="${testdata.dir}/test1.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
@@ -137,13 +137,21 @@
 
 			<!-- List files -->
 			<pipe
-				name="list files"
+				name="list files1"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 	        	action="list"
-	        	wildcard="dummy*.txt"
+	        	wildcard="dummy1*.txt"
 				inputFolder="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
+			<pipe
+				name="list files2"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="list"
+				wildcard="dummy2*.txt"
+				inputFolder="${testdata.dir}">
+				<forward name="success" path="EXIT"/>
+			</pipe>
 
 			<!-- Create file and info -->
 			<pipe name="create file" className="org.frankframework.pipes.LocalFileSystemPipe"

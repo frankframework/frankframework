@@ -34,7 +34,7 @@
 				name="write file"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="write"
-				filename="${testdata.dir}/mfp/test.txt"
+				filename="${testdata.dir}/mfp/test1.txt"
 				getInputFromFixedValue="test"
 				createFolder="true">
 				<forward name="success" path="write file2"/>
@@ -78,7 +78,7 @@
 				name="move file [dir_file]"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="move"
-				filename="${testdata.dir}/mfp/test.txt"
+				filename="${testdata.dir}/mfp/test1.txt"
 				destination="${testdata.dir}/mfp2"
 				createFolder="true">
 				<forward name="success" path="list files"/>
@@ -90,7 +90,7 @@
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="move"
 				destination="${testdata.dir}/mfp2"
-				getInputFromFixedValue="${testdata.dir}/mfp/test.txt"
+				getInputFromFixedValue="${testdata.dir}/mfp/test1.txt"
 				createFolder="true">
 				<forward name="success" path="list files"/>
 			</pipe>
@@ -131,7 +131,7 @@
 				name="move file [move2fileSessionKey]2"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="move"
-				filename="${testdata.dir}/mfp/test.txt"
+				filename="${testdata.dir}/mfp/test1.txt"
 				createFolder="true">
 				<param name="destination" sessionKey="move2destination"/>
 				<forward name="success" path="rename file"/>
@@ -140,7 +140,7 @@
 				name="rename file"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="rename"
-				filename="${testdata.dir}/mfp2/test.txt"
+				filename="${testdata.dir}/mfp2/test1.txt"
 				destination="${testdata.dir}/mfp2/new_test.txt">
 				<forward name="success" path="list files"/>
 			</pipe>
