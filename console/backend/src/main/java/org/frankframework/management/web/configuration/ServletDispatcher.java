@@ -67,6 +67,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 		ServletRegistration.Dynamic servletRegistration = (ServletRegistration.Dynamic) servletConfig.getServletContext().getServletRegistration(getName());
 		servletRegistration.setAsyncSupported(true);
 		servletRegistration.setMultipartConfig(new MultipartConfigElement(""));
+//		servletRegistration.addMapping();
 
 		log.debug("initialize {} servlet", this::getName);
 		super.init(servletConfig);

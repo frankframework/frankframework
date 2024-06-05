@@ -1,4 +1,4 @@
-package org.frankframework.management.websocket;
+package org.frankframework.management.web;
 
 import org.frankframework.util.JacksonUtils;
 import org.springframework.web.socket.TextMessage;

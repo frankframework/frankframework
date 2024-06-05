@@ -1,12 +1,19 @@
-package org.frankframework.management.websocket;
+package org.frankframework.management.web;
 
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.client.standard.WebSocketContainerFactoryBean;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.RequestUpgradeStrategy;
+import org.springframework.web.socket.server.standard.StandardWebSocketUpgradeStrategy;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 /*@Configuration
 @EnableWebSocketMessageBroker
@@ -27,30 +34,24 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
 @Configuration
 @EnableWebSocket
+@Log4j2
 public class WebSocketConfiguration implements WebSocketConfigurer {
 
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-//		registry.addHandler(greetingHandler(), getUrlMapping("greeting")).setAllowedOrigins("*");
-		registry.addHandler(greetingHandler(), "/greeting").setAllowedOrigins("*");
+		registry.addHandler(new GreetingHandler(), getUrlMapping("greeting"))
+				.setAllowedOrigins("*")
+				.addInterceptors(new HttpSessionHandshakeInterceptor());
+
+		log.debug("Registering WebSocket handlers");
 	}
 
-	@Bean
-	public WebSocketHandler greetingHandler() {
-		return new GreetingHandler();
-	}
-
-	@Bean
-	public WebSocketContainerFactoryBean createWebSocketContainer() {
-		WebSocketContainerFactoryBean container = new WebSocketContainerFactoryBean();
-		container.setMaxTextMessageBufferSize(8192);
-		container.setMaxBinaryMessageBufferSize(8192);
-		container.setMaxSessionIdleTimeout(30_000);
-		container.setAsyncSendTimeout(30_000);
-		return container;
-	}
+//	@Bean
+//	public WebSocketHandler greetingHandler() {
+//		return new GreetingHandler();
+//	}
 
 	private String getUrlMapping(String path) {
-		return "/iaf/ws/" + path;
+		return "/ws/" + path;
 	}
 }
