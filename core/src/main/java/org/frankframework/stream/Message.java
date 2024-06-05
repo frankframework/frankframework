@@ -999,7 +999,7 @@ public class Message implements Serializable, Closeable {
 
 	public void assertNotClosed() {
 		if (isClosed()) {
-			throw new IllegalStateException("Message is already closed! " + getObjectId());
+			throw new IllegalStateException(getObjectId() + " is used after is has been closed!");
 		}
 	}
 
