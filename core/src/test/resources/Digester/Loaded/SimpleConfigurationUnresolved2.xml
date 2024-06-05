@@ -23,7 +23,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloOtherWorld">
 			<exit name="EXIT" state="success"/>
-			<pipe name="HelloOtherWorld" returnString="Hello Other World ${digester.property} [${secret}] &lt;@quot;&gt;" className="org.frankframework.pipes.FixedResultPipe">
+			<pipe name="HelloOtherWorld" getInputFromFixedValue="Hello Other World ${digester.property} [${secret}] &lt;@quot;&gt;" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
