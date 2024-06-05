@@ -1,7 +1,5 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <!--     <uib-alert ng-repeat="alert in alerts | orderBy:'type'" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert> -->
-
-  <ul class="alert p-n m-n">
+  <ul class="alert p-n m-n" data-cy-status-component="configuration-warnings">
     <li
       *ngIf="
         freeDiskSpacePercentage &&
@@ -41,7 +39,6 @@
       </li>
       <li
         *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1"
-        data-cy-status-alert="true"
         class="list-group-item alert-warning"
       >
         <i class="m-r-md fa fa-info-circle"></i>
