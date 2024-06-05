@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2016 Nationale-Nederlanden, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 	}
 
 	private void printCharData(boolean startElement) throws SAXException {
-		if (charDataBuilder.length() == 0) {
+		if (charDataBuilder.isEmpty()) {
 			return;
 		}
 		if (inCDATASection) {
