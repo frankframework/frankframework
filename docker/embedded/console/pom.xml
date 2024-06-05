@@ -14,7 +14,7 @@
 	</parent>
 
 	<properties>
-		<config.image.name>frankframework-console</config.image.name>
+		<config.image.name>frank-console</config.image.name>
 		<config.image.tag>${config.image.name}:${revision}</config.image.tag>
 	</properties>
 
