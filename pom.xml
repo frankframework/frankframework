@@ -31,7 +31,7 @@
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.1</frankdoc.version>
-		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
+		<javadoc-plugin.version>3.7.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.2.224</h2.driver.version>
@@ -47,7 +47,7 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.2</activemq.driver.version>
-		<artemis.driver.version>2.33.0</artemis.driver.version>
+		<artemis.driver.version>2.34.0</artemis.driver.version>
 
 		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
 
@@ -142,7 +142,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.2.0-jre</version>
+				<version>33.2.1-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>
@@ -492,7 +492,7 @@
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>3.10.0</version>
+				<version>3.11.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>

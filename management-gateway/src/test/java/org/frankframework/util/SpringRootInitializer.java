@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.security.messaging.context.SecurityContextPropagationChannelInterceptor;
 
 /**
  * A minimal Spring ApplicationContext which contains no beans and no configuration.
@@ -27,9 +26,7 @@ public class SpringRootInitializer {
 
 	@Bean(name = "frank-management-bus")
 	public MessageChannel createDefaultChannel() {
-		PublishSubscribeChannel channel = new PublishSubscribeChannel();// mock(PollableChannel.class);
-		channel.addInterceptor(new SecurityContextPropagationChannelInterceptor());
-		return channel;
+		return new PublishSubscribeChannel();// mock(PollableChannel.class);
 	}
 
 	@Bean
