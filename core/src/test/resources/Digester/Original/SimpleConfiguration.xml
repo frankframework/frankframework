@@ -8,7 +8,7 @@
 				<exits>
 					<exit path="EXIT" state="success"/>
 				</exits>
-				<pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World">
+				<pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedResult="Hello World">
 					<forward name="success" path="EXIT"/>
 				</pipe>
 			</pipeline>

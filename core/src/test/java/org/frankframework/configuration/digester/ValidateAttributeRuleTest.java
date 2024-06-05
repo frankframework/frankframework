@@ -423,12 +423,11 @@ public class ValidateAttributeRuleTest extends Mockito {
 				hasItem(containsString("DeprecatedPipe2InAdapter3"))
 		)));
 		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
-				containsString("DeprecatedPipe1InAdapter2"),
 				containsString("DeprecatedPipe2InAdapter2"),
 				containsString("DeprecatedPipe1InAdapter4"),
 				containsString("DeprecatedPipe2InAdapter4")
 		));
-		assertEquals(4, configurationWarnings.getWarnings().size());
+		assertEquals(3, configurationWarnings.getWarnings().size());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -453,9 +452,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 					hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
 					hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
 			)));
-			assertEquals(4, configurationWarnings.getWarnings().size());
+			assertEquals(3, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
-					containsString("[DeprecatedPipe1InAdapter2] on line [35] column [87]"),
 					containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
 					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [66]"),
 					containsString("[DeprecatedPipe2InAdapter4] on line [82] column [6]")

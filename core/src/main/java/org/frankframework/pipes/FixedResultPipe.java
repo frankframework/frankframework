@@ -15,15 +15,11 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.transform.TransformerException;
-
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -31,55 +27,20 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterValue;
-import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.Misc;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringResolver;
-import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
- * Produces a fixed result that does not depend on the input message. It may return the contents of a file
- * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise the
- * value of attribute <code>returnString</code> is returned.
- * <br/><br/>
- * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
- * performs the following steps:
- * <ol>
- * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.</li>
- * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
- * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>?{...}</code> here.</li>
- * 
- * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
- * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
- * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
- * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
- * 
- * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
- * system properties, pipelinesession variables and application properties. Please note that
- * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
- * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
- * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.</li>
- * </ol>
- * <br/>
- * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
- * is relative to the configuration's root directory.
- *
- * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
- * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
- *
- * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
+ * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
+ * provide this by using the <code>filename</code> attribute or with a <code>param</code> element to be able to
+ * use a sessionKey for instance.
  *
  * @author Johan Verrips
+ * @ff.parameters The <code>filename</code> parameter is used to specify the file to open from the classpath. This can be an
+ * 		absolute or relative path. If a file is referenced by a relative path, the path is relative to the configuration's root directory.
+ * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
@@ -87,133 +48,77 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
 
-	private AppConstants appConstants;
-	private @Getter String filename;
-	private @Getter String filenameSessionKey;
-	private @Getter String returnString;
-	private @Getter boolean substituteVars;
-	private @Getter String replaceFrom;
-	private @Getter String replaceTo;
-	private @Getter String styleSheetName;
-	private @Getter boolean replaceFixedParams;
-	private @Getter String substitutionStartDelimiter = "?";
+	private static final String PARAMETER_FILENAME = "filename";
 
-	private TransformerPool transformerPool;
+	private @Getter String filename;
 
 	/**
-	 * checks for correct configuration, and translates the filename to
-	 * a file, to check existence.
-	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
-	 * <code>returnString</code>, so that the <code>returnString</code>
-	 * may always be returned.
-	 * @throws ConfigurationException
+	 * checks for correct configuration, and checks whether the given filename actually exists
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
-		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
+
+		this.filename = determineFilename();
+
 		if (StringUtils.isNotEmpty(getFilename())) {
 			URL resource = null;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception searching for ["+getFilename()+"]", e);
+				throw new ConfigurationException("got exception searching for [" + getFilename() + "]", e);
 			}
-			if (resource==null) {
-				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
+			if (resource == null) {
+				throw new ConfigurationException("cannot find resource [" + getFilename() + "]");
 			}
-			try {
-				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
-			} catch (Throwable e) {
-				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
-			}
-		}
-		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString==null) { // allow an empty returnString to be specified
-			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
-		}
-		if (StringUtils.isNotEmpty(getStyleSheetName())) {
-			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result=getReturnString();
-		String filename;
-		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
-			filename = session.getString(getFilenameSessionKey());
-		} else {
-			filename = getFilename();
-		}
+		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
+
+		Message result;
+
 		if (StringUtils.isNotEmpty(filename)) {
 			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception searching for ["+filename+"]", e);
+				throw new PipeRunException(this, "got exception searching for [" + filename + "]", e);
 			}
+
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				}
-				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
+				throw new PipeRunException(this, "cannot find resource [" + filename + "]");
 			}
-			try (Message msg = new UrlMessage(resource)) {
-				result = msg.asString();
-			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
-			}
-		}
-		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
-			result = result.replace(getReplaceFrom(), getReplaceTo());
-		}
-		if (!getParameterList().isEmpty()) {
-			try {
-				ParameterValueList pvl = getParameterList().getValues(message, session);
-				for(ParameterValue pv : pvl) {
-					final String replaceFrom;
-					if (isReplaceFixedParams()) {
-						replaceFrom=pv.getName();
-					} else {
-						replaceFrom=substitutionStartDelimiter+"{"+pv.getName()+"}";
-					}
-					String to = pv.asStringValue("");
-					result= result.replace(replaceFrom, to);
-				}
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
+
+			result = new UrlMessage(resource);
+
+			log.debug("returning fixed result filename [{}]", filename);
+			if (!Message.isNull(result)) {
+				return new PipeRunResult(getSuccessForward(), result);
 			}
 		}
 
-		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
-		if (isSubstituteVars()) {
-			result=StringResolver.substVars(result, session, appConstants);
-		}
-
-		if (transformerPool != null) {
-			try{
-				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
-			} catch (SAXException e) {
-				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
-			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this, "got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
-			}
-		}
-
-		log.debug("returning fixed result [{}]", result);
-		return new PipeRunResult(getSuccessForward(), result);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	/**
-	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
-	 * system properties (1), PipelineSession variables (2), application properties (3).
-	 *
-	 * @ff.default false
-	 */
-	public void setSubstituteVars(boolean substitute){
-		this.substituteVars=substitute;
+	private String determineFilename() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getFilename())) {
+			return getFilename();
+		}
+
+		ParameterList parameterList = getParameterList();
+		if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME) != null) {
+			return parameterList.findParameter(PARAMETER_FILENAME).getValue();
+		}
+
+		throw new ConfigurationException("No filename parameter found");
 	}
 
 	/**
@@ -221,57 +126,5 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
-	}
-
-	/**
-	 * Name of the session key containing the file name of the file containing the result message.
-	 */
-	public void setFilenameSessionKey(String filenameSessionKey) {
-		this.filenameSessionKey = filenameSessionKey;
-	}
-
-	/**
-	 * Returned message.
-	 */
-	public void setReturnString(String returnString) {
-		this.returnString = returnString;
-	}
-
-	/**
-	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
-	 */
-	public void setReplaceFrom(String replaceFrom){
-		this.replaceFrom=replaceFrom;
-	}
-
-	/**
-	 * See <code>replaceFrom</code>.
-	 */
-	public void setReplaceTo(String replaceTo){
-		this.replaceTo=replaceTo;
-	}
-
-	/**
-	 * File name of XSLT stylesheet to apply.
-	 */
-	public void setStyleSheetName (String styleSheetName){
-		this.styleSheetName=styleSheetName;
-	}
-
-	/**
-	 * When set <code>true</code>, parameter replacement matches <code>name-of-parameter</code>, not <code>?{name-of-parameter}</code>
-	 *
-	 * @ff.default false
-	 */
-	public void setReplaceFixedParams(boolean b){
-		replaceFixedParams=b;
-	}
-
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
-	public void setUseOldSubstitutionStartDelimiter(boolean old) {
-		if(old) {
-			substitutionStartDelimiter = "$";
-		}
 	}
 }
