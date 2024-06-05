@@ -814,12 +814,7 @@ public class Message implements Serializable, Closeable {
 	 * @return Message[1234abcd:ByteArrayInputStream]
 	 */
 	public String getObjectId() {
-		StringBuilder result = new StringBuilder("Message[");
-		result.append(Integer.toHexString(hashCode()));
-		result.append(":");
-		result.append(getRequestClass());
-
-		return result.append("]").toString();
+		return "Message[" + Integer.toHexString(hashCode()) + ":" + getRequestClass() + "]";
 	}
 
 	public static Message asMessage(Object object) {
@@ -1004,7 +999,7 @@ public class Message implements Serializable, Closeable {
 
 	public void assertNotClosed() {
 		if (isClosed()) {
-			throw new IllegalStateException("Message is already closed!");
+			throw new IllegalStateException("Message is already closed! " + getObjectId());
 		}
 	}
 
