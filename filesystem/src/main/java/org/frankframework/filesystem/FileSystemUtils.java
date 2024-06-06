@@ -339,6 +339,12 @@ public class FileSystemUtils {
 					file.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
 				}
 			}
+			if (fileSystem instanceof IHasCustomProperties<?>) {
+				IHasCustomProperties<F> fsWithCustomProperties = (IHasCustomProperties<F>) fileSystem;
+				for (Map.Entry<String, String> property : fsWithCustomProperties.getCustomProperties(f).entrySet()) {
+					file.addAttribute(property.getKey(), property.getValue());
+				}
+			}
 		}
 	}
 

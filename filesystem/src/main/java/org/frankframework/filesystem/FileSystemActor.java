@@ -342,6 +342,10 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 
+					if (fileSystem instanceof IHasCustomProperties<?> && pvl != null) {
+						((IHasCustomProperties<F>)fileSystem).setCustomProperties(file, pvl.toStringMap());
+					}
+
 					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
 					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}

@@ -25,7 +25,6 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -117,6 +116,15 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
+		return result;
+	}
+
+	@Nonnull
+	public Map<String, String> toStringMap() {
+		Map<String, String> result = new LinkedHashMap<>(map.size());
+		getParameterValueMap().forEach((k, v) -> {
+			result.put(k, v.asStringValue());
+		});
 		return result;
 	}
 

@@ -10,9 +10,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,18 +27,20 @@ import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.IHasCustomProperties;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, IHasCustomProperties<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private boolean configured=false;
 	private boolean opened=false;
+	private final Set<String> customPropertyNames = new HashSet<>();
 
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -355,4 +360,25 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return "Mock!";
 	}
 
+	@Nonnull
+	@Override
+	public Set<String> getCustomPropertyNames() {
+		return customPropertyNames;
+	}
+
+	@Override
+	public void setCustomPropertyNames(@Nonnull Set<String> customPropertyNames) {
+		this.customPropertyNames.clear();
+		this.customPropertyNames.addAll(customPropertyNames);
+	}
+
+	@Nonnull
+	public Map<String, String> getCustomProperties(@Nonnull M file) {
+		return file.getCustomProperties();
+	}
+
+	@Override
+	public void setCustomProperty(@Nonnull M file, @Nonnull String key, @Nonnull String value) {
+		file.getCustomProperties().put(key, value);
+	}
 }
