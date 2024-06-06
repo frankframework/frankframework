@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ public interface OutboundGateway extends IntegrationPattern {
 	default IntegrationPatternType getIntegrationPatternType() {
 		return IntegrationPatternType.outbound_gateway;
 	}
-
 
 	/**
 	 * T in T out.

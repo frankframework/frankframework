@@ -7,9 +7,7 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.JacksonUtils;
 import org.springframework.http.MediaType;
-import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 
 /**

@@ -23,7 +23,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.integration.IntegrationPatternType;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
@@ -54,11 +53,6 @@ public class OutboundGatewayFactory implements InitializingBean, ApplicationCont
 		}
 
 		gateway = (OutboundGateway) SpringUtils.createBean(applicationContext, gatewayClass);
-		IntegrationPatternType type = gateway.getIntegrationPatternType();
-		if(IntegrationPatternType.outbound_gateway != type) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] must be of an Outbound Gateway");
-		}
-
 		log.info("created gateway [{}]", gateway);
 	}
 
