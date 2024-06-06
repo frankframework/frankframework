@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -36,10 +37,8 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Getter;
-
 /**
- * Selects an forward, based on XPath evaluation
+ * Selects a forward, based on XPath evaluation
  *
  * @ff.forward then The configured condition is met
  * @ff.forward else The configured condition is not met
@@ -86,9 +85,6 @@ public class XmlIf extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward;
-		PipeForward pipeForward;
-
 		String sInput;
 		if (StringUtils.isEmpty(getSessionKey())) {
 			if (Message.isEmpty(message)) {
@@ -111,16 +107,17 @@ public class XmlIf extends AbstractPipe {
 			}
 		}
 
+		String forward;
 		if (tp != null) {
 			try {
-				Map<String,Object> parametervalues = null;
+				Map<String, Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				forward = tp.transform(sInput, parametervalues, isNamespaceAware());
 			} catch (Exception e) {
-				throw new PipeRunException(this,"cannot evaluate expression",e);
+				throw new PipeRunException(this, "cannot evaluate expression", e);
 			}
 		} else if (StringUtils.isNotEmpty(getRegex())) {
 			forward = sInput.matches(getRegex()) ? thenForwardName : elseForwardName;
@@ -134,8 +131,7 @@ public class XmlIf extends AbstractPipe {
 
 		log.debug("determined forward [{}]", forward);
 
-		pipeForward=findForward(forward);
-
+		PipeForward pipeForward = findForward(forward);
 		if (pipeForward == null) {
 			throw new PipeRunException (this, "cannot find forward or pipe named [" + forward + "]");
 		}
@@ -155,13 +151,13 @@ public class XmlIf extends AbstractPipe {
 		this.sessionKey = sessionKey;
 	}
 
-	/** a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward */
+	/** a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward */
 	public void setExpressionValue(String expressionValue){
 		this.expressionValue = expressionValue;
 	}
 
 	/**
-	 * forward returned when <code>'true'</code>
+	 * forward returned when output is <code>true</code>
 	 * @ff.default then
 	 */
 	public void setThenForwardName(String thenForwardName){
@@ -169,7 +165,7 @@ public class XmlIf extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when 'false'
+	 * forward returned when output is <code>false</code>
 	 * @ff.default else
 	 */
 	public void setElseForwardName(String elseForwardName){
@@ -181,7 +177,7 @@ public class XmlIf extends AbstractPipe {
 		xpathExpression = string;
 	}
 
-	/** regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward */
+	/** Regular expression to be applied to the input-message (ignored if <code>xpathExpression</code> is specified). The input-message matching the given regular expression leads to the 'then'-forward */
 	public void setRegex(String regex){
 		this.regex = regex;
 	}
@@ -194,7 +190,7 @@ public class XmlIf extends AbstractPipe {
 		this.xsltVersion = xsltVersion;
 	}
 
-	/** namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. */
+	/** namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}

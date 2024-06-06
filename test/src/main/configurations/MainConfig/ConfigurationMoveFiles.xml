@@ -6,6 +6,7 @@
 		<pipeline firstPipe="cleanup dir">
 			<exits>
 				<exit path="EXIT" state="success"/>
+				<exit path="ERROR" state="error"/>
 			</exits>
 
 			<LocalFileSystemPipe
@@ -104,8 +105,20 @@
 				wildcard="*.txt"
 				destination="${testdata.dir}/mfp2"
 				createFolder="true">
-				<forward name="success" path="list files"/>
+				<forward name="success" path="list files with check"/>
 			</pipe>
+			<LocalFileSystemPipe
+				name="list files with check"
+				action="list"
+				inputFolder="${testdata.dir}/mfp2/"
+				createFolder="true"
+				wildcard="*.txt">
+				<forward name="success" path="output-check"/>
+			</LocalFileSystemPipe>
+			<XmlIfPipe name="output-check" xpathExpression="count(/directory/file) = 2" thenForwardName="answerOk" elseForwardName="ERROR"/>
+			<FixedResultPipe name="answerOk" returnString="ok">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
 
 			<!-- Move file with use of wildcard and input message -->
 			<pipe

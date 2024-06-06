@@ -555,7 +555,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	/**
-	 * If set to <code>true</code>, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist
+	 * If <code>true</code>: if a non-existing folder is part of the fileName, it will be created inside the root folder. Side-effect: value of <code>inputFolder</code> is checked when a message passes the pipe, not during startup.
 	 * @ff.default false
 	 */
 	public void setCreateFolder(boolean createFolder) {

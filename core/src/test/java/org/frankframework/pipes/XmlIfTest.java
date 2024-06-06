@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -115,6 +116,48 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.start();
 
 		pipeRunResult = doPipe(pipe, "test", session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	@Disabled("broken in the current implementation, see #6963")
+	void testInputRegexTest() throws Exception {
+		pipe.setRegex("(hoi)+");
+		pipe.configure();
+		pipe.start();
+
+		String input = "hoi a hoi";
+
+		// Act & Assert 1: Test with matching regex
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+
+		// Act & Assert 2: Test with non-matching regex
+		pipe.setRegex("(test3)+");
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	@Disabled("Current regex implementation does not support multiline input. See #6963")
+	void realWorldMultilineInputRegexTest() throws Exception {
+		pipe.setRegex("(test1)+");
+		pipe.configure();
+		pipe.start();
+
+		String input = """
+			<directory>
+				<file name="test1.txt"/>
+				<file name="test2.txt"/>
+			</directory>""";
+
+		// Act & Assert 1: Test with matching regex
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+
+		// Act & Assert 2: Test with non-matching regex
+		pipe.setRegex("(test3)+");
+		pipeRunResult = doPipe(pipe, input, session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
