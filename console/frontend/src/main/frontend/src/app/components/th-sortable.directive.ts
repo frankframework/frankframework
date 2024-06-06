@@ -11,13 +11,13 @@ import {
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortEvent = {
-  column: string;
+  column: string | number;
   direction: SortDirection;
 };
 
 export function updateSortableHeaders(
   headers: QueryList<ThSortableDirective>,
-  column: string,
+  column: string | number | symbol,
 ): void {
   for (const header of headers) {
     if (header.sortable !== column) {
@@ -28,6 +28,11 @@ export function updateSortableHeaders(
 
 const compare = (v1: string | number, v2: string | number): 1 | -1 | 0 =>
   v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+
+/** This is pretty bad, non primitive types won't be covered correctly (null, undefined, object, etc) */
+const anyCompare = <T>(v1: T, v2: T): 1 | -1 | 0 =>
+  v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+
 export function basicTableSort<T extends Record<string, string | number>>(
   array: T[],
   headers: QueryList<ThSortableDirective>,
@@ -39,6 +44,22 @@ export function basicTableSort<T extends Record<string, string | number>>(
 
   return [...array].sort((a, b) => {
     const order = compare(a[column], b[column]);
+    return direction === 'asc' ? order : -order;
+  });
+}
+
+/** Doesn't support all keyof types sadly, for now only string | number */
+export function basicAnyValueTableSort<T>(
+  array: T[],
+  headers: QueryList<ThSortableDirective>,
+  { column, direction }: SortEvent,
+): T[] {
+  updateSortableHeaders(headers, column);
+
+  if (direction == null || column == '') return array;
+
+  return [...array].sort((a, b) => {
+    const order = anyCompare(a[column as keyof T], b[column as keyof T]);
     return direction === 'asc' ? order : -order;
   });
 }
