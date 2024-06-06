@@ -86,8 +86,8 @@ public class Message implements Serializable, Closeable {
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final long serialVersionUID = 437863352486501445L;
-	private final transient Cleaner.Cleanable cleanable;
-	private final transient MessageNotClosedAction messageNotClosedAction;
+	private transient Cleaner.Cleanable cleanable;
+	private transient MessageNotClosedAction messageNotClosedAction;
 
 	private @Nullable Object request;
 	private @Getter @Nonnull String requestClass;
@@ -381,10 +381,8 @@ public class Message implements Serializable, Closeable {
 
 	@Override
 	public void close() throws IOException {
-		if (messageNotClosedAction != null) {
-			messageNotClosedAction.calledByClose = true;
-			cleanable.clean();
-		}
+		messageNotClosedAction.calledByClose = true;
+		cleanable.clean();
 		if (request instanceof AutoCloseable closeable) {
 			CloseUtils.closeSilently(closeable);
 		}
@@ -816,12 +814,7 @@ public class Message implements Serializable, Closeable {
 	 * @return Message[1234abcd:ByteArrayInputStream]
 	 */
 	public String getObjectId() {
-		StringBuilder result = new StringBuilder("Message[");
-		result.append(Integer.toHexString(hashCode()));
-		result.append(":");
-		result.append(getRequestClass());
-
-		return result.append("]").toString();
+		return "Message[" + Integer.toHexString(hashCode()) + ":" + getRequestClass() + "]";
 	}
 
 	public static Message asMessage(Object object) {
@@ -829,6 +822,7 @@ public class Message implements Serializable, Closeable {
 			return nullMessage();
 		}
 		if (object instanceof Message message) {
+			message.assertNotClosed();
 			return message;
 		}
 		if (object instanceof URL rL) {
@@ -841,6 +835,7 @@ public class Message implements Serializable, Closeable {
 			return new PathMessage(path);
 		}
 		if (object instanceof MessageWrapper wrapper) {
+			wrapper.getMessage().assertNotClosed();
 			return wrapper.getMessage();
 		}
 		if (object instanceof RawMessageWrapper) {
@@ -860,6 +855,7 @@ public class Message implements Serializable, Closeable {
 			return string;
 		}
 		if (object instanceof Message message) {
+			message.assertNotClosed();
 			return message.asString();
 		}
 		if (object instanceof MessageWrapper wrapper) {
@@ -992,6 +988,19 @@ public class Message implements Serializable, Closeable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
+		// Register the message for cleaning later
+		messageNotClosedAction = new MessageNotClosedAction(this.toString());
+		cleanable = cleaner.register(this, messageNotClosedAction);
+	}
+
+	public boolean isClosed() {
+		return messageNotClosedAction.calledByClose;
+	}
+
+	public void assertNotClosed() {
+		if (isClosed()) {
+			throw new IllegalStateException(getObjectId() + " is used after is has been closed!");
+		}
 	}
 
 	/**

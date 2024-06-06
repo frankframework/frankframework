@@ -116,15 +116,18 @@ public class ParameterList extends ArrayList<IParameter> {
 				throw new ParameterException("<input message>", "Cannot preserve message for parameter resolution", e);
 			}
 		}
+		if (inputValueRequiredForResolution && message != null) {
+			message.assertNotClosed();
+		}
 
 		ParameterValueList result = new ParameterValueList();
-		for (IParameter parm : this) {
+		for (IParameter param : this) {
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to
 			// each session variable whose name starts with the name of the original parameter
-			if (isWildcardSessionKey(parm)) {
-				addMatchingSessionKeys(result, parm, message, session, namespaceAware);
+			if (isWildcardSessionKey(param)) {
+				addMatchingSessionKeys(result, param, message, session, namespaceAware);
 			} else {
-				result.add(getValue(result, parm, message, session, namespaceAware));
+				result.add(getValue(result, param, message, session, namespaceAware));
 			}
 		}
 		return result;
