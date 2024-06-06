@@ -14,7 +14,6 @@ import org.springframework.messaging.MessageHeaders;
  * Used in the unit tests to just return the input in the correct format to be able to test only the controllers
  *
  * @see WebTestConfiguration
- * @param <T>
  */
 public class SpringUnitTestLocalGateway implements OutboundGateway {
 
@@ -45,6 +44,12 @@ public class SpringUnitTestLocalGateway implements OutboundGateway {
 
 	@Override
 	public <I> void sendAsyncMessage(Message<I> in) {
+		/*
+		 * Can be tested with a Mockito capture:
+		 * ArgumentCaptor<Message<String>> requestCapture = ArgumentCaptor.forClass(Message.class);
+		 * doCallRealMethod().when(handler).sendAsyncMessage(requestCapture.capture());
+		 * Message<String> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
+		 */
 	}
 
 }
