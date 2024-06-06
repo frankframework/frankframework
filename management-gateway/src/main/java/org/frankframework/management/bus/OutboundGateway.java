@@ -16,20 +16,27 @@
 package org.frankframework.management.bus;
 
 import org.springframework.integration.IntegrationPattern;
+import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
 
-public interface OutboundGateway<T> extends IntegrationPattern {
+public interface OutboundGateway extends IntegrationPattern {
+
+	@Override
+	default IntegrationPatternType getIntegrationPatternType() {
+		return IntegrationPatternType.outbound_gateway;
+	}
+
 
 	/**
 	 * T in T out.
 	 * @param in Message to send
 	 * @return Response message
 	 */
-	public Message<T> sendSyncMessage(Message<T> in);
+	public <I, O> Message<O> sendSyncMessage(Message<I> in);
 
 	/**
 	 * T in, no reply
 	 * @param in Message to send
 	 */
-	public void sendAsyncMessage(Message<T> in);
+	public <I> void sendAsyncMessage(Message<I> in);
 }

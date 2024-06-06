@@ -28,7 +28,7 @@ import lombok.Setter;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.util.SpringUtils;
 
-public class HttpOutboundGateway<T> implements InitializingBean, ApplicationContextAware, OutboundGateway<T> {
+public class HttpOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {
 
 	private HttpOutboundHandler handler;
 	private @Setter ApplicationContext applicationContext;
@@ -46,15 +46,16 @@ public class HttpOutboundGateway<T> implements InitializingBean, ApplicationCont
 		SpringUtils.autowireByType(applicationContext, handler);
 	}
 
-	// T in T out.
+	// I in, O out
 	@Override
-	public Message<T> sendSyncMessage(Message<T> in) {
-		return (Message<T>) handler.handleRequestMessage(in);
+	@SuppressWarnings("unchecked")
+	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
+		return (Message<O>) handler.handleRequestMessage(in);
 	}
 
-	// T in, no reply
+	// I in, no reply
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I> void sendAsyncMessage(Message<I> in) {
 		handler.handleRequestMessage(in);
 	}
 

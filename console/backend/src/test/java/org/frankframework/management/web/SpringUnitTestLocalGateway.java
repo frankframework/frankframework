@@ -18,21 +18,18 @@ import org.springframework.messaging.MessageHeaders;
  * @see WebTestConfiguration
  * @param <T>
  */
-public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {
-	@Override
-	protected void onInit() {
-	}
+public class SpringUnitTestLocalGateway implements OutboundGateway {
 
 	@Override
-	public Message<T> sendSyncMessage(Message<T> in) {
+	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		return new Message<>() {
 			@Override
-			public T getPayload() {
+			public O getPayload() {
 				TestGatewayMessageResponse messageResponse = new TestGatewayMessageResponse(
 						getHeaders().get("topic", String.class), getHeaders().get("action", String.class)
 				);
 
-				return (T) JacksonUtils.convertToJson(messageResponse);
+				return (O) JacksonUtils.convertToJson(messageResponse);
 			}
 
 			@Override
@@ -49,12 +46,7 @@ public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport imple
 	}
 
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I> void sendAsyncMessage(Message<I> in) {
 	}
 
-	/* must (re-)throw exceptions and not publish them to a dead-letter-queue. */
-	@Override
-	public MessageChannel getErrorChannel() {
-		return null;
-	}
 }
