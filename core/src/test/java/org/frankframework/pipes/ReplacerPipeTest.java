@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunResult;
 
 /**
  * ReplacerPipe Tester.

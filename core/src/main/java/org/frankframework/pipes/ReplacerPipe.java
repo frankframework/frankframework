@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -38,12 +37,12 @@ import org.frankframework.util.XmlEncodingUtils;
 @ElementType(ElementTypes.TRANSLATOR)
 public class ReplacerPipe extends FixedForwardPipe {
 
-	private String find;
-	private String replace;
-	private String lineSeparatorSymbol = null;
-	private boolean replaceNonXmlChars = false;
-	private String nonXmlReplacementCharacter;
 	private boolean allowUnicodeSupplementaryCharacters = false;
+	private String find;
+	private String lineSeparatorSymbol = null;
+	private String nonXmlReplacementCharacter;
+	private String replace;
+	private boolean replaceNonXmlChars = false;
 
 	{
 		setSizeStatistics(true);
@@ -63,12 +62,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 			}
 		}
 
-		if (isReplaceNonXmlChars()) {
-			if (getNonXmlReplacementCharacter() != null) {
-				if (getNonXmlReplacementCharacter().length() > 1) {
-					throw new ConfigurationException("replaceNonXmlChar [" + getNonXmlReplacementCharacter() + "] has to be one character");
-				}
-			}
+		if (isReplaceNonXmlChars() && getNonXmlReplacementCharacter() != null && getNonXmlReplacementCharacter().length() > 1) {
+			throw new ConfigurationException("replaceNonXmlChar [" + getNonXmlReplacementCharacter() + "] has to be one character");
 		}
 	}
 
@@ -92,6 +87,10 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 	}
 
+	public String getFind() {
+		return find;
+	}
+
 	/**
 	 * Sets the string that is searched for. Newlines can be represented
 	 * by the {@link #setLineSeparatorSymbol(String)}.
@@ -100,20 +99,16 @@ public class ReplacerPipe extends FixedForwardPipe {
 		this.find = find;
 	}
 
-	public String getFind() {
-		return find;
+	public String getReplace() {
+		return replace;
 	}
 
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-	 * 	 * by the {@link #setLineSeparatorSymbol(String)}.
+	 * * by the {@link #setLineSeparatorSymbol(String)}.
 	 */
 	public void setReplace(String replace) {
 		this.replace = replace;
-	}
-
-	public String getReplace() {
-		return replace;
 	}
 
 	/**
@@ -128,13 +123,17 @@ public class ReplacerPipe extends FixedForwardPipe {
 		lineSeparatorSymbol = string;
 	}
 
+	public boolean isReplaceNonXmlChars() {
+		return replaceNonXmlChars;
+	}
+
 	/**
 	 * Replace all characters that are non-printable according to the XML specification with
 	 * the value specified in {@link #setNonXmlReplacementCharacter(String)}.
 	 * <p>
-	 *     <b>NB:</b> This will only replace or remove characters considered non-printable. This
-	 *     will not check if a given character is valid in the particular way it is used. Thus it will
-	 *     not remove or replace, for instance, a single {@code '&'} character.
+	 * <b>NB:</b> This will only replace or remove characters considered non-printable. This
+	 * will not check if a given character is valid in the particular way it is used. Thus it will
+	 * not remove or replace, for instance, a single {@code '&'} character.
 	 * </p>
 	 * <p>
 	 * See also:
@@ -150,8 +149,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 		replaceNonXmlChars = b;
 	}
 
-	public boolean isReplaceNonXmlChars() {
-		return replaceNonXmlChars;
+	public String getNonXmlReplacementCharacter() {
+		return nonXmlReplacementCharacter;
 	}
 
 	/**
@@ -163,8 +162,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 		this.nonXmlReplacementCharacter = nonXmlReplacementCharacter;
 	}
 
-	public String getNonXmlReplacementCharacter() {
-		return nonXmlReplacementCharacter;
+	public boolean isAllowUnicodeSupplementaryCharacters() {
+		return allowUnicodeSupplementaryCharacters;
 	}
 
 	/**
@@ -174,9 +173,5 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 */
 	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
 		allowUnicodeSupplementaryCharacters = b;
-	}
-
-	public boolean isAllowUnicodeSupplementaryCharacters() {
-		return allowUnicodeSupplementaryCharacters;
 	}
 }

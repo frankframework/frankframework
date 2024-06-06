@@ -50,8 +50,8 @@ public class ReplacingInputStream extends FilterInputStream {
 
 	private final boolean allowUnicodeSupplementaryCharacters;
 	private final Queue<Integer> inQueue;
-	private final Queue<Integer> outQueue;
 	private final char nonXmlReplacementCharacter;
+	private final Queue<Integer> outQueue;
 	private final boolean replaceNonXmlChars;
 	private final byte[] replacement;
 	private final byte[] search;
@@ -61,7 +61,7 @@ public class ReplacingInputStream extends FilterInputStream {
 
 		super(in);
 		this.replaceNonXmlChars = replaceNonXmlChars;
-		this.nonXmlReplacementCharacter = StringUtils.isEmpty(nonXmlReplacementCharacter) ? 0 : nonXmlReplacementCharacter.charAt(0) ;
+		this.nonXmlReplacementCharacter = StringUtils.isEmpty(nonXmlReplacementCharacter) ? 0 : nonXmlReplacementCharacter.charAt(0);
 		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
 
 		this.inQueue = new LinkedList<>();
@@ -98,6 +98,7 @@ public class ReplacingInputStream extends FilterInputStream {
 
 	/**
 	 * copied straight from InputStream implementation, just needed to use {@link #read()} from this class
+	 *
 	 * @see InputStream#read(byte[], int, int)
 	 */
 	@Override
@@ -157,7 +158,7 @@ public class ReplacingInputStream extends FilterInputStream {
 
 	private void readAhead() throws IOException {
 		// Work up some look-ahead with a sensible default if search is empty
-		int searchLength = (search.length == 0) ? 1: search.length;
+		int searchLength = (search.length == 0) ? 1 : search.length;
 
 		while (inQueue.size() < searchLength) {
 			int next = getNextValue();
