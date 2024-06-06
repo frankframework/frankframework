@@ -51,17 +51,17 @@ public class ReplacingInputStream extends FilterInputStream {
 	private final boolean allowUnicodeSupplementaryCharacters;
 	private final Queue<Integer> inQueue;
 	private final Queue<Integer> outQueue;
-	private final String replaceNonXmlChar;
+	private final char nonXmlReplacementCharacter;
 	private final boolean replaceNonXmlChars;
 	private final byte[] replacement;
 	private final byte[] search;
 
 	public ReplacingInputStream(InputStream in, String search, String replacement, boolean replaceNonXmlChars,
-								String replaceNonXmlChar, boolean allowUnicodeSupplementaryCharacters) {
+								String nonXmlReplacementCharacter, boolean allowUnicodeSupplementaryCharacters) {
 
 		super(in);
 		this.replaceNonXmlChars = replaceNonXmlChars;
-		this.replaceNonXmlChar = replaceNonXmlChar == null ? "" : replaceNonXmlChar;
+		this.nonXmlReplacementCharacter = StringUtils.isEmpty(nonXmlReplacementCharacter) ? 0 : nonXmlReplacementCharacter.charAt(0) ;
 		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
 
 		this.inQueue = new LinkedList<>();
@@ -132,8 +132,9 @@ public class ReplacingInputStream extends FilterInputStream {
 		int next = super.read();
 
 		if (next != -1 && replaceNonXmlChars && !XmlEncodingUtils.isPrintableUnicodeChar(next, allowUnicodeSupplementaryCharacters)) {
-			if (!StringUtils.isEmpty(replaceNonXmlChar)) {
-				next = replaceNonXmlChar.charAt(0);
+			// '0' is the default value for a char
+			if (nonXmlReplacementCharacter != 0) {
+				next = nonXmlReplacementCharacter;
 			} else {
 				// If the character needs to be replaced, but no replacementChar was defined, skip to next.
 				next = getNextValue();

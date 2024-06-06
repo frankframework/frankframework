@@ -2,11 +2,14 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 /**
  * Created by simon on 8/29/17.
@@ -28,49 +31,32 @@ import java.io.ByteArrayOutputStream;
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 public class ReplacingInputStreamTest {
-	private ByteArrayInputStream bis;
-	private ReplacingInputStream ris;
-	private ByteArrayOutputStream bos;
 
-	@BeforeEach
-	public void beforeTest() throws Exception {
-		byte[] bytes = "hello xyz world.".getBytes("UTF-8");
-		bis = new ByteArrayInputStream(bytes);
+	public static Stream<Arguments> testReplacingInputStream() {
+		return Stream.of(
+				Arguments.of("xyz", "abc", false, "", "hello xyz world.", "hello abc world."),
+				Arguments.of("xyz", "", false, "", "hello xyz world.", "hello  world."),
+				Arguments.of("", "", false, "", "hello xyz world.", "hello xyz world."),
+				Arguments.of("xyz", "xyzxyz", false, "", "hello xyz world.", "hello xyzxyz world."),
+				Arguments.of("", "", true, "R", "hello \bxyz world.", "hello Rxyz world.")
+		);
 	}
 
-	@Test
-	public void testReplacingInputStream() throws Exception {
-		ris = new ReplacingInputStream(bis, "xyz", "abc", false, null, false);
-		bos = new ByteArrayOutputStream();
+	@ParameterizedTest
+	@MethodSource
+	public void testReplacingInputStream(String search, String replacement, boolean replaceXml, String nonXmlCharReplacement, String input, String expected) throws Exception {
+		ReplacingInputStream ris = new ReplacingInputStream(getByteArrayInputStream(input), search, replacement, replaceXml, nonXmlCharReplacement, false);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		int b;
 		while (-1 != (b = ris.read()))
 			bos.write(b);
 
-		assertEquals("hello abc world.", bos.toString());
+		assertEquals(expected, bos.toString());
 	}
 
-	@Test
-	public void testReplacingToEmptyString() throws Exception {
-		ris = new ReplacingInputStream(bis, "xyz", "", false, null, false);
-		bos = new ByteArrayOutputStream();
-
-		int b;
-		while (-1 != (b = ris.read()))
-			bos.write(b);
-
-		assertEquals("hello  world.", bos.toString());
-	}
-
-	@Test
-	public void testWithEmptySearchAndReplace() throws Exception {
-		ris = new ReplacingInputStream(bis, "", "", false, null, false);
-		bos = new ByteArrayOutputStream();
-
-		int b;
-		while (-1 != (b = ris.read()))
-			bos.write(b);
-
-		assertEquals("hello xyz world.", bos.toString());
+	private ByteArrayInputStream getByteArrayInputStream(String input) {
+		byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+		return new ByteArrayInputStream(bytes);
 	}
 }

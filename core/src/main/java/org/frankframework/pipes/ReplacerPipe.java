@@ -42,7 +42,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	private String replace;
 	private String lineSeparatorSymbol = null;
 	private boolean replaceNonXmlChars = false;
-	private String replaceNonXmlChar = null;
+	private String nonXmlReplacementCharacter;
 	private boolean allowUnicodeSupplementaryCharacters = false;
 
 	{
@@ -64,9 +64,9 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 
 		if (isReplaceNonXmlChars()) {
-			if (getReplaceNonXmlChar() != null) {
-				if (getReplaceNonXmlChar().length() > 1) {
-					throw new ConfigurationException("replaceNonXmlChar [" + getReplaceNonXmlChar() + "] has to be one character");
+			if (getNonXmlReplacementCharacter() != null) {
+				if (getNonXmlReplacementCharacter().length() > 1) {
+					throw new ConfigurationException("replaceNonXmlChar [" + getNonXmlReplacementCharacter() + "] has to be one character");
 				}
 			}
 		}
@@ -86,7 +86,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	private ReplacingInputStream getReplacingInputStream(Message message, String find, String replace) throws PipeRunException {
 		try {
-			return new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(), getReplaceNonXmlChar(), isAllowUnicodeSupplementaryCharacters());
+			return new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(), getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters());
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
@@ -130,7 +130,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Replace all characters that are non-printable according to the XML specification with
-	 * the value specified in {@link #setReplaceNonXmlChar(String)}.
+	 * the value specified in {@link #setNonXmlReplacementCharacter(String)}.
 	 * <p>
 	 *     <b>NB:</b> This will only replace or remove characters considered non-printable. This
 	 *     will not check if a given character is valid in the particular way it is used. Thus it will
@@ -155,16 +155,16 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * character that will replace each non valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
+	 * character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
 	 *
 	 * @ff.default empty string
 	 */
-	public void setReplaceNonXmlChar(String replaceNonXmlChar) {
-		this.replaceNonXmlChar = replaceNonXmlChar;
+	public void setNonXmlReplacementCharacter(String nonXmlReplacementCharacter) {
+		this.nonXmlReplacementCharacter = nonXmlReplacementCharacter;
 	}
 
-	public String getReplaceNonXmlChar() {
-		return replaceNonXmlChar;
+	public String getNonXmlReplacementCharacter() {
+		return nonXmlReplacementCharacter;
 	}
 
 	/**
@@ -179,5 +179,4 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public boolean isAllowUnicodeSupplementaryCharacters() {
 		return allowUnicodeSupplementaryCharacters;
 	}
-
 }

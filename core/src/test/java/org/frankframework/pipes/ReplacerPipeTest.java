@@ -55,7 +55,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void replaceNonXMLChar() throws Exception {
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setReplaceNonXmlChar("l");
+		pipe.setNonXmlReplacementCharacter("l");
 		pipe.setReplaceNonXmlChars(true);
 		pipe.setAllowUnicodeSupplementaryCharacters(true);
 		configureAndStartPipe();
@@ -87,7 +87,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void replaceNonXMLCharLongerThanOne() {
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setReplaceNonXmlChar("klkl");
+		pipe.setNonXmlReplacementCharacter("klkl");
 		pipe.setReplaceNonXmlChars(true);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
