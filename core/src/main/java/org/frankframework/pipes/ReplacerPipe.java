@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -160,6 +161,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 */
 	public void setNonXmlReplacementCharacter(String nonXmlReplacementCharacter) {
 		this.nonXmlReplacementCharacter = nonXmlReplacementCharacter;
+	}
+
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("The attribute 'replaceNonXmlChar' has been renamed to 'nonXmlReplacementCharacter' for readability")
+	public void setReplaceNonXmlChar(String replaceNonXmlChar) {
+		setNonXmlReplacementCharacter(replaceNonXmlChar);
 	}
 
 	public boolean isAllowUnicodeSupplementaryCharacters() {
