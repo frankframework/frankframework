@@ -50,64 +50,62 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@Override
 	protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		ResponseEntity<Object> internalResponse = super.handleHttpRequestMethodNotSupported(ex, headers, status, request);
-		return handleSpringException(ex, status, internalResponse.getHeaders());
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		ResponseEntity<Object> internalResponse = super.handleHttpMediaTypeNotSupported(ex, headers, status, request);
-		return handleSpringException(ex, status, internalResponse.getHeaders());
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleConversionNotSupported(ConversionNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, null);
+		return handleSpringException(ex, status, headers);
 	}
 
 	/**
