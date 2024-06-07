@@ -35,6 +35,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   promise: number = -1;
   versions: Configuration[] = [];
   versionsSorted: Configuration[] = [];
+  search: string = '';
 
   private lastSortEvent: SortEvent = { direction: null, column: '' };
 
@@ -87,29 +88,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
           }
         }
 
-        // this.versions = data;
-        this.versions = [
-          {
-            name: 'test',
-            jdbcMigrator: false,
-            stubbed: false,
-            state: 'STOPPED',
-            type: 'DatabaseClassLoader',
-            version: '1.0.0',
-            filename: 'AAAA',
-            created: '2020-01-01 00:00:00',
-          },
-          {
-            name: 'test 2',
-            jdbcMigrator: false,
-            stubbed: false,
-            state: 'STOPPED',
-            type: 'DatabaseClassLoader',
-            version: '1.0.1',
-            filename: 'BBBB',
-            created: '2024-01-01 00:00:00',
-          },
-        ];
+        this.versions = data;
         this.versionsSorted = basicAnyValueTableSort(
           this.versions,
           this.headers,
