@@ -27,7 +27,7 @@ public interface OutboundGateway extends IntegrationPattern {
 	}
 
 	/**
-	 * T in T out.
+	 * I in O out.
 	 * @param in Message to send
 	 * @return Response message
 	 */
