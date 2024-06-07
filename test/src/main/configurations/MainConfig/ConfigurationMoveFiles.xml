@@ -105,20 +105,8 @@
 				wildcard="*.txt"
 				destination="${testdata.dir}/mfp2"
 				createFolder="true">
-				<forward name="success" path="list files with check"/>
+				<forward name="success" path="list files with count check"/>
 			</pipe>
-			<LocalFileSystemPipe
-				name="list files with check"
-				action="list"
-				inputFolder="${testdata.dir}/mfp2/"
-				createFolder="true"
-				wildcard="*.txt">
-				<forward name="success" path="output-check"/>
-			</LocalFileSystemPipe>
-			<XmlIfPipe name="output-check" xpathExpression="count(/directory/file) = 2" thenForwardName="answerOk" elseForwardName="ERROR"/>
-			<FixedResultPipe name="answerOk" returnString="ok">
-				<Forward name="success" path="EXIT" />
-			</FixedResultPipe>
 
 			<!-- Move file with use of wildcard and input message -->
 			<pipe
@@ -129,7 +117,7 @@
 				destination="${testdata.dir}/mfp2"
 				createFolder="true"
 				getInputFromFixedValue="${testdata.dir}/mfp">
-				<forward name="success" path="list files"/>
+				<forward name="success" path="list files with count check"/>
 			</pipe>
 
 			<!-- Move and rename file with use move2fileSessionKey -->
@@ -158,6 +146,7 @@
 				<forward name="success" path="list files"/>
 			</pipe>
 
+			<!-- List files -->
 			<pipe
 				name="list files"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
@@ -167,6 +156,18 @@
 				createFolder="true">
 				<forward name="success" path="EXIT"/>
 			</pipe>
+			<LocalFileSystemPipe
+				name="list files with count check"
+				action="list"
+				inputFolder="${testdata.dir}/mfp2/"
+				createFolder="true"
+				wildcard="*.txt">
+				<forward name="success" path="output-check"/>
+			</LocalFileSystemPipe>
+			<XmlIfPipe name="output-check" xpathExpression="count(/directory/file) = 2" thenForwardName="answerOk" elseForwardName="ERROR"/>
+			<FixedResultPipe name="answerOk" returnString="ok">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
 		</pipeline>
 	</adapter>
 </module>
