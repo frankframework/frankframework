@@ -34,7 +34,7 @@ public interface OutboundGateway extends IntegrationPattern {
 	public <I, O> Message<O> sendSyncMessage(Message<I> in);
 
 	/**
-	 * T in, no reply
+	 * I in, no reply
 	 * @param in Message to send
 	 */
 	public <I> void sendAsyncMessage(Message<I> in);
