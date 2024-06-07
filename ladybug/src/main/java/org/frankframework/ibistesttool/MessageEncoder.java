@@ -31,7 +31,9 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 
 public class MessageEncoder extends MessageEncoderImpl {
-	private static final int MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
+	// With this line, an OutOfMemory exception occurs during the creation of an array.
+	// private static final int MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
+	private static final int MAX_MESSAGE_LENGTH = 15;
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
