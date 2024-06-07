@@ -17,8 +17,7 @@ package org.frankframework.management.web;
 
 import java.util.function.Function;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.management.bus.BusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -34,9 +33,8 @@ import org.springframework.web.client.ResourceAccessException;
 import jakarta.annotation.Nullable;
 
 @RestControllerAdvice
+@Log4j2
 public class SpringBusExceptionHandler {
-
-	private Logger log = LogManager.getLogger(this);
 
 	public enum ManagedException {
 		AUTHENTICATION(AuthenticationException.class, HttpStatus.UNAUTHORIZED), //Authentication exception
