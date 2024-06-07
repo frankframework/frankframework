@@ -6,7 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.testutil.ParameterBuilder;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +45,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void testConfigureWithSeperator() throws Exception {
+	public void testConfigureWithSeparator() throws Exception {
 		pipe.setFind("sina/murat/niels");
 		pipe.setLineSeparatorSymbol("/");
 		pipe.setReplace("yo");
@@ -95,4 +99,35 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		assertThat(e.getMessage(), Matchers.containsString("replaceNonXmlChar [klkl] has to be one character"));
 	}
 
+	@Test
+	public void testReplaceParameters() throws Exception {
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("varToSubstitute")
+				.withValue("substitutedValue"));
+
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("secondVarToSubstitute")
+				.withValue("secondSubstitutedValue"));
+
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute} and ?{secondVarToSubstitute}</test>)", session);
+		assertEquals("<head>substitutedValue and secondSubstitutedValue</head>)", res.getResult().asString());
+	}
+
+	@Test
+	public void testSubstituteVars() throws Exception {
+		session.put("varToSubstitute", "substitutedValue");
+		session.put("secondVarToSubstitute", "secondSubstitutedValue");
+
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>${varToSubstitute} and ${secondVarToSubstitute}</test>)", session);
+		assertEquals("<head>substitutedValue and secondSubstitutedValue</head>)", res.getResult().asString());
+	}
 }

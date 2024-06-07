@@ -17,20 +17,39 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.StringResolver;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
- * Replaces all occurrences of one string with another.
- * Optionally strips or replaces XML non-printable characters.
+ * This Pipe is used to replace values in a few ways. The following steps are performed:
+ * <ol>
+ * <li>If <code>find</code> is provided, it will be replaced by <code>replace</code></li>
+ * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
+ * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
+ * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
+ * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
+ * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
+ * system properties, pipelinesession variables and application properties. Please note that
+ * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
+ * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
+ * </ol>
+ *
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
+ *  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
  * @author Gerrit van Brakel
  * @since 4.2
@@ -38,12 +57,15 @@ import org.frankframework.util.XmlEncodingUtils;
 @ElementType(ElementTypes.TRANSLATOR)
 public class ReplacerPipe extends FixedForwardPipe {
 
-	private String find;
-	private String replace;
-	private String lineSeparatorSymbol = null;
-	private boolean replaceNonXmlChars = false;
-	private String replaceNonXmlChar = null;
+	private static final String SUBSTITUTION_START_DELIMITER = "?";
 	private boolean allowUnicodeSupplementaryCharacters = false;
+	private AppConstants appConstants;
+	private String find;
+	private String lineSeparatorSymbol = null;
+	private String replace;
+	private String replaceNonXmlChar = null;
+	private boolean replaceNonXmlChars = false;
+	private @Getter boolean substituteVars;
 
 	{
 		setSizeStatistics(true);
@@ -52,22 +74,22 @@ public class ReplacerPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
+		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
+
 		if (StringUtils.isNotEmpty(getFind())) {
 			if (getReplace() == null) {
 				throw new ConfigurationException("cannot have a null replace-attribute");
 			}
 			log.info("finds [{}] replaces with [{}]", getFind(), getReplace());
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
-				find = find != null ? find.replace(lineSeparatorSymbol, System.getProperty("line.separator")) : null;
-				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.getProperty("line.separator")) : null;
+				find = find != null ? find.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
+				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 			}
 		}
-		if (isReplaceNonXmlChars()) {
-			if (getReplaceNonXmlChar() != null) {
-				if (getReplaceNonXmlChar().length() > 1) {
-					throw new ConfigurationException("replaceNonXmlChar [" + getReplaceNonXmlChar() + "] has to be one character");
-				}
-			}
+
+		if (isReplaceNonXmlChars() && getReplaceNonXmlChar() != null && getReplaceNonXmlChar().length() > 1) {
+			throw new ConfigurationException("replaceNonXmlChar [" + getReplaceNonXmlChar() + "] has to be one character");
 		}
 	}
 
@@ -93,7 +115,43 @@ public class ReplacerPipe extends FixedForwardPipe {
 				input = XmlEncodingUtils.replaceNonValidXmlCharacters(input, getReplaceNonXmlChar().charAt(0), false, isAllowUnicodeSupplementaryCharacters());
 			}
 		}
+
+		input = substituteVars(input, session);
+
+		input = replaceParameters(input, message, session);
+
 		return new PipeRunResult(getSuccessForward(), input);
+	}
+
+	private String substituteVars(String input, PipeLineSession session) {
+		if (isSubstituteVars()) {
+			return StringResolver.substVars(input, session, appConstants);
+		}
+
+		return input;
+	}
+
+	private String replaceParameters(String input, Message message, PipeLineSession session) throws PipeRunException {
+		if (!getParameterList().isEmpty()) {
+			try {
+				ParameterValueList pvl = getParameterList().getValues(message, session);
+				for (ParameterValue pv : pvl) {
+					final String replaceFrom = SUBSTITUTION_START_DELIMITER + "{" + pv.getName() + "}";
+
+					String replaceTo = pv.asStringValue("");
+
+					input = input.replace(replaceFrom, replaceTo);
+				}
+			} catch (ParameterException e) {
+				throw new PipeRunException(this, "exception extracting parameters", e);
+			}
+		}
+
+		return input;
+	}
+
+	public String getFind() {
+		return find;
 	}
 
 	/**
@@ -104,20 +162,16 @@ public class ReplacerPipe extends FixedForwardPipe {
 		this.find = find;
 	}
 
-	public String getFind() {
-		return find;
+	public String getReplace() {
+		return replace;
 	}
 
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-	 * 	 * by the {@link #setLineSeparatorSymbol(String)}.
+	 * * by the {@link #setLineSeparatorSymbol(String)}.
 	 */
 	public void setReplace(String replace) {
 		this.replace = replace;
-	}
-
-	public String getReplace() {
-		return replace;
 	}
 
 	/**
@@ -132,13 +186,17 @@ public class ReplacerPipe extends FixedForwardPipe {
 		lineSeparatorSymbol = string;
 	}
 
+	public boolean isReplaceNonXmlChars() {
+		return replaceNonXmlChars;
+	}
+
 	/**
 	 * Replace all characters that are non-printable according to the XML specification with
 	 * the value specified in {@link #setReplaceNonXmlChar(String)}.
 	 * <p>
-	 *     <b>NB:</b> This will only replace or remove characters considered non-printable. This
-	 *     will not check if a given character is valid in the particular way it is used. Thus it will
-	 *     not remove or replace, for instance, a single {@code '&'} character.
+	 * <b>NB:</b> This will only replace or remove characters considered non-printable. This
+	 * will not check if a given character is valid in the particular way it is used. Thus it will
+	 * not remove or replace, for instance, a single {@code '&'} character.
 	 * </p>
 	 * <p>
 	 * See also:
@@ -154,12 +212,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 		replaceNonXmlChars = b;
 	}
 
-	public boolean isReplaceNonXmlChars() {
-		return replaceNonXmlChars;
+	public String getReplaceNonXmlChar() {
+		return replaceNonXmlChar;
 	}
 
 	/**
-	 * character that will replace each non valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
+	 * character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
 	 *
 	 * @ff.default empty string
 	 */
@@ -167,8 +225,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 		this.replaceNonXmlChar = replaceNonXmlChar;
 	}
 
-	public String getReplaceNonXmlChar() {
-		return replaceNonXmlChar;
+	public boolean isAllowUnicodeSupplementaryCharacters() {
+		return allowUnicodeSupplementaryCharacters;
 	}
 
 	/**
@@ -180,8 +238,13 @@ public class ReplacerPipe extends FixedForwardPipe {
 		allowUnicodeSupplementaryCharacters = b;
 	}
 
-	public boolean isAllowUnicodeSupplementaryCharacters() {
-		return allowUnicodeSupplementaryCharacters;
+	/**
+	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
+	 * system properties (1), PipelineSession variables (2), application properties (3).
+	 *
+	 * @ff.default false
+	 */
+	public void setSubstituteVars(boolean substitute) {
+		this.substituteVars = substitute;
 	}
-
 }
