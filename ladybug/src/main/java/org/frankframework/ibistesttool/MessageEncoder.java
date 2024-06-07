@@ -32,8 +32,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 
 public class MessageEncoder extends MessageEncoderImpl {
-
-	private @Autowired int maxMessageLength;
+	private static final int MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
@@ -46,7 +45,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					if (m.isBinary()) {
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						try (InputStream inputStream = m.asInputStream()) {
-							IOUtils.copy(new BoundedInputStream(inputStream, maxMessageLength), baos, maxMessageLength);
+							IOUtils.copy(new BoundedInputStream(inputStream, MAX_MESSAGE_LENGTH), baos, MAX_MESSAGE_LENGTH);
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
 							result.setMessageClassName(m.getObjectId());
 							return result;
@@ -56,7 +55,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
-						IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
+						IOUtils.copy(new BoundedReader(reader, MAX_MESSAGE_LENGTH), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
