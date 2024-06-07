@@ -7,32 +7,26 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.JacksonUtils;
 import org.springframework.http.MediaType;
-import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 
 /**
  * Used in the unit tests to just return the input in the correct format to be able to test only the controllers
  *
  * @see WebTestConfiguration
- * @param <T>
  */
-public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {
-	@Override
-	protected void onInit() {
-	}
+public class SpringUnitTestLocalGateway implements OutboundGateway {
 
 	@Override
-	public Message<T> sendSyncMessage(Message<T> in) {
+	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		return new Message<>() {
 			@Override
-			public T getPayload() {
+			public O getPayload() {
 				TestGatewayMessageResponse messageResponse = new TestGatewayMessageResponse(
 						getHeaders().get("topic", String.class), getHeaders().get("action", String.class)
 				);
 
-				return (T) JacksonUtils.convertToJson(messageResponse);
+				return (O) JacksonUtils.convertToJson(messageResponse);
 			}
 
 			@Override
@@ -49,12 +43,13 @@ public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport imple
 	}
 
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I> void sendAsyncMessage(Message<I> in) {
+		/*
+		 * Can be tested with a Mockito capture:
+		 * ArgumentCaptor<Message<String>> requestCapture = ArgumentCaptor.forClass(Message.class);
+		 * doCallRealMethod().when(handler).sendAsyncMessage(requestCapture.capture());
+		 * Message<String> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
+		 */
 	}
 
-	/* must (re-)throw exceptions and not publish them to a dead-letter-queue. */
-	@Override
-	public MessageChannel getErrorChannel() {
-		return null;
-	}
 }

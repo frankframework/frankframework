@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.messaging.MessageChannel;
  * A Spring Integration Gateway in it's most simplistic form.
  * Put's messages on their respective Channels.
  */
-public class LocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {
+public class LocalGateway extends MessagingGatewaySupport implements OutboundGateway {
 
 	@Override
 	protected void onInit() {
@@ -37,12 +37,12 @@ public class LocalGateway<T> extends MessagingGatewaySupport implements Outbound
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Message<T> sendSyncMessage(Message<T> in) {
-		return (Message<T>) super.sendAndReceiveMessage(in);
+	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
+		return (Message<O>) super.sendAndReceiveMessage(in);
 	}
 
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I >void sendAsyncMessage(Message<I> in) {
 		super.send(in);
 	}
 

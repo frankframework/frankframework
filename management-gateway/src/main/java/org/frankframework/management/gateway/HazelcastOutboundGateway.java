@@ -25,7 +25,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.integration.IntegrationPatternType;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
@@ -44,34 +43,29 @@ import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class HazelcastOutboundGateway<T> implements InitializingBean, ApplicationContextAware, OutboundGateway<T> {
+public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {
 	private HazelcastInstance hzInstance;
 	private ApplicationContext applicationContext;
 
 	private String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
-	private ITopic<Message<T>> requestTopic;
+	private ITopic<Message<?>> requestTopic;
 
 	@Override
-	public IntegrationPatternType getIntegrationPatternType() {
-		return IntegrationPatternType.outbound_gateway;
-	}
-
-	@Override
-	public Message<T> sendSyncMessage(Message<T> in) {
+	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		String tempReplyChannelName = "__tmp."+ RandomStringUtils.randomAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);
 		log.debug("sending synchronous request to topic [{}] message [{}] reply-queue [{}] receiveTimeout [{}]", requestTopicName, in, tempReplyChannelName, receiveTimeout);
 
 		// Create the response queue here, before sending the request.
-		IQueue<Message<T>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
+		IQueue<Message<O>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
 
-		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+		Message<I> requestMessage = MessageBuilder.fromMessage(in)
 				.setReplyChannelName(tempReplyChannelName)
 				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
 				.build();
 		requestTopic.publish(requestMessage);
 
-		Message<T> replyMessage = doReceive(responseQueue, receiveTimeout);
+		Message<O> replyMessage = doReceive(responseQueue, receiveTimeout);
 		if (replyMessage != null) {
 			return replyMessage;
 		}
@@ -79,9 +73,10 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 		throw new BusException("no reponse found on temporary reply-queue ["+tempReplyChannelName+"] within receiveTimeout ["+receiveTimeout+"]");
 	}
 
-	private @Nullable Message<T> doReceive(IQueue<Message<T>> responseQueue, long receiveTimeout) {
+	@Nullable
+	private <O> Message<O> doReceive(IQueue<Message<O>> responseQueue, long receiveTimeout) {
 		try {
-			Message<T> response = responseQueue.poll(receiveTimeout, TimeUnit.MILLISECONDS);
+			Message<O> response = responseQueue.poll(receiveTimeout, TimeUnit.MILLISECONDS);
 
 			if(response != null) {
 				log.trace("received message with id [{}]", () -> response.getHeaders().getId());
@@ -120,9 +115,9 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 	}
 
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I> void sendAsyncMessage(Message<I> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
-		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+		Message<I> requestMessage = MessageBuilder.fromMessage(in)
 				.setReplyChannelName(null)
 				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
 				.build();
