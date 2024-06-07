@@ -25,6 +25,7 @@ import org.frankframework.util.ResponseUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,9 +44,13 @@ public class FileViewer extends FrankApiBase {
 
 		if (StringUtils.isEmpty(acceptHeader)) acceptHeader = "*/*";
 		String acceptType = !StringUtils.isEmpty(acceptParam) ? acceptParam : acceptHeader.split(",")[0];
-		String wantedType = MediaType.valueOf(acceptType).getSubtype();
-		builder.addHeader("fileName", file);
-		builder.addHeader("resultType", wantedType);
+		try {
+			String wantedType = MediaType.valueOf(acceptType).getSubtype();
+			builder.addHeader("fileName", file);
+			builder.addHeader("resultType", wantedType);
+		} catch (Exception e) {
+			throw new ApiException("Invalid accept parameter or header: " + acceptHeader, e);
+		}
 
 		Message<InputStream> inputStreamMessage = (Message<InputStream>) sendSyncMessage(builder);
 		return ResponseUtils.convertToSpringStreamingResponse(inputStreamMessage);
