@@ -66,7 +66,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		this.directory = dir;
 	}
 
-	protected File getDirectory() {
+	public File getDirectory() {
 		return this.directory;
 	}
 
