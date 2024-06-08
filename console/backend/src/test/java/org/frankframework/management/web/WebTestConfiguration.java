@@ -1,5 +1,6 @@
 package org.frankframework.management.web;
 
+import org.frankframework.management.web.configuration.WebConfiguration;
 import org.mockito.Mockito;
 
 import org.springframework.context.annotation.Bean;
