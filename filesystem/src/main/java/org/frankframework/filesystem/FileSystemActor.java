@@ -210,7 +210,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	private void checkConfiguration(FileSystemAction action2) throws ConfigurationException {
 		if (!actions.contains(action2))
-			throw new ConfigurationException(ClassUtils.nameOf(owner)+": unknown or invalid action [" + action2 + "] supported actions are " + actions.toString() + "");
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+": unknown or invalid action [" + action2 + "] supported actions are " + actions);
 
 		//Check if necessary parameters are available
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.WRITE,   PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
@@ -555,7 +555,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	/**
-	 * If <code>true</code>: if a non-existing folder is part of the fileName, it will be created inside the root folder. Side-effect: value of <code>inputFolder</code> is checked when a message passes the pipe, not during startup.
+	 * If <code>true</code>: if a non-existing folder is part of the fileName, it will be created.
 	 * @ff.default false
 	 */
 	public void setCreateFolder(boolean createFolder) {
