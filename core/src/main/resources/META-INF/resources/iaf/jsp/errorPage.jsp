@@ -3,7 +3,7 @@
 <%@ page import="org.apache.commons.text.StringEscapeUtils"%>
 <html>
 	<head>
-		<title>Server Error: <%= StringEscapeUtils.escapeHtml4(exception.getMessage()) %></title>
+		<title>Server Error</title>
 	</head>
 	<body>
 		<!-- exception status code -->

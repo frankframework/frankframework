@@ -140,11 +140,11 @@
       <%
         for ( Enumeration enumeration = request.getAttributeNames(); enumeration.hasMoreElements(); ) {
           String attributeName = (String) enumeration.nextElement();
-		  Object requestAttribute = request.getAttribute(attributeName);
+		  String requestAttribute = StringEscapeUtils.escapeHtml4(request.getAttribute(attributeName).toString());
       %>
       <tr bgcolor="#eeeeee">
         <td><%= attributeName %></td>
-        <td><%= StringEscapeUtils.escapeHtml4(requestAttribute.toString()) %></td>
+        <td><%= requestAttribute %></td>
       </tr>
       <%
         }
@@ -161,11 +161,12 @@
       </tr>
       <%
         for ( Enumeration enumeration = request.getParameterNames(); enumeration.hasMoreElements(); ) {
-          String attributeName = (String) enumeration.nextElement();
+          String parameterName = (String) enumeration.nextElement();
+		  String parameterValue = StringEscapeUtils.escapeHtml4(request.getParameter(parameterName));
       %>
       <tr bgcolor="#eeeeee">
-        <td><%= attributeName %></td>
-        <td><%= StringEscapeUtils.escapeHtml4(request.getParameter(attributeName)) %></td>
+        <td><%= parameterName %></td>
+        <td><%= parameterValue %></td>
       </tr>
       <%
         }
