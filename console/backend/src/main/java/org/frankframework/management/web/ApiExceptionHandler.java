@@ -15,8 +15,9 @@
 */
 package org.frankframework.management.web;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.ServletException;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.validation.BindException;
+import org.springframework.validation.method.MethodValidationException;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -37,96 +42,73 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import jakarta.annotation.Nullable;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
-public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+@Log4j2
+public class ApiExceptionHandler {
 
-	private Logger log = LogManager.getLogger(this);
+	/** Taken from {@link ResponseEntityExceptionHandler#handleException(Exception, WebRequest)} } */
+	@ExceptionHandler({
+			HttpRequestMethodNotSupportedException.class,
+			HttpMediaTypeNotSupportedException.class,
+			HttpMediaTypeNotAcceptableException.class,
+			MissingPathVariableException.class,
+			MethodArgumentNotValidException.class,
+			NoResourceFoundException.class,
+			AsyncRequestTimeoutException.class,
+			ErrorResponseException.class,
+			MaxUploadSizeExceededException.class,
+			Exception.class
+	})
+	protected final ResponseEntity<Object> handleException(Exception ex) {
+		if (ex instanceof ErrorResponse errorResponseEx){
+			return handleSpringException(ex, errorResponseEx.getStatusCode(), errorResponseEx.getHeaders());
+		}
+		return handleExceptionLowLevel(ex);
+	}
 
-	@Override
-	protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+	/** Lower level exceptions */
+	@ExceptionHandler({
+			MissingServletRequestParameterException.class,
+			MissingServletRequestPartException.class,
+			ServletRequestBindingException.class,
+			ConversionNotSupportedException.class,
+			TypeMismatchException.class,
+			HttpMessageNotReadableException.class,
+			HttpMessageNotWritableException.class,
+			MethodValidationException.class,
+			BindException.class
+	})
+	protected final ResponseEntity<Object> handleExceptionLowLevel(Exception ex){
+		HttpHeaders headers = new HttpHeaders();
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		if (ex instanceof ServletException
+				|| ex instanceof TypeMismatchException
+				|| ex instanceof HttpMessageNotReadableException
+				|| ex instanceof BindException
+		) {
+			status = HttpStatus.BAD_REQUEST;
+		}
 		return handleSpringException(ex, status, headers);
 	}
 
-	@Override
-	protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleConversionNotSupported(ConversionNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		return handleSpringException(ex, status, headers);
-	}
-
-	/**
-	 * When a {@link RestController} cannot be found, Spring MVC throws this Exception.
-	 */
-	@Override
-	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+	/** When a {@link RestController} cannot be found, Spring MVC throws this Exception. */
+	@ExceptionHandler(NoHandlerFoundException.class)
+	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex) {
 		return ApiException.formatExceptionResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
 	}
 
-	@Override
-	protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpHeaders headers, HttpStatusCode status, WebRequest webRequest) {
-		return handleSpringException(ex, status, null);
-	}
-
 	@ExceptionHandler(ApiException.class)
-	private ResponseEntity<?> handleApiException(ApiException exception, WebRequest request) {
+	protected ResponseEntity<?> handleApiException(ApiException exception) {
 		return exception.getResponse();
 	}
 
-	private ResponseEntity<Object> handleSpringException(Exception exception, HttpStatusCode status, @Nullable HttpHeaders headers) {
+	protected ResponseEntity<Object> handleSpringException(Exception exception, HttpStatusCode status, @Nullable HttpHeaders headers) {
 		log.warn("Caught unhandled exception while executing FF!API call", exception);
 		return ApiException.formatExceptionResponse(exception.getMessage(), status, headers);
 	}
