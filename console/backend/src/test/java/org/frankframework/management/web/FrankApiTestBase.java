@@ -36,7 +36,7 @@ public abstract class FrankApiTestBase {
 	protected WebApplicationContext webApplicationContext;
 
 	@Autowired
-	protected SpringUnitTestLocalGateway<?> outputGateway;
+	protected SpringUnitTestLocalGateway outputGateway;
 
 	@BeforeEach
 	public void setUp() {

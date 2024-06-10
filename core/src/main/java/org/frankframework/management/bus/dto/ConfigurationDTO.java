@@ -21,8 +21,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
+
+import org.apache.commons.io.FilenameUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
+import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.jdbc.migration.DatabaseMigratorBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -41,6 +44,7 @@ public class ConfigurationDTO {
 	private @Getter String type;
 	private @Getter String exception = null;
 
+	private @Getter String directory;
 	private @Getter String filename;
 	private @Getter String created;
 	private @Getter String user;
@@ -68,6 +72,8 @@ public class ConfigurationDTO {
 		ClassLoader classLoader = configuration.getClassLoader();
 		if(classLoader instanceof DatabaseClassLoader loader) {
 			setDatabaseAttributes(loader);
+		} else if(classLoader instanceof DirectoryClassLoader loader) {
+			setDirectoryAttributes(loader);
 		}
 
 		if(configuration.isActive()) {
@@ -81,6 +87,11 @@ public class ConfigurationDTO {
 		if(parentConfig != null) {
 			parent = parentConfig;
 		}
+	}
+
+	private void setDirectoryAttributes(DirectoryClassLoader classLoader) {
+		String directory = classLoader.getDirectory().getAbsolutePath();
+		this.directory = FilenameUtils.normalize(directory, true);
 	}
 
 	private void setDatabaseAttributes(DatabaseClassLoader classLoader) {
