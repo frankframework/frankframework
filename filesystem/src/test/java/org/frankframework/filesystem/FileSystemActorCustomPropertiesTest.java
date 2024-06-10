@@ -20,14 +20,14 @@ abstract public class FileSystemActorCustomPropertiesTest<F, FS extends IWritabl
 	@Test
 	public void testCreateWithCustomProperties() throws Exception {
 		// Arrange
-		IHasCustomProperties cp = (IHasCustomProperties) fileSystem;
+		IHasCustomProperties<?> cp = (IHasCustomProperties<?>) fileSystem;
 		cp.setCustomPropertyNames(Set.of("prop1", "prop2"));
 
 		Message input = new Message("message-data");
 
 		ParameterList parameters = new ParameterList();
 		IParameter p1 = new Parameter("prop1", "value1");
-		IParameter p2 = new Parameter("prop2", "value2");
+		IParameter p2 = new Parameter("prop2", "välue2-non-ascii");
 		IParameter p3 = new Parameter("prop3", "value3");
 		parameters.add(p1);
 		parameters.add(p2);
@@ -44,7 +44,7 @@ abstract public class FileSystemActorCustomPropertiesTest<F, FS extends IWritabl
 
 		// Assert
 		assertThat(result.asString(), containsString("prop1=\"value1\""));
-		assertThat(result.asString(), containsString("prop2=\"value2\""));
+		assertThat(result.asString(), containsString("prop2=\"välue2-non-ascii\""));
 		assertThat(result.asString(), not(containsString("prop3=\"value3\"")));
 	}
 }

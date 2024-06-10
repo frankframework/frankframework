@@ -8,6 +8,7 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,7 +22,6 @@ import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
 
@@ -34,10 +34,10 @@ import org.frankframework.util.StreamUtil;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
-	private final int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
-		setWaitMillis(waitMilis);
+		setWaitMillis(waitMillis);
 	}
 
 	@TempDir
@@ -80,6 +80,9 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isForceGlobalBucketAccessEnabled());
+
+		fileSystemSender.setCustomPropertyNames("P1, P2,p3");
+		assertEquals(Set.of("P1", "P2", "p3"), fileSystemSender.getFileSystem().getCustomPropertyNames());
 	}
 
 	@Test

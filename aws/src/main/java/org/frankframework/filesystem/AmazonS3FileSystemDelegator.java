@@ -15,9 +15,12 @@
 */
 package org.frankframework.filesystem;
 
+import java.util.LinkedHashSet;
+
 import com.amazonaws.services.s3.model.StorageClass;
 
 import org.frankframework.doc.ReferTo;
+import org.frankframework.util.StringUtil;
 
 public interface AmazonS3FileSystemDelegator {
 
@@ -81,5 +84,10 @@ public interface AmazonS3FileSystemDelegator {
 	@ReferTo(AmazonS3FileSystem.class)
 	default void setMaxConnections(int maxConnections) {
 		getFileSystem().setMaxConnections(maxConnections);
+	}
+
+	@ReferTo(AmazonS3FileSystem.class)
+	default void setCustomPropertyNames(String customPropertyNames) {
+		getFileSystem().setCustomPropertyNames(new LinkedHashSet<>(StringUtil.split(customPropertyNames)));
 	}
 }
