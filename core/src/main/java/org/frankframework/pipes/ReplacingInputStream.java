@@ -27,6 +27,12 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.XmlEncodingUtils;
 
+/**
+ * Copyright 2019-2024 WeAreFrank!
+ * Based on original concept created by simon on 8/29/17.
+ * Copyright 2017 Simon Haoran Liang
+ * <a href="https://gist.github.com/lhr0909/e6ac2d6dd6752871eb57c4b083799947">...</a>
+ */
 public class ReplacingInputStream extends FilterInputStream {
 
 	private final boolean allowUnicodeSupplementaryCharacters;
