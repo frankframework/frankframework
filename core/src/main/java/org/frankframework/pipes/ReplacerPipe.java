@@ -61,6 +61,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	private boolean allowUnicodeSupplementaryCharacters = false;
 	private AppConstants appConstants;
 	private String find;
+	private String formatString;
 	private String lineSeparatorSymbol = null;
 	private String replace;
 	private String replaceNonXmlChar = null;
@@ -96,8 +97,13 @@ public class ReplacerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String input;
+
 		try {
-			input = message.asString();
+			if (StringUtils.isNotEmpty(formatString)) {
+				input = replaceSingle(formatString, "message", message.asString());
+			} else {
+				input = message.asString();
+			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
@@ -136,11 +142,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for (ParameterValue pv : pvl) {
-					final String replaceFrom = SUBSTITUTION_START_DELIMITER + "{" + pv.getName() + "}";
-
-					String replaceTo = pv.asStringValue("");
-
-					input = input.replace(replaceFrom, replaceTo);
+					input = replaceSingle(input, pv.getName(), pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
@@ -148,6 +150,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 
 		return input;
+	}
+
+	private String replaceSingle(String value, String replaceFromValue, String replaceTo) {
+		final String replaceFrom = SUBSTITUTION_START_DELIMITER + "{" + replaceFromValue + "}";
+
+		return value.replace(replaceFrom, replaceTo);
 	}
 
 	public String getFind() {
@@ -246,5 +254,18 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 */
 	public void setSubstituteVars(boolean substitute) {
 		this.substituteVars = substitute;
+	}
+
+	/**
+	 * If set, this pattern is used as a pattern to be able to refer to the incoming message. For instance, use "output: [?{message}]" to wrap the
+	 * incoming message string in the result.
+	 * Please note that "message" in the ?{message} syntax is the reserved word here.
+	 *
+	 * Will only be used if the value is not empty.
+	 *
+	 * @ff.default empty string
+	 */
+	public void setFormatString(String formatString) {
+		this.formatString = formatString;
 	}
 }

@@ -118,6 +118,25 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
+	public void testReplaceParametersWithMessageFormatString() throws Exception {
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("varToSubstitute")
+				.withValue("substitutedValue"));
+
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("secondVarToSubstitute")
+				.withValue("secondSubstitutedValue"));
+
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.setFormatString("output[?{message}]");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute} and ?{secondVarToSubstitute}</test>)", session);
+		assertEquals("output[<head>substitutedValue and secondSubstitutedValue</head>)]", res.getResult().asString());
+	}
+
+	@Test
 	public void testSubstituteVars() throws Exception {
 		session.put("varToSubstitute", "substitutedValue");
 		session.put("secondVarToSubstitute", "secondSubstitutedValue");

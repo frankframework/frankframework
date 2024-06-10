@@ -17,6 +17,7 @@ Changed default log level from DEBUG to INFO, for environments that are not conf
 - Only supports Tomcat 10.x or later. Tomcat 9.x or lower version, are no longer supported.
 - By default the PipelineSession substitution delimiter has been changed from `${` to `?{` so it's consistent with the `FixedQuerySender`. Backwards compatibility key `useOldSubstitutionStartDelimiter` has been added so minimal change is required during upgrades. Note that when using caches in combination with `diskPersistent="true"` you may need to purge your cache!
 - FileSystemPipes and FileSystemSenders now have new forwards for `fileNotFound`, `folderNotFound`, `fileAlreadyExists`, `folderAlreadyExists`. Some actions, such as removing a non-existing folder, were previously ignored but can now trigger one of these forwards. If such a forward is not defined, then the pipe or sender will go to the `exception` forward or if that is not defined either, trigger an exception, which was previously ignored. Adding the specific exception forward and pointing it to the next pipe will solve this.
+- The `MoveFilePipe` was deprecated for a while and has been removed now. Please use the `LocalFileSystemPipe` if you need to move a file.  
 
 Upcoming (8.1.0) - April 2024
 --------------
