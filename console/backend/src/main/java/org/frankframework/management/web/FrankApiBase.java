@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.annotation.Nonnull;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
@@ -31,10 +29,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
-
-import java.security.Principal;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
@@ -67,7 +64,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input) throws ApiException {
 		Message<?> response = sendSyncMessage(input);
-		// Build the reponse or do some final checks / return a different response
+		// Build the response or do some final checks / return a different response
 		return ResponseUtils.convertToSpringResponse(response);
 	}
 
@@ -94,12 +91,5 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	protected final boolean allowDeprecatedEndpoints() {
 		return getProperty(DeprecationInterceptor.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
-	}
-
-	protected String getUserPrincipalName(Principal principal) {
-		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
-			return principal.getName();
-		}
-		return null;
 	}
 }

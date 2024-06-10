@@ -20,6 +20,7 @@ public class SpringUnitTestLocalGateway implements OutboundGateway {
 	@Override
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		return new Message<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public O getPayload() {
 				TestGatewayMessageResponse messageResponse = new TestGatewayMessageResponse(
