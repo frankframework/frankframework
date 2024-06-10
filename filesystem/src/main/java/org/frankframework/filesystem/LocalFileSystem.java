@@ -88,15 +88,19 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<Path> list(String folder, TypeFilter filter) throws FileSystemException {
 		if (!folderExists(folder)) {
 			throw new FolderNotFoundException("Cannot list files in ["+folder+"], no such folder found");
 		}
 		final Path dir = toFile(folder);
 
-		DirectoryStream.Filter<Path> filter = file -> !Files.isDirectory(file);
+		DirectoryStream.Filter<Path> directoryStreamFilter = switch (filter) {
+			case FILES_ONLY -> file -> !Files.isDirectory(file);
+			case FOLDERS_ONLY -> Files::isDirectory;
+			case FILES_AND_FOLDERS -> file -> true;
+		};
 		try {
-			return Files.newDirectoryStream(dir, filter);
+			return Files.newDirectoryStream(dir, directoryStreamFilter);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot list files in ["+folder+"]", e);
 		}

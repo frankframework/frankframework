@@ -29,18 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.aws.AwsUtil;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Mandatory;
-import org.frankframework.stream.Message;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.FileUtils;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
@@ -64,6 +52,17 @@ import com.amazonaws.services.s3.model.StorageClass;
 
 import jakarta.annotation.Nullable;
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.aws.AwsUtil;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.FileUtils;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
@@ -196,12 +195,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
-		return listFiles(folder, false);
+	public DirectoryStream<S3Object> list(String folder, TypeFilter filter) throws FileSystemException {
+		return list(folder, filter == TypeFilter.FOLDERS_ONLY || filter == TypeFilter.FILES_AND_FOLDERS);
 	}
 
 	//Lists files, and optionally directories
-	private DirectoryStream<S3Object> listFiles(String folder, boolean includeDirectories) throws FileSystemException {
+	private DirectoryStream<S3Object> list(String folder, boolean includeDirectories) throws FileSystemException {
 		List<S3ObjectSummary> summaries = new ArrayList<>();
 		List<String> subFolders = new ArrayList<>();
 		try {
@@ -399,7 +398,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if (!folderExists(folder)) {
 			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
-		if(!removeNonEmptyFolder && listFiles(folder, true).iterator().hasNext()) { //Check if there are files or folders
+		if(!removeNonEmptyFolder && list(folder, true).iterator().hasNext()) { //Check if there are files or folders
 			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 		}
 

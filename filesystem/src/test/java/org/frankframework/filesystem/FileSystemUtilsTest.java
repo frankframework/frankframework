@@ -8,9 +8,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import org.frankframework.filesystem.mock.MockFileSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.filesystem.mock.MockFileSystem;
 
 public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -261,7 +262,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		IBasicFileSystem<?> fs = new MockFileSystem() {
 
 			@Override
-			public DirectoryStream<?> listFiles(String folder) {
+			public DirectoryStream<?> list(String folder, TypeFilter filter) {
 				return new DirectoryStream() {
 
 					@Override

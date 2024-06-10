@@ -392,7 +392,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	/**
-	 * find a folder for listFiles(), getNumberOfFilesInFolder(), folderExists.
+	 * find a folder for list(), getNumberOfFilesInFolder(), folderExists.
 	 * If folderName is empty, the result defaults to the baseFolder.
 	 * If baseFolder is null, the folder is searched in the root of the message folder hierarchy.
 	 * If the folder is not found, null is returned.
@@ -510,9 +510,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		}
 	}
 
-
 	@Override
-	public DirectoryStream<ExchangeMessageReference> listFiles(final String folder) throws FileSystemException {
+	public DirectoryStream<ExchangeMessageReference> list(final String folder, TypeFilter filter) throws FileSystemException {
 		if (!isOpen()) {
 			return null;
 		}

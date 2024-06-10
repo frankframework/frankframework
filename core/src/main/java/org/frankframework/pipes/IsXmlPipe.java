@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -86,7 +85,7 @@ public class IsXmlPipe extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when <code>'true'</code>
+	 * forward returned when <code>true</code>
 	 * @ff.default then
 	 */
 	public void setThenForwardName(String thenForwardName) {

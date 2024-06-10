@@ -220,7 +220,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
+	public DirectoryStream<Message> list(String foldername, TypeFilter filter) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		if (baseFolder==null) {
