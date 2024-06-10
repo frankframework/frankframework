@@ -8,7 +8,6 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -80,9 +79,6 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isForceGlobalBucketAccessEnabled());
-
-		fileSystemSender.setCustomPropertyNames("P1, P2,p3");
-		assertEquals(Set.of("P1", "P2", "p3"), fileSystemSender.getFileSystem().getCustomPropertyNames());
 	}
 
 	@Test

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 
-public class AmazonS3FileSystemActorTest extends FileSystemActorCustomPropertiesTest<S3Object, AmazonS3FileSystem> {
+public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3Object, AmazonS3FileSystem> {
 
 	@TempDir
 	private Path tempdir;

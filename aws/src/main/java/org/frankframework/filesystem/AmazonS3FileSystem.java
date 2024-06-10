@@ -26,11 +26,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -56,7 +53,6 @@ import com.amazonaws.services.s3.model.StorageClass;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -70,7 +66,7 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 
-public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object>, IHasCustomProperties<S3Object> {
+public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object>, IHasCustomFileAttributes<S3Object> {
 	private final @Getter String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 
@@ -93,7 +89,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter int maxConnections = 50;
 
 	private @Getter StorageClass storageClass = StorageClass.Standard;
-	private @Getter @Setter Set<String> customPropertyNames = new LinkedHashSet<>();
 
 	private AmazonS3 s3Client;
 	private AWSCredentialsProvider credentialProvider;
@@ -447,6 +442,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("bucketName", bucketName);
+		if (f.getObjectMetadata() != null) {
+			attributes.putAll(f.getObjectMetadata().getUserMetadata());
+		}
 		return attributes;
 	}
 
@@ -581,17 +579,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		this.maxConnections = maxConnections;
 	}
 
-	@Nonnull
 	@Override
-	public Map<String, String> getCustomProperties(@Nonnull S3Object file) {
-		return file.getObjectMetadata().getUserMetadata().entrySet()
-				.stream()
-				.filter(entry -> getCustomPropertyNames().contains(entry.getKey()))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-	}
-
-	@Override
-	public void setCustomProperty(@Nonnull S3Object file, @Nonnull String key, @Nonnull String value) {
+	public void setCustomFileAttribute(@Nonnull S3Object file, @Nonnull String key, @Nonnull String value) {
 		file.getObjectMetadata().addUserMetadata(key, value);
 	}
 }

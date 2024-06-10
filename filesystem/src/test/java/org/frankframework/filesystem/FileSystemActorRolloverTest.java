@@ -15,7 +15,7 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.DateFormatUtils;
 
-public abstract class FileSystemActorRolloverTest<F,FS extends IWritableFileSystem<F>> extends FileSystemActorCustomPropertiesTest<F, FS> {
+public abstract class FileSystemActorRolloverTest<F,FS extends IWritableFileSystem<F>> extends FileSystemActorCustomFileAttributesTest<F, FS> {
 
 	@Override
 	protected abstract IFileSystemTestHelperFullControl getFileSystemTestHelper();

@@ -18,13 +18,13 @@ public class MockFile {
 	private byte[] contents;
 	private Date lastModified = new Date();
 	private Map<String,Object> additionalProperties;
-	private @Getter Map<String,String> customProperties;
+	private @Getter Map<String,String> customAttributes;
 
 	public MockFile(String name, MockFolder owner) {
 		super();
 		this.name = name;
 		this.owner=owner;
-		customProperties = new LinkedHashMap<>();
+		customAttributes = new LinkedHashMap<>();
 		additionalProperties = new LinkedHashMap<>();
 		additionalProperties.put("id", "[id:"+getName()+"]");
 	}

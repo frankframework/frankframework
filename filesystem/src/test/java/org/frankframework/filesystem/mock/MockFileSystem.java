@@ -10,10 +10,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -27,20 +26,19 @@ import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
-import org.frankframework.filesystem.IHasCustomProperties;
+import org.frankframework.filesystem.IHasCustomFileAttributes;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, IHasCustomProperties<M>, ApplicationContextAware {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, IHasCustomFileAttributes<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private boolean configured=false;
 	private boolean opened=false;
-	private final Set<String> customPropertyNames = new HashSet<>();
 
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -350,9 +348,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	@Nullable
-	public Map<String, Object> getAdditionalFileProperties(M f) {
+	public Map<String, Object> getAdditionalFileProperties(M file) {
 		checkOpen();
-		return f.getAdditionalProperties();
+		Map<String, Object> additionalProperties = new LinkedHashMap<>(file.getAdditionalProperties());
+		additionalProperties.putAll(file.getCustomAttributes());
+		return additionalProperties;
 	}
 
 	@Override
@@ -361,24 +361,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Nonnull
-	@Override
-	public Set<String> getCustomPropertyNames() {
-		return customPropertyNames;
+	public Map<String, String> getCustomAttributes(@Nonnull M file) {
+		return file.getCustomAttributes();
 	}
 
 	@Override
-	public void setCustomPropertyNames(@Nonnull Set<String> customPropertyNames) {
-		this.customPropertyNames.clear();
-		this.customPropertyNames.addAll(customPropertyNames);
-	}
-
-	@Nonnull
-	public Map<String, String> getCustomProperties(@Nonnull M file) {
-		return file.getCustomProperties();
-	}
-
-	@Override
-	public void setCustomProperty(@Nonnull M file, @Nonnull String key, @Nonnull String value) {
-		file.getCustomProperties().put(key, value);
+	public void setCustomFileAttribute(@Nonnull M file, @Nonnull String key, @Nonnull String value) {
+		file.getCustomAttributes().put(key, value);
 	}
 }

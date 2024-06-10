@@ -318,21 +318,27 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
+	private FileSystemAction getAction(ParameterValueList pvl) throws FileSystemException, ConfigurationException {
+		if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
+			try {
+				action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(String.valueOf(getAction())));
+			} catch(IllegalArgumentException e) {
+				throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
+			}
+			checkConfiguration(action);
+		} else {
+			action = getAction();
+		}
+		return action;
+	}
+
+	@SuppressWarnings("unchecked")
 	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			input.closeOnCloseOf(session, getClass().getSimpleName() + " of a " + fileSystem.getClass().getSimpleName()); // don't know if the input will be used
 
-			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
-				try {
-					action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(String.valueOf(getAction())));
-				} catch(IllegalArgumentException e) {
-					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
-				}
-				checkConfiguration(action);
-			} else {
-				action = getAction();
-			}
+			action = getAction(pvl);
 
 			switch(action) {
 				case CREATE:{
@@ -342,8 +348,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 
-					if (fileSystem instanceof IHasCustomProperties<?> && pvl != null) {
-						((IHasCustomProperties<F>)fileSystem).setCustomProperties(file, pvl.toStringMap());
+					if (fileSystem instanceof IHasCustomFileAttributes<?> && pvl != null) {
+						((IHasCustomFileAttributes<F>)fileSystem).setCustomProperties(file, pvl.toStringMap());
 					}
 
 					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
