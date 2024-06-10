@@ -88,4 +88,3 @@ mvnw.cmd
 license-mappings.xml
 NOTICE
 site.webmanifest
-ReplacingInputStream.java
