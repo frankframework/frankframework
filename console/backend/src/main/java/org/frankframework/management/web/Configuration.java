@@ -183,7 +183,7 @@ public class Configuration extends FrankApiBase {
 
 		String user = RequestUtils.resolveRequiredProperty("user", multipartBody.getUser(), "");
 		if (StringUtils.isEmpty(user)) {
-			user = principal.getName();
+			user = getUserPrincipalName(principal);
 		}
 
 		String fileNameOrPath = filePart.getOriginalFilename();
