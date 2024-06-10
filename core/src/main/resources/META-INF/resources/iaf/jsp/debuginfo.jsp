@@ -140,11 +140,11 @@
       <%
         for ( Enumeration enumeration = request.getAttributeNames(); enumeration.hasMoreElements(); ) {
           String attributeName = (String) enumeration.nextElement();
-		  String requestAttribute = StringEscapeUtils.escapeHtml4(request.getAttribute(attributeName).toString());
+		  String attributeValue = StringEscapeUtils.escapeHtml4(request.getAttribute(attributeName).toString());
       %>
       <tr bgcolor="#eeeeee">
         <td><%= attributeName %></td>
-        <td><%= requestAttribute %></td>
+        <td><%= attributeValue %></td>
       </tr>
       <%
         }
