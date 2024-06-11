@@ -26,14 +26,14 @@ import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
-import org.frankframework.filesystem.IHasCustomFileAttributes;
+import org.frankframework.filesystem.ISupportsCustomFileAttributes;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, IHasCustomFileAttributes<M>, ApplicationContextAware {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ISupportsCustomFileAttributes<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 

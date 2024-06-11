@@ -67,7 +67,7 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 
-public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object>, IHasCustomFileAttributes<S3Object> {
+public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object>, ISupportsCustomFileAttributes<S3Object> {
 	private final @Getter String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 

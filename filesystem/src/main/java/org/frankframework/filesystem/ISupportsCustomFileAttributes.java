@@ -18,7 +18,7 @@ package org.frankframework.filesystem;
 import jakarta.annotation.Nonnull;
 import org.frankframework.parameters.ParameterValueList;
 
-public interface IHasCustomFileAttributes<F> {
+public interface ISupportsCustomFileAttributes<F> {
 	String FILE_ATTRIBUTE_PARAM_PREFIX = "FileAttribute.";
 
 	void setCustomFileAttribute(@Nonnull F file, @Nonnull String key, @Nonnull String value);

@@ -207,10 +207,10 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			}
 		}
 
-		if (parameterList != null && !(fileSystem instanceof IHasCustomFileAttributes<?>)) {
+		if (parameterList != null && !(fileSystem instanceof ISupportsCustomFileAttributes<?>)) {
 			List<String> parametersWithAttributePrefix = parameterList.stream()
 					.map(IParameter::getName)
-					.filter(p -> p.startsWith(IHasCustomFileAttributes.FILE_ATTRIBUTE_PARAM_PREFIX))
+					.filter(p -> p.startsWith(ISupportsCustomFileAttributes.FILE_ATTRIBUTE_PARAM_PREFIX))
 					.toList();
 			if (!parametersWithAttributePrefix.isEmpty()) {
 				ConfigurationWarnings.add(owner, log, "Filesystem [" + ClassUtils.nameOf(fileSystem) + "] does not support setting custom file attribute meta-data: [" + parametersWithAttributePrefix + "]");
@@ -359,8 +359,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 
-					if (fileSystem instanceof IHasCustomFileAttributes<?> && pvl != null) {
-						((IHasCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
+					if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
+						((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
 					}
 
 					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
