@@ -201,9 +201,9 @@
 			<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
 				<forward name="success" path="displayKeys" />
 			</PutInSessionPipe>
-			<PutinSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
+			<PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
 				<forward name="success" path="displayKeys" />
-			</PutinSessionPipe>
+			</PutInSessionPipe>
 
 			<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
 				getInputFromFixedValue="branch [?{BRANCH}] Orignal Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
