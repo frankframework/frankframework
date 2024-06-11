@@ -19,7 +19,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
-public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem> {
+public class LocalFileSystemActorTest extends FileSystemActorCustomFileAttributesTest<Path, LocalFileSystem> {
 
 	@TempDir
 	public Path folder;

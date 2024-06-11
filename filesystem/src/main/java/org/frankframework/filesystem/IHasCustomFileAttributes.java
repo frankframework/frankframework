@@ -9,7 +9,7 @@ public interface IHasCustomFileAttributes<F> {
 
 	void setCustomFileAttribute(@Nonnull F file, @Nonnull String key, @Nonnull String value);
 
-	default void setCustomProperties(@Nonnull F file, @Nonnull Map<String, String> customFileAttributes) {
+	default void setCustomFileAttributes(@Nonnull F file, @Nonnull Map<String, String> customFileAttributes) {
 		customFileAttributes.entrySet()
 				.stream()
 				.filter(entry -> entry.getKey().startsWith(FILE_ATTRIBUTE_PARAM_PREFIX))

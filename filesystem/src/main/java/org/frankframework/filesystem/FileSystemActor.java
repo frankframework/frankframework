@@ -39,6 +39,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -205,6 +206,16 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
+
+		if (parameterList != null && !(fileSystem instanceof IHasCustomFileAttributes<?>)) {
+			List<String> parametersWithAttributePrefix = parameterList.stream()
+					.map(IParameter::getName)
+					.filter(p -> p.startsWith(IHasCustomFileAttributes.FILE_ATTRIBUTE_PARAM_PREFIX))
+					.toList();
+			if (!parametersWithAttributePrefix.isEmpty()) {
+				ConfigurationWarnings.add(owner, log, "Filesystem [" + ClassUtils.nameOf(fileSystem) + "] does not support setting custom file attribute meta-data: [" + parametersWithAttributePrefix + "]");
+			}
+		}
 		eolArray = LINE_SEPARATOR.getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
@@ -349,7 +360,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					}
 
 					if (fileSystem instanceof IHasCustomFileAttributes<?> && pvl != null) {
-						((IHasCustomFileAttributes<F>)fileSystem).setCustomProperties(file, pvl.toStringMap());
+						((IHasCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl.toStringMap());
 					}
 
 					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
