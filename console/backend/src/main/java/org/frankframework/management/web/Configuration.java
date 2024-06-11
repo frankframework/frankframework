@@ -18,13 +18,8 @@ package org.frankframework.management.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.security.Principal;
 import java.util.Map;
 
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAction;
@@ -43,6 +38,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 public class Configuration extends FrankApiBase {
@@ -168,7 +168,7 @@ public class Configuration extends FrankApiBase {
 	@Relation("configuration")
 	@Description("upload a new configuration versions")
 	@PostMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> uploadConfiguration(Principal principal, ConfigurationMultipartBody multipartBody) throws ApiException {
+	public ResponseEntity<?> uploadConfiguration(ConfigurationMultipartBody multipartBody) throws ApiException {
 		String datasource = RequestUtils.resolveRequiredProperty("datasource", multipartBody.getDatasource(), "");
 		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multipartBody.isMultiple_configs(), false);
 		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.isActivate_config(), true);
@@ -183,7 +183,7 @@ public class Configuration extends FrankApiBase {
 
 		String user = RequestUtils.resolveRequiredProperty("user", multipartBody.getUser(), "");
 		if (StringUtils.isEmpty(user)) {
-			user = getUserPrincipalName(principal);
+			user = BusMessageUtils.getUserPrincipalName();
 		}
 
 		String fileNameOrPath = filePart.getOriginalFilename();
