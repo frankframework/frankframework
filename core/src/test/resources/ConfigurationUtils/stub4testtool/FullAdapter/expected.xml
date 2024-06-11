@@ -33,7 +33,7 @@
 
 			      <pipe name="CreateResponse"
                className="org.frankframework.pipes.EchoPipe"
-			   inputFromFixedResult="Success ">
+			   inputFromFixedValue="Success ">
 				        <forward name="success" path="EXIT"/>
 			      </pipe>
 		    </pipeline>

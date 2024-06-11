@@ -138,18 +138,19 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	private String replaceParameters(String input, Message message, PipeLineSession session) throws PipeRunException {
+		String output = input;
 		if (!getParameterList().isEmpty()) {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for (ParameterValue pv : pvl) {
-					input = replaceSingle(input, pv.getName(), pv.asStringValue(""));
+					output = replaceSingle(output, pv.getName(), pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
-		return input;
+		return output;
 	}
 
 	private String replaceSingle(String value, String replaceFromValue, String replaceTo) {

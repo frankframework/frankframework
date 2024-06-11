@@ -230,18 +230,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	private String replaceParameters(String input, Message message, PipeLineSession session) throws PipeRunException {
+		String output = input;
+
 		if (!getParameterList().isEmpty()) {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for (ParameterValue pv : pvl) {
-					input = replaceSingle(input, pv.getName(), pv.asStringValue(""));
+					output = replaceSingle(output, pv.getName(), pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
-		return input;
+		return output;
 	}
 
 	private String replaceSingle(String value, String replaceFromValue, String replaceTo) {
@@ -250,18 +252,19 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return value.replace(replaceFrom, replaceTo);
 	}
 
-	private String determineFilename() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getFilename())) {
-			return getFilename();
-		}
-
-		ParameterList parameterList = getParameterList();
-		if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME) != null) {
-			return parameterList.findParameter(PARAMETER_FILENAME).getValue();
-		}
-
-		throw new ConfigurationException("No filename parameter found");
-	}
+// Enable after removal
+//	private String determineFilename() throws ConfigurationException {
+//		if (StringUtils.isNotEmpty(getFilename())) {
+//			return getFilename();
+//		}
+//
+//		ParameterList parameterList = getParameterList();
+//		if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME) != null) {
+//			return parameterList.findParameter(PARAMETER_FILENAME).getValue();
+//		}
+//
+//		throw new ConfigurationException("No filename parameter found");
+//	}
 
 	/**
 	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
