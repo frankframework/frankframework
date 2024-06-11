@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Client } from '@stomp/stompjs';
 
@@ -10,7 +16,10 @@ import { Client } from '@stomp/stompjs';
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })
-export class WebsocketTestComponent implements OnInit {
+export class WebsocketTestComponent implements OnInit, OnDestroy {
+  @ViewChild('wsLog')
+  private wsLog!: ElementRef<HTMLPreElement>;
+
   private client: Client = new Client({
     brokerURL: 'ws://localhost:4200/iaf/api/ws',
     connectionTimeout: 60_000,
@@ -22,9 +31,15 @@ export class WebsocketTestComponent implements OnInit {
     this.client.activate();
   }
 
+  ngOnDestroy(): void {
+    this.client.deactivate();
+  }
+
   onConnected(): void {
+    const htmlLogElement: HTMLPreElement = this.wsLog.nativeElement;
     this.client.subscribe('/topic/greetings', (message) => {
       console.log(`Received: ${message.body}`);
+      htmlLogElement.innerHTML += `<p>${message.body}</p>`;
     });
     this.client.publish({
       destination: '/hello',
