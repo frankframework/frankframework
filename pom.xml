@@ -27,7 +27,7 @@
 
 		<narayana.version>7.0.1.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.13.0</micrometer.version>
+		<micrometer.version>1.13.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>
@@ -492,7 +492,7 @@
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>3.11.0</version>
+				<version>3.11.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
