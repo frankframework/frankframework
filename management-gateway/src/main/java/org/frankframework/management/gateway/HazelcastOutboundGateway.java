@@ -23,7 +23,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
-import org.frankframework.management.gateway.events.ClusterMemberEvent.Type;
+import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
 import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -161,12 +161,12 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 
 			@Override
 			public void memberAdded(MembershipEvent e) {
-				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, Type.ADD, mapMember(e.getMember())));
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.ADD_MEMBER, mapMember(e.getMember())));
 			}
 
 			@Override
 			public void memberRemoved(MembershipEvent e) {
-				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, Type.REMOVE, mapMember(e.getMember())));
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.REMOVE_MEMBER, mapMember(e.getMember())));
 			}
 
 		});

@@ -18,7 +18,7 @@ package org.frankframework.management.gateway.events;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
-public class AbstractGatewayEvent extends ApplicationEvent {
+public abstract class AbstractGatewayEvent extends ApplicationEvent {
 
 	public AbstractGatewayEvent(ApplicationContext source) {
 		super(source);

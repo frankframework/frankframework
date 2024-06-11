@@ -23,14 +23,14 @@ import lombok.Getter;
 
 public class ClusterMemberEvent extends AbstractGatewayEvent {
 
-	public enum Type {
-		ADD, REMOVE
+	public enum EventType {
+		ADD_MEMBER, REMOVE_MEMBER
 	}
 
-	private @Getter final Type type;
+	private @Getter final EventType type;
 	private @Getter final ClusterMember member;
 
-	public ClusterMemberEvent(@Nonnull ApplicationContext source, @Nonnull Type type, @Nonnull ClusterMember member) {
+	public ClusterMemberEvent(@Nonnull ApplicationContext source, @Nonnull EventType type, @Nonnull ClusterMember member) {
 		super(source);
 		this.type = type;
 		this.member = member;
@@ -38,6 +38,6 @@ public class ClusterMemberEvent extends AbstractGatewayEvent {
 
 	@Override
 	public String toString() {
-		return "Member " + member.getId() + " has been " + (type == Type.ADD ? "added" : "removed");
+		return "Member " + member.getId() + " has been " + (type == EventType.ADD_MEMBER ? "added" : "removed");
 	}
 }
