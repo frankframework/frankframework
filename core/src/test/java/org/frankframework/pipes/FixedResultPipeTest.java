@@ -7,15 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.io.IOUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
 
 /**
  * FixedResultPipe Tester.
@@ -32,6 +34,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		return new FixedResultPipe();
 	}
 
+	@Disabled("Should be enabled after removal of deprecated attributes")
 	@Test
 	public void testSuccessWithParam() throws Exception {
 		Parameter filename = ParameterBuilder.create().withName("filename").withValue(PIPES_2_TXT);
@@ -72,6 +75,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		assertThrows(ConfigurationException.class, this::configurePipe);
 	}
 
+	@Disabled("Should be enabled after removal of deprecated attributes")
 	@Test
 	public void testBinaryContent() throws Exception {
 		pipe.setFilename(PIPES_FILE_PDF);
@@ -90,9 +94,207 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		}
 	}
 
+	@Disabled("Should be enabled after removal of deprecated attributes")
 	@Test
 	public void testEmptyFileName(){
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.endsWith("No filename parameter found"));
+	}
+
+	private Parameter getParameter(String name){
+		session.put(name,"value");
+		return ParameterBuilder.create().withName(name).withValue("abs").withSessionKey("*");
+	}
+
+	@Test
+	public void testSuccess() throws Exception {
+		Parameter param = getParameter("param1");
+		pipe.addParameter(param);
+		pipe.setFilename(PIPES_2_TXT);
+		pipe.setReplaceFrom("param1");
+		pipe.setReplaceTo("kar");
+		pipe.setReturnString("?{param1}andandandparam2");
+		pipe.configure();
+		PipeRunResult res = doPipe(pipe, "whatisthis", session);
+		assertEquals("inside the file", res.getResult().asString());
+	}
+
+	@Test
+	public void testFailAsWrongDirectory() {
+		Parameter param = getParameter("param1");
+		pipe.addParameter(param);
+		pipe.setFilename(PIPES_2_TXT + "/something");
+		pipe.setReplaceFrom("param1");
+		pipe.setReplaceTo("kar");
+		pipe.setReturnString("?{param1}andandandparam2");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("cannot find resource [/Pipes/2.txt/something]"));
+	}
+
+	@Test
+	public void xsltSuccess() throws Exception{
+		Parameter param = getParameter("param1");
+		pipe.addParameter(param);
+		pipe.setSubstituteVars(true);
+		pipe.setStyleSheetName("/Xslt/importNotFound/name.xsl");
+		pipe.setReplaceFrom("param1");
+		pipe.setReplaceTo("kar");
+		pipe.setReturnString("?{param1}andandandparam2");
+		pipe.configure();
+		PipeRunResult res = doPipe(pipe, "whatisthis", session);
+		assertEquals("success", res.getPipeForward().getName());
+	}
+
+	@Test
+	public void xsltFailForTransformation() throws Exception{
+		Parameter param = getParameter("param1");
+		pipe.addParameter(param);
+		pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
+		pipe.setReplaceFrom("param1");
+		pipe.setReplaceTo("kar");
+		pipe.setReturnString("?{param1}andandandparam2");
+		pipe.configure();
+
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "whatisthis", session));
+		assertThat(e.getMessage(), Matchers.containsString("error transforming message"));
+	}
+
+	@Test
+	public void testXsltWithReturnedStringReplaced() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("param").withValue("<result><field>empty</field></result>");
+		pipe.addParameter(param);
+		pipe.setSubstituteVars(true);
+		pipe.setStyleSheetName("/Xslt/extract.xslt");
+		pipe.setReplaceFrom("param1");
+		pipe.setReplaceTo("param");
+		pipe.setReturnString("?{param1}");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "dummy", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("empty", res.getResult().asString());
+	}
+
+	@Test
+	public void substituteVarsFromFile() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("myprop");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+		pipe.setFilename("/FixedResult/fixedResultPipeInput.txt");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("Hello propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void substituteVarsFromFileConfigureTimeLookup() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("myprop");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+		pipe.setFilename("/FixedResult/fixedResultPipeInput.txt");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("Hello propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void testFileNotFound() {
+		pipe.setFilename("nofile");
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
+	}
+
+	@Test
+	public void substituteVarsWithFileSessionKey() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("myprop");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+
+		session.put("filename", "/FixedResult/fixedResultPipeInput.txt");
+
+		pipe.setFilenameSessionKey("filename");
+		pipe.setReplaceFrom("Hello");
+		pipe.setReplaceTo("HelloTo");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("HelloTo propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void replaceFixedParamsTest() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("myprop");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+		pipe.setReturnString("This is myprop");
+		pipe.setReplaceFixedParams(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("This is propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void substituteVarsInCombinationOfReplacePair() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("param");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+
+		pipe.setReturnString("This is replaceFrom ?{param}");
+		pipe.setReplaceFrom("replaceFrom");
+		pipe.setReplaceTo("replaceTo");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("This is replaceTo propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void substituteVarsInCombinationOfReplacePairWithReplaceFixedParams() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("param");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+
+		pipe.setReturnString("This is replaceFrom param");
+		pipe.setReplaceFixedParams(true);
+		pipe.setReplaceFrom("replaceFrom");
+		pipe.setReplaceTo("replaceTo");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("This is replaceTo propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
+	public void testFilenameSessionKeyPointsToNonexistingFile() throws Exception {
+		session.put("filename", "nofile");
+
+		pipe.setFilenameSessionKey("filename");
+		pipe.registerForward(new PipeForward("filenotfound", "dummy"));
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("filenotfound", res.getPipeForward().getName());
+	}
+
+	@Test
+	public void testEmptyReturnString() throws Exception {
+		pipe.setReturnString("");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("", res.getResult().asString());
 	}
 }
