@@ -18,5 +18,13 @@ package org.frankframework.filesystem;
 public enum TypeFilter {
 	FILES_ONLY,
 	FOLDERS_ONLY,
-	FILES_AND_FOLDERS
+	FILES_AND_FOLDERS;
+
+	public boolean includeFiles() {
+		return this == FILES_ONLY || this == FILES_AND_FOLDERS;
+	}
+
+	public boolean includeFolders() {
+		return this == FOLDERS_ONLY || this == FILES_AND_FOLDERS;
+	}
 }

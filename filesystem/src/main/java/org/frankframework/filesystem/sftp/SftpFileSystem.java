@@ -424,14 +424,14 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		SftpFilePathIterator(String folder, List<LsEntry> fileEntities, TypeFilter filter) {
 			files = new ArrayList<>();
 			for (LsEntry ftpFile : fileEntities) {
-				if (ftpFile.getAttrs().isDir() && (filter == TypeFilter.FOLDERS_ONLY || filter == TypeFilter.FILES_AND_FOLDERS)) {
+				if (ftpFile.getAttrs().isDir() && filter.includeFolders()) {
 					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
 					// Skip folders without name, like '.' and '..'
 					if (StringUtils.isNotBlank(fileRef.getFilename())) {
 						log.debug("adding directory SftpFileRef [{}] to the collection", fileRef);
 						files.add(fileRef);
 					}
-				} else if (!ftpFile.getAttrs().isDir() && (filter == TypeFilter.FILES_ONLY || filter == TypeFilter.FILES_AND_FOLDERS)) {
+				} else if (!ftpFile.getAttrs().isDir() && filter.includeFiles()) {
 					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
 					log.debug("adding file SftpFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);

@@ -210,10 +210,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 				}
 
 				listing = s3Client.listObjectsV2(request);
-				if (filter == TypeFilter.FILES_ONLY || filter == TypeFilter.FILES_AND_FOLDERS) {
+				if (filter.includeFiles()) {
 					summaries.addAll(listing.getObjectSummaries()); // Files
 				}
-				if (filter == TypeFilter.FILES_AND_FOLDERS || filter == TypeFilter.FOLDERS_ONLY) {
+				if (filter.includeFolders()) {
 					subFolders.addAll(listing.getCommonPrefixes()); // Folders
 				}
 

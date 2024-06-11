@@ -377,10 +377,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		FTPFilePathIterator(String folder, FTPFile[] filesArr, TypeFilter filter) {
 			for (FTPFile ftpFile : filesArr) {
 				FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile, folder);
-				if (ftpFile.isDirectory() && (filter == TypeFilter.FOLDERS_ONLY || filter == TypeFilter.FILES_AND_FOLDERS)) {
+				if (ftpFile.isDirectory() && filter.includeFolders()) {
 					log.debug("adding directory FTPFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
-				} else if (ftpFile.isFile() && (filter == TypeFilter.FILES_ONLY || filter == TypeFilter.FILES_AND_FOLDERS)) {
+				} else if (ftpFile.isFile() && filter.includeFiles()) {
 					log.debug("adding file FTPFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
 				}

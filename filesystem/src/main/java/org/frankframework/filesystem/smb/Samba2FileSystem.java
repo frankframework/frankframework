@@ -530,12 +530,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 						FileAllInformation fileInfo = getAttributes(file);
 						file.setAttributes(fileInfo);
 
-						if (filter == TypeFilter.FILES_ONLY || filter == TypeFilter.FILES_AND_FOLDERS) {
+						if (filter.includeFiles()) {
 							if (isFileAndAccessible(file) && allowHiddenFile(file)) {
 								files.add(file);
 							}
 						}
-						if (filter == TypeFilter.FOLDERS_ONLY || filter == TypeFilter.FILES_AND_FOLDERS) {
+						if (filter.includeFolders()) {
 							if (isDirectoryAndAccessible(file) && allowHiddenFile(file)) {
 								files.add(file);
 							}
