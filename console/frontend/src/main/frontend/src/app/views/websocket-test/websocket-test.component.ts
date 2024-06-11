@@ -11,22 +11,24 @@ import { Client } from '@stomp/stompjs';
   styleUrl: './websocket-test.component.scss',
 })
 export class WebsocketTestComponent implements OnInit {
-  constructor() {}
+  private client: Client = new Client({
+    brokerURL: 'ws://localhost:4200/iaf/api/ws',
+    connectionTimeout: 60_000,
+    debug: (message) => console.debug(message),
+    onConnect: () => this.onConnected(),
+  });
 
   ngOnInit(): void {
-    const client = new Client({
-      brokerURL: 'ws://localhost:8080/iaf-example/gs-guide-websocket',
-      onConnect: (): void => {
-        client.subscribe('/topic/greetings', (message) => {
-          console.log(`Received: ${message.body}`);
-        });
-        client.publish({
-          destination: '/app/hello',
-          body: JSON.stringify({ name: 'Vivy' }),
-        });
-      },
-    });
+    this.client.activate();
+  }
 
-    client.activate();
+  onConnected(): void {
+    this.client.subscribe('/topic/greetings', (message) => {
+      console.log(`Received: ${message.body}`);
+    });
+    this.client.publish({
+      destination: '/hello',
+      body: JSON.stringify({ name: 'Vivy' }),
+    });
   }
 }

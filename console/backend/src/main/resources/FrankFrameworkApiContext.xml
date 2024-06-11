@@ -11,7 +11,7 @@
 		http://www.springframework.org/schema/websocket
 		https://www.springframework.org/schema/websocket/spring-websocket.xsd">
 
-	<context:component-scan base-package="org.frankframework.management.web">
+	<context:component-scan base-package="org.frankframework.management.web, org.frankframework.management.web.socket">
 		<!-- make sure only load the Spring MVC controllers ;) -->
 	</context:component-scan>
 
@@ -21,9 +21,9 @@
 
 	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
 
-	<websocket:handlers allowed-origins="https://mydomain.com">
-		<websocket:mapping path="/greeting" handler="greetingHandler" />
-	</websocket:handlers>
+<!--	<websocket:handlers allowed-origins="https://mydomain.com">-->
+<!--		<websocket:mapping path="/greeting" handler="greetingHandler" />-->
+<!--	</websocket:handlers>-->
 
-	<bean id="greetingHandler" class="org.frankframework.management.web.GreetingHandler"/>
+<!--	<bean id="greetingHandler" class="org.frankframework.management.web.socket.GreetingHandler"/>-->
 </beans>

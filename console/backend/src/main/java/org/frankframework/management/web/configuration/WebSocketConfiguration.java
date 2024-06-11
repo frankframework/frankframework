@@ -16,27 +16,28 @@
 package org.frankframework.management.web.configuration;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 /**
  * This class is found by classpath scanning in the `FrankFrameworkApiContext.xml` file.
  * It is loaded after the xml has been loaded/wired.
  */
 @Configuration
-@EnableWebSocket
-public class WebSocketConfiguration implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
 
 	@Override
-	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-//		registry.addHandler(test123Handler(), "/myHandler");
+	public void registerStompEndpoints(StompEndpointRegistry registry) {
+		registry.addEndpoint("/ws")
+				.setAllowedOriginPatterns("localhost:*");
 	}
 
-/* Example on how to add a new handler
-	@Bean
-	public WebSocketHandler test123Handler() {
-		return new GreetingHandler();
+	@Override
+	public void configureMessageBroker(MessageBrokerRegistry config) {
+//		config.setApplicationDestinationPrefixes("/app");
+		config.enableSimpleBroker("/topic");
 	}
-*/
 }
