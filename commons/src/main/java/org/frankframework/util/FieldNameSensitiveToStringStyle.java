@@ -67,8 +67,8 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	}
 
 	private String hideValue(Object value) {
-		if(value instanceof String) {
-			return StringUtil.hide((String) value);
+		if(value instanceof String string) {
+			return StringUtil.hide(string);
 		} else {
 			return "***hidden***";
 		}
@@ -82,7 +82,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 		Map<Object, Object> hiddenValues = new HashMap<>(map); //Deep copy, we don't want to alter the original map!
 
 		for(Object key : map.keySet()) {
-			if(key instanceof String && containsHiddenWord((String) key)) {
+			if(key instanceof String string && containsHiddenWord(string)) {
 				Object hideMe = hiddenValues.remove(key);
 				hiddenValues.put(key, hideValue(hideMe));
 			}

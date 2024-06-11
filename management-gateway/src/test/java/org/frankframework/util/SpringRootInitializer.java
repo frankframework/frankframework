@@ -37,8 +37,8 @@ public class SpringRootInitializer {
 	}
 
 	@Bean
-	public OutboundGatewayFactory<Object> createOutboundGatewayFactory() {
-		OutboundGatewayFactory<Object> factory = new OutboundGatewayFactory<>();
+	public OutboundGatewayFactory createOutboundGatewayFactory() {
+		OutboundGatewayFactory factory = new OutboundGatewayFactory();
 		factory.setGatewayClassname(HazelcastOutboundGateway.class.getCanonicalName());
 		return factory;
 	}

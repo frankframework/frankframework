@@ -88,25 +88,25 @@ public class MessagingSource  {
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable<>();
 		}
-		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
+		log.debug("{}set id [{}] context [{}] connectionFactory [{}] authAlias [{}]", getLogPrefix(), id, context, connectionFactory, authAlias);
 	}
 
 	public synchronized boolean close() throws IbisException {
 		if (--referenceCount<=0 && cleanUpOnClose()) {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], cleaning up global objects");
+			log.debug("{}reference count [{}], cleaning up global objects", this::getLogPrefix, () -> referenceCount);
 			siblingMap.remove(getId());
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
 				if (globalConnection != null) {
-					log.debug(getLogPrefix()+"closing global Connection");
+					log.debug("{}closing global Connection", this::getLogPrefix);
 					globalConnection.close();
 					openConnectionCount.decrementAndGet();
 				}
 				if (openSessionCount.get()!=0) {
-					log.warn(getLogPrefix()+"open session count after closing ["+openSessionCount.get()+"]");
+					log.warn("{}open session count after closing [{}]", this::getLogPrefix, openSessionCount::get);
 				}
 				if (openConnectionCount.get()!=0) {
-					log.warn(getLogPrefix()+"open connection count after closing ["+openConnectionCount.get()+"]");
+					log.warn("{}open connection count after closing [{}]", this::getLogPrefix, openConnectionCount::get);
 				}
 				if (context != null) {
 					context.close();
@@ -121,7 +121,7 @@ public class MessagingSource  {
 			}
 			return true;
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
+		log.debug("{}reference count [{}], no cleanup", this::getLogPrefix, () -> referenceCount);
 		return false;
 	}
 
@@ -214,7 +214,7 @@ public class MessagingSource  {
 	protected Connection createConnection() throws JMSException {
 		if (StringUtils.isNotEmpty(authAlias)) {
 			CredentialFactory cf = new CredentialFactory(authAlias);
-			if (log.isDebugEnabled()) log.debug("using userId ["+cf.getUsername()+"] to create Connection");
+			log.debug("using userId [{}] to create Connection", cf::getUsername);
 			return connectionFactory.createConnection(cf.getUsername(),cf.getPassword());
 		}
 		return connectionFactory.createConnection();
@@ -292,7 +292,7 @@ public class MessagingSource  {
 		}
 
 		try {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "closing Session");
+			log.debug("{}closing Session", this::getLogPrefix);
 			session.close();
 		} catch (JMSException e) {
 			log.error(getLogPrefix() + "Exception closing Session", e);
@@ -343,7 +343,7 @@ public class MessagingSource  {
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					log.info(getLogPrefix()+"{} created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					if(log.isInfoEnabled()) log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
 				}
 			}
 			log.trace("Got global dynamic reply queue, lock released on {}", this);

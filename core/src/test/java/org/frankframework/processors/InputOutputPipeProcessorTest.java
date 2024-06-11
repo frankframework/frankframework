@@ -31,7 +31,6 @@ import org.frankframework.testutil.TestFileUtils;
 public class InputOutputPipeProcessorTest {
 
 	public static final String INPUT_MESSAGE_TEXT = "input message";
-	public static final String PIPE_RUN_RESULT_TEXT = "pipe run result";
 	private EchoPipe pipe;
 	private PipeLine pipeLine;
 	private InputOutputPipeProcessor processor;
@@ -92,6 +91,11 @@ public class InputOutputPipeProcessorTest {
 
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
 		assertEquals(testOutputFile, prr.getResult().asString());
+		assertFalse(input.isNull(), "Input Message should not be closed, because it can be used in the session");
+
+		// Act & Assert that closing the session closes the input message
+		session.close();
+		assertTrue(input.isNull(), "Input Message should be closed");
 	}
 
 	@Test
@@ -127,27 +131,35 @@ public class InputOutputPipeProcessorTest {
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 
-		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml");
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml")
+				.replace("<Header/>", "<Header></Header>"); // RestoreMovedElementsHandler does not handle empty elements
 		assertEquals(testOutputFile, prr2.getResult().asString());
+		assertFalse(input.isNull(), "Input Message should not be closed, because it can be used in the session");
+		assertFalse(prr1.getResult().isNull(), "Input Message of pipe2 should not be closed, because it can be used in the session");
+
+		// Act & Assert that closing the session closes the input message
+		session.close();
+		assertTrue(input.isNull(), "Input Message should be closed");
+		assertTrue(prr1.getResult().isNull(), "Input Message of pipe2 should be closed");
 	}
 
 	private void testRestoreMovedElement(Object sessionVarContents) throws Exception {
 		EchoPipe pipe = new EchoPipe();
-		pipe.setGetInputFromFixedValue("result [{sessionKey:replaceThis}]");
+		pipe.setGetInputFromFixedValue("<xml>result [{sessionKey:replaceThis}]</xml>");
 		pipe.setRestoreMovedElements(true);
 		Message input = new Message("input");
 		session.put("replaceThis", sessionVarContents);
 
 		PipeForward forward = new PipeForward();
 		forward.setName("success");
+
 		pipe.registerForward(forward);
-
-		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
-
 		pipe.configure();
 		pipe.start();
 
-		assertEquals("result [ReplacedValue]", prr.getResult().asString());
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		assertEquals("<xml>result [ReplacedValue]</xml>", prr.getResult().asString());
 	}
 
 	@Test

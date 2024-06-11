@@ -35,7 +35,7 @@ import jakarta.annotation.security.RolesAllowed;
 public class HazelcastEndToEndTest {
 
 	@Autowired
-	private HazelcastOutboundGateway<String> outboundGateway;
+	private HazelcastOutboundGateway outboundGateway;
 
 	@Autowired
 	@Qualifier("frank-management-bus")

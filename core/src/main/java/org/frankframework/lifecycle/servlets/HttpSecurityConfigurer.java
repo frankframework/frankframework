@@ -85,7 +85,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 
 		for(Entry<String, SecurityFilterChain> chain : filters.entrySet()) {
 			log.info("adding SecurityFilterChain [{}] to WebSecurity", chain::getKey);
-			webSecurity.addSecurityFilterChainBuilder(() -> chain.getValue());
+			webSecurity.addSecurityFilterChainBuilder(chain::getValue);
 		}
 	}
 }
