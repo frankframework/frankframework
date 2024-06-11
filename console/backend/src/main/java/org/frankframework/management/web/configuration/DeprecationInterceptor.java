@@ -29,6 +29,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.lang.reflect.Method;
 
+/**
+ * Should only intercept Spring WEB MVC requests.
+ * If a method has the {@link Deprecated} annotation it should be omitted (by default).
+ */
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class DeprecationInterceptor implements HandlerInterceptor, EnvironmentAware {
 
@@ -39,15 +43,15 @@ public class DeprecationInterceptor implements HandlerInterceptor, EnvironmentAw
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		HandlerMethod handlerMethod = (HandlerMethod) handler;
-		Method method = handlerMethod.getMethod();
+		if(handler instanceof HandlerMethod handlerMethod) {
+			Method method = handlerMethod.getMethod();
 
-		if(!allowDeprecatedEndpoints && method.isAnnotationPresent(Deprecated.class)) {
-			log.warn("endpoint [{}] has been deprecated, set property [{}=true] to restore functionality", request.getRequestURI(), ALLOW_DEPRECATED_ENDPOINTS_KEY);
-			response.sendError(HttpStatus.BAD_REQUEST.value());
-			return false;
+			if(!allowDeprecatedEndpoints && method.isAnnotationPresent(Deprecated.class)) {
+				log.warn("endpoint [{}] has been deprecated, set property [{}=true] to restore functionality", request.getRequestURI(), ALLOW_DEPRECATED_ENDPOINTS_KEY);
+				response.sendError(HttpStatus.BAD_REQUEST.value());
+				return false;
+			}
 		}
-
 		return true;
 	}
 

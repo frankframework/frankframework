@@ -13,9 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.web.configuration;
+package org.frankframework.web;
 
 import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletConfig;
@@ -24,17 +36,6 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.util.HttpUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
-import org.springframework.web.servlet.DispatcherServlet;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -50,13 +51,13 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 
 	public ServletDispatcher() {
+		setNamespace(getName());
 		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext.xml");
-		setDetectAllHandlerMappings(false); //Else it will use the parent's (EnvironmentContext) Spring Integration mapping
 	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		//don't wire the ApplicationContext,
+		//don't wire the the parent's (EnvironmentContext) ApplicationContext,
 	}
 
 	@Override
@@ -90,7 +91,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 		 */
 		final String method = request.getMethod();
 		if (!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
-			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
+			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), BusMessageUtils.getUserPrincipalName());
 		}
 
 		//TODO add X-Rate-Limit to prevent possible clients to flood the IAF API

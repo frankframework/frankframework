@@ -16,7 +16,6 @@
 package org.frankframework.web;
 
 import org.frankframework.console.ConsoleFrontend;
-import org.frankframework.management.web.configuration.ServletDispatcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -50,9 +50,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        # We must fetch at least the immediate parents so that if this is
-        # a pull request then we can checkout the head.
-        fetch-depth: 20
+        # Number of commits to fetch. 0 indicates all history for all branches and tags.
+        # Required for SonarCloud
+        fetch-depth: 0
 
     - name: Cache local Maven repository
       uses: actions/cache@v3

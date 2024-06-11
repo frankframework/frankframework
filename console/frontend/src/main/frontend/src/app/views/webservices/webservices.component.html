@@ -21,7 +21,7 @@
                 <tr *ngFor="let service of services; index as index">
                   <td>{{ index }}</td>
                   <td>{{ service.name }}</td>
-                  <td>{{ service.method }}</td>
+                  <td>{{ service.methods }}</td>
                   <td>{{ service.view }}</td>
                   <td>
                     <a
@@ -57,11 +57,19 @@
         <div class="ibox-content">
           <div class="col-md-12">
             <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>&nbsp;</th>
+                  <th>URI pattern</th>
+                  <th>Method(s)</th>
+                  <th>&nbsp;</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr *ngFor="let apiListener of apiListeners; index as index">
                   <td>{{ index }}</td>
                   <td>{{ apiListener.uriPattern }}</td>
-                  <td>{{ apiListener.method }}</td>
+                  <td>{{ apiListener.methods.join(', ') }}</td>
                   <td *ngIf="apiListener.error">{{ apiListener.error }}</td>
                   <td class="hideBtn1170">
                     <a

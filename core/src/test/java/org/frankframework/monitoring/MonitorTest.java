@@ -3,16 +3,16 @@ package org.frankframework.monitoring;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.monitoring.events.FireMonitorEvent;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.monitoring.events.FireMonitorEvent;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestConfiguration;
 
 /**
  * This test tests the Spring pub/sub (publishEvent and onApplicationEvent) methods.
@@ -67,7 +67,7 @@ public class MonitorTest {
 		assertEquals(result, ignoreHostname(capturedMessage.asString()));
 		PipeLineSession session = sender.getInputSession();
 		assertTrue(session.containsKey(PipeLineSession.ORIGINAL_MESSAGE_KEY));
-		Message originalMessage = session.getMessage(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+		Message originalMessage = (Message) session.get(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		assertEquals(message.asString(), sender.getSessionOriginalMessageValue());
 		assertEquals(123, originalMessage.getContext().get("special-key"));
 	}

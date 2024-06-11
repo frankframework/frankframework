@@ -1,0 +1,24 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAP-ENV:Header></SOAP-ENV:Header>
+	<SOAP-ENV:Body>
+		<ZKN:edcLk01 xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310">
+			<ZKN:stuurgegevens>
+				<StUF:berichtcode>Lk01</StUF:berichtcode>
+				<StUF:tijdstipBericht>20230825095316895</StUF:tijdstipBericht>
+				<StUF:entiteittype>EDC</StUF:entiteittype>
+			</ZKN:stuurgegevens>
+			<ZKN:parameters>
+				<StUF:mutatiesoort>T</StUF:mutatiesoort>
+				<StUF:indicatorOvername><![CDATA[&<V]]></StUF:indicatorOvername>
+			</ZKN:parameters>
+			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">
+				<ZKN:identificatie><![CDATA[DC2023-00020]]></ZKN:identificatie>
+				<ZKN:dct.omschrijving>Brief</ZKN:dct.omschrijving>
+			</ZKN:object>
+			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="E">
+				<ZKN:identificatie>DC2022-012345</ZKN:identificatie>
+				<ZKN:dct.omschrijving>&amp;&lt;Email</ZKN:dct.omschrijving>
+			</ZKN:object>
+		</ZKN:edcLk01>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

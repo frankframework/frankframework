@@ -20,19 +20,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.util.HttpUtils;
 import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+
+import lombok.Getter;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
@@ -102,15 +101,15 @@ public class RequestMessageBuilder {
 	public Message<?> build() {
 		if (SEC_LOG.isInfoEnabled()) {
 			String method = base.getServletRequest().getMethod();
-			String issuedBy = sanitizeForLog(HttpUtils.getCommandIssuedBy(base.getServletRequest()));
+			String issuedBy = BusMessageUtils.getUserPrincipalName();
+			String request = base.getServletRequest().getRequestURI();
 			if ("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
-				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getServletRequest().getRequestURI(), issuedBy);
+				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, request, issuedBy);
 			} else {
 				String headers = customHeaders.entrySet().stream()
 						.map(this::mapHeaderForLog)
 						.collect(Collectors.joining(", "));
-				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, base.getServletRequest()
-						.getRequestURI(), issuedBy, headers, payload);
+				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, request, issuedBy, headers, payload);
 			}
 		}
 

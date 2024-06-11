@@ -293,6 +293,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return obj.toString();
 		} else if (obj instanceof Message message) {
 			// Existing messages returned directly so they are not closed
+			message.assertNotClosed();
 			return message.asString();
 		} else {
 			// Other types are wrapped into a message, which is closed after converting to String.
