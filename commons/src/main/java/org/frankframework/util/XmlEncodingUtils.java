@@ -244,9 +244,9 @@ public class XmlEncodingUtils {
 		int c;
 		int counter = 0;
 		for (int i = 0; i < length; i += Character.charCount(c)) {
-			c=string.codePointAt(i);
-			if (isPrintableUnicodeChar(c,
-					allowUnicodeSupplementaryCharacters)) {
+			c = string.codePointAt(i);
+
+			if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
 				encoded.appendCodePoint(c);
 			} else {
 				counter++;

@@ -21,6 +21,9 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.PropertyLoader;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.impl.DefaultNodeContext;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 
 public class HazelcastConfig {
 
@@ -33,5 +36,11 @@ public class HazelcastConfig {
 		String resource = "frankframework-hazelcast.xml";
 		Properties properties = new PropertyLoader("hazelcast.properties");
 		return Config.loadFromClasspath(classLoader, resource, properties);
+	}
+
+	static HazelcastInstance newHazelcastInstance(String name) {
+		Config config = HazelcastConfig.createHazelcastConfig();
+		config.getMemberAttributeConfig().setAttribute("name", name);
+		return HazelcastInstanceFactory.newHazelcastInstance(config, name, new DefaultNodeContext());
 	}
 }
