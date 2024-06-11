@@ -28,12 +28,12 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class AmazonEncodingUtils {
 
+	private static final Pattern ENCODABLE_CHARS_RE = Pattern.compile("[^\\x21-\\x7F]");
+	private static final Pattern RFC2047_DECODING_RE = Pattern.compile("=\\?([^?]+)\\?([BQ])\\?([^?]+)\\?=");
+
 	private AmazonEncodingUtils() {
 		// No-op, prevents instance-creation.
 	}
-
-	private static final Pattern ENCODABLE_CHARS_RE = Pattern.compile("[^\\x21-\\x7F]");
-	private static final Pattern RFC2047_DECODING_RE = Pattern.compile("=\\?([^?]+)\\?([BQ])\\?([^?]+)\\?=");
 
 	/**
 	 * Encode a value for passing it as user metadata for an S3 object.

@@ -39,6 +39,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -312,7 +313,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
 			userDefinedAttributes.write(key, Charset.defaultCharset().encode(value));
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw ExceptionUtils.asRuntimeException(e);
 		}
 	}
 
