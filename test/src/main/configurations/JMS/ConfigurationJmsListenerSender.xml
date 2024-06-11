@@ -198,14 +198,15 @@
 				<forward name="greaterthan" path="IdAndCidDifferent" />
 			</CompareStringPipe>
 
-			<PutInSession name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
+			<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
 				<forward name="success" path="displayKeys" />
-			</PutInSession>
-			<PutinSession name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
+			</PutInSessionPipe>
+			<PutinSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
 				<forward name="success" path="displayKeys" />
-			</PutinSession>
+			</PutinSessionPipe>
 
-			<pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe" returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
+			<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
+				getInputFromFixedValue="branch [?{BRANCH}] Orignal Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
 				<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*/@branch" />
 				<param name="MID" sessionKey="id" />
 				<param name="CID" sessionKey="cid" />
