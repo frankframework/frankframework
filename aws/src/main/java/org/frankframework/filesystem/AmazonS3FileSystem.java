@@ -25,7 +25,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +59,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.FileUtils;
@@ -440,10 +441,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
-		Map<String, Object> attributes = new HashMap<>();
+		Map<String, Object> attributes = new LinkedHashMap<>();
 		attributes.put("bucketName", bucketName);
 		if (f.getObjectMetadata() != null) {
-			attributes.putAll(f.getObjectMetadata().getUserMetadata());
+			f.getObjectMetadata().getUserMetadata().forEach((key, value) -> attributes.put(key, AmazonEncodingUtils.decode(value)));
 		}
 		return attributes;
 	}
@@ -581,6 +582,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void setCustomFileAttribute(@Nonnull S3Object file, @Nonnull String key, @Nonnull String value) {
-		file.getObjectMetadata().addUserMetadata(key, value);
+		file.getObjectMetadata().addUserMetadata(key, AmazonEncodingUtils.encode(value));
 	}
 }
