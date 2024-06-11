@@ -30,9 +30,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
@@ -282,11 +282,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			List<String> attributeNames = userDefinedAttributes.list();
 			if (attributeNames == null || attributeNames.isEmpty()) return null;
 			String attrSpec = "user:" + String.join(",", attributeNames);
-			return Files.readAttributes(file, attrSpec)
-					.entrySet()
-					.stream()
-					.map(entry -> Map.entry(entry.getKey(), readAttributeValue(entry.getValue())))
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			Map<String, Object> result = new LinkedHashMap<>();
+			Files.readAttributes(file, attrSpec)
+					.forEach((name, value) -> result.put(name, readAttributeValue(value)));
+			return result;
 		} catch (UnsupportedOperationException e) {
 			return null;
 		} catch (IOException e) {

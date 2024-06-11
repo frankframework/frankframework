@@ -360,7 +360,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					}
 
 					if (fileSystem instanceof IHasCustomFileAttributes<?> && pvl != null) {
-						((IHasCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl.toStringMap());
+						((IHasCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
 					}
 
 					((IWritableFileSystem<F>)fileSystem).createFile(file, null);

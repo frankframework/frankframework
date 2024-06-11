@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -119,15 +120,6 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return result;
 	}
 
-	@Nonnull
-	public Map<String, String> toStringMap() {
-		Map<String, String> result = new LinkedHashMap<>(map.size());
-		getParameterValueMap().forEach((k, v) -> {
-			result.put(k, v.asStringValue());
-		});
-		return result;
-	}
-
 	public static Message getValue(ParameterValueList pvl, String name, Message defaultValue) {
 		if (pvl!=null) {
 			ParameterValue pv = pvl.get(name);
@@ -169,7 +161,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	 * Returns the {@code List} iterator which may contain {@link Parameter Parameters} with the same name!
 	 */
 	@Override
+	@Nonnull
 	public Iterator<ParameterValue> iterator() {
 		return list.iterator();
+	}
+
+	public Stream<ParameterValue> stream() {
+		return list.stream();
 	}
 }
