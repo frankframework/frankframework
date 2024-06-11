@@ -15,15 +15,37 @@
 */
 package org.frankframework.management.bus;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.integration.IntegrationPattern;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
+
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 
 public interface OutboundGateway extends IntegrationPattern {
 
 	@Override
 	default IntegrationPatternType getIntegrationPatternType() {
 		return IntegrationPatternType.outbound_gateway;
+	}
+
+	@Nonnull
+	default List<ClusterMember> getMembers() {
+		return Collections.emptyList();
+	}
+
+	@Setter
+	@Getter
+	public static class ClusterMember {
+		private UUID id;
+		private String address;
+		private String name;
+		private boolean localMember;
 	}
 
 	/**

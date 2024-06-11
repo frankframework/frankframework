@@ -42,8 +42,6 @@
 	<bean id="inboundGatewayFactory" class="org.frankframework.management.bus.InboundGatewayFactory">
 		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
 	</bean>
-	<!-- The LocalGateway is required for internal traffic as well as the Frank!Console -->
-	<alias name="org.frankframework.management.bus.LocalGateway" alias="outboundGateway"/>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
