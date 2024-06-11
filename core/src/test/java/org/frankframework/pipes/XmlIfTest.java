@@ -120,13 +120,12 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	@Disabled("broken in the current implementation, see #6963")
 	void testInputRegexTest() throws Exception {
 		pipe.setRegex("(hoi)+");
 		pipe.configure();
 		pipe.start();
 
-		String input = "hoi a hoi";
+		String input = "hoihoihoi"; // Note that 'hoi a hoi' input is not a match!
 
 		// Act & Assert 1: Test with matching regex
 		pipeRunResult = doPipe(pipe, input, session);

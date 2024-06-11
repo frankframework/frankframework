@@ -177,7 +177,7 @@ public class XmlIf extends AbstractPipe {
 		xpathExpression = string;
 	}
 
-	/** Regular expression to be applied to the input-message (ignored if <code>xpathExpression</code> is specified). The input-message matching the given regular expression leads to the 'then'-forward */
+	/** Regular expression to be applied to the input-message (ignored if <code>xpathExpression</code> is specified). The input-message <b>fully</b> matching the given regular expression leads to the 'then'-forward */
 	public void setRegex(String regex){
 		this.regex = regex;
 	}
