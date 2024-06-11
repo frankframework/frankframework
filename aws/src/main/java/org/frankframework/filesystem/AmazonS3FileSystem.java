@@ -196,11 +196,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public DirectoryStream<S3Object> list(String folder, TypeFilter filter) throws FileSystemException {
-		return list(folder, filter == TypeFilter.FOLDERS_ONLY || filter == TypeFilter.FILES_AND_FOLDERS);
-	}
-
-	//Lists files, and optionally directories
-	private DirectoryStream<S3Object> list(String folder, boolean includeDirectories) throws FileSystemException {
 		List<S3ObjectSummary> summaries = new ArrayList<>();
 		List<String> subFolders = new ArrayList<>();
 		try {
@@ -215,9 +210,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 				}
 
 				listing = s3Client.listObjectsV2(request);
-				summaries.addAll(listing.getObjectSummaries()); //Files
-				if(includeDirectories) {
-					subFolders.addAll(listing.getCommonPrefixes()); //Folders
+				if (filter == TypeFilter.FILES_ONLY || filter == TypeFilter.FILES_AND_FOLDERS) {
+					summaries.addAll(listing.getObjectSummaries()); // Files
+				}
+				if (filter == TypeFilter.FILES_AND_FOLDERS || filter == TypeFilter.FOLDERS_ONLY) {
+					subFolders.addAll(listing.getCommonPrefixes()); // Folders
 				}
 
 				request.setContinuationToken(listing.getNextContinuationToken());
@@ -228,14 +225,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		}
 
 		List<S3Object> list = new ArrayList<>();
+		for (String folderName : subFolders) {
+			list.add(createS3FolderObject(bucketName, folderName));
+		}
 		for (S3ObjectSummary summary : summaries) {
-			if(summary.getKey().endsWith("/")) { //Omit the 'search' folder
+			if (summary.getKey().endsWith("/")) { // Omit the 'search' folder
 				continue;
 			}
 			list.add(extractS3ObjectFromSummary(summary));
-		}
-		for(String folderName : subFolders) {
-			list.add(createS3FolderObject(bucketName, folderName));
 		}
 
 		return FileSystemUtils.getDirectoryStream(list.iterator());
@@ -398,7 +395,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if (!folderExists(folder)) {
 			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
-		if(!removeNonEmptyFolder && list(folder, true).iterator().hasNext()) { //Check if there are files or folders
+		if(!removeNonEmptyFolder && list(folder, TypeFilter.FILES_AND_FOLDERS).iterator().hasNext()) { //Check if there are files or folders
 			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 		}
 
@@ -445,8 +442,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public String getName(S3Object f) {
-		int lastSlashPos = f.getKey().lastIndexOf('/');
-		return f.getKey().substring(lastSlashPos+1);
+		String key = f.getKey();
+		int lastSlashPos;
+		if (key.endsWith("/")) { // Folder: take part before last slash
+			lastSlashPos = key.substring(0, key.length() - 1).lastIndexOf('/');
+		} else { // File
+			lastSlashPos = key.lastIndexOf('/');
+		}
+		return key.substring(lastSlashPos + 1);
 	}
 
 	@Override
