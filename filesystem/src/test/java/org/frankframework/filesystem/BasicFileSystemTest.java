@@ -595,12 +595,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// Assert directories only
 		otherFolder = getFolderContents("Otherfolder", TypeFilter.FOLDERS_ONLY).objectNames;
 		assertEquals(1, otherFolder.size());
-		assertEquals("Folder2", otherFolder.get(0).replace(File.separator, "")); // Remove trailing slash on folder names for SambaFS1.
+		assertTrue(otherFolder.contains("Folder2") || otherFolder.contains("Folder2" + File.separator)); // Remove trailing slash on folder names for SambaFS1.
 
-		// Assert files and directories
+		// Assert files and directories (order does not matter, so using contains instead of get(0))
 		otherFolder = getFolderContents("Otherfolder", TypeFilter.FILES_AND_FOLDERS).objectNames;
 		assertEquals(2, otherFolder.size());
-		assertEquals("Folder2", otherFolder.get(0).replace(File.separator, ""));
-		assertEquals("otherfile", otherFolder.get(1));
+		assertTrue(otherFolder.contains("Folder2") || otherFolder.contains("Folder2/"));
+		assertTrue(otherFolder.contains("otherfile"));
 	}
 }
