@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,18 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.LocalFileSystem;
 
+/**
+ * Sender to work with the server local filesystem.
+ * <p>
+ *     In addition to regular parameters for filesystem senders, it is possible
+ *     to set custom extended attributes on files by prefixing parameter names with
+ *     {@code "FileAttribute."} (see: {@link org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX}).
+ *     This prefix will be not be part of the actual metadata property name.
+ * </p>
+ * <p>
+ *     The string value of these parameters will be used as value of the custom metadata attribute.
+ * </p>
+ */
 public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
 
 	public LocalFileSystemSender() {

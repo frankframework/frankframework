@@ -353,18 +353,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 			switch(action) {
 				case CREATE:{
-					F file = getFileAndCreateFolder(input, pvl);
-					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
-						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
-					}
-
-					if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
-						((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
-					}
-
-					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return createFile(input, pvl, null);
 				}
 				case DELETE: {
 					return Message.asMessage(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
@@ -408,14 +397,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return Message.asMessage(directoryBuilder.toString());
 				}
 				case WRITE: {
-					F file = getFileAndCreateFolder(input, pvl);
-					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
-						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
-					}
-
-					((IWritableFileSystem<F>)fileSystem).createFile(file, getContents(input, pvl, charset));
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return createFile(input, pvl, getContents(input, pvl, charset));
 				}
 				case APPEND: {
 					F file=getFile(input, pvl);
@@ -475,6 +457,21 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
+	}
+
+	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
+		F file = getFileAndCreateFolder(input, pvl);
+		if (fileSystem.exists(file)) {
+			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
+			file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+		}
+
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
+			((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
+		}
+
+		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
+		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
 
 
