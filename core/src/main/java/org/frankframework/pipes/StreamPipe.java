@@ -22,23 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.MimeType;
-
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.http.HttpSender;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
 import org.frankframework.http.mime.MultipartUtils;
@@ -47,6 +37,13 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StreamUtil;
+import org.springframework.util.MimeType;
+
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Stream an input stream to an output stream.
@@ -146,7 +143,7 @@ public class StreamPipe extends FixedForwardPipe {
 				inputStream = message.asInputStream();
 			}
 			if (httpResponse != null) {
-				HttpSender.streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, log, "", redirectLocation);
+				streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
@@ -249,6 +246,24 @@ public class StreamPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "MessagingException getting multiparts from httpServletRequest", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	private void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, String redirectLocation) throws IOException {
+		if (StringUtils.isNotEmpty(contentType)) {
+			response.setHeader("Content-Type", contentType);
+		}
+		if (StringUtils.isNotEmpty(contentDisposition)) {
+			response.setHeader("Content-Disposition", contentDisposition);
+		}
+		if (StringUtils.isNotEmpty(redirectLocation)) {
+			response.sendRedirect(redirectLocation);
+		}
+		if (is != null) {
+			try (OutputStream outputStream = response.getOutputStream()) {
+				StreamUtil.streamToStream(is, outputStream);
+				log.debug("copied response body input stream [{}] to output stream [{}]", is, outputStream);
+			}
+		}
 	}
 
 	protected String adjustFirstStringPart(String firstStringPart, PipeLineSession session) throws PipeRunException {

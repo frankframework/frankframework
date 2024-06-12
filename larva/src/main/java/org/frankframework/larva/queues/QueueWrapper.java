@@ -42,7 +42,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.FileListener;
 import org.frankframework.larva.FileSender;
-import org.frankframework.larva.HttpServletResponseMock;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
@@ -151,31 +150,16 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		while (!processed) {
 			String name = properties.getProperty(_param + i + _name);
 			if (name != null) {
-				Object value;
 				String type = properties.getProperty(_param + i + _type);
-				if ("httpResponse".equals(type)) {
-					String outputFile;
-					String filename = properties.getProperty(_param + i + ".filename");
+				Object value = properties.getProperty(_param + i + ".value");
+				if (value == null) {
+					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
 					if (filename != null) {
-						outputFile = properties.getProperty(_param + i + ".filename.absolutepath");
+						value = new FileMessage(new File(filename));
 					} else {
-						outputFile = properties.getProperty(_param + i + ".outputfile");
-					}
-					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
-					httpServletResponseMock.setOutputFile(outputFile);
-					value = httpServletResponseMock;
-				}
-				else {
-					value = properties.getProperty(_param + i + ".value");
-					if (value == null) {
-						String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
-						if (filename != null) {
-							value = new FileMessage(new File(filename));
-						} else {
-							String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
-							if (inputStreamFilename != null) {
-								throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
-							}
+						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+						if (inputStreamFilename != null) {
+							throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
 						}
 					}
 				}
