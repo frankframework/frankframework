@@ -100,6 +100,8 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 				.toString())), "LocalFileSystem with short path root must accept absolute filename with long path root");
 		assertTrue(fsLong.exists(fsLong.toFile(fShort.toAbsolutePath()
 				.toString())), "LocalFileSystem with long path root must accept absolute filename with short path root");
+		fsLong.close();
+		fsShort.close();
 	}
 
 	@Test
