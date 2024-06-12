@@ -3567,7 +3567,16 @@
       </xs:element>
       <xs:element name="AmazonS3Sender">
         <xs:annotation>
-          <xs:documentation>Sender to work with Amazon S3.</xs:documentation>
+          <xs:documentation>Sender to work with the Amazon S3 Filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom user-metadata on S3 files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4118,6 +4127,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="LocalFileSystemSender">
+        <xs:annotation>
+          <xs:documentation>Sender to work with the server local filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom extended attributes on files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LocalFileSystemSenderType">
@@ -4905,7 +4926,7 @@
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;: if a non-existing folder is part of the fileName, it will be created. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
@@ -8346,7 +8367,16 @@
       </xs:element>
       <xs:element name="AmazonS3ErrorSender">
         <xs:annotation>
-          <xs:documentation>Sender to work with Amazon S3.</xs:documentation>
+          <xs:documentation>Sender to work with the Amazon S3 Filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom user-metadata on S3 files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8897,6 +8927,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="LocalFileSystemErrorSender">
+        <xs:annotation>
+          <xs:documentation>Sender to work with the server local filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom extended attributes on files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LocalFileSystemSenderType">
@@ -12878,6 +12920,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="LocalFileSystemPipe">
+        <xs:annotation>
+          <xs:documentation>Pipe to work with the server local filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom extended attributes on files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LocalFileSystemPipeType">
@@ -13420,7 +13474,7 @@
       </xs:element>
       <xs:element name="XmlIfPipe">
         <xs:annotation>
-          <xs:documentation>Selects an forward, based on XPath evaluation</xs:documentation>
+          <xs:documentation>Selects a forward, based on XPath evaluation</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15103,7 +15157,7 @@
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, if a folder is part of the fileName, this will be created inside the root folder for the file to create, write, move or copy if it does not exist Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;: if a non-existing folder is part of the fileName, it will be created. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
@@ -15625,7 +15679,7 @@
     <xs:attribute name="replace" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
- 	 * by the #setLineSeparatorSymbol(String).</xs:documentation>
+ * by the #setLineSeparatorSymbol(String).</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
@@ -15636,11 +15690,11 @@
     <xs:attribute name="replaceNonXmlChars" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Replace all characters that are non-printable according to the XML specification with
- the value specified in #setReplaceNonXmlChar(String).
+ the value specified in #setNonXmlReplacementCharacter(String).
  &lt;p&gt;
-     &lt;b&gt;NB:&lt;/b&gt; This will only replace or remove characters considered non-printable. This
-     will not check if a given character is valid in the particular way it is used. Thus it will
-     not remove or replace, for instance, a single {@code '&amp;'} character.
+ &lt;b&gt;NB:&lt;/b&gt; This will only replace or remove characters considered non-printable. This
+ will not check if a given character is valid in the particular way it is used. Thus it will
+ not remove or replace, for instance, a single {@code '&amp;'} character.
  &lt;/p&gt;
  &lt;p&gt;
  See also:
@@ -15651,9 +15705,9 @@
  &lt;/p&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="replaceNonXmlChar" type="xs:string">
+    <xs:attribute name="nonXmlReplacementCharacter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>character that will replace each non valid xml character (empty string is also possible) (use &amp;amp;#x00bf; for inverted question mark) Default: empty string</xs:documentation>
+        <xs:documentation>character that will replace each non-valid xml character (empty string is also possible) (use &amp;amp;#x00bf; for inverted question mark) Default: empty string</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowUnicodeSupplementaryCharacters" type="frankBoolean">
@@ -16255,17 +16309,17 @@
   <xs:attributeGroup name="XmlIfDeclaredAttributeGroup">
     <xs:attribute name="expressionValue" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</xs:documentation>
+        <xs:documentation>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="thenForwardName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>forward returned when &lt;code&gt;'true'&lt;/code&gt; Default: then</xs:documentation>
+        <xs:documentation>forward returned when output is &lt;code&gt;true&lt;/code&gt; Default: then</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elseForwardName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>forward returned when 'false' Default: else</xs:documentation>
+        <xs:documentation>forward returned when output is &lt;code&gt;false&lt;/code&gt; Default: else</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
@@ -16275,7 +16329,7 @@
     </xs:attribute>
     <xs:attribute name="regex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward</xs:documentation>
+        <xs:documentation>Regular expression to be applied to the input-message (ignored if &lt;code&gt;xpathExpression&lt;/code&gt; is specified). The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -16285,7 +16339,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions.</xs:documentation>
+        <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="frankBoolean">
