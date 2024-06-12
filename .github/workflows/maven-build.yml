@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage
+  PROFILES: frankframework,codecoverage
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   MAVEN_GOALS: verify
@@ -22,7 +22,6 @@ on:
       - "**.toml"
       - ".github/**"
       - "docker/**"
-      - "webapp/src/main/webapp/iaf/**"
   pull_request:
     branches:
       - master
@@ -35,7 +34,6 @@ on:
       - "**.toml"
       - ".github/**"
       - "docker/**"
-      - "webapp/src/main/webapp/iaf/**"
 
 jobs:
   build:
