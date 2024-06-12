@@ -6320,6 +6320,14 @@
         <xs:union memberTypes="HttpMethodAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="methods">
+      <xs:annotation>
+        <xs:documentation>HTTP method(s) to listen to. Inside XML Configurations: for multiple values, use a comma as separator. Default: GET</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HttpMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="uriPattern" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>URI pattern to register this listener on, eq. &lt;code&gt;/my-listener/{something}/here&lt;/code&gt;</xs:documentation>

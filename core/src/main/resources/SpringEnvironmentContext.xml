@@ -24,6 +24,7 @@
 
 		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.management\.web\..*"/>
 	</context:component-scan>
 
 	<bean id="cxf" class="org.frankframework.http.cxf.SpringSoapBus">
@@ -41,8 +42,6 @@
 	<bean id="inboundGatewayFactory" class="org.frankframework.management.bus.InboundGatewayFactory">
 		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
 	</bean>
-	<!-- The LocalGateway is required for internal traffic as well as the Frank!Console -->
-	<alias name="org.frankframework.management.bus.LocalGateway" alias="outboundGateway"/>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>

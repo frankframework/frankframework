@@ -27,10 +27,10 @@
 
 		<narayana.version>7.0.1.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.13.0</micrometer.version>
+		<micrometer.version>1.13.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>3.1</frankdoc.version>
+		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.7.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -49,7 +49,7 @@
 		<activemq.driver.version>6.1.2</activemq.driver.version>
 		<artemis.driver.version>2.34.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
+		<aws.java.sdk.version>2.25.66</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.12.0</mockito.version>
@@ -132,7 +132,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.27.0</version>
+				<version>4.27.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -152,7 +152,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.39.3</version>
+				<version>9.40</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -492,7 +492,7 @@
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>3.11.0</version>
+				<version>3.11.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -962,7 +962,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.0</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>

@@ -1,9 +1,20 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
+import {
+  SortEvent,
+  ThSortableDirective,
+  basicAnyValueTableSort,
+} from 'src/app/components/th-sortable.directive';
 
 @Component({
   selector: 'app-configurations-manage-details',
@@ -23,6 +34,12 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   promise: number = -1;
   versions: Configuration[] = [];
+  versionsSorted: Configuration[] = [];
+  search: string = '';
+
+  private lastSortEvent: SortEvent = { direction: null, column: '' };
+
+  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
   constructor(
     private route: ActivatedRoute,
@@ -72,6 +89,11 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.versions = data;
+        this.versionsSorted = basicAnyValueTableSort(
+          this.versions,
+          this.headers,
+          this.lastSortEvent,
+        );
         this.loading = false;
       });
   }
@@ -150,5 +172,14 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
           this.update();
         },
       });
+  }
+
+  onSort(event: SortEvent): void {
+    this.lastSortEvent = event;
+    this.versionsSorted = basicAnyValueTableSort<Configuration>(
+      this.versions,
+      this.headers,
+      event,
+    );
   }
 }

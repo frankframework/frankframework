@@ -17,13 +17,34 @@
         </div>
         <div class="ibox-content">
           <h2>Version History</h2>
+          <div class="ibox-stretch">
+            <div class="input-group" id="searchbar">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search ... (Ctrl + Shift + F)"
+                [(ngModel)]="search"
+                name="search"
+              />
+              <i
+                (click)="search = ''"
+                class="fa fa-times input-group-closeSearch{{
+                  search.length < 1 ? ' hidden' : ''
+                }}"
+                aria-hidden="true"
+              ></i>
+              <span class="input-group-addon">
+                <i class="fa fa-search" aria-hidden="true"></i>
+              </span>
+            </div>
+          </div>
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>Version</th>
-                <th>Filename</th>
-                <th>Created At</th>
-                <th>User</th>
+                <th sortable="version" (sorted)="onSort($event)">Version</th>
+                <th sortable="filename" (sorted)="onSort($event)">Filename</th>
+                <th sortable="created" (sorted)="onSort($event)">Created At</th>
+                <th sortable="user" (sorted)="onSort($event)">User</th>
                 <th title="The configuration that's loaded upon IBIS startup">
                   Startup Config
                 </th>
@@ -39,7 +60,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let config of versions">
+              <tr *ngFor="let config of versionsSorted | searchFilter: search">
                 <td>{{ config.version }}</td>
                 <td>{{ config.filename }}</td>
                 <td>{{ config.created }}</td>

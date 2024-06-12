@@ -35,8 +35,6 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.impl.DefaultNodeContext;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.topic.ITopic;
 import com.hazelcast.topic.MessageListener;
 
@@ -57,7 +55,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 	@Override
 	protected void onInit() {
-		hzInstance = HazelcastInstanceFactory.newHazelcastInstance(HazelcastConfig.createHazelcastConfig(), "worker-node", new DefaultNodeContext());
+		hzInstance = HazelcastConfig.newHazelcastInstance("worker");
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
 

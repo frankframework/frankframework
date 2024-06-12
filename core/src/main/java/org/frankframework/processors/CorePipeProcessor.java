@@ -32,11 +32,13 @@ public class CorePipeProcessor implements PipeProcessor {
 
 	@Override
 	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+		if (message != null) message.assertNotClosed();
 		return pipe.doPipe(message, pipeLineSession);
 	}
 
 	@Override
 	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+		if (message != null) message.assertNotClosed();
 		return validator.validate(message, pipeLineSession, messageRoot);
 	}
 

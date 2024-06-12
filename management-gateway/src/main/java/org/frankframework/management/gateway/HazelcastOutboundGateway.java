@@ -15,17 +15,20 @@
 */
 package org.frankframework.management.gateway;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
+import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
 import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.integration.IntegrationPatternType;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
@@ -33,10 +36,11 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.hazelcast.cluster.Member;
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.impl.DefaultNodeContext;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.topic.ITopic;
 
 import jakarta.annotation.Nonnull;
@@ -44,34 +48,29 @@ import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class HazelcastOutboundGateway<T> implements InitializingBean, ApplicationContextAware, OutboundGateway<T> {
+public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {
 	private HazelcastInstance hzInstance;
 	private ApplicationContext applicationContext;
 
 	private String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
-	private ITopic<Message<T>> requestTopic;
+	private ITopic<Message<?>> requestTopic;
 
 	@Override
-	public IntegrationPatternType getIntegrationPatternType() {
-		return IntegrationPatternType.outbound_gateway;
-	}
-
-	@Override
-	public Message<T> sendSyncMessage(Message<T> in) {
+	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		String tempReplyChannelName = "__tmp."+ RandomStringUtils.randomAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);
 		log.debug("sending synchronous request to topic [{}] message [{}] reply-queue [{}] receiveTimeout [{}]", requestTopicName, in, tempReplyChannelName, receiveTimeout);
 
 		// Create the response queue here, before sending the request.
-		IQueue<Message<T>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
+		IQueue<Message<O>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
 
-		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+		Message<I> requestMessage = MessageBuilder.fromMessage(in)
 				.setReplyChannelName(tempReplyChannelName)
 				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
 				.build();
 		requestTopic.publish(requestMessage);
 
-		Message<T> replyMessage = doReceive(responseQueue, receiveTimeout);
+		Message<O> replyMessage = doReceive(responseQueue, receiveTimeout);
 		if (replyMessage != null) {
 			return replyMessage;
 		}
@@ -79,9 +78,10 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 		throw new BusException("no reponse found on temporary reply-queue ["+tempReplyChannelName+"] within receiveTimeout ["+receiveTimeout+"]");
 	}
 
-	private @Nullable Message<T> doReceive(IQueue<Message<T>> responseQueue, long receiveTimeout) {
+	@Nullable
+	private <O> Message<O> doReceive(IQueue<Message<O>> responseQueue, long receiveTimeout) {
 		try {
-			Message<T> response = responseQueue.poll(receiveTimeout, TimeUnit.MILLISECONDS);
+			Message<O> response = responseQueue.poll(receiveTimeout, TimeUnit.MILLISECONDS);
 
 			if(response != null) {
 				log.trace("received message with id [{}]", () -> response.getHeaders().getId());
@@ -95,6 +95,21 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 
 		log.trace("did not receive response within timeout of [{}] ms", receiveTimeout);
 		return null;
+	}
+
+	@Override
+	public List<ClusterMember> getMembers() {
+		Set<Member> members = hzInstance.getCluster().getMembers();
+		return members.stream().map(this::mapMember).toList();
+	}
+
+	private ClusterMember mapMember(Member member) {
+		ClusterMember cm = new ClusterMember();
+		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
+		cm.setId(member.getUuid());
+		cm.setName(member.getAttribute("name"));
+		cm.setLocalMember(member.localMember());
+		return cm;
 	}
 
 	private @Nonnull Authentication getAuthentication() {
@@ -120,9 +135,9 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 	}
 
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I> void sendAsyncMessage(Message<I> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
-		Message<T> requestMessage = MessageBuilder.fromMessage(in)
+		Message<I> requestMessage = MessageBuilder.fromMessage(in)
 				.setReplyChannelName(null)
 				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
 				.build();
@@ -137,9 +152,23 @@ public class HazelcastOutboundGateway<T> implements InitializingBean, Applicatio
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		hzInstance = HazelcastInstanceFactory.newHazelcastInstance(HazelcastConfig.createHazelcastConfig(), "console-node", new DefaultNodeContext());
+		hzInstance = HazelcastConfig.newHazelcastInstance("console");
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
+
+		hzInstance.getCluster().addMembershipListener(new MembershipListener() {
+
+			@Override
+			public void memberAdded(MembershipEvent e) {
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.ADD_MEMBER, mapMember(e.getMember())));
+			}
+
+			@Override
+			public void memberRemoved(MembershipEvent e) {
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.REMOVE_MEMBER, mapMember(e.getMember())));
+			}
+
+		});
 	}
 }

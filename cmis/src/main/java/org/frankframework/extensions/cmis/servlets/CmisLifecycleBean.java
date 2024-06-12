@@ -66,7 +66,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 			log.debug("created and stored CmisServiceFactory in ServletContext under key [{}]", key);
 		}
 		else {
-			log.error("failed to initialize CMIS RepositoryConnector [{}]", () -> RepositoryConnectorFactory.class.getSimpleName());
+			log.error("failed to initialize CMIS RepositoryConnector [{}]", RepositoryConnectorFactory.class::getSimpleName);
 		}
 	}
 

@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunResult;
 
 /**
  * ReplacerPipe Tester.
@@ -37,7 +38,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "dsf", session);
 		assertFalse(res.getPipeForward().getName().isEmpty());
-
 	}
 
 	@Test
@@ -56,7 +56,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void replaceNonXMLChar() throws Exception {
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setReplaceNonXmlChar("l");
+		pipe.setNonXmlReplacementCharacter("l");
 		pipe.setReplaceNonXmlChars(true);
 		pipe.setAllowUnicodeSupplementaryCharacters(true);
 		configureAndStartPipe();
@@ -88,11 +88,10 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void replaceNonXMLCharLongerThanOne() {
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setReplaceNonXmlChar("klkl");
+		pipe.setNonXmlReplacementCharacter("klkl");
 		pipe.setReplaceNonXmlChars(true);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.containsString("replaceNonXmlChar [klkl] has to be one character"));
 	}
-
 }
