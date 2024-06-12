@@ -13548,7 +13548,7 @@
   <xs:attributeGroup name="IsXmlPipeDeclaredAttributeGroup">
     <xs:attribute name="thenForwardName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>forward returned when &lt;code&gt;'true'&lt;/code&gt; Default: then</xs:documentation>
+        <xs:documentation>forward returned when &lt;code&gt;true&lt;/code&gt; Default: then</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elseForwardName" type="xs:string">
