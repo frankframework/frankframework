@@ -7,7 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Client } from '@stomp/stompjs';
+import { Client, IMessage } from '@stomp/stompjs';
 
 @Component({
   selector: 'app-websocket-test',
@@ -36,14 +36,21 @@ export class WebsocketTestComponent implements OnInit, OnDestroy {
   }
 
   onConnected(): void {
-    const htmlLogElement: HTMLPreElement = this.wsLog.nativeElement;
-    this.client.subscribe('/topic/greetings', (message) => {
-      console.log(`Received: ${message.body}`);
-      htmlLogElement.innerHTML += `<p>${message.body}</p>`;
-    });
+    this.client.subscribe(
+      '/event/greetings',
+      this.debugHandler('/event/greetings'),
+    );
+    this.client.subscribe('/event/test', this.debugHandler('/event/test'));
     this.client.publish({
       destination: '/hello',
       body: JSON.stringify({ name: 'Vivy' }),
     });
+  }
+
+  private debugHandler(channel: string): (message: IMessage) => void {
+    const htmlLogElement: HTMLPreElement = this.wsLog.nativeElement;
+    return (message: IMessage): void => {
+      htmlLogElement.innerHTML += `<p>${channel} | ${message.body}</p>`;
+    };
   }
 }
