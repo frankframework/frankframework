@@ -50,10 +50,10 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	boolean isOpen();
 
 	/**
-	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null).
-	 * Should list only 'files', no folders.
+	 * Lists files, directories or both, from a 'folder' or in the 'root' of the filesystem (when folder is null).
+	 * Only lists the objects as defined by the type filter.
 	 */
-	DirectoryStream<F> listFiles(String folder) throws FileSystemException;
+	DirectoryStream<F> list(String folder, TypeFilter filter) throws FileSystemException;
 	int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
 	 * Get a string representation of an identification of a file.

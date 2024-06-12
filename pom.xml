@@ -49,7 +49,7 @@
 		<activemq.driver.version>6.1.2</activemq.driver.version>
 		<artemis.driver.version>2.34.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.25.66</aws.java.sdk.version>
+		<aws.java.sdk.version>2.26.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.12.0</mockito.version>
@@ -137,7 +137,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.110.Final</version>
+				<version>4.1.111.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>

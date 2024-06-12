@@ -256,7 +256,7 @@ public class FileSystemUtils {
 
 		log.debug("Deleting files in folder [{}] that have a name starting with [{}] and are older than [{}] days", folder, srcFilename, rotateDays);
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			for (F f : ds) {
 				String filename = fileSystem.getName(f);
 				if (filename != null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime() < threshold) {
@@ -271,7 +271,7 @@ public class FileSystemUtils {
 
 	@Nonnull
 	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException {
-		DirectoryStream<F> ds = fileSystem.listFiles(folder);
+		DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY);
 		if (ds==null) {
 			return Stream.empty();
 		}

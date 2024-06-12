@@ -546,7 +546,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private void deleteEmptyFolder(String folder) throws FileSystemException {
 		if(isDeleteEmptyFolder()) {
 			boolean isEmpty = false;
-			try (DirectoryStream<F> stream = fileSystem.listFiles(folder)) {
+			try (DirectoryStream<F> stream = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 				isEmpty = !stream.iterator().hasNext();
 			} catch(IOException e) {
 				throw new FileSystemException("Cannot delete folder ["+folder+"]");
