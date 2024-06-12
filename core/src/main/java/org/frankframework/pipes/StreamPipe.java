@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -144,7 +143,7 @@ public class StreamPipe extends FixedForwardPipe {
 				inputStream = message.asInputStream();
 			}
 			if (httpResponse != null) {
-				streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, log, "", redirectLocation);
+				streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
@@ -249,7 +248,7 @@ public class StreamPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
+	private void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
 			response.setHeader("Content-Type", contentType);
 		}
@@ -262,7 +261,7 @@ public class StreamPipe extends FixedForwardPipe {
 		if (is != null) {
 			try (OutputStream outputStream = response.getOutputStream()) {
 				StreamUtil.streamToStream(is, outputStream);
-				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+				log.debug("copied response body input stream [{}] to output stream [{}]", is, outputStream);
 			}
 		}
 	}
