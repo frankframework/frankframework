@@ -1661,11 +1661,6 @@
         <xs:union memberTypes="HttpMethodAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="methods" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>HTTP method(s) to listen to, separated by comma Default: GET</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="uriPattern" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>URI pattern to register this listener on, eq. &lt;code&gt;/my-listener/{something}/here&lt;/code&gt;</xs:documentation>
@@ -3564,7 +3559,16 @@
       </xs:element>
       <xs:element name="AmazonS3Sender">
         <xs:annotation>
-          <xs:documentation>Sender to work with Amazon S3.</xs:documentation>
+          <xs:documentation>Sender to work with the Amazon S3 Filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom user-metadata on S3 files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4115,6 +4119,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="LocalFileSystemSender">
+        <xs:annotation>
+          <xs:documentation>Sender to work with the server local filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom extended attributes on files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LocalFileSystemSenderType">
@@ -8343,7 +8359,16 @@
       </xs:element>
       <xs:element name="AmazonS3ErrorSender">
         <xs:annotation>
-          <xs:documentation>Sender to work with Amazon S3.</xs:documentation>
+          <xs:documentation>Sender to work with the Amazon S3 Filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom user-metadata on S3 files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8894,6 +8919,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="LocalFileSystemErrorSender">
+        <xs:annotation>
+          <xs:documentation>Sender to work with the server local filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom extended attributes on files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LocalFileSystemSenderType">
@@ -12875,6 +12912,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="LocalFileSystemPipe">
+        <xs:annotation>
+          <xs:documentation>Pipe to work with the server local filesystem.
+ &lt;p&gt;
+     In addition to regular parameters for filesystem senders, it is possible
+     to set custom extended attributes on files by prefixing parameter names with
+     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     This prefix will be not be part of the actual metadata property name.
+ &lt;/p&gt;
+ &lt;p&gt;
+     The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="LocalFileSystemPipeType">
