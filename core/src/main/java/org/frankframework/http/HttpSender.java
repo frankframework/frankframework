@@ -17,7 +17,6 @@ package org.frankframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,8 +25,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +46,6 @@ import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -477,7 +473,7 @@ public class HttpSender extends HttpSenderBase {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(String mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
 		Message result = null;
 		try {
 			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream); //the entire InputStream will be read here!
@@ -494,24 +490,6 @@ public class HttpSender extends HttpSenderBase {
 			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
-	}
-
-	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
-		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType);
-		}
-		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition);
-		}
-		if (StringUtils.isNotEmpty(redirectLocation)) {
-			response.sendRedirect(redirectLocation);
-		}
-		if (is != null) {
-			try (OutputStream outputStream = response.getOutputStream()) {
-				StreamUtil.streamToStream(is, outputStream);
-				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
-			}
-		}
 	}
 
 	/**
