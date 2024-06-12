@@ -25,8 +25,8 @@ body:
       description: Are you open to having external companies solve this issue or create an impact analysis for payment?
       multiple: false
       options:
-        - Yes, solve for payment 
-        - Yes, create impact analysis for payment
+        - Yes, solve the problem
+        - Yes, create impact analysis
         - No, community resolution only
       default: 2
     validations:
