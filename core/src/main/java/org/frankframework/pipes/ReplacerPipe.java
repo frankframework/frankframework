@@ -21,6 +21,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -64,7 +65,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	private String formatString;
 	private String lineSeparatorSymbol = null;
 	private String replace;
-	private String replaceNonXmlChar = null;
+	private String nonXmlReplacementCharacter = null;
 	private boolean replaceNonXmlChars = false;
 	private @Getter boolean substituteVars;
 
@@ -89,74 +90,30 @@ public class ReplacerPipe extends FixedForwardPipe {
 			}
 		}
 
-		if (isReplaceNonXmlChars() && getReplaceNonXmlChar() != null && getReplaceNonXmlChar().length() > 1) {
-			throw new ConfigurationException("replaceNonXmlChar [" + getReplaceNonXmlChar() + "] has to be one character");
+		if (isReplaceNonXmlChars() && getNonXmlReplacementCharacter() != null && getNonXmlReplacementCharacter().length() > 1) {
+			throw new ConfigurationException("replaceNonXmlChar [" + getNonXmlReplacementCharacter() + "] has to be one character");
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String input;
 
+		ReplacingInputStream inputStream = getReplacingInputStream(message, getFind(), getReplace());
+
+		Message result = new Message(inputStream, message.copyContext().withoutSize());
+		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
+		message.unscheduleFromCloseOnExitOf(session);
+		result.closeOnCloseOf(session, this);
+
+		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	private ReplacingInputStream getReplacingInputStream(Message message, String find, String replace) throws PipeRunException {
 		try {
-			if (StringUtils.isNotEmpty(formatString)) {
-				input = replaceSingle(formatString, "message", message.asString());
-			} else {
-				input = message.asString();
-			}
+			return new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(), getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters());
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		if (StringUtils.isEmpty(input)) {
-			return new PipeRunResult(getSuccessForward(), input);
-		}
-
-		if (StringUtils.isNotEmpty(getFind())) {
-			input = input.replace(getFind(), getReplace());
-		}
-		if (isReplaceNonXmlChars()) {
-			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
-				input = XmlEncodingUtils.stripNonValidXmlCharacters(input, isAllowUnicodeSupplementaryCharacters());
-			} else {
-				input = XmlEncodingUtils.replaceNonValidXmlCharacters(input, getReplaceNonXmlChar().charAt(0), false, isAllowUnicodeSupplementaryCharacters());
-			}
-		}
-
-		input = substituteVars(input, session);
-
-		input = replaceParameters(input, message, session);
-
-		return new PipeRunResult(getSuccessForward(), input);
-	}
-
-	private String substituteVars(String input, PipeLineSession session) {
-		if (isSubstituteVars()) {
-			return StringResolver.substVars(input, session, appConstants);
-		}
-
-		return input;
-	}
-
-	private String replaceParameters(String input, Message message, PipeLineSession session) throws PipeRunException {
-		String output = input;
-		if (!getParameterList().isEmpty()) {
-			try {
-				ParameterValueList pvl = getParameterList().getValues(message, session);
-				for (ParameterValue pv : pvl) {
-					output = replaceSingle(output, pv.getName(), pv.asStringValue(""));
-				}
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
-			}
-		}
-
-		return output;
-	}
-
-	private String replaceSingle(String value, String replaceFromValue, String replaceTo) {
-		final String replaceFrom = SUBSTITUTION_START_DELIMITER + "{" + replaceFromValue + "}";
-
-		return value.replace(replaceFrom, replaceTo);
 	}
 
 	public String getFind() {
@@ -201,7 +158,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Replace all characters that are non-printable according to the XML specification with
-	 * the value specified in {@link #setReplaceNonXmlChar(String)}.
+	 * the value specified in {@link #setNonXmlReplacementCharacter(String)}.
 	 * <p>
 	 * <b>NB:</b> This will only replace or remove characters considered non-printable. This
 	 * will not check if a given character is valid in the particular way it is used. Thus it will
@@ -221,8 +178,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 		replaceNonXmlChars = b;
 	}
 
-	public String getReplaceNonXmlChar() {
-		return replaceNonXmlChar;
+	public String getNonXmlReplacementCharacter() {
+		return nonXmlReplacementCharacter;
 	}
 
 	/**
@@ -230,8 +187,14 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default empty string
 	 */
+	public void setNonXmlReplacementCharacter(String nonXmlReplacementCharacter) {
+		this.nonXmlReplacementCharacter = nonXmlReplacementCharacter;
+	}
+
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("The attribute 'replaceNonXmlChar' has been renamed to 'nonXmlReplacementCharacter' for readability")
 	public void setReplaceNonXmlChar(String replaceNonXmlChar) {
-		this.replaceNonXmlChar = replaceNonXmlChar;
+		setNonXmlReplacementCharacter(replaceNonXmlChar);
 	}
 
 	public boolean isAllowUnicodeSupplementaryCharacters() {

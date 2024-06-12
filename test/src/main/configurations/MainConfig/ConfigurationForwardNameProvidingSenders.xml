@@ -32,7 +32,8 @@
 				<Forward name="exception" path="FwdException"/>
 			</SenderPipe>
 
-			<ReplacerPipe name="fall through Http" formatString="fall through Http: [?{message}]">
+			<ReplacerPipe name="fall through Http" getInputFromFixedValue="fall through Http: [?{message}]">
+				<param name="message"/>
 				<forward name="success" path="READY"/>
 			</ReplacerPipe>
 

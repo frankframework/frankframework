@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 
 import org.hamcrest.Matchers;
@@ -41,7 +39,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "dsf", session);
 		assertFalse(res.getPipeForward().getName().isEmpty());
-
 	}
 
 	@Test
@@ -60,7 +57,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void replaceNonXMLChar() throws Exception {
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setReplaceNonXmlChar("l");
+		pipe.setNonXmlReplacementCharacter("l");
 		pipe.setReplaceNonXmlChars(true);
 		pipe.setAllowUnicodeSupplementaryCharacters(true);
 		configureAndStartPipe();
@@ -92,7 +89,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void replaceNonXMLCharLongerThanOne() {
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setReplaceNonXmlChar("klkl");
+		pipe.setNonXmlReplacementCharacter("klkl");
 		pipe.setReplaceNonXmlChars(true);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
