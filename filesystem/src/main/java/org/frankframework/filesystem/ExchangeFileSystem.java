@@ -515,6 +515,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		if (!isOpen()) {
 			return null;
 		}
+		if (filter.includeFolders()) {
+			throw new FileSystemException("Filtering on folders is not supported");
+		}
 		final ExchangeObjectReference reference = asObjectReference(folder);
 		final ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
@@ -537,7 +540,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 				return FileSystemUtils.getDirectoryStream((Iterator<ExchangeMessageReference>) null);
 			}
 			Iterator<Item> itemIterator = findResults.getItems().iterator();
-			DirectoryStream<ExchangeMessageReference> result = FileSystemUtils.getDirectoryStream(new Iterator<ExchangeMessageReference>() {
+			DirectoryStream<ExchangeMessageReference> result = FileSystemUtils.getDirectoryStream(new Iterator<>() {
 
 				@Override
 				public boolean hasNext() {

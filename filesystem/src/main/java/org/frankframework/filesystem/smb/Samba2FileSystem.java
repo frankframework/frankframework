@@ -509,7 +509,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	/**
-	 * controls whether hidden files are seen or not
+	 * Controls if hidden files are seen
 	 * @ff.default false
 	 */
 	public void setListHiddenFiles(boolean listHiddenFiles) {
@@ -529,20 +529,17 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 					try {
 						FileAllInformation fileInfo = getAttributes(file);
 						file.setAttributes(fileInfo);
+						if (!allowHiddenFile(file)) continue;
 
-						if (filter.includeFiles()) {
-							if (isFileAndAccessible(file) && allowHiddenFile(file)) {
-								files.add(file);
-							}
+						if (filter.includeFiles() && isFileAndAccessible(file)) {
+							files.add(file);
 						}
-						if (filter.includeFolders()) {
-							if (isDirectoryAndAccessible(file) && allowHiddenFile(file)) {
-								files.add(file);
-							}
+						if (filter.includeFolders() && isDirectoryAndAccessible(file)) {
+							files.add(file);
 						}
 					} catch (SMBApiException e) {
-						if(NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
-							log.debug("delete pending for file ["+ file.getName()+"]");
+						if (NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
+							log.debug("delete pending for file [" + file.getName() + "]");
 						} else {
 							throw e;
 						}

@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 import jakarta.mail.BodyPart;
@@ -221,11 +220,14 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 
 	@Override
 	public DirectoryStream<Message> list(String foldername, TypeFilter filter) throws FileSystemException {
+		if (filter.includeFolders()) {
+			throw new FileSystemException("Filtering on folders is not supported");
+		}
 		IMAPFolder baseFolder = getConnection();
-		boolean invalidateConnectionOnRelease = false;
-		if (baseFolder==null) {
+		if (baseFolder == null) {
 			return null;
 		}
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			IMAPFolder folder = getFolder(baseFolder, foldername);
 			if (!folder.isOpen()) {
@@ -508,7 +510,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		if (recipients == null) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(recipients).stream().map(InternetAddress::toUnicodeString).collect(Collectors.toList());
+		return Arrays.stream(recipients).map(InternetAddress::toUnicodeString).toList();
 	}
 
 	private List<String> getReplyTo(Message f) throws MessagingException {
@@ -516,7 +518,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		if (recipients == null) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(recipients).stream().map(InternetAddress::toUnicodeString).collect(Collectors.toList());
+		return Arrays.stream(recipients).map(InternetAddress::toUnicodeString).toList();
 	}
 
 	@Override
@@ -605,7 +607,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		return new MimeContentMessage((IMAPMessage) emailMessage);
 	}
 
-	private class MimeContentMessage extends org.frankframework.stream.Message {
+	private static class MimeContentMessage extends org.frankframework.stream.Message {
 
 		public MimeContentMessage(IMAPMessage imapMessage) {
 			super(imapMessage::getMimeStream, null, imapMessage.getClass());

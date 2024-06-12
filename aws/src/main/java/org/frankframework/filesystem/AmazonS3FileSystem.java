@@ -395,8 +395,15 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if (!folderExists(folder)) {
 			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
-		if(!removeNonEmptyFolder && list(folder, TypeFilter.FILES_AND_FOLDERS).iterator().hasNext()) { //Check if there are files or folders
-			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+		// Check if there are files or folders, and not allowed to remove non-empty folder
+		if (!removeNonEmptyFolder) {
+			try (DirectoryStream<S3Object> stream = list(folder, TypeFilter.FILES_AND_FOLDERS)) {
+				if (stream.iterator().hasNext()) {
+					throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+				}
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot remove folder [" + folder + "]. " + e.getMessage());
+			}
 		}
 
 		final String absFolder = folder.endsWith("/") ? folder : folder + "/"; //Ensure it's a folder that's being removed
