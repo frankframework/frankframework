@@ -448,7 +448,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		Map<String, Object> attributes = new LinkedHashMap<>();
 		attributes.put("bucketName", bucketName);
 		if (f.getObjectMetadata() != null) {
-			f.getObjectMetadata().getUserMetadata().forEach((key, value) -> attributes.put(key, AmazonEncodingUtils.decode(value)));
+			f.getObjectMetadata().getUserMetadata().forEach((key, value) -> attributes.put(key, AmazonEncodingUtils.rfc2047Decode(value)));
 		}
 		return attributes;
 	}
@@ -592,6 +592,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void setCustomFileAttribute(@Nonnull S3Object file, @Nonnull String key, @Nonnull String value) {
-		file.getObjectMetadata().addUserMetadata(key, AmazonEncodingUtils.encode(value));
+		file.getObjectMetadata().addUserMetadata(key, AmazonEncodingUtils.rfc2047Encode(value));
 	}
 }

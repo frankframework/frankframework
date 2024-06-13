@@ -28,7 +28,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class AmazonEncodingUtils {
 
-	private static final Pattern ENCODABLE_CHARS_RE = Pattern.compile("[^\\x21-\\x7F]");
+	/**
+	 * A regex that matches any character outside the ASCII character set, and any of the ASCII control characters.
+	 * If a value contains any of these characters, the value should be encoded.
+	 */
+	private static final Pattern ENCODABLE_CHARS_RE = Pattern.compile("[^\\x20-\\x7F]");
 	private static final Pattern RFC2047_DECODING_RE = Pattern.compile("=\\?([^?]+)\\?([BQ])\\?([^?]+)\\?=");
 
 	private AmazonEncodingUtils() {
@@ -43,7 +47,7 @@ public class AmazonEncodingUtils {
 	 * @param value Value to be encoded.
 	 * @return Encoded value.
 	 */
-	public static String encode(String value) {
+	public static String rfc2047Encode(String value) {
 		if (!ENCODABLE_CHARS_RE.matcher(value).find()) return value;
 
 		byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
@@ -62,7 +66,7 @@ public class AmazonEncodingUtils {
 	 * @param value Encoded value
 	 * @return Readable value
 	 */
-	public static String decode(String value) {
+	public static String rfc2047Decode(String value) {
 		Matcher matcher = RFC2047_DECODING_RE.matcher(value);
 		if (!matcher.matches()) return value;
 

@@ -7,6 +7,7 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.parameters.IParameter;
@@ -14,13 +15,24 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 
-abstract public class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends FileSystemActorTest<F, S> {
+public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends FileSystemActorTest<F, S> {
+
+	private Message input;
+
+	@Override
+	@AfterEach
+	public void tearDown()  {
+		CloseUtils.closeSilently(input, result);
+		result = null;
+		super.tearDown();
+	}
 
 	@Test
 	public void testCreateWithCustomFileAttributes() throws Exception {
 		// Arrange
-		Message input = new Message("message-data");
+		input = new Message("message-data");
 
 		ParameterList parameters = new ParameterList();
 		IParameter p1 = new Parameter(FILE_ATTRIBUTE_PARAM_PREFIX + "prop1", "value1");
@@ -37,7 +49,7 @@ abstract public class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.open();
 
 		// Act
-		Message result = actor.doAction(input, pvl, session);
+		result = actor.doAction(input, pvl, session);
 
 		// Assert
 		assertThat(result.asString(), containsString("prop1=\"value1\""));
@@ -48,7 +60,7 @@ abstract public class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 	@Test
 	public void testWriteWithCustomFileAttributes() throws Exception {
 		// Arrange
-		Message input = new Message("message-data");
+		input = new Message("message-data");
 
 		ParameterList parameters = new ParameterList();
 		IParameter p1 = new Parameter(FILE_ATTRIBUTE_PARAM_PREFIX + "prop1", "value1");
@@ -66,7 +78,7 @@ abstract public class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.open();
 
 		// Act
-		Message result = actor.doAction(input, pvl, session);
+		result = actor.doAction(input, pvl, session);
 
 		// Assert
 		assertThat(result.asString(), containsString("prop1=\"value1\""));
@@ -85,10 +97,10 @@ abstract public class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 	@Test
 	public void testInfoWithCustomFileAttributes() throws Exception {
 		// Arrange
-		Message input = new Message("message-data");
+		input = new Message("message-data");
 
 		ParameterList parameters = new ParameterList();
-		IParameter p1 = new Parameter(FILE_ATTRIBUTE_PARAM_PREFIX + "prop1", "value1");
+		IParameter p1 = new Parameter(FILE_ATTRIBUTE_PARAM_PREFIX + "prop1", "value1 with space");
 		IParameter p2 = new Parameter(FILE_ATTRIBUTE_PARAM_PREFIX + "prop2", "välüé2-€-nön-äscïï");
 		IParameter p3 = new Parameter(FILE_ATTRIBUTE_PARAM_PREFIX + "prop3", "välue3-non-ascii");
 		IParameter p4 = new Parameter("prop4", "value4");
@@ -107,10 +119,10 @@ abstract public class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.setAction(FileSystemActor.FileSystemAction.INFO);
 
 		// Act
-		Message result = actor.doAction(input, pvl, session);
+		result = actor.doAction(input, pvl, session);
 
 		// Assert
-		assertThat(result.asString(), containsString("prop1=\"value1\""));
+		assertThat(result.asString(), containsString("prop1=\"value1 with space\""));
 		assertThat(result.asString(), containsString("prop2=\"välüé2-€-nön-äscïï\""));
 		assertThat(result.asString(), containsString("prop3=\"välue3-non-ascii\""));
 		assertThat(result.asString(), not(containsString("prop4=\"value4\"")));

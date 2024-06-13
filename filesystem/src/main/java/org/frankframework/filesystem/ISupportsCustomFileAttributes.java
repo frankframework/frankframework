@@ -40,9 +40,15 @@ public interface ISupportsCustomFileAttributes<F> {
 	/**
 	 * Set a custom attributes on the given file.
 	 * <p>
-	 *     <em>NOTE:</em>
+	 *     <em>NOTE 1:</em>
 	 *     At the time this method is called, the file is not yet guaranteed to actually exist
 	 *     in the underlying filesystem.
+	 * </p>
+	 * <p>
+	 *     <em>NOTE 2:</em>
+	 *     As a side-effect of calling this method, the file may be created in the underlying filesystem if it
+	 *     didn't yet exist. This depends on the implementation details of the filesystem in the Frank!Framework
+	 *     and the API against which the filesystem is developed.
 	 * </p>
 	 *
 	 * @param file File on which to set the attribute
@@ -62,8 +68,15 @@ public interface ISupportsCustomFileAttributes<F> {
 	 * <p>
 	 *     This is an interface default method that most implementations should not need to override.
 	 * </p>
+	 * <p>
+	 *     <em>NOTE 2:</em>
+	 *     As a side-effect of calling this method, the file may be created in the underlying filesystem if it
+	 *     didn't yet exist. This depends on the implementation details of the filesystem in the Frank!Framework
+	 *     and the API against which the filesystem is developed.
+	 * </p>
+	 *
 	 * @param file File on which to set the custom attributes
-	 * @param pvl {@link ParameterValueList} containing inputs
+	 * @param pvl {@link ParameterValueList} containing inputs to apply as user-defined file metadata
 	 */
 	default void setCustomFileAttributes(@Nonnull F file, @Nonnull ParameterValueList pvl) {
 		pvl.stream()

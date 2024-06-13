@@ -26,11 +26,14 @@ import org.frankframework.filesystem.LocalFileSystem;
  * <p>
  *     In addition to regular parameters for filesystem senders, it is possible
  *     to set custom extended attributes on files by prefixing parameter names with
- *     {@code "FileAttribute."} (see: {@link org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX}).
+ *     {@value org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX}.
  *     This prefix will be not be part of the actual metadata property name.
  * </p>
  * <p>
  *     The string value of these parameters will be used as value of the custom metadata attribute.
+ * </p>
+ * <p>
+ *     If extended attributes actually can be written depends on the underlying OS / filesystem.
  * </p>
  */
 public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{

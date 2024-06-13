@@ -12,8 +12,8 @@ class AmazonEncodingUtilsTest {
 			"value1, value1",
 			"nön-äscïï, =?UTF-8?B?bsO2bi3DpHNjw6/Drw==?=",
 	})
-	void testEncode(String value, String expected) {
-		String result = AmazonEncodingUtils.encode(value);
+	void testRfc2047Encode(String value, String expected) {
+		String result = AmazonEncodingUtils.rfc2047Encode(value);
 		assertEquals(expected, result);
 	}
 
@@ -24,8 +24,8 @@ class AmazonEncodingUtilsTest {
 			"=?UTF-8?B?bsO2bi3DpHNjw6/Drw==?=, nön-äscïï",
 			"=?UTF-8?Q?v=C3=A4lue3-non-ascii?=, välue3-non-ascii",
 	})
-	void testDecode(String value, String expected) {
-		String result = AmazonEncodingUtils.decode(value);
+	void testRfc2047Decode(String value, String expected) {
+		String result = AmazonEncodingUtils.rfc2047Decode(value);
 		assertEquals(expected, result);
 	}
 }

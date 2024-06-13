@@ -308,6 +308,11 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * This method will create the file in the filesystem if it does not yet exist.
+	 */
 	@Override
 	public void setCustomFileAttribute(@Nonnull Path file, @Nonnull String key, @Nonnull String value) {
 		try {
