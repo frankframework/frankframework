@@ -44,6 +44,7 @@ import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { ToastService } from './services/toast.service';
+import { WebsocketService } from './services/websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -90,6 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private appService: AppService,
     private idle: Idle,
     private modalService: NgbModal,
+    private websocketService: WebsocketService,
     @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
@@ -289,6 +291,8 @@ export class AppComponent implements OnInit, OnDestroy {
           this.appService.getConfigurations().subscribe((data) => {
             this.appService.updateConfigurations(data);
           });
+
+          this.initializeWebsocket();
           this.checkIafVersions();
           this.initializeWarnings();
         },
@@ -378,6 +382,55 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
+  initializeWebsocket(): void {
+    this.websocketService.onConnected$.subscribe(() => {
+      this.websocketService.subscribe('/event/server-warnings', (data) => {
+        const configurations = JSON.parse(data) as Record<string, MessageLog>;
+        this.appService.updateAlerts([]); //Clear all old alerts
+
+        configurations['All'] = {
+          messages: configurations['messages'] as unknown as AdapterMessage[],
+          errorStoreCount: configurations[
+            'totalErrorStoreCount'
+          ] as unknown as number,
+          messageLevel: 'ERROR',
+        };
+        delete configurations['messages'];
+        delete configurations['totalErrorStoreCount'];
+
+        if (configurations['warnings']) {
+          for (const warning of configurations[
+            'warnings'
+          ] as unknown as string[]) {
+            this.appService.addWarning('', warning);
+          }
+        }
+
+        for (const index in configurations) {
+          const configuration = configurations[index];
+          if (configuration.exception)
+            this.appService.addException(index, configuration.exception);
+          if (configuration.warnings) {
+            for (const warning of configuration.warnings) {
+              this.appService.addWarning(index, warning);
+            }
+          }
+
+          configuration.messageLevel = 'INFO';
+          for (const x in configuration.messages) {
+            const level = configuration.messages[x].level;
+            if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+              configuration.messageLevel = 'WARN';
+            if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+          }
+        }
+
+        this.appService.updateMessageLog(configurations);
+      });
+    });
+    this.websocketService.activate();
+  }
+
   initializeWarnings(): void {
     const startupErrorSubscription = this.appService.startupError$.subscribe(
       () => {
@@ -386,7 +439,7 @@ export class AppComponent implements OnInit, OnDestroy {
     );
     this._subscriptions.add(startupErrorSubscription);
 
-    this.pollerService.add(
+    /* this.pollerService.add(
       'server/warnings',
       (data) => {
         const configurations = data as Record<string, MessageLog>;
@@ -432,7 +485,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.appService.updateMessageLog(configurations);
       },
       60_000,
-    );
+    ); */
 
     this.initializeAdapters();
   }
