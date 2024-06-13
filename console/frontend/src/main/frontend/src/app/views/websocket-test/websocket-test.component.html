@@ -1,1 +1,11 @@
 <pre #wsLog></pre>
+<form>
+  <input
+    type="text"
+    name="message"
+    autofocus
+    autocomplete="off"
+    [(ngModel)]="message"
+  />
+  <button type="submit" (click)="push()">Push</button>
+</form>

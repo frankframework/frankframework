@@ -1,0 +1,20 @@
+pre {
+  margin: 10px 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  max-height: 900px;
+}
+
+form {
+  display: flex;
+
+  input {
+    flex: 1 1 0;
+  }
+
+  button {
+    height: 30px;
+    width: 100px;
+    margin-left: 10px;
+  }
+}

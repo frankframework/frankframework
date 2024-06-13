@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Controller
 public class EventController {
 
+	private final SimpMessagingTemplate messagingTemplate;
+
 	@Autowired
-	private SimpMessagingTemplate messagingTemplate;
+	public EventController(SimpMessagingTemplate messagingTemplate) {
+		this.messagingTemplate = messagingTemplate;
+	}
 
 	@PostMapping(value = "/event/push", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> push(@RequestBody String content){
