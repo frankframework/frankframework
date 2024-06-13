@@ -98,6 +98,22 @@ public class RequestMessageBuilder {
 		return new RequestMessageBuilder(base, topic, action);
 	}
 
+	public Message<?> buildWithoutHttp(){
+		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
+		MessageBuilder<?> builder = factory.withPayload(payload);
+		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
+		if (action != null) {
+			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
+		}
+
+		for (Map.Entry<String, Object> customHeader : customHeaders.entrySet()) {
+			String key = BusMessageUtils.HEADER_PREFIX + customHeader.getKey();
+			builder.setHeader(key, customHeader.getValue());
+		}
+
+		return builder.build();
+	}
+
 	public Message<?> build() {
 		if (SEC_LOG.isInfoEnabled()) {
 			String method = base.getServletRequest().getMethod();

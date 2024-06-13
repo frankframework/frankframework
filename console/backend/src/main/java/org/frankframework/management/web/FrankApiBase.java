@@ -18,6 +18,7 @@ package org.frankframework.management.web;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
@@ -60,6 +61,26 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 			throw new ApiException(errorMessage.toString());
 		}
 		return message;
+	}
+
+	@Nonnull
+	protected Message<?> sendSyncMessageWithoutHttp(RequestMessageBuilder input) {
+		try{
+			Message<?> message = getGateway().sendSyncMessage(input.buildWithoutHttp());
+			if (message == null) {
+				StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
+				if (input.getAction() != null) {
+					errorMessage.append(" with action [");
+					errorMessage.append(input.getAction());
+					errorMessage.append("]");
+				}
+				throw new ApiException(errorMessage.toString());
+			}
+			return message;
+		} catch (Exception e) {
+			return new JsonMessage(e.getMessage());
+		}
+
 	}
 
 	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input) throws ApiException {
