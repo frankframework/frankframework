@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 import {
   Component,
   ElementRef,
@@ -9,13 +8,14 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Client, IMessage } from '@stomp/stompjs';
-import { AppService } from 'src/app/app.service';
+import { IMessage } from '@stomp/stompjs';
+import { Subscription } from 'rxjs';
+import { WebsocketService } from 'src/app/services/websocket.service';
 
 @Component({
   selector: 'app-websocket-test',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })
@@ -25,57 +25,77 @@ export class WebsocketTestComponent implements OnInit, OnDestroy {
 
   protected message: string = '';
 
-  private client: Client = new Client({
+  private _subscriptions = new Subscription();
+
+  /* private client: Client = new Client({
     brokerURL: 'ws://localhost:4200/iaf/api/ws',
+    reconnectDelay: 20_000,
     connectionTimeout: 60_000,
     debug: (message) => console.debug(message),
     onConnect: () => this.onConnected(),
-  });
+    onDisconnect: () => this.printToHtml('Disconnected'),
+    onWebSocketClose: () => this.printToHtml('WebSocket closed'),
+    onWebSocketError: (event) => this.onError(event),
+  }); */
 
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  constructor(private websocketService: WebsocketService) {}
 
   ngOnInit(): void {
-    this.client.activate();
+    this._subscriptions.add(
+      this.websocketService.onConnected$.subscribe(() => this.onConnected()),
+    );
+    this._subscriptions.add(
+      this.websocketService.onDisconnected$.subscribe(() =>
+        this.printToHtml('Disconnected'),
+      ),
+    );
+    this._subscriptions.add(
+      this.websocketService.onWebSocketClose$.subscribe(() =>
+        this.printToHtml('WebSocket closed'),
+      ),
+    );
+    this._subscriptions.add(
+      this.websocketService.onWebSocketError$.subscribe((event) =>
+        this.onError(event),
+      ),
+    );
+    this._subscriptions.add(
+      this.websocketService.onMessage$.subscribe((event) =>
+        this.debugHandler(event.channel, event.message),
+      ),
+    );
   }
 
   ngOnDestroy(): void {
-    this.client.deactivate();
+    this._subscriptions.unsubscribe();
   }
 
   onConnected(): void {
-    this.client.subscribe(
-      '/event/greetings',
-      this.debugHandler('/event/greetings'),
-    );
-    this.client.subscribe('/event/test', this.debugHandler('/event/test'));
-    this.client.publish({
-      destination: '/hello',
-      body: JSON.stringify({ name: 'Vivy' }),
-    });
+    this.websocketService.publish('/hello', JSON.stringify({ name: 'Vivy' }));
   }
 
   push(): void {
-    this.http
-      .post(
-        `${this.appService.absoluteApiPath}event/push`,
-        JSON.stringify({ message: this.message }),
-        {
-          headers: { 'Content-Type': 'application/json' },
-        },
-      )
+    this.websocketService
+      .push(JSON.stringify({ message: this.message }))
       .subscribe(() => {
         this.message = '';
       });
   }
 
-  private debugHandler(channel: string): (message: IMessage) => void {
+  onError(event: unknown): void {
+    this.printToHtml('WebSocket error');
+    if (event) {
+      this.printToHtml(JSON.stringify(event));
+    }
+  }
+
+  private printToHtml(message: string): void {
     const htmlLogElement: HTMLPreElement = this.wsLog.nativeElement;
-    return (message: IMessage): void => {
-      htmlLogElement.innerHTML += `<p>${channel} | ${message.body}</p>`;
-      htmlLogElement.scrollTo(0, htmlLogElement.scrollHeight);
-    };
+    htmlLogElement.innerHTML += `<p>${message}</p>`;
+    htmlLogElement.scrollTo(0, htmlLogElement.scrollHeight);
+  }
+
+  private debugHandler(channel: string, message: IMessage): void {
+    this.printToHtml(`${channel} | ${message.body}`);
   }
 }
