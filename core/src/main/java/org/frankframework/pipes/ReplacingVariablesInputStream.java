@@ -1,3 +1,18 @@
+/*
+   Copyright 2017 Simon Haoran Liang, 2019-2024 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package org.frankframework.pipes;
 
 import java.io.FilterInputStream;
@@ -13,6 +28,12 @@ import java.util.stream.IntStream;
 
 import jakarta.annotation.Nonnull;
 
+/**
+ * Copyright 2019-2024 WeAreFrank!
+ * Based on original concept created by simon on 8/29/17.
+ * Copyright 2017 Simon Haoran Liang
+ * <a href="https://gist.github.com/lhr0909/e6ac2d6dd6752871eb57c4b083799947">...</a>
+ */
 public class ReplacingVariablesInputStream extends FilterInputStream {
 
 	private static final byte BYTE_VALUE_END_OF_STREAM = -1;
