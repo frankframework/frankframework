@@ -7,10 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 
-public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
+public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullControl {
 
 	public Path folder;
 
@@ -60,7 +62,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 			Files.createFile(f);
 		} catch (IOException e) {
-			throw new IOException("Cannot create file ["+f.toString()+"]",e);
+			throw new IOException("Cannot create file ["+ f +"]",e);
 		}
 		return Files.newOutputStream(f);
 	}
@@ -90,5 +92,11 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 				// nothing to delete if the folder doesn't exist.
 			}
 		}
+	}
+
+	@Override
+	public void setFileDate(String folderName, String filename, Date modifiedDate) throws Exception {
+		Path f = getFileHandle(folderName, filename);
+		Files.setLastModifiedTime(f, FileTime.fromMillis(modifiedDate.getTime()));
 	}
 }
