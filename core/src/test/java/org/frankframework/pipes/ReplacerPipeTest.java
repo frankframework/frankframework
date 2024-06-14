@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.testutil.ParameterBuilder;
-
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 /**
  * ReplacerPipe Tester.
@@ -115,24 +116,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void testReplaceParametersWithMessageFormatString() throws Exception {
-		pipe.addParameter(ParameterBuilder.create()
-				.withName("varToSubstitute")
-				.withValue("substitutedValue"));
-
-		pipe.addParameter(ParameterBuilder.create()
-				.withName("secondVarToSubstitute")
-				.withValue("secondSubstitutedValue"));
-
-		pipe.setFind("test");
-		pipe.setReplace("head");
-		pipe.configure();
-
-		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute} and ?{secondVarToSubstitute}</test>)", session);
-		assertEquals("output[<head>substitutedValue and secondSubstitutedValue</head>)]", res.getResult().asString());
-	}
-
-	@Test
 	public void testSubstituteVars() throws Exception {
 		session.put("varToSubstitute", "substitutedValue");
 		session.put("secondVarToSubstitute", "secondSubstitutedValue");
@@ -144,5 +127,46 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "<test>${varToSubstitute} and ${secondVarToSubstitute}</test>)", session);
 		assertEquals("<head>substitutedValue and secondSubstitutedValue</head>)", res.getResult().asString());
+	}
+
+	@Test
+	@DisplayName("Combine search/replace, parameter substitution and variable resolving")
+	public void combinedSearchAndReplace() throws Exception {
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("parameter1")
+				.withValue("[Parameter value 1]"));
+
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("parameter2")
+				.withValue("[Parameter value 2]"));
+
+		session.put("sessionVar1", "[Session var content 1]");
+		session.put("sessionVar2", "[Session var content 2]");
+
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>?{parameter1} and ${sessionVar1}<br />${sessionVar2} and ?{parameter2}</test>", session);
+		assertEquals(
+				"<head>[Parameter value 1] and [Session var content 1]<br />[Session var content 2] and [Parameter value 2]</head>",
+				res.getResult().asString()
+		);
+	}
+
+	@Test
+	@DisplayName("Make sure that nothing is replaced if the ${} / ?{} syntax isn't closed")
+	public void testSubstituteVarsIncorrectSyntax() throws Exception {
+		session.put("varToSubstitute", "substitutedValue");
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("secondVarToSubstitute")
+				.withValue("secondSubstitutedValue"));
+
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>${varToSubstitute and ?{secondVarToSubstitute</test>)", session);
+		assertEquals("<test>${varToSubstitute and ?{secondVarToSubstitute</test>)", res.getResult().asString());
 	}
 }

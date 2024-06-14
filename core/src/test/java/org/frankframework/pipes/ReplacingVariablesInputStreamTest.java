@@ -27,8 +27,7 @@ public class ReplacingVariablesInputStreamTest {
 	@ParameterizedTest
 	@MethodSource
 	void testReplacingVariablesInputStream(String prefix, Map<String, String> keyValueMap, String input, String expected) throws IOException {
-		ReplacingVariablesInputStream replacingVariablesInputStreams = new ReplacingVariablesInputStream(getByteArrayInputStream(input),
-				prefix, keyValueMap);
+		ReplacingVariablesInputStream replacingVariablesInputStreams = new ReplacingVariablesInputStream(getByteArrayInputStream(input), prefix, keyValueMap);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		int b;

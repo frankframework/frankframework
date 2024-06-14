@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -36,7 +35,6 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.StringResolver;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
@@ -53,10 +51,9 @@ import org.frankframework.util.XmlEncodingUtils;
  * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
  * </ol>
  *
- * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
- *  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
- *
  * @author Gerrit van Brakel
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
+ * 		* <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  * @since 4.2
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -102,15 +99,16 @@ public class ReplacerPipe extends FixedForwardPipe {
 		try {
 			// Create a ReplacingInputStream for find/replace
 			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
-					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters());
+					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters()
+			);
 
 			// Replace parameters
-			Map<String, String> keyValueMapForParameters = getKeyValueMapForParameters(message, session);
 			ReplacingVariablesInputStream replaceParametersStream = new ReplacingVariablesInputStream(replacingInputStream, "?",
-					keyValueMapForParameters);
+					getKeyValueMapForParameters(message, session)
+			);
 
 			// Wrap for 'substitute vars' if necessary
-			ReplacingVariablesInputStream inputStream = getReplacingVariablesInputStream(session, replaceParametersStream, keyValueMapForParameters);
+			ReplacingVariablesInputStream inputStream = getReplacingVariablesInputStream(session, replaceParametersStream);
 
 			Message result = new Message(inputStream, message.copyContext().withoutSize());
 
@@ -125,21 +123,20 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If subsituteVars is true, we need to wrap the inputStream again to subsitute ${} syntax parameters
+	 * If subsituteVars is true, we need to wrap the inputStream again to substitute ${} syntax parameters
 	 *
 	 * @param session
 	 * @param replaceParametersStream
-	 * @param keyValueMapForParameters
 	 * @return
 	 */
 	private ReplacingVariablesInputStream getReplacingVariablesInputStream(PipeLineSession session,
-																		   ReplacingVariablesInputStream replaceParametersStream,
-																		   Map<String, String> keyValueMapForParameters) {
+																		   ReplacingVariablesInputStream replaceParametersStream) {
 		if (substituteVars) {
-			StringResolver.substVars("input", session, appConstants);
+			Map<String, String> sessionValues = session.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));
 
 			return new ReplacingVariablesInputStream(replaceParametersStream, "$",
-					getKeyValueMapForParametersAndAppConstants(keyValueMapForParameters)
+					getKeyValueMapForParametersAndAppConstants(sessionValues)
 			);
 		}
 
@@ -150,8 +147,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 * @return the appConstants as a key/value map combined with the pipe's parameters
 	 */
 	private Map<String, String> getKeyValueMapForParametersAndAppConstants(Map<String, String> keyValueMapForParameters) {
-		Map<String, String> parametersAndConstants = appConstants.entrySet()
-				.stream()
+		Map<String, String> parametersAndConstants = appConstants.entrySet().stream()
 				.collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString()));
 
 		parametersAndConstants.putAll(keyValueMapForParameters);
