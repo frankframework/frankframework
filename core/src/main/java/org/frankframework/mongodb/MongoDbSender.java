@@ -24,16 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NamingException;
 
-import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonValue;
-import org.bson.Document;
-import org.bson.codecs.DocumentCodec;
-import org.bson.codecs.Encoder;
-import org.bson.codecs.EncoderContext;
-import org.bson.json.JsonMode;
-import org.bson.json.JsonWriterSettings;
-import org.xml.sax.SAXException;
-
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -50,6 +40,14 @@ import jakarta.json.JsonObject;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonValue;
+import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.Encoder;
+import org.bson.codecs.EncoderContext;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
@@ -71,6 +69,7 @@ import org.frankframework.stream.document.INodeBuilder;
 import org.frankframework.stream.document.ObjectBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
+import org.xml.sax.SAXException;
 
 /**
  * Sender to perform action on a MongoDB database.
@@ -119,6 +118,10 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		UPDATEMANY,
 		DELETEONE,
 		DELETEMANY;
+
+		public static boolean isFind(MongoAction action) {
+			return action == FINDONE || action == FINDMANY;
+		}
 	}
 
 
@@ -167,12 +170,12 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		message.closeOnCloseOf(session, this);
-		MongoAction mngaction = getAction();
-		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
+		MongoAction mongoAction = getAction();
+		try (MessageOutputStream target = MongoAction.isFind(mongoAction) ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
-			switch (mngaction) {
+			switch (mongoAction) {
 			case INSERTONE:
 				renderResult(mongoCollection.insertOne(getDocument(message)), target);
 				break;
@@ -331,7 +334,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		if (StringUtils.isEmpty(databaseName)) {
 			throw new SenderException("no database found from attribute or parameter");
 		}
-		return mongoDatabases.computeIfAbsent(databaseName, (d)->mongoClient.getDatabase(databaseName));
+		return mongoDatabases.computeIfAbsent(databaseName, d->mongoClient.getDatabase(databaseName));
 	}
 
 	protected MongoCollection<Document> getCollection(MongoDatabase mongoDatabase, ParameterValueList pvl) throws SenderException {

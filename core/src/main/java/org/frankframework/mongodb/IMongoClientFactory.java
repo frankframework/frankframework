@@ -20,26 +20,26 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
-import org.springframework.jndi.JndiLocatorSupport;
-
 import com.mongodb.client.MongoClient;
+
+import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IMongoClientFactory {
 
 	/**
 	 * Look up a MongoClient from the JNDI
 	 */
-	public MongoClient getMongoClient(String dataSourceName) throws NamingException;
+	MongoClient getMongoClient(String dataSourceName) throws NamingException;
 
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
-	public MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment) throws NamingException;
+	MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment) throws NamingException;
 
 	/**
 	 * Return all known/registered MongoClients
 	 */
-	public List<String> getMongoClients();
+	List<String> getMongoClients();
 }
