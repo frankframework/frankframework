@@ -126,7 +126,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		pipe.setFind("test");
 		pipe.setReplace("head");
-		pipe.setFormatString("output[?{message}]");
 		pipe.configure();
 
 		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute} and ?{secondVarToSubstitute}</test>)", session);

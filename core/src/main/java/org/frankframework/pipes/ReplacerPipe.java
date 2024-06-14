@@ -16,12 +16,16 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ParameterException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -58,16 +62,14 @@ import org.frankframework.util.XmlEncodingUtils;
 @ElementType(ElementTypes.TRANSLATOR)
 public class ReplacerPipe extends FixedForwardPipe {
 
-	private static final String SUBSTITUTION_START_DELIMITER = "?";
 	private boolean allowUnicodeSupplementaryCharacters = false;
-	private AppConstants appConstants;
 	private String find;
-	private String formatString;
 	private String lineSeparatorSymbol = null;
 	private String replace;
 	private String nonXmlReplacementCharacter = null;
 	private boolean replaceNonXmlChars = false;
 	private @Getter boolean substituteVars;
+	private AppConstants appConstants;
 
 	{
 		setSizeStatistics(true);
@@ -97,22 +99,78 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-
-		ReplacingInputStream inputStream = getReplacingInputStream(message, getFind(), getReplace());
-
-		Message result = new Message(inputStream, message.copyContext().withoutSize());
-		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
-		message.unscheduleFromCloseOnExitOf(session);
-		result.closeOnCloseOf(session, this);
-
-		return new PipeRunResult(getSuccessForward(), result);
-	}
-
-	private ReplacingInputStream getReplacingInputStream(Message message, String find, String replace) throws PipeRunException {
 		try {
-			return new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(), getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters());
+			// Create a ReplacingInputStream for find/replace
+			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
+					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters());
+
+			// Replace parameters
+			Map<String, String> keyValueMapForParameters = getKeyValueMapForParameters(message, session);
+			ReplacingVariablesInputStream replaceParametersStream = new ReplacingVariablesInputStream(replacingInputStream, "?",
+					keyValueMapForParameters);
+
+			// Wrap for 'substitute vars' if necessary
+			ReplacingVariablesInputStream inputStream = getReplacingVariablesInputStream(session, replaceParametersStream, keyValueMapForParameters);
+
+			Message result = new Message(inputStream, message.copyContext().withoutSize());
+
+			// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
+			message.unscheduleFromCloseOnExitOf(session);
+			result.closeOnCloseOf(session, this);
+
+			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
+		}
+	}
+
+	/**
+	 * If subsituteVars is true, we need to wrap the inputStream again to subsitute ${} syntax parameters
+	 *
+	 * @param session
+	 * @param replaceParametersStream
+	 * @param keyValueMapForParameters
+	 * @return
+	 */
+	private ReplacingVariablesInputStream getReplacingVariablesInputStream(PipeLineSession session,
+																		   ReplacingVariablesInputStream replaceParametersStream,
+																		   Map<String, String> keyValueMapForParameters) {
+		if (substituteVars) {
+			StringResolver.substVars("input", session, appConstants);
+
+			return new ReplacingVariablesInputStream(replaceParametersStream, "$",
+					getKeyValueMapForParametersAndAppConstants(keyValueMapForParameters)
+			);
+		}
+
+		return replaceParametersStream;
+	}
+
+	/**
+	 * @return the appConstants as a key/value map combined with the pipe's parameters
+	 */
+	private Map<String, String> getKeyValueMapForParametersAndAppConstants(Map<String, String> keyValueMapForParameters) {
+		Map<String, String> parametersAndConstants = appConstants.entrySet()
+				.stream()
+				.collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString()));
+
+		parametersAndConstants.putAll(keyValueMapForParameters);
+
+		return parametersAndConstants;
+	}
+
+	/**
+	 * @return the pipe's parameters as key/value map
+	 * @throws PipeRunException
+	 */
+	private Map<String, String> getKeyValueMapForParameters(Message message, PipeLineSession session) throws PipeRunException {
+		try {
+			ParameterValueList pvl = getParameterList().getValues(message, session);
+
+			return StreamSupport.stream(pvl.spliterator(), false)
+					.collect(Collectors.toMap(ParameterValue::getName, ParameterValue::asStringValue));
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 	}
 
@@ -218,18 +276,5 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 */
 	public void setSubstituteVars(boolean substitute) {
 		this.substituteVars = substitute;
-	}
-
-	/**
-	 * If set, this pattern is used as a pattern to be able to refer to the incoming message. For instance, use "output: [?{message}]" to wrap the
-	 * incoming message string in the result.
-	 * Please note that "message" in the ?{message} syntax is the reserved word here.
-	 *
-	 * Will only be used if the value is not empty.
-	 *
-	 * @ff.default empty string
-	 */
-	public void setFormatString(String formatString) {
-		this.formatString = formatString;
 	}
 }
