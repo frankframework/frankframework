@@ -18,6 +18,10 @@ package org.frankframework.pipes;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -43,11 +47,6 @@ import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -409,6 +408,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/** when set, the value in AppConstants is overwritten (for this pipe only) */
+	@Override
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}
@@ -418,6 +418,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
 	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
 	 */
+	@Override
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

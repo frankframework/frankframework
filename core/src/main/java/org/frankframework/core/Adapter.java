@@ -40,7 +40,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
-import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -196,8 +195,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 		List<String> hrs = new ArrayList<>();
 		for (IPipe pipe : pipeline.getPipes()) {
-			if (pipe instanceof AbstractPipe aPipe && StringUtils.isNotEmpty(aPipe.getHideRegex()) && !hrs.contains(aPipe.getHideRegex())) {
-				hrs.add(aPipe.getHideRegex());
+			if (StringUtils.isNotEmpty(pipe.getHideRegex()) && !hrs.contains(pipe.getHideRegex())) {
+				hrs.add(pipe.getHideRegex());
 			}
 		}
 		StringBuilder sb = new StringBuilder();

@@ -186,4 +186,16 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	void throwEvent(String event, Message eventMessage);
 
 	boolean sizeStatisticsEnabled();
+
+	/**
+	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
+	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
+	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
+	 */
+	void setHideRegex(String hideRegex);
+	String getHideRegex();
+
+	/** when set, the value in AppConstants is overwritten (for this pipe only) */
+	void setLogIntermediaryResults(String string);
+	String getLogIntermediaryResults();
 }
