@@ -179,6 +179,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testFindMany() throws Exception {
+		insertStudentRecord();
+
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.configure();
@@ -190,6 +192,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testFindManyXml() throws Exception {
+		insertStudentRecord();
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.setOutputFormat(DocumentFormat.XML);
@@ -206,6 +209,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testFindManyUsingParameter() throws Exception {
+		insertStudentRecord();
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		Parameter param = new Parameter();
@@ -221,6 +225,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testFindManyCountOnly() throws Exception {
+		insertStudentRecord();
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.setCountOnly(true);
@@ -265,17 +270,27 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testUpdateMany() throws Exception {
+		// Arrange: clean up first
+		sender.setCollection("Students");
+		sender.setAction(MongoAction.DELETEMANY);
+		sender.configure();
+		sender.open();
+		result = sendMessage("{ \"student_id\": \"Evert\" }");
+
+		// Arrange: insert student
+		insertStudentRecord();
 		String filter = "{ \"student_id\": \"Evert\" }";
 		String update = "{\"$set\": {\"seatno\":" + 10 + "}}";
 
+		// Act
 		sender.setAction(MongoAction.UPDATEMANY);
-		sender.setCollection("Students");
 		sender.setFilter(filter);
-		sender.configure();
-		sender.open();
-
 		result = sendMessage(update);
-		assertThat(result.asString(), StringContains.containsString("\"modifiedCount\":"));
+
+		// Assert
+		String returnMessage = result.asString();
+		log.debug("UpdateMany: {}", returnMessage);
+		assertThat(returnMessage, StringContains.containsString("\"acknowledged\":true,\"matchedCount\":1,\"modifiedCount\":1"));
 	}
 
 	@Test

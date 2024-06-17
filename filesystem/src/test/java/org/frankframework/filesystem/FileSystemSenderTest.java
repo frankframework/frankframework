@@ -31,6 +31,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	protected FSS fileSystemSender;
 	private SenderResult senderResult;
+	private Message result;
 
 	public abstract FSS createFileSystemSender();
 
@@ -54,6 +55,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		} catch (SenderException e) {
 			log.warn("Failed to close fileSystemSender", e);
 		}
+		CloseUtils.closeSilently(result);
 		super.tearDown();
 	}
 
@@ -88,7 +90,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.open();
 
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 		String actual = readFile(null, filename);
@@ -116,7 +118,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.open();
 
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 
@@ -146,7 +148,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.open();
 
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 		String actual = readFile(null, filename);
@@ -170,7 +172,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		// test
 		assertEquals(contents.trim(), result.asString().trim(), "result should be base64 of file content");
@@ -203,7 +205,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		assertNotNull(result);
 
@@ -227,14 +229,6 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		Exception e = assertThrows(Exception.class, () -> fileSystemSenderMoveActionTest(null,"folder",false,false));
 		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
-//	@Test
-//	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {
-//		fileSystemSenderMoveActionTest("folder",null);
-//	}
-//	@Test
-//	public void fileSystemSenderMoveActionTestFolderToFolder() throws Exception {
-//		fileSystemSenderMoveActionTest("folder1","folder2");
-//	}
 
 	@Test
 	public void moveFileParamPrefixedWithFolderToAnotherFolder() throws Exception {
@@ -259,7 +253,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.open();
 
 		Message message = new Message("is-not-relevant");
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		// Assert
 		assertNotNull(result);
@@ -286,7 +280,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(folder);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 		// test
@@ -311,7 +305,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(folder);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		// test
 		assertEquals(folder, result.asString(), "result of sender should be name of deleted folder");
@@ -346,7 +340,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(folder);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		// test
 		assertEquals(folder,result.asString(), "result of sender should be name of deleted folder");
@@ -370,7 +364,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		waitForActionToFinish();
 
@@ -398,7 +392,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		// test
 		assertEquals(dest, result.asString(), "result of sender should be new name of file");
@@ -487,8 +481,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 		String result = senderResult.getResult().asString();
 
-		// test
-		// result should be name of the moved file
+		// Result should be the name of the moved file
 		assertNotNull(result);
 
 		// TODO: result should point to new location of file
@@ -648,7 +641,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
 
 		Message message = new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 		// Assert
@@ -679,7 +672,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
 
 		Message message = new Message("not-used");
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 		// Assert

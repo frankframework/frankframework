@@ -56,9 +56,8 @@ import org.xml.sax.SAXException;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
- * When a file is found, it is moved to an process-folder, so that it isn't found more then once.
+ * When a file is found, it is moved to a process-folder, so that it isn't found more than once.
  * The name of the moved file is passed to the pipeline.
- *
  *
  * @author Gerrit van Brakel
  */

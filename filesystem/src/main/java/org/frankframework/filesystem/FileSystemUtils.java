@@ -49,7 +49,7 @@ public class FileSystemUtils {
 	/**
 	 * Check if a source file exists.
 	 */
-	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileNotFoundException, FileSystemException {
+	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileSystemException {
 		if (!fileSystem.exists(source)) {
 			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(source)+"], does not exist");
 		}
@@ -306,7 +306,6 @@ public class FileSystemUtils {
 	}
 
 	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
-
 		try (ObjectBuilder file = nodeBuilder.startObject()) {
 			String name = fileSystem.getName(f);
 			file.addAttribute("name", name);

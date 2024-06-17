@@ -220,13 +220,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 
-//	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
-//		if (getActionEnum().equals(action) && (parameterList == null || parameterList.findParameter(parameter) == null)) {
-//			throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] to be present");
-//		}
-//		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
-//	}
-
 	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction == action) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
