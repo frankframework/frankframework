@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
@@ -19,7 +20,7 @@ import { WebsocketService } from 'src/app/services/websocket.service';
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })
-export class WebsocketTestComponent implements OnInit, OnDestroy {
+export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('wsLog')
   private wsLog!: ElementRef<HTMLPreElement>;
 
@@ -53,7 +54,9 @@ export class WebsocketTestComponent implements OnInit, OnDestroy {
         this.debugHandler(event.channel, event.message),
       ),
     );
+  }
 
+  ngAfterViewInit(): void {
     if (this.websocketService.connected()) {
       this.printToHtml('Connected');
       this.onConnected();
