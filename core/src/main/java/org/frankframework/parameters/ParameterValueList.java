@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -161,7 +161,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	 * Returns the {@code List} iterator which may contain {@link Parameter Parameters} with the same name!
 	 */
 	@Override
+	@Nonnull
 	public Iterator<ParameterValue> iterator() {
 		return list.iterator();
+	}
+
+	public Stream<ParameterValue> stream() {
+		return list.stream();
 	}
 }

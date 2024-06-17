@@ -18,7 +18,7 @@
 
 		<jackson.version>2.17.1</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
-		<spring.version>6.1.8</spring.version>
+		<spring.version>6.1.9</spring.version>
 		<spring-security.version>6.3.0</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
 		<spring.boot.version>3.3.0</spring.boot.version>
@@ -47,9 +47,9 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.2</activemq.driver.version>
-		<artemis.driver.version>2.34.0</artemis.driver.version>
+		<artemis.driver.version>2.35.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.26.1</aws.java.sdk.version>
+		<aws.java.sdk.version>2.26.3</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.12.0</mockito.version>
@@ -709,7 +709,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.5</version>
+				<version>3.3.0</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<reuseForks>true</reuseForks>
@@ -1187,7 +1187,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.0</version>
 				<reportSets>
 					<reportSet>
 						<reports>

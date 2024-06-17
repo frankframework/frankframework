@@ -53,15 +53,15 @@ import org.frankframework.util.SpringUtils;
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.ENDPOINT)
-public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
+public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private FS fileSystem;
-	private final FileSystemActor<F,FS> actor = new FileSystemActor<>();
+	private S fileSystem;
+	private final FileSystemActor<F,S> actor = new FileSystemActor<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		FS fileSystem = getFileSystem();
+		S fileSystem = getFileSystem();
 		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
 		try {
@@ -74,7 +74,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@Override
 	public void open() throws SenderException {
 		try {
-			FS fileSystem=getFileSystem();
+			S fileSystem=getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
@@ -124,10 +124,10 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		return getFileSystem().getDomain();
 	}
 
-	public void setFileSystem(FS fileSystem) {
+	public void setFileSystem(S fileSystem) {
 		this.fileSystem=fileSystem;
 	}
-	public FS getFileSystem() {
+	public S getFileSystem() {
 		return fileSystem;
 	}
 

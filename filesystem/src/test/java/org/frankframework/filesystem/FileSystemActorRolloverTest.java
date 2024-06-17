@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.ParameterList;
@@ -12,9 +14,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.DateFormatUtils;
-import org.junit.jupiter.api.Test;
 
-public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemActorTest<F, FS> {
+public abstract class FileSystemActorRolloverTest<F,S extends IWritableFileSystem<F>> extends FileSystemActorCustomFileAttributesTest<F, S> {
 
 	@Override
 	protected abstract IFileSystemTestHelperFullControl getFileSystemTestHelper();

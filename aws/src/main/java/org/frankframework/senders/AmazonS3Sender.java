@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,23 @@
 */
 package org.frankframework.senders;
 
+import com.amazonaws.services.s3.model.S3Object;
+
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemDelegator;
 import org.frankframework.filesystem.FileSystemSender;
 
-import com.amazonaws.services.s3.model.S3Object;
-
 /**
- * Sender to work with Amazon S3.
+ * Sender to work with the Amazon S3 Filesystem.
+ * <p>
+ *     In addition to regular parameters for filesystem senders, it is possible
+ *     to set custom user-metadata on S3 files by prefixing parameter names with
+ *     {@value org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX}.
+ *     This prefix will be not be part of the actual metadata property name.
+ * </p>
+ * <p>
+ *     The string value of these parameters will be used as value of the custom metadata attribute.
+ * </p>
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> implements AmazonS3FileSystemDelegator {
 

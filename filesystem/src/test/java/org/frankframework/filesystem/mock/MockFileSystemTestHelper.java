@@ -21,7 +21,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	}
 
 	public MockFileSystemTestHelper() {
-		this(new MockFileSystem<F>());
+		this(new MockFileSystem<>());
 	}
 
 	@BeforeEach
