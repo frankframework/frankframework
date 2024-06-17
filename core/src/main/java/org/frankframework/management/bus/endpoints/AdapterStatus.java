@@ -32,6 +32,7 @@ import java.util.TreeMap;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
@@ -113,6 +114,12 @@ public class AdapterStatus extends BusEndpointBase {
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
 		return new JsonMessage(adapterInfo);
+	}
+
+	@ActionSelector(BusAction.UPDATES)
+	@PermitAll
+	public Message<String> getAdaptersUpdates(Message<?> message) {
+		return getAdapters(message);
 	}
 
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {

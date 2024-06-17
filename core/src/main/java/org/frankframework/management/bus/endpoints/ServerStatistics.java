@@ -211,6 +211,12 @@ public class ServerStatistics extends BusEndpointBase {
 		return new JsonMessage(returnMap);
 	}
 
+	@ActionSelector(BusAction.UPDATES)
+	@PermitAll
+	public Message<String> getApplicationWarningsUpdates(){
+		return getApplicationWarnings();
+	}
+
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {
 		List<Object> messages = new ArrayList<>();
 		for (int t = 0; t < messageKeeper.size(); t++) {
