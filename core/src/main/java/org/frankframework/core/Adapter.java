@@ -20,10 +20,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -193,28 +193,24 @@ public class Adapter implements IAdapter, NamedBean {
 			configureReceiver(receiver);
 		}
 
-		Set<String> hrs = pipeline.getPipes().stream()
-				.map(IPipe::getHideRegex)
-				.filter(StringUtils::isNotEmpty)
-				.collect(Collectors.toSet());
-		StringBuilder sb = new StringBuilder();
-		for (String hr : hrs) {
-			if (!sb.isEmpty()) {
-				sb.append("|");
-			}
-			sb.append("(");
-			sb.append(hr);
-			sb.append(")");
-		}
-		if (!sb.isEmpty()) {
-			composedHideRegex = sb.toString();
-		}
-
+		composedHideRegex = computeCombinedHideRegex();
 		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 
 		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
+	}
+
+	@Nonnull
+	String computeCombinedHideRegex() {
+		String combinedHideRegex = pipeline.getPipes().stream()
+				.map(IPipe::getHideRegex)
+				.filter(StringUtils::isNotEmpty)
+				.distinct()
+				.collect(Collectors.joining(")|(", "(", ")"));
+
+		if ("()".equals(combinedHideRegex)) return "";
+		return combinedHideRegex;
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
