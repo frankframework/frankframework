@@ -33,9 +33,17 @@ public class EventController extends FrankApiBase {
 	}
 
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
-	public void ConfigurationWarnings() {
+	public void serverWarnings() {
 		Message<?> response = sendSyncMessageWithoutHttp(RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.WARNINGS));
 		this.messagingTemplate.convertAndSend("/event/server-warnings", response.getPayload());
+	}
+
+	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
+	public void adapters() {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
+		builder.addHeader("expanded", true);
+		Message<?> response = sendSyncMessageWithoutHttp(builder);
+		this.messagingTemplate.convertAndSend("/event/adapters", response.getPayload());
 	}
 
 }

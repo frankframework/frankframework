@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { AppService } from '../app.service';
 import { Observable, Subject } from 'rxjs';
 
@@ -26,7 +26,7 @@ export class WebsocketService {
   onMessage$ = this.onMessageSubject.asObservable();
 
   private client: Client = new Client({
-    brokerURL: `${this.appService.absoluteApiPath}ws`,
+    brokerURL: `ws://${window.location.host}${this.appService.absoluteApiPath}ws`,
     reconnectDelay: 20_000,
     connectionTimeout: 60_000,
     debug: (message) => console.debug(message),
@@ -35,6 +35,10 @@ export class WebsocketService {
     onWebSocketClose: () => this.onWebSocketCloseSubject.next(),
     onWebSocketError: (event) => this.onWebSocketErrorSubject.next(event),
   });
+  private stompSubscriptions: Map<string, StompSubscription> = new Map<
+    string,
+    StompSubscription
+  >();
 
   constructor(
     private http: HttpClient,
@@ -71,14 +75,19 @@ export class WebsocketService {
     );
   }
 
-  subscribe(channel: string, callback: (message: string) => void): void {
-    this.client.subscribe(channel, (message: IMessage) => {
-      callback(message.body);
+  subscribe<T>(channel: string, callback?: (message: T) => void): void {
+    const subscription = this.client.subscribe(channel, (message: IMessage) => {
       this.onMessageSubject.next({ channel, message });
+      if (callback) callback(JSON.parse(message.body) as T);
     });
+    this.stompSubscriptions.set(channel, subscription);
   }
 
   unsubscribe(channel: string): void {
-    this.client.unsubscribe(channel);
+    const subscription = this.stompSubscriptions.get(channel);
+    if (subscription) {
+      subscription.unsubscribe();
+      this.stompSubscriptions.delete(channel);
+    }
   }
 }

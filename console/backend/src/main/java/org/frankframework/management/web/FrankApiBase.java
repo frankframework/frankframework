@@ -15,10 +15,13 @@
 */
 package org.frankframework.management.web;
 
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
@@ -33,6 +36,8 @@ import org.springframework.messaging.Message;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
+
+import java.util.HashMap;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
@@ -78,9 +83,8 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 			}
 			return message;
 		} catch (Exception e) {
-			return new JsonMessage(e.getMessage());
+			return new StringMessage("{\"error\":\"" + e.getMessage() + "\"}");
 		}
-
 	}
 
 	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input) throws ApiException {

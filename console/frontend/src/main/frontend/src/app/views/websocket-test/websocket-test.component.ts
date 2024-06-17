@@ -27,17 +27,6 @@ export class WebsocketTestComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
 
-  /* private client: Client = new Client({
-    brokerURL: 'ws://localhost:4200/iaf/api/ws',
-    reconnectDelay: 20_000,
-    connectionTimeout: 60_000,
-    debug: (message) => console.debug(message),
-    onConnect: () => this.onConnected(),
-    onDisconnect: () => this.printToHtml('Disconnected'),
-    onWebSocketClose: () => this.printToHtml('WebSocket closed'),
-    onWebSocketError: (event) => this.onError(event),
-  }); */
-
   constructor(private websocketService: WebsocketService) {}
 
   ngOnInit(): void {
@@ -64,14 +53,23 @@ export class WebsocketTestComponent implements OnInit, OnDestroy {
         this.debugHandler(event.channel, event.message),
       ),
     );
+
+    if (this.websocketService.connected()) {
+      this.printToHtml('Connected');
+      this.onConnected();
+    }
   }
 
   ngOnDestroy(): void {
+    this.websocketService.unsubscribe('/event/test');
     this._subscriptions.unsubscribe();
   }
 
   onConnected(): void {
-    this.websocketService.publish('/hello', JSON.stringify({ name: 'Vivy' }));
+    this.websocketService.subscribe('/event/test');
+    setTimeout(() => {
+      this.websocketService.publish('/hello', JSON.stringify({ name: 'Vivy' }));
+    }, 1000);
   }
 
   push(): void {

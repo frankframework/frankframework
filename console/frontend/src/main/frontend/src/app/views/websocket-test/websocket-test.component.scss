@@ -3,6 +3,9 @@ pre {
   overflow-x: hidden;
   overflow-y: scroll;
   max-height: 600px;
+  white-space: pre-wrap;
+  font-size: 12px;
+  font-family: Consolas, "Courier New", monospace;
 }
 
 form {

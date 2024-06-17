@@ -29,7 +29,7 @@ import {
   Router,
 } from '@angular/router';
 import { formatDate } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
@@ -76,6 +76,7 @@ export class AppComponent implements OnInit, OnDestroy {
   };
 
   constructor(
+    private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
     private renderer: Renderer2,
@@ -384,49 +385,56 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeWebsocket(): void {
     this.websocketService.onConnected$.subscribe(() => {
-      this.websocketService.subscribe('/event/server-warnings', (data) => {
-        const configurations = JSON.parse(data) as Record<string, MessageLog>;
-        this.appService.updateAlerts([]); //Clear all old alerts
+      this.websocketService.subscribe<Record<string, MessageLog>>(
+        '/event/server-warnings',
+        (configurations) => {
+          this.appService.updateAlerts([]); //Clear all old alerts
 
-        configurations['All'] = {
-          messages: configurations['messages'] as unknown as AdapterMessage[],
-          errorStoreCount: configurations[
-            'totalErrorStoreCount'
-          ] as unknown as number,
-          messageLevel: 'ERROR',
-        };
-        delete configurations['messages'];
-        delete configurations['totalErrorStoreCount'];
+          configurations['All'] = {
+            messages: configurations['messages'] as unknown as AdapterMessage[],
+            errorStoreCount: configurations[
+              'totalErrorStoreCount'
+            ] as unknown as number,
+            messageLevel: 'ERROR',
+          };
+          delete configurations['messages'];
+          delete configurations['totalErrorStoreCount'];
 
-        if (configurations['warnings']) {
-          for (const warning of configurations[
-            'warnings'
-          ] as unknown as string[]) {
-            this.appService.addWarning('', warning);
-          }
-        }
-
-        for (const index in configurations) {
-          const configuration = configurations[index];
-          if (configuration.exception)
-            this.appService.addException(index, configuration.exception);
-          if (configuration.warnings) {
-            for (const warning of configuration.warnings) {
-              this.appService.addWarning(index, warning);
+          if (configurations['warnings']) {
+            for (const warning of configurations[
+              'warnings'
+            ] as unknown as string[]) {
+              this.appService.addWarning('', warning);
             }
           }
 
-          configuration.messageLevel = 'INFO';
-          for (const x in configuration.messages) {
-            const level = configuration.messages[x].level;
-            if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-              configuration.messageLevel = 'WARN';
-            if (level == 'ERROR') configuration.messageLevel = 'ERROR';
-          }
-        }
+          for (const index in configurations) {
+            const configuration = configurations[index];
+            if (configuration.exception)
+              this.appService.addException(index, configuration.exception);
+            if (configuration.warnings) {
+              for (const warning of configuration.warnings) {
+                this.appService.addWarning(index, warning);
+              }
+            }
 
-        this.appService.updateMessageLog(configurations);
-      });
+            configuration.messageLevel = 'INFO';
+            for (const x in configuration.messages) {
+              const level = configuration.messages[x].level;
+              if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+                configuration.messageLevel = 'WARN';
+              if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+            }
+          }
+
+          this.appService.updateMessageLog(configurations);
+        },
+      );
+
+      this.websocketService.subscribe<Record<string, Adapter>>(
+        '/event/adapters',
+        (data) => this.pollerCallback(data),
+      );
     });
     this.websocketService.activate();
   }
@@ -439,9 +447,11 @@ export class AppComponent implements OnInit, OnDestroy {
     );
     this._subscriptions.add(startupErrorSubscription);
 
-    /* this.pollerService.add(
-      'server/warnings',
-      (data) => {
+    this.http
+      .get<
+        Record<string, MessageLog>
+      >(`${this.appService.absoluteApiPath}server/warnings`)
+      .subscribe((data) => {
         const configurations = data as Record<string, MessageLog>;
         this.appService.updateAlerts([]); //Clear all old alerts
 
@@ -483,9 +493,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
 
         this.appService.updateMessageLog(configurations);
-      },
-      60_000,
-    ); */
+      });
 
     this.initializeAdapters();
   }
@@ -605,13 +613,13 @@ export class AppComponent implements OnInit, OnDestroy {
       this.appService.updateLoading(false);
       this.loading = false;
 
-      this.pollerService.add(
+      /* this.pollerService.add(
         'adapters?expanded=all',
         (data: unknown) => {
           this.pollerCallback(data as Record<string, Adapter>);
         },
         undefined,
-      );
+      ); */
     });
   }
 
