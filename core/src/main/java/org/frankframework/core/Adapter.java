@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -193,12 +193,10 @@ public class Adapter implements IAdapter, NamedBean {
 			configureReceiver(receiver);
 		}
 
-		List<String> hrs = new ArrayList<>();
-		for (IPipe pipe : pipeline.getPipes()) {
-			if (StringUtils.isNotEmpty(pipe.getHideRegex()) && !hrs.contains(pipe.getHideRegex())) {
-				hrs.add(pipe.getHideRegex());
-			}
-		}
+		Set<String> hrs = pipeline.getPipes().stream()
+				.map(IPipe::getHideRegex)
+				.filter(StringUtils::isNotEmpty)
+				.collect(Collectors.toSet());
 		StringBuilder sb = new StringBuilder();
 		for (String hr : hrs) {
 			if (!sb.isEmpty()) {
