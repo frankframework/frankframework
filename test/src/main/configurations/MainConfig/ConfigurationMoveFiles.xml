@@ -160,6 +160,7 @@
 				name="list files with count check"
 				action="list"
 				inputFolder="${testdata.dir}/mfp2/"
+				typeFilter="files_and_folders"
 				createFolder="true"
 				wildcard="*.txt">
 				<forward name="success" path="output-check"/>
