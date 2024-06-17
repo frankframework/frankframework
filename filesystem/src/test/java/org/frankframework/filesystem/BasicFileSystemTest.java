@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
@@ -595,7 +594,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// Assert directories only
 		otherFolder = getFolderContents("Otherfolder", TypeFilter.FOLDERS_ONLY).objectNames;
 		assertEquals(1, otherFolder.size());
-		assertTrue(otherFolder.contains("Folder2") || otherFolder.contains("Folder2" + File.separator)); // Remove trailing slash on folder names for SambaFS1.
+		assertTrue(otherFolder.contains("Folder2") || otherFolder.contains("Folder2/")); // Remove trailing slash on folder names for SambaFS1.
 
 		// Assert files and directories (order does not matter, so using contains instead of get(0))
 		otherFolder = getFolderContents("Otherfolder", TypeFilter.FILES_AND_FOLDERS).objectNames;

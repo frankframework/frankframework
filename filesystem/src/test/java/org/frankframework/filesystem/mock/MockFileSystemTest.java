@@ -9,7 +9,7 @@ public class MockFileSystemTest extends FileSystemTest<MockFile, MockFileSystem<
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MockFileSystemTestHelper<MockFile>();
+		return new MockFileSystemTestHelper<>();
 	}
 
 	@Override

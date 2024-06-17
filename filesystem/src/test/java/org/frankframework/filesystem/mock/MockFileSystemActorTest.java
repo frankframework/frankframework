@@ -3,16 +3,17 @@ package org.frankframework.filesystem.mock;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
-import org.frankframework.filesystem.FileSystemActorExtraTest;
-import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,MockFileSystem<MockFile>>{
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
+import org.frankframework.filesystem.FileSystemActorRolloverTest;
+import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.Message;
+
+public class MockFileSystemActorTest extends FileSystemActorRolloverTest<MockFile,MockFileSystem<MockFile>> {
 
 
 	@Override
