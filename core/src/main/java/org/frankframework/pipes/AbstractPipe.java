@@ -407,17 +407,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		secLogSessionKeys = string;
 	}
 
-	/** when set, the value in AppConstants is overwritten (for this pipe only) */
 	@Override
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}
 
-	/**
-	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
-	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
-	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
-	 */
 	@Override
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;

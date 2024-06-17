@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -190,7 +191,9 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	/**
 	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
 	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
-	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
+	 * so a {@code hideRegex} set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
+	 * The regular expressions are matched against part of the log lines. See {@link org.frankframework.util.StringUtil#hideAll(String, Collection, int)}
+	 * with {@code mode = 0} for how regular expressions are matched and replaced.
 	 */
 	void setHideRegex(String hideRegex);
 	String getHideRegex();
