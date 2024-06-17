@@ -21,7 +21,6 @@ import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
 
@@ -34,10 +33,10 @@ import org.frankframework.util.StreamUtil;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
-	private final int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
-		setWaitMillis(waitMilis);
+		setWaitMillis(waitMillis);
 	}
 
 	@TempDir

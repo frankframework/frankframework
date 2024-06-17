@@ -39,6 +39,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -205,6 +206,16 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
+
+		if (parameterList != null && !(fileSystem instanceof ISupportsCustomFileAttributes<?>)) {
+			List<String> parametersWithAttributePrefix = parameterList.stream()
+					.map(IParameter::getName)
+					.filter(p -> p.startsWith(ISupportsCustomFileAttributes.FILE_ATTRIBUTE_PARAM_PREFIX))
+					.toList();
+			if (!parametersWithAttributePrefix.isEmpty()) {
+				ConfigurationWarnings.add(owner, log, "Filesystem [" + ClassUtils.nameOf(fileSystem) + "] does not support setting custom file attribute meta-data: [" + parametersWithAttributePrefix + "]");
+			}
+		}
 		eolArray = LINE_SEPARATOR.getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
@@ -318,32 +329,31 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
+	private FileSystemAction getAction(ParameterValueList pvl) throws FileSystemException, ConfigurationException {
+		if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
+			try {
+				action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(String.valueOf(getAction())));
+			} catch(IllegalArgumentException e) {
+				throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
+			}
+			checkConfiguration(action);
+		} else {
+			action = getAction();
+		}
+		return action;
+	}
+
+	@SuppressWarnings("unchecked")
 	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			input.closeOnCloseOf(session, getClass().getSimpleName() + " of a " + fileSystem.getClass().getSimpleName()); // don't know if the input will be used
 
-			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
-				try {
-					action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(String.valueOf(getAction())));
-				} catch(IllegalArgumentException e) {
-					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
-				}
-				checkConfiguration(action);
-			} else {
-				action = getAction();
-			}
+			action = getAction(pvl);
 
 			switch(action) {
 				case CREATE:{
-					F file = getFileAndCreateFolder(input, pvl);
-					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
-						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
-					}
-
-					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return createFile(input, pvl, null);
 				}
 				case DELETE: {
 					return Message.asMessage(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
@@ -387,14 +397,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return Message.asMessage(directoryBuilder.toString());
 				}
 				case WRITE: {
-					F file = getFileAndCreateFolder(input, pvl);
-					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
-						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
-					}
-
-					((IWritableFileSystem<F>)fileSystem).createFile(file, getContents(input, pvl, charset));
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return createFile(input, pvl, getContents(input, pvl, charset));
 				}
 				case APPEND: {
 					F file=getFile(input, pvl);
@@ -454,6 +457,21 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
+	}
+
+	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
+		F file = getFileAndCreateFolder(input, pvl);
+		if (fileSystem.exists(file)) {
+			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
+			file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+		}
+
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
+			((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
+		}
+
+		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
+		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
 
 

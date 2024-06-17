@@ -19,7 +19,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
-public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem> {
+public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, LocalFileSystem> {
 
 	@TempDir
 	public Path folder;
@@ -32,7 +32,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
+	protected IFileSystemTestHelperFullControl getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(folder);
 	}
 

@@ -25,7 +25,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +50,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
@@ -58,6 +59,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.FileUtils;
@@ -65,7 +67,7 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 
-public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
+public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object>, ISupportsCustomFileAttributes<S3Object> {
 	private final @Getter String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 
@@ -279,6 +281,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 		ObjectMetadata metaData = new ObjectMetadata();
 		metaData.setContentLength(file.length());
+		f.getObjectMetadata().getUserMetadata().forEach(metaData::addUserMetadata);
 
 		try (FileInputStream fis = new FileInputStream(file)) {
 			try(S3Object s3File = f) {
@@ -442,8 +445,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
-		Map<String, Object> attributes = new HashMap<>();
+		Map<String, Object> attributes = new LinkedHashMap<>();
 		attributes.put("bucketName", bucketName);
+		if (f.getObjectMetadata() != null) {
+			f.getObjectMetadata().getUserMetadata().forEach((key, value) -> attributes.put(key, AmazonEncodingUtils.rfc2047Decode(value)));
+		}
 		return attributes;
 	}
 
@@ -584,4 +590,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		this.maxConnections = maxConnections;
 	}
 
+	@Override
+	public void setCustomFileAttribute(@Nonnull S3Object file, @Nonnull String key, @Nonnull String value) {
+		file.getObjectMetadata().addUserMetadata(key, AmazonEncodingUtils.rfc2047Encode(value));
+	}
 }

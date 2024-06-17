@@ -11,9 +11,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +27,7 @@ import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.ISupportsCustomFileAttributes;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
@@ -32,7 +35,7 @@ import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ISupportsCustomFileAttributes<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -358,9 +361,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	@Nullable
-	public Map<String, Object> getAdditionalFileProperties(M f) {
+	public Map<String, Object> getAdditionalFileProperties(M file) {
 		checkOpen();
-		return f.getAdditionalProperties();
+		Map<String, Object> additionalProperties = new LinkedHashMap<>(file.getAdditionalProperties());
+		additionalProperties.putAll(file.getCustomAttributes());
+		return additionalProperties;
 	}
 
 	@Override
@@ -368,4 +373,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return "Mock!";
 	}
 
+	@Nonnull
+	public Map<String, String> getCustomAttributes(@Nonnull M file) {
+		return file.getCustomAttributes();
+	}
+
+	@Override
+	public void setCustomFileAttribute(@Nonnull M file, @Nonnull String key, @Nonnull String value) {
+		file.getCustomAttributes().put(key, value);
+	}
 }
