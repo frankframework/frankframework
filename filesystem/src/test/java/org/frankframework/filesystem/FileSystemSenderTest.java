@@ -406,52 +406,69 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertTrue(actual, "Expected file [" + dest + "] " + "to be present");
 	}
 
-	public void fileSystemSenderListActionTest(String inputFolder, int numberOfFiles) throws Exception {
+	public void fileSystemSenderListActionTest(String inputFolder, int numberOfItems, TypeFilter typeFilter) throws Exception {
 		_deleteFolder(inputFolder);
-		if(inputFolder != null) {
+		if (inputFolder != null) {
 			_createFolder("folder");
 		}
 
-		for (int i=0; i<numberOfFiles; i++) {
-			String filename = "tobelisted"+i + FILE1;
+		for (int i = 0; i < numberOfItems; i++) {
+			String name = "toBeListed" + i + FILE1;
 
-			if (!_fileExists(filename)) {
-				createFile(inputFolder, filename, "is not empty");
+			if (typeFilter.includeFiles() && !_fileExists(name)) {
+				createFile(inputFolder, name, "is not empty");
+			} else {
+				_createFolder(name);
 			}
 		}
 
 		fileSystemSender.setAction(FileSystemAction.LIST);
-		if (inputFolder!=null) {
+		fileSystemSender.setTypeFilter(typeFilter);
+		if (inputFolder != null) {
 			fileSystemSender.setInputFolder(inputFolder);
 		}
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
 		PipeLineSession session = new PipeLineSession();
-		Message message=new Message("");
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		Message message = Message.nullMessage();
+		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		log.debug(result);
-		assertFileCountEquals(result, numberOfFiles);
+		if (typeFilter.includeFiles()) {
+			assertFileCountEquals(result, numberOfItems);
+		} else {
+			assertFolderCountEquals(result, numberOfItems);
+		}
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInRootNoFiles() throws Exception {
-		fileSystemSenderListActionTest(null,0);
+		fileSystemSenderListActionTest(null,0, TypeFilter.FILES_ONLY);
 	}
 	@Test
 	public void fileSystemSenderListActionTestInRoot() throws Exception {
-		fileSystemSenderListActionTest(null,2);
+		fileSystemSenderListActionTest(null,2, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolderNoFiles() throws Exception {
-		fileSystemSenderListActionTest("folder",0);
+		fileSystemSenderListActionTest("folder",0, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
-		fileSystemSenderListActionTest("folder",2);
+		fileSystemSenderListActionTest("folder",2, TypeFilter.FILES_ONLY);
+	}
+
+	@Test
+	public void fileSystemSenderListFilesAndFoldersActionTestInFolder() throws Exception {
+		fileSystemSenderListActionTest("folder",2, TypeFilter.FILES_AND_FOLDERS);
+	}
+
+	@Test
+	public void fileSystemSenderListFoldersActionTestInFolder() throws Exception {
+		fileSystemSenderListActionTest(null, 3, TypeFilter.FOLDERS_ONLY);
 	}
 
 	public SenderResult fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
@@ -598,6 +615,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	public void fileSystemSenderTestForFolderExistenceWithExistingFolder() throws Exception {
 		_createFolder("folder");
 		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setTypeFilter(TypeFilter.FILES_ONLY);
 		fileSystemSender.setInputFolder("folder");
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -632,6 +650,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		session.put("listWithInputFolderAsParameter", inputFolder);
 
 		fileSystemSender.addParameter(ParameterBuilder.create().withName("inputFolder").withSessionKey("listWithInputFolderAsParameter"));
+		fileSystemSender.addParameter(ParameterBuilder.create().withName(FileSystemActor.PARAMETER_TYPEFILTER).withSessionKey(TypeFilter.FILES_ONLY.toString().toLowerCase()));
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.configure();
 		fileSystemSender.open();

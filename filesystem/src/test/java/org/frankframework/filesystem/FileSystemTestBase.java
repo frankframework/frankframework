@@ -121,6 +121,12 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 		assertEquals(expectedFileCount, resultCount, "file count mismatch");
 	}
 
+	protected void assertFolderCountEquals(Object result, int expectedFolderCount) throws Exception {
+		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/folder)", OutputType.TEXT, false, null);
+		int resultCount = Integer.parseInt(tp.transform(Message.asMessage(result), null, false));
+		assertEquals(expectedFolderCount, resultCount, "folder count mismatch");
+	}
+
 	public void setWaitMillis(long waitMillis) {
 		this.waitMillis = waitMillis;
 	}

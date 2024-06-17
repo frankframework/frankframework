@@ -270,8 +270,8 @@ public class FileSystemUtils {
 	}
 
 	@Nonnull
-	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException {
-		DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY);
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard, @Nonnull TypeFilter typeFilter) throws FileSystemException {
+		DirectoryStream<F> ds = fileSystem.list(folder, typeFilter);
 		if (ds==null) {
 			return Stream.empty();
 		}
