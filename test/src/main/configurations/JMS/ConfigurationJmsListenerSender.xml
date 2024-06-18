@@ -199,15 +199,18 @@
 			</CompareStringPipe>
 
 			<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
-				<forward name="success" path="displayKeys" />
+				<forward name="success" path="putOriginalMessageInSession" />
 			</PutInSessionPipe>
 			<PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
-				<forward name="success" path="displayKeys" />
+				<forward name="success" path="putOriginalMessageInSession" />
 			</PutInSessionPipe>
 
+			<!-- The getInputFromFixedValue replaces the original message, put this in session first -->
+			<PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/>
+
 			<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
-				getInputFromFixedValue="branch [?{BRANCH}] Orignal Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
-				<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*/@branch" />
+				getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
+				<param name="BRANCH" sessionKey="incomingMessage" xpathExpression="*/@branch" />
 				<param name="MID" sessionKey="id" />
 				<param name="CID" sessionKey="cid" />
 				<param name="SAME" sessionKey="IdAndCidSame" />
