@@ -45,16 +45,15 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Functions to read and write from one stream to another.
- *
+ * Be careful: Util classes should NOT depend on the Servlet-API
  * @author  Gerrit van Brakel
  */
-//Be careful: UTIL classes should NOT depend on the Servlet-API
 public class StreamUtil {
 
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
-	public static final int BUFFERSIZE=20000;
+	public static final int BUFFER_SIZE = 20_000;
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogManager.getLogger(StreamUtil.class);
@@ -269,9 +268,9 @@ public class StreamUtil {
 	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
 		if (input!=null) {
 			try (InputStream is = input) {
-				byte[] buffer=new byte[BUFFERSIZE];
+				byte[] buffer=new byte[BUFFER_SIZE];
 				int bytesRead;
-				while ((bytesRead=is.read(buffer,0,BUFFERSIZE))>-1) {
+				while ((bytesRead=is.read(buffer,0, BUFFER_SIZE))>-1) {
 					output.write(buffer,0,bytesRead);
 				}
 				if(eof != null) {
@@ -347,28 +346,12 @@ public class StreamUtil {
 			return;
 		}
 		try (Reader r = reader) {
-			char[] buffer=new char[BUFFERSIZE];
+			char[] buffer=new char[BUFFER_SIZE];
 			int charsRead;
-			while ((charsRead=r.read(buffer,0,BUFFERSIZE))>-1) {
+			while ((charsRead=r.read(buffer,0, BUFFER_SIZE))>-1) {
 				writer.write(buffer,0,charsRead);
 			}
 		}
-	}
-
-	/**
-	 * Please consider using resourceToString() instead of relying on files.
-	 */
-	@Deprecated
-	static String fileToString(String fileName) throws IOException {
-		return fileToString(fileName, null, false);
-	}
-
-	/**
-	 * Please consider using resourceToString() instead of relying on files.
-	 */
-	@Deprecated
-	public static String fileToString(String fileName, String endOfLineString) throws IOException {
-		return fileToString(fileName, endOfLineString, false);
 	}
 
 	/**

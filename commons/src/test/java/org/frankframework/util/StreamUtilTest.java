@@ -260,7 +260,7 @@ public class StreamUtilTest {
 	public void testFileToStringFileNameEndLine() throws Exception {
 		// Misc.resourceToString()
 		writeToTestFile();
-		assertEquals("inside the lebron file", StreamUtil.fileToString(file.toString(), " the end"));
+		assertEquals("inside the lebron file", StreamUtil.fileToString(file.toString(), " the end", false));
 	}
 
 	/**
