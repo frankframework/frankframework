@@ -1,13 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  Renderer2,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
