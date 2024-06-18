@@ -58,27 +58,6 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  openFeedback(rating: number): void {
-    this.shouldOpenFeedback.emit(rating);
-  }
-
-  hoverFeedback(rating: number): void {
-    const ratingElements = document.querySelectorAll('rating i');
-    const selectedRatingElements = document.querySelectorAll(
-      `.rating i:nth-child(-n+${rating + 1})`,
-    );
-
-    for (const element of ratingElements) {
-      this.renderer.removeClass(element, 'fa-star');
-      this.renderer.addClass(element, 'fa-star-o');
-    }
-
-    for (const element of selectedRatingElements) {
-      this.renderer.addClass(element, 'fa-star');
-      this.renderer.removeClass(element, 'fa-star-o');
-    }
-  }
-
   resetNotificationCount(): void {
     this.Notification.resetCount();
   }
