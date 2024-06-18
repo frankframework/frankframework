@@ -32,6 +32,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -60,7 +61,7 @@ import org.xml.sax.SAXException;
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
  * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
  * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
- * is substituted. See {@link org.frankframework.parameters.Parameter} to see how parameter values are determined.</li>
+ * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
  *
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
@@ -71,16 +72,13 @@ import org.xml.sax.SAXException;
  * <br/>
  * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
  * is relative to the configuration's root directory.
- * <p>
- * New behaviour (after removal of deprecated attributes):
- * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
- * provide this by using the <code>filename</code> attribute or with a <code>param</code> element to be able to
- * use a sessionKey for instance.
+ *
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
+ * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
+ *
+ * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  *
  * @author Johan Verrips
- * @ff.parameters The <code>filename</code> parameter is used to specify the file to open from the classpath. This can be an
- * 		absolute or relative path. If a file is referenced by a relative path, the path is relative to the configuration's root directory.
- * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
@@ -104,7 +102,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter boolean replaceFixedParams;
 
 	/**
-	 * checks for correct configuration, and checks whether the given filename actually exists
+	 * checks for correct configuration, and translates the filename to
+	 * a file, to check existence.
+	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
+	 * <code>returnString</code>, so that the <code>returnString</code>
+	 * may always be returned.
+	 * @throws ConfigurationException
 	 */
 	@Override
 	public void configure() throws ConfigurationException {

@@ -41,19 +41,20 @@ import org.frankframework.util.XmlEncodingUtils;
  * This Pipe is used to replace values in a few ways. The following steps are performed:
  * <ol>
  * <li>If <code>find</code> is provided, it will be replaced by <code>replace</code></li>
- * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
- * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
- * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
- * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
+ * <li>The resulting string is substituted based on the parameters of this pipe. It will replace values in the input enclosed
+ * with ?{}, for instance: ?{parameterOne}, with parameters of this pipe. If a parameter for the given value is not found, it
+ * will not be replaced and the '?{parameterOne}' value will remain in the output.
+ * <p>
+ * See {@link Parameter} to see how parameter values are determined.</li>
+ * <p>
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
- * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
- * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
+ * no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
  *
  * @author Gerrit van Brakel
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
- * 		* <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
+ * 		* <code>xyz</code> is substituted by the parameter's value.
  * @since 4.2
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -108,7 +109,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			);
 
 			// Wrap for 'substitute vars' if necessary
-			ReplacingVariablesInputStream inputStream = getReplacingVariablesInputStream(session, replaceParametersStream);
+			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(session, replaceParametersStream);
 
 			Message result = new Message(inputStream);
 
@@ -125,8 +126,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 * @param replaceParametersStream
 	 * @return
 	 */
-	private ReplacingVariablesInputStream getReplacingVariablesInputStream(PipeLineSession session,
-																		   ReplacingVariablesInputStream replaceParametersStream) {
+	private ReplacingVariablesInputStream wrapWithSubstituteVarsInputStreamIfNeeded(PipeLineSession session,
+																					ReplacingVariablesInputStream replaceParametersStream) {
 		if (substituteVars) {
 			Map<String, String> sessionValues = session.entrySet().stream()
 					.collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));

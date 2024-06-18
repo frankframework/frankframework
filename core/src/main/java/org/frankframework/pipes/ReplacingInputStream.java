@@ -32,6 +32,10 @@ import org.frankframework.util.XmlEncodingUtils;
  * Based on original concept created by simon on 8/29/17.
  * Copyright 2017 Simon Haoran Liang
  * <a href="https://gist.github.com/lhr0909/e6ac2d6dd6752871eb57c4b083799947">...</a>
+ * <p>
+ * Find / Replace FilterInputStream implementation
+ *
+ * @author Erik van Dongen
  */
 public class ReplacingInputStream extends FilterInputStream {
 
