@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -39,8 +40,6 @@ import org.frankframework.xml.SaxException;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import lombok.Getter;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
@@ -70,12 +69,10 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	private class ItemCallbackCallingHandler extends DefaultHandler {
-
 		private final ItemCallback callback;
 		private final StringBuilder elementBuffer = new StringBuilder();
 		private final List<String> elements = new ArrayList<>();
 		private boolean sElem = false;
-		private Exception rootException = null;
 		private final int startLength;
 		private StopReason stopReason;
 		@Getter private TimeoutException timeoutException;
@@ -143,7 +140,6 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					if (e instanceof TimeoutException exception) {
 						timeoutException = exception;
 					}
-					rootException = e;
 					Throwable rootCause = e;
 					while (rootCause.getCause() != null) {
 						rootCause = rootCause.getCause();
@@ -154,34 +150,32 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 				}
 				if (isStopRequested()) {
-					throw new SAXException("stop maar");
+					throw new SAXException("stop requested");
 				}
 			}
 			elements.remove(lastIndex);
 		}
 
 		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
+		public void characters(char[] ch, int start, int length) {
 			if (sElem) {
-				elementBuffer.append(XmlEncodingUtils.encodeChars(ch, start, length));
+				elementBuffer.append(XmlEncodingUtils.encodeChars(ch, start, length, false));
 			}
 		}
 
 		private String elementsToString() {
-			String chain = null;
+			StringBuilder chain = null;
 			for (Iterator<String> it = elements.iterator(); it.hasNext();) {
 				String element = it.next();
 				if (chain == null) {
-					chain = element;
+					chain = new StringBuilder(element);
 				} else {
-					chain = chain + ";" + element;
+					chain.append(";").append(element);
 				}
 			}
-			return chain;
-		}
-
-		public Exception getRootException() {
-			return rootException;
+			if (chain == null)
+				return "";
+			return chain.toString();
 		}
 
 		public boolean isStopRequested() {
@@ -222,7 +216,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		return handler.stopReason;
 	}
 
-	/** the name of the element to iterate over (alternatively: <code>elementchain</code>) */
+	/** the name of the element to iterate over (alternatively: <code>elementChain</code>) */
 	public void setElementName(String string) {
 		elementName = string;
 	}

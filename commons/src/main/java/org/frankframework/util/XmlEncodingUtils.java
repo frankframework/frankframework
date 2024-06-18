@@ -19,27 +19,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
+@Log4j2
 public class XmlEncodingUtils {
-	static Logger log = LogManager.getLogger(XmlEncodingUtils.class);
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
+
+	/**
+	 * See {@link #encodeChars(String, boolean)}.
+	 */
 	public static String encodeChars(String string) {
 		return encodeChars(string, false);
 	}
 
 	/**
-	 * Translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
-	 * are not changed, hence you might want to use
-	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
+	 * Translates special characters to XML equivalents like <b>&gt;</b> and <b>&amp;</b>. Please note that non-valid XML chars are not changed,
+	 * hence you might want to use {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 */
 	public static String encodeChars(String string, boolean escapeNewLines) {
-		if (string==null) {
+		if (string == null) {
 			return null;
 		}
 		int length = string.length();
@@ -52,18 +53,11 @@ public class XmlEncodingUtils {
 		return encodeChars(replaceNonValidXmlCharacters(string));
 	}
 
-	public static String encodeChars(char[] chars, int offset, int length) {
-		return encodeChars(chars, offset, length, false);
-	}
-
 	/**
-	 * Translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
-	 * are not changed, hence you might want to use
-	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
+	 * Translates special characters to xml equivalents like <b>&gt;</b> and <b>&amp;</b>. Please note that non-valid xml chars
+	 * are not changed, hence you might want to use {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 */
 	public static String encodeChars(char[] chars, int offset, int length, boolean escapeNewLines) {
-
 		if (length<=0) {
 			return "";
 		}
@@ -119,25 +113,24 @@ public class XmlEncodingUtils {
 	}
 
 	/**
-	   * Conversion of special xml signs. Please note that non valid xml chars
-	   * are not changed, hence you might want to use
-	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	   **/
+	 * Conversion of special xml signs. Please note that non-valid xml chars are not changed, hence you might want to use
+	 * {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
+	 **/
 	private static String escapeChar(char c, boolean escapeNewLines) {
 		switch (c) {
-			case ('<') :
+			case ('<'):
 				return "&lt;";
-			case ('>') :
+			case ('>'):
 				return "&gt;";
-			case ('&') :
+			case ('&'):
 				return "&amp;";
-			case ('\"') :
+			case ('\"'):
 				return "&quot;";
-			case ('\'') :
+			case ('\''):
 				// return "&apos;"; // apos does not work in Internet Explorer
 				return "&#39;";
-			case ('\n')  :
-				if(escapeNewLines)
+			case ('\n'):
+				if (escapeNewLines)
 					return "&#10;";
 		}
 		return null;
