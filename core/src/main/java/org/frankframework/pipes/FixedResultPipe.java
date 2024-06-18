@@ -60,7 +60,7 @@ import org.xml.sax.SAXException;
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
  * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
  * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
- * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
+ * is substituted. See {@link org.frankframework.parameters.Parameter} to see how parameter values are determined.</li>
  *
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
@@ -88,8 +88,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
 
-	private static final String PARAMETER_FILENAME = "filename";
-
 	private static final String SUBSTITUTION_START_DELIMITER = "?";
 
 	private AppConstants appConstants;
@@ -115,13 +113,10 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		filename = getFilename();
 
-		// Change to this after removal of deprecated attributes:
-		// filename = determineFilename();
-
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 
 		if (StringUtils.isNotEmpty(getFilename())) {
-			URL resource = null;
+			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
@@ -131,31 +126,25 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource [" + getFilename() + "]");
 			}
 
-			// For removal
 			try {
 				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading [" + getFilename() + "]", e);
 			}
-			// End for removal
 		}
 
-		// For removal
 		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString == null) { // allow an empty returnString to be specified
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
-		// End for removal
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		// Remove
 		String result = getReturnString();
 
-		// Remove
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
 			filename = session.getString(getFilenameSessionKey());
 		} else {
@@ -180,20 +169,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "cannot find resource [" + filename + "]");
 			}
 
-			// To be removed
 			try (Message msg = new UrlMessage(resource)) {
 				result = msg.asString();
 			} catch (Throwable e) {
 				throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
 			}
-
-			// Replace with:
-//			Message result = new UrlMessage(resource);
-//
-//			log.debug("returning fixed result filename [{}]", filename);
-//			if (!Message.isNull(result)) {
-//				return new PipeRunResult(getSuccessForward(), result);
-//			}
 		}
 
 		// String based handling, scheduled for removal
@@ -216,8 +196,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		log.debug("returning fixed result [{}]", result);
 		return new PipeRunResult(getSuccessForward(), result);
-		// End for removal. Replace with:
-		// return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	private String substituteVars(String input, PipeLineSession session) {
@@ -250,20 +228,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		return value.replace(replaceFrom, replaceTo);
 	}
-
-// Enable after removal
-//	private String determineFilename() throws ConfigurationException {
-//		if (StringUtils.isNotEmpty(getFilename())) {
-//			return getFilename();
-//		}
-//
-//		ParameterList parameterList = getParameterList();
-//		if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME) != null) {
-//			return parameterList.findParameter(PARAMETER_FILENAME).getValue();
-//		}
-//
-//		throw new ConfigurationException("No filename parameter found");
-//	}
 
 	/**
 	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
