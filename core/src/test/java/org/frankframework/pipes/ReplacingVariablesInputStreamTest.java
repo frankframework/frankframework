@@ -20,6 +20,7 @@ public class ReplacingVariablesInputStreamTest {
 				Arguments.of("$", Map.of("param", "parameterValue"), "hello ${param} world.", "hello parameterValue world."),
 				Arguments.of("?", Map.of("param", "parameterValue"), "hello ${param} / ?{param} world.", "hello ${param} / parameterValue world."),
 				Arguments.of("?", Map.of("param", "parameterValue"), "hello ?{param} world.", "hello parameterValue world."),
+				Arguments.of("?", Map.of("param", "parameterValue"), "hello ?{param} world ?{unusedParam}.", "hello parameterValue world ?{unusedParam}."),
 				Arguments.of("?", Map.of("param", "parameterValue", "param2", "value2"), "hello ?{param} world with an unclosed ?{param.", "hello parameterValue world with an unclosed ?{param.")
 		);
 	}

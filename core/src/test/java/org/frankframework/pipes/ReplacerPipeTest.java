@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 
 /**
@@ -168,5 +169,24 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "<test>${varToSubstitute and ?{secondVarToSubstitute</test>)", session);
 		assertEquals("<test>${varToSubstitute and ?{secondVarToSubstitute</test>)", res.getResult().asString());
+	}
+
+	@Test
+	@DisplayName("Test whether markSupported is doing what it should by calling captureBinaryStream and getMagic in Message")
+	public void testMarkSupportedIsFalse() throws Exception {
+		session.put("exit", "Exit201");
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("exit")
+				.withSessionKey("exit"));
+
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "statuscodeselectable: [?{exit}]", session);
+
+		Message result = res.getResult();
+		result.captureBinaryStream();
+		result.getMagic(10);
+
+		assertEquals("statuscodeselectable: [Exit201]", result.asString());
 	}
 }

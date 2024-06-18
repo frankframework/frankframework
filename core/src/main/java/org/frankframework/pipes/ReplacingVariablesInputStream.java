@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +83,13 @@ public class ReplacingVariablesInputStream extends FilterInputStream {
 			return keyValuePairs.get(matchingKey).getBytes();
 		}
 
-		return "".getBytes();
+		// If no match for the key was found, return the original value
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		bos.writeBytes(variablePrefix);
+		bos.writeBytes(matchingKeyInBytes);
+		bos.write(CLOSING_CURLY_BRACE);
+
+		return bos.toByteArray();
 	}
 
 	/**
@@ -113,8 +120,7 @@ public class ReplacingVariablesInputStream extends FilterInputStream {
 	}
 
 	private void readAhead() throws IOException {
-		// Read in small steps until the variablePrefix is found or when a prefix is found,
-		// keep reading until the suffix is found.
+		// Read in small steps until the variablePrefix is found, then read until the suffix is found
 		int searchLength = (variablePrefix.length == 0) ? 1 : variablePrefix.length;
 
 		while (lookingForSuffix || (inQueue.size() < searchLength)) {
@@ -126,7 +132,7 @@ public class ReplacingVariablesInputStream extends FilterInputStream {
 				break;
 			}
 
-			// Break out of the wile if we're looking for the CLOSING_CURLY_BRACE
+			// Break out of the while if we're looking for the CLOSING_CURLY_BRACE and find it
 			if (lookingForSuffix && CLOSING_CURLY_BRACE == next) {
 				break;
 			}
@@ -137,7 +143,7 @@ public class ReplacingVariablesInputStream extends FilterInputStream {
 		Iterator<Integer> iterator = inQueue.iterator();
 
 		if (!lookingForSuffix) {
-			// Try to find the prefix, eg: '${'
+			// Try to find the prefix, eg: variablePrefix and '{' - (?{ or ${)
 			for (byte b : variablePrefix) {
 				if (!iterator.hasNext() || b != iterator.next()) {
 					return false;
@@ -167,6 +173,15 @@ public class ReplacingVariablesInputStream extends FilterInputStream {
 	@Override
 	public int read(byte[] b) throws IOException {
 		return read(b, 0, b.length);
+	}
+
+	/**
+	 * Make sure to return false here, because we don't support it.
+	 * See org.frankframework.stream.Message#readBytesFromInputStream(int)
+	 */
+	@Override
+	public boolean markSupported() {
+		return false;
 	}
 
 	/**

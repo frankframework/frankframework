@@ -32,18 +32,27 @@
 				<Forward name="exception" path="FwdException"/>
 			</SenderPipe>
 
+			<PutInSessionPipe name="fall through" sessionKey="incomingMessage"/>
 			<ReplacerPipe name="fall through Http" getInputFromFixedValue="fall through Http: [?{message}]">
-				<param name="message"/>
+				<param name="message" sessionKey="incomingMessage"/>
 				<forward name="success" path="READY"/>
 			</ReplacerPipe>
 
-			<ReplacerPipe name="fwd200" formatString="fwd200: [?{message}]">
+			<PutInSessionPipe name="fwd200" sessionKey="incomingMessage"/>
+			<ReplacerPipe name="fwd200Replacer" getInputFromFixedValue="fwd200: [?{message}]">
+				<param name="message" sessionKey="incomingMessage"/>
 				<forward name="success" path="READY"/>
 			</ReplacerPipe>
-			<ReplacerPipe name="fwd400" formatString="fwd400: [?{message}]">
+
+			<PutInSessionPipe name="fwd400" sessionKey="incomingMessage"/>
+			<ReplacerPipe name="fwd400Replacer" getInputFromFixedValue="fwd400: [?{message}]">
+				<param name="message" sessionKey="incomingMessage"/>
 				<forward name="success" path="READY"/>
 			</ReplacerPipe>
-			<ReplacerPipe name="FwdException" formatString="FwdException: [?{message}]">
+
+			<PutInSessionPipe name="FwdException" sessionKey="incomingMessage"/>
+			<ReplacerPipe name="FwdExceptionReplacer" getInputFromFixedValue="FwdException: [?{message}]">
+				<param name="message" sessionKey="incomingMessage"/>
 				<forward name="success" path="READY"/>
 			</ReplacerPipe>
 		</pipeline>

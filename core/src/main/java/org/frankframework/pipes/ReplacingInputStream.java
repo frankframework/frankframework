@@ -78,6 +78,15 @@ public class ReplacingInputStream extends FilterInputStream {
 		return outQueue.remove();
 	}
 
+	/**
+	 * Make sure to return false here, because we don't support it.
+	 * See org.frankframework.stream.Message#readBytesFromInputStream(int)
+	 */
+	@Override
+	public boolean markSupported() {
+		return false;
+	}
+
 	@Override
 	public int read(byte[] b) throws IOException {
 		return read(b, 0, b.length);

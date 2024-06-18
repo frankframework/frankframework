@@ -110,11 +110,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			// Wrap for 'substitute vars' if necessary
 			ReplacingVariablesInputStream inputStream = getReplacingVariablesInputStream(session, replaceParametersStream);
 
-			Message result = new Message(inputStream, message.copyContext().withoutSize());
-
-			// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
-			message.unscheduleFromCloseOnExitOf(session);
-			result.closeOnCloseOf(session, this);
+			Message result = new Message(inputStream);
 
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
@@ -256,12 +252,13 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Whether to allow Unicode supplementary characters (like a smiley) during {@link XmlEncodingUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}
+	 * Whether to allow Unicode supplementary characters (like a smiley) during {@link XmlEncodingUtils#replaceNonValidXmlCharacters(String,
+	 * char, boolean, boolean) replaceNonValidXmlCharacters}
 	 *
 	 * @ff.default false
 	 */
-	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
-		allowUnicodeSupplementaryCharacters = b;
+	public void setAllowUnicodeSupplementaryCharacters(boolean allowUnicodeSupplementaryCharacters) {
+		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
 	}
 
 	/**

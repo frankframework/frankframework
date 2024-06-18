@@ -11,9 +11,11 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
@@ -296,5 +298,20 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
 		assertEquals("success", res.getPipeForward().getName());
 		assertEquals("", res.getResult().asString());
+	}
+
+	@Test
+	@DisplayName("Proves that an unused param will not be replaced")
+	public void testUnusedParam() throws Exception {
+		// Arguments.of("?", Map.of("param", "parameterValue"), "hello ?{param} world ?{unusedParam}.", "hello parameterValue world ?{unusedParam}."),
+		pipe.setReturnString("hello ?{param} world ?{unusedParam}.");
+		Parameter param = ParameterBuilder.create()
+				.withName("param")
+				.withValue("parameterValue");
+		pipe.addParameter(param);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, Message.nullMessage(), session);
+		assertEquals("hello parameterValue world ?{unusedParam}.", res.getResult().asString());
 	}
 }
