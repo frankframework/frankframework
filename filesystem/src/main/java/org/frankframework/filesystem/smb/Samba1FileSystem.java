@@ -167,7 +167,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		}
 	}
 
-	private boolean isFolder(SmbFile f) throws FileSystemException {
+	@Override
+	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
 		} catch (SmbException e) {

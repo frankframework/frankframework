@@ -241,9 +241,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private static S3Object createS3FolderObject(String bucketName, String folderName) {
-		S3Object object = new S3Object();
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(0); //Does not trigger updateFileAttributes
+		S3Object object = new S3Object();
 		object.setBucketName(bucketName);
 		object.setKey(folderName);
 		object.setObjectMetadata(metadata);
@@ -251,11 +251,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
-		S3Object object = new S3Object();
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(summary.getSize());
 		metadata.setLastModified(summary.getLastModified());
 
+		S3Object object = new S3Object();
 		object.setBucketName(summary.getBucketName());
 		object.setKey(summary.getKey());
 		object.setObjectMetadata(metadata);
@@ -265,6 +265,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public boolean exists(S3Object f) {
 		return s3Client.doesObjectExist(bucketName, f.getKey());
+	}
+
+	@Override
+	public boolean isFolder(S3Object s3Object) {
+		return s3Object.getKey().endsWith("/");
 	}
 
 	@Override

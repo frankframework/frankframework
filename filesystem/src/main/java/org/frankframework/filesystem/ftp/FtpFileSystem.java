@@ -112,6 +112,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		return findFile(file) != null;
 	}
 
+	@Override
+	public boolean isFolder(FTPFileRef ftpFileRef) {
+		return ftpFileRef.isDirectory();
+	}
+
 	private @Nullable FTPFileRef findFile(FTPFileRef file) throws FileSystemException {
 		try {
 			FTPFile[] files = ftpClient.listFiles(file.getFolder(), f -> f.getName().equals(file.getFileName()));

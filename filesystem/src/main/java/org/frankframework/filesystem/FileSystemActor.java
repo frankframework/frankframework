@@ -325,14 +325,16 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
-	private void determineTypeFilter(final ParameterValueList pvl) throws FileSystemException {
+	// Get the type filter from the parameter list, if it is present. Otherwise, return the pipe attribute value.
+	private TypeFilter determineTypeFilter(final ParameterValueList pvl) throws FileSystemException {
 		if (pvl != null && pvl.contains(PARAMETER_TYPEFILTER)) {
 			try {
-				typeFilter = EnumUtils.parse(TypeFilter.class, pvl.get(PARAMETER_TYPEFILTER).asStringValue(String.valueOf(getTypeFilter())));
+				return EnumUtils.parse(TypeFilter.class, pvl.get(PARAMETER_TYPEFILTER).asStringValue(String.valueOf(getTypeFilter())));
 			} catch (IllegalArgumentException e) {
 				throw new FileSystemException("unable to resolve the value of parameter [" + PARAMETER_TYPEFILTER + "]");
 			}
 		}
+		return getTypeFilter();
 	}
 
 	private FileSystemAction getAction(ParameterValueList pvl) throws FileSystemException, ConfigurationException {
@@ -387,24 +389,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return result;
 				}
 				case LIST: {
-					String folder = arrangeFolder(determineInputFolderName(input, pvl));
-					determineTypeFilter(pvl);
-					String title = switch (typeFilter) {
-						case FILES_ONLY, FILES_AND_FOLDERS -> "file";
-						case FOLDERS_ONLY -> "folder";
-					};
-					ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", title);
-					try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), typeFilter)) {
-
-						Iterator<F> it = stream.iterator();
-						while (it.hasNext()) {
-							F file = it.next();
-							try (INodeBuilder nodeBuilder = directoryBuilder.addElement()) {
-								FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
-							}
-						}
-					}
-					return Message.asMessage(directoryBuilder.toString());
+					return processListAction(input, pvl);
 				}
 				case WRITE: {
 					return createFile(input, pvl, getContents(input, pvl, charset));
@@ -467,6 +452,26 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
+	}
+
+	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, SAXException {
+		String folder = arrangeFolder(determineInputFolderName(input, pvl));
+		typeFilter = determineTypeFilter(pvl);
+		String elementName = switch (typeFilter) {
+			case FILES_ONLY, FILES_AND_FOLDERS -> "file";
+			case FOLDERS_ONLY -> "folder";
+		};
+		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", elementName);
+		try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), typeFilter)) {
+			Iterator<F> it = stream.iterator();
+			while (it.hasNext()) {
+				F file = it.next();
+				try (INodeBuilder nodeBuilder = directoryBuilder.addElement()) {
+					FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+				}
+			}
+		}
+		return Message.asMessage(directoryBuilder.toString());
 	}
 
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {

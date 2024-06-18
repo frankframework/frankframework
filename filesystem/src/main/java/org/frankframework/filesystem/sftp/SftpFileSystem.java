@@ -124,6 +124,11 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		}
 	}
 
+	@Override
+	public boolean isFolder(SftpFileRef sftpFileRef) {
+		return sftpFileRef.isDirectory();
+	}
+
 	private SftpFileRef findFile(SftpFileRef file) throws SftpException {
 		try {
 			List<LsEntry> files = listFolder(file.getName());
@@ -418,30 +423,30 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	private class SftpFilePathIterator implements Iterator<SftpFileRef> {
-		private final List<SftpFileRef> files;
+		private final List<SftpFileRef> items;
 		private int i = 0;
 
 		SftpFilePathIterator(String folder, List<LsEntry> fileEntities, TypeFilter filter) {
-			files = new ArrayList<>();
+			items = new ArrayList<>();
 			for (LsEntry ftpFile : fileEntities) {
 				if (ftpFile.getAttrs().isDir() && filter.includeFolders()) {
 					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
 					// Skip folders without name, like '.' and '..'
 					if (StringUtils.isNotBlank(fileRef.getFilename())) {
 						log.debug("adding directory SftpFileRef [{}] to the collection", fileRef);
-						files.add(fileRef);
+						items.add(fileRef);
 					}
 				} else if (!ftpFile.getAttrs().isDir() && filter.includeFiles()) {
 					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
 					log.debug("adding file SftpFileRef [{}] to the collection", fileRef);
-					files.add(fileRef);
+					items.add(fileRef);
 				}
 			}
 		}
 
 		@Override
 		public boolean hasNext() {
-			return files != null && i < files.size();
+			return items != null && i < items.size();
 		}
 
 		@Override
@@ -450,12 +455,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				throw new NoSuchElementException();
 			}
 
-			return files.get(i++);
+			return items.get(i++);
 		}
 
 		@Override
 		public void remove() {
-			SftpFileRef file = files.get(i++);
+			SftpFileRef file = items.get(i++);
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {

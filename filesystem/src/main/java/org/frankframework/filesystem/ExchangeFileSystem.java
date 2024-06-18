@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -508,6 +508,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		} finally {
 			releaseConnection(exchangeService, invalidateConnectionOnRelease);
 		}
+	}
+
+	@Override
+	public boolean isFolder(ExchangeMessageReference exchangeMessageReference) {
+		return false; // Currently only supports messages
 	}
 
 	@Override
