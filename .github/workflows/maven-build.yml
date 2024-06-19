@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: frankframework,codecoverage
+  PROFILES: frankframework,codecoverage,ci
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   MAVEN_GOALS: verify
@@ -72,6 +72,11 @@ jobs:
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
+
+    - name: Seu up Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
