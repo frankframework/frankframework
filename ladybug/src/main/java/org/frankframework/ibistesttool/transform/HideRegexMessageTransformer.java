@@ -15,11 +15,14 @@
 */
 package org.frankframework.ibistesttool.transform;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.frankframework.logging.IbisMaskingLayout;
-
 import org.frankframework.util.StringUtil;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.transform.MessageTransformer;
 
@@ -30,7 +33,7 @@ import nl.nn.testtool.transform.MessageTransformer;
  * @author Jaco de Groot
  */
 public class HideRegexMessageTransformer implements MessageTransformer {
-	Set<String> hideRegex;
+	Map<String, Pattern> hideRegex;
 
 	HideRegexMessageTransformer() {
 		hideRegex = IbisMaskingLayout.getGlobalReplace();
@@ -39,20 +42,22 @@ public class HideRegexMessageTransformer implements MessageTransformer {
 	@Override
 	public String transform(Checkpoint checkpoint, String message) {
 		if (message != null) {
-			message = StringUtil.hideAll(message, hideRegex);
+			message = StringUtil.hideAll(message, hideRegex.values());
 
-			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = StringUtil.hideAll(message, threadHideRegex);
+			Map<String, Pattern> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
+			if (threadHideRegex != null) message = StringUtil.hideAll(message, threadHideRegex.values());
 		}
 		return message;
 	}
 
 	public Set<String> getHideRegex() {
-		return hideRegex;
+		return hideRegex.keySet();
 	}
 
 	public void setHideRegex(Set<String> string) {
-		hideRegex = string;
+		hideRegex = string.stream()
+				.map(re -> Map.entry(re, Pattern.compile(re)))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 }

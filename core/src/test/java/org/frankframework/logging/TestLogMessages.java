@@ -27,6 +27,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -37,9 +41,6 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class TestLogMessages {
 	protected Logger log = LogUtil.getLogger(this);
@@ -57,7 +58,7 @@ public class TestLogMessages {
 	public void testHideRegexMatchInLogMessage() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
 		TestAppender.addToRootLogger(appender);
-		Set<String> globalReplace = IbisMaskingLayout.getGlobalReplace();
+		Set<String> globalReplace = IbisMaskingLayout.getGlobalReplace().keySet();
 		IbisMaskingLayout.cleanGlobalReplace();
 		// Password matching regex that is intentionally different from the default
 		IbisMaskingLayout.addToGlobalReplace("(?<=password=\").+?(?=\")");

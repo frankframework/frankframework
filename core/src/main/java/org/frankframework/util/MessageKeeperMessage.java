@@ -17,10 +17,10 @@ package org.frankframework.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.logging.IbisMaskingLayout;
 
 /**
@@ -56,11 +56,11 @@ public class MessageKeeperMessage {
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
-			message = StringUtil.hideAll(message, hideRegex);
+			Map<String, Pattern> hideRegex = IbisMaskingLayout.getGlobalReplace();
+			message = StringUtil.hideAll(message, hideRegex.values());
 
-			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = StringUtil.hideAll(message, threadHideRegex);
+			Map<String, Pattern> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
+			if (threadHideRegex != null) message = StringUtil.hideAll(message, threadHideRegex.values());
 		}
 		return message;
 	}

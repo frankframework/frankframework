@@ -16,9 +16,9 @@
 package org.frankframework.logging;
 
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
@@ -29,7 +29,6 @@ import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
-
 import org.frankframework.util.StringUtil;
 
 /**
@@ -58,12 +57,12 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * This is required to be set for each thread individually.
 	 */
-	private static final ThreadLocal<Set<String>> threadLocalReplace = new ThreadLocal<>();
+	private static final ThreadLocal<Map<String, Pattern>> threadLocalReplace = new ThreadLocal<>();
 
 	/**
 	 * Set of regex strings to hide globally, meaning for every thread/adapter.
 	 */
-	private static Set<String> globalReplace = new HashSet<>();
+	private static Map<String, Pattern> globalReplace = new HashMap<>();
 
 	/**
 	 * @param config
@@ -80,8 +79,9 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
-			message = StringUtil.hideAll(message, globalReplace);
-			message = StringUtil.hideAll(message, threadLocalReplace.get());
+			message = StringUtil.hideAll(message, globalReplace.values());
+			Map<String, Pattern> threadLocalPatterns = threadLocalReplace.get();
+			if (threadLocalPatterns != null) message = StringUtil.hideAll(message, threadLocalPatterns.values());
 
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {
@@ -170,50 +170,50 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static void addToGlobalReplace(String regex) {
-		globalReplace.add(regex);
+		globalReplace.put(regex, Pattern.compile(regex));
 	}
 
 	public static void removeFromGlobalReplace(String regex) {
 		globalReplace.remove(regex);
 	}
 
-	public static Set<String> getGlobalReplace() {
+	public static Map<String, Pattern> getGlobalReplace() {
 		return globalReplace;
 	}
 
 	public static void cleanGlobalReplace() {
-		globalReplace = new HashSet<>();
+		globalReplace = new HashMap<>();
 	}
 
-	public static void addToThreadLocalReplace(Collection<String> collection) {
-		if(collection == null) return;
+	public static void addToThreadLocalReplace(Map<String, Pattern> hideRegexMap) {
+		if (hideRegexMap == null || hideRegexMap.isEmpty()) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
 
-		threadLocalReplace.get().addAll(collection);
+		threadLocalReplace.get().putAll(hideRegexMap);
 	}
 
 	/**
 	 * Add regex to hide locally, meaning for specific threads/adapters.
 	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
 	 */
-	public static void addToThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
+	public static void addToThreadLocalReplace(String tag, Pattern regex) {
+		if(StringUtils.isEmpty(tag) || regex == null) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
-		threadLocalReplace.get().add(regex);
+		threadLocalReplace.get().put(tag, regex);
 	}
 
 	/**
-	 * Remove regex to hide locally, meaning for specific threads/adapters.
+	 * Remove regex identified by tag to hide locally, meaning for specific threads/adapters.
 	 * When the last item is removed the Set will be removed as well.
 	 */
-	public static void removeFromThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
+	public static void removeFromThreadLocalReplace(String tag) {
+		if(StringUtils.isEmpty(tag)) return;
 
-		threadLocalReplace.get().remove(regex);
+		threadLocalReplace.get().remove(tag);
 
 		if(threadLocalReplace.get().isEmpty())
 			removeThreadLocalReplace();
@@ -223,12 +223,12 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * Can return null when not used/initalized!
 	 */
-	public static Set<String> getThreadLocalReplace() {
+	public static Map<String, Pattern> getThreadLocalReplace() {
 		return threadLocalReplace.get();
 	}
 
 	private static void createThreadLocalReplace() {
-		threadLocalReplace.set(new HashSet<>());
+		threadLocalReplace.set(new HashMap<>());
 	}
 
 	public static void removeThreadLocalReplace() {

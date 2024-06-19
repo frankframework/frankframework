@@ -20,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -132,6 +133,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private String composedHideRegex;
+	private Pattern composedHideRegexPattern;
 
 	private static class SenderLastExitState {
 		private final String lastExitState;
@@ -194,6 +196,9 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 
 		composedHideRegex = computeCombinedHideRegex();
+		if (StringUtils.isNotEmpty(composedHideRegex)) {
+			composedHideRegexPattern = Pattern.compile(composedHideRegex);
+		}
 		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
@@ -546,8 +551,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 		PipeLineResult result = null;
 		try {
-			if (StringUtils.isNotEmpty(composedHideRegex)) {
-				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
+			if (composedHideRegexPattern != null) {
+				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex, composedHideRegexPattern);
 			}
 
 			String additionalLogging = getAdditionalLogging(pipeLineSession);

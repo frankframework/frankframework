@@ -16,11 +16,10 @@
 package org.frankframework.stream;
 
 import java.util.Map;
-import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.jta.TransactionConnector;
@@ -35,7 +34,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private Thread childThread;
 	private Map<String,String> savedThreadContext;
 	private T threadInfo;
-	private Set<String> hideRegex;
+	private Map<String, Pattern> hideRegex;
 
 	private enum ThreadState {
 		ANNOUNCED,
