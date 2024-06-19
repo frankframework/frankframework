@@ -9,15 +9,16 @@
       <span class="m-r-sm text-muted iaf-info"></span>
     </div>
     <ul class="nav navbar-top-links navbar-right">
-      <li class="m-r-sm rating" title="Please rate us!">
-        <i
-          *ngFor="let _ of [1, 2, 3, 4, 5]; let index = index"
-          (click)="openFeedback(index)"
-          (mouseover)="hoverFeedback(index)"
-          (mouseleave)="hoverFeedback(-1)"
-          class="fa fa-star-o rating{{ index }}"
-          aria-hidden="true"
-        ></i>
+      <li class="m-r-sm" title="Star frankframework/frankframework on GitHub">
+        <a
+          class="text-muted"
+          target="_blank"
+          href="https://github.com/frankframework/frankframework"
+          aria-label="Star frankframework/frankframework on GitHub"
+        >
+          <i class="fa fa-star-o"></i>
+          Star
+        </a>
       </li>
       <li>
         <span class="m-r-sm text-muted serverTime">{{ serverTime }}</span>
