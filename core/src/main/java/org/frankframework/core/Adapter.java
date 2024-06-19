@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +40,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
-import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -194,30 +193,26 @@ public class Adapter implements IAdapter, NamedBean {
 			configureReceiver(receiver);
 		}
 
-		List<String> hrs = new ArrayList<>();
-		for (IPipe pipe : pipeline.getPipes()) {
-			if (pipe instanceof AbstractPipe aPipe && StringUtils.isNotEmpty(aPipe.getHideRegex()) && !hrs.contains(aPipe.getHideRegex())) {
-				hrs.add(aPipe.getHideRegex());
-			}
-		}
-		StringBuilder sb = new StringBuilder();
-		for (String hr : hrs) {
-			if (!sb.isEmpty()) {
-				sb.append("|");
-			}
-			sb.append("(");
-			sb.append(hr);
-			sb.append(")");
-		}
-		if (!sb.isEmpty()) {
-			composedHideRegex = sb.toString();
-		}
-
+		composedHideRegex = computeCombinedHideRegex();
 		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 
 		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
+	}
+
+	@Nonnull
+	String computeCombinedHideRegex() {
+		String combinedHideRegex = pipeline.getPipes().stream()
+				.map(IPipe::getHideRegex)
+				.filter(StringUtils::isNotEmpty)
+				.distinct()
+				.collect(Collectors.joining(")|(", "(", ")"));
+
+		if ("()".equals(combinedHideRegex)) {
+			return "";
+		}
+		return combinedHideRegex;
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
