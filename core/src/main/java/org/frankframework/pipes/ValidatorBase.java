@@ -154,8 +154,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	}
 
 	/**
-	 * Wrapper for the response validator. It has its own name and forwards, but delegates the actual work to the original validator.
-	 * It overrides the stop and start method to prevent the original validator from being started and stopped.
+	 * Wrapper for the response validator.
 	 */
 	public static class ResponseValidatorWrapper extends AbstractResponseValidatorWrapper<ValidatorBase> implements IValidator {
 		public ResponseValidatorWrapper(ValidatorBase owner) {

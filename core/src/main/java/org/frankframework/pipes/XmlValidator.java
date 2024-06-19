@@ -419,8 +419,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	/**
-	 * Wrapper for the response validator. It has its own name and forwards, but delegates the actual work to the original validator.
-	 * It overrides the stop and start method to prevent the original validator from being started and stopped.
+	 * Wrapper for the XML response validator.
 	 */
 	public static class ResponseValidatorWrapper extends AbstractResponseValidatorWrapper<XmlValidator> implements IXmlValidator {
 
