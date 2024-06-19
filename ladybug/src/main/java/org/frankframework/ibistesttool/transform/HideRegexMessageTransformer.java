@@ -30,7 +30,7 @@ import nl.nn.testtool.transform.MessageTransformer;
 
 /**
  * Hide the same data as is hidden in the Ibis logfiles based on the
- * log.hideRegex property in log4j4ibis.properties.
+ * log.hideRegex property in log4j4ibis.properties and {@link org.frankframework.core.IPipe#setHideRegex(String)}.
  *
  * @author Jaco de Groot
  */
@@ -39,11 +39,12 @@ public class HideRegexMessageTransformer implements MessageTransformer {
 
 	@Override
 	public String transform(Checkpoint checkpoint, String message) {
-		if (StringUtils.isNotEmpty(message)) {
-			message = IbisMaskingLayout.maskSensitiveInfo(message);
-			message = StringUtil.hideAll(message, hideRegex.values());
+		if (StringUtils.isBlank(message)) {
+			return message;
 		}
-		return message;
+		String result = IbisMaskingLayout.maskSensitiveInfo(message);
+		// Apply additional regexes that may have been set specifically on the MessageTransformer
+		return StringUtil.hideAll(result, hideRegex.values());
 	}
 
 	public Set<String> getHideRegex() {
@@ -55,5 +56,4 @@ public class HideRegexMessageTransformer implements MessageTransformer {
 				.map(re -> Map.entry(re, Pattern.compile(re)))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
-
 }

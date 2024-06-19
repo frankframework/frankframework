@@ -97,10 +97,15 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static String maskSensitiveInfo(String message) {
-		message = StringUtil.hideAll(message, globalReplace.values());
+		if (StringUtils.isBlank(message)) {
+			return message;
+		}
+		String result = StringUtil.hideAll(message, globalReplace.values());
 		Map<String, Pattern> threadLocalPatterns = threadLocalReplace.get();
-		if (threadLocalPatterns != null) message = StringUtil.hideAll(message, threadLocalPatterns.values());
-		return message;
+		if (threadLocalPatterns == null) {
+			return result;
+		}
+		return StringUtil.hideAll(result, threadLocalPatterns.values());
 	}
 
 	/**
