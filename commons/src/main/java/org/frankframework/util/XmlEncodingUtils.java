@@ -117,23 +117,15 @@ public class XmlEncodingUtils {
 	 * {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 **/
 	private static String escapeChar(char c, boolean escapeNewLines) {
-		switch (c) {
-			case ('<'):
-				return "&lt;";
-			case ('>'):
-				return "&gt;";
-			case ('&'):
-				return "&amp;";
-			case ('\"'):
-				return "&quot;";
-			case ('\''):
-				// return "&apos;"; // apos does not work in Internet Explorer
-				return "&#39;";
-			case ('\n'):
-				if (escapeNewLines)
-					return "&#10;";
-		}
-		return null;
+		return switch (c) {
+			case ('<') -> "&lt;";
+			case ('>') -> "&gt;";
+			case ('&') -> "&amp;";
+			case ('\"') -> "&quot;";
+			case ('\'') -> "&#39;";    // return "&apos;"; // apos does not work in Internet Explorer
+			case ('\n') -> escapeNewLines ? "&#10;" : null;
+			default -> null;
+		};
 	}
 
 	private static char unEscapeString(String str) {
