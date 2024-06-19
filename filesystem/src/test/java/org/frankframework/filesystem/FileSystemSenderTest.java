@@ -10,12 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -413,12 +415,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 
 		for (int i = 0; i < numberOfItems; i++) {
-			String name = "toBeListed" + i + FILE1;
-
-			if (typeFilter.includeFiles() && !_fileExists(name)) {
-				createFile(inputFolder, name, "is not empty");
-			} else {
-				_createFolder(name);
+			String fileName = "toBeListed" + i + FILE1;
+			String folderName = StringUtils.isNotEmpty(inputFolder) ? inputFolder + File.separatorChar + "toBeListed" + i : "toBeListed" + i;
+			if (typeFilter.includeFiles() && !_fileExists(fileName)) {
+				createFile(inputFolder, fileName, "is not empty");
+			}
+			if (typeFilter.includeFolders() && !_fileExists(folderName)) {
+				_createFolder(folderName);
 			}
 		}
 
@@ -434,10 +437,11 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		Message message = Message.nullMessage();
 		result = fileSystemSender.sendMessageOrThrow(message, session);
 
-		log.debug(result);
+		log.debug("Result: {}", result.asString());
 		if (typeFilter.includeFiles()) {
 			assertFileCountEquals(result, numberOfItems);
-		} else {
+		}
+		if (typeFilter.includeFolders()) {
 			assertFolderCountEquals(result, numberOfItems);
 		}
 	}

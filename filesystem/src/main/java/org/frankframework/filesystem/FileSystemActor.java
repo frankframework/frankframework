@@ -369,7 +369,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, getOutputFormat()));
 				}
 				case READ: {
 					F file = getFile(input, pvl);
@@ -406,7 +406,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					}
 
 					((IWritableFileSystem<F>)fileSystem).appendFile(file, getContents(input, pvl, charset));
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, getOutputFormat()));
 				}
 				case MKDIR: {
 					String folder = determineInputFolderName(input, pvl);
@@ -457,17 +457,13 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, SAXException {
 		String folder = arrangeFolder(determineInputFolderName(input, pvl));
 		typeFilter = determineTypeFilter(pvl);
-		String elementName = switch (typeFilter) {
-			case FILES_ONLY, FILES_AND_FOLDERS -> "file";
-			case FOLDERS_ONLY -> "folder";
-		};
-		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", elementName);
+		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
 		try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), typeFilter)) {
 			Iterator<F> it = stream.iterator();
 			while (it.hasNext()) {
 				F file = it.next();
 				try (INodeBuilder nodeBuilder = directoryBuilder.addElement()) {
-					FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+					FileSystemUtils.getFileInfo(fileSystem, file, typeFilter, nodeBuilder);
 				}
 			}
 		}
@@ -486,7 +482,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 
 		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
-		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, getOutputFormat()));
 	}
 
 
@@ -508,7 +504,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				while(it.hasNext()) {
 					F file = it.next();
 					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
-						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+						FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, nodeBuilder);
 						action.execute(file);
 					}
 				}

@@ -25,4 +25,11 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <FileSystemSe
 	public void fileSystemSenderListFoldersActionTestInFolder() {
 		// Not supported
 	}
+
+	@Test
+	@Override
+	public void fileSystemSenderListFilesAndFoldersActionTestInFolder() {
+		// Not supported
+	}
+
 }
