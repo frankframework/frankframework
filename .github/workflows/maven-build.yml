@@ -21,6 +21,7 @@ on:
       - "**.png"
       - "**.toml"
       - ".github/**"
+      - "!.github/workflows/maven-build.yml"
       - "docker/**"
   pull_request:
     branches:
@@ -33,6 +34,7 @@ on:
       - "**.png"
       - "**.toml"
       - ".github/**"
+      - "!.github/workflows/maven-build.yml"
       - "docker/**"
 
 jobs:
