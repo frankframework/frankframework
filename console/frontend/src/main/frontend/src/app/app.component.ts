@@ -42,7 +42,6 @@ import { SweetalertService } from './services/sweetalert.service';
 import { Title } from '@angular/platform-browser';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
-import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { ToastService } from './services/toast.service';
 
 @Component({
@@ -603,20 +602,5 @@ export class AppComponent implements OnInit, OnDestroy {
       InformationModalComponent,
       this.MODAL_OPTIONS_CLASSES,
     );
-  }
-
-  sendFeedback(rating?: number): void {
-    if (!this.appConstants['console.feedbackURL']) return;
-
-    for (const element of document.querySelectorAll('.rating i')) {
-      this.renderer.addClass(element, 'fa-star-o');
-      this.renderer.removeClass(element, 'fa-star');
-    }
-
-    const modalReference = this.modalService.open(
-      FeedbackModalComponent,
-      this.MODAL_OPTIONS_CLASSES,
-    );
-    modalReference.componentInstance.rating = rating;
   }
 }

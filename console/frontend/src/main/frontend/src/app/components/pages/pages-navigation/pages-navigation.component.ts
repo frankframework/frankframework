@@ -29,7 +29,6 @@ import { SideNavigationDirective } from '../side-navigation.directive';
 export class PagesNavigationComponent implements OnChanges {
   @Input() queryParams = convertToParamMap({});
   @Output() shouldOpenInfo = new EventEmitter<void>();
-  @Output() shouldOpenFeedback = new EventEmitter<void>();
 
   protected frankframeworkLogoPath: string = 'assets/images/ff-kawaii.svg';
   protected frankExclamationPath: string =
@@ -47,10 +46,6 @@ export class PagesNavigationComponent implements OnChanges {
 
   openInfo(): void {
     this.shouldOpenInfo.emit();
-  }
-
-  openFeedback(): void {
-    this.shouldOpenFeedback.emit();
   }
 
   getClassByRoute(

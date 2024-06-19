@@ -64,7 +64,6 @@ import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/mon
 import { PagesTitleStrategy } from './pages-title-strategy';
 import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
-import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
 import { NgMermaidComponent } from './components/ng-mermaid/ng-mermaid.component';
 import { LoggingComponent } from './views/logging/logging.component';
@@ -178,7 +177,6 @@ const windowProvider: ValueProvider = {
     NgMermaidComponent,
     ToastsContainerComponent,
     InformationModalComponent,
-    FeedbackModalComponent,
     PagesFooterComponent,
     PagesNavigationComponent,
     PagesTopinfobarComponent,
