@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@ package org.frankframework.stream.xml;
 
 import java.io.IOException;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.stream.JsonEventHandler;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 
 public class JsonXslt3XmlHandler implements JsonEventHandler {
 
-	private String TARGETNAMESPACE="http://www.w3.org/2013/XSL/json";
+	private static final String TARGET_NAMESPACE = "http://www.w3.org/2013/XSL/json";
 
 	private @Getter @Setter ContentHandler contentHandler;
 
@@ -108,7 +107,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 			addAttribute(attr, attrName, attrValue);
 		}
 		newLine();
-		ch.startElement(TARGETNAMESPACE, typename, typename, attr);
+		ch.startElement(TARGET_NAMESPACE, typename, typename, attr);
 		elementEnded=false;
 	}
 	private void endElement(String typename) throws SAXException {
@@ -116,7 +115,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 			newLine();
 		}
 		ContentHandler ch=getContentHandler();
-		ch.endElement(TARGETNAMESPACE, typename, typename);
+		ch.endElement(TARGET_NAMESPACE, typename, typename);
 		elementEnded=true;
 	}
 
@@ -134,7 +133,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 	@Override
 	public void startDocument() throws SAXException {
 		contentHandler.startDocument();
-		contentHandler.startPrefixMapping("", TARGETNAMESPACE);
+		contentHandler.startPrefixMapping("", TARGET_NAMESPACE);
 	}
 
 	@Override

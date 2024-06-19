@@ -545,22 +545,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return builder.toString();
 	}
 
-	/**
-	  * Gets the queueSender for a specific queue, not the one in <code>destination</code>
-	  * @see QueueSender
-	  * @return The queueReceiver value
-	  */
-	private QueueSender getQueueSender(QueueSession session, Queue destination) throws JMSException {
-		return session.createSender(destination);
-	}
-
-	/**
-	 * Gets a topicPublisher for a specified topic
-	 */
-	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws JMSException {
-		return session.createPublisher(topic);
-	}
-
 	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws JMSException {
 		MessageConsumer messageConsumer;
 		switch (subscriberType) {

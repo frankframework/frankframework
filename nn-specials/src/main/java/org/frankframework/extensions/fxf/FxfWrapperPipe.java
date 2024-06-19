@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -35,8 +36,6 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlBuilder;
-
-import lombok.Getter;
 
 /**
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
@@ -72,14 +71,14 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private @Getter boolean createFolder = false;
 	private @Getter boolean useServerFilename = false;
 
-	private final String DESTINATION_PREFIX = "ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer";
-	private final String DESTINATION_SUFFIX = "Action";
-	private final String ON_COMPLETED_TRANSFER_NOTIFY_ACTION = "/OnCompletedTransferNotify_Action/";
-	private final String TRANSFORMER_FLOW_ID_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION + "TransferFlowId";
-	private final String SERVER_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ServerFilename";
-	private final String CLIENT_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ClientFilename";
-	private final String TRANSFER_ACTION_NAMESPACE_PREFIX = "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/";
-	private final String FILEPATH_PREFIX = "/opt/data/FXF/";
+	private static final String DESTINATION_PREFIX = "ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer";
+	private static final String DESTINATION_SUFFIX = "Action";
+	private static final String ON_COMPLETED_TRANSFER_NOTIFY_ACTION = "/OnCompletedTransferNotify_Action/";
+	private static final String TRANSFORMER_FLOW_ID_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION + "TransferFlowId";
+	private static final String SERVER_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ServerFilename";
+	private static final String CLIENT_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ClientFilename";
+	private static final String TRANSFER_ACTION_NAMESPACE_PREFIX = "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/";
+	private static final String FILEPATH_PREFIX = "/opt/data/FXF/";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -105,7 +104,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				throw new ConfigurationException("instance.name.lc not available");
 			}
 			environment = rootAppConstants.getProperty("dtap.stage");
-			if (StringUtils.isEmpty(environment) || environment.length() < 1) {
+			if (StringUtils.isEmpty(environment) || environment.isEmpty()) {
 				throw new ConfigurationException("dtap.stage not available");
 			}
 			environment = environment.substring(0, 1);

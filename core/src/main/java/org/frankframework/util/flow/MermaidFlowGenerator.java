@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.ElementType;
@@ -45,8 +46,6 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.http.MediaType;
@@ -54,8 +53,6 @@ import org.springframework.util.Assert;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Flow generator to create MERMAID files
@@ -200,10 +197,6 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 		String[] bdn = scanner.getRegistry().getBeanDefinitionNames();
 		return Arrays.asList(bdn);
-	}
-
-	private boolean matchesTestClassPath(MetadataReader reader, MetadataReaderFactory factory) throws IOException {
-		return reader.getResource().getURI().toString().contains("/test-classes/");
 	}
 
 	@Override

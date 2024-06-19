@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -47,7 +49,7 @@ import org.xml.sax.SAXException;
 /**
  * Extension of {@link org.apache.catalina.realm.JNDIRealm} where we take care of the
  * role to ldap group mapping
- *
+ * <p>
  * Set the <code>pathname</code> parameter to the role-mapping file where the
  * role to ldap group mapping is defined.
  *
@@ -56,7 +58,7 @@ import org.xml.sax.SAXException;
  */
 public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupMapper {
 
-	private final String ALL_AUTHENTICATED = "AllAuthenticated";
+	private static final String ALL_AUTHENTICATED = "AllAuthenticated";
 
 	private final Log log = LogFactory.getLog(this.getClass());
 
@@ -66,7 +68,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * The pathname (absolute or relative to Catalina's current working directory "catalina.base")
 	 * of the XML file containing our mapping information.
 	 */
-	private String pathname = null;
+	@Setter @Getter private String pathname = null;
 
 	/**
 	 * The Digester we will use to process role-mapping data.
@@ -80,7 +82,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 */
 	public List<String> getRoles(String username) {
 		JNDIConnection connection = null;
-		List<String> roles = null;
+		List<String> roles;
 		try {
 			connection = get();
 			try {
@@ -108,7 +110,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * Based on {@link JNDIRealm#authenticate(JNDIConnection connection, String username, String credentials)}
 	 */
 	public List<String> getRoles(JNDIConnection connection, String username) throws NamingException {
-		if (username == null || "".equals(username)) {
+		if (username == null || username.isEmpty()) {
 			if (this.containerLog.isDebugEnabled())
 				this.containerLog.debug("username null or empty: returning null roles.");
 			return null;
@@ -138,7 +140,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 
 	/**
 	 * Overrides getRoles to find the nested group memberships of this user, assuming users and groups
-	 * have a "memberOf" like attribute (specifed by 'userRoleName' and 'roleName') that specifies the groups
+	 * have a "memberOf" like attribute (specified by 'userRoleName' and 'roleName') that specifies the groups
 	 * they are member of. The original getRoles assumed groups have a 'member' attribute, specifying their
 	 * members. That approach is not available in this implementation.
 	 *
@@ -264,22 +266,17 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * Report the roles mapping configured on the container
 	 */
 	protected void reportMappingConfig() {
-
 		if (log.isTraceEnabled()) log.trace(">>> reportMappingConfig");
-
 		Container container = getContainer();
-
 		if (container instanceof Context cxt) {
-
 			String[] securityRoles = cxt.findSecurityRoles();
-
 			if (securityRoles != null) {
-				log.info("Security role mappings:".formatted());
+				log.info("Security role mappings:");
 				for (String role : securityRoles) {
 					log.info("Security [role]: %s [link]: %s".formatted(role, cxt.findRoleMapping(role)));
 				}
 			} else {
-				log.info("No security roles found.".formatted());
+				log.info("No security roles found.");
 			}
 		}
 
@@ -287,14 +284,13 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	}
 
 	/**
-	 * Add the role and it's link(mapping) to the context where the webapp is
+	 * Add the role, and it's link(mapping) to the context where the webapp is
 	 * running in. The tomcat implementation will use this to do the mapping, just
-	 * like its done with the web.xml "security-role-ref" specification
+	 * like it's done with the web.xml "security-role-ref" specification
 	 */
 	@Override
 	public void addRoleGroupMapping(String role, String group) {
-
-		if (role != null && role.length() > 0 && group != null && group.length() > 0) {
+		if (role != null && !role.isEmpty() && group != null && !group.isEmpty()) {
 
 			Container container = getContainer();
 			log.info(">>> addRoleGroupMapping container: " + container);
@@ -309,13 +305,6 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 		} else {
 			log.warn(">>> skipped addRoleGroupMapping role: " + role + ", group: " + group);
 		}
-	}
-
-	public String getPathname() {
-		return pathname;
-	}
-	public void setPathname(String pathname) {
-		this.pathname = pathname;
 	}
 
 }

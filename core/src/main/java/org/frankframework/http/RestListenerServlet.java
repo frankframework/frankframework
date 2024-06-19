@@ -25,10 +25,8 @@ import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -37,7 +35,6 @@ import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
-
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -47,11 +44,11 @@ import org.frankframework.util.StreamUtil;
  */
 @IbisInitializer
 public class RestListenerServlet extends HttpServletBase {
-	protected Logger log=LogUtil.getLogger(this);
-	private final String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
-	private final String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	protected final transient Logger log = LogUtil.getLogger(this);
+	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
+	private final String corsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
-	private RestServiceDispatcher sd=null;
+	private transient RestServiceDispatcher sd=null;
 
 	@Override
 	public void init() throws ServletException {
@@ -69,11 +66,11 @@ public class RestListenerServlet extends HttpServletBase {
 		String body = "";
 
 		if(restPath.contains("rest-public")) {
-			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
+			response.setHeader("Access-Control-Allow-Origin", corsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
 			if (headers != null)
 				response.setHeader("Access-Control-Allow-Headers", headers);
-			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
+			response.setHeader("Access-Control-Expose-Headers", corsExposeHeaders);
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {

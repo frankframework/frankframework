@@ -1,6 +1,5 @@
 /*
-/*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +44,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -90,8 +88,8 @@ import org.frankframework.util.StreamUtil;
 public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	protected static Logger log =  LogUtil.getLogger(LdapClient.class);
 
-    private String DEFAULT_INITIAL_CONTEXT_FACTORY_NAME = "com.sun.jndi.ldap.LdapCtxFactory";
-    public static String JNDI_AUTH_ALIAS_KEY = "jndiAuthAlias";
+    private static final String DEFAULT_INITIAL_CONTEXT_FACTORY_NAME = "com.sun.jndi.ldap.LdapCtxFactory";
+    public static final String JNDI_AUTH_ALIAS_KEY = "jndiAuthAlias";
 //    private String ATTRIBUTE_CACHE_JNDI_NAME_KEY = "attributeCache.jndiName";
 //    private String ATTRIBUTE_CACHE_TIME_TO_LIVE_KEY = "attributeCache.timeToLive";
 //    private int ATTRIBUTE_CACHE_TIME_TO_LIVE_DEFAULT = 3600;
@@ -271,74 +269,16 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		return context.search(searchDN, filter, params, sc);
     }
 
-//    public Set<String> searchRecursivelyViaGroups(String searchDN, String filter, String param, String returnedAttribute) throws NamingException {
-//    	Set<String> results=new LinkedHashSet<String>();
-//    	Set<String> toBeSearched=new LinkedHashSet<String>();
-//       	Set<String> searched=new LinkedHashSet<String>();
-//
-//		int nestingLevel=0;
-//		DirContext context = getContext();
-//		try {
-//			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] lookup of memberships of ["+param+"]");
-//	       	NamingEnumeration<SearchResult> primaryResults = search(context, searchDN, filter, param, returnedAttribute);
-//	    	try {
-//	//			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] lookup of memberships of ["+param+"]");
-//		    	while (primaryResults.hasMore()) {
-//		    		results.add(getFirstAttribute(primaryResults.next()));
-//		    	}
-//			} catch(PartialResultException e) {
-//				if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
-//			} finally {
-//				primaryResults.close();
-//			}
-//			searched.add(param);
-//			toBeSearched.addAll(results);
-//			while (!toBeSearched.isEmpty()) {
-//		       	Set<String> searchingNow=toBeSearched;
-//		       	toBeSearched=new LinkedHashSet<String>();
-//		       	nestingLevel++;
-//				if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] lookup of memberships of ["+param+"]");
-//				for (String target:searchingNow) {
-//					searched.add(target);
-//	//				if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] lookup of memberships of ["+target+"]");
-//			       	NamingEnumeration<SearchResult> secondaryResults = search(context, searchDN, filter, target, returnedAttribute);
-//			    	try {
-//				    	while (secondaryResults.hasMore()) {
-//				    		String secondaryResult=getFirstAttribute(secondaryResults.next());
-//				    		if (!results.contains(secondaryResult)) {
-//				    			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] found secondary membership ["+secondaryResult+"]");
-//				    			results.add(secondaryResult);
-//				    			if (!searched.contains(secondaryResult) &&
-//				    				!searchingNow.contains(secondaryResult) &&
-//				    				!toBeSearched.contains(secondaryResult)) {
-//				    				toBeSearched.add(secondaryResult);
-//				    			}
-//				    		}
-//				    	}
-//					} catch(PartialResultException e) {
-//						if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
-//					} finally {
-//						secondaryResults.close();
-//					}
-//				}
-//			}
-//			return results;
-//		} finally {
-//			context.close();
-//		}
-//    }
-
     public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute) throws NamingException {
-    	Set<String> results=new LinkedHashSet<>();
-    	Set<String> toBeSearched=new LinkedHashSet<>();
-       	Set<String> searched=new LinkedHashSet<>();
+		Set<String> results;
+		Set<String> searched = new LinkedHashSet<>();
 
        	DirContext context=getContext();
        	try {
 			int nestingLevel=0;
 			if (log.isDebugEnabled()) log.debug("primary lookup of attribute ["+attribute+"] of ["+uid+"]");
 			results=searchObjectForMultiValuedAttribute(context, uid, baseDn, attribute);
-			toBeSearched.addAll(results);
+			Set<String> toBeSearched = new LinkedHashSet<>(results);
 			while (!toBeSearched.isEmpty()) {
 		       	Set<String> searchingNow=toBeSearched;
 		       	toBeSearched=new LinkedHashSet<>();
@@ -540,14 +480,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public Set<String> getAttributeSet(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Set<String> result=new LinkedHashSet<>();
-    	mapMultiValuedAttribute(searchResultEnum,new ObjectCallback<Set<String>,Attribute,Object>(result) {
+    	mapMultiValuedAttribute(searchResultEnum, new ObjectCallback<>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {
-				getData().add((String)value);
+				getData().add((String) value);
 			}
 
-    	});
+		});
 		return result;
     }
 
@@ -556,14 +496,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public Map<String,String> getAttributeMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Map<String,String> result=new LinkedHashMap<>();
-    	mapMultipleAttributes(searchResultEnum,new ObjectCallback<Map<String,String>,Attribute,Object>(result) {
+    	mapMultipleAttributes(searchResultEnum, new ObjectCallback<>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {
-				getData().put(key.getID(), (String)value);
+				getData().put(key.getID(), (String) value);
 			}
 
-    	});
+		});
 		return result;
     }
 
@@ -572,19 +512,19 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public Map<String,List<String>> getAttributeMultiMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Map<String,List<String>> result=new LinkedHashMap<>();
-    	mapMultiValuedAttribute(searchResultEnum,new ObjectCallback<Map<String,List<String>>,Attribute,Object>(result) {
+    	mapMultiValuedAttribute(searchResultEnum, new ObjectCallback<>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {
-				List<String> list=getData().get(key.getID());
-				if (list==null) {
-					list=new LinkedList<>();
+				List<String> list = getData().get(key.getID());
+				if (list == null) {
+					list = new LinkedList<>();
 					getData().put(key.getID(), list);
 				}
-				list.add((String)value);
+				list.add((String) value);
 			}
 
-    	});
+		});
 		return result;
     }
 
@@ -718,7 +658,6 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	 */
 	private static void setLdapJvmProperty(String property, String propValue, boolean isDefault) {
 		String currentValue = System.getProperty(property);
-//		log.info("LDAP JVM property ["+ property +"] current ["+currentValue+"] new ["+propValue+"] default ["+defaultVal+"]");
 
 		if(propValue != null){
 			if(currentValue == null){
@@ -732,11 +671,9 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 					if (log.isDebugEnabled()) log.debug("JVM custom property [" + property + "] current value [" + currentValue + "] is not changed");
 				}
 			}
-
 		} else {
 			if (log.isDebugEnabled()) log.debug("JVM custom property [" + property + "] current value [" + currentValue + "], no value or default specified");
 		}
-
 	}
 
 }

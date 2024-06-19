@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import lombok.Getter;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -56,8 +57,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -154,10 +153,10 @@ import lombok.Getter;
  */
 public class LdapSender extends JndiBase implements ISenderWithParameters {
 
-	private final String FILTER = "filterExpression";
-	private final String ENTRYNAME = "entryName";
+	private static final String FILTER = "filterExpression";
+	private static final String ENTRYNAME = "entryName";
 
-	private @Getter int searchTimeout=20000;
+	private @Getter int searchTimeout = 20_000;
 
 	private static final String INITIAL_CONTEXT_FACTORY ="com.sun.jndi.ldap.LdapCtxFactory";
 
@@ -380,7 +379,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	}
 
 	private String[] splitCommaSeparatedString(String toSeparate) {
-		if(toSeparate == null || toSeparate == "") return null;
+		if (toSeparate == null || toSeparate.isEmpty()) return null;
 
 		List<String> list = new ArrayList<>();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
@@ -989,30 +988,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	//	protected Attributes getAttributesFromParameters(ParameterResolutionContext prc) throws ParameterException {
-	//		Parameter2AttributeHelper helper = new Parameter2AttributeHelper();
-	//		prc.forAllParameters(paramList, helper);
-	//		Attributes result = helper.result;
-	//
-	//		log.debug("LDAP STEP:	applyParameters(String message, ParameterResolutionContext prc)");
-	//		log.debug("collected LDAP Attributes from parameters ["+result.toString()+"]");
-	//		return result;
-	//	}
-	//
-	//	private class Parameter2AttributeHelper implements IParameterHandler {
-	//		private Attributes result = new BasicAttributes(true); // ignore attribute name case
-	//
-	//		public void handleParam(String paramName, Object value) throws ParameterException {
-	//
-	//			if (result.get(paramName) == null)
-	//				result.put(new BasicAttribute(paramName, value));
-	//			else
-	//				result.get(paramName).add(value);
-	//
-	//			log.debug("LDAP STEP:	(Parameter2 ATTRIBUTE Helper)handleParam(String paramName, Object value) - result = [" + result.toString() +"]");
-	//		}
-	//	}
-
 	/**
 	 *Strips all the values from the attributes in <code>input</code>. This is performed to be able to delete
 	 *the attributes without having to match the values. If values exist they must be exactly matched too in
@@ -1085,38 +1060,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 		}
 	}
-
-	/*	protected String searchResultsToXml(NamingEnumeration<?> searchresults) {
-			// log.debug("SearchResultsToXml for class ["+searchresults.getClass().getName()+"]:"+ToStringBuilder.reflectionToString(searchresults));
-			log.debug("LDAP STEP:	SearchResultsToXml(NamingEnumeration<?> searchresults)");
-			XmlBuilder searchresultsElem = new XmlBuilder("searchresults");
-			if (searchresults!=null) {
-				try {
-					while (searchresults.hasMore()) {
-						SearchResult sr = (SearchResult)searchresults.next();
-						// log.debug("result:"+ sr.toString());
-
-						XmlBuilder itemElem = new XmlBuilder("item");
-						itemElem.addAttribute("name",sr.getName());
-						try {
-							itemElem.addSubElement(attributesToXml(sr.getAttributes()));
-						} catch (NamingException e) {
-							itemElem.addAttribute("exceptionType",e.getClass().getName());
-							itemElem.addAttribute("exceptionExplanation",e.getExplanation());
-						} catch (Throwable t) {
-							itemElem.addAttribute("exceptionType",t.getClass().getName());
-							itemElem.addAttribute("exceptionExplanation",t.getMessage());
-							itemElem.addAttribute("itemclass",sr.getClass().getName());
-						}
-						searchresultsElem.addSubElement(itemElem);
-					}
-				} catch (NamingException e) {
-					searchresultsElem.addAttribute("exceptionType",e.getClass().getName());
-					searchresultsElem.addAttribute("exceptionExplanation",e.getExplanation());
-				}
-			}
-			return searchresultsElem.toXML();
-		}*/
 
 	protected XmlBuilder attributesToXml(Attributes atts)
 		throws NamingException {

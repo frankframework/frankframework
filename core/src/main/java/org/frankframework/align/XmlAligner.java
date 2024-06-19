@@ -25,6 +25,8 @@ import java.util.Stack;
 
 import javax.xml.validation.ValidatorHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -42,6 +44,8 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
@@ -50,11 +54,6 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlUtils;
 
 /**
  * XMLFilter with option to get schema information about child elements to be parsed.
@@ -68,7 +67,7 @@ public class XmlAligner extends XMLFilterImpl {
 	public static final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
 	private @Setter PSVIProvider psviProvider;
-	private boolean indent=true;
+	private final boolean indent = true;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
 	protected ValidatorHandler validatorHandler;
 	private @Getter @Setter List<XSModel> schemaInformation;
@@ -79,23 +78,22 @@ public class XmlAligner extends XMLFilterImpl {
 
 	private @Getter @Setter Locator documentLocator;
 
-	private Stack<Set<String>> multipleOccurringElements=new Stack<>();
-	private @Getter Set<String> multipleOccurringChildElements=null;
-	private Stack<Boolean> parentOfSingleMultipleOccurringChildElements=new Stack<>();
-	private @Getter boolean parentOfSingleMultipleOccurringChildElement=false;
-	private Stack<Boolean> typeContainsWildcards=new Stack<>();
-	private @Getter boolean typeContainsWildcard=false;
+	private final Stack<Set<String>> multipleOccurringElements = new Stack<>();
+	private @Getter Set<String> multipleOccurringChildElements = null;
+	private final Stack<Boolean> parentOfSingleMultipleOccurringChildElements = new Stack<>();
+	private @Getter boolean parentOfSingleMultipleOccurringChildElement = false;
+	private final Stack<Boolean> typeContainsWildcards = new Stack<>();
+	private @Getter boolean typeContainsWildcard = false;
 
-	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
-	private final int MAX_INDENT=INDENTOR.length/2;
+	private static final char[] INDENTOR = "\n                                                                                         ".toCharArray();
+	private static final int MAX_INDENT = INDENTOR.length / 2;
 
-	public String XML_SCHEMA_INSTANCE_NAMESPACE="http://www.w3.org/2001/XMLSchema-instance";
-	public String XML_SCHEMA_NIL_ATTRIBUTE="nil";
+	public static final String XML_SCHEMA_INSTANCE_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
+	public static final String XML_SCHEMA_NIL_ATTRIBUTE = "nil";
 
 	private enum ChildOccurrence {
 		EMPTY,ONE_SINGLE_OCCURRING_ELEMENT,ONE_MULTIPLE_OCCURRING_ELEMENT,MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING
 	}
-
 
 	private XmlAligner(PSVIProvider psviProvider) {
 		super();
@@ -196,8 +194,6 @@ public class XmlAligner extends XMLFilterImpl {
 	public boolean isMultipleOccurringChildElement(String name) {
 		return isPresentInSet(multipleOccurringChildElements,name);
 	}
-
-
 
 	protected ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
 		if (particle==null) {
@@ -334,7 +330,6 @@ public class XmlAligner extends XMLFilterImpl {
 			if (log.isTraceEnabled()) log.trace("ElementDeclaration name ["+elementName+"]");
 			elementNames.add(elementName);
 		}
-		return;
 	}
 
 	protected Set<String> findMultipleOccurringChildElements(XSParticle particle) {
@@ -381,14 +376,11 @@ public class XmlAligner extends XMLFilterImpl {
 
 	public XSTypeDefinition getTypeDefinition(PSVIProvider psviProvider) {
 		ElementPSVI elementPSVI = psviProvider.getElementPSVI();
-		//if (log.isTraceEnabled()) log.trace("elementPSVI ["+ToStringBuilder.reflectionToString(elementPSVI)+"]");
 		XSElementDeclaration elementDeclaration = elementPSVI.getElementDeclaration();
-		//if (log.isTraceEnabled()) log.trace("elementPSVI element declaration ["+ToStringBuilder.reflectionToString(elementDeclaration)+"]");
 		if (elementDeclaration==null) {
 			return null;
 		}
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
-		//if (log.isTraceEnabled()) log.trace("elementDeclaration typeDefinition ["+ToStringBuilder.reflectionToString(typeDefinition)+"]");
 		return typeDefinition;
 	}
 

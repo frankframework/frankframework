@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import java.util.Enumeration;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -42,12 +40,12 @@ import org.frankframework.util.StreamUtil;
  */
 @IbisInitializer
 public class HttpListenerServlet extends HttpServletBase {
-	protected Logger log=LogUtil.getLogger(this);
+	protected final transient Logger log = LogUtil.getLogger(this);
 
-	public final String SERVICE_ID_PARAM = "service";
-	public final String MESSAGE_PARAM = "message";
+	public static final String SERVICE_ID_PARAM = "service";
+	public static final String MESSAGE_PARAM = "message";
 
-	private ServiceDispatcher sd=null;
+	private transient ServiceDispatcher sd = null;
 
 	@Override
 	public void init() throws ServletException {
