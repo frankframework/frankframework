@@ -17,14 +17,9 @@ package org.frankframework.extensions.afm;
 
 import java.text.DecimalFormat;
 
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -35,6 +30,10 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
+import org.springframework.context.ApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
@@ -44,7 +43,7 @@ import org.frankframework.util.XmlUtils;
 @Category("NN-Special")
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String VERWERKTAG = "VRWRKCD";
@@ -101,10 +100,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	private boolean bevatWaarde(Node aNode) {
 		String lWaarde = getWaardeForNode(aNode);
-		boolean lRes = false;
-		if ((lWaarde != null) && (!"".equalsIgnoreCase(lWaarde))) {
-			lRes = true;
-		}
+		boolean lRes = (lWaarde != null) && (!"".equalsIgnoreCase(lWaarde));
 		if (!lRes) {
 			NodeList lList = aNode.getChildNodes();
 			for (int i = 0; i <= lList.getLength() - 1; i++) {
@@ -126,7 +122,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	private void closeList(StringBuilder aRes, int regelTeller) {
 		// UNT
-		char untRegel[] = new char[21];
+		char[] untRegel = new char[21];
 		for (int i = 0; i < 21; i++)
 			untRegel[i] = ' ';
 		"UNT".getChars(0, "UNT".length(), untRegel, 0);
@@ -161,7 +157,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	public char[] getCloseResultaat() {
 		// UNZ
-		char unzRegel[] = new char[23];
+		char[] unzRegel = new char[23];
 		for (int i = 0; i < 23; i++)
 			unzRegel[i] = ' ';
 		"UNZ000001".getChars(0, "UNZ000001".length(), unzRegel, 0);
@@ -170,7 +166,7 @@ public class Afm2EdiFactSender implements ISender {
 
 	public char[] getInitResultaat() {
 		// UNB
-		char unbRegel[] = new char[206];
+		char[] unbRegel = new char[206];
 		for (int i = 0; i < 206; i++)
 			unbRegel[i] = ' ';
 		String lStart = "UNBUNOC1INFONET " + getDestination() + "     TP";
@@ -195,7 +191,7 @@ public class Afm2EdiFactSender implements ISender {
 		return lRes;
 	}
 	private char[] getNewDocInit() {
-		char unhRegel[] = new char[74];
+		char[] unhRegel = new char[74];
 		for (int i = 0; i < 74; i++)
 			unhRegel[i] = ' ';
 		"UNH".getChars(0, "UNH".length(), unhRegel, 0);

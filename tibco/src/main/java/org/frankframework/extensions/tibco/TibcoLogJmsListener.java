@@ -22,19 +22,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.jms.JMSException;
 import javax.xml.transform.TransformerException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
 
 import com.tibco.tibjms.TibjmsMapMessage;
 
+import jakarta.jms.JMSException;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.jms.JmsListener;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.DateFormatUtils;
+import org.xml.sax.SAXException;
 
 public class TibcoLogJmsListener extends JmsListener {
 
@@ -106,7 +104,7 @@ public class TibcoLogJmsListener extends JmsListener {
 				}
 			}
 		}
-		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
+		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb);
 	}
 
 	private String logLevelToText(int logLevel) {

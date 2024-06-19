@@ -33,7 +33,6 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -420,7 +419,7 @@ public abstract class ClassUtils {
 			appendFieldsAndMethods(result,o,"Class",c);
 			c=c.getSuperclass();
 		}
-		result.append("toString=[").append(o.toString()).append("]\n");
+		result.append("toString=[").append(o).append("]\n");
 		return result.toString();
 	}
 

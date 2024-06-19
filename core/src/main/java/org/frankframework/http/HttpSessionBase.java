@@ -31,6 +31,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -76,9 +78,9 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.HttpAuthenticationException;
 import org.frankframework.http.authentication.OAuthAccessTokenManager;
+import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
 import org.frankframework.http.authentication.OAuthAuthenticationScheme;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
-import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
@@ -86,9 +88,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * <p>
@@ -145,7 +144,7 @@ import lombok.Setter;
 public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore {
 	protected final Logger log = LogUtil.getLogger(this);
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -294,7 +293,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
 		}
-		httpClientBuilder.evictIdleConnections((long) getConnectionIdleTimeout(), TimeUnit.SECONDS);
+		httpClientBuilder.evictIdleConnections(getConnectionIdleTimeout(), TimeUnit.SECONDS);
 
 		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
 
@@ -414,7 +413,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
 
 			AuthenticationScheme preferredAuthenticationScheme = getPreferredAuthenticationScheme();
-			requestConfigBuilder.setTargetPreferredAuthSchemes(Arrays.asList(preferredAuthenticationScheme.getSchemeName()));
+			requestConfigBuilder.setTargetPreferredAuthSchemes(Collections.singletonList(preferredAuthenticationScheme.getSchemeName()));
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
@@ -435,7 +434,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			log.trace("setting credentialProvider [{}]", credentialsProvider);
 
 			if(isPrefillProxyAuthCache()) {
-				requestConfigBuilder.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
+				requestConfigBuilder.setProxyPreferredAuthSchemes(List.of(AuthSchemes.BASIC));
 
 				AuthCache authCache = defaultHttpClientContext.getAuthCache();
 				if(authCache == null)

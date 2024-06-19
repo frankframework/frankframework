@@ -238,12 +238,12 @@ class StringUtilTest {
 	}
 
 	private static class ToStringTestClass {
-		private String field1 = "tralala";
-		private String field2 = "lalala";
-		private boolean field3 = false;
-		private String password = "top-secret";
-		private String hoofdletterPassword = "bottom-secret";
-		private Properties props = new Properties();
+		private final String field1 = "tralala";
+		private final String field2 = "lalala";
+		private final boolean field3 = false;
+		private final String password = "top-secret";
+		private final String hoofdletterPassword = "bottom-secret";
+		private final Properties props = new Properties();
 
 		public ToStringTestClass() {
 			props.put("no-string-password", Collections.singletonList("something"));

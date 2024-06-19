@@ -20,14 +20,10 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.leadpony.justify.api.JsonSchema;
-import org.leadpony.justify.api.JsonValidationService;
-import org.leadpony.justify.api.ProblemHandler;
-
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -37,6 +33,9 @@ import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+import org.leadpony.justify.api.JsonSchema;
+import org.leadpony.justify.api.JsonValidationService;
+import org.leadpony.justify.api.ProblemHandler;
 
 
 /**
@@ -52,7 +51,7 @@ public class JsonValidator extends ValidatorBase {
 	private @Getter String subSchemaPrefix="/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 
-	private JsonValidationService service = JsonValidationService.newInstance();
+	private final JsonValidationService service = JsonValidationService.newInstance();
 	private JsonSchema jsonSchema;
 
 	@Override

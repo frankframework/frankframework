@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -417,7 +416,7 @@ public class FileHandler implements IScopeProvider {
 	 * The class supports the deletion of the file after reading.
 	 */
 	private class FileReader implements TransformerActionWithOutputTypeStream {
-		private boolean deleteAfterRead;
+		private final boolean deleteAfterRead;
 
 		FileReader() {
 			deleteAfterRead = false;
@@ -511,14 +510,14 @@ public class FileHandler implements IScopeProvider {
 			if (file.exists()) {
 				boolean success = file.delete();
 				if (!success){
-					log.warn( getLogPrefix(session) + "could not delete file [" + file.toString() +"]");
+					log.warn( getLogPrefix(session) + "could not delete file [" + file +"]");
 				}
 				else {
-					log.debug(getLogPrefix(session) + "deleted file [" + file.toString() +"]");
+					log.debug(getLogPrefix(session) + "deleted file [" + file +"]");
 				}
 			}
 			else {
-				log.warn( getLogPrefix(session) + "file [" + file.toString() +"] does not exist");
+				log.warn( getLogPrefix(session) + "file [" + file +"] does not exist");
 			}
 			/* if parent directory is empty, delete the directory */
 			if (isDeleteEmptyDirectory()) {
@@ -526,13 +525,13 @@ public class FileHandler implements IScopeProvider {
 				if (directory.exists() && directory.list().length==0) {
 					boolean success = directory.delete();
 					if (!success){
-						log.warn( getLogPrefix(session) + "could not delete directory [" + directory.toString() +"]");
+						log.warn( getLogPrefix(session) + "could not delete directory [" + directory +"]");
 					}
 					else {
-						log.debug(getLogPrefix(session) + "deleted directory [" + directory.toString() +"]");
+						log.debug(getLogPrefix(session) + "deleted directory [" + directory +"]");
 					}
 				} else {
-					log.debug(getLogPrefix(session) + "directory [" + directory.toString() +"] doesn't exist or is not empty");
+					log.debug(getLogPrefix(session) + "directory [" + directory +"] doesn't exist or is not empty");
 				}
 			}
 			return in;

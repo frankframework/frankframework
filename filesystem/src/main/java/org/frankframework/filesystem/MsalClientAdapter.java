@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.aad.msal4j.HttpRequest;
+import com.microsoft.aad.msal4j.IHttpClient;
+import com.microsoft.aad.msal4j.IHttpResponse;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -30,11 +34,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.Logger;
-
-import com.microsoft.aad.msal4j.HttpRequest;
-import com.microsoft.aad.msal4j.IHttpClient;
-import com.microsoft.aad.msal4j.IHttpResponse;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
@@ -156,8 +155,8 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	private class MsalResponse implements IHttpResponse {
 		protected Logger log = LogUtil.getLogger(this);
 
-		private int statusCode;
-		private Map<String, List<String>> headers = new HashMap<>();
+		private final int statusCode;
+		private final Map<String, List<String>> headers = new HashMap<>();
 		private String body = "";
 
 		public MsalResponse(Message response, PipeLineSession session) {

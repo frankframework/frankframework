@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.logging.IbisMaskingLayout;
 
 /**
@@ -33,8 +32,8 @@ import org.frankframework.logging.IbisMaskingLayout;
 public class MessageKeeperMessage {
 
 	private Date messageDate=new Date();
-	private String messageText;
-	private MessageKeeper.MessageKeeperLevel messageLevel;
+	private final String messageText;
+	private final MessageKeeper.MessageKeeperLevel messageLevel;
 
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.

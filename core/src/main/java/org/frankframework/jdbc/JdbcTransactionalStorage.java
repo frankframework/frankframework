@@ -508,7 +508,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			if (resultString != null) return resultString;
 		}
 		log.debug("preparing insert statement [{}]", insertQuery);
-		try (PreparedStatement stmt = conn.prepareStatement(insertQuery, new String[]{ getKeyField().toLowerCase() });) { // Field name should be lowercase for PostgreSQL
+		try (PreparedStatement stmt = conn.prepareStatement(insertQuery, new String[]{ getKeyField().toLowerCase() })) { // Field name should be lowercase for PostgreSQL
 			stmt.clearParameters();
 			int parPos = 0;
 

@@ -20,10 +20,9 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.xml.sax.ContentHandler;
-
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
+import org.xml.sax.ContentHandler;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
@@ -102,7 +101,6 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 		}
 		if (captureStream instanceof OutputStream stream) {
 			super.captureBinaryStream(stream, caputureSize);
-			return;
 		}
 	}
 

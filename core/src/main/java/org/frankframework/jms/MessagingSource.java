@@ -19,29 +19,27 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.naming.Context;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
 import jakarta.jms.Session;
 import jakarta.jms.TemporaryQueue;
-import javax.naming.Context;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
@@ -198,8 +196,7 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof JmsPoolConnectionFactory) {
-			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+		if (qcfd instanceof JmsPoolConnectionFactory poolcf) {
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
@@ -325,10 +322,9 @@ public class MessagingSource  {
 	private void deleteDynamicQueue(Queue queue) throws JmsException {
 		if (queue!=null) {
 			try {
-				if (!(queue instanceof TemporaryQueue)) {
+				if (!(queue instanceof TemporaryQueue tqueue)) {
 					throw new JmsException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
 				}
-				TemporaryQueue tqueue = (TemporaryQueue)queue;
 				tqueue.delete();
 			} catch (JMSException e) {
 				throw new JmsException("cannot delete temporary queue",e);

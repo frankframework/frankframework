@@ -69,7 +69,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 
 	private class AttachmentIterator implements IDataIterator<A> {
 
-		private Iterator<A> it;
+		private final Iterator<A> it;
 
 		AttachmentIterator(Iterator<A> it) {
 			this.it = it;

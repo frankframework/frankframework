@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.util.LogUtil;
@@ -40,7 +39,7 @@ public class RootValidation {
 	public void check(IConfigurationAware source, Set<IXSD> xsds) {
 		boolean found = false;
 		String validElements = rootValidation.get(rootValidation.size() - 1);
-		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
+		String[] validElementsAsList = validElements.split(",");
 		for (String validElement : validElementsAsList) {
 			if (StringUtils.isNotEmpty(validElement)) {
 				List<String> allRootTags = new ArrayList<>();
@@ -85,6 +84,6 @@ public class RootValidation {
 
 	@Override
 	public String toString() {
-		return new StringBuilder(getClass().getSimpleName()).append(" ").append(rootValidation).toString();
+		return getClass().getSimpleName() + " " + rootValidation;
 	}
 }

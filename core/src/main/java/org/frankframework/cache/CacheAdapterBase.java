@@ -15,19 +15,18 @@
 */
 package org.frankframework.cache;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Baseclass for caching.
@@ -39,7 +38,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  */
 public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigurationAware {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;

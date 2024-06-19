@@ -15,6 +15,12 @@
 */
 package org.frankframework.jms;
 
+import jakarta.annotation.Nullable;
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.Session;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.unmanaged.SpringJmsConnector;
 import org.frankframework.util.CredentialFactory;
@@ -22,13 +28,6 @@ import org.frankframework.util.LogUtil;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.TransactionStatus;
-
-import jakarta.annotation.Nullable;
-import jakarta.jms.Connection;
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.MessageConsumer;
-import jakarta.jms.Session;
 
 /**
  * Extend the DefaultMessageListenerContainer from Spring to add trace logging and make it possible to monitor the last
@@ -64,14 +63,14 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	@Override
 	protected Connection getConnection(JmsResourceHolder holder) {
 		Connection conn = super.getConnection(holder);
-		if (log.isTraceEnabled()) log.trace("getConnection() - jmsResourceHolder[" + holder.toString() + "] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("getConnection() - jmsResourceHolder[" + holder + "] connection["+(conn==null?"null":conn.toString())+"]");
 		return conn;
 	}
 
 	@Override
 	protected Session getSession(JmsResourceHolder holder) {
 		Session session = super.getSession(holder);
-		if (log.isTraceEnabled()) log.trace("getSession() - ackMode["+getSessionAcknowledgeMode()+"] jmsResourceHolder[" + holder.toString() + "] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("getSession() - ackMode["+getSessionAcknowledgeMode()+"] jmsResourceHolder[" + holder + "] session["+(session==null?"null":session.toString())+"]");
 		return session;
 	}
 
@@ -94,8 +93,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 		try {
 			return super.doReceiveAndExecute(invoker, session, consumer, txStatus);
 		} finally {
-			if (getMessageListener() instanceof SpringJmsConnector) {
-				SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
+			if (getMessageListener() instanceof SpringJmsConnector springJmsConnector) {
 				springJmsConnector.setLastPollFinishedTime(System.currentTimeMillis());
 			}
 		}
@@ -103,8 +101,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 
 	@Override
 	protected void commitIfNecessary(Session session, @Nullable Message message) throws JMSException {
-		if (message!=null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector) {
-			SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
+		if (message!=null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector springJmsConnector) {
 			JmsListener listener = (JmsListener)springJmsConnector.getListener();
 			if (listener.getAcknowledgeMode() == JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				// Avoid message.acknowledge() in super.commitIfNecessray if AcknowledgeMode=CLIENT_ACKNOWLEDGE

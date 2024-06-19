@@ -166,7 +166,7 @@ public class SchedulerAdapter {
 			SchedulerMetaData smd = theScheduler.getMetaData();
 
 			xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
-			xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
+			xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId());
 			xbRoot.addAttribute("version", smd.getVersion());
 			xbRoot.addAttribute("isPaused", smd.isInStandbyMode());
 			xbRoot.addAttribute("isSchedulerRemote", smd.isSchedulerRemote());

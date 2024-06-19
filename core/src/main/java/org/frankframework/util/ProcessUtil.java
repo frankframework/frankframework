@@ -21,12 +21,11 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frankframework.task.TimeoutGuard;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.task.TimeoutGuard;
 
 /**
  * Process execution utilities.
@@ -56,7 +55,7 @@ public class ProcessUtil {
 		if (command==null || command.isEmpty()) {
 			return "";
 		}
-		StringBuilder result = new StringBuilder((String) command.get(0));
+		StringBuilder result = new StringBuilder(command.get(0));
 		for (int i = 1; i < command.size(); i++) {
 			result.append(" ").append(command.get(i));
 		}

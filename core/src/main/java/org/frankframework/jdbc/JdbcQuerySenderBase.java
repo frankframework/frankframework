@@ -35,6 +35,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.jms.JMSException;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -66,12 +71,6 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.ContentHandler;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.jms.JMSException;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -359,8 +358,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryType()+"]");
 			}
 		} catch (SenderException e) {
-			if (e.getCause() instanceof SQLException) {
-				SQLException sqle = (SQLException) e.getCause();
+			if (e.getCause() instanceof SQLException sqle) {
 				if  (sqle.getErrorCode() == 1013) {
 					throw new TimeoutException("Timeout of ["+getTimeout()+"] sec expired");
 				}

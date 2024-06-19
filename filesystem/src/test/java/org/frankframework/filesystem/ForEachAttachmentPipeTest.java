@@ -3,6 +3,8 @@ package org.frankframework.filesystem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +66,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		String attachmentFileName="testAttachmentFileName";
 		String attachmentContentType="testAttachmentContentType";
 		String attachmentContents="attachmentContents";
-		byte[] attachmentContentsBytes=attachmentContents.getBytes("UTF-8");
+		byte[] attachmentContentsBytes=attachmentContents.getBytes(StandardCharsets.UTF_8);
 		String propname1="propname1";
 		String propname2="propname2";
 		String propvalue1="propvalue1";

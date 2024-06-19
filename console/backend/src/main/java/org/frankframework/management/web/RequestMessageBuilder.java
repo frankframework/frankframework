@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,10 +32,8 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
-
 public class RequestMessageBuilder {
-	private Map<String, Object> customHeaders = new HashMap<>();
+	private final Map<String, Object> customHeaders = new HashMap<>();
 
 	private final FrankApiBase base;
 	private final @Getter BusTopic topic;

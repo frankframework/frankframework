@@ -24,12 +24,11 @@ import javax.xml.transform.URIResolver;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.Resource;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
 import org.xml.sax.SAXException;
-
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.core.Resource;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
@@ -62,7 +61,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 				if(allowedProtocols.isEmpty()) {
 					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
 				} else if(!allowedProtocols.contains(protocol)) {
-					throw new TransformerException("Cannot lookup resource ["+href+"] not allowed with protocol ["+protocol+"] allowedProtocols "+allowedProtocols.toString());
+					throw new TransformerException("Cannot lookup resource ["+href+"] not allowed with protocol ["+protocol+"] allowedProtocols "+ allowedProtocols);
 				}
 			}
 		} else {

@@ -17,13 +17,12 @@ package org.frankframework.configuration;
 
 import java.util.List;
 
+import org.frankframework.core.Adapter;
+import org.frankframework.management.IbisAction;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-
-import org.frankframework.core.Adapter;
-import org.frankframework.management.IbisAction;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -35,7 +34,7 @@ import org.frankframework.management.IbisAction;
  * @since   4.8
  */
 public interface IbisManager extends ApplicationEventPublisherAware, ApplicationContextAware {
-	public static String ALL_CONFIGS_KEY = "*ALL*";
+	String ALL_CONFIGS_KEY = "*ALL*";
 
 	void setIbisContext(IbisContext ibisContext);
 
@@ -66,11 +65,11 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 	void shutdown();
 
 	@Deprecated
-	public Adapter getRegisteredAdapter(String name);
+	Adapter getRegisteredAdapter(String name);
 
 	@Deprecated
-	public List<Adapter> getRegisteredAdapters();
+	List<Adapter> getRegisteredAdapters();
 
-	public ApplicationEventPublisher getApplicationEventPublisher();
+	ApplicationEventPublisher getApplicationEventPublisher();
 
 }

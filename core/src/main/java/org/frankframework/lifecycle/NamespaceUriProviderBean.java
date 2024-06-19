@@ -19,16 +19,15 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.http.WebServiceListener;
+import org.frankframework.http.cxf.NamespaceUriProvider;
+import org.frankframework.receivers.ServiceDispatcher;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import org.frankframework.http.WebServiceListener;
-import org.frankframework.http.cxf.NamespaceUriProvider;
-import org.frankframework.receivers.ServiceDispatcher;
-import org.frankframework.util.LogUtil;
 
 /**
  * This bean creates an (CXF) endpoint with the /rpcrouter mapping for older SOAP based requests.
@@ -49,7 +48,7 @@ import org.frankframework.util.LogUtil;
 @IbisInitializer
 public class NamespaceUriProviderBean implements ApplicationContextAware, InitializingBean, DisposableBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private ApplicationContext applicationContext;
 	private EndpointImpl namespaceRouter = null;
 

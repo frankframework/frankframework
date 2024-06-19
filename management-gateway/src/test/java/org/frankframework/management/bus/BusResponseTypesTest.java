@@ -7,17 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.StreamUtil;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
 
 public class BusResponseTypesTest {
 
@@ -72,7 +72,7 @@ public class BusResponseTypesTest {
 		json.add("key", "value");
 		JsonMessage message = new JsonMessage(json.build());
 
-		assertEquals("{\"key\":\"value\"}", message.getPayload().replaceAll("\s", "").replaceAll("\n", ""));
+		assertEquals("{\"key\":\"value\"}", message.getPayload().replaceAll(" ", "").replaceAll("\n", ""));
 		assertEquals("application/json", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
 		assertEquals(200, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}

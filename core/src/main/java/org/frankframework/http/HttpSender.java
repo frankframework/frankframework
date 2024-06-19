@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
+import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -65,11 +69,6 @@ import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-import lombok.Getter;
 
 /**
  * Sender for the HTTP protocol using {@link HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
@@ -122,7 +121,7 @@ public class HttpSender extends HttpSenderBase {
 		/** Yields a multipart/form-data form entity */
 		FORMDATA,
 		/** Yields a MTOM multipart/related form entity */
-		MTOM;
+		MTOM
 	}
 
 	@Override

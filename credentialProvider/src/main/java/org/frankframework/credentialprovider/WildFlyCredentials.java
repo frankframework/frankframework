@@ -46,8 +46,7 @@ public class WildFlyCredentials extends Credentials {
 		} catch (NoSuchElementException e) {
 			throw e;
 		} catch (Exception e) {
-			NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
-			nsee.initCause(e);
+			NoSuchElementException nsee = new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
 			throw nsee;
 		}
 	}

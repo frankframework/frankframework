@@ -46,7 +46,7 @@ public class EscapePipe extends FixedForwardPipe {
 	private boolean encodeSubstring = false;
 
 	public enum Direction {
-		ENCODE, DECODE, CDATA2TEXT;
+		ENCODE, DECODE, CDATA2TEXT
 	}
 
 	@Override

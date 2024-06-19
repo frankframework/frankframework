@@ -45,12 +45,11 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.logging.log4j.Logger;
-
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -322,7 +321,7 @@ public class SchemaUtils {
 							if (xsd.isAddNamespaceToSchema() && !"http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
 								event = XmlUtils.mergeAttributes(startElement,
 										Arrays.asList(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
-										Arrays.asList(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
+										Collections.singletonList(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
 										XmlUtils.EVENT_FACTORY
 									);
 								if (!event.equals(startElement)) {

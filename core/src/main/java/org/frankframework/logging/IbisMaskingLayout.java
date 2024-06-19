@@ -29,7 +29,6 @@ import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
-
 import org.frankframework.util.StringUtil;
 
 /**
@@ -103,7 +102,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	private static class LogMessage extends SimpleMessage {
 		private static final long serialVersionUID = 3907571033273707664L;
 
-		private Throwable throwable;
+		private final Throwable throwable;
 
 		public LogMessage(String message, Throwable throwable) {
 			super(message);

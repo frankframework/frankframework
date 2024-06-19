@@ -15,6 +15,7 @@
 */
 package org.frankframework.extensions.esb;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -35,8 +36,6 @@ import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
-
-import lombok.Getter;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -291,7 +290,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			if (cmhVersion == 0) {
 				cmhVersion = 1;
 			} else if (cmhVersion < 0 || cmhVersion > 2) {
-				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+getMode().toString()+"] should be set to '1' or '2', assuming '1'");
+				ConfigurationWarnings.add(this, log, "cmhVersion [" + cmhVersion + "] for mode [" + getMode() + "] should be set to '1' or '2', assuming '1'");
 				cmhVersion = 1;
 			}
 		} else {

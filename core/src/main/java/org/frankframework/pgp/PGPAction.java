@@ -20,14 +20,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
-import org.bouncycastle.openpgp.PGPException;
-
 import lombok.Getter;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallback;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallbacks;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemoryKeyring;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
+import org.apache.commons.io.IOUtils;
+import org.bouncycastle.openpgp.PGPException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.pipes.PGPPipe;
@@ -41,7 +40,7 @@ import org.frankframework.util.ClassLoaderUtils;
  * @author Murat Kaan Meral
  */
 public abstract class PGPAction implements IScopeProvider {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected InMemoryKeyring keyringConfig;
 	private final String[] publicKeys;

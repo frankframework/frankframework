@@ -24,18 +24,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
-
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -45,8 +38,13 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -244,7 +242,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 					if (StringUtils.isNotEmpty(value)) {
 						String name = recipientElement.getAttribute("name");
 						String type = recipientElement.getAttribute("type");
-						EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type)?type:"to");
+						EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type) ? type : "to");
 						recipients.add(recipient);
 					} else {
 						log.debug("empty recipient found, ignoring");
@@ -495,7 +493,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String bounceAddress = MailSenderBase.this.getBounceAddress();
 
 		public MailSessionBase() throws SenderException {
-			from = new EMail(getDefaultFrom(),"from");
+			from = new EMail(getDefaultFrom(), "from");
 		}
 
 		public void setRecipientsOnMessage(StringBuilder logBuffer) throws SenderException {
@@ -668,16 +666,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 	}
 
-	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
+	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{}
 
 	/**
 	 * Generic mail class
 	 * @author alisihab
 	 *
 	 */
-	public class EMail {
-		private InternetAddress emailAddress;
-		private String type; //"cc", "to", "from", "bcc"
+	public static class EMail {
+		private final InternetAddress emailAddress;
+		private final String type; //"cc", "to", "from", "bcc"
 
 		public EMail(String address, String name, String type) throws SenderException {
 			try {

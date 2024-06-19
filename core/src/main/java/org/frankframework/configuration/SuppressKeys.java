@@ -42,11 +42,11 @@ public enum SuppressKeys {
 	private final @Getter String key;
 	private final @Getter boolean allowGlobalSuppression;
 
-	private SuppressKeys(String key) {
+	SuppressKeys(String key) {
 		this(key, false);
 	}
 
-	private SuppressKeys(String key, boolean allowGlobalSuppression) {
+	SuppressKeys(String key, boolean allowGlobalSuppression) {
 		this.key = key;
 		this.allowGlobalSuppression = allowGlobalSuppression;
 	}

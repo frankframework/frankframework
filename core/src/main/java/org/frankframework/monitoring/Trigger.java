@@ -24,10 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
@@ -138,7 +137,7 @@ public class Trigger implements ITrigger {
 	protected void cleanUpEvents(Instant now) {
 		while(!eventDates.isEmpty()) {
 			Instant firstDate = eventDates.getFirst();
-			if ((now.toEpochMilli() - firstDate.toEpochMilli()) > getPeriod() * 1000) {
+			if ((now.toEpochMilli() - firstDate.toEpochMilli()) > getPeriod() * 1000L) {
 				eventDates.removeFirst();
 				if (log.isDebugEnabled()) log.debug("removed element dated ["+ DateFormatUtils.format(firstDate)+"]");
 			} else {

@@ -58,14 +58,10 @@ public class SkipPipe extends FixedForwardPipe {
 				} else {
 					if (length >= 0 && length < bytesInput.length - skip) {
 						bytesResult = new byte[length];
-						for (int i = 0; i < length; i++) {
-							bytesResult[i] = bytesInput[skip + i];
-						}
+						System.arraycopy(bytesInput, skip + 0, bytesResult, 0, length);
 					} else {
 						bytesResult = new byte[bytesInput.length - skip];
-						for (int i = 0; i < bytesResult.length; i++) {
-							bytesResult[i] = bytesInput[skip + i];
-						}
+						System.arraycopy(bytesInput, skip + 0, bytesResult, 0, bytesResult.length);
 					}
 				}
 				result = new Message(bytesResult);
