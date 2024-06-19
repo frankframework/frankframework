@@ -12,6 +12,10 @@ import org.junit.jupiter.api.io.TempDir;
 
 import org.frankframework.core.PipeLineSession;
 
+/**
+ *  Note: Not really testing the full features of the pipe, just testing some flows, to increase coverage.
+ *  The writer is deprecated and will be removed in the future.
+ */
 class Result2FilewriterTest {
 
 	private final Result2Filewriter writer = new Result2Filewriter();

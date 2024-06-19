@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -164,18 +163,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 
 		private String elementsToString() {
-			StringBuilder chain = null;
-			for (Iterator<String> it = elements.iterator(); it.hasNext();) {
-				String element = it.next();
-				if (chain == null) {
-					chain = new StringBuilder(element);
-				} else {
-					chain.append(";").append(element);
-				}
-			}
-			if (chain == null)
-				return "";
-			return chain.toString();
+			return String.join(";", elements);
 		}
 
 		public boolean isStopRequested() {

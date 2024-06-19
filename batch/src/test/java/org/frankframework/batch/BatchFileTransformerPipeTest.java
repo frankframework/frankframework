@@ -17,6 +17,10 @@ import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 
+/**
+ *  Note: Not really testing the full features of the pipe, just testing some flows, to increase coverage.
+ *  The pipe is deprecated and will be removed in the future.
+ */
 class BatchFileTransformerPipeTest extends PipeTestBase<BatchFileTransformerPipe> {
 
 	@Override
@@ -27,7 +31,7 @@ class BatchFileTransformerPipeTest extends PipeTestBase<BatchFileTransformerPipe
 	@TempDir
 	private Path tempDir;
 
-	@Test // Not really using the full features of the pipe, just testing some flows
+	@Test
 	void doPipeMovesFileAfterProcessing() throws Exception {
 		URL inputUrl = TestFileUtils.getTestFileURL("/input.xml");
 		File file = new File(inputUrl.toURI());

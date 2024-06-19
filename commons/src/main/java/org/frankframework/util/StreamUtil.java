@@ -53,7 +53,7 @@ public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
-	public static final int BUFFER_SIZE = 20_000;
+	public static final int BUFFER_SIZE = 64 * 1024;
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogManager.getLogger(StreamUtil.class);
