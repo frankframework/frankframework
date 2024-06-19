@@ -161,7 +161,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			ParameterValueList pvl = getParameterList().getValues(message, session);
 
 			return StreamSupport.stream(pvl.spliterator(), false)
-					.collect(Collectors.toMap(ParameterValue::getName, ParameterValue::asStringValue));
+					.collect(Collectors.toMap(ParameterValue::getName, pv -> pv.asStringValue("")));
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
