@@ -17,19 +17,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class XmlEncodingUtilsTest {
 
 	@Test
-	public void encodeChars_encodesSpecialCharacters() {
+	public void encodesSpecialCharacters() {
 		String input = "<>&\"'\n";
 		String expected = "&lt;&gt;&amp;&quot;&#39;&#10;";
 		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
 	}
 
 	@Test
-	public void encodeChars_returnsNullForNullInput() {
+	public void encodeCharsReturnsNullForNullInput() {
 		assertNull(XmlEncodingUtils.encodeChars(null, true));
 	}
 
 	@Test
-	public void encodeChars_doesNotEncodeNewLinesWhenFlagIsFalse() {
+	public void encodeCharsDoesNotEncodeNewLinesWhenFlagIsFalse() {
 		String input = "\n";
 		String expected = "\n";
 		assertEquals(expected, XmlEncodingUtils.encodeChars(input, false));
@@ -37,7 +37,7 @@ public class XmlEncodingUtilsTest {
 	}
 
 	@Test
-	public void encodeChars_encodesNewLinesWhenFlagIsTrue() {
+	public void encodeCharsEncodesNewLinesWhenFlagIsTrue() {
 		String input = "\n";
 		String expected = "&#10;";
 		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
