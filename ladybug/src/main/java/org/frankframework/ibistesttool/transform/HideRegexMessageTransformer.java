@@ -15,11 +15,13 @@
 */
 package org.frankframework.ibistesttool.transform;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.util.StringUtil;
 
@@ -33,19 +35,13 @@ import nl.nn.testtool.transform.MessageTransformer;
  * @author Jaco de Groot
  */
 public class HideRegexMessageTransformer implements MessageTransformer {
-	Map<String, Pattern> hideRegex;
-
-	HideRegexMessageTransformer() {
-		hideRegex = IbisMaskingLayout.getGlobalReplace();
-	}
+	Map<String, Pattern> hideRegex = new HashMap<>();
 
 	@Override
 	public String transform(Checkpoint checkpoint, String message) {
-		if (message != null) {
+		if (StringUtils.isNotEmpty(message)) {
+			message = IbisMaskingLayout.maskSensitiveInfo(message);
 			message = StringUtil.hideAll(message, hideRegex.values());
-
-			Map<String, Pattern> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			if (threadHideRegex != null) message = StringUtil.hideAll(message, threadHideRegex.values());
 		}
 		return message;
 	}

@@ -17,8 +17,6 @@ package org.frankframework.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -56,11 +54,7 @@ public class MessageKeeperMessage {
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			Map<String, Pattern> hideRegex = IbisMaskingLayout.getGlobalReplace();
-			message = StringUtil.hideAll(message, hideRegex.values());
-
-			Map<String, Pattern> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			if (threadHideRegex != null) message = StringUtil.hideAll(message, threadHideRegex.values());
+			return IbisMaskingLayout.maskSensitiveInfo(message);
 		}
 		return message;
 	}

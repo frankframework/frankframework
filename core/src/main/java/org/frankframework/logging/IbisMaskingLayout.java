@@ -15,6 +15,7 @@
 */
 package org.frankframework.logging;
 
+import java.io.Serial;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,9 +80,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
-			message = StringUtil.hideAll(message, globalReplace.values());
-			Map<String, Pattern> threadLocalPatterns = threadLocalReplace.get();
-			if (threadLocalPatterns != null) message = StringUtil.hideAll(message, threadLocalPatterns.values());
+			message = maskSensitiveInfo(message);
 
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {
@@ -97,13 +96,21 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return serializeEvent(event);
 	}
 
+	public static String maskSensitiveInfo(String message) {
+		message = StringUtil.hideAll(message, globalReplace.values());
+		Map<String, Pattern> threadLocalPatterns = threadLocalReplace.get();
+		if (threadLocalPatterns != null) message = StringUtil.hideAll(message, threadLocalPatterns.values());
+		return message;
+	}
+
 	/**
 	 * Wrapper around SimpleMessage so we can persist throwables, if any.
 	 */
 	private static class LogMessage extends SimpleMessage {
+		@Serial
 		private static final long serialVersionUID = 3907571033273707664L;
 
-		private Throwable throwable;
+		private final Throwable throwable;
 
 		public LogMessage(String message, Throwable throwable) {
 			super(message);
@@ -118,10 +125,10 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	/**
 	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
-	 *
+	 * <br/>
 	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
 	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
-	 *
+	 * <br/>
 	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
 	 * This is done by taking a snapshot of the stack and walking it, see {@link StackLocatorUtil#calcLocation(String)}).
 	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
