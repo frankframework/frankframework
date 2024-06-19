@@ -55,7 +55,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			summary.record(pipeDuration);
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
-				durationLog.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, ()->pipeLine.getOwner().getName(), ()->pipeDuration, pipe::getDurationThreshold, ()->message);
+				durationLog.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, () -> pipeLine.getOwner().getName(), () -> pipeDuration, pipe::getDurationThreshold, () -> message);
 				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
 			}
 		}

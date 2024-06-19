@@ -209,7 +209,9 @@ public class Adapter implements IAdapter, NamedBean {
 				.distinct()
 				.collect(Collectors.joining(")|(", "(", ")"));
 
-		if ("()".equals(combinedHideRegex)) return "";
+		if ("()".equals(combinedHideRegex)) {
+			return "";
+		}
 		return combinedHideRegex;
 	}
 
