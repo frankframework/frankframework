@@ -27,8 +27,8 @@ import com.google.common.net.HttpHeaders;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -36,7 +36,6 @@ import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -44,9 +43,9 @@ import org.frankframework.util.StreamUtil;
  *
  * @author  Gerrit van Brakel
  */
+@Log4j2
 @IbisInitializer
 public class RestListenerServlet extends HttpServletBase {
-	protected final transient Logger log = LogUtil.getLogger(this);
 	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
@@ -106,11 +105,11 @@ public class RestListenerServlet extends HttpServletBase {
 			messageContext.setSecurityHandler(securityHandler);
 			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, request.getMethod());
 
-			Enumeration<String> paramnames=request.getParameterNames();
-			while (paramnames.hasMoreElements()) {
-				String paramname = paramnames.nextElement();
+			Enumeration<String> paramNames = request.getParameterNames();
+			while (paramNames.hasMoreElements()) {
+				String paramname = paramNames.nextElement();
 				String paramvalue = request.getParameter(paramname);
-				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
+				if (log.isTraceEnabled()) log.trace("setting parameter [" + paramname + "] to [" + paramvalue + "]");
 				messageContext.put(paramname, paramvalue);
 			}
 			if (!MultipartUtils.isMultipart(request)) {
@@ -153,9 +152,7 @@ public class RestListenerServlet extends HttpServletBase {
 						response.setHeader("Allow", allowedMethods);
 					}
 
-					/*
-					 * Finalize the pipeline and write the result to the response
-					 */
+					// Finalize the pipeline and write the result to the response
 					writeToResponseStream(response, result);
 					log.trace("RestListenerServlet finished with result [{}] etag [{}] contentType [{}] contentDisposition [{}]", result, etag, contentType, contentDisposition);
 				}

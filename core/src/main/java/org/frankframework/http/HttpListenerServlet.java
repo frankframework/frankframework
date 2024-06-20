@@ -21,14 +21,13 @@ import java.util.Enumeration;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
@@ -36,11 +35,10 @@ import org.frankframework.util.StreamUtil;
  * Servlet that listens for HTTP GET or POSTS, and handles them over to the ServiceDispatcher
  *
  * @author  Gerrit van Brakel
- * @since   4.4.x (still experimental)
  */
+@Log4j2
 @IbisInitializer
 public class HttpListenerServlet extends HttpServletBase {
-	protected final transient Logger log = LogUtil.getLogger(this);
 
 	public static final String SERVICE_ID_PARAM = "service";
 	public static final String MESSAGE_PARAM = "message";
