@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -23,8 +24,7 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 
 /**
- * Skip a number of bytes or characters from the input.
- *
+ * Skip a number of bytes or characters from the input message.
  *
  * @author Jaco de Groot (***@dynasol.nl)
  *
@@ -41,6 +41,9 @@ public class SkipPipe extends FixedForwardPipe {
 			Message result;
 			if (!message.isBinary()) {
 				String stringInput = message.asString();
+				if (StringUtils.isEmpty(stringInput)) {
+					return new PipeRunResult(getSuccessForward(), message);
+				}
 				if (skip > stringInput.length()) {
 					result = new Message("");
 				} else {
@@ -58,10 +61,10 @@ public class SkipPipe extends FixedForwardPipe {
 				} else {
 					if (length >= 0 && length < bytesInput.length - skip) {
 						bytesResult = new byte[length];
-						System.arraycopy(bytesInput, skip + 0, bytesResult, 0, length);
+						System.arraycopy(bytesInput, skip, bytesResult, 0, length);
 					} else {
 						bytesResult = new byte[bytesInput.length - skip];
-						System.arraycopy(bytesInput, skip + 0, bytesResult, 0, bytesResult.length);
+						System.arraycopy(bytesInput, skip, bytesResult, 0, bytesResult.length);
 					}
 				}
 				result = new Message(bytesResult);
@@ -73,7 +76,7 @@ public class SkipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger then the length of the input
+	 * Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger than the length of the input.
 	 * @ff.default 0
 	 */
 	public void setSkip(int skip) {
