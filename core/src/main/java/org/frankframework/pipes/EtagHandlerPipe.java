@@ -52,7 +52,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 //	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	public enum EtagAction {
 		GENERATE, GET, SET, DELETE, FLUSH, CLEAR
-}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {

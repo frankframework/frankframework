@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 
 public class RootValidation {
 	protected Logger log = LogUtil.getLogger(this);
