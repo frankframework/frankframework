@@ -54,20 +54,18 @@ jobs:
         # Required for SonarCloud
         fetch-depth: 0
 
-    - name: Cache local Maven repository
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: maven-dependencies
-        restore-keys: |
-          ${{ runner.os }}-maven-
+    - name: Create cached directories
+      run: |
+        mkdir -p ~/.m2/repository
+        mkdir -p ~/.sonar/cache
 
-    - name: Cache SonarCloud packages
-      uses: actions/cache@v3
+    - name: Restore cached directories
+      uses: actions/cache/restore@v3
       with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
+        path: |
+          ~/.m2/repository
+          ~/.sonar/cache
+        key: project-cache-${{ runner.os }}-${{ runner.arch }}
 
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v3
@@ -152,3 +150,12 @@ jobs:
         workflow: Compare FrankDoc
         token: ${{ secrets.PAT }}
         inputs: '{"target": "${{ github.event.pull_request.head.sha }}"}'
+
+    - name: Save cached directories
+      uses: actions/cache/save@v3
+      if: always()
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.sonar/cache
+        key: project-cache-${{ runner.os }}-${{ runner.arch }}
