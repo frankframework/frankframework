@@ -294,52 +294,6 @@ public abstract class ClassUtils {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
 
-	private static void appendFieldsAndMethods(StringBuilder result, Object o, String type, Class<?> c) {
-		Field[] fields = c.getDeclaredFields();
-		Method[] methods = c.getDeclaredMethods();
-		result.append(type).append(" ").append(c.getName()).append(" #fields [").append(fields.length).append("] #methods [").append(methods.length).append("]");
-		if (fields.length>0 || methods.length>0) {
-			result.append(" {\n");
-			for (int i=0; i<fields.length; i++) {
-				Field f=fields[i];
-				Object value;
-				try {
-					f.setAccessible(true);
-					value=f.get(o);
-				} catch (Exception e) {
-					value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
-				}
-				result.append("  field[").append(i).append("] ").append(f.getName()).append("(").append(f.getType().getName()).append("): [").append(value).append("]\n");
-			}
-			for (int i=0; i<methods.length; i++) {
-				Method m=methods[i];
-				result.append("  method[").append(i).append("] ").append(m.getName());
-				result.append("\n");
-			}
-			result.append("}");
-		}
-		result.append("\n");
-	}
-
-	public static String debugObject(Object o) {
-		if (o==null) {
-			return null;
-		}
-
-		StringBuilder result = new StringBuilder(nameOf(o)+"\n");
-		Class<?> c=o.getClass();
-		Class<?>[] interfaces = c.getInterfaces();
-		for (int i=0;i<interfaces.length; i++) {
-			appendFieldsAndMethods(result,o,"Interface",interfaces[i]);
-		}
-		while (c!=Object.class) {
-			appendFieldsAndMethods(result,o,"Class",c);
-			c=c.getSuperclass();
-		}
-		result.append("toString=[").append(o).append("]\n");
-		return result.toString();
-	}
-
 	public static List<Object> getClassInfoList(Class<?> clazz) {
 		ClassLoader classLoader = clazz.getClassLoader();
 		List<Object> infoList = new LinkedList<>();
