@@ -17,8 +17,9 @@ package org.frankframework.management.web;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
@@ -37,7 +38,7 @@ import lombok.Getter;
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
 	@Autowired
-	private MessageCacheStore messageCacheStore;
+	protected MessageCacheStore messageCacheStore;
 
 	@Autowired
 	protected @Getter HttpServletRequest servletRequest;
@@ -51,48 +52,11 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
-		Message<?> cachedMessage = messageCacheStore.getCachedMessage(input.getBusMessageName());
-		if(cachedMessage != null) {
-			return cachedMessage;
-		}
-
 		Message<?> message = getGateway().sendSyncMessage(input.build());
 		if (message == null) {
-			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
-			if (input.getAction() != null) {
-				errorMessage.append(" with action [");
-				errorMessage.append(input.getAction());
-				errorMessage.append("]");
-			}
-			throw new ApiException(errorMessage.toString());
+			throw createErrorMessage(input.getTopic(), input.getAction());
 		}
-		messageCacheStore.putMessage(input.getBusMessageName(), message);
 		return message;
-	}
-
-	@Nonnull
-	protected Message<?> sendSyncMessageWithoutHttp(RequestMessageBuilder input) {
-		Message<?> cachedMessage = messageCacheStore.getCachedMessage(input.getBusMessageName());
-		if(cachedMessage != null) {
-			return cachedMessage;
-		}
-
-		try{
-			Message<?> message = getGateway().sendSyncMessage(input.buildWithoutHttp());
-			if (message == null) {
-				StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
-				if (input.getAction() != null) {
-					errorMessage.append(" with action [");
-					errorMessage.append(input.getAction());
-					errorMessage.append("]");
-				}
-				throw new ApiException(errorMessage.toString());
-			}
-			messageCacheStore.putMessage(input.getBusMessageName(), message);
-			return message;
-		} catch (Exception e) {
-			return new StringMessage("{\"error\":\"" + e.getMessage() + "\"}");
-		}
 	}
 
 	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input) throws ApiException {
@@ -124,5 +88,15 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	protected final boolean allowDeprecatedEndpoints() {
 		return getProperty(DeprecationInterceptor.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
+	}
+
+	protected ApiException createErrorMessage(BusTopic topic, BusAction action) {
+		StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + topic + "]");
+		if (action != null) {
+			errorMessage.append(" with action [");
+			errorMessage.append(action);
+			errorMessage.append("]");
+		}
+		return new ApiException(errorMessage.toString());
 	}
 }

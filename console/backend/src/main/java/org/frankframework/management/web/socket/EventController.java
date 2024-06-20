@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.concurrent.TimeUnit;
 
 @Controller
-public class EventController extends FrankApiBase {
+public class EventController extends FrankApiWebSocketBase {
 
 	private final SimpMessagingTemplate messagingTemplate;
 
@@ -49,17 +49,29 @@ public class EventController extends FrankApiBase {
 
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
 	public void serverWarnings() {
+		this.messagingTemplate.convertAndSend("/event/test", "processing server warnings");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.UPDATES);
-		Message<?> response = sendSyncMessageWithoutHttp(RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.UPDATES));
-		this.messagingTemplate.convertAndSend("/event/server-warnings", response.getPayload());
+
+		Message<?> message = sendSyncMessageWithoutHttp(builder);
+		Message<?> response = convertMessageToDiff(builder.getBusMessageName(), message);
+
+		if (response != null) {
+			this.messagingTemplate.convertAndSend("/event/server-warnings", response.getPayload());
+		}
 	}
 
 	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
 	public void adapters() {
+		this.messagingTemplate.convertAndSend("/event/test", "processing adapter info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.UPDATES);
 		builder.addHeader("expanded", "all");
-		Message<?> response = sendSyncMessageWithoutHttp(builder);
-		this.messagingTemplate.convertAndSend("/event/adapters", response.getPayload());
+
+		Message<?> message = sendSyncMessageWithoutHttp(builder);
+		Message<?> response = convertMessageToDiff(builder.getBusMessageName(), message);
+
+		if (response != null) {
+			this.messagingTemplate.convertAndSend("/event/adapters", response.getPayload());
+		}
 	}
 
 }

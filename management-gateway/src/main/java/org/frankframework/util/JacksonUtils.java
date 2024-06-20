@@ -16,7 +16,17 @@
 package org.frankframework.util;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import jakarta.json.Json;
+import jakarta.json.JsonMergePatch;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.fasterxml.jackson.core.JacksonException;
@@ -59,5 +69,15 @@ public class JacksonUtils {
 		} catch (IOException e) {
 			throw new BusException("unable to parse payload", e);
 		}
+	}
+
+	public static String difference(String oldJson, String newJson) {
+		JsonValue source = Json.createReader(new StringReader(oldJson)).readValue();
+		JsonValue target = Json.createReader(new StringReader(newJson)).readValue();
+
+//		JsonMergePatch mergeDiff = Json.createMergeDiff(source, target);
+//		return mergeDiff.toJsonValue().toString();
+		JsonPatch diff = Json.createDiff(source.asJsonObject(), target.asJsonObject());
+		return diff.toJsonArray().toString();
 	}
 }
