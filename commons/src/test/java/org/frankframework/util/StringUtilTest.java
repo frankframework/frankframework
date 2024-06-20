@@ -237,6 +237,7 @@ class StringUtilTest {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static class ToStringTestClass {
 		private final String field1 = "tralala";
 		private final String field2 = "lalala";
