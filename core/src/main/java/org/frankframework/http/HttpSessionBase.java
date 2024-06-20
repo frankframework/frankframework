@@ -416,7 +416,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
 				AuthenticationType authType = isAuthenticatedTokenRequest() ? AuthenticationType.AUTHENTICATION_HEADER : AuthenticationType.REQUEST_PARAMETER;
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), clientCf, userCf ==null, authType, this, getTokenExpiry());
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), clientCf, userCf == null, authType, this, getTokenExpiry());
 				defaultHttpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}

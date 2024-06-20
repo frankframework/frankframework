@@ -104,7 +104,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				throw new ConfigurationException("instance.name.lc not available");
 			}
 			environment = rootAppConstants.getProperty("dtap.stage");
-			if (StringUtils.isEmpty(environment) || environment.isEmpty()) {
+			if (StringUtils.isEmpty(environment)) {
 				throw new ConfigurationException("dtap.stage not available");
 			}
 			environment = environment.substring(0, 1);

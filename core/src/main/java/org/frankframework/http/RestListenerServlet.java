@@ -48,7 +48,7 @@ public class RestListenerServlet extends HttpServletBase {
 	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
-	private transient RestServiceDispatcher sd=null;
+	private transient RestServiceDispatcher sd = null;
 
 	@Override
 	public void init() throws ServletException {

@@ -30,7 +30,7 @@ import org.frankframework.util.LogUtil;
 public class ApiEhcache implements IApiCache {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private static final String KEY_CACHE_NAME="etagCacheReceiver";
+	private static final String KEY_CACHE_NAME = "etagCacheReceiver";
 	private static final String KEY_PREFIX="etag.ehcache.";
 	private static final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory";
 	private static final String KEY_MEMORYSTORE_EVICTION_POLICY=KEY_PREFIX+"memoryStoreEvictionPolicy";
