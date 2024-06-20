@@ -24,12 +24,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -53,6 +50,9 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 	public static final List<String> DEFAULT_IBIS_ROLES = Collections.unmodifiableList(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
@@ -67,10 +67,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	private final @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
 	private boolean allowUnsecureOptionsRequest = false;
-
-	@Value("${csrf.enabled:true}")
 	private boolean csrfEnabled;
-	@Value("${csrf.cookie.path}")
 	private String csrfCookiePath;
 
 	@Override
@@ -78,6 +75,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		this.applicationContext = applicationContext;
 		Environment env = applicationContext.getEnvironment();
 		allowUnsecureOptionsRequest = env.getProperty(ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
+		csrfEnabled = env.getProperty("csrf.enabled", boolean.class, true);
+		csrfCookiePath = env.getProperty("csrf.cookie.path", String.class);
 	}
 
 	protected final synchronized Properties getEnvironmentProperties() {
