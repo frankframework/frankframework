@@ -87,7 +87,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
 	@Getter
-	public class Column {
+	private class Column {
 		private String name = null;
 		private String value = null;
 		private String type = TYPE_STRING;
