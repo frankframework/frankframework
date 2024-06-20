@@ -7,13 +7,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -21,6 +18,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
@@ -315,7 +314,7 @@ public class OpenApiTestBase extends Mockito {
 				add(message, null, level);
 			}
 			@Override
-			public synchronized void add(String message, Date date, MessageKeeperLevel level) {
+			public synchronized void add(String message, Instant date, MessageKeeperLevel level) {
 				log.debug("SysOutMessageKeeper {} - {}", level, message);
 				if(MessageKeeperLevel.ERROR == level) fail(message);
 			}
