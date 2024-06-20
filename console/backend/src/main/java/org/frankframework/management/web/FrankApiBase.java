@@ -15,12 +15,9 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.json.JsonStructure;
-import jakarta.json.JsonValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
@@ -37,24 +34,28 @@ import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 
-import java.util.HashMap;
-
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
 	@Autowired
+	private MessageCacheStore messageCacheStore;
+
+	@Autowired
 	protected @Getter HttpServletRequest servletRequest;
-
-	private @Getter ApplicationContext applicationContext;
-	private @Getter Environment environment;
-
 	protected Logger log = LogManager.getLogger(this);
-
 	protected final OutboundGateway getGateway() {
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
 	}
 
+	private @Getter ApplicationContext applicationContext;
+	private @Getter Environment environment;
+
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
+		Message<?> cachedMessage = messageCacheStore.getCachedMessage(input.getBusMessageName());
+		if(cachedMessage != null) {
+			return cachedMessage;
+		}
+
 		Message<?> message = getGateway().sendSyncMessage(input.build());
 		if (message == null) {
 			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
@@ -65,11 +66,17 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 			}
 			throw new ApiException(errorMessage.toString());
 		}
+		messageCacheStore.putMessage(input.getBusMessageName(), message);
 		return message;
 	}
 
 	@Nonnull
 	protected Message<?> sendSyncMessageWithoutHttp(RequestMessageBuilder input) {
+		Message<?> cachedMessage = messageCacheStore.getCachedMessage(input.getBusMessageName());
+		if(cachedMessage != null) {
+			return cachedMessage;
+		}
+
 		try{
 			Message<?> message = getGateway().sendSyncMessage(input.buildWithoutHttp());
 			if (message == null) {
@@ -81,6 +88,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 				}
 				throw new ApiException(errorMessage.toString());
 			}
+			messageCacheStore.putMessage(input.getBusMessageName(), message);
 			return message;
 		} catch (Exception e) {
 			return new StringMessage("{\"error\":\"" + e.getMessage() + "\"}");

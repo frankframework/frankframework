@@ -13,10 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.util;
+package org.frankframework.management.web;
 
-import org.frankframework.management.web.FrankApiBase;
-import org.frankframework.management.web.RequestMessageBuilder;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.Message;
@@ -32,18 +30,18 @@ public class MessageCacheStore {
 
 	private final Map<String, MessageCache> messages = new HashMap<>();
 
-	public Message<Object> getCachedOrLatest(String name, RequestMessageBuilder messageBuilder, FrankApiBase apiBase) {
-		MessageCache cache = messages.get(name);
-		if (cache != null && cache.expires().isAfter(Instant.now())) {
-			return cache.message();
+	/*public Message<?> getCachedOrLatest(String name, RequestMessageBuilder messageBuilder, FrankApiBase apiBase) {
+		Message<?> cachedMessage = getCachedMessage(name);
+		if(cachedMessage != null) {
+			return cachedMessage;
 		}
 
-		Message<Object> latestMessage = apiBase.sendSyncMessageWithoutHttp(messageBuilder);
+		Message<?> latestMessage = apiBase.sendSyncMessageWithoutHttp(messageBuilder);
 		putMessage(name, latestMessage);
 		return latestMessage;
-	}
+	}*/
 
-	public Message<Object> getCachedMessage(String name) {
+	public Message<?> getCachedMessage(String name) {
 		MessageCache cache = messages.get(name);
 		if (cache != null && cache.expires().isAfter(Instant.now())) {
 			return cache.message();
@@ -52,8 +50,10 @@ public class MessageCacheStore {
 		return null;
 	}
 
-	public void putMessage(String name, Message<Object> message) {
-		this.messages.put(name, new MessageCache(name, message, Instant.now().plusSeconds(30)));
+	public void putMessage(String name, Message<?> message) {
+		this.messages.put(name, new MessageCache(name, message, Instant.now().plusSeconds(10)));
 	}
+
+	protected record MessageCache(String name, Message<?> message, Instant expires) {}
 
 }

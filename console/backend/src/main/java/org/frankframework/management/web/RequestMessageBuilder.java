@@ -150,6 +150,10 @@ public class RequestMessageBuilder {
 		return builder.build();
 	}
 
+	public String getBusMessageName(){
+		return topic.name() + "." + action.name();
+	}
+
 	private String mapHeaderForLog(Map.Entry<String, Object> entry) {
 		StringBuilder builder = new StringBuilder(entry.getKey());
 		builder.append("=");
