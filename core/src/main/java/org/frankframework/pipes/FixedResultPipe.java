@@ -47,8 +47,149 @@ import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
 
 /**
+ * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
+ * provide this by using the <code>filename</code> attribute or with a <code>param</code> element to be able to
+ * use a sessionKey for instance.
+ *
+ * <h2>Migrating from deprecated features</h2>
+ * The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
+ * a 'resultString' to find / replace values in. The following migrations are available:
+ *
+ * <h3>For using a 'resultString'</h3>
+ * You can use the {@link EchoPipe} for a static value. This looked like this before:
+ *
+ * <pre>
+ * {@code
+ * <pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World">
+ *     <forward name="success" path="EXIT"/>
+ * </pipe>
+ * }
+ * </pre>
+ * Becomes:
+ * <pre>
+ * {@code
+ * <pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World">
+ *     <forward name="success" path="EXIT"/>
+ * </pipe>
+ * }
+ * </pre>
+ *
+ * <h3>For replacing a value</h3>
+ * You can use the {@link ReplacerPipe} to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
+ * This looked like:
+ * <pre>
+ * {@code
+ * <pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
+ *     returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
+ *     <param name="MID" sessionKey="mid" />
+ * 	   <param name="ACTION" xpathExpression="request/@action" />
+ * </pipe>
+ * }
+ * </pre>
+ *
+ * And can now be written like this (note the ?{..} syntax):
+ * <pre>
+ * {@code
+ * <pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
+ *     getInputFromFixedValue="&lt;msg mid=&quot;?{MID}&quot; action=&quot;?{ACTION}&quot; /&gt;">
+ * 	   <param name="MID" sessionKey="mid" />
+ * 	   <param name="ACTION" xpathExpression="request/@action" />
+ * </pipe>
+ * }
+ * </pre>
+ *
+ * When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
+ * <pre>
+ * {@code
+ * <FixedResultPipe name="InputValidateError"
+ *     filename="ManageFileSystem/xml/ErrorMessage.xml"
+ *     replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
+ *     <forward name="success" path="EXIT" />
+ * </FixedResultPipe>
+ * }
+ * </pre>
+ *
+ * And now should be solved like this:
+ * <pre>
+ * {@code
+ * <FixedResultPipe name="InputValidateError"
+ *     filename="ManageFileSystem/xml/ErrorMessage.xml">
+ *     <forward name="success" path="replaceReasonCode" />
+ * </FixedResultPipe>
+ * <ReplacerPipe name="replaceReasonCode"
+ *     find="%reasonCode"
+ *     replace="NOT_WELL_FORMED_XML">
+ *     <forward name="success" path="EXIT" />
+ * </ReplacerPipe>
+ * }
+ * </pre>
+ * This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
+ *
+ * <h2>More complex configurations</h2>
+ * In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
+ * was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
+ * <pre>
+ * {@code
+ * 	<CompareStringPipe name="compareIdAndCid" >
+ * 		<param name="operand1" sessionKey="id"/>
+ * 		<param name="operand2" sessionKey="cid"/>
+ * 		<forward name="equals" path="IdAndCidSame" />
+ * 		<forward name="lessthan" path="IdAndCidDifferent" />
+ * 		<forward name="greaterthan" path="IdAndCidDifferent" />
+ * 	</CompareStringPipe>
+ * 	<FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame">
+ * 		<forward name="success" path="displayKeys" />
+ * 	</FixedResultPipe>
+ * 	<FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame">
+ * 		<forward name="success" path="displayKeys" />
+ * 	</FixedResultPipe>
+ *
+ *  <pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
+ * 		returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
+ * 		<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
+ * 		<param name="MID" sessionKey="id" />
+ * 		<param name="CID" sessionKey="cid" />
+ * 		<param name="SAME" sessionKey="IdAndCidSame" />
+ * 		<forward name="success" path="EXIT" />
+ * 	</pipe>
+ * }
+ * </pre>
+ *
+ * Was rewritten to the following:
+ * <pre>
+ * {@code
+ * 	<CompareStringPipe name="compareIdAndCid" >
+ * 		<param name="operand1" sessionKey="id"/>
+ * 		<param name="operand2" sessionKey="cid"/>
+ * 		<forward name="equals" path="IdAndCidSame" />
+ * 		<forward name="lessthan" path="IdAndCidDifferent" />
+ * 		<forward name="greaterthan" path="IdAndCidDifferent" />
+ * 	</CompareStringPipe>
+ *
+ * 	<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
+ * 		<forward name="success" path="putOriginalMessageInSession" />
+ * 	</PutInSessionPipe>
+ * 	<PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
+ * 		<forward name="success" path="putOriginalMessageInSession" />
+ * 	</PutInSessionPipe>
+ *
+ * 	<PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/>
+ *
+ * 	<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
+ * 		getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
+ * 		<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
+ * 		<param name="MID" sessionKey="id" />
+ * 		<param name="CID" sessionKey="cid" />
+ * 		<param name="SAME" sessionKey="IdAndCidSame" />
+ * 		<forward name="success" path="EXIT" />
+ * 	</pipe>
+ * }
+ * </pre>
+ * <p>
+ *
+ * <h2>The features/documentation of the deprecated features</h2>
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
- * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise the
+ * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise, the
  * value of attribute <code>returnString</code> is returned.
  * <br/><br/>
  * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
@@ -86,7 +227,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
 
-	private static final String SUBSTITUTION_START_DELIMITER = "?";
+	private static final String SUBSTITUTION_START_DELIMITER = "?{";
 
 	private AppConstants appConstants;
 
@@ -131,7 +272,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			try {
 				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new ConfigurationException("got exception loading [" + getFilename() + "]", e);
 			}
 		}
@@ -160,7 +301,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, filename);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new PipeRunException(this, "got exception searching for [" + filename + "]", e);
 			}
 
@@ -174,7 +315,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			try (Message msg = new UrlMessage(resource)) {
 				result = msg.asString();
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
 			}
 		}
@@ -226,10 +367,10 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return output;
 	}
 
-	private String replaceSingle(String value, String replaceFromValue, String replaceTo) {
-		final String replaceFrom = (isReplaceFixedParams()) ? replaceFromValue : SUBSTITUTION_START_DELIMITER + "{" + replaceFromValue + "}";
+	private String replaceSingle(String value, String replaceFromValue, String to) {
+		final String from = (isReplaceFixedParams()) ? replaceFromValue : SUBSTITUTION_START_DELIMITER + replaceFromValue + "}";
 
-		return value.replace(replaceFrom, replaceTo);
+		return value.replace(from, to);
 	}
 
 	/**

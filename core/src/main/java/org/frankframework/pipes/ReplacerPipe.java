@@ -48,13 +48,11 @@ import org.frankframework.util.XmlEncodingUtils;
  * See {@link Parameter} to see how parameter values are determined.</li>
  * <p>
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
- * system properties, pipelinesession variables and application properties. Please note that
- * no <code>${...}</code> patterns are left in the input. </li>
+ * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
  *
  * @author Gerrit van Brakel
- * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
- * 		* <code>xyz</code> is substituted by the parameter's value.
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> is substituted by the parameter's value.
  * @since 4.2
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -120,7 +118,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If subsituteVars is true, we need to wrap the inputStream again to substitute ${} syntax parameters
+	 * If subsituteVars is true, we need to wrap the inputStream again to substitute ${} syntax variables with
+	 * system properties, session variables and application properties.
 	 *
 	 * @param session
 	 * @param replaceParametersStream
