@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.IntStream;
-
-import jakarta.annotation.Nonnull;
 
 /**
  * Copyright 2019-2024 WeAreFrank!
@@ -39,9 +36,8 @@ import jakarta.annotation.Nonnull;
  *
  * @author Erik van Dongen
  */
-public class ReplacingVariablesInputStream extends FilterInputStream {
+public class ReplacingVariablesInputStream extends BaseReplacingInputStream {
 
-	private static final byte BYTE_VALUE_END_OF_STREAM = -1;
 	private static final byte CLOSING_CURLY_BRACE = 125;
 	private final byte[] variablePrefix;
 	private final Map<String, String> keyValuePairs;
@@ -172,52 +168,5 @@ public class ReplacingVariablesInputStream extends FilterInputStream {
 		}
 
 		return false;
-	}
-
-	@Override
-	public int read(byte[] b) throws IOException {
-		return read(b, 0, b.length);
-	}
-
-	/**
-	 * Make sure to return false here, because we don't support it.
-	 * See org.frankframework.stream.Message#readBytesFromInputStream(int)
-	 */
-	@Override
-	public boolean markSupported() {
-		return false;
-	}
-
-	/**
-	 * copied straight from InputStream implementation, just needed to use {@link #read()} from this class
-	 *
-	 * @see InputStream#read(byte[], int, int)
-	 */
-	@Override
-	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
-		if (off < 0 || len < 0 || len > b.length - off) {
-			throw new IndexOutOfBoundsException();
-		} else if (len == 0) {
-			return 0;
-		}
-
-		int c = read();
-		if (c == BYTE_VALUE_END_OF_STREAM) {
-			return BYTE_VALUE_END_OF_STREAM;
-		}
-		b[off] = (byte) c;
-
-		int i = 1;
-		try {
-			for (; i < len; i++) {
-				c = read();
-				if (c == BYTE_VALUE_END_OF_STREAM) {
-					break;
-				}
-				b[off + i] = (byte) c;
-			}
-		} catch (IOException ee) {
-		}
-		return i;
 	}
 }
