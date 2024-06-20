@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -415,8 +414,8 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 
 		for (int i = 0; i < numberOfItems; i++) {
-			String fileName = "toBeListed" + i + FILE1;
-			String folderName = StringUtils.isNotEmpty(inputFolder) ? inputFolder + File.separatorChar + "toBeListed" + i : "toBeListed" + i;
+			String fileName = "toBeListedFile" + i;
+			String folderName = StringUtils.isNotEmpty(inputFolder) ? inputFolder + "/toBeListedFolder" + i : "toBeListedFolder" + i;
 			if (typeFilter.includeFiles() && !_fileExists(fileName)) {
 				createFile(inputFolder, fileName, "is not empty");
 			}
@@ -427,7 +426,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.setTypeFilter(typeFilter);
-		if (inputFolder != null) {
+		if (StringUtils.isNotEmpty(inputFolder)) {
 			fileSystemSender.setInputFolder(inputFolder);
 		}
 		fileSystemSender.configure();
