@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.StreamSupport;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
@@ -143,17 +145,24 @@ class MailConvertor extends AbstractConvertor {
 			Files.delete(tempMHtmlFile.toPath());
 		}
 
-		// Convert and (optional add) any attachment of the mail.
-		for (int index = 0; index < attachments.size(); index++) {
-			// Initialize Attachment object and Get the indexed Attachment reference
-			Attachment attachment = attachments.get_Item(index);
+		if(attachments.size() > 0){
+			int maxThreadPoolSize = configuration.getMaxThreads();
+			int optimalThreadPoolSize = attachments.size() <= maxThreadPoolSize ? attachments.size() : maxThreadPoolSize;
+			ForkJoinPool threadPool = new ForkJoinPool(optimalThreadPoolSize);
+			threadPool.submit(() -> StreamSupport.stream(attachments.spliterator(), true)
+					.forEachOrdered(attachment -> threadPool.submit(() -> convertAttachment(attachment, result)))
+			);
+			threadPool.shutdown();
+		}
+	}
 
-			// Convert the attachment.
-			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
+	private void convertAttachment(Attachment attachment, CisConversionResult parentResult) {
+		try {
+			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, parentResult.getConversionOption());
 			// If it is a singlepdf add the file to the current pdf.
-			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
+			if (ConversionOption.SINGLEPDF.equals(parentResult.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
 				try {
-					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
+					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, parentResult.getPdfResultFile());
 					pdfAttachmentUtil.addAttachmentInSinglePdf();
 				} finally {
 					deleteFile(cisConversionResultAttachment.getPdfResultFile());
@@ -163,9 +172,12 @@ class MailConvertor extends AbstractConvertor {
 				}
 
 			}
-			result.addAttachment(cisConversionResultAttachment);
+			parentResult.addAttachment(cisConversionResultAttachment);
+		} catch (IOException e) {
+			log.error("Could not convert attachment to pdf!", e);
 		}
 	}
+
 
 	private void resizeInlineImages(Document doc) throws Exception {
 		Node[] shapes = doc.getChildNodes(NodeType.SHAPE, true).toArray();
