@@ -15,6 +15,8 @@
 */
 package org.frankframework.stream.xml;
 
+import static org.frankframework.stream.xml.JsonXslt3XmlHandler.TARGET_NAMESPACE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -37,7 +39,6 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class JsonXslt3XmlReader implements XMLReader {
 
-	private static final String TARGET_NAMESPACE = "http://www.w3.org/2013/XSL/json";
 	private static final String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
 	private static final String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
 
@@ -170,12 +171,12 @@ public class JsonXslt3XmlReader implements XMLReader {
 	}
 
 	@Override
-	public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+	public boolean getFeature(String name) throws SAXNotRecognizedException {
 		throw new SAXNotRecognizedException("Feature not recognized [" + name + "]");
 	}
 
 	@Override
-	public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+	public void setFeature(String name, boolean value) throws SAXNotRecognizedException {
 		if (name.equals(FEATURE_NAMESPACES)) {
 			if (!value) {
 				throw new SAXNotRecognizedException("Cannot set feature [" + name + "] to false");
@@ -191,12 +192,12 @@ public class JsonXslt3XmlReader implements XMLReader {
 
 	@Override
 	public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-		throw new SAXNotRecognizedException("Protperty not recognized [" + name + "]");
+		throw new SAXNotRecognizedException("Property not recognized [" + name + "]");
 	}
 
 	@Override
 	public void setProperty(String name, Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
-		throw new SAXNotRecognizedException("Protperty not recognized [" + name + "]");
+		throw new SAXNotRecognizedException("Property not recognized [" + name + "]");
 	}
 
 

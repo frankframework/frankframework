@@ -29,7 +29,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class JsonXslt3XmlHandler implements JsonEventHandler {
 
-	private static final String TARGET_NAMESPACE = "http://www.w3.org/2013/XSL/json";
+	static final String TARGET_NAMESPACE = "http://www.w3.org/2013/XSL/json";
 
 	private @Getter @Setter ContentHandler contentHandler;
 
