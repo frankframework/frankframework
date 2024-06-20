@@ -39,7 +39,7 @@ public class RootValidation {
 	public void check(IConfigurationAware source, Set<IXSD> xsds) {
 		boolean found = false;
 		String validElements = rootValidation.get(rootValidation.size() - 1);
-		String[] validElementsAsList = validElements.split(",");
+		List<String> validElementsAsList = StringUtil.split(validElements);
 		for (String validElement : validElementsAsList) {
 			if (StringUtils.isNotEmpty(validElement)) {
 				List<String> allRootTags = new ArrayList<>();
