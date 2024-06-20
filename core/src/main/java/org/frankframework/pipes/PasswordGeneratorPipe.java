@@ -85,12 +85,11 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){
-		StringBuilder result = new StringBuilder();
-		result.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
-		result.append(getRandomElementsOfString(getUCharacters(), numOfUCharacters));
-		result.append(getRandomElementsOfString(getSigns(), numOfSigns));
-		result.append(getRandomElementsOfString(getNumbers(), numOfNumbers));
-		return garbleString(result.toString());
+		String result = getRandomElementsOfString(getLCharacters(), numOfLCharacters) +
+				getRandomElementsOfString(getUCharacters(), numOfUCharacters) +
+				getRandomElementsOfString(getSigns(), numOfSigns) +
+				getRandomElementsOfString(getNumbers(), numOfNumbers);
+		return garbleString(result);
 	}
 
 	protected  String getRandomElementsOfString(String input, int count){

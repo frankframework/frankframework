@@ -52,7 +52,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	private @Getter String responseRoot;
 	private @Getter boolean forwardFailureToSuccess = false;
 
-	private @Getter boolean throwException = false;
+	private final @Getter boolean throwException = false;
 
 
 	@Override

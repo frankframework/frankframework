@@ -52,7 +52,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 		CRC32,
 		ADLER32;
 
-		private String algorithm;
+		private final String algorithm;
 
 		ChecksumType(String algorithm) {
 			this.algorithm = algorithm;
@@ -67,9 +67,9 @@ public class ChecksumPipe extends FixedForwardPipe {
 	}
 
 	protected interface ChecksumGenerator {
-		public void update(int b);
-		public void update(byte[] b, int offset, int length);
-		public String getResult();
+		void update(int b);
+		void update(byte[] b, int offset, int length);
+		String getResult();
 	}
 
 	protected ChecksumGenerator createChecksumGenerator() throws NoSuchAlgorithmException {
@@ -90,7 +90,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 	protected static class ZipChecksumGenerator implements ChecksumGenerator {
 
-		private Checksum checksum;
+		private final Checksum checksum;
 
 		ZipChecksumGenerator(Checksum checksum) {
 			super();
@@ -116,7 +116,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 	protected static class MessageDigestChecksumGenerator implements ChecksumGenerator {
 
-		private MessageDigest messageDigest;
+		private final MessageDigest messageDigest;
 
 		MessageDigestChecksumGenerator(ChecksumType type) throws NoSuchAlgorithmException {
 			super();

@@ -25,7 +25,7 @@ import org.frankframework.util.MessageKeeperMessage;
 import org.springframework.context.ApplicationContext;
 
 public class ConfigurationMessageEvent extends ApplicationMessageEvent {
-	private @Getter MessageKeeperMessage messageKeeperMessage;
+	private final @Getter MessageKeeperMessage messageKeeperMessage;
 
 	public ConfigurationMessageEvent(IConfigurationAware source, String message) {
 		this(source, message, MessageKeeperLevel.INFO);

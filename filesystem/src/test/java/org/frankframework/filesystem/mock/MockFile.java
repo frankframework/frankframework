@@ -18,7 +18,7 @@ public class MockFile {
 	private byte[] contents;
 	private Date lastModified = new Date();
 	private Map<String,Object> additionalProperties;
-	private @Getter Map<String,String> customAttributes;
+	private final @Getter Map<String,String> customAttributes;
 
 	public MockFile(String name, MockFolder owner) {
 		super();

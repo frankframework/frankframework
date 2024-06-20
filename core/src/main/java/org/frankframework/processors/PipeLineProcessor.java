@@ -26,6 +26,6 @@ import org.frankframework.stream.Message;
  */
 public interface PipeLineProcessor {
 
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException;
+	PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException;
 
 }

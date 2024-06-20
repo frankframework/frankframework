@@ -15,9 +15,8 @@
 */
 package org.frankframework.extensions.esb;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
@@ -37,7 +36,7 @@ public class EsbJmsSender extends JmsSender {
 		/** Fire & Forget protocol */
 		FF,
 		/** Request-Reply protocol */
-		RR;
+		RR
 	}
 
 	private @Getter MessageProtocol messageProtocol = null;

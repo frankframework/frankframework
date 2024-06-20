@@ -41,7 +41,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private enum ThreadState {
 		ANNOUNCED,
 		CREATED,
-		FINISHED;
+		FINISHED
 	}
 
 	private ThreadState threadState=ThreadState.ANNOUNCED;

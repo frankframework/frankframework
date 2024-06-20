@@ -15,9 +15,7 @@
 */
 package org.frankframework.util;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -33,7 +31,6 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -95,33 +92,6 @@ public abstract class ClassUtils {
 	}
 
 	/**
-	 * Determine the last modification date for this class file or its enclosing library
-	 *
-	 * @param aClass A class whose last modification date is queried
-	 * @return The time the given class was last modified
-	 * @exception IllegalArgumentException The class was not loaded from a file or directory
-	 */
-	public static long lastModified(Class<?> aClass) throws IllegalArgumentException {
-		URL url = aClass.getProtectionDomain().getCodeSource().getLocation();
-
-		if(!"file".equals(url.getProtocol())) {
-			throw new IllegalArgumentException("Class was not loaded from a file url");
-		}
-
-		File directory = new File(url.getFile());
-		if(!directory.isDirectory()) {
-			throw new IllegalArgumentException("Class was not loaded from a directory");
-		}
-
-		String className = aClass.getName();
-		String basename = className.substring(className.lastIndexOf(".") + 1);
-
-		File file = new File(directory, basename + ".class");
-
-		return file.lastModified();
-	}
-
-	/**
 	 * Create a new instance given a class name. The constructor of the class does NOT have parameters.
 	 *
 	 * @param className The class name to load
@@ -152,19 +122,6 @@ public abstract class ClassUtils {
 	 */
 	public static Class<?> loadClass(String className) throws ClassNotFoundException {
 		return ClassUtils.getClassLoader().loadClass(className);
-	}
-
-	/**
-	 * Gets the absolute pathname of the class file containing the specified class name, as prescribed by the current classpath.
-	 */
-	public static String which(Class<?> aClass) {
-		String path = null;
-		try {
-			path = aClass.getProtectionDomain().getCodeSource().getLocation().toString();
-		} catch (Throwable t) {
-			// Catch all exceptions, return null if the path cannot be determined.
-		}
-		return path;
 	}
 
 	/**
@@ -205,9 +162,9 @@ public abstract class ClassUtils {
 		return StringUtils.isNotEmpty(simpleName) ? simpleName : clazz.getTypeName();
 	}
 
-	public static boolean isClassPresent(String classname) {
+	public static boolean isClassPresent(String className) {
 		try {
-			Class.forName(classname);
+			Class.forName(className);
 			return true;
 		} catch (Throwable ex) {
 			// Class or one of its dependencies is not present...
@@ -278,26 +235,20 @@ public abstract class ClassUtils {
 		}
 
 		try {
-			switch (type.getTypeName()) {
-			case "int":
-			case "java.lang.Integer":
-				return Integer.parseInt(value);
-			case "long":
-			case "java.lang.Long":
-				return Long.parseLong(value);
-			case "boolean":
-			case "java.lang.Boolean":
-				if("".equals(value)) { //parseBoolean returns FALSE when it cannot parse the value
-					throw new IllegalArgumentException("cannot convert empty string to boolean");
+			return switch (type.getTypeName()) {
+				case "int", "java.lang.Integer" -> Integer.parseInt(value);
+				case "long", "java.lang.Long" -> Long.parseLong(value);
+				case "boolean", "java.lang.Boolean" -> {
+					if (value.isEmpty()) { //parseBoolean returns FALSE when it cannot parse the value
+						throw new IllegalArgumentException("cannot convert empty string to boolean");
+					}
+					yield Boolean.parseBoolean(value); //parseBoolean returns FALSE when it cannot parse the value
 				}
-				return Boolean.parseBoolean(value);
-			case "java.lang.String":
-				return value;
-			default:
-				throw new IllegalArgumentException("cannot convert to type ["+type.getName()+"], not implemented");
-			}
-		} catch(NumberFormatException e) { //Throw a -more descriptive- NumberFormatException instead of 'For input string'
-			throw new NumberFormatException("value ["+value+"] cannot be converted to a number ["+type.getName()+"]");
+				case "java.lang.String" -> value;
+				default -> throw new IllegalArgumentException("cannot convert to type [" + type.getName() + "], not implemented");
+			};
+		} catch (NumberFormatException e) { //Throw a -more descriptive- NumberFormatException instead of 'For input string'
+			throw new NumberFormatException("value [" + value + "] cannot be converted to a number [" + type.getName() + "]");
 		}
 	}
 
@@ -321,13 +272,6 @@ public abstract class ClassUtils {
 		Object[] args = { value };
 		setterMtd.invoke(o, args);
 	}
-	public static Object invokeGetterSafe(Object o, String name, boolean forceAccess) {
-		try {
-			return invokeGetter(o,name,forceAccess);
-		} catch (Exception e) {
-			return nameOf(o)+"."+name+"() "+nameOf(e)+": "+e.getMessage();
-		}
-	}
 	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		Method getterMtd = o.getClass().getMethod(name, (Class<?>[]) null);
 		if (forceAccess) {
@@ -335,36 +279,8 @@ public abstract class ClassUtils {
 		}
 		return getterMtd.invoke(o, (Object[]) null);
 	}
-	public static Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return invokeGetter(o,name,false);
-	}
 
-	public static String invokeStringGetterSafe(Object o, String name) {
-		try {
-			return invokeStringGetter(o,name);
-		} catch (Exception e) {
-			return nameOf(o)+"."+name+"() "+nameOf(e)+": "+e.getMessage();
-		}
-	}
-	public static String invokeStringGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return (String)invokeGetter(o,name);
-	}
-
-	public static Object getFieldValueSafe(Object o, String name) {
-		try {
-			return getFieldValue(o,name);
-		} catch (Exception e) {
-			return nameOf(o)+"."+name+" "+nameOf(e)+": "+e.getMessage();
-		}
-	}
-	public static Object getFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-		return c.getField(name).get(o);
-	}
-	public static Object getFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-		return getFieldValue(o, o.getClass(), name);
-	}
-
-	public static Object getDeclaredFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	public static Object getDeclaredFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		Field f = c.getDeclaredField(name);
 		try {
 			f.setAccessible(true);
@@ -374,57 +290,11 @@ public abstract class ClassUtils {
 			return e.getMessage();
 		}
 	}
-	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
 
-	private static void appendFieldsAndMethods(StringBuilder result, Object o, String type, Class<?> c) {
-		Field[] fields = c.getDeclaredFields();
-		Method[] methods = c.getDeclaredMethods();
-		result.append(type).append(" ").append(c.getName()).append(" #fields [").append(fields.length).append("] #methods [").append(methods.length).append("]");
-		if (fields.length>0 || methods.length>0) {
-			result.append(" {\n");
-			for (int i=0; i<fields.length; i++) {
-				Field f=fields[i];
-				Object value;
-				try {
-					f.setAccessible(true);
-					value=f.get(o);
-				} catch (Exception e) {
-					value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
-				}
-				result.append("  field[").append(i).append("] ").append(f.getName()).append("(").append(f.getType().getName()).append("): [").append(value).append("]\n");
-			}
-			for (int i=0; i<methods.length; i++) {
-				Method m=methods[i];
-				result.append("  method[").append(i).append("] ").append(m.getName());
-				result.append("\n");
-			}
-			result.append("}");
-		}
-		result.append("\n");
-	}
-
-	public static String debugObject(Object o) {
-		if (o==null) {
-			return null;
-		}
-
-		StringBuilder result = new StringBuilder(nameOf(o)+"\n");
-		Class<?> c=o.getClass();
-		Class<?>[] interfaces = c.getInterfaces();
-		for (int i=0;i<interfaces.length; i++) {
-			appendFieldsAndMethods(result,o,"Interface",interfaces[i]);
-		}
-		while (c!=Object.class) {
-			appendFieldsAndMethods(result,o,"Class",c);
-			c=c.getSuperclass();
-		}
-		result.append("toString=[").append(o.toString()).append("]\n");
-		return result.toString();
-	}
-
-	public static List<Object> getClassInfoList(Class<?> clazz) throws IOException {
+	public static List<Object> getClassInfoList(Class<?> clazz) {
 		ClassLoader classLoader = clazz.getClassLoader();
 		List<Object> infoList = new LinkedList<>();
 		String className = clazz.getName();

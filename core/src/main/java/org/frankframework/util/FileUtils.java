@@ -184,7 +184,7 @@ public class FileUtils {
 
 	public static boolean copyFile(File orgFile, File destFile, boolean append) {
 		try {
-			byte[] buf = new byte[StreamUtil.BUFFERSIZE];
+			byte[] buf = new byte[StreamUtil.BUFFER_SIZE];
 			try (FileInputStream fis = new FileInputStream(orgFile); FileOutputStream fos = new FileOutputStream(destFile, append)) {
 				int len;
 				while ((len = fis.read(buf)) > 0) {

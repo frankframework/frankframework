@@ -18,6 +18,10 @@ package org.frankframework.extensions.tibco;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.tibco.tibjms.admin.QueueInfo;
+import com.tibco.tibjms.admin.TibjmsAdmin;
+import com.tibco.tibjms.admin.TibjmsAdminException;
+
 import jakarta.jms.BytesMessage;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
@@ -28,13 +32,7 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
-
 import org.apache.commons.lang3.StringUtils;
-
-import com.tibco.tibjms.admin.QueueInfo;
-import com.tibco.tibjms.admin.TibjmsAdmin;
-import com.tibco.tibjms.admin.TibjmsAdminException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
@@ -42,17 +40,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.Resource;
-
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.TimeoutGuardPipe;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
-
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
@@ -86,7 +81,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		/** Request-Reply */
 		@EnumLabel("RR") REQUEST_REPLY,
 		/** Fire & Forget */
-		@EnumLabel("FF") FIRE_AND_FORGET;
+		@EnumLabel("FF") FIRE_AND_FORGET
 	}
 
 	@Override

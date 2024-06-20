@@ -552,7 +552,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 					return ExchangeMessageReference.of(reference, (EmailMessage) itemIterator.next());
 				}
 
-			}, (Runnable) () -> releaseConnection(exchangeService, false));
+			}, () -> releaseConnection(exchangeService, false));
 			closeConnectionOnExit = false;
 			return result;
 		} catch (Exception e) {

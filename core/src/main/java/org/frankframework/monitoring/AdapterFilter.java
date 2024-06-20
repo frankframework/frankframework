@@ -32,7 +32,7 @@ public class AdapterFilter {
 
 	private String adapter;
 
-	private List<String> subObjectList=new ArrayList<>();
+	private final List<String> subObjectList=new ArrayList<>();
 
 	/**
 	 * Set the name of the Adapter that this AdapterFilter filters on.

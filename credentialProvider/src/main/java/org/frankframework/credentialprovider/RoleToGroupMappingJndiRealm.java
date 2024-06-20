@@ -274,12 +274,12 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			String[] securityRoles = cxt.findSecurityRoles();
 
 			if (securityRoles != null) {
-				log.info("Security role mappings:".formatted());
+				log.info("Security role mappings:");
 				for (String role : securityRoles) {
 					log.info("Security [role]: %s [link]: %s".formatted(role, cxt.findRoleMapping(role)));
 				}
 			} else {
-				log.info("No security roles found.".formatted());
+				log.info("No security roles found.");
 			}
 		}
 

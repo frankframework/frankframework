@@ -100,7 +100,7 @@ public class JmsRealm {
 		}catch (Exception e) {
 			log.error(logPrefixDest+"unable to copy properties of JmsRealm", e);
 		}
-		log.info(logPrefixDest+"loaded properties from jmsRealm ["+toString()+"]");
+		log.info(logPrefixDest+"loaded properties from jmsRealm ["+ this +"]");
 	}
 
 	/**

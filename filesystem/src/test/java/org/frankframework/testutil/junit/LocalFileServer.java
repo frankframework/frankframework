@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +50,6 @@ import org.frankframework.filesystem.smb.Samba2FileSystemTest;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
@@ -59,7 +60,7 @@ import org.springframework.extensions.config.element.GenericConfigElement;
  * @author Niels Meijer
  */
 public class LocalFileServer implements AutoCloseable, CloseableResource {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	// Default memory pool settings
 	private static final int[] DefaultMemoryPoolBufSizes = { 256, 4096, 16384, 65536 };
@@ -80,7 +81,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 	private final String domain = "dummyDomain.org";
 	private final String license;
 	private final Path testDirectory; // path in which the tests are executed
-	private ServerConfiguration serverConfig;
+	private final ServerConfiguration serverConfig;
 
 
 	public enum FileSystemType {

@@ -38,7 +38,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	private String tableAlias;
 
 	private JdbcFacade parent=null;
-	private JdbcTableListener<M> tableListener;
+	private final JdbcTableListener<M> tableListener;
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";

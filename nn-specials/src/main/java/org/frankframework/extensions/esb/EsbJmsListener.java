@@ -24,13 +24,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import javax.xml.transform.TransformerConfigurationException;
+
 import jakarta.jms.BytesMessage;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
-import javax.xml.transform.TransformerConfigurationException;
-
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -51,8 +52,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-
-import lombok.Getter;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
@@ -78,7 +77,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		/** Fire & Forget protocol */
 		FF,
 		/** Request-Reply protocol */
-		RR;
+		RR
 	}
 
 	@Override

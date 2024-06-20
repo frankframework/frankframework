@@ -36,7 +36,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -112,10 +116,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -251,7 +251,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private @Getter boolean forceRetryFlag = false;
 	private @Getter boolean checkForDuplicates=false;
-	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID };
+	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID }
+
 	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
 	private @Getter int maxDeliveries=5;
 	private @Getter int maxRetries=1;
@@ -582,13 +583,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (getListener() instanceof ReceiverAware) {
 				((ReceiverAware)getListener()).setReceiver(this);
 			}
-			if (getListener() instanceof IPushingListener) {
-				IPushingListener<M> pl = (IPushingListener<M>)getListener();
+			if (getListener() instanceof IPushingListener<M> pl) {
 				pl.setHandler(this);
 				pl.setExceptionListener(this);
 			}
-			if (getListener() instanceof IPortConnectedListener) {
-				IPortConnectedListener<M> pcl = (IPortConnectedListener<M>) getListener();
+			if (getListener() instanceof IPortConnectedListener<M> pcl) {
 				pcl.setReceiver(this);
 			}
 			if (getListener() instanceof IPullingListener) {
@@ -611,8 +610,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					info("Listener has answer-sender on "+destination.getPhysicalDestinationName());
 				}
 			}
-			if (getListener() instanceof ITransactionRequirements) {
-				ITransactionRequirements tr=(ITransactionRequirements)getListener();
+			if (getListener() instanceof ITransactionRequirements tr) {
 				if (tr.transactionalRequired() && !isTransacted()) {
 					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 					//throw new ConfigurationException(msg);
@@ -1659,18 +1657,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public boolean isThreadCountReadable() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.isThreadCountReadable();
 		}
 		return getListener() instanceof IPullingListener;
 	}
 	@Override
 	public boolean isThreadCountControllable() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.isThreadCountControllable();
 		}
 		return getListener() instanceof IPullingListener;
@@ -1678,9 +1672,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public int getCurrentThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.getCurrentThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1691,9 +1683,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public int getMaxThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.getMaxThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1704,9 +1694,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public void increaseThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			tcc.increaseThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1716,9 +1704,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public void decreaseThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			tcc.decreaseThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {

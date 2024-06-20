@@ -94,7 +94,7 @@ class FrankJ2V8LibraryLoader {
 		}
 
 		/* Failed to find the library */
-		throw new UnsatisfiedLinkError("Could not load J2V8 library. Reasons: " + message.toString()); //$NON-NLS-1$
+		throw new UnsatisfiedLinkError("Could not load J2V8 library. Reasons: " + message); //$NON-NLS-1$
 	}
 
 	static boolean load(final String libName, final StringBuilder message) {

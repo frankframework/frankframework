@@ -22,14 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.FrankDocGroup;
@@ -38,6 +33,10 @@ import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.monitoring.events.Event;
 import org.frankframework.monitoring.events.RegisterMonitorEvent;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 
 /**
  * Manager for Monitoring.
@@ -52,9 +51,9 @@ import org.frankframework.util.XmlBuilder;
 public class MonitorManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
-	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
-	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
+	private final List<Monitor> monitors = new ArrayList<>();                            // All monitors managed by this MonitorManager
+	private final Map<String, Event> events = new HashMap<>();                           // All events that can be thrown
+	private final Map<String, IMonitorDestination> destinations = new LinkedHashMap<>(); // All destinations (that can receive status messages) managed by this MonitorManager
 
 	/**
 	 * (re)configure all destinations and all monitors.
