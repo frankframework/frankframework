@@ -28,7 +28,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	private Object responseBuffer;
 	private Object captureStream;
-	private int caputureSize;
+	private int captureSize;
 	private String charset;
 
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
@@ -96,23 +96,23 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	private void installCapture() {
 		if (captureStream instanceof Writer writer) {
-			super.captureCharacterStream(writer, caputureSize);
+			super.captureCharacterStream(writer, captureSize);
 			return;
 		}
 		if (captureStream instanceof OutputStream stream) {
-			super.captureBinaryStream(stream, caputureSize);
+			super.captureBinaryStream(stream, captureSize);
 		}
 	}
 
 	@Override
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		captureStream = writer;
-		caputureSize = maxSize;
+		captureSize = maxSize;
 	}
 
 	@Override
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		captureStream = outputStream;
-		caputureSize = maxSize;
+		captureSize = maxSize;
 	}
 }

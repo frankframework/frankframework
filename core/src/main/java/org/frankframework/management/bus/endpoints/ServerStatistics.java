@@ -16,15 +16,15 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.ServletContext;
-
 import jakarta.annotation.security.PermitAll;
+import jakarta.servlet.ServletContext;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.Configuration;
@@ -220,7 +220,7 @@ public class ServerStatistics extends BusEndpointBase {
 				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...(" + (msg.length() - MAX_MESSAGE_SIZE) + " characters more)";
 			}
 			configurationMessage.put("message", msg);
-			Date date = messageKeeper.getMessage(t).getMessageDate();
+			Instant date = messageKeeper.getMessage(t).getMessageDate();
 			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FULL_GENERIC_FORMATTER));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.put("level", level);

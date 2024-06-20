@@ -64,8 +64,8 @@ public class MessagingSource  {
 
 	private final @Getter String id;
 
-	private Context context = null;
-	private ConnectionFactory connectionFactory = null;
+	private Context context;
+	private ConnectionFactory connectionFactory;
 	private Connection globalConnection=null; // only used when connections are not pooled
 
 	private final Map<String,MessagingSource> siblingMap;
@@ -140,7 +140,7 @@ public class MessagingSource  {
 	}
 
 	/** The QCF is wrapped in a Spring TransactionAwareConnectionFactoryProxy, this should always be the most outer wrapped QCF. */
-	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		if(getConnectionFactory() instanceof TransactionAwareConnectionFactoryProxy) {
 			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(), "targetConnectionFactory");
 		}

@@ -218,7 +218,7 @@ public class FileRecordListener implements IPullingListener<String> {
 			String fileContent = "";
 			try {
 				fullInputFileName = inputFile.getCanonicalPath();
-				fileContent = StreamUtil.fileToString(fullInputFileName, "\n");
+				fileContent = StreamUtil.fileToString(fullInputFileName, "\n", false);
 				inputFileName = archiveFile(inputFile);
 
 			} catch (IOException e) {

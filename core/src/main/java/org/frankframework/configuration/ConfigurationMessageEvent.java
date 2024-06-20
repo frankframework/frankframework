@@ -15,7 +15,7 @@
 */
 package org.frankframework.configuration;
 
-import java.util.Date;
+import java.time.Instant;
 
 import lombok.Getter;
 import org.frankframework.core.IConfigurationAware;
@@ -79,7 +79,6 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 			m.append(": ").append(e.getMessage());
 		}
 
-		Date date = new Date(getTimestamp());
-		messageKeeperMessage = new MessageKeeperMessage(m.toString(), date, level);
+		messageKeeperMessage = new MessageKeeperMessage(m.toString(), Instant.ofEpochMilli(getTimestamp()), level);
 	}
 }

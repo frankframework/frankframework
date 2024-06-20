@@ -17,6 +17,13 @@ package org.frankframework.web;
 
 import java.io.IOException;
 
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.lifecycle.DynamicRegistration;
@@ -28,14 +35,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.servlet.DispatcherServlet;
-
-import jakarta.servlet.MultipartConfigElement;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -57,7 +56,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		//don't wire the the parent's (EnvironmentContext) ApplicationContext,
+		//don't wire the parent's (EnvironmentContext) ApplicationContext,
 	}
 
 	@Override
@@ -85,9 +84,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 			return;
 		}
 
-		/**
-		 * Log POST, PUT and DELETE requests
-		 */
+		// Log POST, PUT and DELETE requests
 		final String method = request.getMethod();
 		if (!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
 			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), BusMessageUtils.getUserPrincipalName());

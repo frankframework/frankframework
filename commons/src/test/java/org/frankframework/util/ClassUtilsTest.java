@@ -95,4 +95,36 @@ class ClassUtilsTest {
 			private @Getter @Setter String name;
 		}));
 	}
+
+	@Test
+	public void getDeclaredFieldValueReturnsCorrectValue() throws NoSuchFieldException {
+		TestClass testClass = new TestClass();
+		testClass.setField("testValue");
+		Object result = ClassUtils.getDeclaredFieldValue(testClass, "field");
+		assertEquals("testValue", result);
+	}
+
+	@Test
+	public void getDeclaredFieldValueThrowsExceptionForNonExistentField() {
+		TestClass testClass = new TestClass();
+		assertThrows(NoSuchFieldException.class, () -> ClassUtils.getDeclaredFieldValue(testClass, "nonExistentField"));
+	}
+
+	@Test
+	public void getDeclaredFieldValueThrowsExceptionForNullObject() {
+		assertThrows(NullPointerException.class, () -> ClassUtils.getDeclaredFieldValue(null, "field"));
+	}
+
+	@Test
+	public void getDeclaredFieldValueThrowsExceptionForNullFieldName() {
+		TestClass testClass = new TestClass();
+		assertThrows(NullPointerException.class, () -> ClassUtils.getDeclaredFieldValue(testClass, null));
+	}
+
+	@Setter
+	@SuppressWarnings("unused")
+	private static class TestClass {
+		private String field;
+
+	}
 }

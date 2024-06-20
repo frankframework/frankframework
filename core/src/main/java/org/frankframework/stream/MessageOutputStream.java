@@ -15,7 +15,6 @@
 */
 package org.frankframework.stream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -324,12 +323,10 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public StringWriter captureCharacterStream() {
 		StringWriter result = new StringWriter();
-		captureCharacterStream(result);
+		captureCharacterStream(result, 10_000);
 		return result;
 	}
-	public void captureCharacterStream(Writer writer) {
-		captureCharacterStream(writer, 10000);
-	}
+
 	@SuppressWarnings("resource")
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
@@ -353,14 +350,6 @@ public class MessageOutputStream implements AutoCloseable {
 		log.warn("captureCharacterStream() called before stream is installed.");
 	}
 
-	public ByteArrayOutputStream captureBinaryStream() {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		captureBinaryStream(result);
-		return result;
-	}
-	public void captureBinaryStream(OutputStream outputStream) {
-		captureBinaryStream(outputStream, 10000);
-	}
 	@SuppressWarnings("resource")
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));

@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'console/frontend/**'
-      - '.github/workflows/*.yml'
+      - '.github/workflows/angular-karma-tests.yml'
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
