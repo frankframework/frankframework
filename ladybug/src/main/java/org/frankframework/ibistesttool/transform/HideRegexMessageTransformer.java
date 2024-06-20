@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,44 +15,45 @@
 */
 package org.frankframework.ibistesttool.transform;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.logging.IbisMaskingLayout;
-
 import org.frankframework.util.StringUtil;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.transform.MessageTransformer;
 
 /**
  * Hide the same data as is hidden in the Ibis logfiles based on the
- * log.hideRegex property in log4j4ibis.properties.
+ * log.hideRegex property in log4j4ibis.properties and {@link org.frankframework.core.IPipe#setHideRegex(String)}.
  *
  * @author Jaco de Groot
  */
 public class HideRegexMessageTransformer implements MessageTransformer {
-	Set<String> hideRegex;
-
-	HideRegexMessageTransformer() {
-		hideRegex = IbisMaskingLayout.getGlobalReplace();
-	}
+	Map<String, Pattern> hideRegex = new HashMap<>();
 
 	@Override
 	public String transform(Checkpoint checkpoint, String message) {
-		if (message != null) {
-			message = StringUtil.hideAll(message, hideRegex);
-
-			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = StringUtil.hideAll(message, threadHideRegex);
+		if (StringUtils.isBlank(message)) {
+			return message;
 		}
-		return message;
+		String result = IbisMaskingLayout.maskSensitiveInfo(message);
+		// Apply additional regexes that may have been set specifically on the MessageTransformer
+		return StringUtil.hideAll(result, hideRegex.values());
 	}
 
 	public Set<String> getHideRegex() {
-		return hideRegex;
+		return hideRegex.keySet();
 	}
 
 	public void setHideRegex(Set<String> string) {
-		hideRegex = string;
+		hideRegex = string.stream()
+				.map(re -> Map.entry(re, Pattern.compile(re)))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
-
 }

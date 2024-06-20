@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.stream;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -24,6 +25,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.jta.TransactionConnector;
 import org.frankframework.logging.IbisMaskingLayout;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 
 public class ThreadConnector<T> implements AutoCloseable {
@@ -34,7 +36,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private Thread childThread;
 	private Map<String,String> savedThreadContext;
 	private final T threadInfo;
-	private final Set<String> hideRegex;
+	private final Set<Pattern> hideRegex;
 
 	private enum ThreadState {
 		ANNOUNCED,
@@ -46,7 +48,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private final TransactionConnector<?,?> transactionConnector;
 
 
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager<?,?> txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener = threadLifeCycleEventListener;
 		threadInfo = threadLifeCycleEventListener != null ? threadLifeCycleEventListener.announceChildThread(owner, correlationId) : null;
@@ -56,7 +58,8 @@ public class ThreadConnector<T> implements AutoCloseable {
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 		saveThreadContext();
 	}
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
+
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager<?,?> txManager, PipeLineSession session) {
 		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getCorrelationId());
 	}
 
@@ -159,29 +162,23 @@ public class ThreadConnector<T> implements AutoCloseable {
 	@Override
 	public void close() {
 		restoreThreadContext();
-		try {
-			if (transactionConnector != null) {
-				transactionConnector.close();
-			}
-		} finally {
-			if (threadLifeCycleEventListener != null) {
-				switch (threadState) {
-				case ANNOUNCED:
+		CloseUtils.closeSilently(transactionConnector);
+		if (threadLifeCycleEventListener != null) {
+			switch (threadState) {
+				case ANNOUNCED -> {
 					log.trace("[{}] cancel thread [{}] in close", this, threadInfo);
 					threadLifeCycleEventListener.cancelChildThread(threadInfo);
-					break;
-				case CREATED:
+				}
+				case CREATED -> {
 					log.warn("thread was not properly closed");
 					log.trace("[{}] end thread [{}] in close", this, threadInfo);
 					threadLifeCycleEventListener.threadEnded(threadInfo, null);
-					break;
-				case FINISHED:
-					break;
-				default:
-					throw new IllegalStateException("Unknown ThreadState [" + threadState + "]");
 				}
+				case FINISHED -> {
+					// No-op
+				}
+				default -> throw new IllegalStateException("Unknown ThreadState [" + threadState + "]");
 			}
 		}
 	}
-
 }
