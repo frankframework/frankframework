@@ -33,7 +33,6 @@ import java.util.TreeMap;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
-
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -391,7 +390,7 @@ public class AdapterStatus extends BusEndpointBase {
 			MessageKeeperMessage msg = adapter.getMessageKeeper().getMessage(t);
 
 			message.put("message", msg.getMessageText());
-			message.put("date", msg.getMessageDate());
+			message.put("date", Date.from(msg.getMessageDate()));
 			message.put("level", msg.getMessageLevel());
 			message.put("capacity", adapter.getMessageKeeper().capacity());
 
