@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,18 +17,17 @@ package org.frankframework.configuration.filters;
 
 import java.util.Properties;
 
+import org.frankframework.util.StringResolver;
+import org.frankframework.xml.AttributesWrapper;
+import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import org.frankframework.util.StringResolver;
-import org.frankframework.xml.AttributesWrapper;
-import org.frankframework.xml.FullXmlFilter;
-
 public class OnlyActiveFilter extends FullXmlFilter {
 
-	private final String ACTIVE_ATTRIBUTE = "active";
-	private Properties properties;
+	private static final String ACTIVE_ATTRIBUTE = "active";
+	private final Properties properties;
 	private int suppressLevel = 0;
 
 	/**

@@ -20,6 +20,10 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
@@ -29,18 +33,13 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
-
 @IbisInitializer
 public class LarvaServlet extends HttpServletBase {
 	private static final URL INDEX_TEMPLATE = getResource("/index.html.template");
 	private static final String SERVLET_PATH = "/iaf/larva/";
 	private final transient Logger log = LogUtil.getLogger(this);
 
-	private final transient boolean ALLOW_SAVE = AppConstants.getInstance().getBoolean("servlet.LarvaServlet.allowFileSave", false);
+	private final transient boolean allowSave = AppConstants.getInstance().getBoolean("servlet.LarvaServlet.allowFileSave", false);
 
 	private enum Assets {
 		STYLESHEET("/assets/style.css", "text/css"),
@@ -113,7 +112,7 @@ public class LarvaServlet extends HttpServletBase {
 		if("/".equals(path) || "/index.jsp".equalsIgnoreCase(path)) {
 			handleIndex(req, resp);
 			return;
-		} else if (ALLOW_SAVE && "/saveResultToFile.jsp".equals(path)) {
+		} else if (allowSave && "/saveResultToFile.jsp".equals(path)) {
 			handleSaveResult(req, resp);
 			return;
 		}

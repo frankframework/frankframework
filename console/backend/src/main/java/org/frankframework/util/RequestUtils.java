@@ -23,16 +23,14 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.management.web.ApiException;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
-public abstract class RequestUtils {
-	private static final Logger LOG = LogManager.getLogger(RequestUtils.class);
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+public class RequestUtils {
 
 	@SuppressWarnings("unchecked")
 	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {

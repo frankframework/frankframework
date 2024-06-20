@@ -90,15 +90,15 @@ public class Adapter implements IAdapter, NamedBean {
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private final AppConstants appConstants = AppConstants.getInstance(configurationClassLoader);
 
 	private String name;
 	private @Getter String description;
-	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
+	private @Getter boolean autoStart = appConstants.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
-	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
-	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
+	private Level msgLogLevel = Level.toLevel(appConstants.getProperty("msg.log.level.default", "INFO"));
+	private @Getter boolean msgLogHidden = appConstants.getBoolean("msg.log.hidden.default", true);
 	private @Setter @Getter String targetDesignDocument;
 
 	private @Getter Configuration configuration;
@@ -120,7 +120,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
 	private DistributionSummary statsMessageProcessingDuration = null;
-	private Object statisticsLock = new Object();
+	private final Object statisticsLock = new Object();
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
@@ -128,7 +128,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
-	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
+	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
