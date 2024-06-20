@@ -22,6 +22,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.google.common.net.HttpHeaders;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -66,11 +68,11 @@ public class RestListenerServlet extends HttpServletBase {
 		String body = "";
 
 		if(restPath.contains("rest-public")) {
-			response.setHeader("Access-Control-Allow-Origin", corsAllowOrigin);
-			String headers = request.getHeader("Access-Control-Request-Headers");
+			response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, corsAllowOrigin);
+			String headers = request.getHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
 			if (headers != null)
-				response.setHeader("Access-Control-Allow-Headers", headers);
-			response.setHeader("Access-Control-Expose-Headers", corsExposeHeaders);
+				response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, headers);
+			response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, corsExposeHeaders);
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {

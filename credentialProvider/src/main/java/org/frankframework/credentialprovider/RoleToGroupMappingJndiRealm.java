@@ -36,6 +36,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.realm.JNDIRealm;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.digester.Digester;
@@ -111,8 +112,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 */
 	public List<String> getRoles(JNDIConnection connection, String username) throws NamingException {
 		if (StringUtils.isEmpty(username)) {
-			if (this.containerLog.isDebugEnabled())
-				this.containerLog.debug("username null or empty: returning null roles.");
+			containerLog.debug("username null or empty: returning null roles.");
 			return null;
 		}
 		if (this.userPatternArray != null) {
