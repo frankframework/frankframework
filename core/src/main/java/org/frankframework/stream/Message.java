@@ -49,10 +49,8 @@ import javax.xml.transform.dom.DOMSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import lombok.Getter;
 import lombok.Lombok;
-
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -1065,9 +1063,9 @@ public class Message implements Serializable, Closeable {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
 		if (isBinary()) {
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize, true);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize);
 		} else {
-			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize, true);
+			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize);
 		}
 		closeOnClose(outputStream);
 	}
@@ -1095,10 +1093,10 @@ public class Message implements Serializable, Closeable {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
 		if (!isBinary()) {
-			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize, true);
+			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
 		} else {
 			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize);
 		}
 		closeOnClose(writer);
 	}

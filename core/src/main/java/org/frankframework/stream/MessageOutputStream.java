@@ -15,7 +15,6 @@
 */
 package org.frankframework.stream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,34 +29,33 @@ import java.util.Set;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.stream.document.Json2XmlHandler;
-import org.frankframework.stream.json.JsonTee;
-import org.frankframework.stream.json.JsonWriter;
-import org.frankframework.stream.xml.XmlTee;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamCaptureUtils;
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.ThreadConnectingFilter;
-import org.frankframework.xml.XmlWriter;
-import org.xml.sax.ContentHandler;
-
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
+import org.frankframework.stream.document.Json2XmlHandler;
+import org.frankframework.stream.json.JsonTee;
+import org.frankframework.stream.json.JsonWriter;
+import org.frankframework.stream.xml.XmlTee;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.ThreadConnectingFilter;
+import org.frankframework.xml.XmlWriter;
+import org.xml.sax.ContentHandler;
 
 public class MessageOutputStream implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(MessageOutputStream.class);
 
-	private INamedObject owner;
+	private final INamedObject owner;
 	protected Object requestStream;
 	private Message response;
 	private PipeForward forward;
-	private String conversionCharset;
+	private final String conversionCharset;
 
 	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
@@ -325,12 +323,10 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public StringWriter captureCharacterStream() {
 		StringWriter result = new StringWriter();
-		captureCharacterStream(result);
+		captureCharacterStream(result, 10_000);
 		return result;
 	}
-	public void captureCharacterStream(Writer writer) {
-		captureCharacterStream(writer, 10000);
-	}
+
 	@SuppressWarnings("resource")
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
@@ -354,14 +350,6 @@ public class MessageOutputStream implements AutoCloseable {
 		log.warn("captureCharacterStream() called before stream is installed.");
 	}
 
-	public ByteArrayOutputStream captureBinaryStream() {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		captureBinaryStream(result);
-		return result;
-	}
-	public void captureBinaryStream(OutputStream outputStream) {
-		captureBinaryStream(outputStream, 10000);
-	}
 	@SuppressWarnings("resource")
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
