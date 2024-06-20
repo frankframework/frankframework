@@ -552,7 +552,7 @@ public class Adapter implements IAdapter, NamedBean {
 		PipeLineResult result = null;
 		try {
 			if (composedHideRegexPattern != null) {
-				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex, composedHideRegexPattern);
+				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegexPattern);
 			}
 
 			String additionalLogging = getAdditionalLogging(pipeLineSession);

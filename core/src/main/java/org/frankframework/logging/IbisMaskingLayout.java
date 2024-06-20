@@ -17,8 +17,8 @@ package org.frankframework.logging;
 
 import java.io.Serial;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,12 +58,12 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * This is required to be set for each thread individually.
 	 */
-	private static final ThreadLocal<Map<String, Pattern>> threadLocalReplace = new ThreadLocal<>();
+	private static final ThreadLocal<Set<Pattern>> threadLocalReplace = new ThreadLocal<>();
 
 	/**
 	 * Set of regex strings to hide globally, meaning for every thread/adapter.
 	 */
-	private static Map<String, Pattern> globalReplace = new HashMap<>();
+	private static Set<Pattern> globalReplace = new HashSet<>();
 
 	/**
 	 * @param config
@@ -100,12 +100,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		if (StringUtils.isBlank(message)) {
 			return message;
 		}
-		String result = StringUtil.hideAll(message, globalReplace.values());
-		Map<String, Pattern> threadLocalPatterns = threadLocalReplace.get();
-		if (threadLocalPatterns == null) {
-			return result;
-		}
-		return StringUtil.hideAll(result, threadLocalPatterns.values());
+		String tmpResult = StringUtil.hideAll(message, globalReplace);
+		return StringUtil.hideAll(tmpResult, threadLocalReplace.get());
 	}
 
 	/**
@@ -182,65 +178,52 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static void addToGlobalReplace(String regex) {
-		globalReplace.put(regex, Pattern.compile(regex));
+		globalReplace.add(Pattern.compile(regex));
 	}
 
-	public static void removeFromGlobalReplace(String regex) {
-		globalReplace.remove(regex);
+	public static void addToGlobalReplace(Pattern regex) {
+		globalReplace.add(regex);
 	}
 
-	public static Map<String, Pattern> getGlobalReplace() {
+	public static Set<Pattern> getGlobalReplace() {
 		return globalReplace;
 	}
 
 	public static void cleanGlobalReplace() {
-		globalReplace = new HashMap<>();
+		globalReplace = new HashSet<>();
 	}
 
-	public static void addToThreadLocalReplace(Map<String, Pattern> hideRegexMap) {
-		if (hideRegexMap == null || hideRegexMap.isEmpty()) return;
+	public static void addToThreadLocalReplace(Set<Pattern> hideRegexSet) {
+		if (hideRegexSet == null || hideRegexSet.isEmpty()) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
 
-		threadLocalReplace.get().putAll(hideRegexMap);
+		threadLocalReplace.get().addAll(hideRegexSet);
 	}
 
 	/**
 	 * Add regex to hide locally, meaning for specific threads/adapters.
 	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
 	 */
-	public static void addToThreadLocalReplace(String tag, Pattern regex) {
-		if(StringUtils.isEmpty(tag) || regex == null) return;
+	public static void addToThreadLocalReplace(Pattern regex) {
+		if(regex == null) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
-		threadLocalReplace.get().put(tag, regex);
-	}
-
-	/**
-	 * Remove regex identified by tag to hide locally, meaning for specific threads/adapters.
-	 * When the last item is removed the Set will be removed as well.
-	 */
-	public static void removeFromThreadLocalReplace(String tag) {
-		if(StringUtils.isEmpty(tag)) return;
-
-		threadLocalReplace.get().remove(tag);
-
-		if(threadLocalReplace.get().isEmpty())
-			removeThreadLocalReplace();
+		threadLocalReplace.get().add(regex);
 	}
 
 	/**
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * Can return null when not used/initalized!
 	 */
-	public static Map<String, Pattern> getThreadLocalReplace() {
+	public static Set<Pattern> getThreadLocalReplace() {
 		return threadLocalReplace.get();
 	}
 
 	private static void createThreadLocalReplace() {
-		threadLocalReplace.set(new HashMap<>());
+		threadLocalReplace.set(new HashSet<>());
 	}
 
 	public static void removeThreadLocalReplace() {

@@ -137,10 +137,11 @@ public class StringUtil {
 		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
 			return message; //Nothing to do!
 
+		String result = message;
 		for (Pattern regex : collection) {
-			message = hideAll(message, regex, mode);
+			result = hideAll(result, regex, mode);
 		}
-		return message;
+		return result;
 	}
 
 	/**
