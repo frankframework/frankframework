@@ -27,7 +27,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.header.writers.ContentSecurityPolicyHeaderWriter;
@@ -39,7 +38,7 @@ public class CspFilter implements Filter {
 	private boolean reportOnly;
 
 	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
+	public void init(FilterConfig filterConfig) {
 		cspWriter = new ContentSecurityPolicyHeaderWriter();
 
 		List<String> policyDirectives = new LinkedList<>();
