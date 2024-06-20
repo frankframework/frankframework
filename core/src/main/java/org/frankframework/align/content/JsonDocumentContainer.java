@@ -34,7 +34,7 @@ import org.frankframework.util.LogUtil;
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	@Getter private final String name;
+	private @Getter final String name;
 	private final boolean skipArrayElementContainers;
 	private final boolean skipRootElement;
 	private static final String ATTRIBUTE_PREFIX = "@";
