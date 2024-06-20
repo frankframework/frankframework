@@ -21,5 +21,5 @@ package org.frankframework.monitoring;
  * @since   4.7
  */
 public enum Severity {
-	HARMLESS, WARNING, CRITICAL, FATAL;
+	HARMLESS, WARNING, CRITICAL, FATAL
 }

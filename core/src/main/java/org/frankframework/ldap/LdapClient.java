@@ -45,7 +45,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -353,8 +352,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			    			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] found secondary membership ["+secondaryResult+"]");
 			    			results.add(secondaryResult);
 			    			if (!searched.contains(secondaryResult) &&
-			    				!searchingNow.contains(secondaryResult) &&
-			    				!toBeSearched.contains(secondaryResult)) {
+			    				!searchingNow.contains(secondaryResult)) {
 			    				toBeSearched.add(secondaryResult);
 			    			}
 			    		}
@@ -685,7 +683,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		try {
 			URL url = ClassLoaderUtils.getResourceURL(resourceName);
 			if (url != null) {
-				log.info("LDAP properties loading from file [" + url.toString() + "]");
+				log.info("LDAP properties loading from file [" + url + "]");
 				try(InputStream is = StreamUtil.urlToStream(url, 10000); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 					ldapProperties.load(reader);
 				}

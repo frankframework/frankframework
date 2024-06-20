@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
@@ -44,9 +46,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
 
 /**
  * Sender for Akamai NetStorage (HTTP based).
@@ -73,7 +72,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 	private @Getter Action action = null;
 	public enum Action {
-		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD;
+		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD
 	}
 
 	private @Getter int signVersion = 5;

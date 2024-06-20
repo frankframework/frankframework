@@ -30,6 +30,6 @@ import org.frankframework.stream.Message;
  */
 public interface SenderWrapperProcessor {
 
-	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 }

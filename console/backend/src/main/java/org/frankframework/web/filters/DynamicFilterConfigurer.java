@@ -24,22 +24,19 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.SpringUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import lombok.Getter;
-
-import org.frankframework.util.SpringUtils;
 
 /**
  * Configures all {@link Dynamic} Filters through Spring and registers them in the ServletContext.
  */
 @WebListener
 public class DynamicFilterConfigurer implements ServletContextListener {
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 
 	public enum DynamicFilters {
 		CORS_FILTER(CorsFilter.class, "/iaf/api/*"),
@@ -48,8 +45,8 @@ public class DynamicFilterConfigurer implements ServletContextListener {
 		ETAG_FILTER(WeakShallowEtagHeaderFilter.class, "/iaf/api/*"),
 		CSRF_COOKIE_FILTER(CsrfCookieFilter.class, "/iaf/gui/*");
 
-		private @Getter Class<? extends Filter> filterClass;
-		private @Getter String endpoints;
+		private final @Getter Class<? extends Filter> filterClass;
+		private final @Getter String endpoints;
 		DynamicFilters(Class<? extends Filter> clazz, String endpoints) {
 			this.filterClass = clazz;
 			this.endpoints = endpoints;

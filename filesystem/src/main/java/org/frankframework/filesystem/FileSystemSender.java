@@ -55,7 +55,7 @@ import org.frankframework.util.SpringUtils;
 public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private S fileSystem;
-	private FileSystemActor<F,S> actor = new FileSystemActor<>();
+	private final FileSystemActor<F,S> actor = new FileSystemActor<>();
 
 	@Override
 	public void configure() throws ConfigurationException {

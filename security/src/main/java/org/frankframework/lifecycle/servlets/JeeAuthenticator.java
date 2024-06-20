@@ -15,10 +15,11 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -37,8 +38,6 @@ import org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPre
 import org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappableAttributesRetriever;
 
-import org.frankframework.util.SpringUtils;
-
 /* https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html
  * https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov
  * https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
@@ -56,7 +55,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 	//see AuthenticationManagerFactoryBean
 	private AuthenticationManager getAuthenticationManager(HttpSecurity http) {
 		AuthenticationProvider provider = getAuthenticationProvider(http);
-		return new ProviderManager(Arrays.asList(provider));
+		return new ProviderManager(List.of(provider));
 	}
 
 	/**
@@ -105,7 +104,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 
 	public static class DelegatedMappableAttributesRetriever implements MappableAttributesRetriever {
 
-		private Set<String> mappableAttributes = new HashSet<>();
+		private final Set<String> mappableAttributes = new HashSet<>();
 
 		@Override
 		public Set<String> getMappableAttributes() {

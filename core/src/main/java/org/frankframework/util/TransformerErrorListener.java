@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 public class TransformerErrorListener implements ErrorListener {
 	static Logger log = LogUtil.getLogger(TransformerErrorListener.class);
 
-	private boolean throwException;
+	private final boolean throwException;
 	private TransformerException fatalTransformerException;
 	private IOException fatalIOException;
 

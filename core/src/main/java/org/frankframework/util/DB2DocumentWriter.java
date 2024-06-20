@@ -21,19 +21,17 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.INodeBuilder;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.stream.MessageOutputStream;
 import org.frankframework.stream.StreamingException;
+import org.frankframework.stream.document.ArrayBuilder;
+import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
+import org.frankframework.stream.document.INodeBuilder;
 import org.frankframework.stream.document.ObjectBuilder;
+import org.xml.sax.SAXException;
 
 public class DB2DocumentWriter {
 	protected static Logger log = LogUtil.getLogger(DB2DocumentWriter.class);
@@ -165,7 +163,7 @@ public class DB2DocumentWriter {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
 			try (ObjectBuilder row=nodeBuilder.startObject()) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
-					String columnName = "" + rsmeta.getColumnName(i);
+					String columnName = rsmeta.getColumnName(i);
 					if(convertFieldnamesToUppercase) {
 						columnName = columnName.toUpperCase();
 					}

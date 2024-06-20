@@ -15,7 +15,7 @@
 */
 package org.frankframework.ldap;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -37,6 +37,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import lombok.Getter;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -56,8 +57,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -248,13 +247,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 * 	  <li>parameter 'newPassword', new password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
 		 * </ul>
 		 */
-		@EnumLabel("changeUnicodePwd") CHANGE_UNICODE_PWD;
+		@EnumLabel("changeUnicodePwd") CHANGE_UNICODE_PWD
 	}
 
 	public enum Manipulation {
 		ENTRY,
 		ATTRIBUTE
-	};
+	}
 
 	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
@@ -436,7 +435,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		String entryNameAfter = entryName;
 		if (paramValueMap != null){
 			String newEntryName = (String)paramValueMap.get("newEntryName");
-			if (newEntryName != null && StringUtils.isNotEmpty(newEntryName)) {
+			if (StringUtils.isNotEmpty(newEntryName)) {
 				if (log.isDebugEnabled()) log.debug("newEntryName=["+newEntryName+"]");
 				DirContext dirContext = null;
 				try{
@@ -974,7 +973,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		digester.addCallMethod("*/attributes/attribute/value","add",0);
 
 		try {
-			return (Attributes) digester.parse(message.asReader());
+			return digester.parse(message.asReader());
 		} catch (Exception e) {
 			throw new SenderException("[" + this.getClass().getName() + "] exception in digesting",	e);
 		}
@@ -1169,11 +1168,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private byte[] encodeUnicodePwd(Object value) throws SenderException {
 		log.debug("Encode unicodePwd value");
 		String quotedPassword = "\"" + value + "\"";
-		try {
-			return quotedPassword.getBytes("UTF-16LE");
-		} catch (UnsupportedEncodingException e) {
-			throw new SenderException(e);
-		}
+		return quotedPassword.getBytes(StandardCharsets.UTF_16LE);
 	}
 
 	@Override

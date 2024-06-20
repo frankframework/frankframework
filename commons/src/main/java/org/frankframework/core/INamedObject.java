@@ -25,6 +25,6 @@ public interface INamedObject {
 	/**
 	 * The functional name of the object.
 	 */
-	public void setName(String name);
-	public String getName();
+	void setName(String name);
+	String getName();
 }

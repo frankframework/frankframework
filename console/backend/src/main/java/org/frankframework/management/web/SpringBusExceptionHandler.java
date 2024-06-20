@@ -17,6 +17,7 @@ package org.frankframework.management.web;
 
 import java.util.function.Function;
 
+import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.management.bus.BusException;
 import org.springframework.http.HttpStatus;
@@ -29,8 +30,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
-
-import jakarta.annotation.Nullable;
 
 @RestControllerAdvice
 @Log4j2
@@ -46,12 +45,12 @@ public class SpringBusExceptionHandler {
 		private final Class<? extends Throwable> exceptionClass;
 		private final Function<Throwable, ResponseEntity<?>> messageConverter;
 
-		private ManagedException(final Class<? extends Throwable> exceptionClass, final HttpStatus status) {
+		ManagedException(final Class<? extends Throwable> exceptionClass, final HttpStatus status) {
 			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status));
 		}
 
 		@SuppressWarnings("unchecked")
-		private <T extends Throwable> ManagedException(final Class<T> exceptionClass, final Function<T, ResponseEntity<?>> messageConverter) {
+		<T extends Throwable> ManagedException(final Class<T> exceptionClass, final Function<T, ResponseEntity<?>> messageConverter) {
 			this.exceptionClass = exceptionClass;
 			this.messageConverter = (Function<Throwable, ResponseEntity<?>>) messageConverter;
 		}

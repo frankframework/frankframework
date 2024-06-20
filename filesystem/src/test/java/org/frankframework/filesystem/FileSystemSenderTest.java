@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -136,7 +137,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_deleteFile(null, filename);
 		}
 
-		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
+		InputStream stream = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 

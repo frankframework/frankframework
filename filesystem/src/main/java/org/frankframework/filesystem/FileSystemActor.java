@@ -160,7 +160,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		@EnumLabel(ACTION_FORWARD) FORWARD,
 
 		/** Specific to FileSystemSenderWithAttachments */
-		@EnumLabel(ACTION_LIST_ATTACHMENTS) LISTATTACHMENTS;
+		@EnumLabel(ACTION_LIST_ATTACHMENTS) LISTATTACHMENTS
 
 	}
 

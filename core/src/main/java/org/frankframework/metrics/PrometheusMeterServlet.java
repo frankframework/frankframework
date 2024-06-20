@@ -18,14 +18,6 @@ package org.frankframework.metrics;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.http.HttpServletBase;
-import org.frankframework.lifecycle.IbisInitializer;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
@@ -34,6 +26,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.http.HttpServletBase;
+import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
 @IbisInitializer
 public class PrometheusMeterServlet extends HttpServletBase {
@@ -41,7 +40,7 @@ public class PrometheusMeterServlet extends HttpServletBase {
 
 	private PrometheusMeterRegistry prometheusRegistry = null;
 	private transient @Setter @Autowired MeterRegistry registry;
-	private static final transient Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
+	private static final Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {

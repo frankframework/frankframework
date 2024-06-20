@@ -29,6 +29,9 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
@@ -59,10 +62,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -101,7 +100,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	private @Getter String urlParam = "url";
 
 	public enum HttpMethod {
-		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
+		GET, POST, PUT, PATCH, DELETE, HEAD, REPORT
 	}
 	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 

@@ -25,9 +25,8 @@ import java.util.TreeSet;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.frankframework.util.StreamUtil;
-
 import jakarta.annotation.Nonnull;
+import org.frankframework.util.StreamUtil;
 
 /**
  * General utility functions needed to implement the HTTP SDK.  Many of these functions are also
@@ -54,7 +53,7 @@ public class NetStorageUtils {
 		 */
 		private final String algorithm;
 
-		private KeyedHashAlgorithm(final String algorithm) {
+		KeyedHashAlgorithm(final String algorithm) {
 			this.algorithm = algorithm;
 		}
 

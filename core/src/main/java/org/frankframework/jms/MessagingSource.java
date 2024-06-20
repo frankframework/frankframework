@@ -196,8 +196,7 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof JmsPoolConnectionFactory) {
-			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+		if (qcfd instanceof JmsPoolConnectionFactory poolcf) {
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
@@ -323,10 +322,9 @@ public class MessagingSource  {
 	private void deleteDynamicQueue(Queue queue) throws JmsException {
 		if (queue!=null) {
 			try {
-				if (!(queue instanceof TemporaryQueue)) {
+				if (!(queue instanceof TemporaryQueue tqueue)) {
 					throw new JmsException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
 				}
-				TemporaryQueue tqueue = (TemporaryQueue)queue;
 				tqueue.delete();
 			} catch (JMSException e) {
 				throw new JmsException("cannot delete temporary queue",e);

@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.jta.TransactionConnector;
@@ -31,20 +30,20 @@ public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private ThreadLifeCycleEventListener<T> threadLifeCycleEventListener;
-	private Thread parentThread;
+	private final Thread parentThread;
 	private Thread childThread;
 	private Map<String,String> savedThreadContext;
-	private T threadInfo;
-	private Set<String> hideRegex;
+	private final T threadInfo;
+	private final Set<String> hideRegex;
 
 	private enum ThreadState {
 		ANNOUNCED,
 		CREATED,
-		FINISHED;
-	};
+		FINISHED
+	}
 
 	private ThreadState threadState=ThreadState.ANNOUNCED;
-	private TransactionConnector<?,?> transactionConnector;
+	private final TransactionConnector<?,?> transactionConnector;
 
 
 	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {

@@ -18,10 +18,8 @@ package org.frankframework.http;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.HasPhysicalDestination;
@@ -57,7 +55,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter String etagSessionKey;
 	private @Getter String contentTypeSessionKey;
 	private @Getter String restPath = "/rest";
-	private @Getter Boolean view = null;
+	private final @Getter Boolean view = null;
 	private @Getter String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
 	private @Getter boolean writeToSecLog = false;
 	private @Getter boolean writeSecLogMessage = false;
@@ -71,7 +69,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter boolean generateEtag = false;
 
 	public enum MediaTypes {
-		XML, JSON, TEXT;
+		XML, JSON, TEXT
 	}
 
 	@Override

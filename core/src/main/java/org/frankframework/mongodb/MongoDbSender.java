@@ -300,7 +300,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 			return bsonValue.asObjectId().getValue().toString();
 		}
 		if (bsonValue.isString()) {
-			return bsonValue.asString().getValue().toString();
+			return bsonValue.asString().getValue();
 		}
 		return bsonValue.toString();
 	}

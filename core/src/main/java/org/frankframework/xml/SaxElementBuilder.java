@@ -27,9 +27,9 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class SaxElementBuilder implements AutoCloseable {
 
-	private ContentHandler handler;
+	private final ContentHandler handler;
 	private String elementName;
-	private SaxElementBuilder parent;
+	private final SaxElementBuilder parent;
 
 	private AttributesImpl attributes=null;
 	private boolean promotedToObject = false;

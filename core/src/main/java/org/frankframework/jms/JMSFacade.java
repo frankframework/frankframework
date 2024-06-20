@@ -185,12 +185,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	public enum SubscriberType {
 		DURABLE,
-		TRANSIENT;
+		TRANSIENT
 	}
 
 	public enum DestinationType {
 		QUEUE,
-		TOPIC;
+		TOPIC
 	}
 
 	/**

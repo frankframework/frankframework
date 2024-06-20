@@ -45,7 +45,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -181,7 +180,7 @@ public class PkiUtil {
 		if (url == null) {
 			throw new IllegalArgumentException("Keystore url for "+purpose+" may not be null");
 		}
-		log.info("Initializing keystore for "+purpose+" from "+url.toString());
+		log.info("Initializing keystore for " + purpose + " from " + url);
 		KeyStore keystore  = KeyStore.getInstance(keystoreType.name());
 		keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
 		if (log.isInfoEnabled()) {

@@ -55,7 +55,7 @@ import org.springframework.context.ApplicationContext;
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
 public class FileRecordListener implements IPullingListener<String> {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;

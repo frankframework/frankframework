@@ -55,7 +55,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	public enum Direction {
 		JSON2XML,
-		XML2JSON;
+		XML2JSON
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import java.io.InputStream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +82,7 @@ public class VaultHandlerTest {
 			ByteArrayOutputStream decodedStream = new ByteArrayOutputStream();
 			InputStream encodedStream = getClass().getClassLoader().getResourceAsStream("test-vault.yml");
 			VaultHandler.decrypt(encodedStream, decodedStream, TEST_PASSWORD);
-			String decoded = new String(decodedStream.toByteArray());
+			String decoded = decodedStream.toString();
 			assertEquals(DECODED_VAULT, decoded);
 		} catch (Exception ex) {
 			fail("Failed to decode the test vault from stream: " + ex.getMessage());

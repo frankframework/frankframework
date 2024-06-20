@@ -15,8 +15,11 @@
  */
 package org.frankframework.extensions.tibco.pipes;
 
+import java.io.IOException;
+
 import com.tibco.security.AXSecurityException;
 import com.tibco.security.ObfuscationEngine;
+
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -25,8 +28,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-
-import java.io.IOException;
 
 /**
  * Pipe that performs obfuscation on a message, using the tibcrypt library.
@@ -40,7 +41,7 @@ public class ObfuscatePipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.OBFUSCATE;
 
 	public enum Direction {
-		OBFUSCATE, DEOBFUSCATE;
+		OBFUSCATE, DEOBFUSCATE
 	}
 
 	@Override
