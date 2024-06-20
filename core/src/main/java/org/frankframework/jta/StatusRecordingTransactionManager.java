@@ -23,18 +23,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import jakarta.transaction.TransactionManager;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.transaction.TransactionSystemException;
-import org.springframework.util.StreamUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.transaction.TransactionSystemException;
+import org.springframework.util.StreamUtils;
 
 /**
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
@@ -56,7 +54,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 		INITIALIZING,
 		ACTIVE,
 		PENDING,
-		COMPLETED;
+		COMPLETED
 	}
 
 	protected abstract TransactionManager createTransactionManager() throws TransactionSystemException;

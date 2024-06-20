@@ -17,7 +17,7 @@ import org.frankframework.core.INamedObject;
 
 class ClassUtilsTest {
 
-	private enum TestEnum {ONE,TWO};
+	private enum TestEnum {ONE,TWO}
 
 	@Test
 	void testConvertToType() {

@@ -32,7 +32,7 @@ public interface ConfigurableLifecycle extends SmartLifecycle {
 	 * components that apply.</p>
 	 * @throws ConfigurationException in case it was not able to configure the component.
 	 */
-	public void configure() throws ConfigurationException;
+	void configure() throws ConfigurationException;
 
 	@Override
 	default int getPhase() {

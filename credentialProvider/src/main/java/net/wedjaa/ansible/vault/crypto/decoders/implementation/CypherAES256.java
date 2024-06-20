@@ -25,13 +25,12 @@ import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultContent;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 
 public class CypherAES256 implements CypherInterface
 {
@@ -107,7 +106,7 @@ public class CypherAES256 implements CypherInterface
         if (decrypted.length == 0)
         {
             if( logger.isDebugEnabled() ) {
-            	logger.debug("Empty decoded text has no padding.".formatted());
+            	logger.debug("Empty decoded text has no padding.");
             }
             return 0;
         }
@@ -232,7 +231,7 @@ public class CypherAES256 implements CypherInterface
         if (verifyHMAC(hmac, hmacKey, cypher))
         {
             if( logger.isDebugEnabled() ) {
-            	logger.debug("Signature matches - decrypting".formatted());
+            	logger.debug("Signature matches - decrypting");
             }
             decrypted = decryptAES(cypher, cypherKey, iv);
 

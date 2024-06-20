@@ -18,9 +18,8 @@ package org.frankframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.commons.lang3.StringUtils;
-
 import net.sf.ehcache.Cache;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -41,7 +40,7 @@ import org.frankframework.util.TransformerPool.OutputType;
 public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	private IbisCacheManager ibisCacheManager;
 	private String cacheName;
-	private KeyTransformer keyTransformer = new KeyTransformer();
+	private final KeyTransformer keyTransformer = new KeyTransformer();
 
 	@Override
 	public void configure() throws ConfigurationException {

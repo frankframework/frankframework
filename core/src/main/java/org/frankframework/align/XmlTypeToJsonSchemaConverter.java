@@ -19,6 +19,13 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
+import lombok.Getter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
@@ -38,14 +45,6 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonStructure;
-import lombok.Getter;
 import org.frankframework.util.LogUtil;
 
 public class XmlTypeToJsonSchemaConverter  {
@@ -56,13 +55,13 @@ public class XmlTypeToJsonSchemaConverter  {
 	private static final String DEFINITIONS_PATH = "#/definitions/";
 	public static final String SCHEMA_DEFINITION_PATH = "#/components/schemas/";
 
-	private List<XSModel> models;
-	private boolean skipArrayElementContainers;
-	private boolean skipRootElement;
-	private String schemaLocation;
-	private String definitionsPath;
-	private String attributePrefix="@";
-	private String mixedContentLabel="#text";
+	private final List<XSModel> models;
+	private final boolean skipArrayElementContainers;
+	private final boolean skipRootElement;
+	private final String schemaLocation;
+	private final String definitionsPath;
+	private final String attributePrefix="@";
+	private final String mixedContentLabel="#text";
 
 	private enum SimpleType {
 		STRING("string"),
@@ -72,9 +71,9 @@ public class XmlTypeToJsonSchemaConverter  {
 		DATETIME("date-time"),
 		BOOLEAN("boolean");
 
-		private @Getter String type;
+		private final @Getter String type;
 
-		private SimpleType(String type) {
+		SimpleType(String type) {
 			this.type = type;
 		}
 

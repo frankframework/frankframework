@@ -23,7 +23,6 @@ import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
-
 import org.frankframework.util.CredentialFactory;
 
 
@@ -57,7 +56,7 @@ public class NetStorageCmsSigner {
 		private final int value;
 		private final KeyedHashAlgorithm algorithm;
 
-		private SignType(KeyedHashAlgorithm algorithm, int value) {
+		SignType(KeyedHashAlgorithm algorithm, int value) {
 			this.value = value;
 			this.algorithm = algorithm;
 		}
@@ -71,10 +70,10 @@ public class NetStorageCmsSigner {
 		}
 	}
 
-	private URI uri;
-	private String nonce;
-	private String accessToken;
-	private SignType signType;
+	private final URI uri;
+	private final String nonce;
+	private final String accessToken;
+	private final SignType signType;
 
 	/**
 	 * Primary invocation for an API communication. This constructor is used for convenience when not uploading content

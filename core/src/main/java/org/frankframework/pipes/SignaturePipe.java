@@ -25,10 +25,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -81,7 +80,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		/** signs the input */
 		SIGN,
 		/** verifies a signature */
-		VERIFY;
+		VERIFY
 	}
 
 	@Override

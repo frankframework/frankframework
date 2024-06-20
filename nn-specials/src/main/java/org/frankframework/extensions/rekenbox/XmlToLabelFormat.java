@@ -117,8 +117,8 @@ public class XmlToLabelFormat {
 				convertTagsToLabels(buf, tagLabel, children);
 			} else {
 				StringBuilder text = getTextValue(el);
-				if(text != null && text.length() > 0) {
-					buf.append(tagLabel).append(" :").append(text.toString()).append("\n"); // JDK1.4 needs no converstion text.toString()
+				if(text != null && !text.isEmpty()) {
+					buf.append(tagLabel).append(" :").append(text).append("\n"); // JDK1.4 needs no converstion text.toString()
 				}
 			}
 		}

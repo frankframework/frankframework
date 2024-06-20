@@ -22,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -38,12 +43,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StreamUtil;
 import org.springframework.util.MimeType;
-
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Stream an input stream to an output stream.
@@ -73,9 +72,9 @@ public class StreamPipe extends FixedForwardPipe {
 	private String antiVirusFailureReasonSessionKey;
 
 	private class AntiVirusObject {
-		private String fileName;
-		private String status;
-		private String message;
+		private final String fileName;
+		private final String status;
+		private final String message;
 
 		public AntiVirusObject(String fileName, String status, String message) {
 			this.fileName = fileName;

@@ -37,8 +37,8 @@ import org.frankframework.util.CloseUtils;
 public class SerializableInputStream extends InputStream implements Externalizable {
 
 	private static final long serialVersionUID = 1L;
-	private static final transient int BUFFERSIZE = 20_480;
-	private static final transient Logger LOG = LogManager.getLogger(SerializableInputStream.class);
+	private static final int BUFFERSIZE = 20_480;
+	private static final Logger LOG = LogManager.getLogger(SerializableInputStream.class);
 
 	private final transient Path tmpFile;
 

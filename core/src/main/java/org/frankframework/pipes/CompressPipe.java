@@ -121,7 +121,7 @@ public class CompressPipe extends FixedForwardPipe {
 
 			String outFilename;
 			if (messageIsContent) {
-				outFilename = FileUtils.getFilename(getParameterList(), session, (File) null, filenamePattern);
+				outFilename = FileUtils.getFilename(getParameterList(), session, null, filenamePattern);
 			} else {
 				outFilename = FileUtils.getFilename(getParameterList(), session, new File(Objects.requireNonNull(filename)), filenamePattern);
 			}
@@ -157,11 +157,11 @@ public class CompressPipe extends FixedForwardPipe {
 
 	private void decompressSingleFile(OutputStream out, InputStream in, String filename, PipeLineSession session) throws IOException, ParameterException {
 		if ((getFileFormat() == FileFormat.GZ) || ((getFileFormat() == null) && messageIsContent)) {
-			try (InputStream copyFrom = new GZIPInputStream(in); OutputStream copyTo = out;) {
+			try (InputStream copyFrom = new GZIPInputStream(in); OutputStream copyTo = out) {
 				StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
 			}
 		} else {
-			try (ZipInputStream zipper = new ZipInputStream(in); OutputStream copyTo = out;) {
+			try (ZipInputStream zipper = new ZipInputStream(in); OutputStream copyTo = out) {
 				String zipEntryName = getZipEntryName(filename, session);
 				if (zipEntryName.isEmpty()) {
 					// Use first entry found
@@ -180,11 +180,11 @@ public class CompressPipe extends FixedForwardPipe {
 
 	private void compressSingleFile(OutputStream out, InputStream in, String filename, PipeLineSession session) throws IOException, ParameterException {
 		if ((getFileFormat() == FileFormat.GZ) || ((getFileFormat() == null) && resultIsContent)) {
-			try (OutputStream copyTo = new GZIPOutputStream(out); InputStream copyFrom = in;) {
+			try (OutputStream copyTo = new GZIPOutputStream(out); InputStream copyFrom = in) {
 				StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
 			}
 		} else {
-			try (ZipOutputStream zipper = new ZipOutputStream(out); InputStream copyFrom = in;) {
+			try (ZipOutputStream zipper = new ZipOutputStream(out); InputStream copyFrom = in) {
 				String zipEntryName = getZipEntryName(filename, session);
 				zipper.putNextEntry(new ZipEntry(zipEntryName));
 				StreamUtil.copyStream(copyFrom, zipper, CHUNK_SIZE);
@@ -216,7 +216,7 @@ public class CompressPipe extends FixedForwardPipe {
 		}
 
 		if (messageIsContent) {
-			return FileUtils.getFilename(getParameterList(), session, (File) null, zipEntryPattern);
+			return FileUtils.getFilename(getParameterList(), session, null, zipEntryPattern);
 		}
 		return FileUtils.getFilename(getParameterList(), session, new File(input), zipEntryPattern);
 	}

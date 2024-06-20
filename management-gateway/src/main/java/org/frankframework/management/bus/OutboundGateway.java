@@ -19,13 +19,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.integration.IntegrationPattern;
-import org.springframework.integration.IntegrationPatternType;
-import org.springframework.messaging.Message;
-
 import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.integration.IntegrationPattern;
+import org.springframework.integration.IntegrationPatternType;
+import org.springframework.messaging.Message;
 
 public interface OutboundGateway extends IntegrationPattern {
 
@@ -41,7 +40,7 @@ public interface OutboundGateway extends IntegrationPattern {
 
 	@Setter
 	@Getter
-	public static class ClusterMember {
+	class ClusterMember {
 		private UUID id;
 		private String address;
 		private String name;
@@ -53,11 +52,11 @@ public interface OutboundGateway extends IntegrationPattern {
 	 * @param in Message to send
 	 * @return Response message
 	 */
-	public <I, O> Message<O> sendSyncMessage(Message<I> in);
+	<I, O> Message<O> sendSyncMessage(Message<I> in);
 
 	/**
 	 * I in, no reply
 	 * @param in Message to send
 	 */
-	public <I> void sendAsyncMessage(Message<I> in);
+	<I> void sendAsyncMessage(Message<I> in);
 }

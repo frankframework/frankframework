@@ -93,7 +93,7 @@ public class CrlPipe extends FixedForwardPipe {
 			XmlBuilder root = new XmlBuilder("SerialNumbers");
 			Iterator <? extends X509CRLEntry> it = crl.getRevokedCertificates().iterator();
 			while (it.hasNext()) {
-				X509CRLEntry e = (X509CRLEntry) it.next();
+				X509CRLEntry e = it.next();
 				XmlBuilder serialNumber = new XmlBuilder("SerialNumber");
 				serialNumber.setValue(e.getSerialNumber().toString(16));
 				root.addSubElement(serialNumber);

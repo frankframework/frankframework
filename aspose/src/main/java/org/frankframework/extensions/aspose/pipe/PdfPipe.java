@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.frankframework.configuration.ConfigurationException;
@@ -44,8 +45,6 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.XmlBuilder;
-
-import lombok.Getter;
 
 
 /**
@@ -74,7 +73,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	public enum DocumentAction {
 		CONVERT,
-		COMBINE;
+		COMBINE
 	}
 
 	@Override

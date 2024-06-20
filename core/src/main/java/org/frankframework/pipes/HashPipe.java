@@ -23,11 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -57,10 +55,10 @@ public class HashPipe extends FixedForwardPipe {
 	private @Getter HashEncoding hashEncoding = HashEncoding.Base64;
 
 	public enum HashAlgorithm {
-		HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384, HmacSHA512;
+		HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384, HmacSHA512
 	}
 	public enum HashEncoding {
-		Base64, Hex;
+		Base64, Hex
 	}
 
 	@Override

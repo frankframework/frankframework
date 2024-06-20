@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,9 +53,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 	public static final List<String> DEFAULT_IBIS_ROLES = Collections.unmodifiableList(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
@@ -65,7 +64,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	private final Set<String> publicEndpoints = new HashSet<>();
 	private final Set<String> privateEndpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
-	private @Getter Set<String> securityRoles = new HashSet<>();
+	private final @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
 	private boolean allowUnsecureOptionsRequest = false;
 

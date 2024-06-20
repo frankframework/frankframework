@@ -51,7 +51,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		aliases.store(credentialData, title);
 
-		String vaultData = new String(credentialData.toByteArray(), StandardCharsets.US_ASCII);
+		String vaultData = credentialData.toString(StandardCharsets.US_ASCII);
 
 // re-enable the line below to generate a vault which contains single backslashes, if you want to test with that.
 //		vaultData = vaultData.replace("\\\\", "\\");
@@ -96,7 +96,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		VaultHandler.decrypt(fis, credentialData, password);
 
-		System.out.println("Decrypted Vault data:\n"+new String(credentialData.toByteArray()));
+		System.out.println("Decrypted Vault data:\n" + credentialData);
 	}
 
 

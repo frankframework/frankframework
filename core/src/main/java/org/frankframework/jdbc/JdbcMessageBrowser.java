@@ -24,25 +24,20 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.frankframework.dbms.JdbcException;
-
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
-
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JdbcUtil;
-
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 
@@ -188,8 +183,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	private class ResultSetIterator implements IMessageBrowsingIterator {
 
-		private Connection conn;
-		private ResultSet  rs;
+		private final Connection conn;
+		private final ResultSet  rs;
 		private boolean current;
 		private boolean eof;
 

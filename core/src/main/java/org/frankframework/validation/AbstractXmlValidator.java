@@ -25,29 +25,27 @@ import java.util.Map;
 
 import javax.xml.validation.ValidatorHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.XMLFilterImpl;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.XmlUtils;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * baseclass for validating input message against a XML Schema.
@@ -66,14 +64,14 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		VALID_WITH_WARNINGS("valid XML with warnings"),
 		VALID("valid XML");
 
-		private @Getter String event;
+		private final @Getter String event;
 
-		private ValidationResult(String event) {
+		ValidationResult(String event) {
 			this.event = event;
 		}
 	}
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter IConfigurationAware owner;
 

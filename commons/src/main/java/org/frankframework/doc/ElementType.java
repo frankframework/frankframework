@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ElementType {
 
-	public enum ElementTypes {
+	enum ElementTypes {
 		UNKNOWN,
 		LISTENER,
 		ENDPOINT,
@@ -38,7 +38,7 @@ public @interface ElementType {
 		ITERATOR,
 		SESSION,
 		ERRORHANDLING,
-		TRANSLATOR;
+		TRANSLATOR
 	}
 
 	@LabelValue ElementTypes value();

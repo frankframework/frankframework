@@ -15,6 +15,9 @@
 */
 package org.frankframework.scheduler;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -30,10 +33,6 @@ import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.quartz.JobDetail;
 import org.springframework.context.ApplicationContext;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -289,7 +288,7 @@ import lombok.Setter;
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
 	private @Getter boolean configured;
