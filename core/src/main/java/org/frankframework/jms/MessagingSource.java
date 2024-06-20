@@ -19,29 +19,27 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.naming.Context;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
 import jakarta.jms.Session;
 import jakarta.jms.TemporaryQueue;
-import javax.naming.Context;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
@@ -66,8 +64,8 @@ public class MessagingSource  {
 
 	private final @Getter String id;
 
-	private Context context = null;
-	private ConnectionFactory connectionFactory = null;
+	private Context context;
+	private ConnectionFactory connectionFactory;
 	private Connection globalConnection=null; // only used when connections are not pooled
 
 	private final Map<String,MessagingSource> siblingMap;
@@ -142,7 +140,7 @@ public class MessagingSource  {
 	}
 
 	/** The QCF is wrapped in a Spring TransactionAwareConnectionFactoryProxy, this should always be the most outer wrapped QCF. */
-	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		if(getConnectionFactory() instanceof TransactionAwareConnectionFactoryProxy) {
 			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(), "targetConnectionFactory");
 		}

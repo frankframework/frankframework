@@ -15,18 +15,14 @@
  */
 package org.frankframework.filesystem;
 
-import java.io.InputStream;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StreamCaptureUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems} that use a 'Connection' to connect to their storage.
@@ -152,14 +148,6 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 		} catch (Exception e) {
 			log.warn("Cannot invalidate connection of "+ClassUtils.nameOf(this), e);
 		}
-	}
-
-	/**
-	 * Postpone the release of the connection to after the stream is closed.
-	 * If any IOExceptions on the stream occur, the connection is invalidated.
-	 */
-	protected InputStream pendingRelease(InputStream stream, C connection) {
-		return StreamCaptureUtils.watch(stream, () -> releaseConnection(connection) , () -> invalidateConnection(connection));
 	}
 
 	private void openPool() {
