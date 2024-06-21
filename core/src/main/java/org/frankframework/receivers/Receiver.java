@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -196,12 +196,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 @Category("Basic")
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	public TransactionDefinition TXNEW_PROC;
+	private TransactionDefinition newTransaction;
 
 	public static final String THREAD_CONTEXT_KEY_NAME = "listener";
 	public static final String THREAD_CONTEXT_KEY_TYPE = "listener.type";
@@ -570,7 +570,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			registerEvent(RCV_RESUMED_MONITOR_EVENT);
 			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
-			TXNEW_PROC = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
+			newTransaction = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
 
 			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
@@ -1126,7 +1126,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				return;
 			}
 			PlatformTransactionManager txManager = getTxManager();
-			IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
+			IbisTransaction itx = new IbisTransaction(txManager, newTransaction, "receiver [" + getName() + "]");
 			RawMessageWrapper<Serializable> msg = null;
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {

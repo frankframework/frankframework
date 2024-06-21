@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class StringUtil {
 	 * If the set of expressions is null or empty it will return the raw message.
 	 * @see #hideAll(String, Collection, int)
 	 */
-	public static String hideAll(String message, Collection<String> collection) {
+	public static String hideAll(String message, Collection<Pattern> collection) {
 		return hideAll(message, collection, 0);
 	}
 
@@ -133,15 +133,15 @@ public class StringUtil {
 	 * If the set of expressions is null or empty it will return the raw message
 	 * @see #hideAll(String, String, int)
 	 */
-	public static String hideAll(String message, Collection<String> collection, int mode) {
+	public static String hideAll(String message, Collection<Pattern> collection, int mode) {
 		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
 			return message; //Nothing to do!
 
-		for (String regex : collection) {
-			if (StringUtils.isNotEmpty(regex))
-				message = hideAll(message, regex, mode);
+		String result = message;
+		for (Pattern regex : collection) {
+			result = hideAll(result, regex, mode);
 		}
-		return message;
+		return result;
 	}
 
 	/**
@@ -157,9 +157,17 @@ public class StringUtil {
 	 * Else, all of it.
 	 */
 	public static String hideAll(String inputString, String regex, int mode) {
+		return hideAll(inputString, Pattern.compile(regex), mode);
+	}
+
+	/**
+	 * Hides the input string according to the given regex and mode.
+	 * If mode is set to 1, then the first half of the string gets hidden.
+	 * Else, all of it.
+	 */
+	public static String hideAll(String inputString, Pattern regex, int mode) {
 		StringBuilder result = new StringBuilder();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
+		Matcher matcher = regex.matcher(inputString);
 		int previous = 0;
 		while (matcher.find()) {
 			result.append(inputString, previous, matcher.start());

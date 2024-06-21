@@ -213,8 +213,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private boolean disableCookies = false;
 
 	private CredentialFactory credentials;
-	private CredentialFactory user_cf;
-	private CredentialFactory client_cf;
+	private CredentialFactory userCf;
+	private CredentialFactory clientCf;
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -239,9 +239,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	@Override
 	public void configure() throws ConfigurationException {
-		/**
-		 * TODO find out if this really breaks proxy authentication or not.
-		 */
+		// TODO find out if this really breaks proxy authentication or not.
 		defaultHttpClientContext = HttpClientContext.create(); //Only create a new HttpContext when configure is called (which doesn't happen when using a SharedResource)
 //		httpClientBuilder.disableAuthCaching();
 
@@ -254,12 +252,12 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
 		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-			user_cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			credentials = user_cf;
+			userCf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			credentials = userCf;
 		}
-		client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		clientCf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
 		if (credentials==null) {
-			credentials = client_cf;
+			credentials = clientCf;
 		}
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
@@ -418,15 +416,13 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
 				AuthenticationType authType = isAuthenticatedTokenRequest() ? AuthenticationType.AUTHENTICATION_HEADER : AuthenticationType.REQUEST_PARAMETER;
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, authType, this, getTokenExpiry());
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), clientCf, userCf == null, authType, this, getTokenExpiry());
 				defaultHttpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
 		if (proxy!=null) {
 			AuthScope authScope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
-
-
 			if (StringUtils.isNotEmpty(proxyCredentials.getUsername())) {
 				Credentials httpCredentials = new UsernamePasswordCredentials(proxyCredentials.getUsername(), proxyCredentials.getPassword());
 				credentialsProvider.setCredentials(authScope, httpCredentials);
@@ -490,8 +486,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		}
 
 		try {
-			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, protocol);
-			sslConnectionSocketFactory = new SSLConnectionSocketFactory(socketfactory, supportedProtocols, cipherSuites, hostnameVerifier);
+			javax.net.ssl.SSLSocketFactory socketFactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, protocol);
+			sslConnectionSocketFactory = new SSLConnectionSocketFactory(socketFactory, supportedProtocols, cipherSuites, hostnameVerifier);
 		} catch (Exception e) {
 			throw new ConfigurationException("cannot create or initialize SocketFactory", e);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.frankframework.util;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,11 +57,7 @@ public class MessageKeeperMessage {
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
-			message = StringUtil.hideAll(message, hideRegex);
-
-			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = StringUtil.hideAll(message, threadHideRegex);
+			return IbisMaskingLayout.maskSensitiveInfo(message);
 		}
 		return message;
 	}
