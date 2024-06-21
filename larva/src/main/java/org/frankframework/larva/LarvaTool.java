@@ -185,7 +185,7 @@ public class LarvaTool {
 			config.setMultiThreaded(Boolean.parseBoolean(paramMultithreaded));
 		}
 		// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
-		if (!paramScenariosRootDirectory.equals(paramExecute)) {
+		if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
 			config.setMultiThreaded(false);
 		}
 		if (!silent) {

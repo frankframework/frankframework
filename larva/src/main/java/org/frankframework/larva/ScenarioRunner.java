@@ -34,6 +34,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -41,6 +42,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.queues.Queue;
 import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
 @Log4j2
@@ -48,7 +50,7 @@ public class ScenarioRunner {
 
 	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
 	private static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
-	public static final List<String> PARALLEL_BLACKLIST_DIRS = List.of("MessageStoreSenderAndListener", "QuerySender", "Receivers", "BlockEnabledSenders", "TransactionHandling", "BatchFileTransformerPipe", "JdbcListener");
+	public final List<String> parallelBlacklistDirs = new ArrayList<>();
 
 	private @Getter final AtomicInteger scenariosFailed = new AtomicInteger();
 	private @Getter final AtomicInteger scenariosPassed = new AtomicInteger();
@@ -73,6 +75,10 @@ public class ScenarioRunner {
 		this.waitBeforeCleanUp = waitBeforeCleanUp;
 		this.logLevel = logLevel;
 		multipleThreads = config.isMultiThreaded();
+
+		String blackListDirs = AppConstants.getInstance().getProperty("larva.parallel.blacklistDirs", "");
+		StringUtil.split(blackListDirs, ",").stream().collect(Collectors.toCollection(() -> parallelBlacklistDirs));
+		log.info("Setting parallel blacklist dirs to: {}", parallelBlacklistDirs);
 	}
 
 	public void runScenario(List<File> scenarioFiles, String currentScenariosRootDirectory) {
@@ -99,7 +105,7 @@ public class ScenarioRunner {
 		sameFolderFiles.keySet().forEach(folder -> {
 			List<File> files = sameFolderFiles.get(folder);
 			log.debug("Starting FOLDER: {} - found: {} files", folder, files.size());
-			if (PARALLEL_BLACKLIST_DIRS.contains(folder)) {
+			if (parallelBlacklistDirs.contains(folder)) {
 				log.debug("Skipping folder because found in parallel blacklist: {}", folder);
 				singleThreadedScenarios.addAll(files);
 				return;
