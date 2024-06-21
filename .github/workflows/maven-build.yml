@@ -60,7 +60,7 @@ jobs:
         mkdir -p ~/.sonar/cache
 
     - name: Restore cached directories
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: |
           ~/.m2/repository
@@ -152,7 +152,7 @@ jobs:
         inputs: '{"target": "${{ github.event.pull_request.head.sha }}"}'
 
     - name: Save cached directories
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       if: always()
       with:
         path: |
