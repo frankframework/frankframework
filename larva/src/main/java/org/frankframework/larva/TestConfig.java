@@ -30,12 +30,12 @@ public class TestConfig {
 	private Writer silentOut = null;
 	private StringWriter htmlBuffer = new StringWriter();
 	private StringWriter logBuffer = new StringWriter();
-	private LarvaLogLevel logLevel;
+	private LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
-	private boolean autoScroll;
+	private boolean autoScroll = true;
 	private boolean useHtmlBuffer = false;
 	private boolean useLogBuffer = true;
-	private boolean multiThreaded = false;
+	private boolean multiThreaded = true;
 
 	private int messageCounter = 0;
 	private int scenarioCounter = 1;
@@ -59,6 +59,20 @@ public class TestConfig {
 				silentOut.flush();
 			}
 		} catch (Exception ignored) {
+		}
+	}
+
+	public void writeSilent(String message) {
+		if (!silent) {
+			return;
+		}
+		if (silentOut != null) {
+			synchronized (silentOut) {
+				try {
+					silentOut.write(message);
+				} catch (Exception ignored) {
+				}
+			}
 		}
 	}
 

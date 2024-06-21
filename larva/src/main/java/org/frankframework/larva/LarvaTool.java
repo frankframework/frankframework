@@ -173,25 +173,20 @@ public class LarvaTool {
 		config.setTimeout(timeout);
 		config.setSilent(silent);
 		AppConstants appConstants = AppConstants.getInstance();
-		LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
-		boolean autoScroll = true;
+		LarvaLogLevel logLevel = config.getLogLevel();
 		if (paramLogLevel != null) {
 			logLevel = LarvaLogLevel.parse(paramLogLevel);
 		}
 		if (paramAutoScroll == null && paramLogLevel != null) {
-			autoScroll = false;
+			config.setAutoScroll(false);
 		}
-		if (paramMultithreaded != null) {
-			config.setMultiThreaded(Boolean.parseBoolean(paramMultithreaded));
-		}
-		// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
-		if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
+		if (paramMultithreaded == null && paramLogLevel != null) {
 			config.setMultiThreaded(false);
 		}
+
 		if (!silent) {
 			config.setOut(out);
 			config.setLogLevel(logLevel);
-			config.setAutoScroll(autoScroll);
 		} else {
 			config.setSilentOut(out);
 		}
@@ -269,6 +264,10 @@ public class LarvaTool {
 			long startTime = System.currentTimeMillis();
 			debugMessage("Execute scenario('s)");
 			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+			// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
+			if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
+				scenarioRunner.setMultipleThreads(false);
+			}
 			scenarioRunner.runScenario(scenarioFiles, currentScenariosRootDirectory);
 			config.flushWriters();
 			scenariosFailed = scenarioRunner.getScenariosFailed().get();
@@ -624,10 +623,7 @@ public class LarvaTool {
 
 	public void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected) {
 		if (config.isSilent()) {
-			try {
-				config.getSilentOut().write(message);
-			} catch (IOException ignored) {
-			}
+			config.writeSilent(message);
 			return;
 		}
 		LarvaLogLevel method = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
@@ -745,10 +741,7 @@ public class LarvaTool {
 
 	public void scenariosTotalMessage(String message) {
 		if (config.isSilent()) {
-			try {
-				config.getSilentOut().write(message);
-			} catch (IOException e) {
-			}
+			config.writeSilent(message);
 		} else {
 			writeLog("<h1 class='total'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
 		}
@@ -756,10 +749,7 @@ public class LarvaTool {
 
 	public void scenariosPassedTotalMessage(String message) {
 		if (config.isSilent()) {
-			try {
-				config.getSilentOut().write(message);
-			} catch (IOException e) {
-			}
+			config.writeSilent(message);
 		} else {
 			writeLog("<h1 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
 		}
@@ -767,10 +757,7 @@ public class LarvaTool {
 
 	public void scenariosAutosavedTotalMessage(String message) {
 		if (config.isSilent()) {
-			try {
-				config.getSilentOut().write(message);
-			} catch (IOException e) {
-			}
+			config.writeSilent(message);
 		} else {
 			writeLog("<h1 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
 		}
@@ -778,10 +765,7 @@ public class LarvaTool {
 
 	public void scenariosFailedTotalMessage(String message) {
 		if (config.isSilent()) {
-			try {
-				config.getSilentOut().write(message);
-			} catch (IOException e) {
-			}
+			config.writeSilent(message);
 		} else {
 			writeLog("<h1 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
 		}
@@ -789,12 +773,7 @@ public class LarvaTool {
 
 	public void errorMessage(String message) {
 		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.ERROR, true);
-		if (config.getSilentOut() != null) {
-			try {
-				config.getSilentOut().write(message);
-			} catch (IOException e) {
-			}
-		}
+		config.writeSilent(message);
 	}
 
 	public void errorMessage(String message, Exception exception) {

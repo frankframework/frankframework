@@ -15,7 +15,6 @@
  */
 package org.frankframework.larva;
 
-import static org.frankframework.larva.LarvaTool.LOG_LEVEL_ORDER;
 import static org.frankframework.larva.LarvaTool.RESULT_AUTOSAVED;
 import static org.frankframework.larva.LarvaTool.RESULT_ERROR;
 import static org.frankframework.larva.LarvaTool.RESULT_OK;
@@ -37,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.queues.Queue;
@@ -64,7 +64,7 @@ public class ScenarioRunner {
 	private boolean evenStep;
 	private final int waitBeforeCleanUp;
 	private final LarvaLogLevel logLevel;
-	private final boolean multipleThreads;
+	private @Setter boolean multipleThreads;
 
 	public ScenarioRunner(LarvaTool larvaTool, IbisContext ibisContext, TestConfig config, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, LarvaLogLevel logLevel) {
 		this.larvaTool = larvaTool;
@@ -136,6 +136,7 @@ public class ScenarioRunner {
 			config.getOut().write("<br/><h2>Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios </h2>");
 		} catch (IOException ignored) {
 		}
+		multipleThreads = false; // Make output flush every scenario
 		for (File file : singleThreadedScenarios) {
 			runOneFile(file, currentScenariosRootDirectory);
 		}
@@ -253,31 +254,22 @@ public class ScenarioRunner {
 			scenariosPassed.incrementAndGet();
 			if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))
 				output.append(scenarioPassedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' passed (" + scenariosFailed.get() + "/" + scenariosPassed.get() + "/" + scenariosTotal + ")"));
-			if (config.isSilent() && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-				try {
-					config.getSilentOut().write("Scenario '" + shortName + " - " + scenarioDescription + "' passed");
-				} catch (IOException e) {
-				}
+			if (config.isSilent() && logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED)) {
+				config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' passed");
 			}
 		} else if (scenarioPassed == RESULT_AUTOSAVED) {
 			scenariosAutosaved.incrementAndGet();
 			if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))
 				output.append(scenarioAutosavedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave"));
 			if (config.isSilent()) {
-				try {
-					config.getSilentOut().write("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave");
-				} catch (IOException e) {
-				}
+				config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave");
 			}
 		} else {
 			scenariosFailed.incrementAndGet();
 			if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_FAILED))
 				output.append(scenarioFailedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' failed (" + scenariosFailed.get() + "/" + scenariosPassed.get() + "/" + scenariosTotal + ")"));
 			if (config.isSilent()) {
-				try {
-					config.getSilentOut().write("Scenario '" + shortName + " - " + scenarioDescription + "' failed");
-				} catch (IOException e) {
-				}
+				config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' failed");
 			}
 		}
 		output.append("</div>");
