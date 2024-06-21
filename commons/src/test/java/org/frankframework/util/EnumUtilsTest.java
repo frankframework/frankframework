@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.frankframework.doc.DocumentedEnum;
+import org.frankframework.doc.EnumLabel;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.doc.DocumentedEnum;
-import org.frankframework.doc.EnumLabel;
 
 public class EnumUtilsTest {
 
@@ -20,7 +19,7 @@ public class EnumUtilsTest {
 		ERROR("Error"),
 		HOLD("Hold");
 
-		@Getter @Setter
+		@Getter
 		private final String name;
 
 		TestEnumWithField(String name) {
