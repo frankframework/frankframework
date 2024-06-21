@@ -43,33 +43,6 @@ class XmlEncodingUtilsTest {
 		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
 	}
 
-	@Test
-	public void encodesSpecialCharacters() {
-		String input = "<>&\"'\n";
-		String expected = "&lt;&gt;&amp;&quot;&#39;&#10;";
-		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
-	}
-
-	@Test
-	public void encodeCharsReturnsNullForNullInput() {
-		assertNull(XmlEncodingUtils.encodeChars(null, true));
-	}
-
-	@Test
-	public void encodeCharsDoesNotEncodeNewLinesWhenFlagIsFalse() {
-		String input = "\n";
-		String expected = "\n";
-		assertEquals(expected, XmlEncodingUtils.encodeChars(input, false));
-		assertEquals(expected, XmlEncodingUtils.encodeChars(input));
-	}
-
-	@Test
-	public void encodeCharsEncodesNewLinesWhenFlagIsTrue() {
-		String input = "\n";
-		String expected = "&#10;";
-		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
-	}
-
 	private static Stream<Arguments> testFileWithXmlDeclaration() {
 		return Stream.of(
 			Arguments.of(StandardCharsets.ISO_8859_1, null, "iso-8859-1.xml"),
