@@ -28,6 +28,7 @@ on:
       - "**.txt"
       - "**.png"
       - ".github/**"
+      - "!.github/workflows/codeql-javascript.yml"
       - "docker/**"
       - "resources/Javascript/*.js"
   schedule:
@@ -50,6 +51,9 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         languages: javascript
+        query-filters:
+          - exclude:
+              id: "resources/Javascript/*.js"
         # If you wish to specify custom queries, you can do so here or in a config file.
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
