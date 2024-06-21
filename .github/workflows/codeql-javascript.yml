@@ -27,7 +27,6 @@ on:
       - "**.yml"
       - "**.txt"
       - "**.png"
-      - ".github/**"
       - "!.github/workflows/codeql-javascript.yml"
       - "docker/**"
       - "resources/Javascript/*.js"
