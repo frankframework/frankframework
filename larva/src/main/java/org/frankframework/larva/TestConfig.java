@@ -24,18 +24,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TestConfig {
-
 	private boolean silent = false;
 	private int timeout;
 	private Writer out;
 	private Writer silentOut = null;
 	private StringWriter htmlBuffer = new StringWriter();
 	private StringWriter logBuffer = new StringWriter();
-	private String logLevel;
+	private LarvaLogLevel logLevel;
 
 	private boolean autoScroll;
 	private boolean useHtmlBuffer = false;
 	private boolean useLogBuffer = true;
+	private boolean multiThreaded = false;
 
 	private int messageCounter = 0;
 	private int scenarioCounter = 1;
@@ -51,7 +51,9 @@ public class TestConfig {
 	public void flushWriters() {
 		try {
 			if (out != null) {
-				out.flush();
+				synchronized (out) {
+					out.flush();
+				}
 			}
 			if (silentOut != null) {
 				silentOut.flush();

@@ -19,6 +19,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
@@ -27,13 +29,10 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.stream.Message;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 /**
  * Call Larva Test Tool
@@ -100,7 +99,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		boolean silent = true;
 		LarvaTool.setTimeout(getTimeout());
-		int numScenariosFailed = larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+		int numScenariosFailed = larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, "false", paramExecute, paramWaitBeforeCleanUp,
 				getTimeout(), realPath, currentScenariosRootDirectory, out, silent);
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
