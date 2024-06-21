@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -48,24 +49,16 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
 public class IbisTester {
-	private AppConstants appConstants;
 	String webAppPath;
-	IbisContext ibisContext;
+	@Getter IbisContext ibisContext;
 	MockServletContext application;
 
-	private class Result {
-		private String resultString;
-		private long duration;
-
-		public Result(String resultString, long duration) {
-			this.resultString = resultString;
-			this.duration = duration;
-		}
+	private record Result(String resultString, long duration) {
 	}
 
 	private class ScenarioRunner implements Callable<String> {
-		private String scenariosRootDir;
-		private String scenario;
+		private final String scenariosRootDir;
+		private final String scenario;
 
 		public ScenarioRunner(String scenariosRootDir, String scenario) {
 			this.scenariosRootDir = scenariosRootDir;
@@ -92,7 +85,7 @@ public class IbisTester {
 			Writer writer = new StringWriter();
 			LarvaTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
 			if (scenario == null) {
-				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
+				String htmlString = "<html><head/><body>" + writer + "</body></html>";
 				return XmlUtils.toXhtml(Message.asMessage(htmlString));
 			} else {
 				return writer.toString();
@@ -131,7 +124,7 @@ public class IbisTester {
 		System.setProperty("dtap.stage", "LOC");
 
 		/*
-		 * By default the ladybug AOP config is included. This gives the following error:
+		 * By default, the ladybug AOP config is included. This gives the following error:
 		 * LinkageError: loader 'app' attempted duplicate class definition for XYZ
 		 *
 		 * Current default SPRING.CONFIG.LOCATIONS = spring${application.server.type}${application.server.type.custom}.xml,springIbisDebuggerAdvice.xml,springCustom.xml
@@ -159,7 +152,6 @@ public class IbisTester {
 		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
-		appConstants = AppConstants.getInstance();
 		webAppPath = getWebContentDirectory();
 
 		System.setProperty("jdbc.migrator.active", "true");
@@ -249,8 +241,7 @@ public class IbisTester {
 			if (runScenariosResult!=null) {
 				return runScenariosResult;
 			}
-			if (scenariosRootDirsUnselected != null
-					&& scenariosRootDirsUnselected.size() > 0) {
+			if (scenariosRootDirsUnselected != null && !scenariosRootDirsUnselected.isEmpty()) {
 				for (String scenariosRootDirUnselected : scenariosRootDirsUnselected) {
 					try {
 						result = runScenario(scenariosRootDirUnselected, null,
@@ -278,7 +269,7 @@ public class IbisTester {
 		Collection<String> scenarios = evaluateXPath(
 				xhtml,
 				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
-		if (scenarios == null || scenarios.size() == 0) {
+		if (scenarios == null || scenarios.isEmpty()) {
 			return error("No scenarios found");
 		} else {
 			String scenariosRootDir = evaluateXPathFirst(
@@ -455,7 +446,4 @@ public class IbisTester {
 		}
 	}
 
-	public IbisContext getIbisContext() {
-		return ibisContext;
-	}
 }

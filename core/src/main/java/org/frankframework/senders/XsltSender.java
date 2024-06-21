@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -56,9 +58,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
  *
@@ -71,8 +70,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 
 	public final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD= TransformerPool.OutputType.XML;
 	public final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD= TransformerPool.OutputType.TEXT;
-	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false
-	public final boolean DEFAULT_OMIT_XML_DECLARATION=false;
+	public static final boolean DEFAULT_INDENT = false; // some existing FF expect default for indent to be false
+	public static final boolean DEFAULT_OMIT_XML_DECLARATION = false;
 
 	private @Getter String styleSheetName;
 	private @Getter String styleSheetNameSessionKey=null;
@@ -323,11 +322,6 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 */
 	public void setStreamingXslt(Boolean streamingActive) {
 		this.streamingXslt = streamingActive;
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 	/** Location of stylesheet to apply to the input message */

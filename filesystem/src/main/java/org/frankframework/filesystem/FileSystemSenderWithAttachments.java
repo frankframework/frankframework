@@ -38,7 +38,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 
 	public final FileSystemActor.FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS = {FileSystemActor.FileSystemAction.LISTATTACHMENTS};
 
-	private final boolean attachmentsAsSessionKeys = false;
+	private static final boolean ATTACHMENTS_AS_SESSION_KEYS = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -76,7 +76,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 
 						FileAttachment fileAttachment = (FileAttachment) attachment;
 						fileAttachment.load();
-						if(!attachmentsAsSessionKeys) {
+						if(!ATTACHMENTS_AS_SESSION_KEYS) {
 							InputStream binaryInputStream = new ByteArrayInputStream(fileAttachment.getContent());
 							InputStream base64 = new Base64InputStream(binaryInputStream,true);
 							attachmentXml.setCdataValue(StreamUtil.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));

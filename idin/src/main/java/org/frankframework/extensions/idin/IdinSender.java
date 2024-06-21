@@ -28,6 +28,21 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.parsers.ParserConfigurationException;
 
+import lombok.Getter;
+import lombok.Setter;
+import net.bankid.merchant.library.AssuranceLevel;
+import net.bankid.merchant.library.AuthenticationRequest;
+import net.bankid.merchant.library.AuthenticationResponse;
+import net.bankid.merchant.library.Communicator;
+import net.bankid.merchant.library.Configuration;
+import net.bankid.merchant.library.DirectoryResponse;
+import net.bankid.merchant.library.ErrorResponse;
+import net.bankid.merchant.library.IMessenger;
+import net.bankid.merchant.library.SamlResponse;
+import net.bankid.merchant.library.ServiceId;
+import net.bankid.merchant.library.StatusRequest;
+import net.bankid.merchant.library.StatusResponse;
+import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -47,25 +62,8 @@ import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.bankid.merchant.library.AssuranceLevel;
-import net.bankid.merchant.library.AuthenticationRequest;
-import net.bankid.merchant.library.AuthenticationResponse;
-import net.bankid.merchant.library.Communicator;
-import net.bankid.merchant.library.Configuration;
-import net.bankid.merchant.library.DirectoryResponse;
-import net.bankid.merchant.library.ErrorResponse;
-import net.bankid.merchant.library.IMessenger;
-import net.bankid.merchant.library.SamlResponse;
-import net.bankid.merchant.library.ServiceId;
-import net.bankid.merchant.library.StatusRequest;
-import net.bankid.merchant.library.StatusResponse;
-import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
-
 /**
  * Requires the net.bankid.merchant.library V1.2.9
- * Compile with Java 1.8+
  *
  * @author Niels Meijer
  */
@@ -91,8 +89,8 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private @Getter CredentialFactory merchantCertificateCredentials = null;
 	private @Getter String acquirerCertificateAlias = null;
 	private @Getter String acquirerAlternativeCertificateAlias = null;
-	private @Getter String SAMLCertificateAlias = null;
-	private @Getter CredentialFactory SAMLCertificateCredentials = null;
+	private @Getter String samlCertificateAlias = null;
+	private @Getter CredentialFactory samlCertificateCredentials = null;
 
 	private @Getter boolean logsEnabled = false;
 	private @Getter boolean serviceLogsEnabled = false;
@@ -168,16 +166,16 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		if(StringUtils.isNotEmpty(getAcquirerAlternativeCertificateAlias()))
 			idinConfig.setAcquirerAlternateCertificateAlias(getAcquirerAlternativeCertificateAlias());
 
-		if(StringUtils.isNotEmpty(getSAMLCertificateAlias())) {
-			idinConfig.setSamlCertificateAlias(getSAMLCertificateAlias());
+		if(StringUtils.isNotEmpty(getSamlCertificateAlias())) {
+			idinConfig.setSamlCertificateAlias(getSamlCertificateAlias());
 			if(StringUtils.isNotEmpty(getSAMLCertificatePassword()))
 				idinConfig.setSamlCertificatePassword(getSAMLCertificatePassword());
 		}
 
 		if(isLogsEnabled())
-			idinConfig.setLogsEnabled(isLogsEnabled());
+			idinConfig.setLogsEnabled(true);
 		if(isServiceLogsEnabled())
-			idinConfig.setServiceLogsEnabled(isServiceLogsEnabled());
+			idinConfig.setServiceLogsEnabled(true);
 		if(StringUtils.isNotEmpty(getServiceLogsLocation()))
 			idinConfig.setServiceLogsLocation(getServiceLogsLocation());
 		if(StringUtils.isNotEmpty(getServiceLogsPattern()))
@@ -633,33 +631,33 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
 	 * PKCS#12 format which has the extension .p12 or .pfx;
 	 *
-	 * @param SAMLCertificateAlias The alias assigned to the SAML certificate in the keystore.
+	 * @param samlCertificateAlias The alias assigned to the SAML certificate in the keystore.
 	 * This could  be the alias supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
-	public void setSAMLCertificateAlias(String sAMLCertificateAlias) {
-		this.SAMLCertificateAlias = sAMLCertificateAlias;
+	public void setSamlCertificateAlias(String samlCertificateAlias) {
+		this.samlCertificateAlias = samlCertificateAlias;
 	}
 
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param SAMLCertificatePassword The password for the SAML Certificate
+	 * @param samlCertificatePassword The password for the SAML Certificate
 	 */
-	public void setSAMLCertificatePassword(String sAMLCertificatePassword) {
-		this.SAMLCertificateCredentials = new CredentialFactory(null, null, sAMLCertificatePassword);
+	public void setSAMLCertificatePassword(String samlCertificatePassword) {
+		this.samlCertificateCredentials = new CredentialFactory(null, null, samlCertificatePassword);
 	}
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param sAMLCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
+	 * @param samlCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
 	 */
-	public void setSAMLCertificateAuthAlias(String sAMLCertificateAuthAlias) {
-		this.SAMLCertificateCredentials = new CredentialFactory(sAMLCertificateAuthAlias);
+	public void setSAMLCertificateAuthAlias(String samlCertificateAuthAlias) {
+		this.samlCertificateCredentials = new CredentialFactory(samlCertificateAuthAlias);
 	}
 	public String getSAMLCertificatePassword() {
-		if(SAMLCertificateCredentials == null)
+		if(samlCertificateCredentials == null)
 			return null;
 
-		return SAMLCertificateCredentials.getPassword();
+		return samlCertificateCredentials.getPassword();
 	}
 
 
