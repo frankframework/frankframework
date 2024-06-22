@@ -16,7 +16,9 @@
 package org.frankframework.larva;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public enum LarvaLogLevel {
 	DEBUG("debug"),
 	PIPELINE_MESSAGES_PREPARED_FOR_DIFF("pipeline messages prepared for diff"),
@@ -35,20 +37,17 @@ public enum LarvaLogLevel {
 		this.name = name;
 	}
 
-	public String getName() {
-		return name;
-	}
-
 	public boolean shouldLog(LarvaLogLevel other) {
 		return this.ordinal() <= other.ordinal();
 	}
 
-	public static LarvaLogLevel parse(String value) {
+	public static LarvaLogLevel parse(String value, LarvaLogLevel defaultValue) {
 		for (LarvaLogLevel level : values()) {
 			if (level.getName().equals(value)) {
 				return level;
 			}
 		}
-		throw new IllegalArgumentException("Unknown log level: " + value);
+		log.warn("Unknown log level found: [{}], using default value instead.", value);
+		return defaultValue;
 	}
 }

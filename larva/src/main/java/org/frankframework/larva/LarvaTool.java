@@ -175,7 +175,7 @@ public class LarvaTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		LarvaLogLevel logLevel = config.getLogLevel();
 		if (paramLogLevel != null) {
-			logLevel = LarvaLogLevel.parse(paramLogLevel);
+			logLevel = LarvaLogLevel.parse(paramLogLevel, logLevel);
 		}
 		if (paramAutoScroll == null && paramLogLevel != null) {
 			config.setAutoScroll(false);
