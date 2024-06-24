@@ -7,12 +7,14 @@ body:
       value: |
         > [!CAUTION]
         > Please do not add sensitive information in issues, you can provide extra information via email using the issue number as reference.
-  - type: input
+  - type: dropdown
     attributes:
-      label: Is your Frank! up to date?
+      label: Is your Frank!Framework up to date?
       description: Have you tried updating to the latest version to see if the bug still exists?
-      placeholder: | 
-        Yes I've updated to: <version> 
+      options:
+        - Yes I've updated and the bug still exists
+        - Yes I've updated and the bug has been fixed, can it be backported?
+        - No, I can't update
     validations:
       required: true
   - type: textarea
@@ -41,9 +43,9 @@ body:
       label: Steps To Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
+        1. Go to ...
+        2. Click on ...
+        3. Scroll down to ...
         4. See error
     validations:
       required: false
