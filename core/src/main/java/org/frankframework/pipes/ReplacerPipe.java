@@ -96,6 +96,9 @@ public class ReplacerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
+			// Make sure to close the incoming message
+			message.closeOnCloseOf(session, this);
+
 			// Create a ReplacingInputStream for find/replace
 			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
 					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters()
@@ -110,6 +113,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(session, replaceParametersStream);
 
 			Message result = new Message(inputStream);
+			result.closeOnCloseOf(session, this);
 
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
@@ -129,7 +133,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 																					ReplacingVariablesInputStream replaceParametersStream) {
 		if (substituteVars) {
 			Map<String, String> sessionValues = session.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString()));
+					.collect(Collectors.toMap(Map.Entry::getKey, this::getEntryValue));
 
 			return new ReplacingVariablesInputStream(replaceParametersStream, "$",
 					getKeyValueMapForParametersAndAppConstants(sessionValues)
@@ -137,6 +141,20 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 
 		return replaceParametersStream;
+	}
+
+	/**
+	 * @return the String value for the given entry, which might be a {@link Message}
+	 */
+	private String getEntryValue(Map.Entry<String, Object> entry) {
+		if (entry.getValue() instanceof Message message) {
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new IllegalStateException("cannot open stream", e);
+			}
+		}
+		return entry.getValue().toString();
 	}
 
 	/**
@@ -262,8 +280,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
-	 * system properties (1), PipelineSession variables (2), application properties (3).
+	 * Should properties (values between <code>${</code> and <code>}</code>) be resolved.
 	 *
 	 * @ff.default false
 	 */
