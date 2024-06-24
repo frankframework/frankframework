@@ -321,11 +321,11 @@ public class FileSystemUtils {
 				}
 				// Add class of item: file, folder or ask the file system
 				if (typeFilter == TypeFilter.FILES_ONLY) {
-					file.addAttribute("kind", "file");
+					file.addAttribute("type", "file");
 				} else if (typeFilter == TypeFilter.FOLDERS_ONLY) {
-					file.addAttribute("kind", "folder");
+					file.addAttribute("type", "folder");
 				} else {
-					file.addAttribute("kind", fileSystem.isFolder(f) ? "folder" : "file");
+					file.addAttribute("type", fileSystem.isFolder(f) ? "folder" : "file");
 				}
 				// Get the modification date of the file
 				Date modificationDate = fileSystem.getModificationTime(f);
