@@ -62,8 +62,8 @@ public class TestPipeline extends FrankApiBase {
 	public ResponseEntity<TestPipeLineResponse> testPipeLine(@ModelAttribute TestPipeLineModel model) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 
-		builder.addHeader("configuration", model.configuration);
-		builder.addHeader("adapter", model.adapter);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, model.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, model.adapter);
 
 		Optional.ofNullable(model.sessionKeys)
 				.ifPresent(sessionKeys -> builder.addHeader("sessionKeys", sessionKeys));
