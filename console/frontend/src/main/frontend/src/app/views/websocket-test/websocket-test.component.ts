@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -7,11 +7,11 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { IMessage } from '@stomp/stompjs';
-import { Subscription } from 'rxjs';
-import { WebsocketService } from 'src/app/services/websocket.service';
+import {FormsModule} from '@angular/forms';
+import {RouterModule} from '@angular/router';
+import {IMessage} from '@stomp/stompjs';
+import {Subscription} from 'rxjs';
+import {WebsocketService} from 'src/app/services/websocket.service';
 
 @Component({
   selector: 'app-websocket-test',
@@ -20,7 +20,9 @@ import { WebsocketService } from 'src/app/services/websocket.service';
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })
-export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit {
+export class WebsocketTestComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @ViewChild('wsLog')
   private wsLog!: ElementRef<HTMLPreElement>;
 
@@ -70,17 +72,14 @@ export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit 
 
   onConnected(): void {
     this.websocketService.subscribe('/event/test');
-    setTimeout(() => {
-      this.websocketService.publish('/hello', JSON.stringify({ name: 'Vivy' }));
-    }, 1000);
   }
 
   push(): void {
-    this.websocketService
-      .push(JSON.stringify({ message: this.message }))
-      .subscribe(() => {
-        this.message = '';
-      });
+    this.websocketService.publish(
+      '/debug',
+      JSON.stringify({ message: this.message }),
+    );
+    this.message = '';
   }
 
   onError(event: unknown): void {

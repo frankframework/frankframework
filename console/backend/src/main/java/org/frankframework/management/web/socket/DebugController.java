@@ -21,16 +21,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
 
 @Controller
-public class GreetingController {
+public class DebugController {
 
-	@MessageMapping("/hello")
-	@SendTo("/event/greetings")
-	public Greeting greeting(HelloMessage message) {
-		return new Greeting("Hello, " + HtmlUtils.htmlEscape(message.name()) + "!");
+	@MessageMapping("/debug")
+	@SendTo("/event/test")
+	public DebugMessage sendTest(DebugMessage body) {
+		return new DebugMessage(HtmlUtils.htmlEscape(body.message()));
 	}
 
-	public record HelloMessage(String name) {}
-
-	public record Greeting(String content) {}
+	public record DebugMessage(String message) {}
 	
 }

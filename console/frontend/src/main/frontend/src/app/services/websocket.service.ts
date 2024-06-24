@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
-import { AppService } from '../app.service';
-import { Observable, Subject } from 'rxjs';
+import {HttpClient} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Client, IMessage, StompSubscription} from '@stomp/stompjs';
+import {AppService} from '../app.service';
+import {Subject} from 'rxjs';
 
 type ChannelMessage = {
   channel: string;
@@ -63,16 +63,6 @@ export class WebsocketService {
 
   publish(channel: string, message: string): void {
     this.client.publish({ destination: channel, body: message });
-  }
-
-  push(message: string): Observable<void> {
-    return this.http.post<void>(
-      `${this.appService.absoluteApiPath}event/push`,
-      JSON.stringify({ message }),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
   }
 
   subscribe<T>(channel: string, callback?: (message: T) => void): void {
