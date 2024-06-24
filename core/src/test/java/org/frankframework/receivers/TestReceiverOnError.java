@@ -46,6 +46,7 @@ import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,6 +56,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@Tag("slow")
 public class TestReceiverOnError {
 	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
 	private TestAppender appender;
