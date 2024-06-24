@@ -49,7 +49,7 @@ public class LarvaServlet extends HttpServletBase {
 		private final URL url;
 		private final String resource;
 
-		private Assets(String resource, String contentType) {
+		Assets(String resource, String contentType) {
 			URL resourceURL = getResource(resource);
 			if(resourceURL == null) {
 				throw new IllegalStateException("unable to find asset");

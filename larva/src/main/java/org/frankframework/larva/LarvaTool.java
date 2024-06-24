@@ -102,7 +102,6 @@ import org.frankframework.util.XmlUtils;
  */
 public class LarvaTool {
 	private static final Logger logger = LogUtil.getLogger(LarvaTool.class);
-	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<LarvaTool>Clean up reply</LarvaTool>";
 	public static final int RESULT_ERROR = 0;
@@ -388,7 +387,7 @@ public class LarvaTool {
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TR_STARTING_TAG, false);
 		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", false);
+		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\"/>", false);
 		writeHtml(TD_CLOSING_TAG, false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TABLE_CLOSING_TAG, false);
@@ -401,7 +400,7 @@ public class LarvaTool {
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TR_STARTING_TAG, false);
 		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeoutMillis ? timeout : globalTimeoutMillis) + "\" title=\"Global timeout for larva scenarios.\">", false);
+		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeoutMillis ? timeout : globalTimeoutMillis) + "\" title=\"Global timeout for larva scenarios.\"/>", false);
 		writeHtml(TD_CLOSING_TAG, false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TABLE_CLOSING_TAG, false);
@@ -440,7 +439,7 @@ public class LarvaTool {
 		if (config.isAutoScroll()) {
 			writeHtml(" checked", false);
 		}
-		writeHtml(">", false);
+		writeHtml("/>", false);
 		writeHtml(TD_CLOSING_TAG, false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TABLE_CLOSING_TAG, false);
@@ -457,7 +456,7 @@ public class LarvaTool {
 		if (config.isMultiThreaded()) {
 			writeHtml(" checked", false);
 		}
-		writeHtml(">", false);
+		writeHtml("/>", false);
 		writeHtml(TD_CLOSING_TAG, false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TABLE_CLOSING_TAG, false);
@@ -531,7 +530,7 @@ public class LarvaTool {
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TR_STARTING_TAG, false);
 		writeHtml("<td align=\"right\">", false);
-		writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\">", false);
+		writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\"/>", false);
 		writeHtml(TD_CLOSING_TAG, false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TABLE_CLOSING_TAG, false);
