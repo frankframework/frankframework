@@ -204,7 +204,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			return query;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("{}converting query [{}] from [{}] to [{}]", getLogPrefix(), query.trim(), getSqlDialect(), getDbmsSupport().getDbmsName());
+			log.debug("{}converting query [{}] from [{}] to [{}]", this::getLogPrefix, query::trim, this::getSqlDialect, () -> getDbmsSupport().getDbmsName());
 		}
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
@@ -373,7 +373,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				for (int i = 0; i < newParameterList.size(); i++) {
 					IParameter param = newParameterList.getParameter(i);
 					if (param.getType() == ParameterType.INPUTSTREAM) {
-						log.debug("{}Closing inputstream for parameter [{}]", getLogPrefix(), param.getName());
+						log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
 						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
 							if(object instanceof AutoCloseable closeable) {
 								closeable.close();
