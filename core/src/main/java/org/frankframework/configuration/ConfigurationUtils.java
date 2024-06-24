@@ -160,10 +160,9 @@ public class ConfigurationUtils {
 			qs.open();
 			try(Connection conn = qs.getConnection()) {
 				if (version == null) { // Return active config
-					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG=?";
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
-						stmt.setString(2, qs.getDbmsSupport().getBooleanValue(true));
 						return extractConfigurationFromResultSet(stmt, name, version);
 					}
 				}
@@ -256,10 +255,9 @@ public class ConfigurationUtils {
 			int updated = 0;
 
 			if (activateConfig) {
-				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=? WHERE NAME=?";
+				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, qs.getDbmsSupport().getBooleanValue(false));
-					stmt.setString(2, name);
+					stmt.setString(1, name);
 					updated = stmt.executeUpdate();
 				}
 			}

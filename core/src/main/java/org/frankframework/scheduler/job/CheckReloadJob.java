@@ -74,7 +74,7 @@ public class CheckReloadJob extends JobDef {
 		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG=? and AUTORELOAD=?";
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
 		try {
 			qs.configure();
 			qs.open();
@@ -84,8 +84,6 @@ public class CheckReloadJob extends JobDef {
 					configNames.add(configName);
 					if (DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
-						stmt.setString(2, booleanValueTrue);
-						stmt.setString(3, booleanValueTrue);
 						try (ResultSet rs = stmt.executeQuery()) {
 							if (rs.next()) {
 								String ibisConfigVersion = rs.getString(1);
