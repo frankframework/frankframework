@@ -1,8 +1,8 @@
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {Client, IMessage, StompSubscription} from '@stomp/stompjs';
-import {AppService} from '../app.service';
-import {Subject} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { AppService } from '../app.service';
+import { Subject } from 'rxjs';
 
 type ChannelMessage = {
   channel: string;
