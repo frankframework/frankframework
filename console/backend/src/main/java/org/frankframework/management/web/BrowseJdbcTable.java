@@ -26,6 +26,7 @@ import org.frankframework.util.RequestUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,7 +36,7 @@ public class BrowseJdbcTable extends FrankApiBase {
 	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a specific JDBC table")
-	public ResponseEntity<?> browseJdbcTable(Map<String, Object> json) {
+	public ResponseEntity<?> browseJdbcTable(@RequestBody Map<String, Object> json) {
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String tableName = RequestUtils.getValue(json, "table");
 		String where = RequestUtils.getValue(json, "where");

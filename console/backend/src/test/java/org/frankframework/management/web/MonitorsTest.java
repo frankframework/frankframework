@@ -36,7 +36,7 @@ public class MonitorsTest extends FrankApiTestBase {
 
 	@Test
 	public void testGetMonitors() throws Exception {
-		this.testBasicRequest("/configurations/{configuration}/monitors/", "MONITORING", "GET", "TestConfiguration");
+		this.testActionAndTopicHeaders("/configurations/{configuration}/monitors/", "MONITORING", "GET", "TestConfiguration");
 	}
 
 	@Test

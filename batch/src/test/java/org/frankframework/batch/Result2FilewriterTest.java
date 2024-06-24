@@ -21,7 +21,7 @@ class Result2FilewriterTest {
 	private final Result2Filewriter writer = new Result2Filewriter();
 
 	@TempDir
-	Path tempDir;
+	private Path tempDir;
 
 	@Test // Just some basic tests. Not a complete test of the class.
 	void createWriterCreatesNewFile() throws Exception {
@@ -29,8 +29,9 @@ class Result2FilewriterTest {
 		writer.setFilenamePattern("test.txt");
 		PipeLineSession session = new PipeLineSession();
 
-		Writer w = writer.createWriter(session, "writer1");
-		w.write("test");
+		try(Writer w = writer.createWriter(session, "writer1")) {
+			w.write("test");
+		}
 		String filePath = writer.finalizeResult(session, "writer1", false);
 
 		File file = new File(filePath);
@@ -44,7 +45,9 @@ class Result2FilewriterTest {
 
 		PipeLineSession session = new PipeLineSession();
 
-		writer.createWriter(session, "streamId");
+		try(Writer w = writer.createWriter(session, "streamId")) {
+			w.write("test");
+		}
 		writer.finalizeResult(session, "streamId", true);
 
 		assertFalse(new File(tempDir.toFile(), "test.txt").exists());

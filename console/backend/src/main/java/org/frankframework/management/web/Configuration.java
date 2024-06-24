@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,7 +66,7 @@ public class Configuration extends FrankApiBase {
 	@Relation("application")
 	@Description("reload the entire application")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> fullReload(Map<String, Object> json) throws ApiException {
+	public ResponseEntity<?> fullReload(@RequestBody Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
@@ -112,7 +113,7 @@ public class Configuration extends FrankApiBase {
 	@Relation("configuration")
 	@Description("reload a specific configuration")
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> reloadConfiguration(@PathVariable("configuration") String configurationName, Map<String, Object> json) throws ApiException {
+	public ResponseEntity<?> reloadConfiguration(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
@@ -140,7 +141,12 @@ public class Configuration extends FrankApiBase {
 	@Relation("configuration")
 	@Description("change the active configuration version, and optionally schedule or load it directly")
 	@PutMapping(value = "/configurations/{configuration}/versions/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> manageConfiguration(@PathVariable("configuration") String configurationName, @PathVariable("version") String encodedVersion, @RequestParam(value = "datasourceName", required = false) String datasourceName, Map<String, Object> json) throws ApiException {
+	public ResponseEntity<?> manageConfiguration(
+			@PathVariable("configuration") String configurationName,
+			@PathVariable("version") String encodedVersion,
+			@RequestParam(value = "datasourceName", required = false) String datasourceName,
+			@RequestBody Map<String, Object> json) throws ApiException {
+
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));

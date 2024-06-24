@@ -256,10 +256,6 @@
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.integration</groupId>
-			<artifactId>spring-integration-security</artifactId>
-		</dependency>
 
 		<!-- explicitly define Spring dependencies, to avoid version conflicts with Spring Security (https://www.baeldung.com/spring-security-with-maven) -->
 		<dependency>
@@ -615,7 +611,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>6.6.2</version>
+			<version>6.7.0</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
