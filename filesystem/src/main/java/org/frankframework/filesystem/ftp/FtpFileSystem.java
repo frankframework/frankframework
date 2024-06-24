@@ -354,7 +354,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("user", f.getUser());
 		attributes.put("group", f.getGroup());
-		attributes.put("ftpType", f.getType());
 		attributes.put("rawListing", f.getRawListing());
 		attributes.put("link", f.getLink());
 		attributes.put("hardLinkCount", f.getHardLinkCount());
