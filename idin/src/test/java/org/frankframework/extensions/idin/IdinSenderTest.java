@@ -88,7 +88,7 @@ public class IdinSenderTest {
 				assertNotNull(expected, "did not find [/messages/"+expectedFile+"-request.xml]");
 				String expectedString = StreamUtil.resourceToString(expected);
 				request = request.replaceAll("<createDateTimestamp[\\s\\S]*?<\\/createDateTimestamp>", "<createDateTimestamp/>");
-				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthnRequest xmlns:ns3=\"http://dummy\" signature=\"here\"/>");
+				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthnRequest xmlns:ns3=\"http://dummy\" signature=\"here\">");
 				request = request.replaceAll("<Signature[\\s\\S]*?<\\/Signature>", "");
 
 				assertEquals(expectedString.replace("\r", ""), request.replace("\r", ""));
