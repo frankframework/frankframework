@@ -53,7 +53,7 @@ public abstract class FrankApiTestBase {
 		return new MockMultipartFile(name, originalFilename, MediaType.MULTIPART_FORM_DATA_VALUE, content);
 	}
 
-	protected void testBasicRequest(String url, String topic, String action) throws Exception {
+	protected void testActionAndTopicHeaders(String url, String topic, String action) throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get(url))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -61,7 +61,7 @@ public abstract class FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.jsonPath("action").value(action));
 	}
 
-	protected void testBasicRequest(String url, String topic, String action, Object... urlParams) throws Exception {
+	protected void testActionAndTopicHeaders(String url, String topic, String action, Object... urlParams) throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get(url, urlParams))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
