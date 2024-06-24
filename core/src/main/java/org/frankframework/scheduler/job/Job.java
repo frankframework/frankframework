@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,15 @@ import org.frankframework.scheduler.JobDef;
 import org.frankframework.scheduler.JobDefFunctions;
 
 /**
- * Placeholder class to allow old-school <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
+ * Placeholder class to allow legacy configuration notations <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
+ * <p>
+ * The attribute <code>function</code> has been removed in favor of explicit JobDefinitions such as: <code>SendMessageJob</code>, <code>ExecuteQueryJob</code> and <code>IbisActionJob</code>.
+ * Using the new elements enables the use of auto-completion for the specified type.
  *
  * @author Niels Meijer
  */
 // Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
+@Deprecated(since = "7.7.0")
 public class Job extends JobDef {
 
 	private @Getter JobDefFunctions function;

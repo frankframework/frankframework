@@ -178,7 +178,7 @@ public class ConfigurationStatus extends FrankApiBase {
 			builder.addHeader("action", action.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-			builder.addHeader("receiver", receiver);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 			callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}
