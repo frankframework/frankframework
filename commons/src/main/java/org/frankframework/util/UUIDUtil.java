@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.util.UUID;
 
@@ -100,7 +101,7 @@ public class UUIDUtil {
 		String ia4 = df.format(unsignedByteToInt(ipAddress[3]));
 		String ia = ia1 + ia2 + ia3 + ia4;
 
-		long hashL = Math.round(Math.random() * 1000000);
+		long hashL = Math.round(new SecureRandom().nextDouble() * 1_000_000d);
 		df = new DecimalFormat("000000");
 		String hash = df.format(hashL);
 

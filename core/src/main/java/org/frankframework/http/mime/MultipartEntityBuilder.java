@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package org.frankframework.http.mime;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -33,13 +33,11 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.Args;
-
 import org.frankframework.stream.Message;
 
 /**
  * Builder for (mtom-)multipart {@link HttpEntity}s.
- *
- * See: https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
+ * See <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">link</a>.
  */
 public class MultipartEntityBuilder {
 
@@ -58,7 +56,7 @@ public class MultipartEntityBuilder {
 	private boolean mtom = false;
 	private String firstPart = null;
 
-	private static final Random RANDOM = new Random();
+	private static final SecureRandom RANDOM = new SecureRandom();
 
 	public static MultipartEntityBuilder create() {
 		return new MultipartEntityBuilder();
@@ -195,7 +193,7 @@ public class MultipartEntityBuilder {
 				contentType.withParameters(params) :
 				ContentType.create("multipart/" + subtypeCopy, params);
 
-		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<>(bodyParts) : Collections.<FormBodyPart>emptyList();
+		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<>(bodyParts) : Collections.emptyList();
 		MultipartForm form = new MultipartForm(charsetCopy, boundaryCopy, bodyPartsCopy);
 		return new MultipartEntity(form, contentTypeCopy);
 	}
