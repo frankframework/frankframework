@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,8 +110,7 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * Get the version (configuration.version + configuration.timestmap)
-	 * from the configuration's AppConstants
+	 * Get the version (configuration.version + configuration.timestamp) from the configuration's AppConstants.
 	 */
 	public static String getConfigurationVersion(ClassLoader classLoader) {
 		return getConfigurationVersion(AppConstants.getInstance(classLoader));
@@ -160,10 +159,11 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			try(Connection conn = qs.getConnection()) {
-				if(version == null) {//Return active config
-					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				if (version == null) { // Return active config
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG=?";
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
+						stmt.setString(2, qs.getDbmsSupport().getBooleanValue(true));
 						return extractConfigurationFromResultSet(stmt, name, version);
 					}
 				}
@@ -226,7 +226,7 @@ public class ConfigurationUtils {
 						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
-						log.error("an error occurred while trying to store new configuration using datasource ["+datasource+"]", e);
+						log.error("an error occurred while trying to store new configuration using datasource [{}]", datasource, e);
 						result.put(entryName, e.getMessage());
 					}
 				}
@@ -242,7 +242,6 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
@@ -257,9 +256,10 @@ public class ConfigurationUtils {
 			int updated = 0;
 
 			if (activateConfig) {
-				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?";
+				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=? WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, name);
+					stmt.setString(1, qs.getDbmsSupport().getBooleanValue(false));
+					stmt.setString(2, name);
 					updated = stmt.executeUpdate();
 				}
 			}
@@ -274,7 +274,7 @@ public class ConfigurationUtils {
 
 			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
 			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
-			String query = "INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")";
+			String query = "INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)";
 			try (PreparedStatement stmt = conn.prepareStatement(query)) {
 				stmt.setString(1, name);
 				stmt.setString(2, version);
@@ -285,6 +285,8 @@ public class ConfigurationUtils {
 				} else {
 					stmt.setString(5, ruser);
 				}
+				stmt.setString(6, activeBool);
+				stmt.setString(7, reloadBool);
 
 				return stmt.executeUpdate() > 0;
 			}
@@ -293,7 +295,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			itx.complete();
-			JdbcUtil.fullClose(conn, rs);
+			JdbcUtil.close(conn);
 			qs.close();
 		}
 	}
@@ -353,17 +355,19 @@ public class ConfigurationUtils {
 				selectStmt.setString(2, version);
 				try (ResultSet rs = selectStmt.executeQuery()) {
 					if (rs.next()) {
-						String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=" + booleanValueFalse + " WHERE NAME=?";
+						String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=? WHERE NAME=?";
 
 						try (PreparedStatement stmt = conn.prepareStatement(query)) {
-							stmt.setString(1, name);
+							stmt.setString(1, booleanValueFalse);
+							stmt.setString(2, name);
 							updated = stmt.executeUpdate();
 						}
 						if (updated > 0) {
-							String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG=" + booleanValueTrue + " WHERE NAME=? AND VERSION=?";
+							String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG=? WHERE NAME=? AND VERSION=?";
 							try (PreparedStatement stmt2 = conn.prepareStatement(query2)) {
-								stmt2.setString(1, name);
-								stmt2.setString(2, version);
+								stmt2.setString(1, booleanValueTrue);
+								stmt2.setString(2, name);
+								stmt2.setString(3, version);
 								return stmt2.executeUpdate() > 0;
 							}
 						}
@@ -394,18 +398,18 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-
 				String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
 					selectStmt.setString(1, name);
 					selectStmt.setString(2, version);
 					try (ResultSet rs = selectStmt.executeQuery()) {
 						if (rs.next()) {
-							String query = "UPDATE IBISCONFIG SET AUTORELOAD=" + qs.getDbmsSupport().getBooleanValue(booleanValue) + " WHERE NAME=? AND VERSION=?";
+							String query = "UPDATE IBISCONFIG SET AUTORELOAD=? WHERE NAME=? AND VERSION=?";
 
 							try (PreparedStatement stmt = conn.prepareStatement(query)) {
-								stmt.setString(1, name);
-								stmt.setString(2, version);
+								stmt.setString(1, qs.getDbmsSupport().getBooleanValue(booleanValue));
+								stmt.setString(2, name);
+								stmt.setString(3, version);
 								return stmt.executeUpdate() > 0;
 							}
 						}
@@ -419,7 +423,6 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 *
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
@@ -444,7 +447,7 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(name) == null) {
 						allConfigNameItems.put(name, DirectoryClassLoader.class);
 					} else {
-						log.warn("config ["+name+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [{}] already exists in {}, cannot add same config twice", name, allConfigNameItems);
 					}
 				}
 			} catch (IOException e) {
@@ -459,7 +462,7 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(dbConfigName) == null) {
 						allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
 					} else {
-						log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [{}] already exists in {}, cannot add same config twice", dbConfigName, allConfigNameItems);
 					}
 				}
 			}
@@ -468,7 +471,7 @@ public class ConfigurationUtils {
 			}
 		}
 
-		log.info("found configurations to load ["+allConfigNameItems+"]");
+		log.info("found configurations to load [{}]", allConfigNameItems);
 
 		return sort(allConfigNameItems);
 	}
@@ -495,7 +498,6 @@ public class ConfigurationUtils {
 			}
 			return configName1.equals(configName2) ? 0 : 1;
 		}
-
 	}
 
 	@Nonnull
@@ -534,8 +536,11 @@ public class ConfigurationUtils {
 					return Collections.emptyList();
 				}
 
-				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
-				try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+				ResultSet rs = null;
+				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG=?";
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, qs.getDbmsSupport().getBooleanValue(true));
+					rs = stmt.executeQuery();
 					List<String> configurationNames = new ArrayList<>();
 					while (rs.next()) {
 						configurationNames.add(rs.getString(1));
@@ -543,6 +548,9 @@ public class ConfigurationUtils {
 
 					log.debug("found database configurations {}", configurationNames);
 					return Collections.unmodifiableList(configurationNames);
+				}
+				finally {
+					if (rs != null) rs.close();
 				}
 			}
 		} catch (SenderException | JdbcException | SQLException e) {

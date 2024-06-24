@@ -34,10 +34,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.StreamUtil;
-
-import lombok.SneakyThrows;
 
 /**
  * Support for PostgreSQL.
@@ -276,12 +275,13 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException {
 		String schema = schemaOwner != null ? schemaOwner : "public";
-		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE  indrelid = '" + schema + "." + tableName.toLowerCase() + "'::regclass";
+		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid = '?'::regclass";
 		StringBuilder target = new StringBuilder().append(" (").append(columns.get(0).toLowerCase());
 		for (int i = 1; i < columns.size(); i++) {
 			target.append(", ").append(columns.get(i).toLowerCase());
 		}
 		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, schema + "." + tableName.toLowerCase());
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
 					if (rs.getString(1).indexOf(target.toString()) > 0) {

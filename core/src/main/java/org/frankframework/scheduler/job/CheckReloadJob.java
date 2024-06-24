@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,25 +36,25 @@ import org.frankframework.util.SpringUtils;
 public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
 	private static final String DATABASE_CLASSLOADER = "DatabaseClassLoader";
-	private boolean atLeastOneConfigrationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
+	private boolean atLeastOneConfigurationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
 
 	@Override
 	public boolean beforeExecuteJob() {
-		if(!atLeastOneConfigrationHasDBClassLoader) {
+		if(!atLeastOneConfigurationHasDBClassLoader) {
 			IbisManager ibisManager = getIbisManager();
 			for (Configuration configuration : ibisManager.getConfigurations()) {
 				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
-					atLeastOneConfigrationHasDBClassLoader=true;
+					atLeastOneConfigurationHasDBClassLoader =true;
 					break;
 				}
 			}
 		} else {
 			getMessageKeeper().add("skipped job execution: autoload is disabled");
 		}
-		if(!atLeastOneConfigrationHasDBClassLoader) {
+		if(!atLeastOneConfigurationHasDBClassLoader) {
 			getMessageKeeper().add("skipped job execution: no database configurations found");
 		}
-		return atLeastOneConfigrationHasDBClassLoader;
+		return atLeastOneConfigurationHasDBClassLoader;
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class CheckReloadJob extends JobDef {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
 			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
-			log.info(getLogPrefix() + msg);
+			log.info("{}{}", getLogPrefix(), msg);
 			return;
 		}
 
@@ -74,7 +74,7 @@ public class CheckReloadJob extends JobDef {
 		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG=? and AUTORELOAD=?";
 		try {
 			qs.configure();
 			qs.open();
@@ -84,15 +84,17 @@ public class CheckReloadJob extends JobDef {
 					configNames.add(configName);
 					if (DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
+						stmt.setString(2, booleanValueTrue);
+						stmt.setString(3, booleanValueTrue);
 						try (ResultSet rs = stmt.executeQuery()) {
 							if (rs.next()) {
 								String ibisConfigVersion = rs.getString(1);
 								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
 								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+									log.warn("{}skipping autoreload for configuration [{}] unable to determine [configuration.version]", getLogPrefix(), configName);
 								}
 								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+									log.info("{}configuration [{}] with version [{}] will be reloaded with new version [{}]", getLogPrefix(), configName, configVersion, ibisConfigVersion);
 									configsToReload.add(configName);
 								}
 							}
