@@ -32,21 +32,25 @@ import java.util.stream.IntStream;
  * Copyright 2017 Simon Haoran Liang
  * <a href="https://gist.github.com/lhr0909/e6ac2d6dd6752871eb57c4b083799947">...</a>
  * <p>
- * Replaces variable placeholders with values from the given keyValuePairs in a FilterInputStream implementation.
+ * Replaces variable placeholders with values from the given keyValuePairs in a InputStream implementation.
  *
  * @author Erik van Dongen
  */
-public class ReplacingVariablesInputStream extends BaseReplacingInputStream {
+public class ReplacingVariablesInputStream extends InputStream {
 
 	private static final byte CLOSING_CURLY_BRACE = 125;
+	private static final byte BYTE_VALUE_END_OF_STREAM = -1;
+
+	private final InputStream in;
 	private final byte[] variablePrefix;
 	private final Map<String, String> keyValuePairs;
 	private final Queue<Integer> inQueue;
 	private final Queue<Integer> outQueue;
 	private boolean lookingForSuffix = false;
 
+
 	protected ReplacingVariablesInputStream(InputStream in, String variablePrefix, Map<String, String> keyValuePairs) {
-		super(in);
+		this.in = in;
 		this.variablePrefix = (variablePrefix + "{").getBytes();
 		this.keyValuePairs = keyValuePairs;
 
@@ -124,7 +128,7 @@ public class ReplacingVariablesInputStream extends BaseReplacingInputStream {
 		int searchLength = (variablePrefix.length == 0) ? 1 : variablePrefix.length;
 
 		while (lookingForSuffix || (inQueue.size() < searchLength)) {
-			int next = super.read();
+			int next = in.read();
 
 			inQueue.offer(next);
 

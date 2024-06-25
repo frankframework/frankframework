@@ -31,11 +31,11 @@ import org.frankframework.util.XmlEncodingUtils;
  * Copyright 2017 Simon Haoran Liang
  * <a href="https://gist.github.com/lhr0909/e6ac2d6dd6752871eb57c4b083799947">...</a>
  * <p>
- * Find / Replace FilterInputStream implementation
+ * Find / Replace InputStream implementation
  *
  * @author Erik van Dongen
  */
-public class ReplacingInputStream extends BaseReplacingInputStream {
+public class ReplacingInputStream extends InputStream {
 
 	private final boolean allowUnicodeSupplementaryCharacters;
 	private final Queue<Integer> inQueue;
@@ -44,11 +44,12 @@ public class ReplacingInputStream extends BaseReplacingInputStream {
 	private final boolean replaceNonXmlChars;
 	private final byte[] replacement;
 	private final byte[] search;
+	private final InputStream in;
 
 	public ReplacingInputStream(InputStream in, String search, String replacement, boolean replaceNonXmlChars,
 								String nonXmlReplacementCharacter, boolean allowUnicodeSupplementaryCharacters) {
 
-		super(in);
+		this.in = in;
 		this.replaceNonXmlChars = replaceNonXmlChars;
 		this.nonXmlReplacementCharacter = StringUtils.isEmpty(nonXmlReplacementCharacter) ? 0 : nonXmlReplacementCharacter.charAt(0);
 		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
@@ -81,7 +82,7 @@ public class ReplacingInputStream extends BaseReplacingInputStream {
 	}
 
 	private int getNextValue() throws IOException {
-		int next = super.read();
+		int next = in.read();
 
 		if (next != -1 && replaceNonXmlChars && !XmlEncodingUtils.isPrintableUnicodeChar(next, allowUnicodeSupplementaryCharacters)) {
 			// '0' is the default value for a char

@@ -117,7 +117,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void testSubstituteVars() throws Exception {
+	public void testSubstituteVarsViaSessionNotSupportedAnymore() throws Exception {
 		session.put("varToSubstitute", "substitutedValue");
 		session.put("secondVarToSubstitute", "secondSubstitutedValue");
 
@@ -127,7 +127,19 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		pipe.configure();
 
 		PipeRunResult res = doPipe(pipe, "<test>${varToSubstitute} and ${secondVarToSubstitute}</test>)", session);
-		assertEquals("<head>substitutedValue and secondSubstitutedValue</head>)", res.getResult().asString());
+		assertEquals("<head>${varToSubstitute} and ${secondVarToSubstitute}</head>)", res.getResult().asString());
+	}
+
+	@Test
+	public void testSubstituteVars() throws Exception {
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		// application.name is always set in AppConstants.properties
+		PipeRunResult res = doPipe(pipe, "<test>${application.name}</test>)", session);
+		assertEquals("<head>IAF</head>)", res.getResult().asString());
 	}
 
 	@Test
@@ -141,17 +153,15 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 				.withName("parameter2")
 				.withValue("[Parameter value 2]"));
 
-		session.put("sessionVar1", "[Session var content 1]");
-		session.put("sessionVar2", "[Session var content 2]");
-
 		pipe.setFind("test");
 		pipe.setReplace("head");
 		pipe.setSubstituteVars(true);
 		pipe.configure();
 
-		PipeRunResult res = doPipe(pipe, "<test>?{parameter1} and ${sessionVar1}<br />${sessionVar2} and ?{parameter2}</test>", session);
+		// application.name is always set in AppConstants.properties
+		PipeRunResult res = doPipe(pipe, "<test>?{parameter1} and ${application.name}<br />?{parameter2}</test>", session);
 		assertEquals(
-				"<head>[Parameter value 1] and [Session var content 1]<br />[Session var content 2] and [Parameter value 2]</head>",
+				"<head>[Parameter value 1] and IAF<br />[Parameter value 2]</head>",
 				res.getResult().asString()
 		);
 	}

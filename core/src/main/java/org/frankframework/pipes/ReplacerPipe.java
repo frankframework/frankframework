@@ -97,7 +97,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			// Make sure to close the incoming message
-			message.closeOnCloseOf(session, this);
+			message.unscheduleFromCloseOnExitOf(session);
 
 			// Create a ReplacingInputStream for find/replace
 			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
@@ -110,7 +110,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			);
 
 			// Wrap for 'substitute vars' if necessary
-			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(session, replaceParametersStream);
+			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(replaceParametersStream);
 
 			Message result = new Message(inputStream);
 			result.closeOnCloseOf(session, this);
@@ -124,49 +124,21 @@ public class ReplacerPipe extends FixedForwardPipe {
 	/**
 	 * If subsituteVars is true, we need to wrap the inputStream again to substitute ${} syntax variables with
 	 * system properties, session variables and application properties.
-	 *
-	 * @param session
-	 * @param replaceParametersStream
-	 * @return
 	 */
-	private ReplacingVariablesInputStream wrapWithSubstituteVarsInputStreamIfNeeded(PipeLineSession session,
-																					ReplacingVariablesInputStream replaceParametersStream) {
+	private ReplacingVariablesInputStream wrapWithSubstituteVarsInputStreamIfNeeded(ReplacingVariablesInputStream replaceParametersStream) {
 		if (substituteVars) {
-			Map<String, String> sessionValues = session.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, this::getEntryValue));
-
-			return new ReplacingVariablesInputStream(replaceParametersStream, "$",
-					getKeyValueMapForParametersAndAppConstants(sessionValues)
-			);
+			return new ReplacingVariablesInputStream(replaceParametersStream, "$", getKeyValueMapForAppConstants());
 		}
 
 		return replaceParametersStream;
 	}
 
 	/**
-	 * @return the String value for the given entry, which might be a {@link Message}
+	 * @return the appConstants as a key/value map combined with the session values
 	 */
-	private String getEntryValue(Map.Entry<String, Object> entry) {
-		if (entry.getValue() instanceof Message message) {
-			try {
-				return message.asString();
-			} catch (IOException e) {
-				throw new IllegalStateException("cannot open stream", e);
-			}
-		}
-		return entry.getValue().toString();
-	}
-
-	/**
-	 * @return the appConstants as a key/value map combined with the pipe's parameters
-	 */
-	private Map<String, String> getKeyValueMapForParametersAndAppConstants(Map<String, String> keyValueMapForParameters) {
-		Map<String, String> parametersAndConstants = appConstants.entrySet().stream()
+	private Map<String, String> getKeyValueMapForAppConstants() {
+		return appConstants.entrySet().stream()
 				.collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString()));
-
-		parametersAndConstants.putAll(keyValueMapForParameters);
-
-		return parametersAndConstants;
 	}
 
 	/**
