@@ -293,11 +293,11 @@ public class FileSystemUtils {
 	}
 
 
-	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, TypeFilter typeFilter, DocumentFormat format) throws FileSystemException {
+	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
 		try {
 			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
 			try(builder) {
-				getFileInfo(fileSystem, f, typeFilter, builder);
+				getFileInfo(fileSystem, f, builder);
 			}
 			return builder.toString();
 		} catch (SAXException e) {
@@ -305,7 +305,7 @@ public class FileSystemUtils {
 		}
 	}
 
-	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, TypeFilter typeFilter, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
+	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
 		try (ObjectBuilder file = nodeBuilder.startObject()) {
 			String name = fileSystem.getName(f);
 			file.addAttribute("name", name);
@@ -319,14 +319,9 @@ public class FileSystemUtils {
 					log.warn("cannot get canonicalName for file [{}]", name, e);
 					file.addAttribute("canonicalName", name);
 				}
-				// Add class of item: file, folder or ask the file system
-				if (typeFilter == TypeFilter.FILES_ONLY) {
-					file.addAttribute("type", "file");
-				} else if (typeFilter == TypeFilter.FOLDERS_ONLY) {
-					file.addAttribute("type", "folder");
-				} else {
-					file.addAttribute("type", fileSystem.isFolder(f) ? "folder" : "file");
-				}
+				// Add type of item: file or folder
+				file.addAttribute("type", fileSystem.isFolder(f) ? "folder" : "file");
+
 				// Get the modification date of the file
 				Date modificationDate = fileSystem.getModificationTime(f);
 				//add date

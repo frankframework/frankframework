@@ -369,7 +369,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, getOutputFormat()));
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case READ: {
 					F file = getFile(input, pvl);
@@ -406,7 +406,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					}
 
 					((IWritableFileSystem<F>)fileSystem).appendFile(file, getContents(input, pvl, charset));
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, getOutputFormat()));
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case MKDIR: {
 					String folder = determineInputFolderName(input, pvl);
@@ -463,7 +463,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			while (it.hasNext()) {
 				F file = it.next();
 				try (INodeBuilder nodeBuilder = directoryBuilder.addElement()) {
-					FileSystemUtils.getFileInfo(fileSystem, file, typeFilter, nodeBuilder);
+					FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
 				}
 			}
 		}
@@ -482,7 +482,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 
 		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
-		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, getOutputFormat()));
+		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
 
 
@@ -504,7 +504,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				while(it.hasNext()) {
 					F file = it.next();
 					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
-						FileSystemUtils.getFileInfo(fileSystem, file, TypeFilter.FILES_ONLY, nodeBuilder);
+						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
 						action.execute(file);
 					}
 				}
