@@ -15,12 +15,26 @@
 */
 package org.frankframework.senders;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.ISender;
+import org.frankframework.core.SenderException;
+import org.frankframework.doc.Category;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
@@ -36,18 +50,6 @@ import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.angus.mail.smtp.SMTPMessage;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.ISender;
-import org.frankframework.core.SenderException;
-import org.frankframework.doc.Category;
-import org.frankframework.util.Misc;
-import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * {@link ISender sender} that sends a mail specified by an XML message.
@@ -247,8 +249,8 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
 			msg.writeTo(out);
-			byte[] byteArray = out.toByteArray();
-			return Misc.byteArrayToString(byteArray, "\n", false);
+			ByteArrayInputStream bis = new ByteArrayInputStream(out.toByteArray());
+			return StreamUtil.streamToString(bis, "\n", false);
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while sending email", e);
 		}
