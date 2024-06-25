@@ -54,8 +54,8 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.configure();
 		sender.open();
 
-		try (FileOutputStream fout = new FileOutputStream(src)) {
-			fout.write("tja".getBytes());
+		try (FileOutputStream stream = new FileOutputStream(src)) {
+			stream.write("tja".getBytes());
 		}
 
 		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
@@ -84,8 +84,8 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.configure();
 		sender.open();
 
-		try (FileOutputStream fout = new FileOutputStream(src)) {
-			fout.write("tja".getBytes());
+		try (FileOutputStream stream = new FileOutputStream(src)) {
+			stream.write("tja".getBytes());
 		}
 		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
 

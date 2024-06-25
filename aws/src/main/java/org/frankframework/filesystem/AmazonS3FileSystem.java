@@ -231,7 +231,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			list.add(createS3FolderObject(bucketName, folderName));
 		}
 		for (S3ObjectSummary summary : summaries) {
-			if (summary.getKey().endsWith("/")) { // Omit the 'search' folder
+			if (summary.getKey().endsWith(FILE_DELIMITER)) { // Omit the 'search' folder
 				continue;
 			}
 			list.add(extractS3ObjectFromSummary(summary));
@@ -241,21 +241,21 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private static S3Object createS3FolderObject(String bucketName, String folderName) {
-		S3Object object = new S3Object();
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(0); //Does not trigger updateFileAttributes
+		S3Object object = new S3Object();
 		object.setBucketName(bucketName);
-		object.setKey(folderName);
+		object.setKey(folderName.endsWith(FILE_DELIMITER) ? folderName : folderName + FILE_DELIMITER);
 		object.setObjectMetadata(metadata);
 		return object;
 	}
 
 	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
-		S3Object object = new S3Object();
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(summary.getSize());
 		metadata.setLastModified(summary.getLastModified());
 
+		S3Object object = new S3Object();
 		object.setBucketName(summary.getBucketName());
 		object.setKey(summary.getKey());
 		object.setObjectMetadata(metadata);
@@ -265,6 +265,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public boolean exists(S3Object f) {
 		return s3Client.doesObjectExist(bucketName, f.getKey());
+	}
+
+	@Override
+	public boolean isFolder(S3Object s3Object) {
+		return s3Object.getKey().endsWith(FILE_DELIMITER);
 	}
 
 	@Override
@@ -380,7 +385,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
-		String folderName = folder.endsWith("/") ? folder : folder + "/";
+		String folderName = folder.endsWith(FILE_DELIMITER) ? folder : folder + FILE_DELIMITER;
 		if (folderExists(folder)) {
 			throw new FolderAlreadyExistsException("Create directory for [" + folderName + "] has failed. Directory already exists.");
 		}
@@ -409,7 +414,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			}
 		}
 
-		final String absFolder = folder.endsWith("/") ? folder : folder + "/"; //Ensure it's a folder that's being removed
+		final String absFolder = folder.endsWith(FILE_DELIMITER) ? folder : folder + FILE_DELIMITER; //Ensure it's a folder that's being removed
 		s3Client.deleteObject(bucketName, absFolder);
 	}
 
@@ -428,7 +433,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if (!createFolder && !folderExists(destinationFolder)) {
 			throw new FolderNotFoundException("folder ["+destinationFolder+"] does not exist");
 		}
-		String destinationFile = destinationFolder+"/"+getName(f);
+		String destinationFile = destinationFolder+FILE_DELIMITER+getName(f);
 		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);
 		cor.setStorageClass(getStorageClass());
 		s3Client.copyObject(cor);
@@ -458,7 +463,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		String key = f.getKey();
 		int lastSlashPos;
 		if (key.endsWith("/")) { // Folder: take part before last slash
-			lastSlashPos = key.substring(0, key.length() - 1).lastIndexOf('/');
+			lastSlashPos = key.lastIndexOf('/', key.length() - 2);
 		} else { // File
 			lastSlashPos = key.lastIndexOf('/');
 		}

@@ -185,6 +185,11 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
+	public boolean isFolder(Message message) throws FileSystemException {
+		return false;  // Currently only supports messages
+	}
+
+	@Override
 	public boolean folderExists(String foldername) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;

@@ -147,6 +147,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 	}
 
+	@Override
 	public boolean isFolder(Path f) {
 		return Files.isDirectory(f);
 	}

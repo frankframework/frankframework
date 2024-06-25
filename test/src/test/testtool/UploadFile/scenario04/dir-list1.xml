@@ -1,3 +1,3 @@
 <directory name="TESTDATA_DIR\UploadFile" count="1">
-  <file name="newFile.txt" size="27" fSize="27 B" directory="false" canonicalName="TESTDATA_DIR\UploadFile\newFile.txt" modificationDate="09-02-22" modificationTime="16:18:24"/>
+  <file name="newFile.txt" size="27" fSize="27 B" directory="false" canonicalName="TESTDATA_DIR\UploadFile\newFile.txt" type="file" modificationDate="09-02-22" modificationTime="16:18:24"/>
 </directory>
