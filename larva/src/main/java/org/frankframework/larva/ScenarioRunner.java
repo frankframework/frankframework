@@ -21,6 +21,8 @@ import static org.frankframework.larva.LarvaTool.RESULT_OK;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -125,6 +127,7 @@ public class ScenarioRunner {
 			executor.shutdown();
 		} finally {
 			try {
+				executor.shutdown();
 				executor.awaitTermination(15, TimeUnit.MINUTES); // Guessing a max timeout, otherwise we might hang forever
 			} catch (InterruptedException e) {
 				log.warn("Interrupted while waiting for scenario runner to finish", e);
@@ -216,15 +219,18 @@ public class ScenarioRunner {
 				String step = iterator.next();
 				String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 				larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
+				LocalTime start = LocalTime.now();
 				int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
+				LocalTime end = LocalTime.now();
+				String startStop = "Started: " + start + " Stopped: " + end + " Duration: " + start.until(end, ChronoUnit.MILLIS) + " ms";
 				if (stepPassed == RESULT_OK) {
-					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed"));
+					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed. " + startStop));
 				} else if (stepPassed == RESULT_AUTOSAVED) {
 					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
 						output.append(stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave"));
 					autoSaved = true;
 				} else {
-					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepFailedMessage("Step '" + stepDisplayName + "' failed"));
+					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepFailedMessage("Step '" + stepDisplayName + "' failed. " + startStop));
 					allStepsPassed = false;
 				}
 				output.append("</div>");
