@@ -27,8 +27,8 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     where: '',
     order: '',
     numberOfRowsOnly: false,
-    minRow: 0,
-    maxRow: 0,
+    minRow: 1,
+    maxRow: 100,
   };
   columnNames: ColumnName[] = [];
   result: string[][] = [];
@@ -134,12 +134,15 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   reset(): void {
     this.query = '';
     this.error = '';
-    if (!this.form) return;
-    if (this.form['table']) this.form['table'] = '';
-    if (this.form['where']) this.form['where'] = '';
-    if (this.form['order']) this.form['order'] = '';
-    if (this.form['numberOfRowsOnly']) this.form['numberOfRowsOnly'] = false;
-    if (this.form['minRow']) this.form['minRow'] = 0;
-    if (this.form['maxRow']) this.form['maxRow'] = 0;
+    this.form = {
+      datasource: '',
+      resultType: '',
+      table: '',
+      where: '',
+      order: '',
+      numberOfRowsOnly: false,
+      minRow: 1,
+      maxRow: 100,
+    };
   }
 }
