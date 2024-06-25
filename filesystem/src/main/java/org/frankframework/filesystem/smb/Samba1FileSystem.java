@@ -80,7 +80,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
 			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());
-			log.debug("setting authentication to [" + auth + "]");
+			log.debug("setting authentication to [{}]", auth);
 		}
 	}
 

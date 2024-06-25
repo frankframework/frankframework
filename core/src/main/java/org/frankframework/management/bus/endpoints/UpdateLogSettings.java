@@ -115,14 +115,14 @@ public class UpdateLogSettings extends BusEndpointBase {
 				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
 				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
-					log.info("setting debugger enabled ["+enableDebugger+"]");
+					log.info("setting debugger enabled [{}]", enableDebugger);
 					if(!msg.isEmpty())
 						msg.append(", enableDebugger from [").append(testtoolEnabled).append("] to [").append(enableDebugger).append("]");
 					else
 						msg.append("enableDebugger changed from [").append(testtoolEnabled).append("] to [").append(enableDebugger).append("]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
+					log.warn("no applicationEventPublisher, cannot set debugger enabled to [{}]", enableDebugger);
 				}
 			}
 		}

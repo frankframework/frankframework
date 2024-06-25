@@ -130,7 +130,7 @@ public class Misc {
 		try {
 			return Long.parseLong(s) * multiplier;
 		} catch (NumberFormatException e) {
-			log.error("[" + value + "] not in expected format", e);
+			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
 	}
@@ -235,11 +235,11 @@ public class Misc {
 			if (lowercase) {
 				item=item.toLowerCase();
 			}
-			log.debug("adding item to "+collectionDescription+" ["+item+"]");
+			log.debug("adding item to {} [{}]", collectionDescription, item);
 			collection.add(item);
 		}
 		if (list.trim().endsWith(",")) {
-			log.debug("adding item to "+collectionDescription+" <empty string>");
+			log.debug("adding item to {} <empty string>", collectionDescription);
 			collection.add("");
 		}
 	}
@@ -296,7 +296,7 @@ public class Misc {
 		try {
 			return Long.parseLong(s) * multiplier;
 		} catch (NumberFormatException e) {
-			log.error("[" + value + "] not in expected format", e);
+			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
 	}

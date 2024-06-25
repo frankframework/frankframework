@@ -212,7 +212,7 @@ public class FileHandler implements IScopeProvider {
 				}
 				OutputStream outputStream = response.getOutputStream();
 				StreamUtil.streamToStream(inputStream, outputStream);
-				log.debug(getLogPrefix(session) + "copied response body input stream [" + inputStream + "] to output stream [" + outputStream + "]");
+				log.debug("{}copied response body input stream [{}] to output stream [{}]", getLogPrefix(session), inputStream, outputStream);
 				return "";
 			} else {
 				if ("base64".equals(outputType)) {
@@ -361,12 +361,12 @@ public class FileHandler implements IScopeProvider {
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
-						log.debug( getLogPrefix(session) + "created directory [" + tmpFile.getParent() +"]");
+						log.debug("{}created directory [{}]", getLogPrefix(session), tmpFile.getParent());
 					} else {
-						log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] could not be created");
+						log.warn("{}directory [{}] could not be created", getLogPrefix(session), tmpFile.getParent());
 					}
 				} else {
-					log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] does not exists");
+					log.warn("{}directory [{}] does not exists", getLogPrefix(session), tmpFile.getParent());
 				}
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
@@ -397,12 +397,12 @@ public class FileHandler implements IScopeProvider {
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
-						log.debug( getLogPrefix(session) + "created directory [" + tmpFile.getParent() +"]");
+						log.debug("{}created directory [{}]", getLogPrefix(session), tmpFile.getParent());
 					} else {
-						log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] could not be created");
+						log.warn("{}directory [{}] could not be created", getLogPrefix(session), tmpFile.getParent());
 					}
 				} else {
-					log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] does not exists");
+					log.warn("{}directory [{}] does not exists", getLogPrefix(session), tmpFile.getParent());
 				}
 			}
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), false);
@@ -510,14 +510,14 @@ public class FileHandler implements IScopeProvider {
 			if (file.exists()) {
 				boolean success = file.delete();
 				if (!success){
-					log.warn( getLogPrefix(session) + "could not delete file [" + file +"]");
+					log.warn("{}could not delete file [{}]", getLogPrefix(session), file);
 				}
 				else {
-					log.debug(getLogPrefix(session) + "deleted file [" + file +"]");
+					log.debug("{}deleted file [{}]", getLogPrefix(session), file);
 				}
 			}
 			else {
-				log.warn( getLogPrefix(session) + "file [" + file +"] does not exist");
+				log.warn("{}file [{}] does not exist", getLogPrefix(session), file);
 			}
 			/* if parent directory is empty, delete the directory */
 			if (isDeleteEmptyDirectory()) {
@@ -525,13 +525,13 @@ public class FileHandler implements IScopeProvider {
 				if (directory.exists() && directory.list().length==0) {
 					boolean success = directory.delete();
 					if (!success){
-						log.warn( getLogPrefix(session) + "could not delete directory [" + directory +"]");
+						log.warn("{}could not delete directory [{}]", getLogPrefix(session), directory);
 					}
 					else {
-						log.debug(getLogPrefix(session) + "deleted directory [" + directory +"]");
+						log.debug("{}deleted directory [{}]", getLogPrefix(session), directory);
 					}
 				} else {
-					log.debug(getLogPrefix(session) + "directory [" + directory +"] doesn't exist or is not empty");
+					log.debug("{}directory [{}] doesn't exist or is not empty", getLogPrefix(session), directory);
 				}
 			}
 			return in;
@@ -827,21 +827,21 @@ public class FileHandler implements IScopeProvider {
 				file.mkdirs();
 			}
 			if (!file.isDirectory()) {
-				log.debug("Directory [" + directory + "] is not a directory");
+				log.debug("Directory [{}] is not a directory", directory);
 				return false;
 			}
 			File tmpFile = File.createTempFile("ibis", null, file);
 			try {
 				Files.delete(tmpFile.toPath());
 			} catch (Exception t) {
-				log.warn("Exception while deleting temporary file [" + tmpFile.getName() + "] in directory [" + directory + "]", t);
+				log.warn("Exception while deleting temporary file [{}] in directory [{}]", tmpFile.getName(), directory, t);
 			}
 			return true;
 		} catch (IOException e) {
-			log.debug("Exception while creating a temporary file in directory [" + directory + "]", e);
+			log.debug("Exception while creating a temporary file in directory [{}]", directory, e);
 			return false;
 		} catch (SecurityException e) {
-			log.debug("Exception while testing if the application is allowed to write to directory [" + directory + "]", e);
+			log.debug("Exception while testing if the application is allowed to write to directory [{}]", directory, e);
 			return false;
 		}
 	}

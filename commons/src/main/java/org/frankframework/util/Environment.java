@@ -108,12 +108,12 @@ public class Environment {
 				return Optional.of(result);
 			}
 		} catch (Throwable e) {
-			getLogger().warn("Was not allowed to read environment variable [" + property + "]: "+ e.getMessage());
+			getLogger().warn("Was not allowed to read environment variable [{}]: {}", property, e.getMessage());
 		}
 		try {
 			return Optional.ofNullable(System.getProperty(property, def));
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			getLogger().warn("Was not allowed to read system property [" + property + "]: " + e.getMessage());
+			getLogger().warn("Was not allowed to read system property [{}]: {}", property, e.getMessage());
 			return Optional.ofNullable(def);
 		}
 	}

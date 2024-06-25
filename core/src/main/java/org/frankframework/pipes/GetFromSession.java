@@ -58,7 +58,7 @@ public class GetFromSession  extends FixedForwardPipe {
 
 		if (result == null) {
 			//why is null returned when nothing can be found?
-			log.warn("got null value from session under key ["+getSessionKey()+"]");
+			log.warn("got null value from session under key [{}]", getSessionKey());
 		}
 		else {
 			if (getType()==ParameterType.MAP && result instanceof Map) {
@@ -73,7 +73,7 @@ public class GetFromSession  extends FixedForwardPipe {
 				}
 				result = itemsXml.toXML();
 			}
-			log.debug("got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
+			log.debug("got [{}] from pipeLineSession under key [{}]", result.toString(), getSessionKey());
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);

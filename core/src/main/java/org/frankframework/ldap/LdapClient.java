@@ -186,7 +186,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		if (log.isDebugEnabled()) {
 			for(String key:jndiEnv.keySet()) {
 				String value=(String)jndiEnv.get(key);
-				log.debug("jndiEnv ["+key+"] = ["+(key.equals(Context.SECURITY_CREDENTIALS)?"********":value)+"]");
+				log.debug("jndiEnv [{}] = [{}]", key, key.equals(Context.SECURITY_CREDENTIALS) ? "********" : value);
 			}
 		}
 		return jndiEnv;
@@ -210,7 +210,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	} catch (NamingException ne) {
     		for (Throwable cause=ne; cause!=null; cause=cause.getCause()) {
     			if (cause instanceof CertPathValidatorException cpve) {
-     				log.warn("CertPathValidatorException index ["+cpve.getIndex()+"] certpath ["+cpve.getCertPath()+"]");
+					log.warn("CertPathValidatorException index [{}] certpath [{}]", cpve.getIndex(), cpve.getCertPath());
     			}
     		}
      		throw ne;
@@ -239,7 +239,8 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, String[] returnedAttributes, int scope) throws NamingException {
-    	if (log.isDebugEnabled()) log.debug("searchDN ["+searchDN+"] filter ["+filter+"] no params returnedAttributes ["+arrayToString(returnedAttributes,",")+"]");
+    	if (log.isDebugEnabled())
+			log.debug("searchDN [{}] filter [{}] no params returnedAttributes [{}]", searchDN, filter, arrayToString(returnedAttributes, ","));
 		SearchControls sc = new SearchControls();
 		sc.setSearchScope(scope);
 		if (returnedAttributes!=null) {
@@ -260,7 +261,8 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     }
 
     public NamingEnumeration<SearchResult> searchSubtree(DirContext context, String searchDN, String filter, Object[] params, String[] returnedAttributes) throws NamingException {
-    	if (log.isDebugEnabled()) log.debug("searchDN ["+searchDN+"] filter ["+filter+"] params "+(params==null?"null":params.length==1?"["+params[0]:" length ["+params.length)+"]");
+    	if (log.isDebugEnabled())
+			log.debug("searchDN [{}] filter [{}] params {}]", searchDN, filter, params == null ? "null" : params.length == 1 ? "[" + params[0] : " length [" + params.length);
 		SearchControls sc = new SearchControls();
 		sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		if (returnedAttributes!=null) {
@@ -276,21 +278,22 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
        	DirContext context=getContext();
        	try {
 			int nestingLevel=0;
-			if (log.isDebugEnabled()) log.debug("primary lookup of attribute ["+attribute+"] of ["+uid+"]");
+			if (log.isDebugEnabled()) log.debug("primary lookup of attribute [{}] of [{}]", attribute, uid);
 			results=searchObjectForMultiValuedAttribute(context, uid, baseDn, attribute);
 			Set<String> toBeSearched = new LinkedHashSet<>(results);
 			while (!toBeSearched.isEmpty()) {
 		       	Set<String> searchingNow=toBeSearched;
 		       	toBeSearched=new LinkedHashSet<>();
 		       	nestingLevel++;
-				if (log.isDebugEnabled()) log.debug("secondary lookup of memberships of ["+uid+"] nestingLevel ["+nestingLevel+"]");
+				if (log.isDebugEnabled()) log.debug("secondary lookup of memberships of [{}] nestingLevel [{}]", uid, nestingLevel);
 				for (String target:searchingNow) {
-					if (log.isDebugEnabled()) log.debug("secondary lookup of memberships of ["+uid+"] nestingLevel ["+nestingLevel+"], now searching ["+target+"]");
+					if (log.isDebugEnabled())
+						log.debug("secondary lookup of memberships of [{}] nestingLevel [{}], now searching [{}]", uid, nestingLevel, target);
 					searched.add(target);
 					Set<String> secondaryResults=searchObjectForMultiValuedAttributeWithCache(context, target, baseDn, attribute, true);
 					for(String secondaryResult:secondaryResults) {
 			    		if (!results.contains(secondaryResult)) {
-			    			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] found secondary membership ["+secondaryResult+"]");
+			    			if (log.isDebugEnabled()) log.debug("nestingLevel [{}] found secondary membership [{}]", nestingLevel, secondaryResult);
 			    			results.add(secondaryResult);
 			    			if (!searched.contains(secondaryResult) &&
 			    				!searchingNow.contains(secondaryResult)) {
@@ -341,11 +344,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 					if (cacheNullResultsAsEmptySet) {
 						results=new HashSet<>();
 					} else {
-		    			if (log.isDebugEnabled()) log.debug("no attribute ["+attribute+"] found for object ["+objectDN+"], will not cache");
+		    			if (log.isDebugEnabled()) log.debug("no attribute [{}] found for object [{}], will not cache", attribute, objectDN);
 					}
 				}
 				if (results!=null) {
-					if (log.isDebugEnabled()) log.debug("caching set of ["+results.size()+"] items of attribute ["+attribute+"] for object ["+objectDN+"]");
+					if (log.isDebugEnabled()) log.debug("caching set of [{}] items of attribute [{}] for object [{}]", results.size(), attribute, objectDN);
 					attributeCache.put(cacheKey, results);
 				}
 			}
@@ -453,7 +456,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		result=getFirstAttribute(searchResultEnum.next());
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
+			if (log.isDebugEnabled()) log.debug("ignoring Exception: {}", e);
 		} finally {
 			searchResultEnum.close();
 		}
@@ -549,7 +552,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		}
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
+			if (log.isDebugEnabled()) log.debug("ignoring Exception: {}", e);
 		} finally {
 			searchResultEnum.close();
 		}
@@ -580,7 +583,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		}
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
+			if (log.isDebugEnabled()) log.debug("ignoring Exception: {}", e);
 		} finally {
 			searchResultEnum.close();
 		}
@@ -618,13 +621,13 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	}
 
 	private static void setLdapJvmProperties(String resourceName){
-		if (log.isDebugEnabled()) log.debug("[TAI] LDAP properties file ["+resourceName+"]");
+		if (log.isDebugEnabled()) log.debug("[TAI] LDAP properties file [{}]", resourceName);
 
 		Properties ldapProperties = new Properties();
 		try {
 			URL url = ClassLoaderUtils.getResourceURL(resourceName);
 			if (url != null) {
-				log.info("LDAP properties loading from file [" + url + "]");
+				log.info("LDAP properties loading from file [{}]", url);
 				try(InputStream is = StreamUtil.urlToStream(url, 10000); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 					ldapProperties.load(reader);
 				}
@@ -660,18 +663,19 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
 		if(propValue != null){
 			if(currentValue == null){
-				log.info("JVM custom property [" + property + "] is set to "+(isDefault?"default value ":"")+"[" + propValue+"]");
+				log.info("JVM custom property [{}] is set to {}[{}]", property, isDefault ? "default value " : "", propValue);
 				System.setProperty(property, propValue);
 			} else {
 				if(!currentValue.equalsIgnoreCase(propValue)){
-					log.warn("JVM custom property [" + property + "] is overridden from [" + currentValue + "] to "+(isDefault?"default value ":"")+"[" + propValue+"]");
+					log.warn("JVM custom property [{}] is overridden from [{}] to {}[{}]", property, currentValue, isDefault ? "default value " : "", propValue);
 					System.setProperty(property, propValue);
 				} else {
-					if (log.isDebugEnabled()) log.debug("JVM custom property [" + property + "] current value [" + currentValue + "] is not changed");
+					if (log.isDebugEnabled()) log.debug("JVM custom property [{}] current value [{}] is not changed", property, currentValue);
 				}
 			}
 		} else {
-			if (log.isDebugEnabled()) log.debug("JVM custom property [" + property + "] current value [" + currentValue + "], no value or default specified");
+			if (log.isDebugEnabled())
+				log.debug("JVM custom property [{}] current value [{}], no value or default specified", property, currentValue);
 		}
 	}
 

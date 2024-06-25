@@ -271,7 +271,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				results = src.moveUIDMessages(messages, destination);
 			}
 			if (results[0] == null) {
-				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
+				log.warn("could not find new name of message in folder [{}]", destinationFolder);
 				return null;
 			}
 			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
@@ -299,7 +299,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				results = src.copyUIDMessages(messages, destination);
 			}
 			if (results[0] == null) {
-				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
+				log.warn("could not find new name of message in folder [{}]", destinationFolder);
 				return null;
 			}
 			IMAPFolder destination = getFolder(baseFolder, destinationFolder);

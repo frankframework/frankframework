@@ -186,7 +186,7 @@ public class ConfigurationUtils {
 	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
 		try(ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
-				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
+				log.error("no configuration found in database with name [{}] {}", name, version != null ? "version [" + version + "]" : "activeconfig [TRUE]");
 				return null;
 			}
 
@@ -226,7 +226,7 @@ public class ConfigurationUtils {
 						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
-						log.error("an error occurred while trying to store new configuration using datasource ["+datasource+"]", e);
+						log.error("an error occurred while trying to store new configuration using datasource [{}]", datasource, e);
 						result.put(entryName, e.getMessage());
 					}
 				}
@@ -444,7 +444,7 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(name) == null) {
 						allConfigNameItems.put(name, DirectoryClassLoader.class);
 					} else {
-						log.warn("config ["+name+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [{}] already exists in {}, cannot add same config twice", name, allConfigNameItems);
 					}
 				}
 			} catch (IOException e) {
@@ -459,7 +459,7 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(dbConfigName) == null) {
 						allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
 					} else {
-						log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [{}] already exists in {}, cannot add same config twice", dbConfigName, allConfigNameItems);
 					}
 				}
 			}
@@ -468,7 +468,7 @@ public class ConfigurationUtils {
 			}
 		}
 
-		log.info("found configurations to load ["+allConfigNameItems+"]");
+		log.info("found configurations to load [{}]", allConfigNameItems);
 
 		return sort(allConfigNameItems);
 	}

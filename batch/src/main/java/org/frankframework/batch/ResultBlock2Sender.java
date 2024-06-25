@@ -152,7 +152,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
 			if (writer!=null) {
 				Message message=new Message(writer.getBuffer().toString());
-				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
+				log.debug("sending block [{}] to sender [{}]", message, sender.getName());
 				writer.getBuffer().setLength(0);
 				getSender().sendMessageOrThrow(message, session).close();
 			}

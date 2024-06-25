@@ -361,7 +361,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 			ldapError.setValue(message);
 			String reasonXml=ldapError.toXML();
-			if (log.isDebugEnabled()) { log.debug("sessionKey ["+getErrorSessionKey()+"] loaded with error message ["+reasonXml+"]"); }
+			if (log.isDebugEnabled()) {log.debug("sessionKey [{}] loaded with error message [{}]", getErrorSessionKey(), reasonXml); }
 			session.put(getErrorSessionKey(),reasonXml);
 		}
 		log.debug("exit storeLdapException");
@@ -421,7 +421,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// Sun:
 			//   [LDAP: error code 32 - No Such Object...
 			if(e.getMessage().startsWith("[LDAP: error code 32 - ") ) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
+				if (log.isDebugEnabled()) log.debug("Operation [{}] found nothing - no such entryName: {}", getOperation(), entryName);
 				return DEFAULT_RESULT_READ;
 			}
 			storeLdapException(e, session);
@@ -436,7 +436,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		if (paramValueMap != null){
 			String newEntryName = (String)paramValueMap.get("newEntryName");
 			if (StringUtils.isNotEmpty(newEntryName)) {
-				if (log.isDebugEnabled()) log.debug("newEntryName=["+newEntryName+"]");
+				if (log.isDebugEnabled()) log.debug("newEntryName=[{}]", newEntryName);
 				DirContext dirContext = null;
 				try{
 					dirContext = getDirContext(paramValueMap);
@@ -469,7 +469,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			NamingEnumeration<?> na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
-				log.debug("Update attribute: " + a.getID());
+				log.debug("Update attribute: {}", a.getID());
 				NamingEnumeration<?> values;
 				try {
 					values = a.getAll();
@@ -486,7 +486,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
 							log.debug("Update value: ***");
 						} else {
-							log.debug("Update value: " + value);
+							log.debug("Update value: {}", value);
 						}
 					}
 					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
@@ -548,7 +548,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			NamingEnumeration<?> na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
-				log.debug("Create attribute: " + a.getID());
+				log.debug("Create attribute: {}", a.getID());
 				NamingEnumeration<?> values;
 				try {
 					values = a.getAll();
@@ -565,7 +565,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
 							log.debug("Create value: ***");
 						} else {
-							log.debug("Create value: " + value);
+							log.debug("Create value: {}", value);
 						}
 					}
 					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
@@ -584,7 +584,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						// Sun:
 						//   [LDAP: error code 20 - Attribute Or Value Exists]
 						if (e.getMessage().startsWith("[LDAP: error code 20 - ")) {
-							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+							if (log.isDebugEnabled()) log.debug("Operation [{}] successful: {}", getOperation(), e.getMessage());
 							result = DEFAULT_RESULT_CREATE_OK;
 						} else {
 							storeLdapException(e, session);
@@ -619,7 +619,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			return DEFAULT_RESULT;
 		} catch (NamingException e) {
 			// if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-			if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
+			if (log.isDebugEnabled()) log.debug("Exception in operation [{}] entryName [{}]: {}", getOperation(), entryName, e.getMessage());
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
 			//   68 LDAP_ALREADY_EXISTS Indicates that the add operation attempted to add an entry that already exists, or that the modify operation attempted to rename an entry to the name of an entry that already exists.
 			// Sun:
@@ -640,7 +640,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			NamingEnumeration<?> na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
-				log.debug("Delete attribute: " + a.getID());
+				log.debug("Delete attribute: {}", a.getID());
 				NamingEnumeration<?> values;
 				try {
 					values = a.getAll();
@@ -657,7 +657,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
 							log.debug("Delete value: ***");
 						} else {
-							log.debug("Delete value: " + value);
+							log.debug("Delete value: {}", value);
 						}
 					}
 					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
@@ -681,7 +681,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						//   [LDAP: error code 16 - 00002085: AtrErr: DSID-03151F03, #1...
 						if (e.getMessage().startsWith("[LDAP: error code 16 - ")
 								|| e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+							if (log.isDebugEnabled()) log.debug("Operation [{}] successful: {}", getOperation(), e.getMessage());
 							result = DEFAULT_RESULT_DELETE;
 						} else {
 							storeLdapException(e, session);
@@ -708,7 +708,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// Sun:
 			//   [LDAP: error code 32 - No Such Object...
 			if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+				if (log.isDebugEnabled()) log.debug("Operation [{}] successful: {}", getOperation(), e.getMessage());
 				return DEFAULT_RESULT_DELETE;
 			}
 			storeLdapException(e, session);
@@ -739,7 +739,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
 		} catch (NamingException e) {
 			if (isReplyNotFound() && "Unprocessed Continuation Reference(s)".equals(e.getMessage())) {
-				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[" + filterExpression + "]");
+				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[{}]", filterExpression);
 				return DEFAULT_RESULT_SEARCH;
 			}
 			storeLdapException(e, session);
@@ -786,7 +786,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
 			//   49 LDAP_INVALID_CREDENTIALS Indicates that during a bind operation one of the following occurred: The client passed either an incorrect DN or password, or the password is incorrect because it has expired, intruder detection has locked the account, or another similar reason. This is equivalent to AD error code 52e.
 			if(e.getMessage().startsWith("[LDAP: error code 49 - ") ) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] invalid credentials for: " + principal);
+				if (log.isDebugEnabled()) log.debug("Operation [{}] invalid credentials for: {}", getOperation(), principal);
 				return DEFAULT_RESULT_CHALLENGE_NOK;
 			}
 			storeLdapException(e, session);
@@ -815,7 +815,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// AD:
 			//   [LDAP: error code 19 - 0000052D: AtrErr: DSID-03191041, #1...
 			if(e.getMessage().startsWith("[LDAP: error code 19 - ") ) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] old password doesn't match or new password doesn't comply with policy for: " + entryName);
+				if (log.isDebugEnabled())
+					log.debug("Operation [{}] old password doesn't match or new password doesn't comply with policy for: {}", getOperation(), entryName);
 				return DEFAULT_RESULT_CHANGE_UNICODE_PWD_NOK;
 			}
 			storeLdapException(e, session);
@@ -836,7 +837,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		if (paramList != null){
 			paramValueMap = paramList.getValues(message, session).getValueMap();
 			entryName = (String)paramValueMap.get("entryName");
-			if (log.isDebugEnabled()) log.debug("entryName=["+entryName+"]");
+			if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);
 		}
 		if ((entryName == null || StringUtils.isEmpty(entryName)) && getOperation() != Operation.CHALLENGE) {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
@@ -893,7 +894,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		} catch (NamingException e) {
 			storeLdapException(e, session);
-			log.error("Exception in operation [" + getOperation()+ "]: ", e);
+			log.error("Exception in operation [{}]: ", getOperation(), e);
 		}
 
 		return contextElem;
@@ -907,7 +908,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		contextElem.addSubElement(currentContextElem);
 
 		if (subs != null) {
-			log.error("Subs.length = " + subs.length);
+			log.error("Subs.length = {}", subs.length);
 			for (int i = 0; i<subs.length; i++) {
 				XmlBuilder subContextElem = new XmlBuilder("SubContext");
 				subContextElem.setValue(subs[i]);
@@ -928,7 +929,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// Create a vector object and add the names of all of the sub-contexts to it
 			Vector<NameClassPair> n = new Vector<>();
 			NamingEnumeration<?> list = parentContext.list(relativeContext);
-			if (log.isDebugEnabled()) log.debug("getSubCOntextList(context) : context = " + relativeContext);
+			if (log.isDebugEnabled()) log.debug("getSubCOntextList(context) : context = {}", relativeContext);
 			while(list.hasMoreElements()) {
 				NameClassPair nc = (NameClassPair)list.nextElement();
 				n.addElement(nc);
@@ -944,7 +945,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		} catch (NamingException e) {
 			storeLdapException(e, session);
-			log.error("Exception in operation [" + getOperation()+ "] ", e);
+			log.error("Exception in operation [{}] ", getOperation(), e);
 		}
 
 		return retValue;
@@ -1031,7 +1032,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 				// Disable connection pooling
 				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "false");
 			}
-			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + newJndiEnv.get("java.naming.provider.url") + "]");
+			if (log.isDebugEnabled())
+				log.debug("created environment for LDAP provider URL [{}]", newJndiEnv.get("java.naming.provider.url"));
 			dirContext = new InitialDirContext(newJndiEnv);
 			if (!principalParameterFound) {
 				jndiEnv = newJndiEnv;

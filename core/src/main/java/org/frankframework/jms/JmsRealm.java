@@ -98,9 +98,9 @@ public class JmsRealm {
 				}
 			}
 		}catch (Exception e) {
-			log.error(logPrefixDest+"unable to copy properties of JmsRealm", e);
+			log.error("{}unable to copy properties of JmsRealm", logPrefixDest, e);
 		}
-		log.info(logPrefixDest+"loaded properties from jmsRealm ["+ this +"]");
+		log.info("{}loaded properties from jmsRealm [{}]", logPrefixDest, this);
 	}
 
 	/**

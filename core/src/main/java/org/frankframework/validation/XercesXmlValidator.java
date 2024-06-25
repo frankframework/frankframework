@@ -192,7 +192,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		} catch (NoSuchFieldError e) {
 			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ["+org.apache.xerces.impl.Version.getVersion()+"]";
 			if (isXmlSchema1_0()) {
-				log.warn(msg+", assuming XML Schema version 1.0 will be supported", e);
+				log.warn("{}, assuming XML Schema version 1.0 will be supported", msg, e);
 			} else {
 				throw new ConfigurationException(msg, e);
 			}

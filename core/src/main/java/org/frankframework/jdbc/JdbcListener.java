@@ -133,7 +133,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				connection.close();
 			}
 		} catch (SQLException e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			connection = null;
 			super.close();
@@ -194,7 +194,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
-			if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
+			if (trace && log.isDebugEnabled()) log.debug("executing query for [{}]", query);
 			try (ResultSet rs=stmt.executeQuery(query)) {
 				if (!rs.next()) {
 					return null;
@@ -204,7 +204,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				if (!getDbmsSupport().hasSkipLockedFunctionality()) {
 					String errorMessage = e.getMessage();
 					if (errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
-						log.debug(getLogPrefix()+"caught lock timeout exception, returning null: ("+e.getClass().getName()+")"+e.getMessage());
+						log.debug("{}caught lock timeout exception, returning null: ({}){}", getLogPrefix(), e.getClass().getName(), e.getMessage());
 						return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
 					}
 				}
@@ -362,12 +362,12 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
-			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
+			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
 				int i=1;
 				for(String parameter:parameters) {
-					log.debug("setting parameter "+i+" to ["+parameter+"]");
+					log.debug("setting parameter {} to [{}]", i, parameter);
 					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 

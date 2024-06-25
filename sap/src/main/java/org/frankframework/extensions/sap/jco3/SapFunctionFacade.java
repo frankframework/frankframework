@@ -88,14 +88,14 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	public void openFacade() throws SapException {
 		if (sapSystem!=null) {
 			sapSystem.openSystem();
-			log.info("open SapSystem ["+sapSystem.toString()+"]");
+			log.info("open SapSystem [{}]", sapSystem.toString());
 
 			//Something has changed, so remove the cached templates
 			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
 
 			if (StringUtils.isNotEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
-				log.debug("found JCoFunctionTemplate ["+ftemplate.toString()+"]");
+				log.debug("found JCoFunctionTemplate [{}]", ftemplate.toString());
 				try {
 					calculateStaticFieldIndices(ftemplate);
 				} catch (Exception e) {
@@ -162,7 +162,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	 * @param ft
 	 */
 	protected void calculateStaticFieldIndices(JCoFunctionTemplate ft) {
-		log.info("calculate static field indexes for JCOFunctionTemplate ["+(ft!=null?ft.getName():"unknown")+"]");
+		log.info("calculate static field indexes for JCOFunctionTemplate [{}]", ft != null ? ft.getName() : "unknown");
 		if (getRequestFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getRequestFieldName())) {
 				setRequestFieldIndex(-1);
@@ -170,7 +170,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			} else {
 				if (ft!=null) {
 					setRequestFieldIndex(1+ft.getImportParameterList().indexOf(getRequestFieldName()));
-					log.debug("searching for requestFieldName ["+getRequestFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+					log.debug("searching for requestFieldName [{}] in JCOFunctionTemplate Parameters [{}]", getRequestFieldName(), ft.getImportParameterList());
 				}
 			}
 		}
@@ -181,7 +181,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			} else {
 				if (ft!=null) {
 					setReplyFieldIndex(1+ft.getExportParameterList().indexOf(getReplyFieldName()));
-					log.debug("searching for replyFieldName ["+getReplyFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+					log.debug("searching for replyFieldName [{}] in JCOFunctionTemplate Parameters [{}]", getReplyFieldName(), ft.getImportParameterList());
 				}
 			}
 		}
@@ -192,7 +192,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			} else {
 				if (ft!=null) {
 					setCorrelationIdFieldIndex(1+ft.getImportParameterList().indexOf(getCorrelationIdFieldName()));
-					log.debug("searching for correlationIdFieldName ["+getCorrelationIdFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+					log.debug("searching for correlationIdFieldName [{}] in JCOFunctionTemplate Parameters [{}]", getCorrelationIdFieldName(), ft.getImportParameterList());
 				}
 			}
 		}
@@ -207,7 +207,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {
 		if(name != null && params != null && log.isTraceEnabled())
-			log.trace("find FieldIndex for name [" + name + "] in JCoParameterList [" + params + "]");
+			log.trace("find FieldIndex for name [{}] in JCoParameterList [{}]", name, params);
 
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
@@ -215,7 +215,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		try {
 			return 1+params.getListMetaData().indexOf(name);
 		} catch (Exception e) {
-			log.warn("["+getName()+"] exception finding FieldIndex for name ["+name+"]", e);
+			log.warn("[{}] exception finding FieldIndex for name [{}]", getName(), name, e);
 			return 0;
 		}
 	}

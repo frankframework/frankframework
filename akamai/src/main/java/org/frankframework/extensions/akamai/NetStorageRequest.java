@@ -162,7 +162,7 @@ public class NetStorageRequest {
 		Map<String, String> headers = signer.computeHeaders(this);
 
 		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+			if(log.isDebugEnabled()) log.debug("append header [{}] with value [{}]", entry.getKey(), entry.getValue());
 
 			method.setHeader(entry.getKey(), entry.getValue());
 		}

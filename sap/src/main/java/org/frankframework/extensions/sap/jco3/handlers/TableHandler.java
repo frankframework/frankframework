@@ -50,7 +50,7 @@ public class TableHandler extends Handler {
 				table.appendRow();
 				parsedItem=true;
 			} else {
-				log.warn("element '" + localName + "' invalid");
+				log.warn("element '{}' invalid", localName);
 				unknownElementDepth = 1;
 			}
 		} else {
@@ -60,7 +60,7 @@ public class TableHandler extends Handler {
 					startStringField(localName, table);
 				}
 			} else {
-				log.warn("field '" + localName + "' does not exist");
+				log.warn("field '{}' does not exist", localName);
 				unknownElementDepth = 1;
 			}
 		}

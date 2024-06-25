@@ -112,7 +112,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 			for (PropertyNode elem:result) {
 				elems+=", ["+elem.value+"]";
 			}
-			log.debug("getChildrenByName returning: "+elems.substring(1));
+			log.debug("getChildrenByName returning: {}", elems.substring(1));
 		}
 //		for (int i=1;data.containsKey(name+indexSeparator+i);i++) {
 //			result.add(data.get(name+indexSeparator+i));

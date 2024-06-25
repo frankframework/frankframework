@@ -365,7 +365,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				String strValue = "messageText".equals(key) ? "(... see elsewhere ...)" : String.valueOf(value);
 				contextDump.append(" ").append(key).append("=[").append(hiddenSessionKeys.contains(key) ? StringUtil.hide(strValue) : strValue).append("]");
 			});
-			log.debug(getLogPrefix()+contextDump);
+			log.debug("{}{}", getLogPrefix(), contextDump);
 		}
 	}
 
@@ -377,7 +377,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
 	protected void info(String msg) {
-		log.info(getLogPrefix()+msg);
+		log.info("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add(getLogPrefix() + msg);
 		}
@@ -387,7 +387,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn(getLogPrefix()+msg);
+		log.warn("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperLevel.WARN);
 		}
@@ -397,7 +397,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(String msg, Throwable t) {
-		log.error(getLogPrefix()+msg, t);
+		log.error("{}{}", getLogPrefix(), msg, t);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
 		}
@@ -457,7 +457,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	protected void closeAllResources() {
 		TimeoutGuard timeoutGuard = new TimeoutGuard(getStopTimeout(), "stopping receiver ["+getName()+"]");
-		log.debug(getLogPrefix()+"closing");
+		log.debug("{}closing", getLogPrefix());
 		try {
 			try {
 				getListener().close();
@@ -501,9 +501,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				// Force an exception and catch it, so we have a stacktrace.
 				Throwable t = new Throwable("Timeout Stopping Receiver [" + getName() + "] in thread [" + Thread.currentThread().getName() + "]");
 				t.fillInStackTrace();
-				log.warn(getLogPrefix() + "timeout stopping", t);
+				log.warn("{}timeout stopping", getLogPrefix(), t);
 			} else {
-				log.debug(getLogPrefix()+"closed");
+				log.debug("{}closed", getLogPrefix());
 				if (isInRunState(RunState.STOPPING) || isInRunState(RunState.EXCEPTION_STOPPING)) {
 					runState.setRunState(RunState.STOPPED);
 				}
@@ -738,20 +738,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (adapter != null) {
 				RunState adapterRunState = adapter.getRunState();
 				if (adapterRunState!=RunState.STARTED) {
-					log.warn(getLogPrefix()+"on adapter [" + adapter.getName() + "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
+					log.warn("{}on adapter [{}] was tried to start, but the adapter is in state [{}]. Ignoring command.", getLogPrefix(), adapter.getName(), adapterRunState);
 					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
 					return;
 				}
 			}
 			// See also Adapter.startRunning()
 			if (!configurationSucceeded) {
-				log.error("configuration of receiver [" + getName() + "] did not succeed, therefore starting the receiver is not possible");
+				log.error("configuration of receiver [{}] did not succeed, therefore starting the receiver is not possible", getName());
 				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
 				runState.setRunState(RunState.ERROR);
 				return;
 			}
 			if (adapter.getConfiguration().isUnloadInProgressOrDone()) {
-				log.error( "configuration of receiver [" + getName() + "] unload in progress or done, therefore starting the receiver is not possible");
+				log.error("configuration of receiver [{}] unload in progress or done, therefore starting the receiver is not possible", getName());
 				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
 				return;
 			}

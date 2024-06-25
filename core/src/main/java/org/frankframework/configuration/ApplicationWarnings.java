@@ -38,7 +38,7 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	}
 
 	private ApplicationWarnings(boolean springInstantiated) {
-		LOG.debug("ApplicationWarnings instantiated "+(springInstantiated?"through Spring":"manually"));
+		LOG.debug("ApplicationWarnings instantiated {}", springInstantiated ? "through Spring" : "manually");
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 			List<String> warnings = instance.getWarnings();
 			springInstance.addWarnings(warnings);
 			if(!warnings.isEmpty()) {
-				LOG.debug("appending ["+warnings.size()+"] warning(s)");
+				LOG.debug("appending [{}] warning(s)", warnings.size());
 			}
 		}
 		instance = springInstance;

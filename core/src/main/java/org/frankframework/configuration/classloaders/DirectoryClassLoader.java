@@ -45,7 +45,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		}
 
 		if(getBasePath() != null) { //Append BasePath, because legacy
-			log.debug("appending basepath ["+getBasePath()+"] to directory ["+directory+"]");
+			log.debug("appending basepath [{}] to directory [{}]", getBasePath(), directory);
 			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
 		}
 
@@ -77,7 +77,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			try {
 				return file.toURI().toURL();
 			} catch (MalformedURLException e) {
-				log.error("Could not create url for '" + name + "'", e);
+				log.error("Could not create url for '{}'", name, e);
 			}
 		}
 

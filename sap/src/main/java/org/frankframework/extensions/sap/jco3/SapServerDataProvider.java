@@ -58,7 +58,7 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	@Override
 	public Properties getServerProperties(String servername) throws DataProviderException {
-		log.info("providing server properties for ["+servername+"]");
+		log.info("providing server properties for [{}]", servername);
 		Properties serverProperties = new Properties();
 		SapListenerImpl listener = listeners.get(servername);
 		if (listener==null) {
@@ -89,7 +89,7 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	@Override
 	public void setServerDataEventListener(ServerDataEventListener serverDataEventListener) {
-		log.debug("setting new serverDataEventListener ["+serverDataEventListener.toString()+"]");
+		log.debug("setting new serverDataEventListener [{}]", serverDataEventListener.toString());
 		this.serverDataEventListener = serverDataEventListener;
 	}
 

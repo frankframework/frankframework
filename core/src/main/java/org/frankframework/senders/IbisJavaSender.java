@@ -127,7 +127,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				throw new SenderException(getLogPrefix() + "exception processing message using request processor [" + serviceName + "]", e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys [" + getReturnedSessionKeys() + "]");
+					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}

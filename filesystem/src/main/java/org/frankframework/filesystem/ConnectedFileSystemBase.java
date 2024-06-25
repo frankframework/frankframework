@@ -124,7 +124,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			try {
 				connectionPool.returnObject(connection);
 			} catch (Exception e) {
-				log.warn("Cannot return connection of "+ClassUtils.nameOf(this), e);
+				log.warn("Cannot return connection of {}", ClassUtils.nameOf(this), e);
 			}
 		}
 	}
@@ -146,7 +146,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 				}
 			}
 		} catch (Exception e) {
-			log.warn("Cannot invalidate connection of "+ClassUtils.nameOf(this), e);
+			log.warn("Cannot invalidate connection of {}", ClassUtils.nameOf(this), e);
 		}
 	}
 
@@ -183,7 +183,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 				connectionPool=null;
 			}
 		} catch (Exception e) {
-			log.warn("exception clearing Pool of "+ClassUtils.nameOf(this),e);
+			log.warn("exception clearing Pool of {}", ClassUtils.nameOf(this), e);
 		}
 	}
 

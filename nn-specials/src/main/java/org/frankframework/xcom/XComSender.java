@@ -129,7 +129,7 @@ public class XComSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix(),e);
 		}
 		for (String filename : getFileList(messageString)) {
-			log.debug("Start sending " + filename);
+			log.debug("Start sending {}", filename);
 
 			// get file to send
 			File localFile = new File(filename);
@@ -158,11 +158,11 @@ public class XComSender extends SenderWithParametersBase {
 				try {
 					p.waitFor();
 				} catch (InterruptedException e) {
-					log.warn(getLogPrefix() + "has been interrupted", e);
+					log.warn("{}has been interrupted", getLogPrefix(), e);
 				}
 
 				log.debug("output for {} = {}", localFile::getName, output::toString);
-				log.debug(localFile.getName() + "{} exits with {}", localFile::getName, p::exitValue);
+				log.debug("{} exits with {}", localFile::getName, p::exitValue);
 
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
