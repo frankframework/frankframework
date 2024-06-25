@@ -52,7 +52,7 @@
 		<activemq.driver.version>6.1.2</activemq.driver.version>
 		<artemis.driver.version>2.35.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.26.7</aws.java.sdk.version>
+		<aws.java.sdk.version>2.26.8</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.12.0</mockito.version>
@@ -136,11 +136,6 @@
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
 				<version>4.27.1</version>
-			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.111.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -367,6 +362,14 @@
 				<groupId>org.springframework.integration</groupId>
 				<artifactId>spring-integration-bom</artifactId>
 				<version>${spring-integration.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.1.111.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
