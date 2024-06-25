@@ -272,7 +272,7 @@ public class ConfigurationUtils {
 
 			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
 			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
-			String query = "INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)";
+			String query = "INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")";
 			try (PreparedStatement stmt = conn.prepareStatement(query)) {
 				stmt.setString(1, name);
 				stmt.setString(2, version);
@@ -283,8 +283,6 @@ public class ConfigurationUtils {
 				} else {
 					stmt.setString(5, ruser);
 				}
-				stmt.setString(6, activeBool);
-				stmt.setString(7, reloadBool);
 
 				return stmt.executeUpdate() > 0;
 			}
@@ -353,19 +351,17 @@ public class ConfigurationUtils {
 				selectStmt.setString(2, version);
 				try (ResultSet rs = selectStmt.executeQuery()) {
 					if (rs.next()) {
-						String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=? WHERE NAME=?";
+						String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=" + booleanValueFalse + " WHERE NAME=?";
 
 						try (PreparedStatement stmt = conn.prepareStatement(query)) {
-							stmt.setString(1, booleanValueFalse);
-							stmt.setString(2, name);
+							stmt.setString(1, name);
 							updated = stmt.executeUpdate();
 						}
 						if (updated > 0) {
-							String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG=? WHERE NAME=? AND VERSION=?";
+							String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG=" + booleanValueTrue + " WHERE NAME=? AND VERSION=?";
 							try (PreparedStatement stmt2 = conn.prepareStatement(query2)) {
-								stmt2.setString(1, booleanValueTrue);
-								stmt2.setString(2, name);
-								stmt2.setString(3, version);
+								stmt2.setString(1, name);
+								stmt2.setString(2, version);
 								return stmt2.executeUpdate() > 0;
 							}
 						}
@@ -402,12 +398,11 @@ public class ConfigurationUtils {
 					selectStmt.setString(2, version);
 					try (ResultSet rs = selectStmt.executeQuery()) {
 						if (rs.next()) {
-							String query = "UPDATE IBISCONFIG SET AUTORELOAD=? WHERE NAME=? AND VERSION=?";
+							String query = "UPDATE IBISCONFIG SET AUTORELOAD=" + qs.getDbmsSupport().getBooleanValue(booleanValue) + " WHERE NAME=? AND VERSION=?";
 
 							try (PreparedStatement stmt = conn.prepareStatement(query)) {
-								stmt.setString(1, qs.getDbmsSupport().getBooleanValue(booleanValue));
-								stmt.setString(2, name);
-								stmt.setString(3, version);
+								stmt.setString(1, name);
+								stmt.setString(2, version);
 								return stmt.executeUpdate() > 0;
 							}
 						}
@@ -534,11 +529,8 @@ public class ConfigurationUtils {
 					return Collections.emptyList();
 				}
 
-				ResultSet rs = null;
-				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG=?";
-				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, qs.getDbmsSupport().getBooleanValue(true));
-					rs = stmt.executeQuery();
+				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
 					List<String> configurationNames = new ArrayList<>();
 					while (rs.next()) {
 						configurationNames.add(rs.getString(1));
@@ -546,9 +538,6 @@ public class ConfigurationUtils {
 
 					log.debug("found database configurations {}", configurationNames);
 					return Collections.unmodifiableList(configurationNames);
-				}
-				finally {
-					if (rs != null) rs.close();
 				}
 			}
 		} catch (SenderException | JdbcException | SQLException e) {
