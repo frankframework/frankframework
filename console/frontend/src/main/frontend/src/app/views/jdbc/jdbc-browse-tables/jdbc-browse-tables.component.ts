@@ -135,7 +135,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     this.query = '';
     this.error = '';
     this.form = {
-      datasource: '',
+      datasource: this.form.datasource,
       resultType: '',
       table: '',
       where: '',
