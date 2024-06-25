@@ -279,7 +279,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 			}
 		};
 
-		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null);
+		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null, TypeFilter.FILES_ONLY);
 		assertFalse(stream.findAny().isPresent());
 	}
 }

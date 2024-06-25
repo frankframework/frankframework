@@ -1,6 +1,6 @@
 <results>
 <result item="1">
-<file name="testFile1.txt" size="64" fSize="64 B" canonicalName="TESTDATA_DIR\UploadFile\testFile1.txt" modificationDate="29-06-21" modificationTime="15:46:00" />
+<file name="testFile1.txt" size="64" fSize="64 B" canonicalName="TESTDATA_DIR\UploadFile\testFile1.txt" type="file" modificationDate="29-06-21" modificationTime="15:46:00" />
 
 </result>
 </results>

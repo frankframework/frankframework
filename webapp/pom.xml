@@ -16,4 +16,16 @@
 		<m2eclipse.wtp.contextRoot>iaf-webapp</m2eclipse.wtp.contextRoot>
 	</properties>
 
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>

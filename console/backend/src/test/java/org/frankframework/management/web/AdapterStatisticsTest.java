@@ -9,6 +9,6 @@ public class AdapterStatisticsTest extends FrankApiTestBase {
 
 	@Test
 	public void getAdapterStatisticsReturnsCorrectResponse() throws Exception {
-		testBasicRequest("/configurations/{configuration}/adapters/{adapter}/statistics", "ADAPTER", "STATUS", "TestConfiguration", "TestAdapter");
+		testActionAndTopicHeaders("/configurations/{configuration}/adapters/{adapter}/statistics", "ADAPTER", "STATUS", "TestConfiguration", "TestAdapter");
 	}
 }

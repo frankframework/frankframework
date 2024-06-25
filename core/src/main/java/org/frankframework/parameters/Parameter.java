@@ -20,11 +20,15 @@ import org.frankframework.doc.Default;
 import lombok.Getter;
 
 /**
- * Placeholder class to allow old-school <code>&lt;param type='number' /&gt;</code> in the new Frank!Config XSD.
+ * Placeholder class to allow legacy configuration notations <code>&lt;param type='number' /&gt;</code> in the new Frank!Config XSD.
+ * <p>
+ * The attribute <code>type</code> has been removed in favor of explicit ParameterTypes such as: <code>NumberParameter</code>, <code>DateParameter</code> and <code>BooleanParameter</code>.
+ * Using the new elements enables the use of auto-completion for the specified type.
  *
  * @author Niels Meijer
  */
 // Should never be instantiated directly. See {@link ParameterFactory} and {@link ParameterType} for more information.
+// To be deprecated(since = "8.2.0")
 public class Parameter extends AbstractParameter {
 
 	private @Getter ParameterType type;

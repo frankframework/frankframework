@@ -9,7 +9,7 @@ class ClassInfoTest extends FrankApiTestBase {
 
 	@Test
 	public void getClassInfoCorrectResponse() throws Exception {
-		testBasicRequest("/classinfo/{className}", "DEBUG", "GET", "String.class");
+		testActionAndTopicHeaders("/classinfo/className", "DEBUG", "GET");
 	}
 
 }

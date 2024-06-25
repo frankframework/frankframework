@@ -9,6 +9,6 @@ class LoggingTest extends FrankApiTestBase {
 
 	@Test
 	public void getLoggingBasic() throws Exception {
-		testBasicRequest("/logging", "LOGGING", "GET");
+		testActionAndTopicHeaders("/logging", "LOGGING", "GET");
 	}
 }

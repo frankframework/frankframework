@@ -4,9 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.pipes.EchoPipe;
-import org.jetbrains.annotations.NotNull;
 
 class AdapterTest {
 	int pipeNr = 0;
@@ -42,7 +43,7 @@ class AdapterTest {
 		assertEquals("<root>hidden</root>", regexApplied.replaceFirst(regex, "hidden"));
 	}
 
-	private @NotNull EchoPipe buildTestPipe(@NotNull PipeLine pipeLine) throws ConfigurationException {
+	private @Nonnull EchoPipe buildTestPipe(@Nonnull PipeLine pipeLine) throws ConfigurationException {
 		EchoPipe pipe = new EchoPipe();
 		pipe.setName("Pipe" + ++pipeNr);
 		pipeLine.addPipe(pipe);

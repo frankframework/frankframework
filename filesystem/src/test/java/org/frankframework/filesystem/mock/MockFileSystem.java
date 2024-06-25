@@ -211,6 +211,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	public boolean isFolder(M m) {
+		return m.getName().endsWith("/");
+	}
+
+	@Override
 	public OutputStream createFile(MockFile f) throws IOException {
 		checkOpen();
 		f.getOwner().getFiles().put(f.getName(), f);

@@ -72,6 +72,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 */
 	F toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException;
 	boolean exists(F f) throws FileSystemException;
+	boolean isFolder(F f) throws FileSystemException;
 
 	boolean folderExists(String folder) throws FileSystemException;
 	Message readFile(F f, String charset) throws FileSystemException, IOException;
