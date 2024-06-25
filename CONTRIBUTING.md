@@ -127,7 +127,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
-- We prefer to run the Frank!Framework on Java 17. Please install a Java 17 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
+- We prefer to run the Frank!Framework on Java 17. Please install a Java 17 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://adoptium.net/temurin/releases/?package=jdk&version=17). This is a distribution of the OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
 
 *Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
 

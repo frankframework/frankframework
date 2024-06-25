@@ -1,4 +1,4 @@
 <directory name="TESTDATA_DIR\UploadFile" count="2">
-  <file name="testFile11745837305867083106.txt" size="64" fSize="64 B" directory="false" canonicalName="TESTDATA_DIR\UploadFile\testFile11745837305867083106.txt" modificationDate="07-07-21" modificationTime="16:16:48" />
-  <file name="testFile25883692992031466903.txt" size="64" fSize="64 B" directory="false" canonicalName="TESTDATA_DIR\UploadFile\testFile25883692992031466903.txt" modificationDate="07-07-21" modificationTime="16:16:48" />
+  <file name="testFile11745837305867083106.txt" size="64" fSize="64 B" directory="false" canonicalName="TESTDATA_DIR\UploadFile\testFile11745837305867083106.txt" type="file" modificationDate="07-07-21" modificationTime="16:16:48" />
+  <file name="testFile25883692992031466903.txt" size="64" fSize="64 B" directory="false" canonicalName="TESTDATA_DIR\UploadFile\testFile25883692992031466903.txt" type="file" modificationDate="07-07-21" modificationTime="16:16:48" />
 </directory>

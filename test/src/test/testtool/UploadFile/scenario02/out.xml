@@ -1,10 +1,10 @@
 <results>
 <result item="1">
-<file name="testFile1.txt" size="64" fSize="64 B" canonicalName="TESTDATA_DIR\UploadFile\testFile1.txt" modificationDate="01-07-21" modificationTime="08:39:06" />
+<file name="testFile1.txt" size="64" fSize="64 B" canonicalName="TESTDATA_DIR\UploadFile\testFile1.txt" type="file" modificationDate="01-07-21" modificationTime="08:39:06" />
 
 </result>
 <result item="2">
-<file name="testFile2.txt" size="64" fSize="64 B" canonicalName="TESTDATA_DIR\UploadFile\testFile2.txt" modificationDate="01-07-21" modificationTime="08:39:06" />
+<file name="testFile2.txt" size="64" fSize="64 B" canonicalName="TESTDATA_DIR\UploadFile\testFile2.txt" type="file" modificationDate="01-07-21" modificationTime="08:39:06" />
 
 </result>
 </results>
