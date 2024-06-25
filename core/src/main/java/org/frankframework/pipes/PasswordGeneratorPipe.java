@@ -29,6 +29,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
+import org.frankframework.util.UUIDUtil;
 
 
 /**
@@ -45,7 +46,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	private String numbers = "0123456789";
 	private String signs = ";:_%$#@!><";
 
-	private SecureRandom random;
+	private static SecureRandom random; // different algorithm than standard Random
 
 	int numOfLCharacters = 2;
 	int numOfUCharacters = 2;
@@ -56,10 +57,12 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		try {
-			random = SecureRandom.getInstance("SHA1PRNG");
-		} catch (NoSuchAlgorithmException e) {
-			random = new SecureRandom(); // traverses the list of registered security Providers
+		if (random == null) {
+			try {
+				random = SecureRandom.getInstance("SHA1PRNG");
+			} catch (NoSuchAlgorithmException e) {
+				random = UUIDUtil.RANDOM; // fallback to shared UUIDUtil random
+			}
 		}
 	}
 

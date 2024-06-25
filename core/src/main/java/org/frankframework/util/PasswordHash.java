@@ -20,7 +20,6 @@ package org.frankframework.util;
 
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.SecretKeyFactory;
@@ -68,9 +67,8 @@ public class PasswordHash {
 
 	public static String createHash(char[] password, int iterations) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		// Generate a random salt
-		SecureRandom random = new SecureRandom();
 		byte[] salt = new byte[SALT_BYTE_SIZE];
-		random.nextBytes(salt);
+		UUIDUtil.RANDOM.nextBytes(salt);
 
 		// Hash the password
 		byte[] hash = pbkdf2(password, salt, iterations, HASH_BYTE_SIZE);

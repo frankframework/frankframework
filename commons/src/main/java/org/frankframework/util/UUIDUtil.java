@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.util.UUID;
 
 public class UUIDUtil {
+	public static final SecureRandom RANDOM = new SecureRandom();
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
 	/**
@@ -101,7 +102,7 @@ public class UUIDUtil {
 		String ia4 = df.format(unsignedByteToInt(ipAddress[3]));
 		String ia = ia1 + ia2 + ia3 + ia4;
 
-		long hashL = Math.round(new SecureRandom().nextDouble() * 1_000_000d);
+		long hashL = Math.round(RANDOM.nextDouble() * 1_000_000d);
 		df = new DecimalFormat("000000");
 		String hash = df.format(hashL);
 
@@ -114,7 +115,7 @@ public class UUIDUtil {
 	 * Converts an unsigned byte to its integer representation.
 	 * Examples:
 	 * <pre>
-	 * Misc.unsignedByteToInt(new Btye(12)) returns 12
+	 * Misc.unsignedByteToInt(new Byte(12)) returns 12
 	 * Misc.unsignedByteToInt(new Byte(-12)) returns 244
 	 * </pre>
 	 * @param b byte to be converted.

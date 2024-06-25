@@ -17,10 +17,10 @@ package org.frankframework.http.mime;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -56,7 +56,8 @@ public class MultipartEntityBuilder {
 	private boolean mtom = false;
 	private String firstPart = null;
 
-	private static final SecureRandom RANDOM = new SecureRandom();
+	@SuppressWarnings("java:S2245") // Random is good enough for this use case
+	private static final Random RANDOM = new Random();
 
 	public static MultipartEntityBuilder create() {
 		return new MultipartEntityBuilder();

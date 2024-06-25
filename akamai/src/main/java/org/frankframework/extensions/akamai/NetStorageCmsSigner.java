@@ -16,7 +16,6 @@
 package org.frankframework.extensions.akamai;
 
 import java.net.URI;
-import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +23,7 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.UUIDUtil;
 
 
 /**
@@ -39,7 +39,6 @@ public class NetStorageCmsSigner {
 	protected static final String ACTION_HEADER = "X-Akamai-ACS-Action";
 	protected static final String AUTH_DATA_HEADER = "X-Akamai-ACS-Auth-Data";
 	protected static final String AUTH_SIGN_HEADER = "X-Akamai-ACS-Auth-Sign";
-	private static final SecureRandom RANDOM = new SecureRandom();
 
 	/**
 	 * Currently only 3 signing hash types are supported. Each are indicated with a version. They are:
@@ -123,7 +122,7 @@ public class NetStorageCmsSigner {
 	 */
 	protected String getAuthDataHeaderValue() {
 		Date currentTime = new Date();
-		int rand = RANDOM.nextInt(Integer.MAX_VALUE);
+		int rand = UUIDUtil.RANDOM.nextInt(Integer.MAX_VALUE);
 
 		return
 				"%d, 0.0.0.0, 0.0.0.0, %d, %d, %s".formatted(
