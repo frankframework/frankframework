@@ -120,9 +120,9 @@ public class Scheduler extends FrankApiBase {
 		builder.addHeader("cron", RequestUtils.resolveRequiredProperty("cron", multipartBody.getCron(), ""));
 		builder.addHeader("interval", RequestUtils.resolveRequiredProperty("interval", multipartBody.getInterval(), -1));
 
-		builder.addHeader("adapter", RequestUtils.resolveRequiredProperty("adapter", multipartBody.getAdapter(), null));
-		builder.addHeader("receiver", RequestUtils.resolveRequiredProperty("receiver", multipartBody.getReceiver(), ""));
-		builder.addHeader("configuration", RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.getConfiguration(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, RequestUtils.resolveRequiredProperty("adapter", multipartBody.getAdapter(), null));
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, RequestUtils.resolveRequiredProperty("receiver", multipartBody.getReceiver(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.getConfiguration(), ""));
 		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", multipartBody.getListener(), ""));
 
 		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.isPersistent(), false));
