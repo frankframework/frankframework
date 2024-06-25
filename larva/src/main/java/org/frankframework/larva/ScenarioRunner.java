@@ -65,6 +65,7 @@ public class ScenarioRunner {
 	private final int waitBeforeCleanUp;
 	private final LarvaLogLevel logLevel;
 	private @Setter boolean multipleThreads;
+	private final int threads;
 
 	public ScenarioRunner(LarvaTool larvaTool, IbisContext ibisContext, TestConfig config, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, LarvaLogLevel logLevel) {
 		this.larvaTool = larvaTool;
@@ -79,6 +80,8 @@ public class ScenarioRunner {
 		String blackListDirs = AppConstants.getInstance().getProperty("larva.parallel.blacklistDirs", "");
 		StringUtil.split(blackListDirs, ",").stream().collect(Collectors.toCollection(() -> parallelBlacklistDirs));
 		log.info("Setting parallel blacklist dirs to: {}", parallelBlacklistDirs);
+
+		 threads = AppConstants.getInstance().getInt("larva.parallel.threads", 4);
 	}
 
 	public void runScenario(List<File> scenarioFiles, String currentScenariosRootDirectory) {
@@ -101,29 +104,32 @@ public class ScenarioRunner {
 		List<File> singleThreadedScenarios = new ArrayList<>(); // Collect scenarios that should be run single threaded
 
 		// Run each scenario folder in a separate thread
-		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
-		sameFolderFiles.keySet().forEach(folder -> {
-			List<File> files = sameFolderFiles.get(folder);
-			log.debug("Starting FOLDER: {} - found: {} files", folder, files.size());
-			if (parallelBlacklistDirs.contains(folder)) {
-				log.debug("Skipping folder because found in parallel blacklist: {}", folder);
-				singleThreadedScenarios.addAll(files);
-				return;
-			}
-			executor.submit(() -> {
-				for (File file : files) {
-					runOneFile(file, currentScenariosRootDirectory);
-				}
-			});
-		});
-
-		// Wait for all scenarios to finish
-		executor.shutdown();
+		// Not using a try-with-resources because the default awaitTermination is set on 1 day
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		try {
-			executor.awaitTermination(15, TimeUnit.MINUTES); // Guessing a max timeout, otherwise we might hang forever
-		} catch (InterruptedException e) {
-			log.warn("Interrupted while waiting for scenario runner to finish", e);
-			Thread.currentThread().interrupt();
+			sameFolderFiles.keySet().forEach(folder -> {
+				List<File> files = sameFolderFiles.get(folder);
+				log.debug("Starting FOLDER: {} - found: {} files", folder, files.size());
+				if (parallelBlacklistDirs.contains(folder)) {
+					log.debug("Skipping folder because found in parallel blacklist: {}", folder);
+					singleThreadedScenarios.addAll(files);
+					return;
+				}
+				executor.submit(() -> {
+					for (File file : files) {
+						runOneFile(file, currentScenariosRootDirectory);
+					}
+				});
+			});
+			// Wait for all scenarios to finish
+			executor.shutdown();
+		} finally {
+			try {
+				executor.awaitTermination(15, TimeUnit.MINUTES); // Guessing a max timeout, otherwise we might hang forever
+			} catch (InterruptedException e) {
+				log.warn("Interrupted while waiting for scenario runner to finish", e);
+				Thread.currentThread().interrupt();
+			}
 		}
 		return singleThreadedScenarios;
 	}
