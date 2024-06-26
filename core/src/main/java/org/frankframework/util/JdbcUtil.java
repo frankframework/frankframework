@@ -44,6 +44,11 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ParameterException;
@@ -65,12 +70,6 @@ import org.frankframework.stream.document.INodeBuilder;
 import org.frankframework.stream.document.ObjectBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
-
-import jakarta.jms.BytesMessage;
-import jakarta.jms.JMSException;
-import jakarta.jms.TextMessage;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Database-oriented utility functions.
@@ -425,7 +424,7 @@ public class JdbcUtil {
 						throw new JdbcException(e);
 					}
 				} else {
-					rawMessage = Message.asString(result);
+					rawMessage = MessageUtils.asString(result);
 				}
 			} else {
 				rawMessage = new String(bytes, charset);
