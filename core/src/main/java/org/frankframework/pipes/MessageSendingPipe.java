@@ -25,6 +25,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.transform.TransformerException;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
@@ -80,12 +85,6 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import jakarta.annotation.Nonnull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
@@ -737,14 +736,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), output);
 	}
 
-	private boolean validResult(Object result) throws IOException {
-		boolean validResult = true;
-		if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
-			if (!XmlUtils.isWellFormed(Message.asString(result), getCheckRootTag())) {
-				validResult = false;
-			}
-		}
-		return validResult;
+	private boolean validResult(Message result) throws IOException {
+		return (!isCheckXmlWellFormed() && !StringUtils.isNotEmpty(getCheckRootTag()))
+				|| XmlUtils.isWellFormed(result.asString(), getCheckRootTag());
 	}
 
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, InterruptedException, IOException {

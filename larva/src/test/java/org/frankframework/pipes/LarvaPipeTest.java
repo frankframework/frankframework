@@ -6,14 +6,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.AppConstants;
 
 class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 
@@ -39,7 +39,7 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 	public void testDoPipeWithoutScenarios() throws PipeRunException, IOException {
 		// Act
 		PipeRunResult prr = doPipe(pipe, null, session);
-		String result = Message.asString(prr.getResult());
+		String result = prr.getResult().asString();
 
 		// Assert
 		assertEquals("No scenarios root directories found\n", result);

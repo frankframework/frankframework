@@ -33,6 +33,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,9 +64,6 @@ import org.frankframework.util.XmlUtils;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Generic parameter definition.
@@ -558,27 +557,13 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 	}
 
-	private Object preFormatDateType(Object rawValue, String formatType, String patternFormatString) throws ParameterException {
-		if (formatType!=null && ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType))) {
-			if (rawValue instanceof Date) {
-				return rawValue;
-			}
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
-			try {
-				return df.parse(Message.asString(rawValue));
-			} catch (ParseException | IOException e) {
-				throw new ParameterException(getName(), "Cannot parse ["+rawValue+"] as date", e);
-			}
+	private Object preFormatDateType(Date rawValue, String formatType, String patternFormatString) {
+		if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
+			return rawValue;
 		}
-		if (rawValue instanceof Date) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
-			return df.format(rawValue);
-		}
-		try {
-			return Message.asString(rawValue);
-		} catch (IOException e) {
-			throw new ParameterException(getName(), "Cannot read date value ["+rawValue+"]", e);
-		}
+
+		DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
+		return df.format(rawValue);
 	}
 
 
@@ -630,16 +615,27 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
 					}
+
+					// Parameter can be provided as a Date or a String. If using session.getString on a Date parameter, it will be formatted incorrectly
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
-					if (fixedDateTime == null) {
+
+					if (fixedDateTime != null) {
+						if (fixedDateTime instanceof Date date) {
+							substitutionValue = preFormatDateType(date, formatType, formatString);
+						} else if (fixedDateTime instanceof String string) {
+							substitutionValue = string;
+						}
+					} else {
 						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
+
 						try {
-							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
+							Date date = df.parse(PutSystemDateInSession.FIXEDDATETIME);
+							substitutionValue = preFormatDateType(date, formatType, formatString);
 						} catch (ParseException e) {
 							throw new ParameterException(getName(), "Could not parse FIXEDDATETIME [" + PutSystemDateInSession.FIXEDDATETIME + "]", e);
 						}
 					}
-					substitutionValue = preFormatDateType(fixedDateTime, formatType, formatString);
+
 					break;
 				case "fixeduid":
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
