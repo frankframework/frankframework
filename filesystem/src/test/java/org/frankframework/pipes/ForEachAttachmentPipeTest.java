@@ -19,7 +19,6 @@ public class ForEachAttachmentPipeTest {
 	@Test
 	public void testOnlyPropertiesToList() {
 		String list = "a,b,C";
-		String collectionDescription = "First 3 letters of the alphabet";
 		ForEachAttachmentPipe pipe = new ForEachAttachmentPipe();
 		pipe.setOnlyProperties(list);
 
@@ -29,12 +28,11 @@ public class ForEachAttachmentPipeTest {
 
 	@Test
 	public void testExcludePropertiesToList() {
-		String list = "a,b,C";
-		String collectionDescription = "First 3 letters of the alphabet";
+		String list = "a,b,C,";
 		ForEachAttachmentPipe pipe = new ForEachAttachmentPipe();
 		pipe.setExcludeProperties(list);
 
 		List<String> collection = new ArrayList<>(pipe.getExcludePropertiesSet());
-		assertThat(collection, containsInAnyOrder("a", "b", "C"));
+		assertThat(collection, containsInAnyOrder("a", "b", "C", ""));
 	}
 }

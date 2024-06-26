@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package org.frankframework.senders;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
@@ -31,7 +29,6 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISender;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -170,10 +167,10 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 	}
 
 	@Override
-	public String sendEmail(MailSessionBase mailSession) throws SenderException {
+	public void sendEmail(MailSessionBase mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session [{}]", session);
-		return sendEmail(session, (MailSession)mailSession);
+		sendEmail(session, (MailSession)mailSession);
 	}
 
 	@Override
@@ -220,7 +217,7 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 		}
 	}
 
-	private String sendEmail(Session session, MailSession mailSession) throws SenderException {
+	private void sendEmail(Session session, MailSession mailSession) throws SenderException {
 		StringBuilder builder = new StringBuilder();
 
 		if (log.isDebugEnabled()) {
@@ -242,17 +239,8 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 		// Only send if some recipients remained after whitelisting
 		if (mailSession.hasWhitelistedRecipients()) {
 			putOnTransport(session, msg);
-		} else if (log.isDebugEnabled()) {
-			log.debug("No recipients left after whitelisting, mail is not send");
-		}
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try {
-			msg.writeTo(out);
-			ByteArrayInputStream bis = new ByteArrayInputStream(out.toByteArray());
-			return StreamUtil.streamToString(bis, "\n", false);
-		} catch (Exception e) {
-			throw new SenderException("Error occurred while sending email", e);
+		} else {
+			log.debug("no recipients left after whitelisting, mail is not send");
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2022-2023 WeAreFrank!
+   Copyright 2019, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	private final ArrayList<String> allowedDomains = new ArrayList<>();
 
-	protected abstract String sendEmail(MailSessionBase mailSession) throws SenderException;
+	protected abstract void sendEmail(MailSessionBase mailSession) throws SenderException;
 
 	@Override
 	public void configure() throws ConfigurationException {
