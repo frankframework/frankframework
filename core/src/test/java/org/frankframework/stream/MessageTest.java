@@ -358,19 +358,6 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testStringAsStaticByteArray() {
-		byte[] byteArray = testString.getBytes();
-		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
-	}
-
-	@Test
-	public void testByteArrayAsStaticByteArray() {
-		byte[] byteArray = testString.getBytes();
-		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
-		assertEquals(testString, new String(byteArray), "content differ");
-	}
-
-	@Test
 	public void testReaderAsString() throws Exception {
 		StringReader source = new StringReader(testString);
 		adapter = new Message(source);
