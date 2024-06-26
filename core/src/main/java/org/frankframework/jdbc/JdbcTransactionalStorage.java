@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -405,9 +405,22 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				throw new ConfigurationException("Cannot convert [selectKeyForMessageQuery]", e);
 			}
 		}
-		if (DOCUMENT_QUERIES && log.isDebugEnabled()) {
-			log.debug("{}{}{}{}{}{}{}{}{}", documentQuery("insertQuery", insertQuery, "Voeg een regel toe aan de tabel"), documentQuery("selectKeyForMessageQuery", selectKeyForMessageQuery, "Controleer of slot-id + message-id al voorkomen in de tabel"), documentQuery("deleteQuery", deleteQuery, "Verwijder een regel uit de tabel, via de primary key"), documentQuery("selectContextQuery", selectContextQuery, "Haal de niet blob velden van een regel op, via de primary key"), documentQuery("selectListQuery", getSelectListQuery(dbmsSupport, null, null, null), "Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op"), documentQuery("selectDataQuery", selectDataQuery, "Haal de blob van een regel op, via de primary key"), documentQuery("checkMessageIdQuery", checkMessageIdQuery, "bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal."), documentQuery("checkCorrelationIdQuery", checkCorrelationIdQuery, "bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal."), documentQuery("getMessageCountQuery", getMessageCountQuery, "tel het aantal regels in een gedeelte van de tabel. Kan via index."));
-		}
+		/*
+		 * insertQuery: Voeg een regel toe aan de tabel
+		 * selectKeyForMessageQuery: Controleer of slot-id   message-id al voorkomen in de tabel
+		 * deleteQuery: Verwijder een regel uit de tabel, via de primary key
+		 * selectContextQuery: Haal de niet blob velden van een regel op, via de primary key
+		 * selectListQuery: bmsSupport, null, null, null),"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op
+		 * selectDataQuery: Haal de blob van een regel op, via de primary key
+		 * checkMessageIdQuery: bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.
+		 * checkCorrelationIdQuery: bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.
+		 * getMessageCountQuery: tel het aantal regels in een gedeelte van de tabel. Kan via index.
+		 *
+		 * slotId en type zou via ? kunnen
+		 * selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen
+		 * selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen
+		 * we zouden de index hint via een custom property aan en uit kunnen zetten...
+		 */
 	}
 
 	private String documentQuery(String name, String query, String purpose) {
