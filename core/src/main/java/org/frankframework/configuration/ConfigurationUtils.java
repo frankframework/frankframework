@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,8 +110,7 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * Get the version (configuration.version + configuration.timestmap)
-	 * from the configuration's AppConstants
+	 * Get the version (configuration.version + configuration.timestamp) from the configuration's AppConstants.
 	 */
 	public static String getConfigurationVersion(ClassLoader classLoader) {
 		return getConfigurationVersion(AppConstants.getInstance(classLoader));
@@ -160,7 +159,7 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			try(Connection conn = qs.getConnection()) {
-				if(version == null) {//Return active config
+				if (version == null) { // Return active config
 					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
@@ -242,7 +241,6 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
@@ -293,7 +291,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			itx.complete();
-			JdbcUtil.fullClose(conn, rs);
+			JdbcUtil.close(conn);
 			qs.close();
 		}
 	}
@@ -394,7 +392,6 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-
 				String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
 					selectStmt.setString(1, name);
@@ -419,7 +416,6 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 *
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
@@ -495,7 +491,6 @@ public class ConfigurationUtils {
 			}
 			return configName1.equals(configName2) ? 0 : 1;
 		}
-
 	}
 
 	@Nonnull

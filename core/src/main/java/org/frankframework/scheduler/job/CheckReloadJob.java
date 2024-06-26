@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,25 +36,25 @@ import org.frankframework.util.SpringUtils;
 public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
 	private static final String DATABASE_CLASSLOADER = "DatabaseClassLoader";
-	private boolean atLeastOneConfigrationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
+	private boolean atLeastOneConfigurationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
 
 	@Override
 	public boolean beforeExecuteJob() {
-		if(!atLeastOneConfigrationHasDBClassLoader) {
+		if(!atLeastOneConfigurationHasDBClassLoader) {
 			IbisManager ibisManager = getIbisManager();
 			for (Configuration configuration : ibisManager.getConfigurations()) {
 				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
-					atLeastOneConfigrationHasDBClassLoader=true;
+					atLeastOneConfigurationHasDBClassLoader =true;
 					break;
 				}
 			}
 		} else {
 			getMessageKeeper().add("skipped job execution: autoload is disabled");
 		}
-		if(!atLeastOneConfigrationHasDBClassLoader) {
+		if(!atLeastOneConfigurationHasDBClassLoader) {
 			getMessageKeeper().add("skipped job execution: no database configurations found");
 		}
-		return atLeastOneConfigrationHasDBClassLoader;
+		return atLeastOneConfigurationHasDBClassLoader;
 	}
 
 	@Override

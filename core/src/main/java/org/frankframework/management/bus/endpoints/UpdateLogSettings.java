@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,11 +25,6 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.messaging.Message;
-
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -37,8 +32,12 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
@@ -78,6 +77,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 		updateLogConfiguration(loglevel, logIntermediaryResults, maxMessageLength, enableDebugger);
 	}
 
+	@SuppressWarnings("S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
 	private void updateLogConfiguration(Level loglevel, Boolean logIntermediaryResults, Integer maxMessageLength, Boolean enableDebugger) {
 		StringBuilder msg = new StringBuilder();
 
@@ -127,9 +127,9 @@ public class UpdateLogSettings extends BusEndpointBase {
 			}
 		}
 
-		if(msg.length() > 0) {
-			log.warn(msg::toString);
-			LogUtil.getLogger("SEC").info(msg::toString);
+		if (!msg.isEmpty()) {
+			log.warn(msg);
+			LogUtil.getLogger("SEC").info(msg);
 		}
 	}
 }

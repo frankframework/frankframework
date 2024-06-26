@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ import org.xml.sax.ContentHandler;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
- * Descendent classes can override getStatement to provide meaningful statements.
+ * Descendant classes can override getStatement to provide meaningful statements.
  * If used with parameters, the values of the parameters will be applied to the statement.
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
@@ -204,7 +204,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			return query;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("{}converting query [{}] from [{}] to [{}]", getLogPrefix(), query.trim(), getSqlDialect(), getDbmsSupport().getDbmsName());
+			log.debug("{}converting query [{}] from [{}] to [{}]", this::getLogPrefix, query::trim, this::getSqlDialect, () -> getDbmsSupport().getDbmsName());
 		}
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
@@ -373,7 +373,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				for (int i = 0; i < newParameterList.size(); i++) {
 					IParameter param = newParameterList.getParameter(i);
 					if (param.getType() == ParameterType.INPUTSTREAM) {
-						log.debug("{}Closing inputstream for parameter [{}]", getLogPrefix(), param.getName());
+						log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
 						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
 							if(object instanceof AutoCloseable closeable) {
 								closeable.close();
@@ -854,7 +854,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-	 * Controls wheter the returned package content is db2 format or xml format.
+	 * Controls if the returned package content is db2 format or xml format.
 	 * Possible values:
 	 * <ul>
 	 * <li>select:</li> xml content s expected

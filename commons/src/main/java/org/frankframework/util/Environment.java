@@ -119,7 +119,7 @@ public class Environment {
 	}
 
 	/**
-	 * Get IBIS module version
+	 * Get FF module version
 	 *
 	 * @param module name of the module to fetch the version
 	 * @return module version or null if not found
