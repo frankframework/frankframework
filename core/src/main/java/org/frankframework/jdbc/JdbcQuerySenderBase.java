@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ import org.xml.sax.ContentHandler;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
- * Descendent classes can override getStatement to provide meaningful statements.
+ * Descendant classes can override getStatement to provide meaningful statements.
  * If used with parameters, the values of the parameters will be applied to the statement.
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
@@ -191,7 +191,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try {
 				convertedResultQuery = convertQuery(getResultQuery());
-				if (log.isDebugEnabled()) log.debug("converted result query into [" + convertedResultQuery + "]");
+				if (log.isDebugEnabled()) log.debug("converted result query into [{}]", convertedResultQuery);
 			} catch (JdbcException | SQLException e) {
 				throw new SenderException("Cannot convert result query",e);
 			}
@@ -204,7 +204,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			return query;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
+			log.debug("{}converting query [{}] from [{}] to [{}]", this::getLogPrefix, query::trim, this::getSqlDialect, () -> getDbmsSupport().getDbmsName());
 		}
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
@@ -224,7 +224,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			adaptedQuery = getDbmsSupport().prepareQueryTextForNonLockingRead(adaptedQuery);
 		}
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+ adaptedQuery +"]");
+			log.debug("{}preparing statement for query [{}]", getLogPrefix(), adaptedQuery);
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned != null) {
@@ -373,7 +373,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				for (int i = 0; i < newParameterList.size(); i++) {
 					IParameter param = newParameterList.getParameter(i);
 					if (param.getType() == ParameterType.INPUTSTREAM) {
-						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + param.getName() + "]");
+						log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
 						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
 							if(object instanceof AutoCloseable closeable) {
 								closeable.close();
@@ -593,7 +593,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	private ClobWriter getClobWriter(PreparedStatement statement, int clobColumn) throws SQLException, JdbcException {
-		log.debug(getLogPrefix() + "executing an update CLOB command");
+		log.debug("{}executing an update CLOB command", getLogPrefix());
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
 		JdbcUtil.warningsToXml(statement.getWarnings(),result);
@@ -688,7 +688,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				pstmt.registerOutParameter(parameterIndex, Types.CLOB); // make sure enough space is available for result...
 			}
 			if ("xml".equalsIgnoreCase(getPackageContent())) {
-				log.debug(getLogPrefix() + "executing a package SQL command");
+				log.debug("{}executing a package SQL command", getLogPrefix());
 				pstmt.executeUpdate();
 				String pUitvoer = pstmt.getString(parameterIndex);
 				return new Message(pUitvoer);
@@ -854,7 +854,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-	 * Controls wheter the returned package content is db2 format or xml format.
+	 * Controls if the returned package content is db2 format or xml format.
 	 * Possible values:
 	 * <ul>
 	 * <li>select:</li> xml content s expected
