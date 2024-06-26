@@ -77,7 +77,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			try {
 				return file.toURI().toURL();
 			} catch (MalformedURLException e) {
-				log.error("Could not create url for '{}'", name, e);
+				log.error("could not create url for [{}]", name, e);
 			}
 		}
 

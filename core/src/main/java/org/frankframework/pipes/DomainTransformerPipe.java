@@ -153,7 +153,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 						}
 						if (!type.equals(TYPE_STRING)
 							&& !type.equals(TYPE_NUMBER)) {
-							log.warn("Only types [" + TYPE_STRING + "," + TYPE_NUMBER + "] are allowed in [{}]", invoerSubstring);
+							log.warn("Only types [{},{}] are allowed in [{}]", TYPE_STRING, TYPE_NUMBER, invoerSubstring);
 							builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 							copyFrom = endPos + DT_END.length();
 						} else {

@@ -495,11 +495,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (isUseRootFolder()) {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
-			log.debug("{}created new document [ {}]", getLogPrefix(), document.getId());
+			log.debug("{}created new document [{}]", getLogPrefix(), document.getId());
 			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-		log.debug("{}created new document [ {}]", getLogPrefix(), objectId.getId());
+		log.debug("{}created new document [{}]", getLogPrefix(), objectId.getId());
 		return new SenderResult(objectId.getId());
 	}
 
