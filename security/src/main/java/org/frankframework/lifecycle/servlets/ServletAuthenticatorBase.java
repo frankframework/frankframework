@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,9 +51,6 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
@@ -181,7 +180,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				http.csrf(csrf -> csrf
 						.csrfTokenRepository(csrfTokenRepository)
 						.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-						.ignoringRequestMatchers((request) -> request.getRequestURI().endsWith("/iaf/larva/index.jsp"), (request) -> request.getRequestURI().endsWith("/iaf/testtool"))
+						.ignoringRequestMatchers(
+								request -> request.getRequestURI().endsWith("/iaf/larva/index.jsp"),
+								request -> request.getRequestURI().endsWith("/iaf/testtool"),
+								request -> request.getRequestURI().endsWith("/iaf/ladybug")
+						)
 				);
 			} else {
 				http.csrf(CsrfConfigurer::disable);
