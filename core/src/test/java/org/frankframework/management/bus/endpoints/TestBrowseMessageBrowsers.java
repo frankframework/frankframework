@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,6 +33,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
@@ -60,11 +66,6 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.TransactionManagerMock;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -297,6 +298,29 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 	}
 
+	/**
+	 * Method: cleanseMessage(String inputString, String hideRegex, String
+	 * hideMethod)
+	 */
+	@Test
+	public void testCleanseMessageHideAll() {
+		String s = "Donald Duck 23  Hey hey  14  Wooo";
+		String regex = "\\d";
+		String res = BrowseMessageBrowsers.cleanseMessage(s, regex, IMessageBrowser.HideMethod.ALL);
+		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
+	}
+
+	/**
+	 * Method: cleanseMessage(String inputString, String hideRegex, String
+	 * hideMethod)
+	 */
+	@Test
+	public void testCleanseMessageHideFirstHalf() {
+		String s = "1 Donald Duck 123  Hey hey  45  Wooo  6789 and 12345";
+		String regex = "\\d+";
+		String res = BrowseMessageBrowsers.cleanseMessage(s, regex, IMessageBrowser.HideMethod.FIRSTHALF);
+		assertEquals("* Donald Duck **3  Hey hey  *5  Wooo  **89 and ***45", res);
+	}
 
 	public class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
 

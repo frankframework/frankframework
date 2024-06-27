@@ -24,14 +24,6 @@ import java.util.Set;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -48,6 +40,7 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.ProcessStateDTO;
 import org.frankframework.management.bus.dto.StorageItemDTO;
 import org.frankframework.management.bus.dto.StorageItemsDTO;
@@ -58,7 +51,13 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.MessageBrowsingFilter;
 import org.frankframework.util.MessageBrowsingUtil;
-import org.frankframework.util.Misc;
+import org.frankframework.util.StringUtil;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MESSAGE_BROWSER)
@@ -69,6 +68,18 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	public static final String HEADER_PROCESSSTATE_KEY = "processState";
 
 	private static final TransactionDefinition TXNEW_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+	/**
+	 * Edits the input string according to the regex and the hide method specified.
+	 * @see StringUtil#hideAll(String, String, int)
+	 */
+	public static String cleanseMessage(String inputString, String regexForHiding, IMessageBrowser.HideMethod hideMethod) {
+		if (StringUtils.isEmpty(regexForHiding) || StringUtils.isEmpty(inputString)) {
+			return inputString;
+		}
+		// Ordinal of the HideMethod enum matches to the mode parameter value for hideAll method
+		return StringUtil.hideAll(inputString, regexForHiding, hideMethod.ordinal());
+	}
 
 	@ActionSelector(BusAction.GET)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -320,7 +331,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		if (StringUtils.isEmpty(msg)) {
 			msg = "<no message found/>";
 		} else {
-			msg = Misc.cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
+			msg = cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
 		}
 
 		return msg;
