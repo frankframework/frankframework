@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import lombok.Getter;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -79,8 +79,6 @@ import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
