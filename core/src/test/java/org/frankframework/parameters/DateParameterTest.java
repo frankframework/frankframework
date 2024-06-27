@@ -218,6 +218,7 @@ public class DateParameterTest {
 		p.setName("date");
 		p.setPattern("{fixedDate}");
 		p.setType(ParameterType.DATE);
+		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
 		Date date = new Date();

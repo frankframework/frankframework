@@ -583,7 +583,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			Object substitutionValueMessage = session.get(name);
 			if (substitutionValueMessage != null) {
 				if (substitutionValueMessage instanceof Date substitutionValueDate) {
-					substitutionValue = substitutionValueDate;
+					substitutionValue = getSubstitutionValueForDate(substitutionValueDate, formatType);
 				} else {
 					if (substitutionValueMessage instanceof String stringValue) {
 						substitutionValue = preFormatDateType(stringValue, formatType, formatString);
@@ -629,7 +629,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 					if (fixedDateTime != null) {
 						if (fixedDateTime instanceof Date date) {
-							substitutionValue = date;
+							substitutionValue = getSubstitutionValueForDate(date, formatType);
 						} else if (fixedDateTime instanceof String string) {
 							substitutionValue = preFormatDateType(string, formatType, formatString);
 						}
@@ -669,6 +669,17 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return substitutionValue;
 	}
 
+	/**
+	 * @return the date when the format type is set, so the formatter knows how to format the Date object or return the date formatted
+	 * as a String with the default format.
+	 */
+	private Object getSubstitutionValueForDate(Date date, String formatType) {
+		return (formatType != null) ? date : formatDateToString(date, null);
+	}
+
+	/**
+	 * @return the given date formatted by the given patternFormatString or the DateFormatUtils.FORMAT_DATETIME_GENERIC pattern if empty
+	 */
 	private String formatDateToString(Date date, String patternFormatString) {
 		DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 		return df.format(date);
