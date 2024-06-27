@@ -91,7 +91,7 @@ public class DelphiStringRecordReader extends Reader {
 		if (len<0) {
 			return null;
 		}
-		if (trace && log.isDebugEnabled()) log.debug("read byte for string length ["+len+"]");
+		if (trace && log.isDebugEnabled()) log.debug("read byte for string length [{}]", len);
 		byte[] buf=new byte[len]; // allocate space for the bytes of the string
 		int bytesToRead=len;
 		int pos=0;
@@ -111,14 +111,14 @@ public class DelphiStringRecordReader extends Reader {
 			}
 		}
 		if (pos<stringLength) {
-			if (trace && log.isDebugEnabled()) log.debug("skipping ["+(stringLength-pos)+"] bytes");
+			if (trace && log.isDebugEnabled()) log.debug("skipping [{}] bytes", stringLength - pos);
 			in.skip(stringLength-pos);
 		}
 		String result=new String(buf,charsetName);
 		if (StringUtils.isNotEmpty(separatorReplacement)) {
 			result= result.replace(separator, separatorReplacement);
 		}
-		if (trace && log.isDebugEnabled()) log.debug("read string ["+result+"]");
+		if (trace && log.isDebugEnabled()) log.debug("read string [{}]", result);
 		return result;
 	}
 
@@ -137,7 +137,7 @@ public class DelphiStringRecordReader extends Reader {
 				stringsRead++;
 			}
 		}
-		if (trace && log.isDebugEnabled()) log.debug("read ["+stringsRead+"] strings");
+		if (trace && log.isDebugEnabled()) log.debug("read [{}] strings", stringsRead);
 		if (stringsRead==0) {
 			buffer=null;
 		} else {

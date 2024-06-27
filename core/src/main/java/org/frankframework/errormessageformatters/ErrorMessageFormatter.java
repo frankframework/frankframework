@@ -109,7 +109,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		try {
 			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
 		} catch (IOException e) {
-			log.warn("Could not convert originalMessage for messageId ["+messageId+"]",e);
+			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
 			originalMessageXml.setValue(originalMessage.toString(), true);
 		}
 		errorXml.addSubElement(originalMessageXml);

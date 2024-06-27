@@ -65,7 +65,7 @@ public class AsposeFontManager {
 			rootDirectory = new File(fontsDirectory);
 
 			if (!rootDirectory.exists()) {
-				log.warn("fontDirectory ["+fontsDirectory+"] does not exist, using ibis.tmpdir instead");
+				log.warn("fontDirectory [{}] does not exist, using ibis.tmpdir instead", fontsDirectory);
 			} else {
 				fontDirectory = new File(rootDirectory, FONTS_RESOURCE_DIR);
 			}

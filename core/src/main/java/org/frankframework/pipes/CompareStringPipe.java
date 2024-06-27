@@ -158,8 +158,8 @@ public class CompareStringPipe extends AbstractPipe {
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug("operand1 [" + operand1 + "]");
-			log.debug("operand2 [" + operand2 + "]");
+			log.debug("operand1 [{}]", operand1);
+			log.debug("operand2 [{}]", operand2);
 		}
 
 		int comparison = StringUtils.compare(operand1, operand2);

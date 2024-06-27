@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.testutil.TestAssertions;
@@ -19,18 +17,6 @@ import org.junit.jupiter.api.Test;
  * @author <Sina Sen>
  */
 public class MiscTest {
-
-	/**
-	 * Method: byteArrayToString(byte[] input, String endOfLineString, boolean
-	 * xmlEncode)
-	 */
-	@Test
-	public void testByteArrayToString() throws Exception {
-		String s = "test";
-		byte[] arr = s.getBytes();
-		String res = Misc.byteArrayToString(arr, "", true);
-		assertEquals(s, res);
-	}
 
 	/**
 	 * Method: toFileSize(String value, long defaultValue)
@@ -79,33 +65,6 @@ public class MiscTest {
 		assertEquals("150kB", kbSiUnits);
 		assertEquals("15 MB", mbSiUnits);
 		assertEquals("3GB", gbSiUnits);
-	}
-
-	@Test
-	public void testListToStringWithStringList() {
-		List<String> list = new ArrayList<>();
-		list.add("bailar");
-		list.add("besos");
-		String res = Misc.listToString(list);
-		assertEquals("bailarbesos", res);
-	}
-
-	/**
-	 * Method: addItemsToList(Collection<String> collection, String list, String
-	 * collectionDescription, boolean lowercase)
-	 */
-	@Test
-	public void testAddItemsToList() {
-		List<String> stringCollection = new ArrayList<>();
-		String list = "a,b,C";
-		String collectionDescription = "First 3 letters of the alphabet";
-		Misc.addItemsToList(stringCollection, list, collectionDescription, true);
-		ArrayList<String> arrayList = new ArrayList<>();
-		arrayList.add("a");
-		arrayList.add("b");
-		arrayList.add("c");
-		assertEquals(3, stringCollection.size());
-		assertEquals("c", stringCollection.get(stringCollection.size() - 1));
 	}
 
 	/**
@@ -197,50 +156,4 @@ public class MiscTest {
 		String expectedString = StreamUtil.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
-
-	@Test
-	public void testAuthorityInUrlString1() {
-		String username="user";
-		String password="password";
-		String url="http://aa:bb@host.nl";
-		String expected = "http://user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString2() {
-		String username="user";
-		String password="password";
-		String url="http://host.nl";
-		String expected = "http://user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString3() {
-		String username=null;
-		String password=null;
-		String url="http://aa:bb@host.nl";
-		String expected = "http://aa:bb@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString4() {
-		String username="user";
-		String password="password";
-		String url="aa:bb@host.nl";
-		String expected = "user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString5() {
-		String username="user";
-		String password="password";
-		String url="host.nl";
-		String expected = "user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
 }

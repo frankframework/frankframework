@@ -114,7 +114,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		String rawValue=new String(ch,start,length);
 		if (currentName==null) {
 			if (rawValue.trim().length()>0) {
-				log.warn("no name to set characters ["+rawValue+"]");
+				log.warn("no name to set characters [{}]", rawValue);
 			}
 		} else {
 			String value=ESCAPE_JSON.translate(rawValue);

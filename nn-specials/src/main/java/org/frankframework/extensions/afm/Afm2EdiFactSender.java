@@ -311,7 +311,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	public void setTpnummer(String newTpnummer) {
-		logger.info("Tpnr: " + newTpnummer);
+		logger.info("Tpnr: {}", newTpnummer);
 		tpnummer = newTpnummer;
 	}
 	public String getTpnummer() {

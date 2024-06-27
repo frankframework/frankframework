@@ -107,10 +107,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	@Override
 	public void close() {
 		if (isDiskPersistent()) {
-			log.debug("cache ["+getName()+"] flushing to disk");
+			log.debug("cache [{}] flushing to disk", getName());
 			cache.flush();
 		} else {
-			log.debug("cache ["+getName()+"] clearing data");
+			log.debug("cache [{}] clearing data", getName());
 			cache.removeAll();
 		}
 		if (cacheManager!=null) {

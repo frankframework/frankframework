@@ -129,8 +129,7 @@ public class TibcoUtils {
 					return currentTime - jmsTimestamp;
 				} else {
 					if (warn) {
-						log.warn("message was not of type Message, but ["
-								+ o.getClass().getName() + "]");
+						log.warn("message was not of type Message, but [{}]", o.getClass().getName());
 					}
 					return -2;
 				}
@@ -245,13 +244,11 @@ public class TibcoUtils {
 				if (state == ServerInfo.SERVER_ACTIVE) {
 					uws_ok = true;
 				} else {
-					log.debug("Server [" + uw + "] is not active");
+					log.debug("Server [{}] is not active", uw);
 					try {
 						admin.close();
 					} catch (TibjmsAdminException e) {
-						log.warn(
-								"Exception on closing Tibjms Admin on server ["
-										+ uw + "]", e);
+						log.warn("Exception on closing Tibjms Admin on server [{}]", uw, e);
 					}
 				}
 			}
@@ -260,7 +257,7 @@ public class TibcoUtils {
 			log.warn("Could not find an active server", lastException);
 			return null;
 		} else {
-			log.debug("Found active server [" + uw + "]");
+			log.debug("Found active server [{}]", uw);
 			return admin;
 		}
 	}

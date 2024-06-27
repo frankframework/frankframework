@@ -386,7 +386,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage= "document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}{}", getLogPrefix(), errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -495,11 +495,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (isUseRootFolder()) {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
-			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
+			log.debug("{}created new document [{}]", getLogPrefix(), document.getId());
 			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
+		log.debug("{}created new document [{}]", getLogPrefix(), objectId.getId());
 		return new SenderResult(objectId.getId());
 	}
 
@@ -547,14 +547,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					}
 					props.put(nameAttr, calendar);
 				} else {
-					log.warn(getLogPrefix() + "unknown type ["+ typeAttr +"], assuming 'string'");
+					log.warn("{}unknown type [{}], assuming 'string'", getLogPrefix(), typeAttr);
 					props.put(nameAttr, property);
 				}
 				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix() + "set property name ["+ nameAttr +"] value ["+ property +"]");
+					log.debug("{}set property name [{}] value [{}]", getLogPrefix(), nameAttr, property);
 				}
 			} else {
-				log.debug(getLogPrefix() + "empty property found, ignoring");
+				log.debug("{}empty property found, ignoring", getLogPrefix());
 			}
 		}
 	}
@@ -569,7 +569,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}{}", getLogPrefix(), errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -904,7 +904,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}{}", getLogPrefix(), errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);

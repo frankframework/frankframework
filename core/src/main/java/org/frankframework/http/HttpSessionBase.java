@@ -233,7 +233,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			uri.setPath("/");
 		}
 
-		log.info("created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
+		log.info("created uri: scheme=[{}] host=[{}] path=[{}]", uri.getScheme(), uri.getHost(), uri.getPath());
 		return uri.build();
 	}
 

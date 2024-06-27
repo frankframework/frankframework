@@ -90,7 +90,7 @@ public class DB2DocumentWriter {
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error occurred at row [" + rowCounter+"]", e);
+			log.error("Error occurred at row [{}]", rowCounter, e);
 		}
 	}
 
@@ -129,7 +129,7 @@ public class DB2DocumentWriter {
 					} catch (SQLException e) {
 						log.warn("Could not determine precision",e);
 					} catch (NumberFormatException e2) {
-						if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
+						if (log.isDebugEnabled()) log.debug("Could not determine precision: {}", e2.getMessage());
 					}
 					try {
 						field.addAttribute("scale", rsmeta.getScale(j));

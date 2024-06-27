@@ -115,7 +115,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 				throw new SenderException(getLogPrefix()+"got error converting string [" + result + "] to source", se);
 			}
 		}
-		log.debug("returning fixed result [" + result + "]");
+		log.debug("returning fixed result [{}]", result);
 		return new SenderResult(result);
 	}
 

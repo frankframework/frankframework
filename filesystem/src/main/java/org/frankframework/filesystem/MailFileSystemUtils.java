@@ -186,7 +186,7 @@ public class MailFileSystemUtils {
 			}
 			return result.toString();
 		} catch (AddressException | UnsupportedEncodingException e) {
-			log.warn("type ["+type+"] address ["+address+"] is invalid: "+e.getMessage());
+			log.warn("type [{}] address [{}] is invalid: {}", type, address, e.getMessage());
 			return null;
 		}
 	}

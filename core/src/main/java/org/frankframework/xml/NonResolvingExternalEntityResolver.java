@@ -46,7 +46,7 @@ public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 
 	@Override
 	public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-		log.warn("Resolving entity with name [" + name + "], public id [" + publicId + "], base uri [" + baseURI + "] and system id [" + systemId + "] to an empty string");
+		log.warn("Resolving entity with name [{}], public id [{}], base uri [{}] and system id [{}] to an empty string", name, publicId, baseURI, systemId);
 		return new InputSource(new StringReader(""));
 	}
 

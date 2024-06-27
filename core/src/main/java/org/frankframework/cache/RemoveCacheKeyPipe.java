@@ -58,12 +58,12 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 			String cacheKey = keyTransformer.transformKey(message.asString(), session);
 			Cache cache = ibisCacheManager.getCache(cacheName);
 			if (cache == null) {
-				log.warn("cache ["+cacheName+"] not found");
+				log.warn("cache [{}] not found", cacheName);
 			} else {
 				if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
-					log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+					log.debug("removed cache key [{}] from cache [{}]", cacheKey, cacheName);
 				} else {
-					log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+					log.warn("could not find cache key [{}] to remove from cache [{}]", cacheKey, cacheName);
 				}
 			}
 			return new PipeRunResult(getSuccessForward(), message);

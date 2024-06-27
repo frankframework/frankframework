@@ -157,7 +157,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
 		exitHandlers.add(exitHandler);
-		log.info("registered exithandler ["+exitHandler.getName()+"]");
+		log.info("registered exithandler [{}]", exitHandler.getName());
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
 			registerPipeLineExit(defaultExit);
-			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
+			log.debug("Created default Exit named [{}], state [{}]", defaultExit.getName(), defaultExit.getState());
 		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);

@@ -127,7 +127,7 @@ public class ProcessUtil {
 			throw new SenderException("Nonzero exit value [" + exitValue + "] for command  ["+getCommandLine(command)+"], process output was [" + output + "], error output was [" + errors + "]");
 		}
 		if (StringUtils.isNotEmpty(errors)) {
-			log.warn("command ["+getCommandLine(command)+"] had error output [" + errors + "]");
+			log.warn("command [{}] had error output [{}]", getCommandLine(command), errors);
 		}
 		return output;
 	}

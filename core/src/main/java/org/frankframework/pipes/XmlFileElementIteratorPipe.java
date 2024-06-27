@@ -182,7 +182,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
 
-		log.debug("obtaining list of elements [" + getElementName() + "] using sax parser");
+		log.debug("obtaining list of elements [{}] using sax parser", getElementName());
 		try {
 			SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 			parserFactory.setNamespaceAware(true);
