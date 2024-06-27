@@ -18,7 +18,9 @@ package org.frankframework.extensions.test;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -28,8 +30,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -44,9 +44,13 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class IbisTester {
@@ -408,7 +412,7 @@ public class IbisTester {
 	}
 
 	private static String getWebContentDirectory() {
-		String buildOutputDirectory = Misc.getBuildOutputDirectory();
+		String buildOutputDirectory = getBuildOutputDirectory();
 		if (buildOutputDirectory != null && buildOutputDirectory.endsWith("classes")) {
 			String wcDirectory = null;
 			File file = new File(buildOutputDirectory);
@@ -435,6 +439,18 @@ public class IbisTester {
 			}
 			return wcDirectory;
 		} else {
+			return null;
+		}
+	}
+
+	private static String getBuildOutputDirectory() {
+		// TODO: Warning from Sonarlint of Potential NPE?
+		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
+
+		try {
+			return URLDecoder.decode(path, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			log.warn("unable to parse build-output-directory using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
 			return null;
 		}
 	}
