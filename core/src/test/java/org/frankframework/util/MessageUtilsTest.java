@@ -302,4 +302,15 @@ public class MessageUtilsTest {
 		assertEquals("text", content);
 		msg.close();
 	}
+
+	@Test
+	void testAsString() throws IOException {
+		assertNull(MessageUtils.asString(null));
+
+		String expected = "testString";
+		assertEquals(expected, MessageUtils.asString(expected));
+
+		assertEquals(expected, MessageUtils.asString(new StringReader(expected)));
+
+	}
 }

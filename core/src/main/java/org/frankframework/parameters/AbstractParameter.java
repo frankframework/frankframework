@@ -557,15 +557,18 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 	}
 
-	private Object preFormatDateType(Date rawValue, String formatType, String patternFormatString) {
+	private Object preFormatDateType(String rawValue, String formatType, String patternFormatString) throws ParameterException {
 		if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
-			return rawValue;
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
+			try {
+				return df.parse(rawValue);
+			} catch (ParseException e) {
+				throw new ParameterException(getName(), "Cannot parse [" + rawValue + "] as date", e);
+			}
 		}
 
-		DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
-		return df.format(rawValue);
+		return rawValue;
 	}
-
 
 	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
 		String[] patternElements = targetPattern.split(",");
@@ -580,10 +583,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			Object substitutionValueMessage = session.get(name);
 			if (substitutionValueMessage != null) {
 				if (substitutionValueMessage instanceof Date substitutionValueDate) {
-					substitutionValue = preFormatDateType(substitutionValueDate, formatType, formatString);
+					substitutionValue = substitutionValueDate;
 				} else {
-					if (substitutionValueMessage instanceof String) {
-						substitutionValue = substitutionValueMessage;
+					if (substitutionValueMessage instanceof String stringValue) {
+						substitutionValue = preFormatDateType(stringValue, formatType, formatString);
 					} else {
 						try {
 							Message message = Message.asMessage(substitutionValueMessage); // Do not close object from session here; might be reused later
@@ -600,7 +603,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			String namelc=name.toLowerCase();
 			switch (namelc) {
 				case "now":
-					substitutionValue = preFormatDateType(new Date(), formatType, formatString);
+					if ("date".equals(formatType)) {
+						substitutionValue = new Date();
+					} else{
+						substitutionValue = formatDateToString(new Date(), formatString);
+					}
+
 					break;
 				case "uid":
 					substitutionValue = UUIDUtil.createSimpleUUID();
@@ -621,19 +629,13 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 					if (fixedDateTime != null) {
 						if (fixedDateTime instanceof Date date) {
-							substitutionValue = preFormatDateType(date, formatType, formatString);
+							substitutionValue = date;
 						} else if (fixedDateTime instanceof String string) {
-							substitutionValue = string;
+							substitutionValue = preFormatDateType(string, formatType, formatString);
 						}
 					} else {
-						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
-
-						try {
-							Date date = df.parse(PutSystemDateInSession.FIXEDDATETIME);
-							substitutionValue = preFormatDateType(date, formatType, formatString);
-						} catch (ParseException e) {
-							throw new ParameterException(getName(), "Could not parse FIXEDDATETIME [" + PutSystemDateInSession.FIXEDDATETIME + "]", e);
-						}
+						// Get the default value
+						substitutionValue = preFormatDateType(PutSystemDateInSession.FIXEDDATETIME, formatType, DateFormatUtils.FORMAT_DATETIME_GENERIC);
 					}
 
 					break;
@@ -665,6 +667,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 		}
 		return substitutionValue;
+	}
+
+	private String formatDateToString(Date date, String patternFormatString) {
+		DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
+		return df.format(date);
 	}
 
 	@Override
