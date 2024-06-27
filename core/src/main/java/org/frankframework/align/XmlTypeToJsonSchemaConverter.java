@@ -654,16 +654,13 @@ public class XmlTypeToJsonSchemaConverter  {
 				for (int i=0; i<multiValuedFacets.getLength(); i++) {
 					XSMultiValueFacet multiValuedFacet = (XSMultiValueFacet) multiValuedFacets.item(i);
 
-					if (log.isTraceEnabled())
+					if (log.isTraceEnabled()) {
 						log.trace("Inspecting single multi valued facet [{}] which is named [{}] which is of type [{}]", multiValuedFacet, multiValuedFacet.getName(), multiValuedFacet.getType());
-					if (log.isTraceEnabled())
 						log.trace("Inspecting multiValuedFacet.getLexicalFacetValues() for [{}] which has value of [{}]", multiValuedFacet.getName(), multiValuedFacet.getLexicalFacetValues());
-					if (log.isTraceEnabled())
 						log.trace("Inspecting multiValuedFacet.getEnumerationValues() for [{}] which has value of [{}]", multiValuedFacet.getName(), multiValuedFacet.getEnumerationValues());
-					if (log.isTraceEnabled())
 						log.trace("Inspecting multiValuedFacet.getFacetKind() == enum for [{}] which has value of [{}]", multiValuedFacet.getName(), multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_ENUMERATION);
-					if (log.isTraceEnabled())
 						log.trace("Inspecting multiValuedFacet.getFacetKind() == pattern for [{}] which has value of [{}]", multiValuedFacet.getName(), multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_PATTERN);
+					}
 
 					if(facet == multiValuedFacet.getFacetKind()){
 						StringList lexicalFacetValues = multiValuedFacet.getLexicalFacetValues();

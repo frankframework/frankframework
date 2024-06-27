@@ -186,7 +186,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		}
 		if (noConversionForward==null) {
 			noConversionForward=getSuccessForward();
-			log.info("no forward found for [{}], setting to forward for succes [{}]", getNoConversionForwardName(), getSuccessForward().getPath());
+			log.info("no forward found for [{}], setting to forward for success [{}]", getNoConversionForwardName(), getSuccessForward().getPath());
 		}
 		initializeConversionTables();
 	}

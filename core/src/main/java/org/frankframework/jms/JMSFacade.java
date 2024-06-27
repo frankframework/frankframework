@@ -636,9 +636,24 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@SuppressWarnings("java:S3457") // Ignore {} usage inside logging
 	protected void logMessageDetails(jakarta.jms.Message message, MessageProducer messageProducer) throws JMSException {
 		if (log.isDebugEnabled()) {
-			log.debug("{}sender on [{}] JMSDeliveryMode=[{}] JMSMessageID=[{}] JMSCorrelationID=[{}] JMSTimestamp=[{}] JMSExpiration=[{}] JMSPriority=[{}] JMSType=[{}] JMSReplyTo=[{}] Message=[{}]", getLogPrefix(), getDestinationName(), message.getJMSDeliveryMode(), message.getJMSMessageID(), message.getJMSCorrelationID(), DateFormatUtils.format(message.getJMSTimestamp()), message.getJMSExpiration(), message.getJMSPriority(), message.getJMSType(), message.getJMSReplyTo(), message);
+			log.debug(getLogPrefix() + "sender on [" + getDestinationName()
+					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
+					+ "] JMSMessageID=[" + message.getJMSMessageID()
+					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
+					+ "] JMSTimestamp=[" + DateFormatUtils.format(message.getJMSTimestamp())
+					+ "] JMSExpiration=[" + message.getJMSExpiration()
+					+ "] JMSPriority=[" + message.getJMSPriority()
+					+ "] JMSType=[" + message.getJMSType()
+					+ "] JMSReplyTo=[" + message.getJMSReplyTo()
+					+ "] Message=[" + message
+					+ "]");
 		} else if (log.isInfoEnabled()){
-			log.info("[{}{}] JMSDeliveryMode=[{}] JMSMessageID=[{}] JMSCorrelationID=[{}] JMSReplyTo=[{}]", getName(), messageProducer != null ? "] message destination [" + messageProducer.getDestination() : "", message.getJMSDeliveryMode(), message.getJMSMessageID(), message.getJMSCorrelationID(), message.getJMSReplyTo());
+			log.info("[" + getName()
+					+ (messageProducer != null ? "] message destination [" + messageProducer.getDestination() : "")
+					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
+					+ "] JMSMessageID=[" + message.getJMSMessageID()
+					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
+					+ "] JMSReplyTo=[" + message.getJMSReplyTo() + "]");
 		}
 	}
 

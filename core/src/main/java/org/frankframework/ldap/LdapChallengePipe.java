@@ -134,7 +134,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		try {
 			log.debug("Looking up context for principal [{}]", principal);
 			ldapSender.configure();
-			log.debug("Succesfully looked up context for principal [{}]", principal);
+			log.debug("Successfully looked up context for principal [{}]", principal);
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
 				ldapSender.storeLdapException(e, pls);

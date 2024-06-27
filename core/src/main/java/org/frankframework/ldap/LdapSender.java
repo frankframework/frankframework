@@ -926,7 +926,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		String[] retValue = null;
 
 		try {
-			// Create a vector object and add the names of all of the sub-contexts to it
+			// Create a vector object and add the names of all the sub-contexts to it
 			Vector<NameClassPair> n = new Vector<>();
 			NamingEnumeration<?> list = parentContext.list(relativeContext);
 			if (log.isDebugEnabled()) log.debug("getSubCOntextList(context) : context = {}", relativeContext);
