@@ -450,7 +450,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof Message);
+		assertInstanceOf(Message.class, result);
 
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
 
@@ -476,7 +476,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 
 		String stringResult = Message.asMessage(result).asString();
 		assertEquals("fiets bel appel", stringResult);
@@ -650,7 +650,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 
 		String stringResult = Message.asMessage(result).asString();
 		assertEquals("value value2 value4 value3", stringResult);
@@ -668,7 +668,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("12345", (String) result);
 	}
 
@@ -684,7 +684,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String);
+		assertInstanceOf(String.class, result);
 		assertEquals("1234567890     ", (String) result);
 	}
 
@@ -1027,7 +1027,7 @@ public class ParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof String);
+			assertInstanceOf(String.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
@@ -1074,7 +1074,7 @@ public class ParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof String);
+			assertInstanceOf(String.class, result);
 
 			assertEquals(expectedDate, result);
 
@@ -1310,7 +1310,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterfromStylesheetXsltVersion3() throws ConfigurationException, ParameterException {
+	public void testParameterFromStylesheetXsltVersion3() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.setXsltVersion(3);

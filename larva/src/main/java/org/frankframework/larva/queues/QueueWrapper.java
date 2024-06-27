@@ -81,15 +81,71 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		return new QueueWrapper(configurable);
 	}
 
+	public synchronized PipeLineSession getSession() {
+		if(!containsKey(PIPELINESESSION_KEY)) {
+			PipeLineSession session = new PipeLineSession();
+			put(PIPELINESESSION_KEY, session);
+			return session;
+		}
+		return (PipeLineSession) get(PIPELINESESSION_KEY);
+	}
+
+	public ListenerMessageHandler getMessageHandler() {
+		return (ListenerMessageHandler) get(MESSAGE_HANDLER_KEY);
+	}
+
+	public void setSenderThread(SenderThread senderThread) {
+		put(SENDER_THREAD_KEY, senderThread);
+	}
+
+	public SenderThread getSenderThread() {
+		return (SenderThread) get(SENDER_THREAD_KEY);
+	}
+
+	public void removeSenderThread() {
+		remove(SENDER_THREAD_KEY);
+	}
+
+	public QueueWrapper invokeSetters(Properties queueProperties) {
+		return invokeSetters(-1, queueProperties);
+	}
+
+	public QueueWrapper invokeSetters(int defaultTimeout, Properties properties) {
+		if(containsKey(MESSAGE_HANDLER_KEY)) {
+			if(defaultTimeout > 0) {
+				getMessageHandler().setTimeout(defaultTimeout);
+			}
+
+			QueueUtils.invokeSetters(getMessageHandler(), properties); //set timeout properties
+		}
+
+		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
+		put(CONVERT_MESSAGE_TO_EXCEPTION_KEY, Boolean.valueOf(convertException));
+
+		mapParameters(properties);
+
+		return this;
+	}
+
+	private void mapParameters(Properties properties) {
+		if(get() instanceof IWithParameters) {
+			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, true, getSession());
+			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
+			while (parameterNameIterator.hasNext()) {
+				String parameterName = parameterNameIterator.next();
+				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+				((IWithParameters) get()).addParameter(parameter);
+			}
+		}
+	}
+
 	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, boolean createParameterObjects, PipeLineSession session) {
 		final String _name = ".name";
 		final String _param = "param";
 		final String _type = ".type";
-
 		Map<String, Object> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
-
 		while (!processed) {
 			String name = properties.getProperty(_param + i + _name);
 			if (name != null) {
@@ -172,76 +228,19 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		return result;
 	}
 
-	public static QueueWrapper create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
-		QueueUtils.invokeSetters(configurable, queueProperties);
-		return create(configurable).invokeSetters(defaultTimeout, queueProperties);
-	}
-
-	public synchronized PipeLineSession getSession() {
-		if (!containsKey(PIPELINESESSION_KEY)) {
-			PipeLineSession session = new PipeLineSession();
-			put(PIPELINESESSION_KEY, session);
-			return session;
-		}
-		return (PipeLineSession) get(PIPELINESESSION_KEY);
-	}
-
-	public ListenerMessageHandler getMessageHandler() {
-		return (ListenerMessageHandler) get(MESSAGE_HANDLER_KEY);
-	}
-
-	public SenderThread getSenderThread() {
-		return (SenderThread) get(SENDER_THREAD_KEY);
-	}
-
-	public void setSenderThread(SenderThread senderThread) {
-		put(SENDER_THREAD_KEY, senderThread);
-	}
-
-	public void removeSenderThread() {
-		remove(SENDER_THREAD_KEY);
-	}
-
-	public QueueWrapper invokeSetters(Properties queueProperties) {
-		return invokeSetters(-1, queueProperties);
-	}
-
-	public QueueWrapper invokeSetters(int defaultTimeout, Properties properties) {
-		if (containsKey(MESSAGE_HANDLER_KEY)) {
-			if (defaultTimeout > 0) {
-				getMessageHandler().setTimeout(defaultTimeout);
-			}
-
-			QueueUtils.invokeSetters(getMessageHandler(), properties); //set timeout properties
-		}
-
-		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
-		put(CONVERT_MESSAGE_TO_EXCEPTION_KEY, Boolean.valueOf(convertException));
-
-		mapParameters(properties);
-
-		return this;
-	}
-
-	private void mapParameters(Properties properties) {
-		if (get() instanceof IWithParameters) {
-			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, true, getSession());
-			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-			while (parameterNameIterator.hasNext()) {
-				String parameterName = parameterNameIterator.next();
-				Parameter parameter = (Parameter) paramPropertiesMap.get(parameterName);
-				((IWithParameters) get()).addParameter(parameter);
-			}
-		}
-	}
 
 	public IConfigurable get() {
 		return (IConfigurable) get(queueKey);
 	}
 
+	public static QueueWrapper create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
+		QueueUtils.invokeSetters(configurable, queueProperties);
+		return create(configurable).invokeSetters(defaultTimeout, queueProperties);
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
-		if (!(get() instanceof WebServiceListener)) {//requires a configuration as parent
+		if(!(get() instanceof WebServiceListener)) {//requires a configuration as parent
 			get().configure();
 		}
 	}
@@ -249,9 +248,10 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	@Override
 	public void open() throws ConfigurationException {
 		try {
-			if (get() instanceof ISender) {
+			if(get() instanceof ISender) {
 				((ISender) get()).open();
-			} else if (get() instanceof IListener<?>) {
+			}
+			else if(get() instanceof IListener<?>) {
 				((IListener<?>) get()).open();
 			}
 		} catch (SenderException | ListenerException e) {
@@ -260,11 +260,13 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	public void close() throws Exception {
-		if (get() instanceof AutoCloseable) {
+		if(get() instanceof AutoCloseable) {
 			((AutoCloseable) get()).close();
-		} else if (get() instanceof ISender) {
+		}
+		else if(get() instanceof ISender) {
 			((ISender) get()).close();
-		} else if (get() instanceof IListener<?>) {
+		}
+		else if(get() instanceof IListener<?>) {
 			((IListener<?>) get()).close();
 		}
 	}
