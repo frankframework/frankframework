@@ -162,16 +162,16 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 			StringEntity se = new StringEntity(message.asString());
 			httpPost.setEntity(se);
 			if (StringUtils.isNotEmpty(getContentType())) {
-				log.debug(getLogPrefix() + "setting Content-Type header [" + getContentType() + "]");
+				log.debug("{}setting Content-Type header [{}]", getLogPrefix(), getContentType());
 				httpPost.addHeader("Content-Type", getContentType());
 			}
 			if (StringUtils.isNotEmpty(getSoapAction())) {
-				log.debug(getLogPrefix() + "setting SOAPAction header [" + getSoapAction() + "]");
+				log.debug("{}setting SOAPAction header [{}]", getLogPrefix(), getSoapAction());
 				httpPost.addHeader("SOAPAction", getSoapAction());
 			}
-			log.debug(getLogPrefix() + "executing method");
+			log.debug("{}executing method", getLogPrefix());
 			HttpResponse httpresponse = httpClient.execute(httpPost);
-			log.debug(getLogPrefix() + "executed method");
+			log.debug("{}executed method", getLogPrefix());
 			StatusLine statusLine = httpresponse.getStatusLine();
 			if (statusLine == null) {
 				throw new SenderException(getLogPrefix() + "no statusline found");
@@ -179,18 +179,18 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 				int statusCode = statusLine.getStatusCode();
 				String statusMessage = statusLine.getReasonPhrase();
 				if (statusCode == HttpServletResponse.SC_OK) {
-					log.debug(getLogPrefix() + "status code [" + statusCode + "] message [" + statusMessage + "]");
+					log.debug("{}status code [{}] message [{}]", getLogPrefix(), statusCode, statusMessage);
 				} else {
 					throw new SenderException(getLogPrefix() + "status code [" + statusCode + "] message [" + statusMessage + "]");
 				}
 			}
 			HttpEntity httpEntity = httpresponse.getEntity();
 			if (httpEntity == null) {
-				log.warn(getLogPrefix() + "no response found");
+				log.warn("{}no response found", getLogPrefix());
 			} else {
-				log.debug(getLogPrefix() + "response content length [" + httpEntity.getContentLength() + "]");
+				log.debug("{}response content length [{}]", getLogPrefix(), httpEntity.getContentLength());
 				result = EntityUtils.toString(httpEntity);
-				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
+				log.debug("{}retrieved result [{}]", getLogPrefix(), result);
 			}
 		} catch (SocketTimeoutException | ConnectTimeoutException e) {
 			throw new TimeoutException(e);

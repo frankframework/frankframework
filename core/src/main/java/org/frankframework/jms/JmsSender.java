@@ -171,7 +171,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
 					if (soapHeaderParamValue == null) {
-						log.warn("no SoapHeader found using parameter [" + getSoapHeaderParam() + "]");
+						log.warn("no SoapHeader found using parameter [{}]", getSoapHeaderParam());
 					} else {
 						soapHeader = soapHeaderParamValue.asStringValue("");
 					}

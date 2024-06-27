@@ -92,7 +92,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			}
 		}
 
-		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
+		if (log.isDebugEnabled()) log.debug("monitor [{}] configuring triggers", getName());
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
@@ -145,7 +145,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 		for(String destination : destinations) {
 			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
+			if (log.isDebugEnabled()) log.debug("{}firing event on destination [{}]", getLogPrefix(), destination);
 
 			if (monitorAdapter != null) {
 				monitorAdapter.fireEvent(name, eventType, severity, eventCode, event);
@@ -205,10 +205,10 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"clearing destinations");
+			if (log.isDebugEnabled()) log.debug("{}clearing destinations", getLogPrefix());
 			destinations.clear();
 		} else {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting destinations to ["+newDestinations+"]");
+			if (log.isDebugEnabled()) log.debug("{}setting destinations to [{}]", getLogPrefix(), newDestinations);
 			for(String destination : newDestinations) {
 				if(getManager().getDestination(destination) == null) {
 					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
@@ -218,7 +218,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			//Only proceed if all destinations exist
 			destinations.clear();
 			for(String destination : newDestinations) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
+				if (log.isDebugEnabled()) log.debug("{}adding destination [{}]", getLogPrefix(), destination);
 				destinations.add(destination);
 			}
 		}
@@ -288,7 +288,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	 */
 	@Override
 	public void destroy() {
-		log.info("removing monitor ["+this+"]");
+		log.info("removing monitor [{}]", this);
 
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		for (ITrigger trigger : triggers) {

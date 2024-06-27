@@ -49,47 +49,53 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 		} else {
 			conn = super.createConnection();
 		}
-		if (log.isTraceEnabled()) log.trace("createConnection() - connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("createConnection() - connection[{}]", conn == null ? "null" : conn.toString());
 		return conn;
 	}
 
 	@Override
 	protected Session createSession(Connection conn) throws JMSException {
 		Session session = super.createSession(conn);
-		if (log.isTraceEnabled()) log.trace("createSession() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("createSession() - ackMode[{}] connection[{}] session[{}]", getSessionAcknowledgeMode(), conn == null ? "null" : conn.toString(), session == null ? "null" : session.toString());
 		return session;
 	}
 
 	@Override
 	protected Connection getConnection(JmsResourceHolder holder) {
 		Connection conn = super.getConnection(holder);
-		if (log.isTraceEnabled()) log.trace("getConnection() - jmsResourceHolder[" + holder + "] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("getConnection() - jmsResourceHolder[{}] connection[{}]", holder, conn == null ? "null" : conn.toString());
 		return conn;
 	}
 
 	@Override
 	protected Session getSession(JmsResourceHolder holder) {
 		Session session = super.getSession(holder);
-		if (log.isTraceEnabled()) log.trace("getSession() - ackMode["+getSessionAcknowledgeMode()+"] jmsResourceHolder[" + holder + "] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("getSession() - ackMode[{}] jmsResourceHolder[{}] session[{}]", getSessionAcknowledgeMode(), holder, session == null ? "null" : session.toString());
 		return session;
 	}
 
 	@Override
 	protected Connection createSharedConnection() throws JMSException {
 		Connection conn = super.createSharedConnection();
-		if (log.isTraceEnabled()) log.trace("createSharedConnection() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("createSharedConnection() - ackMode[{}] connection[{}]", getSessionAcknowledgeMode(), conn == null ? "null" : conn.toString());
 		return conn;
 	}
 
 	@Override
 	protected boolean receiveAndExecute(Object asyncMessageListenerInvoker, Session session, MessageConsumer consumer) throws JMSException {
-		if (log.isTraceEnabled()) log.trace("receiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
+		if (log.isTraceEnabled())
+			log.trace("receiveAndExecute() - destination[{}] clientId[{}] session[{}]", getDestinationName(), getClientId(), session);
 		return super.receiveAndExecute(asyncMessageListenerInvoker, session, consumer);
 	}
 
 	@Override
 	protected boolean doReceiveAndExecute(Object invoker, Session session, MessageConsumer consumer, TransactionStatus txStatus) throws JMSException {
-		if (log.isTraceEnabled()) log.trace("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
+		if (log.isTraceEnabled())
+			log.trace("doReceiveAndExecute() - destination[{}] clientId[{}] session[{}]", getDestinationName(), getClientId(), session);
 		try {
 			return super.doReceiveAndExecute(invoker, session, consumer, txStatus);
 		} finally {

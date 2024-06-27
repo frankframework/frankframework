@@ -64,7 +64,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		try {
 			return asResourceList(path, url.toURI(), url::openStream);
 		} catch (URISyntaxException e) {
-			LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
+			LogUtil.getLogger(this).warn("unable to convert resource url [{}]", url, e);
 		}
 		return Collections.emptyList();
 	}

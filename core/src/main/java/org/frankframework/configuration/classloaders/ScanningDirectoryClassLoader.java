@@ -89,7 +89,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		if(interval < 10)
 			throw new ConfigurationException("minimum scaninterval is 10 seconds");
 
-		log.debug("scanInterval set to ["+interval+"] seconds");
+		log.debug("scanInterval set to [{}] seconds", interval);
 		this.scanInterval = interval;
 	}
 
@@ -110,7 +110,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 			future.cancel(false);
 		}
 
-		log.debug("starting new scheduler, interval ["+scanInterval+"] delay ["+delay+"]");
+		log.debug("starting new scheduler, interval [{}] delay [{}]", scanInterval, delay);
 		future = executor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -120,7 +120,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	}
 
 	protected synchronized void scan() {
-		if(log.isTraceEnabled()) log.trace("running directory scanner on directory ["+getDirectory()+"]");
+		if(log.isTraceEnabled()) log.trace("running directory scanner on directory [{}]", getDirectory());
 		File[] files = getDirectory().listFiles();
 		if(hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
@@ -154,11 +154,11 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	 * @return true if a file has been changed in the last 'scanInterval' seconds
 	 */
 	private boolean hasBeenModified(File file) {
-		if(log.isTraceEnabled()) log.trace("scanning file ["+ file.getName() +"] lastModDate ["+ file.lastModified() +"]");
+		if(log.isTraceEnabled()) log.trace("scanning file [{}] lastModDate [{}]", file.getName(), file.lastModified());
 		boolean modified = file.lastModified() + scanInterval*1000 >= System.currentTimeMillis();
 
 		if(log.isDebugEnabled() && modified) {
-			log.debug("file ["+file.getAbsolutePath()+"] has been changed in the last ["+scanInterval+"] seconds");
+			log.debug("file [{}] has been changed in the last [{}] seconds", file.getAbsolutePath(), scanInterval);
 		}
 
 		return modified;

@@ -50,7 +50,8 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
-		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] in scope ["+scopeProvider+"]");
+		if (log.isDebugEnabled())
+			log.debug("Resolving publicId [{}] systemId [{}] in scope [{}]", publicId, systemId, scopeProvider);
 		Resource resource = Resource.getResource(scopeProvider, systemId);
 		if(resource != null) {
 			return resource.asInputSource();

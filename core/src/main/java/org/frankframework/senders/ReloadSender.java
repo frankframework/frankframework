@@ -87,7 +87,7 @@ public class ReloadSender extends SenderWithParametersBase {
 				return new SenderResult("Reload " + configName + " succeeded");
 			}
 		} else {
-			log.warn("Configuration [" + configName + "] not loaded yet");
+			log.warn("Configuration [{}] not loaded yet", configName);
 		}
 		return new SenderResult(true, new Message("Reload " + configName + " skipped"), null, "skipped");
 	}

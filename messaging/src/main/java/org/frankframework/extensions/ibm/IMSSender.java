@@ -155,7 +155,7 @@ public class IMSSender extends MQSender {
 		try {
 			message = (BytesMessage)rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type BytesMessage, but ["+rawMessage.getClass().getName()+"]", e);
+			log.error("message received by listener on [{}] was not of type BytesMessage, but [{}]", getDestinationName(), rawMessage.getClass().getName(), e);
 			return null;
 		}
 

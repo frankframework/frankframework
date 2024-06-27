@@ -216,7 +216,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			Destination replyTo = (Destination) pipeLineSession.get("replyTo");
 			if (replyTo == null) {
-				log.warn("no replyTo address found for messageProtocol [" + getMessageProtocol() + "], response is lost");
+				log.warn("no replyTo address found for messageProtocol [{}], response is lost", getMessageProtocol());
 			}
 		}
 	}

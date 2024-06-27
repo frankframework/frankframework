@@ -114,11 +114,11 @@ public class JsonElementContainer implements ElementContainer {
 	 * Sets the Text content of the current object
 	 */
 	public void setContent(String content) {
-		if (log.isTraceEnabled()) log.trace("setContent() name ["+getName()+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("setContent() name [{}] content [{}]", getName(), content);
 		if (content!=null) {
 			boolean whitespace=content.trim().isEmpty();
 			if (whitespace && stringContent==null) {
-				if (log.isTraceEnabled()) log.trace("setContent() ignoring empty content for name ["+getName()+"]");
+				if (log.isTraceEnabled()) log.trace("setContent() ignoring empty content for name [{}]", getName());
 				return;
 			}
 		}
@@ -163,7 +163,8 @@ public class JsonElementContainer implements ElementContainer {
 	 */
 	public void addContent(JsonElementContainer content) {
 		String childName=content.getName();
-		if (log.isTraceEnabled()) log.trace("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
+		if (log.isTraceEnabled())
+			log.trace("addContent for parent [{}] name [{}] array container [{}] content.isRepeatedElement [{}] skipArrayElementContainers [{}] content [{}]", getName(), childName, isXmlArrayContainer(), content.isRepeatedElement(), skipArrayElementContainers, content);
 		if (stringContent!=null) {
 			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
 		}
@@ -225,7 +226,7 @@ public class JsonElementContainer implements ElementContainer {
 			case NUMERIC:
 				return stripLeadingZeroes(stringContent);
 			default:
-				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [" + stringContent + "]");
+				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [{}]", stringContent);
 //				String result=StringEscapeUtils.escapeJson(stringContent); // this also converts diacritics into unicode escape sequences
 				String result = ESCAPE_JSON.translate(stringContent);
 				return '"' + result + '"';

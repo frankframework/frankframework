@@ -139,7 +139,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			for(RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
 				CheckSum checkSum = ranChangeSet.getLastCheckSum();
 				if(checkSum != null && checkSum.getVersion() < CheckSum.getCurrentVersion()) {
-					migrationLog.warn("checksum ["+checkSum+"] for changeset ["+ranChangeSet+"] is outdated and will be updated");
+					migrationLog.warn("checksum [{}] for changeset [{}] is outdated and will be updated", checkSum, ranChangeSet);
 				}
 			}
 

@@ -39,7 +39,8 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
-		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
+		if (log.isDebugEnabled())
+			log.debug("creating TransactionDefinition for transactionAttribute [{}], timeout [{}]", transactionAttribute, transactionTimeout);
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
 	}
 

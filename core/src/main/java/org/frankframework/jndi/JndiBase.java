@@ -128,7 +128,7 @@ public class JndiBase implements IConfigurable {
 			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
 				String key=(String) it.next();
 				String value=jndiEnv.getProperty(key);
-				log.debug("jndiEnv ["+key+"] = ["+value+"]");
+				log.debug("jndiEnv [{}] = [{}]", key, value);
 			}
 		}
 		return jndiEnv;

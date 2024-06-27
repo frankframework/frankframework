@@ -72,7 +72,7 @@ public class LogSender extends SenderWithParametersBase {
 		try {
 			logger.log(level, message.asString());
 		} catch (IOException io) {
-			log.warn("unable to log message: " + message);
+			log.warn("unable to log message: {}", message);
 		}
 		if (getParameterList() != null && pvl != null) {
 			for (ParameterValue param : pvl) {

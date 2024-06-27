@@ -261,9 +261,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
+		log.debug("{}obtaining prepared statement to execute", getLogPrefix());
 		PreparedStatement statement = getStatement(connection, query, getQueryType());
-		log.debug(getLogPrefix() + "obtained prepared statement to execute");
+		log.debug("{}obtained prepared statement to execute", getLogPrefix());
 		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
 			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
@@ -379,7 +379,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 								closeable.close();
 							}
 							else {
-								log.error("unable to auto-close parameter ["+param.getName()+"]");
+								log.error("unable to auto-close parameter [{}]", param.getName());
 							}
 						} catch (Exception e) {
 							log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
@@ -412,7 +412,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			int endPos = query.indexOf(UNP_END, startPos + UNP_START.length());
 
 			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ query+ "]");
+				log.warn("{}Found a start delimiter without an end delimiter at position [{}] in [{}]", getLogPrefix(), startPos, query);
 				buffer.append(messageChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {
@@ -423,7 +423,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					buffer.append("?");
 					copyFrom = endPos + UNP_END.length();
 				} else {
-					log.warn(getLogPrefix() + "Parameter [" + namedParam + "] is not found");
+					log.warn("{}Parameter [{}] is not found", getLogPrefix(), namedParam);
 					buffer.append(messageChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				}
@@ -460,7 +460,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
 				if(numberOfColumns > 1) {
-					log.warn(getLogPrefix() + "has set scalar=true but the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
+					log.warn("{}has set scalar=true but the resultset contains [{}] columns. Consider optimizing the query.", getLogPrefix(), numberOfColumns);
 				}
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
 					if (response!=null) {
@@ -515,7 +515,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 				if (resultset.next()) {
-					log.warn(getLogPrefix() + "has set scalar=true but the query returned more than 1 row. Consider optimizing the query.");
+					log.warn("{}has set scalar=true but the query returned more than 1 row. Consider optimizing the query.", getLogPrefix());
 				}
 			} else if (isScalarExtended()) {
 					result="[absent]";
@@ -556,7 +556,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 
 	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException {
-		log.debug(getLogPrefix() + "executing an update BLOB command");
+		log.debug("{}executing an update BLOB command", getLogPrefix());
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
 		JdbcUtil.warningsToXml(statement.getWarnings(),result);
@@ -636,11 +636,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
 
-			log.debug(getLogPrefix() + "executing a SELECT SQL command");
+			log.debug("{}executing a SELECT SQL command", getLogPrefix());
 			try (ResultSet resultset = statement.executeQuery()) {
 				if (getStartRow()>1) {
 					resultset.absolute(getStartRow()-1);
-					log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
+					log.debug("{}Index set at position: {}", getLogPrefix(), resultset.getRow());
 				}
 				return getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition, session, next);
 			}
@@ -693,11 +693,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				String pUitvoer = pstmt.getString(parameterIndex);
 				return new Message(pUitvoer);
 			}
-			log.debug(getLogPrefix() + "executing a package SQL command");
+			log.debug("{}executing a package SQL command", getLogPrefix());
 			int numRowsAffected = pstmt.executeUpdate();
 			if (queryExecutionContext.getResultQueryStatement() != null) {
 				PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
-				if (log.isDebugEnabled()) log.debug("obtaining result from [" + queryExecutionContext.getResultQuery() + "]");
+				if (log.isDebugEnabled()) log.debug("obtaining result from [{}]", queryExecutionContext.getResultQuery());
 				ResultSet rs = resStmt.executeQuery();
 				return getResult(rs);
 			}
@@ -734,13 +734,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						ri = parameters.size() + 1;
 					}
 					cstmt.registerOutParameter(ri, Types.VARCHAR);
-					log.debug(getLogPrefix() + "executing a SQL command");
+					log.debug("{}executing a SQL command", getLogPrefix());
 					numRowsAffected = cstmt.executeUpdate();
 					String rowId = cstmt.getString(ri);
 					if (session!=null) session.put(getRowIdSessionKey(), rowId);
 				}
 			} else {
-				log.debug(getLogPrefix() + "executing a SQL command");
+				log.debug("{}executing a SQL command", getLogPrefix());
 				if (getBatchSize() > 0) {
 					statement.addBatch();
 				} else {

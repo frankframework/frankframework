@@ -54,7 +54,7 @@ public abstract class MultipartUtils {
 				}
 			}
 		} catch (MessagingException e) {
-			log.warn("unable to determine fieldname from part ["+part+"]", e);
+			log.warn("unable to determine fieldname from part [{}]", part, e);
 		}
 		return null;
 	}
@@ -95,7 +95,7 @@ public abstract class MultipartUtils {
 				}
 			}
 		} catch (MessagingException e) {
-			log.warn("unable to determine if part ["+part+"] is binary", e);
+			log.warn("unable to determine if part [{}] is binary", part, e);
 		}
 		return false;
 	}

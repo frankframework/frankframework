@@ -56,7 +56,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 
 	@Override
 	protected void addContent(JsonElementContainer parent, JsonElementContainer child) {
-		if (log.isTraceEnabled()) log.trace("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
+		if (log.isTraceEnabled())
+			log.trace("DocCont.addGroupContent name [{}] child [{}]", parent.getName(), child.getName());
 		parent.addContent(child);
 	}
 

@@ -44,7 +44,8 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 			Map<String,RecordHandlingFlow> valueHandlersMap = getFlowMap();
 			RecordHandlingFlow rhf = null;
 			for(String name: valueHandlersMap.keySet()) {
-				if (log.isTraceEnabled()) log.trace("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
+				if (log.isTraceEnabled())
+					log.trace("determining value for record [{}] with key [{}] and startPosition [{}]", record, name, startPosition);
 				if (name.length()<=record.length()) {
 					value = record.substring(startPosition, name.length());
 					if (value.equals(name) && (rhf = valueHandlersMap.get(name))!=null) {

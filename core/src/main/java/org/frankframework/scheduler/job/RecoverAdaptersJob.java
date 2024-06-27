@@ -50,7 +50,7 @@ public class RecoverAdaptersJob extends JobDef {
 								adapter.configure();
 							} catch (ConfigurationException e) {
 								// log the warning and do nothing, it couldn't configure before, it still can't...
-								log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
+								log.warn("error configuring adapter [{}] while trying to recover", adapter.getName(), e);
 							}
 						}
 
@@ -102,7 +102,7 @@ public class RecoverAdaptersJob extends JobDef {
 				}
 			}
 		}
-		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunState.STARTED + "]");
+		heartbeatLog.info("[{}/{}] adapters and [{}/{}] receivers have state [{}]", countAdapterStateStarted, countAdapter, countReceiverStateStarted, countReceiver, RunState.STARTED);
 	}
 
 }

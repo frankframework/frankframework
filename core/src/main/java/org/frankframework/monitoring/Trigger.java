@@ -139,7 +139,7 @@ public class Trigger implements ITrigger {
 			Instant firstDate = eventDates.getFirst();
 			if ((now.toEpochMilli() - firstDate.toEpochMilli()) > getPeriod() * 1000L) {
 				eventDates.removeFirst();
-				if (log.isDebugEnabled()) log.debug("removed element dated ["+ DateFormatUtils.format(firstDate)+"]");
+				if (log.isDebugEnabled()) log.debug("removed element dated [{}]", DateFormatUtils.format(firstDate));
 			} else {
 				break;
 			}
@@ -259,7 +259,7 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void destroy() throws Exception {
-		log.info("removing trigger ["+this+"]");
+		log.info("removing trigger [{}]", this);
 	}
 
 }

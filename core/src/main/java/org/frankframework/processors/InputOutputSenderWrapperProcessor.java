@@ -48,11 +48,12 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
 			}
 			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
-			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
+			if (log.isDebugEnabled())
+				log.debug("{}set contents of session variable [{}] as input [{}]", senderWrapperBase.getLogPrefix(), senderWrapperBase.getGetInputFromSessionKey(), senderInput);
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
 				senderInput=new Message(senderWrapperBase.getGetInputFromFixedValue());
-				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
+				if (log.isDebugEnabled()) log.debug("{}set input to fixed value [{}]", senderWrapperBase.getLogPrefix(), senderInput);
 			}
 		}
 		if (senderWrapperBase.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
@@ -72,7 +73,8 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 						throw new SenderException("Could not preserve result",e);
 					}
 				}
-				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
+				if (log.isDebugEnabled())
+					log.debug("{}storing results in session variable [{}]", senderWrapperBase.getLogPrefix(), senderWrapperBase.getStoreResultInSessionKey());
 				session.put(senderWrapperBase.getStoreResultInSessionKey(), result.getResult());
 			}
 			if (senderWrapperBase.isPreserveInput()) {

@@ -185,7 +185,7 @@ public class ConfigurationUtils {
 	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
 		try(ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
-				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
+				log.error("no configuration found in database with name [{}] {}", name, version != null ? "version [" + version + "]" : "activeconfig [TRUE]");
 				return null;
 			}
 

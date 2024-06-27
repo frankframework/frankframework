@@ -544,7 +544,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 						}
 					} catch (SMBApiException e) {
 						if (NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
-							log.debug("delete pending for file [" + file.getName() + "]");
+							log.debug("delete pending for file [{}]", file.getName());
 						} else {
 							throw e;
 						}

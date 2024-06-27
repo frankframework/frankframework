@@ -83,7 +83,8 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 			if (elementDeclaration!=null) {
 				return elementDeclaration.getNamespace();
 			}
-			if (log.isTraceEnabled()) log.trace("Cannot find elementDeclaration for ["+localName+"], assuming it has parents namespace");
+			if (log.isTraceEnabled())
+				log.trace("Cannot find elementDeclaration for [{}], assuming it has parents namespace", localName);
 			return stack.peek().namespaceUri;
 		}
 		return null;

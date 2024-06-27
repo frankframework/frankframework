@@ -161,14 +161,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						loops--;
 					}
 					try {
-						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
+						log.debug("waiting for JavaListener [{}] to open", getJavaListener());
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						throw new SenderException(e);
 					}
 				}
 				if(loops == 0 && (listener==null || !listener.isOpen())) {
-					log.warn("Unable to open JavaListener ["+getJavaListener()+"] in "+getDependencyTimeOut()+" seconds. Make sure that the listener ["+getJavaListener()+"] exists or increase the timeout so that the sub-adapter may start before timeout limit.");
+					log.warn("Unable to open JavaListener [{}] in {} seconds. Make sure that the listener [{}] exists or increase the timeout so that the sub-adapter may start before timeout limit.", getJavaListener(), getDependencyTimeOut(), getJavaListener());
 				}
 			}
 		}
@@ -216,7 +216,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				try {
 					actualJavaListenerName = session.getString(getJavaListenerSessionKey());
 				} catch (Exception e) {
-					log.warn("unable to resolve session key [" + getJavaListenerSessionKey() + "]", e);
+					log.warn("unable to resolve session key [{}]", getJavaListenerSessionKey(), e);
 					actualJavaListenerName = null;
 				}
 				if (actualJavaListenerName == null) {
