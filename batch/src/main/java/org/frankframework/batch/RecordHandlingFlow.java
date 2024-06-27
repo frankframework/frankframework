@@ -85,7 +85,7 @@ public final class RecordHandlingFlow {
 				throw new ConfigurationException("cannot find recordhandler ["+getRecordHandlerRef()+"] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 			}
 		} else {
-			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
+			log.debug("no recordhandler defined for flow of manager [{}], key [{}]", getNextRecordHandlerManagerRef(), getRecordKey());
 		}
 
 		// obtain the named resultHandler

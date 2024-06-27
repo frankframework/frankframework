@@ -387,7 +387,7 @@ public class JdbcUtil {
 
 	private static String getBlobAsString(final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
 		if (blobInputStream == null) {
-			log.debug("no blob found in column [" + column + "]");
+			log.debug("no blob found in column [{}]", column);
 			return null;
 		}
 		if (encodeBlobBase64) {
@@ -401,7 +401,7 @@ public class JdbcUtil {
 				try (ObjectInputStream ois = new RenamingObjectInputStream(bis)) {
 					result = ois.readObject();
 				} catch (Exception e) {
-					log.debug("message in column [" + column + "] is probably not a serialized object: " + e.getClass().getName());
+					log.debug("message in column [{}] is probably not a serialized object: {}", column, e.getClass().getName());
 					objectOK = false;
 				}
 			}
@@ -577,7 +577,7 @@ public class JdbcUtil {
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
 		if (log.isDebugEnabled())
-			log.debug("jdbc parameter [" + parameterIndex + "] applying parameter [" + paramName + "] type [" + paramType + "] value [" + value + "]");
+			log.debug("jdbc parameter [{}] applying parameter [{}] type [{}] value [{}]", parameterIndex, paramName, paramType, value);
 		switch (paramType) {
 			case DATE:
 				if (value == null) {
@@ -646,9 +646,13 @@ public class JdbcUtil {
 				break;
 			}
 			//noinspection deprecation
-			case BYTES:
-				statement.setBytes(parameterIndex, Message.asByteArray(value));
+			case BYTES: {
+				Message message = Message.asMessage(value);
+				message.closeOnCloseOf(session, "JDBC BYTES Parameter");
+
+				statement.setBytes(parameterIndex, message.asByteArray());
 				break;
+			}
 			default:
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session, "JDBC Parameter");
@@ -685,7 +689,7 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [{}] handled as String", ()-> JDBCType.valueOf(sqlTYpe).getName());
+					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
 					//$FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:

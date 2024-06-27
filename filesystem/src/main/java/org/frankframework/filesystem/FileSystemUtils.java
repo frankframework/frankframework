@@ -270,8 +270,8 @@ public class FileSystemUtils {
 	}
 
 	@Nonnull
-	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException {
-		DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY);
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard, @Nonnull TypeFilter typeFilter) throws FileSystemException {
+		DirectoryStream<F> ds = fileSystem.list(folder, typeFilter);
 		if (ds==null) {
 			return Stream.empty();
 		}
@@ -306,7 +306,6 @@ public class FileSystemUtils {
 	}
 
 	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
-
 		try (ObjectBuilder file = nodeBuilder.startObject()) {
 			String name = fileSystem.getName(f);
 			file.addAttribute("name", name);
@@ -320,6 +319,9 @@ public class FileSystemUtils {
 					log.warn("cannot get canonicalName for file [{}]", name, e);
 					file.addAttribute("canonicalName", name);
 				}
+				// Add type of item: file or folder
+				file.addAttribute("type", fileSystem.isFolder(f) ? "folder" : "file");
+
 				// Get the modification date of the file
 				Date modificationDate = fileSystem.getModificationTime(f);
 				//add date

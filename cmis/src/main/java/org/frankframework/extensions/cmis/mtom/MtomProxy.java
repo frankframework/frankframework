@@ -80,7 +80,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 		ServletConfiguration config = servletManager.getServlet(PROXY_SERVLET);
 
 		if(cmisWebServiceServlet == null || config == null) {
-			log.warn("unable to find servlet [" + PROXY_SERVLET + "]");
+			log.warn("unable to find servlet [{}]", PROXY_SERVLET);
 			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] not found");
 		}
 		if(config.getLoadOnStartup() < 0) {

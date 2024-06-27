@@ -51,8 +51,8 @@ public class SenderThread extends Thread {
 		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
 		this.correlationId = correlationId;
-		log.debug("Creating SenderThread for ISenderWithParameters '" + name + "'");
-		log.debug("Request: " + request);
+		log.debug("Creating SenderThread for ISenderWithParameters '{}'", name);
+		log.debug("Request: {}", request);
 	}
 
 	@Override
@@ -69,28 +69,28 @@ public class SenderThread extends Thread {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
-				log.error("SenderException for ISender '" + name + "'", e);
+				log.error("SenderException for ISender '{}'", name, e);
 				senderException = e;
 			}
 		} catch(IOException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
-				log.error("IOException for ISender '" + name + "'", e);
+				log.error("IOException for ISender '{}'", name, e);
 				ioException = e;
 			}
 		} catch(TimeoutException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
-				log.error("timeoutException for ISender '" + name + "'", e);
+				log.error("timeoutException for ISender '{}'", name, e);
 				timeoutException = e;
 			}
 		}
 	}
 
     public String getResponse() {
-    	log.debug("Getting response for Sender: " + name);
+		log.debug("Getting response for Sender: {}", name);
         while (this.isAlive()) {
             try {
                 Thread.sleep(100);

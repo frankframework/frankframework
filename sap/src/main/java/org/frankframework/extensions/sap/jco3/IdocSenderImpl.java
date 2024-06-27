@@ -45,9 +45,9 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 
 		try {
-			log.debug(getLogPrefix()+"start parsing Idoc");
+			log.debug("{}start parsing Idoc", getLogPrefix());
 			XmlUtils.parseXml(message.asInputSource(), handler);
-			log.debug(getLogPrefix()+"finished parsing Idoc");
+			log.debug("{}finished parsing Idoc", getLogPrefix());
 			return handler.getIdoc();
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -67,14 +67,14 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 			IDocDocument idoc = parseIdoc(sapSystem,message);
 
 			try {
-				log.trace(getLogPrefix()+"checking syntax");
+				log.trace("{}checking syntax", getLogPrefix());
 				idoc.checkSyntax();
 			}
 			catch ( IDocException e ) {
 				throw new SenderException("Syntax error in idoc", e);
 			}
 
-			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)+"]"); }
+			if (log.isDebugEnabled()) {log.debug("{}parsed idoc [{}]", getLogPrefix(), JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)); }
 
 
 			JCoDestination destination = getDestination(session, sapSystem);

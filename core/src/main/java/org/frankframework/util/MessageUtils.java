@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -263,6 +263,7 @@ public abstract class MessageUtils {
 	/**
 	 * Resource intensive operation, preserves the message and calculates an MD5 hash over the entire message.
 	 */
+	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	public static String generateMD5Hash(Message message) {
 		try {
 			if(!message.isRepeatable()) {

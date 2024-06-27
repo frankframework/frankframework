@@ -71,7 +71,7 @@ public class JmsRealmFactory {
 	public JmsRealm getJmsRealm(String jmsRealmName) {
 		JmsRealm jmsRealm = jmsRealms.get(jmsRealmName);
 		if (jmsRealm == null) {
-			log.error("no JmsRealm found under name [" + jmsRealmName + "], factory contents [" + this + "]");
+			log.error("no JmsRealm found under name [{}], factory contents [{}]", jmsRealmName, this);
 		}
 		return jmsRealm;
 	}
@@ -112,7 +112,7 @@ public class JmsRealmFactory {
 	public void registerJmsRealm(JmsRealm jmsRealm) {
 		String realmName = jmsRealm.getRealmName();
 		if(jmsRealms.containsKey(realmName)) {
-			log.warn("overwriting JmsRealm [" + jmsRealm + "]. Realm with name ["+realmName+"] already exists");
+			log.warn("overwriting JmsRealm [{}]. Realm with name [{}] already exists", jmsRealm, realmName);
 		}
 		jmsRealms.put(realmName, jmsRealm);
 		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());

@@ -76,7 +76,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 				connection.close();
 			}
 		} catch (SQLException e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			connection = null;
 			super.close();
@@ -112,7 +112,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		String query = getSelectQuery();
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
-			if (trace && log.isDebugEnabled()) log.debug("executing query for [" + query + "]");
+			if (trace && log.isDebugEnabled()) log.debug("executing query for [{}]", query);
 			try (ResultSet rs = stmt.executeQuery(query)) {
 				if (!rs.next()) {
 					return null;
@@ -137,7 +137,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		if (StringUtils.isEmpty(query)) {
 			throw new ListenerException(getLogPrefix() + "cannot execute empty query");
 		}
-		if (trace && log.isDebugEnabled()) log.debug("executing query [" + query + "]");
+		if (trace && log.isDebugEnabled()) log.debug("executing query [{}]", query);
 		try (Statement stmt = conn.createStatement()) {
 			return stmt.executeQuery(query);
 		} catch (SQLException e) {
@@ -156,11 +156,11 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	protected void execute(Connection conn, String query, String parameter) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
-			if (trace && log.isDebugEnabled()) log.debug("executing statement [" + query + "]");
+			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
 			try (PreparedStatement stmt = conn.prepareStatement(query)) {
 				stmt.clearParameters();
 				if (StringUtils.isNotEmpty(parameter)) {
-					log.debug("setting parameter 1 to [" + parameter + "]");
+					log.debug("setting parameter 1 to [{}]", parameter);
 					stmt.setString(1, parameter);
 				}
 				stmt.execute();

@@ -460,10 +460,10 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 		String payload = null;
 		if (result == null) {
-			payload = Misc.listToString(messages);
+			payload = BisUtils.listToString(messages);
 		} else {
 			if (resultInPayload) {
-				String message = Misc.listToString(messages);
+				String message = BisUtils.listToString(messages);
 				Document messageDoc = XmlUtils.buildDomDocument(message);
 				Node messageRootNode = messageDoc.getFirstChild();
 				Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
@@ -471,7 +471,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				payload = XmlUtils.nodeToString(messageDoc);
 			} else {
 				messages.add(result);
-				payload = Misc.listToString(messages);
+				payload = BisUtils.listToString(messages);
 			}
 		}
 		return payload;

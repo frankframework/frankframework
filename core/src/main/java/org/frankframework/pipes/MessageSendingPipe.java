@@ -856,7 +856,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
 		}
-		log.warn(description+", starts waiting for [" + currentInterval + "] seconds");
+		log.warn("{}, starts waiting for [{}] seconds", description, currentInterval);
 		while (currentInterval-- > 0) {
 			Thread.sleep(1000);
 		}

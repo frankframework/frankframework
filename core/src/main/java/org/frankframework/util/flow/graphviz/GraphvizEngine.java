@@ -77,7 +77,7 @@ public class GraphvizEngine {
 		try {
 			Format format = Format.valueOf(FILE_FORMAT);
 			defaultOptions = Options.create().format(format);
-			if (log.isDebugEnabled()) log.debug("Setting Graphviz options to [" + defaultOptions + "]");
+			if (log.isDebugEnabled()) log.debug("Setting Graphviz options to [{}]", defaultOptions);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException("unknown format[" + FILE_FORMAT + "], must be one of " + Format.values());
 		}
@@ -130,7 +130,7 @@ public class GraphvizEngine {
 
 		long start = 0;
 		if(log.isDebugEnabled()) {
-			if(log.isTraceEnabled()) log.trace("executing VizJS src["+src+"] options["+options.toString()+"]");
+			if(log.isTraceEnabled()) log.trace("executing VizJS src[{}] options[{}]", src, options.toString());
 			start = System.currentTimeMillis();
 		}
 

@@ -132,14 +132,14 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		ldapSender.setCredentials(credentials);
 		ldapSender.setOperation(Operation.READ);
 		try {
-			log.debug("Looking up context for principal ["+principal+"]");
+			log.debug("Looking up context for principal [{}]", principal);
 			ldapSender.configure();
-			log.debug("Succesfully looked up context for principal ["+principal+"]");
+			log.debug("Successfully looked up context for principal [{}]", principal);
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
 				ldapSender.storeLdapException(e, pls);
 			} else {
-				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
+				log.warn("LDAP error looking up context for principal [{}]", principal, e);
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}

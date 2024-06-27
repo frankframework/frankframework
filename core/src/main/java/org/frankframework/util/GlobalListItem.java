@@ -99,7 +99,7 @@ public class GlobalListItem implements INamedObject {
 			configure();
 		}
 		items.put(getName(), this);
-		log.debug("globalItemList registered item [" + this + "]");
+		log.debug("globalItemList registered item [{}]", this);
 	}
 
 	@Override

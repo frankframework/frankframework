@@ -71,14 +71,14 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 		//TODO look into NamespaceHandlerResolver
 		Bus bus = (Bus) applicationContext.getBean("cxf");
 		if(bus instanceof SpringBus) {
-			log.debug("default CXF SpringBus ["+bus.getId()+"]");
+			log.debug("default CXF SpringBus [{}]", bus.getId());
 
 			log.info("registering NamespaceURI Provider with JAX-WS CXF Dispatcher");
 			namespaceRouter = new EndpointImpl(bus, new NamespaceUriProvider());
 			namespaceRouter.publish("/rpcrouter");
 
 			if(namespaceRouter.isPublished()) {
-				log.info("published NamespaceURI Provider on CXF endpoint [rpcrouter] on SpringBus ["+namespaceRouter.getBus().getId()+"]");
+				log.info("published NamespaceURI Provider on CXF endpoint [rpcrouter] on SpringBus [{}]", namespaceRouter.getBus().getId());
 			} else {
 				throw new IllegalStateException("unable to NamespaceURI Service Provider on CXF endpoint [rpcrouter]");
 			}

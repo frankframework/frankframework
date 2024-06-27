@@ -1,6 +1,7 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -13,14 +14,18 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.JdbcTestUtil;
@@ -35,9 +40,6 @@ import org.frankframework.testutil.VirtualReader;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 public class JdbcUtilTest {
@@ -165,6 +167,37 @@ public class JdbcUtilTest {
 
 		// Assert
 		assertEquals(5, result);
+	}
+
+	@Test
+	public void testBytesCase() throws Exception {
+		// Arrange
+		String query = "INSERT INTO TEMP (TKEY, TBLOB) VALUES (?, ?)";
+
+		ParameterList params = new ParameterList();
+		params.add(NumberParameterBuilder.create().withValue(1));
+		params.add(ParameterBuilder.create().withSessionKey("binaryParam").withType(ParameterType.BYTES));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("binaryParam", new ThrowingAfterCloseInputStream(new VirtualInputStream(20_000)));
+
+		params.configure();
+		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
+
+		// Act
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+
+		// Assert
+		ParameterList resultParams = new ParameterList();
+		resultParams.add(NumberParameterBuilder.create().withValue(1));
+
+		Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TBLOB FROM TEMP WHERE TKEY = ?",
+				ParameterBuilder.getPVL(resultParams), session);
+
+		assertNotNull(result);
+
+		Blob blob = (Blob) result;
+		assertEquals(20_000, blob.length());
 	}
 
 	@Test

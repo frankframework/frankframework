@@ -367,7 +367,9 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		threadInfo.threadId = Integer.toString(threadCounter.incrementAndGet());
 		if (log.isDebugEnabled()) {
 			String nameClause=threadInfo.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
-			log.debug("announceChildThread thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+threadInfo.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+threadInfo.threadId+"] correlationId ["+threadInfo.correlationId+"]");
+			log.debug("announceChildThread thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
+					.getId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
+					.getSimpleName(), nameClause, threadInfo.threadId, threadInfo.correlationId);
 		}
 		ibisDebugger.createThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
 		return threadInfo;
@@ -380,7 +382,9 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=threadInfo.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
-			log.debug("cancelChildThread thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+threadInfo.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+threadInfo.threadId+"] correlationId ["+threadInfo.correlationId+"]");
+			log.debug("cancelChildThread thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
+					.getId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
+					.getSimpleName(), nameClause, threadInfo.threadId, threadInfo.correlationId);
 		}
 		ibisDebugger.cancelThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
 	}
@@ -392,7 +396,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
-			log.debug("threadCreated thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
+			log.debug("threadCreated thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
+					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
 		return (R)ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
@@ -404,7 +409,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
-			log.debug("threadEnded thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
+			log.debug("threadEnded thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
+					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
 		return (R)ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
@@ -416,7 +422,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
-			log.debug("threadAborted thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
+			log.debug("threadAborted thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
+					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
 		return ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
 	}

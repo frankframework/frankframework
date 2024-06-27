@@ -266,7 +266,7 @@ public class GetSchedules extends BusEndpointBase {
 				map.put(propertyName, date.getTime());
 			}
 		} catch (Exception e) {
-			log.debug("error parsing date for property ["+propertyName+"]", e);
+			log.debug("error parsing date for property [{}]", propertyName, e);
 		}
 	}
 

@@ -98,7 +98,7 @@ public class RestListenerServlet extends HttpServletBase {
 		String ifMatch=request.getHeader("If-Match");
 		String contentType=request.getHeader("accept");
 
-		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
+		if (log.isTraceEnabled()) log.trace("path [{}] If-Match [{}] If-None-Match [{}] contentType [{}]", path, ifMatch, ifNoneMatch, contentType);
 
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
@@ -109,14 +109,14 @@ public class RestListenerServlet extends HttpServletBase {
 			while (paramNames.hasMoreElements()) {
 				String paramname = paramNames.nextElement();
 				String paramvalue = request.getParameter(paramname);
-				if (log.isTraceEnabled()) log.trace("setting parameter [" + paramname + "] to [" + paramvalue + "]");
+				if (log.isTraceEnabled()) log.trace("setting parameter [{}] to [{}]", paramname, paramvalue);
 				messageContext.put(paramname, paramvalue);
 			}
 			if (!MultipartUtils.isMultipart(request)) {
 				body = StreamUtil.streamToString(request.getInputStream(),"\n",false);
 			}
 			try {
-				log.trace("RestListenerServlet calling service ["+path+"]");
+				log.trace("RestListenerServlet calling service [{}]", path);
 				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
 
 				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {

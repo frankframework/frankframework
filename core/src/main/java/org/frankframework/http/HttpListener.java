@@ -43,10 +43,10 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void open() throws ListenerException {
 		if (StringUtils.isEmpty(getServiceName())) {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+			log.debug("registering listener [{}] with ServiceDispatcher", getName());
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
 		} else {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			log.debug("registering listener [{}] with ServiceDispatcher by serviceName [{}]", getName(), getServiceName());
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceName(), this);
 		}
 
@@ -58,10 +58,10 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 		super.close();
 
 		if (StringUtils.isEmpty(getServiceName())) {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+			log.debug("unregistering listener [{}] from ServiceDispatcher", getName());
 			ServiceDispatcher.getInstance().unregisterServiceClient(getName());
 		} else {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			log.debug("unregistering listener [{}] from ServiceDispatcher by serviceName [{}]", getName(), getServiceName());
 			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceName());
 		}
 	}

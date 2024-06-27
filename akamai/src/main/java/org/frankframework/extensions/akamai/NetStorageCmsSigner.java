@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden
+   Copyright 2017, 2020 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.UUIDUtil;
 
 
 /**
@@ -39,14 +39,13 @@ public class NetStorageCmsSigner {
 	protected static final String ACTION_HEADER = "X-Akamai-ACS-Action";
 	protected static final String AUTH_DATA_HEADER = "X-Akamai-ACS-Auth-Data";
 	protected static final String AUTH_SIGN_HEADER = "X-Akamai-ACS-Auth-Sign";
-	private static final Random RANDOM = new Random();
 
 	/**
 	 * Currently only 3 signing hash types are supported. Each are indicated with a version. They are:
 	 * Hmac-MD5 = v3
 	 * Hmac-SHA1 = v4
 	 * Hmac-SHA256 = v5
-	 *
+	 * <p>
 	 * (don't ask what v1 and v2 were. You don't want to know. It will make you cry.)
 	 */
 	public enum SignType {
@@ -123,7 +122,7 @@ public class NetStorageCmsSigner {
 	 */
 	protected String getAuthDataHeaderValue() {
 		Date currentTime = new Date();
-		int rand = RANDOM.nextInt(Integer.MAX_VALUE);
+		int rand = UUIDUtil.RANDOM.nextInt(Integer.MAX_VALUE);
 
 		return
 				"%d, 0.0.0.0, 0.0.0.0, %d, %d, %s".formatted(

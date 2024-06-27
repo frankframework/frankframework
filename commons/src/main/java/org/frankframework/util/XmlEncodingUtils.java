@@ -285,7 +285,7 @@ public class XmlEncodingUtils {
 			int encodingStart=declaration.indexOf(encodingTarget);
 			if (encodingStart>0) {
 				encodingStart+=encodingTarget.length();
-				log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
+				log.debug("encoding-declaration [{}]", declaration.substring(encodingStart));
 				int encodingEnd=declaration.indexOf("\"", encodingStart);
 				if (encodingEnd > 0) {
 					charset=declaration.substring(encodingStart, encodingEnd);

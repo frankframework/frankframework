@@ -158,6 +158,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see org.frankframework.core.Pipeline#configurePipes
 	 */
 	@Override
+	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles originate from the properties file
 	public void configure() throws ConfigurationException { //TODO check if we should fail when the adapter has already been configured?
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);

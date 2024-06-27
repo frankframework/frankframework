@@ -45,7 +45,7 @@ public class MessageZipEntry extends ZipEntry {
 			setSize(message.size());
 		} else {
 			this.message = Message.nullMessage();
-			log.warn("contents of zip entry ["+filename+"] is null");
+			log.warn("contents of zip entry [{}] is null", filename);
 		}
 	}
 

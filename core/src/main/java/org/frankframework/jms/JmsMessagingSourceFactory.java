@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			if (connectionFactoryInfo==null) {
 				connectionFactoryInfo = connectionFactory.toString();
 			}
-			log.info("%slooked up connection factory [%s]: [%s]".formatted(jmsFacade.getLogPrefix(), cfName, connectionFactoryInfo));
+			log.info("{}looked up connection factory [{}]: [{}]", jmsFacade.getLogPrefix(), cfName, connectionFactoryInfo);
 		}
 		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
 	}

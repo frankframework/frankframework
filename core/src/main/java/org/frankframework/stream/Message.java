@@ -843,31 +843,6 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * Convert an object to a byte array. Does not close object when it is of type Message or MessageWrapper.
-	 */
-	public static byte[] asByteArray(Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof byte[] bytes) {
-			return bytes;
-		}
-		if (object instanceof String string) {
-			return string.getBytes();
-		}
-		if (object instanceof Message message) {
-			return message.asByteArray();
-		}
-		if (object instanceof MessageWrapper wrapper) {
-			return wrapper.getMessage().asByteArray();
-		}
-		// In other cases, message can be closed directly after converting to byte array.
-		try (Message message = Message.asMessage(object)) {
-			return message.asByteArray();
-		}
-	}
-
-	/**
 	 * Check if the message passed is null or empty.
 	 *
 	 * @param message Message to check. Can be {@code null}.

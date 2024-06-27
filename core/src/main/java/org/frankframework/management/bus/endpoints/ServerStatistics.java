@@ -160,7 +160,7 @@ public class ServerStatistics extends BusEndpointBase {
 									esr += errorStorage.getMessageCount();
 								} catch (Exception e) {
 									//error("error occurred on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-									log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+									log.warn("Assuming there are no errorlog records for adapter [{}]", adapter.getName());
 								}
 							}
 						}

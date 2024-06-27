@@ -227,6 +227,11 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
+	public boolean isFolder(SmbFileRef smbFileRef) {
+		return FilesIterator.isDirectoryAndAccessible(smbFileRef);
+	}
+
+	@Override
 	public OutputStream createFile(SmbFileRef f) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
@@ -539,7 +544,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 						}
 					} catch (SMBApiException e) {
 						if (NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
-							log.debug("delete pending for file [" + file.getName() + "]");
+							log.debug("delete pending for file [{}]", file.getName());
 						} else {
 							throw e;
 						}
@@ -548,14 +553,14 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			}
 		}
 
-		private boolean isFileAndAccessible(SmbFileRef file) {
+		static boolean isFileAndAccessible(SmbFileRef file) {
 			FileStandardInformation fsi = file.getAttributes().getStandardInformation();
 			boolean accessible = !fsi.isDeletePending();
 			boolean isDirectory = fsi.isDirectory();
 			return accessible && !isDirectory;
 		}
 
-		private boolean isDirectoryAndAccessible(SmbFileRef file) {
+		static boolean isDirectoryAndAccessible(SmbFileRef file) {
 			FileStandardInformation fsi = file.getAttributes().getStandardInformation();
 			boolean accessible = !fsi.isDeletePending();
 			boolean isDirectory = fsi.isDirectory();

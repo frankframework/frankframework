@@ -253,7 +253,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		try {
 			String query = getSelectListQuery(getDbmsSupport(), startTime, endTime, order);
 			if (log.isDebugEnabled()) {
-				log.debug("preparing selectListQuery ["+query+"]");
+				log.debug("preparing selectListQuery [{}]", query);
 			}
 			stmt = conn.prepareStatement(query);
 			if (startTime==null && endTime==null) {
@@ -305,7 +305,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 				applyStandardParameters(stmt, false, false);
 				try (ResultSet rs =  stmt.executeQuery()) {
 					if (!rs.next()) {
-						log.warn(getLogPrefix()+"no message count found");
+						log.warn("{}no message count found", getLogPrefix());
 						return 0;
 					}
 					return rs.getInt(1);

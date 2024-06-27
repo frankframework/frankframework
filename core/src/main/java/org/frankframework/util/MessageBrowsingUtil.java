@@ -48,7 +48,7 @@ public class MessageBrowsingUtil {
 					return msg;
 				}
 			} catch (Exception e) {
-				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawMessageWrapper + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
+				log.warn("{} cannot extract raw message [{}] ({}): {}", ClassUtils.nameOf(listener), rawMessageWrapper, ClassUtils.nameOf(e), e.getMessage(), e);
 			}
 		}
 
