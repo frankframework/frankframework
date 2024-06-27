@@ -141,16 +141,16 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
 			String logRequest;
 			if ("E".equalsIgnoreCase(getType())) {
-				log.debug(getLogPrefix() + "creating exceptionLog request");
+				log.debug("{}creating exceptionLog request", getLogPrefix());
 				logRequest = exceptionLogTp.transform("<dummy/>", parameterValues, true);
 			} else {
-				log.debug(getLogPrefix() + "creating auditLog request");
+				log.debug("{}creating auditLog request", getLogPrefix());
 				logRequest = auditLogTp.transform("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
 			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));
 			String returnMessage = send(session, getDestination(), msg);
-			log.debug(getLogPrefix() + "sent message [" + logRequest + "] " + "to [" + getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "]");
+			log.debug("{}sent message [{}] to [{}] msgID [{}] correlationID [{}]", getLogPrefix(), logRequest, getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID());
 			return returnMessage;
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -187,7 +187,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 				textMessage = (TextMessage) message;
 				rawMessageText = textMessage.getText();
 			} catch (ClassCastException e) {
-				log.error("message was not of type TextMessage, but [" + message.getClass().getName() + "]", e);
+				log.error("message was not of type TextMessage, but [{}]", message.getClass().getName(), e);
 				rawMessageText = message.toString();
 			}
 		}

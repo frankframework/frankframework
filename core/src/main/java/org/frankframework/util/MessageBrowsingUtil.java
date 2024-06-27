@@ -47,7 +47,7 @@ public class MessageBrowsingUtil {
 			try {
 				msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
 			} catch (Exception e) {
-				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawMessageWrapper + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
+				log.warn("{} cannot extract raw message [{}] ({}): {}", ClassUtils.nameOf(listener), rawMessageWrapper, ClassUtils.nameOf(e), e.getMessage(), e);
 			}
 			if (StringUtils.isEmpty(msg)) {
 				msg = Message.asString(rawMessage);

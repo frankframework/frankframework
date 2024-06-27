@@ -264,7 +264,7 @@ public class AdapterStatus extends BusEndpointBase {
 				messageLogCount="?";
 			}
 		} catch (Exception e) {
-			log.warn("Cannot determine number of messages in messageLog ["+store.getName()+"]", e);
+			log.warn("Cannot determine number of messages in messageLog [{}]", store.getName(), e);
 			messageLogCount="error";
 		}
 		data.put("messageLogCount", messageLogCount);
@@ -282,7 +282,7 @@ public class AdapterStatus extends BusEndpointBase {
 			try {
 				return ts.getMessageCount();
 			} catch (Exception e) {
-				log.warn("Cannot determine number of messages in MessageBrowser ["+ClassUtils.nameOf(ts)+"]", e);
+				log.warn("Cannot determine number of messages in MessageBrowser [{}]", ClassUtils.nameOf(ts), e);
 				return "error";
 			}
 		} else {

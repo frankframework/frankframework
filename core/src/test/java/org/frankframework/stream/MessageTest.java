@@ -45,6 +45,10 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.functional.ThrowingSupplier;
@@ -57,9 +61,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -354,21 +355,6 @@ public class MessageTest {
 		StringReader source = new StringReader(testString);
 		adapter = new Message(source);
 		testAsByteArray(adapter);
-	}
-
-	@Test
-	public void testStringAsStaticByteArray() throws Exception {
-		Object source = testString;
-		byte[] byteArray = Message.asByteArray(source);
-		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
-	}
-
-	@Test
-	public void testByteArrayAsStaticByteArray() throws Exception {
-		Object source = testString.getBytes();
-		byte[] byteArray = Message.asByteArray(source);
-		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
-		assertEquals(testString, new String(byteArray), "content differ");
 	}
 
 	@Test
@@ -1363,10 +1349,10 @@ public class MessageTest {
 	@Test
 	void testMessageAsByteArrayDoesNotCloseMessage() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Object msg = Message.asMessage(new StringReader("text"));
+		Message msg = Message.asMessage(new StringReader("text"));
 
 		// Act
-		byte[] content = Message.asByteArray(msg);
+		byte[] content = msg.asByteArray();
 
 		// Assert
 		Message message = (Message) msg;
@@ -1379,10 +1365,10 @@ public class MessageTest {
 	void testMessageAsByteArrayDoesNotCloseMessageWrapper() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
 		Message msg = Message.asMessage(new StringReader("text"));
-		Object wrapper = new MessageWrapper<Message>(msg, null, null);
+		MessageWrapper wrapper = new MessageWrapper<Message>(msg, null, null);
 
 		// Act
-		byte[] content = Message.asByteArray(wrapper);
+		byte[] content = wrapper.getMessage().asByteArray();
 
 		// Assert
 		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;

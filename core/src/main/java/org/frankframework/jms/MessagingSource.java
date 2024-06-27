@@ -163,7 +163,7 @@ public class MessagingSource  {
 			if (qcf != null) {
 				return qcf;
 			}
-			log.warn(getLogPrefix() + "could not determine managed connection factory", e);
+			log.warn("{}could not determine managed connection factory", getLogPrefix(), e);
 			return null;
 		}
 	}
@@ -245,7 +245,7 @@ public class MessagingSource  {
 				connection.close();
 				openConnectionCount.decrementAndGet();
 			} catch (JMSException e) {
-				log.error(getLogPrefix()+"Exception closing Connection", e);
+				log.error("{}Exception closing Connection", getLogPrefix(), e);
 			}
 		}
 	}
@@ -281,7 +281,7 @@ public class MessagingSource  {
 				session.close();
 				openSessionCount.decrementAndGet();
 			} catch (JMSException e) {
-				log.error(getLogPrefix() + "Exception closing Session", e);
+				log.error("{}Exception closing Session", getLogPrefix(), e);
 			} finally {
 				releaseConnection(connection);
 			}
@@ -292,7 +292,7 @@ public class MessagingSource  {
 			log.debug("{}closing Session", this::getLogPrefix);
 			session.close();
 		} catch (JMSException e) {
-			log.error(getLogPrefix() + "Exception closing Session", e);
+			log.error("{}Exception closing Session", getLogPrefix(), e);
 		}
 	}
 
@@ -339,7 +339,8 @@ public class MessagingSource  {
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					if(log.isInfoEnabled()) log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					if(log.isInfoEnabled())
+						log.info("{}created dynamic replyQueue [{}]", getLogPrefix(), globalDynamicReplyQueue.getQueueName());
 				}
 			}
 			log.trace("Got global dynamic reply queue, lock released on {}", this);

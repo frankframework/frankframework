@@ -91,21 +91,21 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	public final String getText(XSElementDeclaration elementDeclaration, N node) {
 		String nodeName=elementDeclaration.getName();
 		Object text;
-		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
+		if (log.isTraceEnabled()) log.trace("node [{}] currently parsed element [{}]", nodeName, getContext().getLocalName());
 		if (sp!=null && sp.hasOverride(getContext())) {
 			String result = getOverride(elementDeclaration, node);
-			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] override found ["+result+"]");
+			if (log.isTraceEnabled()) log.trace("node [{}] override found [{}]", nodeName, result);
 			return result;
 		}
 		String result=getNodeText(elementDeclaration, node);
 		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
-			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] default found ["+text+"]");
+			if (log.isTraceEnabled()) log.trace("node [{}] default found [{}]", nodeName, text);
 			if (text instanceof String string) {
 				result = string;
 			}
 			result = text.toString();
 		}
-		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] returning value ["+result+"]");
+		if (log.isTraceEnabled()) log.trace("node [{}] returning value [{}]", nodeName, result);
 		return result;
 	}
 

@@ -99,7 +99,7 @@ public class WebServiceSender extends HttpSender {
 
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
+			log.debug("{}created CredentialFactory for username=[{}]", getLogPrefix(), wsscf.getUsername());
 		}
 	}
 
@@ -134,10 +134,10 @@ public class WebServiceSender extends HttpSender {
 		if (wsscf!=null) {
 			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
+		if (log.isDebugEnabled()) log.debug("{}SOAPMSG [{}]", getLogPrefix(), soapmsg);
 
 		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
-		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
+		log.debug("{}setting SOAPAction header [{}]", getLogPrefix(), soapActionURI);
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
 	}

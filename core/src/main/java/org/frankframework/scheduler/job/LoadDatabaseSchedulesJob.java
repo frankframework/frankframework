@@ -134,7 +134,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							if(databaseJobDetails.containsKey(key)) {
 								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
 								if(!oldJobDetails.compareWith(jobdef)) {
-									log.debug("updating DatabaseSchedule ["+key+"]");
+									log.debug("updating DatabaseSchedule [{}]", key);
 									try {
 										sh.scheduleJob(jobdef);
 									} catch (SchedulerException e) {
@@ -145,7 +145,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 								databaseJobDetails.remove(key);
 							} else {
 								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
-								log.debug("add DatabaseSchedule ["+key+"]");
+								log.debug("add DatabaseSchedule [{}]", key);
 								try {
 									sh.scheduleJob(jobdef);
 								} catch (SchedulerException e) {
@@ -164,7 +164,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
 		for(JobKey key : databaseJobDetails.keySet()) {
-			log.debug("delete DatabaseSchedule ["+key+"]");
+			log.debug("delete DatabaseSchedule [{}]", key);
 			try {
 				scheduler.deleteJob(key);
 			} catch (SchedulerException e) {

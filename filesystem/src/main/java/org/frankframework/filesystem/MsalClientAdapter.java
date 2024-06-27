@@ -79,7 +79,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 			Message response = sendMessageOrThrow(request, session);
 			return new MsalResponse(response, session);
 		} catch (Exception e) {
-			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [" + httpRequest.url().toString() + "]", e);
+			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [{}]", httpRequest.url().toString(), e);
 			throw e;
 		} finally {
 			session.close();
@@ -162,7 +162,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 		public MsalResponse(Message response, PipeLineSession session) {
 			this.statusCode = Integer.parseInt((String) session.get(STATUS_CODE_SESSION_KEY));
 			if(log.isDebugEnabled())
-				log.debug("Parsing status code [" + statusCode + "]");
+				log.debug("Parsing status code [{}]", statusCode);
 
 			String[] headersAsCsv = ((String) session.get(RESPONSE_HEADERS_SESSION_KEY)).split(",");
 			for (String headerName : headersAsCsv) {
@@ -171,7 +171,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 				values.add(headerValue);
 
 				if(log.isDebugEnabled())
-					log.debug("Parsing header [" + headerName + "] [" + headerValue + "]");
+					log.debug("Parsing header [{}] [{}]", headerName, headerValue);
 				this.headers.put(headerName, values);
 			}
 

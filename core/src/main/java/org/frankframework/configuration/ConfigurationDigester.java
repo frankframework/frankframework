@@ -200,7 +200,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		try {
 			digester = getDigester(configuration);
 
-			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
+			if (log.isDebugEnabled())
+				log.debug("digesting configuration [{}] configurationFile [{}]", configuration.getName(), configurationFile);
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);

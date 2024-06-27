@@ -97,7 +97,7 @@ public class NodeSetFilter extends FullXmlFilter {
 			super.endPrefixMapping(prefix);
 		} else {
 			if (pendingNamespaceDefinitions.size()<=0) {
-				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]");
+				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix [{}]", prefix);
 				return;
 			}
 			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);

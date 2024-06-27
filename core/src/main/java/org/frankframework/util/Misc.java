@@ -88,7 +88,7 @@ public class Misc {
 		try {
 			return Long.parseLong(s) * multiplier;
 		} catch (NumberFormatException e) {
-			log.error("[" + value + "] not in expected format", e);
+			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
 	}
@@ -216,7 +216,7 @@ public class Misc {
 		try {
 			return Long.parseLong(s) * multiplier;
 		} catch (NumberFormatException e) {
-			log.error("[" + value + "] not in expected format", e);
+			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
 	}

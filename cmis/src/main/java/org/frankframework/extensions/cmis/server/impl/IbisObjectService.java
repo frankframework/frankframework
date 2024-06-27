@@ -252,7 +252,7 @@ public class IbisObjectService implements ObjectService {
 				return CmisUtils.processProperties(result);
 			}
 			catch(Exception e) {
-				log.error("error creating CMIS objectData: " + e.getMessage(), e.getCause());
+				log.error("error creating CMIS objectData: {}", e.getMessage(), e.getCause());
 			}
 			return new PropertiesImpl();
 		}

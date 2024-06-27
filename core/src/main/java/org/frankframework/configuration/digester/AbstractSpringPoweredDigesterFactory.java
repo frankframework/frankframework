@@ -146,10 +146,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 		String className = attrs.get("className");
 		if (log.isDebugEnabled()) {
-			log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
-					+ "], name=[" + attrs.get("name")
-					+ "], Configured ClassName=[" + className
-					+ "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
+			log.debug("CreateObject: Element=[{}], name=[{}], Configured ClassName=[{}], Suggested Spring Bean Name=[{}]",
+					getDigester().getCurrentElementName(), attrs.get("name"), className, getSuggestedBeanName());
 		}
 
 		if(className == null) {
@@ -178,7 +176,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	protected <T> T createBeanAndAutoWire(Class<T> beanClass) {
-		if (log.isDebugEnabled()) log.debug("instantiating bean class ["+beanClass.getName()+"] directly using Spring Factory ["+applicationContext.getDisplayName()+"]");
+		if (log.isDebugEnabled())
+			log.debug("instantiating bean class [{}] directly using Spring Factory [{}]", beanClass.getName(), applicationContext.getDisplayName());
 
 		return SpringUtils.createBean(applicationContext, beanClass); //Autowire and initialize the bean through Spring
 	}

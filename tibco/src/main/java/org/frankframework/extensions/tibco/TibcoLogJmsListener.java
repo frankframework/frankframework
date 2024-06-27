@@ -45,7 +45,8 @@ public class TibcoLogJmsListener extends JmsListener {
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on [" + getDestinationName() + "] was not of type TibjmsMapMessage, but [" + rawMessage.getClass().getName() + "]", e);
+			log.error("message received by listener on [{}] was not of type TibjmsMapMessage, but [{}]", getDestinationName(), rawMessage.getClass()
+					.getName(), e);
 			return null;
 		}
 		Enumeration enumeration = tjmMessage.getMapNames();

@@ -171,14 +171,14 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 
 	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();
-		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping ["+disableOutputEscaping+"]");
+		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping [{}]", disableOutputEscaping);
 		if (disableOutputEscaping == null) {
 			disableOutputEscaping = poolToUse.getDisableOutputEscaping();
-			if (log.isTraceEnabled()) log.trace("Detected disableOutputEscaping ["+disableOutputEscaping+"]");
+			if (log.isTraceEnabled()) log.trace("Detected disableOutputEscaping [{}]", disableOutputEscaping);
 		}
 		if (disableOutputEscaping == null) {
 			disableOutputEscaping = false;
-			if (log.isTraceEnabled()) log.trace("Default disableOutputEscaping ["+disableOutputEscaping+"]");
+			if (log.isTraceEnabled()) log.trace("Default disableOutputEscaping [{}]", disableOutputEscaping);
 		}
 		return disableOutputEscaping;
 	}
@@ -210,44 +210,44 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			}
 
 			TransformerPool.OutputType outputType = getOutputType();
-			if (log.isTraceEnabled()) log.trace("Configured outputmethod ["+outputType+"]");
+			if (log.isTraceEnabled()) log.trace("Configured outputmethod [{}]", outputType);
 			if (outputType == null) {
 				String parsedOutputType = poolToUse.getOutputMethod();
 				if (StringUtils.isNotEmpty(parsedOutputType)) {
 					outputType = EnumUtils.parse(TransformerPool.OutputType.class, parsedOutputType);
 				}
-				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+parsedOutputType+"]");
+				if (log.isTraceEnabled()) log.trace("Detected outputmethod [{}]", parsedOutputType);
 			}
 			if (outputType == null) {
 				outputType = DEFAULT_OUTPUT_METHOD;
-				if (log.isTraceEnabled()) log.trace("Default outputmethod ["+outputType+"]");
+				if (log.isTraceEnabled()) log.trace("Default outputmethod [{}]", outputType);
 			}
 
 			boolean disableOutputEscaping = isDisableOutputEscaping(poolToUse);
 
 			Boolean indentXml = getIndentXml();
-			if (log.isTraceEnabled()) log.trace("Configured indentXml ["+indentXml+"]");
+			if (log.isTraceEnabled()) log.trace("Configured indentXml [{}]", indentXml);
 			if (indentXml==null) {
 				indentXml = poolToUse.getIndent();
-				if (log.isTraceEnabled()) log.trace("Detected indentXml ["+indentXml+"]");
+				if (log.isTraceEnabled()) log.trace("Detected indentXml [{}]", indentXml);
 			}
 			if (indentXml==null) {
 				indentXml = DEFAULT_INDENT;
-				if (log.isTraceEnabled()) log.trace("Default indentXml ["+indentXml+"]");
+				if (log.isTraceEnabled()) log.trace("Default indentXml [{}]", indentXml);
 			}
 
 			if (handler == null || disableOutputEscaping) {
 				XmlWriter xmlWriter = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
 				xmlWriter.setCloseWriterOnEndDocument(true);
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [" + omitXmlDeclaration + "]");
+				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [{}]", omitXmlDeclaration);
 				if (outputType == TransformerPool.OutputType.XML) {
 					if (omitXmlDeclaration == null) {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
-						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [" + omitXmlDeclaration + "]");
+						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [{}]", omitXmlDeclaration);
 						if (omitXmlDeclaration == null) {
 							omitXmlDeclaration = DEFAULT_OMIT_XML_DECLARATION;
-							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [" + omitXmlDeclaration + "]");
+							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [{}]", omitXmlDeclaration);
 						}
 					}
 					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
@@ -303,7 +303,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 					@Override
 					public void endDocument() throws SAXException {
 						super.endDocument();
-						log.debug(getLogPrefix() + " xml input [" + getWriter() + "]");
+						log.debug("{} xml input [{}]", getLogPrefix(), getWriter());
 					}
 				};
 			}

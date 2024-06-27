@@ -104,12 +104,12 @@ class MailConvertor extends AbstractConvertor {
 		AttachmentCollection attachments = eml.getAttachments();
 
 		if (log.isDebugEnabled()) {
-			log.debug("cc : [" + toString(eml.getCC()) + "]");
-			log.debug("bcc : [" + toString(eml.getBcc()) + "]");
-			log.debug("sender : [" + toString(eml.getSender()) + "]");
-			log.debug("from : [" + toString(eml.getFrom()) + "]");
-			log.debug("to : [" + toString(eml.getTo()) + "]");
-			log.debug("subject : [" + eml.getSubject() + "]");
+			log.debug("cc : [{}]", toString(eml.getCC()));
+			log.debug("bcc : [{}]", toString(eml.getBcc()));
+			log.debug("sender : [{}]", toString(eml.getSender()));
+			log.debug("from : [{}]", toString(eml.getFrom()));
+			log.debug("to : [{}]", toString(eml.getTo()));
+			log.debug("subject : [{}]", eml.getSubject());
 		}
 
 		// Overrules the default documentname.

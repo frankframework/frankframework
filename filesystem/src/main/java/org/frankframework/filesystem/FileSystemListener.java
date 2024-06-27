@@ -324,7 +324,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					return Message.asMessage(result);
 				}
 			}
-			log.warn("no attribute [" + getMessageType() + "] found for file [" + getFileSystem().getName(file) + "]");
+			log.warn("no attribute [{}] found for file [{}]", getMessageType(), getFileSystem().getName(file));
 			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -344,7 +344,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					messageId = (String)attributes.get(getMessageIdPropertyKey());
 				}
 				if (StringUtils.isEmpty(messageId)) {
-					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
+					log.warn("no attribute [{}] found, will use filename as messageId", getMessageIdPropertyKey());
 				}
 			}
 			if (StringUtils.isEmpty(messageId)) {

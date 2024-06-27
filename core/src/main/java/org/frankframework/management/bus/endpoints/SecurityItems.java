@@ -128,7 +128,7 @@ public class SecurityItems extends BusEndpointBase {
 				try {
 					cfInfo = js.getConnectionFactoryInfo();
 				} catch (JmsException e) {
-					log.debug("no connectionFactory ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+					log.debug("no connectionFactory ({}): {}", ClassUtils.nameOf(e), e.getMessage());
 				}
 				if (StringUtils.isNotEmpty(qcfName)) {
 					realm.put("name", realmName);
@@ -200,7 +200,7 @@ public class SecurityItems extends BusEndpointBase {
 			qs.configure();
 			dsInfo = qs.getDatasourceInfo();
 		} catch (JdbcException | ConfigurationException e) {
-			log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+			log.debug("no datasource ({}): {}", ClassUtils.nameOf(e), e.getMessage());
 		}
 		realm.put("datasourceName", datasourceName);
 		realm.put("info", dsInfo);
@@ -223,7 +223,7 @@ public class SecurityItems extends BusEndpointBase {
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Throwable t) {
-			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
+			log.debug("Caught NoClassDefFoundError, just no sapSystem available: {}", t.getMessage());
 		}
 
 		if (sapSystems!=null) {

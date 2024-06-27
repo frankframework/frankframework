@@ -48,7 +48,8 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 
 	@Override
 	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
-		if (log.isDebugEnabled()) log.debug("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"]");
+		if (log.isDebugEnabled())
+			log.debug("resolveEntity publicId [{}] baseSystemId [{}] expandedSystemId [{}] literalSystemId [{}] namespace [{}]", resourceIdentifier.getPublicId(), resourceIdentifier.getBaseSystemId(), resourceIdentifier.getExpandedSystemId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getNamespace());
 		if (resourceIdentifier.getExpandedSystemId() == null
 				&& resourceIdentifier.getLiteralSystemId() == null
 				&& resourceIdentifier.getNamespace() == null
@@ -66,12 +67,12 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 		String targetNamespace = resourceIdentifier.getNamespace();
 		if (targetNamespace != null) {
 			for(Schema schema:schemas) {
-				if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
+				if (log.isTraceEnabled()) log.trace("matching namespace [{}] to schema [{}]", targetNamespace, schema.getSystemId());
 				if (targetNamespace.equals(schema.getSystemId())) {
 					return new XMLInputSource(null, targetNamespace, null, schema.getReader(), null);
 				}
 			}
-			log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
+			log.warn("namespace [{}] not found in list of schemas", targetNamespace);
 		}
 
 		if(resourceIdentifier.getExpandedSystemId() != null) {

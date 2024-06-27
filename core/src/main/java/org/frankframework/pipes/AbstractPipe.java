@@ -204,7 +204,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
 					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
 				} else {
-					log.info("PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+					log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
 				}
 			}
 		} else {

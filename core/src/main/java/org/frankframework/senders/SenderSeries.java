@@ -84,7 +84,8 @@ public class SenderSeries extends SenderWrapperBase {
 		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
+			if (log.isDebugEnabled())
+				log.debug("{}sending correlationID [{}] message [{}] to sender [{}]", getLogPrefix(), correlationID, message, sender.getName());
 			result = sender.sendMessage(message, session);
 			if (!result.isSuccess()) {
 				return result;

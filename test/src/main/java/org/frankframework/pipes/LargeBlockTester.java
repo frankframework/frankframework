@@ -122,7 +122,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 						break;
 					}
 					bytesRead += len;
-					log.debug("read block [" + (block++) + "] of size [" + len + "]: " + new String(buf, 0, len < displaylen ? len : displaylen));
+					log.debug("read block [{}] of size [{}]: {}", block++, len, new String(buf, 0, len < displaylen ? len : displaylen));
 				}
 				int blocksServedAtEndOfReading = totalBlocksServed.get();
 

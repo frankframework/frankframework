@@ -138,7 +138,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		try {
 			jmsConnector.stop();
 		} catch (Exception e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			super.close();
 		}
@@ -218,13 +218,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// false). Hence when set is has a value of 2 or higher. When not
 			// set a NumberFormatException is thrown.
 			int value = message.getIntProperty("JMSXDeliveryCount");
-			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
+			if (log.isDebugEnabled()) log.debug("determined delivery count [{}]", value);
 			return value;
 		} catch (NumberFormatException nfe) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"NumberFormatException in determination of DeliveryCount");
+			if (log.isDebugEnabled()) log.debug("{}NumberFormatException in determination of DeliveryCount", getLogPrefix());
 			return -1;
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"exception in determination of DeliveryCount", e);
+			log.error("{}exception in determination of DeliveryCount", getLogPrefix(), e);
 			return -1;
 		}
 	}

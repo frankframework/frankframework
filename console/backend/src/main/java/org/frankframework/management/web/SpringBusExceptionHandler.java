@@ -20,6 +20,8 @@ import java.util.function.Function;
 import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.management.bus.BusException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
 public class SpringBusExceptionHandler {
 

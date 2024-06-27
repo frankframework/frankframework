@@ -131,7 +131,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix() + msg, e);
+				log.error("{}{}", getLogPrefix(), msg, e);
 			} finally {
 				if (qs != null) {
 					qs.close();
@@ -299,7 +299,7 @@ public class CleanupDatabaseJob extends JobDef {
 				return "DELETE FROM " + tableName + " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
 						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : "");
 			default:
-				if (log.isDebugEnabled()) log.warn("Not sure how to clean up for dialect: " + dbmsName + " just trying something");
+				if (log.isDebugEnabled()) log.warn("Not sure how to clean up for dialect: {} just trying something", dbmsName);
 				return "DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
 						+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
 						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")";

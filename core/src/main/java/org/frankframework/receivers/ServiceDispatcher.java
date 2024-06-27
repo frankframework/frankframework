@@ -103,15 +103,15 @@ public class ServiceDispatcher  {
 		}
 
 		registeredListeners.put(name, listener);
-		log.info("Listener ["+name+"] registered at ServiceDispatcher");
+		log.info("Listener [{}] registered at ServiceDispatcher", name);
 	}
 
 	public void unregisterServiceClient(String name) {
 		if (!isRegisteredServiceListener(name)) {
-			log.warn("listener ["+name+"] not registered with ServiceDispatcher");
+			log.warn("listener [{}] not registered with ServiceDispatcher", name);
 		} else {
 			registeredListeners.remove(name);
-			log.info("Listener ["+name+"] unregistered from ServiceDispatcher");
+			log.info("Listener [{}] unregistered from ServiceDispatcher", name);
 		}
 	}
 

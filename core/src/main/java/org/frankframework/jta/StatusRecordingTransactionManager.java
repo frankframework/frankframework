@@ -82,7 +82,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	protected String determineTmUid() {
 		String recordedTmUid = read(getUidFile());
 		if (StringUtils.isNotEmpty(recordedTmUid)) {
-			log.info("retrieved tmuid ["+recordedTmUid+"] from ["+getUidFile()+"]");
+			log.info("retrieved tmuid [{}] from [{}]", recordedTmUid, getUidFile());
 			setUid(recordedTmUid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
@@ -91,7 +91,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
 			}
 			setUid(tmuid);
-			log.info("created tmuid ["+getUid()+"]");
+			log.info("created tmuid [{}]", getUid());
 		}
 		if (!getUid().equals(recordedTmUid)) {
 			write(getUidFile(),getUid());

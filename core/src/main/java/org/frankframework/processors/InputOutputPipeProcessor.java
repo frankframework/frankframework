@@ -15,11 +15,11 @@
 */
 package org.frankframework.processors;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
@@ -32,13 +32,19 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.PathMessage;
 import org.frankframework.util.CompactSaxHandler;
+import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RestoreMovedElementsHandler;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * The InputOutputPipeProcessor class is a subclass of PipeProcessorBase and is responsible for processing pipes in a pipeline.
@@ -186,17 +192,29 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (Message.isEmpty(result)) {
 			return;
 		}
+
+		result.closeOnCloseOf(pipeLineSession, owner);
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
-		XmlWriter xmlWriter = new XmlWriter();
-		RestoreMovedElementsHandler handler = new RestoreMovedElementsHandler(xmlWriter);
-		handler.setSession(pipeLineSession);
+		final File tempFile;
+
 		try {
-			XmlUtils.parseXml(inputSource, handler);
-			result.closeOnCloseOf(pipeLineSession, owner);
-			pipeRunResult.setResult(xmlWriter.toString());
-		} catch (Exception e) {
-			log.warn("Pipeline of adapter [{}] could not restore moved elements on the received message: {}", owner.getName(), e.getMessage());
+			File tempDirectory = FileUtils.getTempDirectory("restoreMovedElements");
+			tempFile = File.createTempFile("msg", ".xml", tempDirectory);
+
+			try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+				XmlWriter xmlWriter = new XmlWriter(fos);
+				RestoreMovedElementsHandler handler = new RestoreMovedElementsHandler(xmlWriter);
+				handler.setSession(pipeLineSession);
+
+				XmlUtils.parseXml(inputSource, handler);
+			}
+		} catch (SAXException | IOException e) {
+			throw new PipeRunException(pipe, "could not restore moved elements", e);
 		}
+
+		Message restoredResult = PathMessage.asTemporaryMessage(tempFile.toPath()); // SFR will be removed upon close.
+		restoredResult.closeOnCloseOf(pipeLineSession, owner);
+		pipeRunResult.setResult(restoredResult);
 	}
 
 	private static InputSource getInputSourceFromResult(Message result, IPipe pipe, INamedObject owner) throws PipeRunException {

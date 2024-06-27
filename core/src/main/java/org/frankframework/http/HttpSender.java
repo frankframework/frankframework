@@ -209,12 +209,12 @@ public class HttpSender extends HttpSenderBase {
 			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
+					if (log.isDebugEnabled()) log.debug("{}path after appending of parameters [{}]", getLogPrefix(), relativePath);
 				}
 
 				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
+				if (log.isDebugEnabled()) log.debug("{}HttpSender constructed GET-method [{}]", getLogPrefix(), getMethod.getURI().getQuery());
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
@@ -292,7 +292,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
-				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
+				log.debug("{}appended parameter [{}] with value [{}]", getLogPrefix(), getFirstBodyPartName(), message);
 			}
 			if (parameters!=null) {
 				for(ParameterValue pv : parameters) {
@@ -301,7 +301,7 @@ public class HttpSender extends HttpSenderBase {
 
 					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
 						requestFormElements.add(new BasicNameValuePair(name,value));
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+						if (log.isDebugEnabled()) log.debug("{}appended parameter [{}] with value [{}]", getLogPrefix(), name, value);
 					}
 				}
 			}
@@ -340,7 +340,7 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 			entity.addPart(createStringBodypart(message));
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
+			if (log.isDebugEnabled()) log.debug("{}appended stringpart [{}] with value [{}]", getLogPrefix(), getFirstBodyPartName(), message);
 		}
 		if (parameters!=null) {
 			for(ParameterValue pv : parameters) {
@@ -367,9 +367,9 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
 			String multipartXml = session.getString(getMultipartXmlSessionKey());
-			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+			log.debug("{}building multipart message with MultipartXmlSessionKey [{}]", getLogPrefix(), multipartXml);
 			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
+				log.warn("{}sessionKey [{}] is empty", getLogPrefix(), getMultipartXmlSessionKey());
 			} else {
 				Element partsElement;
 				try {
@@ -379,7 +379,7 @@ public class HttpSender extends HttpSenderBase {
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 				if (parts.isEmpty()) {
-					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
+					log.warn("{}no part(s) in multipart xml [{}]", getLogPrefix(), multipartXml);
 				} else {
 					for (final Node part : parts) {
 						Element partElement = (Element) part;
@@ -430,7 +430,7 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			log.warn(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "]");
+			log.warn("{}httpstatus [{}] reason [{}]", getLogPrefix(), statusCode, responseHandler.getStatusLine().getReasonPhrase());
 			return new Message(body);
 		}
 

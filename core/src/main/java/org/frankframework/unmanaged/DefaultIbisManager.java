@@ -170,7 +170,7 @@ public class DefaultIbisManager implements IbisManager {
 					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
 					configuration.getRegisteredAdapter(adapterName).startRunning();
 				} catch (Exception e) {
-					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]", e);
+					log.error("error in execution of command [{}] for adapter [{}]", action, adapterName, e);
 				}
 			}
 			break;
@@ -197,7 +197,7 @@ public class DefaultIbisManager implements IbisManager {
 				secLog.info(msg2);
 				ibisContext.fullReload();
 			} else {
-				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
+				log.warn("Full reload not allowed for [{}]", commandIssuedBy);
 			}
 			break;
 
