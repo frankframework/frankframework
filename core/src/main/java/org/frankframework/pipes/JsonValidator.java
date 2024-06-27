@@ -89,7 +89,7 @@ public class JsonValidator extends ValidatorBase {
 				messageRoot = responseMode ? getResponseRoot() : getRoot();
 			}
 			if (StringUtils.isNotEmpty(messageRoot)) {
-				log.debug("validation to messageRoot ["+messageRoot+"]");
+				log.debug("validation to messageRoot [{}]", messageRoot);
 				curSchema = jsonSchema.getSubschemaAt(getSubSchemaPrefix()+messageRoot);
 				if (curSchema==null) {
 					throw new PipeRunException(this, "No schema found for ["+getSubSchemaPrefix()+messageRoot+"]");

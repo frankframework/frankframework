@@ -72,7 +72,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 		ApplicationContext applicationContext = source.getApplicationContext();
 		if(applicationContext == null) {
 			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
-			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source ["+source+"]", e);
+			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source [{}]", source, e);
 			return null;
 		}
 

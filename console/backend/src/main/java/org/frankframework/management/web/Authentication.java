@@ -38,7 +38,7 @@ public class Authentication extends FrankApiBase {
 			String user = httpServletRequest.getUserPrincipal().getName();
 			try {
 				httpServletRequest.logout();
-				log.debug("successfully logged out user [" + user + "]");
+				log.debug("successfully logged out user [{}]", user);
 			} catch (ServletException e) {
 				throw new ApiException(e);
 			}

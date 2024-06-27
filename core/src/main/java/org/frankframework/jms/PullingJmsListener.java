@@ -217,7 +217,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			throw new TimeoutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("JmsListener ["+getName()+"] received for correlationId ["+correlationId+"] replymessage ["+msg+"]");
+			log.debug("JmsListener [{}] received for correlationId [{}] replymessage [{}]", getName(), correlationId, msg);
 		}
 		return msg;
 	}
@@ -284,7 +284,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					try {
 						mc.close();
 					} catch(JMSException e) {
-						log.warn(getLogPrefix()+"exception closing messageConsumer",e);
+						log.warn("{}exception closing messageConsumer", getLogPrefix(), e);
 					}
 				}
 			}

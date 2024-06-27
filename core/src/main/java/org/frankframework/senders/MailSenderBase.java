@@ -508,7 +508,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 						logBuffer.append("[recipient [").append(recipient).append("]]");
 					}
 				} else {
-					log.warn("Recipient [" + recipient + "] ignored, not in domain whitelist [" + getDomainWhitelist() + "]");
+					log.warn("Recipient [{}] ignored, not in domain whitelist [{}]", recipient, getDomainWhitelist());
 				}
 			}
 			if (!recipientsFound) {

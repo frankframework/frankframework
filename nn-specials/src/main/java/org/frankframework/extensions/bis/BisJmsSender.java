@@ -136,7 +136,7 @@ public class BisJmsSender extends JmsSender {
 				throw new SenderException(e);
 			}
 			if (Boolean.valueOf(bisError).booleanValue()) {
-				log.debug("put in session [" + getErrorListSessionKey() + "] [" + bisErrorList + "]");
+				log.debug("put in session [{}] [{}]", getErrorListSessionKey(), bisErrorList);
 				session.put(getErrorListSessionKey(), bisErrorList);
 				throw new SenderException("bisErrorXPath [" + (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()) + "] returns true");
 			}

@@ -118,7 +118,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
 		if(bus instanceof SpringBus springBus) {
 			cxfBus = springBus;
-			log.debug("found CXF SpringBus id ["+bus.getId()+"]");
+			log.debug("found CXF SpringBus id [{}]", bus.getId());
 		} else {
 			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 		}
@@ -127,24 +127,24 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public void open() throws ListenerException {
 		if (StringUtils.isNotEmpty(getAddress())) {
-			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
+			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", getName(), cxfBus.getId());
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress()); //TODO: prepend with `local://` when used without application server
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
 			if(endpoint.isPublished()) {
-				log.debug("published listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
+				log.debug("published listener [{}] on CXF endpoint [{}]", getName(), getAddress());
 			} else {
-				log.error("unable to publish listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
+				log.error("unable to publish listener [{}] on CXF endpoint [{}]", getName(), getAddress());
 			}
 		} else {
 			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
 				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
 			}
 			else {
-				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+				log.debug("registering listener [{}] with ServiceDispatcher", getName());
 				ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
 			}
 		}
@@ -162,11 +162,11 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		if (StringUtils.isEmpty(getAddress())) {
 			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
 				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
 			}
 			else {
-				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+				log.debug("unregistering listener [{}] from ServiceDispatcher", getName());
 				ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
 			}
 		}
@@ -189,7 +189,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		if (isSoap()) {
 			try {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
+				if (log.isDebugEnabled()) log.debug("{}received SOAPMSG [{}]", getLogPrefix(), message);
 				Message request = soapWrapper.getBody(message, false, session, null);
 				Message result = super.processRequest(request, session);
 
@@ -199,7 +199,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
 				}
 				Message reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false, false);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
+				if (log.isDebugEnabled()) log.debug("{}replied SOAPMSG [{}]", getLogPrefix(), reply);
 				return reply;
 			} catch (Exception e) {
 				throw new ListenerException(e);

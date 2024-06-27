@@ -89,7 +89,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		BridgedCmisService service = null;
 		try {
 			service = new BridgedCmisService(context);
-			LOG.info("created repository service ["+service+"]");
+			LOG.info("created repository service [{}]", service);
 		} catch (Exception e) {
 			throw new CmisRuntimeException("could not create service instance: " + e, e);
 		}

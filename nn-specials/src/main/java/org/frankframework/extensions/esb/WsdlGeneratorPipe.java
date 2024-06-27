@@ -216,7 +216,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
-				log.debug("counted [" + countRoot + "] root elements in xsd file [" + xsdFile.getName() + "]");
+				log.debug("counted [{}] root elements in xsd file [{}]", countRoot, xsdFile.getName());
 				int cr = Integer.parseInt(countRoot);
 				if (cr > 1) {
 					EsbSoapValidator outputValidator;
@@ -244,12 +244,12 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 					TransformerPool tp = TransformerPool.getXPathTransformerPool("*/@targetNamespace", XmlUtils.DEFAULT_XSLT_VERSION);
 					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
-						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
+						log.debug("found target namespace [{}] in xsd file [{}]", xsdTargetNamespace, xsdFile.getName());
 					} else {
 						// default namespace to prevent
 						// "(IllegalArgumentException) The schema attribute isn't supported"
 						xsdTargetNamespace = "urn:wsdlGenerator";
-						log.warn("could not find target namespace in xsd file [" + xsdFile.getName() + "], assuming namespace [" + xsdTargetNamespace + "]");
+						log.warn("could not find target namespace in xsd file [{}], assuming namespace [{}]", xsdFile.getName(), xsdTargetNamespace);
 					}
 				} catch (Exception e) {
 					throw new ConfigurationException(e);
@@ -274,7 +274,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 					TransformerPool tp = TransformerPool.getXPathTransformerPool(rootXPath, XmlUtils.DEFAULT_XSLT_VERSION);
 					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
-						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");
+						log.debug("found root element [{}] in xsd file [{}]", xsdRoot, xsdFile.getName());
 						esbSoapValidator.setSoapBody(xsdRoot);
 					}
 				} catch (Exception e) {

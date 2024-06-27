@@ -97,7 +97,7 @@ public abstract class JmsMessageBrowser<M, J extends jakarta.jms.Message> extend
 
 	@Override
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
-		log.warn("could not determine correct presence of a message with correlationId [" + correlationId + "], assuming it doesnot exist");
+		log.warn("could not determine correct presence of a message with correlationId [{}], assuming it does not exist", correlationId);
 		// TODO: check presence of a message with correlationId
 		return false;
 	}
@@ -203,7 +203,7 @@ public abstract class JmsMessageBrowser<M, J extends jakarta.jms.Message> extend
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
-			log.debug("retrieving message ["+messageId+"] in order to delete it");
+			log.debug("retrieving message [{}] in order to delete it", messageId);
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
 			mc.receive(getTimeout());
 		} catch (Exception e) {

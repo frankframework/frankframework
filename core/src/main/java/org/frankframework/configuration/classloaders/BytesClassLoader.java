@@ -82,6 +82,6 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	 */
 	public final void clearResources() {
 		resources.clear();
-		log.debug("cleaned up classloader resources for configuration ["+getConfigurationName()+"]");
+		log.debug("cleaned up classloader resources for configuration [{}]", getConfigurationName());
 	}
 }

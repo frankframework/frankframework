@@ -233,21 +233,21 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			}
 			if (StringUtils.isNotEmpty(soapAction_work)) {
-				log.debug("setting [SoapAction] property to value [" + soapAction_work + "]");
+				log.debug("setting [SoapAction] property to value [{}]", soapAction_work);
 				msg.setStringProperty("SoapAction", soapAction_work);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
-				log.debug("sent message ["+ msg.getText() + "] " + "to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
+				log.debug("sent message [{}] to [{}] msgID [{}] correlationID [{}] replyTo [{}]", msg.getText(), msgProducer.getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID(), msg.getJMSReplyTo());
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("sent message to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
+					log.info("sent message to [{}] msgID [{}] correlationID [{}] replyTo [{}]", msgProducer.getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID(), msg.getJMSReplyTo());
 				}
 			}
 			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
 				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
-				log.debug("start waiting for reply on [" + replyQueue+ "] selector [" + replyCorrelationId + "] for ["+ replyTimeout_work + "] ms");
+				log.debug("start waiting for reply on [{}] selector [{}] for [{}] ms", replyQueue, replyCorrelationId, replyTimeout_work);
 
 				connection.start();
 				jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);

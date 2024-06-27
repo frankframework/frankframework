@@ -111,21 +111,21 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	public synchronized void openSystem() throws SapException {
 		if (referenceCount++<=0) {
 			referenceCount=1;
-			log.debug(getLogPrefix()+"opening system");
+			log.debug("{}opening system", getLogPrefix());
 			initSystem();
-			log.debug(getLogPrefix()+"opened system");
+			log.debug("{}opened system", getLogPrefix());
 		}
 	}
 
 	public synchronized void closeSystem() {
 		clearCache();
 		if (--referenceCount<=0) {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
+			log.debug("{}reference count [{}], closing system", getLogPrefix(), referenceCount);
 			referenceCount=0;
 			clearSystem();
-			log.debug(getLogPrefix()+"closed system");
+			log.debug("{}closed system", getLogPrefix());
 		} else {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], waiting for other references to close");
+			log.debug("{}reference count [{}], waiting for other references to close", getLogPrefix(), referenceCount);
 		}
 	}
 
@@ -152,14 +152,14 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	public void clearCache() {
-		log.debug("start clearing cache of SapSystem ["+getName()+"]");
+		log.debug("start clearing cache of SapSystem [{}]", getName());
 		try {
 			JCoRepository jcoRepository = getJcoRepository();
 			jcoRepository.clear();
 		} catch (JCoException e) {
 			log.warn("cannot clear function template cache",e);
 		}
-		log.debug("end clearing cache of SapSystem ["+getName()+"]");
+		log.debug("end clearing cache of SapSystem [{}]", getName());
 	}
 
 	public JCoDestination getDestination() throws JCoException {

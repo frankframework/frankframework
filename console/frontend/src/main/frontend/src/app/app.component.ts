@@ -93,13 +93,18 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     this.consoleState = this.appService.CONSOLE_STATE;
+
+    Pace.start({
+      eventLag: {
+        minSamples: 10,
+        sampleCount: 3,
+        lagThreshold: 20,
+      },
+      restartOnRequestAfter: false,
+    });
   }
 
   ngOnInit(): void {
-    Pace.start({
-      ajax: false,
-    });
-
     this.router.events
       .pipe(
         filter(
