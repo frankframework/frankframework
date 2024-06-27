@@ -44,6 +44,11 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ParameterException;
@@ -65,12 +70,6 @@ import org.frankframework.stream.document.INodeBuilder;
 import org.frankframework.stream.document.ObjectBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
-
-import jakarta.jms.BytesMessage;
-import jakarta.jms.JMSException;
-import jakarta.jms.TextMessage;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Database-oriented utility functions.
@@ -647,9 +646,13 @@ public class JdbcUtil {
 				break;
 			}
 			//noinspection deprecation
-			case BYTES:
-				statement.setBytes(parameterIndex, Message.asByteArray(value));
+			case BYTES: {
+				Message message = Message.asMessage(value);
+				message.closeOnCloseOf(session, "JDBC BYTES Parameter");
+
+				statement.setBytes(parameterIndex, message.asByteArray());
 				break;
+			}
 			default:
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session, "JDBC Parameter");
@@ -686,7 +689,7 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [{}] handled as String", ()-> JDBCType.valueOf(sqlTYpe).getName());
+					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
 					//$FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:
