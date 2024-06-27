@@ -1306,7 +1306,7 @@ public class XmlUtils {
 			if (value != null) {
 				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
 					try {
-						value = Message.asString(value);
+						value = MessageUtils.asString(value);
 					} catch (IOException e) {
 						throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
 					}

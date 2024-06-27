@@ -33,6 +33,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,9 +64,6 @@ import org.frankframework.util.XmlUtils;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Generic parameter definition.
@@ -558,29 +557,18 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 	}
 
-	private Object preFormatDateType(Object rawValue, String formatType, String patternFormatString) throws ParameterException {
-		if (formatType!=null && ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType))) {
-			if (rawValue instanceof Date) {
-				return rawValue;
-			}
+	private Object preFormatDateType(String rawValue, String formatType, String patternFormatString) throws ParameterException {
+		if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 			try {
-				return df.parse(Message.asString(rawValue));
-			} catch (ParseException | IOException e) {
-				throw new ParameterException(getName(), "Cannot parse ["+rawValue+"] as date", e);
+				return df.parse(rawValue);
+			} catch (ParseException e) {
+				throw new ParameterException(getName(), "Cannot parse [" + rawValue + "] as date", e);
 			}
 		}
-		if (rawValue instanceof Date) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
-			return df.format(rawValue);
-		}
-		try {
-			return Message.asString(rawValue);
-		} catch (IOException e) {
-			throw new ParameterException(getName(), "Cannot read date value ["+rawValue+"]", e);
-		}
-	}
 
+		return rawValue;
+	}
 
 	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
 		String[] patternElements = targetPattern.split(",");
@@ -595,10 +583,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			Object substitutionValueMessage = session.get(name);
 			if (substitutionValueMessage != null) {
 				if (substitutionValueMessage instanceof Date substitutionValueDate) {
-					substitutionValue = preFormatDateType(substitutionValueDate, formatType, formatString);
+					substitutionValue = getSubstitutionValueForDate(substitutionValueDate, formatType);
 				} else {
-					if (substitutionValueMessage instanceof String) {
-						substitutionValue = substitutionValueMessage;
+					if (substitutionValueMessage instanceof String stringValue) {
+						substitutionValue = preFormatDateType(stringValue, formatType, formatString);
 					} else {
 						try {
 							Message message = Message.asMessage(substitutionValueMessage); // Do not close object from session here; might be reused later
@@ -615,7 +603,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			String namelc=name.toLowerCase();
 			switch (namelc) {
 				case "now":
-					substitutionValue = preFormatDateType(new Date(), formatType, formatString);
+					if ("date".equals(formatType)) {
+						substitutionValue = new Date();
+					} else{
+						substitutionValue = formatDateToString(new Date(), formatString);
+					}
+
 					break;
 				case "uid":
 					substitutionValue = UUIDUtil.createSimpleUUID();
@@ -630,16 +623,21 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
 					}
+
+					// Parameter can be provided as a Date or a String. If using session.getString on a Date parameter, it will be formatted incorrectly
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
-					if (fixedDateTime == null) {
-						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
-						try {
-							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
-						} catch (ParseException e) {
-							throw new ParameterException(getName(), "Could not parse FIXEDDATETIME [" + PutSystemDateInSession.FIXEDDATETIME + "]", e);
+
+					if (fixedDateTime != null) {
+						if (fixedDateTime instanceof Date date) {
+							substitutionValue = getSubstitutionValueForDate(date, formatType);
+						} else if (fixedDateTime instanceof String string) {
+							substitutionValue = preFormatDateType(string, formatType, formatString);
 						}
+					} else {
+						// Get the default value
+						substitutionValue = preFormatDateType(PutSystemDateInSession.FIXEDDATETIME, formatType, DateFormatUtils.FORMAT_DATETIME_GENERIC);
 					}
-					substitutionValue = preFormatDateType(fixedDateTime, formatType, formatString);
+
 					break;
 				case "fixeduid":
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
@@ -669,6 +667,22 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 		}
 		return substitutionValue;
+	}
+
+	/**
+	 * @return the date when the format type is set, so the formatter knows how to format the Date object or return the date formatted
+	 * as a String with the default format.
+	 */
+	private Object getSubstitutionValueForDate(Date date, String formatType) {
+		return (formatType != null) ? date : formatDateToString(date, null);
+	}
+
+	/**
+	 * @return the given date formatted by the given patternFormatString or the DateFormatUtils.FORMAT_DATETIME_GENERIC pattern if empty
+	 */
+	private String formatDateToString(Date date, String patternFormatString) {
+		DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
+		return df.format(date);
 	}
 
 	@Override
