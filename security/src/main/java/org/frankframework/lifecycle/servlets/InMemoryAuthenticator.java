@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 - 2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import lombok.Setter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import lombok.Setter;
 
 /*
 	<authentication-manager alias="inMemoryAuthManager">
@@ -41,7 +41,6 @@ public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		http.httpBasic(basic -> basic.realmName("Frank")); //BasicAuthenticationEntryPoint
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		UserDetails user = User.builder()
 				.username(username)

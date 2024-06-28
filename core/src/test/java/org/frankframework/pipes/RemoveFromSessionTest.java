@@ -3,8 +3,9 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.frankframework.core.PipeRunResult;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.PipeRunResult;
 
 /**
  * RemoveFromSession Tester.
@@ -43,11 +44,11 @@ public class RemoveFromSessionTest extends PipeTestBase<RemoveFromSession> {
 	}
 
 	@Test
-	public void testNullInput() throws Exception {
+	public void testNullInput() {
 		pipe.setSessionKey("");
 		session.put("a", "123");
 
-		assertThrows(NullPointerException.class, ()->doPipe(pipe, null, session));
+		assertThrows(NullPointerException.class, () -> doPipe(pipe, null, session));
 	}
 
 	@Test

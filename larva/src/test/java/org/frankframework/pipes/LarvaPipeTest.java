@@ -11,7 +11,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.larva.LarvaLogLevel;
-import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 
@@ -42,7 +41,7 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 
 		// Act
 		PipeRunResult prr = doPipe(pipe, null, session);
-		String result = Message.asString(prr.getResult());
+		String result = prr.getResult().asString();
 
 		// Assert
 		assertEquals("No scenarios root directories found\n", result);

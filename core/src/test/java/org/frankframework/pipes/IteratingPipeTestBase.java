@@ -97,7 +97,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expected = TestFileUtils.getTestFile(expectedFile);
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 		prr.getResult().close();
 
 		assertEquals(expected, actual);
@@ -266,7 +266,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals("<results count=\"10\"/>", actual);
 	}
@@ -303,7 +303,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 
@@ -324,7 +324,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals("<results count=\"10\"/>", actual);
 	}
@@ -361,7 +361,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 

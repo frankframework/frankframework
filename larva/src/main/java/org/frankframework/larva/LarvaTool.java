@@ -2225,7 +2225,9 @@ public class LarvaTool {
 			String name = properties.getProperty(property + _param + i + _name);
 			if (name != null) {
 				String type = properties.getProperty(property + _param + i + _type);
-				Object value = properties.getProperty(property + _param + i + ".value");
+				String propertyValue = properties.getProperty(property + _param + i + ".value");
+				Object value = propertyValue;
+
 				if (value == null) {
 					String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
 					if (filename != null) {
@@ -2239,46 +2241,36 @@ public class LarvaTool {
 				}
 				if ("node".equals(type)) {
 					try {
-						value = XmlUtils.buildNode(Message.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
+						value = XmlUtils.buildNode(propertyValue, true);
+					} catch (DomBuilderException e) {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("domdoc".equals(type)) {
 					try {
-						value = XmlUtils.buildDomDocument(Message.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
+						value = XmlUtils.buildDomDocument(propertyValue, true);
+					} catch (DomBuilderException e) {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
-					try {
-						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
-						List<String> list = new LinkedList<>();
-						for (String part : parts) {
-							list.add(part);
-						}
-						value = list;
-					} catch (IOException e) {
-						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e);
-					}
+					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+
+					value = new LinkedList<>(parts);
 				} else if ("map".equals(type)) {
-					try {
-						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
-						Map<String, String> map = new LinkedHashMap<>();
-						for (String part : parts) {
-							String[] splitted = part.split("\\s*(=\\s*)+", 2);
-							if (splitted.length==2) {
-								map.put(splitted[0], splitted[1]);
-							} else {
-								map.put(splitted[0], "");
-							}
+					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+					Map<String, String> map = new LinkedHashMap<>();
+
+					for (String part : parts) {
+						String[] splitted = part.split("\\s*(=\\s*)+", 2);
+						if (splitted.length==2) {
+							map.put(splitted[0], splitted[1]);
+						} else {
+							map.put(splitted[0], "");
 						}
-						value = map;
-					} catch (IOException e) {
-						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e);
 					}
+					value = map;
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(property + _param + i + ".pattern");
+					String pattern = properties.getProperty(property + _param + i + ".pattern");
 					if (value == null && pattern == null) {
 						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern");
 					} else {
