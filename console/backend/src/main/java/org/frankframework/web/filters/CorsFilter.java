@@ -92,7 +92,7 @@ public class CorsFilter implements Filter {
 				response.setHeader("Access-Control-Max-Age", "3600");
 			} else {
 				//If origin has been set, but has not been whitelisted, report the request in security log.
-				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+originHeader+"] but was blocked due to CORS restrictions");
+				secLog.info("host[{}] tried to access uri[{}] with origin[{}] but was blocked due to CORS restrictions", request.getRemoteHost(), request.getPathInfo(), originHeader);
 				log.warn("blocked request with origin [{}]", originHeader);
 				response.setStatus(400);
 				return; //actually block the request

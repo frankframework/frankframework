@@ -20,14 +20,13 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.util.LogUtil;
 
 public class RootValidations implements Iterable<RootValidation> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private Set<RootValidation> rootValidations;
+	private final Set<RootValidation> rootValidations;
 
 	public RootValidations() {
 		this.rootValidations = new LinkedHashSet<>();

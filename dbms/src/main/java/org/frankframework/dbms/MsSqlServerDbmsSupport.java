@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,15 +32,7 @@ import org.frankframework.util.DateFormatUtils;
  */
 public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
-	protected static final String NEXT_VALUE_FOR = "NEXT VALUE FOR ";
-	protected static final String SELECT_CURRENT_VALUE = "SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME = ";
-	protected static final String DEFAULT_BLOB_VALUE = "0x";
-	protected static final String WITH_UPDLOCK_ROWLOCK = "WITH (UPDLOCK, ROWLOCK)";
-	protected static final String GET_DATE = "GETDATE()";
-	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
-
-	private final int CLOB_SIZE_TRESHOLD = 10000000; // larger than this is considered a CLOB, smaller a string
-
+	private static final int CLOB_SIZE_THRESHOLD = 10_000_000; // larger than this is considered a CLOB, smaller a string
 
 	@Override
 	public Dbms getDbms() {
@@ -92,7 +84,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
-		return (rsmeta.getColumnType(colNum) == Types.VARCHAR || rsmeta.getColumnType(colNum) == Types.NVARCHAR) && rsmeta.getPrecision(colNum) > CLOB_SIZE_TRESHOLD;
+		return (rsmeta.getColumnType(colNum) == Types.VARCHAR || rsmeta.getColumnType(colNum) == Types.NVARCHAR) && rsmeta.getPrecision(colNum) > CLOB_SIZE_THRESHOLD;
 	}
 
 

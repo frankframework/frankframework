@@ -22,5 +22,5 @@ package org.frankframework.util;
  */
 public interface RunStateEnquiring {
 
-	public void SetRunStateEnquirer(RunStateEnquirer enquirer);
+	void SetRunStateEnquirer(RunStateEnquirer enquirer);
 }

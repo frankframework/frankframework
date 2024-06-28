@@ -25,7 +25,7 @@ import org.frankframework.core.IPushingListener;
  */
 public interface ISapListener<F> extends IPushingListener<F>, ISapFunctionFacade {
 
-	public void setProgid(String string);
-	public void setConnectionCount(String connectionCount);
+	void setProgid(String string);
+	void setConnectionCount(String connectionCount);
 
 }

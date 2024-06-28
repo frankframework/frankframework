@@ -54,6 +54,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.MimeType;
 
@@ -68,7 +69,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Laurens Mäkel
  */
-
+@Tag("slow")
 public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*?(?=\")";
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";

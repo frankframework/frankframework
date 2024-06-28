@@ -26,7 +26,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,8 +34,8 @@ public class CacheControlFilter implements Filter {
 	private final Logger log = LogManager.getLogger(this);
 
 	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-		//We have nothing to initialize
+	public void init(FilterConfig filterConfig) {
+		// Nothing to initialize
 	}
 
 	@Override

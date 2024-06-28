@@ -23,6 +23,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,7 +33,7 @@ public class IbisstoreSummary extends FrankApiBase {
 	@Relation("jdbc")
 	@Description("view database dump of the IbisStore table")
 	@PostMapping(value = "/jdbc/summary", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getIbisstoreSummary(Map<String, Object> json) {
+	public ResponseEntity<?> getIbisstoreSummary(@RequestBody Map<String, Object> json) {
 
 		String query = null;
 		String datasource = null;

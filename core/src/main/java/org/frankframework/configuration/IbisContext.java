@@ -227,12 +227,12 @@ public class IbisContext extends IbisApplicationContext {
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
 		if (!javaListenerNames.isEmpty()) {
 			// cannot log to MessageKeeper here, as applicationContext is closed
-			LOG.warn("Not all java listeners are unregistered: " + javaListenerNames);
+			LOG.warn("Not all java listeners are unregistered: {}", javaListenerNames);
 		}
 		Set<String> uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
 		if (!uriPatterns.isEmpty()) {
 			// cannot log to MessageKeeper here, as applicationContext is closed
-			LOG.warn("Not all rest listeners are unregistered: " + uriPatterns);
+			LOG.warn("Not all rest listeners are unregistered: {}", uriPatterns);
 		}
 
 		init();
@@ -279,7 +279,7 @@ public class IbisContext extends IbisApplicationContext {
 			String classLoaderType = currentConfigNameItem.getValue() == null ? null : currentConfigNameItem.getValue().getCanonicalName();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
-				LOG.info("loading configuration ["+currentConfigurationName+"]");
+				LOG.info("loading configuration [{}]", currentConfigurationName);
 				configFound = true;
 
 				ClassLoaderException classLoaderException = null;
@@ -294,10 +294,11 @@ public class IbisContext extends IbisApplicationContext {
 
 				} catch (ClassLoaderException e) {
 					classLoaderException = e;
-					if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] got exception creating/retrieving classloader type ["+classLoaderType+"] errorMessage ["+e.getMessage()+"]");
+					if(LOG.isDebugEnabled())
+						LOG.debug("configuration [{}] got exception creating/retrieving classloader type [{}] errorMessage [{}]", currentConfigurationName, classLoaderType, e.getMessage());
 				}
 
-				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+ClassUtils.nameOf(classLoader)+"]");
+				if(LOG.isDebugEnabled()) LOG.debug("configuration [{}] found classloader [{}]", currentConfigurationName, ClassUtils.nameOf(classLoader));
 				try {
 					loadingConfigs.add(currentConfigurationName);
 					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, classLoaderException);
@@ -307,7 +308,7 @@ public class IbisContext extends IbisApplicationContext {
 					loadingConfigs.remove(currentConfigurationName);
 				}
 
-				LOG.info("configuration ["+currentConfigurationName+"] loaded successfully");
+				LOG.info("configuration [{}] loaded successfully", currentConfigurationName);
 			}
 		}
 
@@ -347,7 +348,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
 	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
-		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
+		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration [{}]", currentConfigurationName);
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -372,7 +373,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			configuration.configure();
 
-			LOG.info("configured configuration ["+currentConfigurationName+"] successfully");
+			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);

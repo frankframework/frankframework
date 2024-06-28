@@ -70,11 +70,11 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 			}
 			properties.put("name", adapter.getName().replaceAll(ILLEGAL_CHARACTER_REGEX, "_"));
 			ObjectName name = new ObjectName(jmxDomain, properties);
-			if(log.isDebugEnabled()) log.debug("determined ObjectName ["+name+"] for MBean ["+managedBean+"]");
+			if(log.isDebugEnabled()) log.debug("determined ObjectName [{}] for MBean [{}]", name, managedBean);
 			return name;
 		} else {
 			ObjectName name = super.getObjectName(managedBean, beanKey);
-			log.warn("currently only MBeans of type [Adapter] are supported, falling back to IdentityNamingStrategy converting key ["+beanKey+"] bean ["+managedBean+"] to ObjectName ["+name+"]");
+			log.warn("currently only MBeans of type [Adapter] are supported, falling back to IdentityNamingStrategy converting key [{}] bean [{}] to ObjectName [{}]", beanKey, managedBean, name);
 			return name;
 		}
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -56,9 +58,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
  *
@@ -71,8 +70,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 
 	public final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD= TransformerPool.OutputType.XML;
 	public final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD= TransformerPool.OutputType.TEXT;
-	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false
-	public final boolean DEFAULT_OMIT_XML_DECLARATION=false;
+	public static final boolean DEFAULT_INDENT = false; // some existing FF expect default for indent to be false
+	public static final boolean DEFAULT_OMIT_XML_DECLARATION = false;
 
 	private @Getter String styleSheetName;
 	private @Getter String styleSheetNameSessionKey=null;
@@ -172,14 +171,14 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 
 	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();
-		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping ["+disableOutputEscaping+"]");
+		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping [{}]", disableOutputEscaping);
 		if (disableOutputEscaping == null) {
 			disableOutputEscaping = poolToUse.getDisableOutputEscaping();
-			if (log.isTraceEnabled()) log.trace("Detected disableOutputEscaping ["+disableOutputEscaping+"]");
+			if (log.isTraceEnabled()) log.trace("Detected disableOutputEscaping [{}]", disableOutputEscaping);
 		}
 		if (disableOutputEscaping == null) {
 			disableOutputEscaping = false;
-			if (log.isTraceEnabled()) log.trace("Default disableOutputEscaping ["+disableOutputEscaping+"]");
+			if (log.isTraceEnabled()) log.trace("Default disableOutputEscaping [{}]", disableOutputEscaping);
 		}
 		return disableOutputEscaping;
 	}
@@ -211,44 +210,44 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			}
 
 			TransformerPool.OutputType outputType = getOutputType();
-			if (log.isTraceEnabled()) log.trace("Configured outputmethod ["+outputType+"]");
+			if (log.isTraceEnabled()) log.trace("Configured outputmethod [{}]", outputType);
 			if (outputType == null) {
 				String parsedOutputType = poolToUse.getOutputMethod();
 				if (StringUtils.isNotEmpty(parsedOutputType)) {
 					outputType = EnumUtils.parse(TransformerPool.OutputType.class, parsedOutputType);
 				}
-				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+parsedOutputType+"]");
+				if (log.isTraceEnabled()) log.trace("Detected outputmethod [{}]", parsedOutputType);
 			}
 			if (outputType == null) {
 				outputType = DEFAULT_OUTPUT_METHOD;
-				if (log.isTraceEnabled()) log.trace("Default outputmethod ["+outputType+"]");
+				if (log.isTraceEnabled()) log.trace("Default outputmethod [{}]", outputType);
 			}
 
 			boolean disableOutputEscaping = isDisableOutputEscaping(poolToUse);
 
 			Boolean indentXml = getIndentXml();
-			if (log.isTraceEnabled()) log.trace("Configured indentXml ["+indentXml+"]");
+			if (log.isTraceEnabled()) log.trace("Configured indentXml [{}]", indentXml);
 			if (indentXml==null) {
 				indentXml = poolToUse.getIndent();
-				if (log.isTraceEnabled()) log.trace("Detected indentXml ["+indentXml+"]");
+				if (log.isTraceEnabled()) log.trace("Detected indentXml [{}]", indentXml);
 			}
 			if (indentXml==null) {
 				indentXml = DEFAULT_INDENT;
-				if (log.isTraceEnabled()) log.trace("Default indentXml ["+indentXml+"]");
+				if (log.isTraceEnabled()) log.trace("Default indentXml [{}]", indentXml);
 			}
 
 			if (handler == null || disableOutputEscaping) {
 				XmlWriter xmlWriter = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
 				xmlWriter.setCloseWriterOnEndDocument(true);
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [" + omitXmlDeclaration + "]");
+				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [{}]", omitXmlDeclaration);
 				if (outputType == TransformerPool.OutputType.XML) {
 					if (omitXmlDeclaration == null) {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
-						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [" + omitXmlDeclaration + "]");
+						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [{}]", omitXmlDeclaration);
 						if (omitXmlDeclaration == null) {
 							omitXmlDeclaration = DEFAULT_OMIT_XML_DECLARATION;
-							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [" + omitXmlDeclaration + "]");
+							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [{}]", omitXmlDeclaration);
 						}
 					}
 					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
@@ -304,7 +303,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 					@Override
 					public void endDocument() throws SAXException {
 						super.endDocument();
-						log.debug(getLogPrefix() + " xml input [" + getWriter() + "]");
+						log.debug("{} xml input [{}]", getLogPrefix(), getWriter());
 					}
 				};
 			}
@@ -323,11 +322,6 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 */
 	public void setStreamingXslt(Boolean streamingActive) {
 		this.streamingXslt = streamingActive;
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 	/** Location of stylesheet to apply to the input message */

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package org.frankframework.senders;
 
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +27,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
-import org.frankframework.http.HttpSender;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 
@@ -62,15 +60,11 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
 @Category("Advanced")
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private static final String MULTIPART_RESPONSE_CONTENT_TYPE = "application/octet-stream";
-	private static final String MULTIPART_RESPONSE_CHARSET = "UTF-8";
-
 	private final @Getter String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
 	private @Getter String returnedSessionKeys = ""; // do not initialize with null, returned session keys must be set explicitly
-	private @Getter boolean multipartResponse = false;
 	private @Getter String dispatchType = "default";
 
 	@Override
@@ -127,16 +121,13 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 				String correlationID = session.getCorrelationId();
 				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
-				if (isMultipartResponse()) {
-					return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
-				}
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "exception processing message using request processor [" + serviceName + "]", e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys [" + getReturnedSessionKeys() + "]");
+					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
@@ -167,14 +158,6 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
-	}
-
-	/**
-	 * Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed
-	 * @ff.default false
-	 */
-	public void setMultipartResponse(boolean b) {
-		multipartResponse = b;
 	}
 
 	/**

@@ -32,12 +32,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
@@ -86,7 +86,8 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
-	public class Column {
+	@Getter
+	private class Column {
 		private String name = null;
 		private String value = null;
 		private String type = TYPE_STRING;
@@ -115,11 +116,9 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (formatString != null) {
 				this.formatString = formatString;
 			}
-
 			if (value != null) {
 				fillParameter();
 			}
-
 			fillQueryValue();
 		}
 
@@ -190,59 +189,24 @@ public class XmlQuerySender extends DirectQuerySender {
 			}
 		}
 
-		public String getName() {
-			return name;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public String getType() {
-			return type;
-		}
-
-		public String getDecimalSeparator() {
-			return decimalSeparator;
-		}
-
-		public String getGroupingSeparator() {
-			return groupingSeparator;
-		}
-
-		public String getFormatString() {
-			return formatString;
-		}
-
-		public Object getParameter() {
-			return parameter;
-		}
-
-		public String getQueryValue() {
-			return queryValue;
-		}
 	}
 
 	@Override
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		Element queryElement;
-		String tableName;
-		List<Column> columns;
-		String where;
-		String order;
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException {
 		PipeRunResult result;
 		try {
-			queryElement = XmlUtils.buildElement(message.asString());
+			Element queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
-			tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
+			String tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
 			Element columnsElement = XmlUtils.getFirstChildTag(queryElement, "columns");
+			List<Column> columns;
 			if (columnsElement != null) {
 				columns = getColumns(columnsElement);
 			} else {
 				columns = Collections.emptyList();
 			}
-			where = XmlUtils.getChildTagAsString(queryElement, "where");
-			order = XmlUtils.getChildTagAsString(queryElement, "order");
+			String where = XmlUtils.getChildTagAsString(queryElement, "where");
+			String order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			if ("select".equalsIgnoreCase(root)) {
 				result = selectQuery(connection, tableName, columns, where, order, session, next);
@@ -446,32 +410,32 @@ public class XmlQuerySender extends DirectQuerySender {
 		for (Column column : columns) {
 			if (column.getParameter() != null) {
 				if (column.getParameter() instanceof Integer) {
-					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is an Integer with value [{}]", var, column.getParameter());
 					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Boolean) {
-					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is an Boolean with value [{}]", var, column.getParameter());
 					statement.setBoolean(var, Boolean.parseBoolean(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Double) {
-					log.debug("parm [" + var + "] is a Double with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a Double with value [{}]", var, column.getParameter());
 					statement.setDouble(var, Double.parseDouble(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Float) {
-					log.debug("parm [" + var + "] is a Float with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a Float with value [{}]", var, column.getParameter());
 					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Timestamp) {
-					log.debug("parm [" + var + "] is a Timestamp with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a Timestamp with value [{}]", var, column.getParameter());
 					statement.setTimestamp(var, (Timestamp) column.getParameter());
 					var++;
 				} else if (column.getParameter() instanceof byte[]) {
-					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter().toString() + "] = [" + new String((byte[]) column.getParameter()) + "]");
+					log.debug("parm [{}] is a byte array with value [{}] = [{}]", var, column.getParameter(), new String((byte[]) column.getParameter()));
 					statement.setBytes(var, (byte[]) column.getParameter());
 					var++;
 				} else {
 					//if (column.getParameter() instanceof String)
-					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a String with value [{}]", var, column.getParameter());
 					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
 					var++;
 				}

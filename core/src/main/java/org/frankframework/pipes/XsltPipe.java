@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -35,8 +36,6 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.springframework.beans.factory.InitializingBean;
 
-import lombok.Getter;
-
 
 /**
  * Perform an XSLT transformation with a specified stylesheet.
@@ -51,7 +50,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	private String sessionKey=null;
 
-	private @Getter XsltSender sender = createXsltSender();
+	private final @Getter XsltSender sender = createXsltSender();
 
 	{
 		setSizeStatistics(true);

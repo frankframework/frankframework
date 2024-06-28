@@ -29,6 +29,9 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
@@ -59,10 +62,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -101,7 +100,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	private @Getter String urlParam = "url";
 
 	public enum HttpMethod {
-		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
+		GET, POST, PUT, PATCH, DELETE, HEAD, REPORT
 	}
 	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
@@ -115,8 +114,8 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	private @Getter String resultStatusCodeSessionKey;
 	private @Getter String parametersToSkipWhenEmpty;
 
-	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
-	private final boolean APPEND_CORRELATIONID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.correlationid", true);
+	private final boolean appendMessageidHeader = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
+	private final boolean appendCorrelationidHeader = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.correlationid", true);
 
 	private TransformerPool transformerPool=null;
 
@@ -380,10 +379,10 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 			//Set all headers
 			if(session != null) {
-				if (APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
+				if (appendMessageidHeader && StringUtils.isNotEmpty(session.getMessageId())) {
 					httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
 				}
-				if (APPEND_CORRELATIONID_HEADER && StringUtils.isNotEmpty(session.getCorrelationId())) {
+				if (appendCorrelationidHeader && StringUtils.isNotEmpty(session.getCorrelationId())) {
 					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
 				}
 			}

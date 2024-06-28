@@ -29,25 +29,24 @@ import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.extensions.idin.IdinSender.Action;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Document;
 
 import net.bankid.merchant.library.CommunicatorException;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.IMessenger;
 import net.bankid.merchant.library.SigningKeyPair;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.extensions.idin.IdinSender.Action;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
+import org.w3c.dom.Document;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -89,7 +88,7 @@ public class IdinSenderTest {
 				assertNotNull(expected, "did not find [/messages/"+expectedFile+"-request.xml]");
 				String expectedString = StreamUtil.resourceToString(expected);
 				request = request.replaceAll("<createDateTimestamp[\\s\\S]*?<\\/createDateTimestamp>", "<createDateTimestamp/>");
-				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthRequest signature=\"here\">");
+				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthnRequest xmlns:ns3=\"http://dummy\" signature=\"here\">");
 				request = request.replaceAll("<Signature[\\s\\S]*?<\\/Signature>", "");
 
 				assertEquals(expectedString.replace("\r", ""), request.replace("\r", ""));
@@ -288,7 +287,7 @@ public class IdinSenderTest {
 	}
 
 	private static String addSignature(SigningKeyPair keyEntry, String xml) throws Exception {
-		X509Certificate cert = (X509Certificate) keyEntry.getCertificate();
+		X509Certificate cert = keyEntry.getCertificate();
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 
@@ -319,7 +318,7 @@ public class IdinSenderTest {
 		return serialize(doc);
 	}
 
-	private static String serialize(Document doc) throws TransformerConfigurationException, TransformerException {
+	private static String serialize(Document doc) throws TransformerException {
 		StringWriter sw = new StringWriter();
 		Transformer trans = TransformerFactory.newInstance().newTransformer();
 

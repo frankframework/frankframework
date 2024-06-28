@@ -19,11 +19,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
-import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -90,15 +90,15 @@ public class Adapter implements IAdapter, NamedBean {
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private final AppConstants appConstants = AppConstants.getInstance(configurationClassLoader);
 
 	private String name;
 	private @Getter String description;
-	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
+	private @Getter boolean autoStart = appConstants.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
-	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
-	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
+	private Level msgLogLevel = Level.toLevel(appConstants.getProperty("msg.log.level.default", "INFO"));
+	private @Getter boolean msgLogHidden = appConstants.getBoolean("msg.log.hidden.default", true);
 	private @Setter @Getter String targetDesignDocument;
 
 	private @Getter Configuration configuration;
@@ -120,7 +120,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
 	private DistributionSummary statsMessageProcessingDuration = null;
-	private Object statisticsLock = new Object();
+	private final Object statisticsLock = new Object();
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
@@ -128,11 +128,12 @@ public class Adapter implements IAdapter, NamedBean {
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
-	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
+	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private String composedHideRegex;
+	private Pattern composedHideRegexPattern;
 
 	private static class SenderLastExitState {
 		private final String lastExitState;
@@ -157,6 +158,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see org.frankframework.core.Pipeline#configurePipes
 	 */
 	@Override
+	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles originate from the properties file
 	public void configure() throws ConfigurationException { //TODO check if we should fail when the adapter has already been configured?
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
@@ -194,30 +196,29 @@ public class Adapter implements IAdapter, NamedBean {
 			configureReceiver(receiver);
 		}
 
-		List<String> hrs = new ArrayList<>();
-		for (IPipe pipe : pipeline.getPipes()) {
-			if (pipe instanceof AbstractPipe aPipe && StringUtils.isNotEmpty(aPipe.getHideRegex()) && !hrs.contains(aPipe.getHideRegex())) {
-				hrs.add(aPipe.getHideRegex());
-			}
+		composedHideRegex = computeCombinedHideRegex();
+		if (StringUtils.isNotEmpty(composedHideRegex)) {
+			composedHideRegexPattern = Pattern.compile(composedHideRegex);
 		}
-		StringBuilder sb = new StringBuilder();
-		for (String hr : hrs) {
-			if (!sb.isEmpty()) {
-				sb.append("|");
-			}
-			sb.append("(");
-			sb.append(hr);
-			sb.append(")");
-		}
-		if (!sb.isEmpty()) {
-			composedHideRegex = sb.toString();
-		}
-
 		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 
 		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
+	}
+
+	@Nonnull
+	String computeCombinedHideRegex() {
+		String combinedHideRegex = pipeline.getPipes().stream()
+				.map(IPipe::getHideRegex)
+				.filter(StringUtils::isNotEmpty)
+				.distinct()
+				.collect(Collectors.joining(")|(", "(", ")"));
+
+		if ("()".equals(combinedHideRegex)) {
+			return "";
+		}
+		return combinedHideRegex;
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
@@ -551,8 +552,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 		PipeLineResult result = null;
 		try {
-			if (StringUtils.isNotEmpty(composedHideRegex)) {
-				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
+			if (composedHideRegexPattern != null) {
+				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegexPattern);
 			}
 
 			String additionalLogging = getAdditionalLogging(pipeLineSession);

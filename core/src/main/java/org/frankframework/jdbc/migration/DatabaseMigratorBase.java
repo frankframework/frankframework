@@ -80,7 +80,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 
 	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		try {
-			log.debug("looking up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
+			log.debug("looking up Datasource [{}] for JdbcMigrator [{}]", getDatasourceName(), getName());
 			return dataSourceFactory.getDataSource(getDatasourceName());
 		} catch (IllegalStateException e) {
 			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);

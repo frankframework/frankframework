@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import jakarta.json.stream.JsonGenerator;
+import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
-
-import jakarta.json.stream.JsonGenerator;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -34,14 +34,14 @@ import org.frankframework.util.LogUtil;
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private final String name;
+	private @Getter final String name;
 	private final boolean skipArrayElementContainers;
-	private boolean skipRootElement;
-	private final String attributePrefix = "@";
-	private final String mixedContentLabel = "#text";
+	private final boolean skipRootElement;
+	private static final String ATTRIBUTE_PREFIX = "@";
+	private static final String MIXED_CONTENT_LABEL = "#text";
 
-	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
-	private final int MAX_INDENT=INDENTOR.length/2;
+	private static final char[] INDENTOR = "\n                                                                                         ".toCharArray();
+	private static final int MAX_INDENT = INDENTOR.length / 2;
 
 	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.name=name;
@@ -51,12 +51,13 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 
 	@Override
 	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
-		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, mixedContentLabel, typeDefinition);
+		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, ATTRIBUTE_PREFIX, MIXED_CONTENT_LABEL, typeDefinition);
 	}
 
 	@Override
 	protected void addContent(JsonElementContainer parent, JsonElementContainer child) {
-		if (log.isTraceEnabled()) log.trace("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
+		if (log.isTraceEnabled())
+			log.trace("DocCont.addGroupContent name [{}] child [{}]", parent.getName(), child.getName());
 		parent.addContent(child);
 	}
 
@@ -76,15 +77,6 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		StringBuilder sb = new StringBuilder();
 		toString(sb,content,indent?0:-1);
 		return sb.toString();
-//		Map config  =new HashMap<String,Object>();
-//		config.put(JsonGenerator.PRETTY_PRINTING,true);
-//		JsonGeneratorFactory gf = Json.createGeneratorFactory(config);
-//
-//		StringWriter writer = new StringWriter();
-//		JsonGenerator generator = gf.createGenerator(writer);
-//		generate(generator, null, content);
-//		generator.close();
-//		return writer.toString();
 	}
 
 	protected void toString(StringBuilder sb, Object item, int indentLevel) {
@@ -146,22 +138,10 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		}
 	}
 
-
 	private void newLine(StringBuilder sb, int indentLevel) {
-		if (indentLevel>=0)  {
-			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
+		if (indentLevel >= 0) {
+			sb.append(INDENTOR, 0, (Math.min(indentLevel, MAX_INDENT)) * 2 + 1);
 		}
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public boolean isSkipRootElement() {
-		return skipRootElement;
-	}
-	public void setSkipRootElement(boolean skipRootElement) {
-		this.skipRootElement = skipRootElement;
 	}
 
 }

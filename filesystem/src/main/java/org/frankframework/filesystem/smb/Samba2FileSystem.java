@@ -72,6 +72,7 @@ import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CloseUtils;
@@ -216,13 +217,18 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public DirectoryStream<SmbFileRef> listFiles(String folder) throws FileSystemException {
-		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, diskShare.list(folder)));
+	public DirectoryStream<SmbFileRef> list(String folder, TypeFilter filter) throws FileSystemException {
+		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, filter, diskShare.list(folder)));
 	}
 
 	@Override
 	public boolean exists(SmbFileRef f) {
 		return diskShare.fileExists(f.getName());
+	}
+
+	@Override
+	public boolean isFolder(SmbFileRef smbFileRef) {
+		return FilesIterator.isDirectoryAndAccessible(smbFileRef);
 	}
 
 	@Override
@@ -508,7 +514,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	/**
-	 * controls whether hidden files are seen or not
+	 * Controls if hidden files are seen
 	 * @ff.default false
 	 */
 	public void setListHiddenFiles(boolean listHiddenFiles) {
@@ -517,24 +523,28 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	class FilesIterator implements Iterator<SmbFileRef> {
 
-		private List<SmbFileRef> files;
+		private final List<SmbFileRef> files;
 		private int i = 0;
 
-		public FilesIterator(String folder, List<FileIdBothDirectoryInformation> list) {
+		public FilesIterator(String folder, TypeFilter filter, List<FileIdBothDirectoryInformation> list) {
 			files = new ArrayList<>();
 			for (FileIdBothDirectoryInformation info : list) {
 				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
 					SmbFileRef file = new SmbFileRef(info.getFileName(), folder);
 					try {
-						FileAllInformation fileinfo = getAttributes(file);
-						file.setAttributes(fileinfo);
+						FileAllInformation fileInfo = getAttributes(file);
+						file.setAttributes(fileInfo);
+						if (!allowHiddenFile(file)) continue;
 
-						if (isFileAndAccessible(file) && allowHiddenFile(file)) {
+						if (filter.includeFiles() && isFileAndAccessible(file)) {
+							files.add(file);
+						}
+						if (filter.includeFolders() && isDirectoryAndAccessible(file)) {
 							files.add(file);
 						}
 					} catch (SMBApiException e) {
-						if(NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
-							log.debug("delete pending for file ["+ file.getName()+"]");
+						if (NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
+							log.debug("delete pending for file [{}]", file.getName());
 						} else {
 							throw e;
 						}
@@ -543,11 +553,18 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			}
 		}
 
-		private boolean isFileAndAccessible(SmbFileRef file) {
-			FileStandardInformation fai = file.getAttributes().getStandardInformation();
-			boolean accessible = !fai.isDeletePending();
-			boolean isDirectory = fai.isDirectory();
+		static boolean isFileAndAccessible(SmbFileRef file) {
+			FileStandardInformation fsi = file.getAttributes().getStandardInformation();
+			boolean accessible = !fsi.isDeletePending();
+			boolean isDirectory = fsi.isDirectory();
 			return accessible && !isDirectory;
+		}
+
+		static boolean isDirectoryAndAccessible(SmbFileRef file) {
+			FileStandardInformation fsi = file.getAttributes().getStandardInformation();
+			boolean accessible = !fsi.isDeletePending();
+			boolean isDirectory = fsi.isDirectory();
+			return accessible && isDirectory;
 		}
 
 		private boolean allowHiddenFile(SmbFileRef file) {

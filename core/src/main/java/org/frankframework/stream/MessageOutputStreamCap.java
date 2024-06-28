@@ -20,16 +20,15 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.xml.sax.ContentHandler;
-
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
+import org.xml.sax.ContentHandler;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
 	private Object responseBuffer;
 	private Object captureStream;
-	private int caputureSize;
+	private int captureSize;
 	private String charset;
 
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
@@ -97,24 +96,23 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	private void installCapture() {
 		if (captureStream instanceof Writer writer) {
-			super.captureCharacterStream(writer, caputureSize);
+			super.captureCharacterStream(writer, captureSize);
 			return;
 		}
 		if (captureStream instanceof OutputStream stream) {
-			super.captureBinaryStream(stream, caputureSize);
-			return;
+			super.captureBinaryStream(stream, captureSize);
 		}
 	}
 
 	@Override
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		captureStream = writer;
-		caputureSize = maxSize;
+		captureSize = maxSize;
 	}
 
 	@Override
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		captureStream = outputStream;
-		caputureSize = maxSize;
+		captureSize = maxSize;
 	}
 }

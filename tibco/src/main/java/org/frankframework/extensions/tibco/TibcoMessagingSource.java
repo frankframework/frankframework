@@ -65,7 +65,7 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 		Session session=null;
 		try {
 			session = createSession(false,Session.AUTO_ACKNOWLEDGE);
-			log.debug("Session class ["+session.getClass().getName()+"]");
+			log.debug("Session class [{}]", session.getClass().getName());
 			Destination destination;
 
 			/* create the destination */

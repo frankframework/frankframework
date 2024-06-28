@@ -15,16 +15,15 @@
 */
 package org.frankframework.senders;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
-
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.SenderException;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Baseclass for senders.
@@ -35,7 +34,7 @@ import org.frankframework.util.SpringUtils;
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
 	@Override

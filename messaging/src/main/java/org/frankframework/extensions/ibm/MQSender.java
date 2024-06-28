@@ -79,7 +79,7 @@ public class MQSender extends JmsSender {
 	}
 
 	private void setTargetClientMQ(Destination destination) throws JMSException {
-		log.debug("[" + getName() + "] set target client for queue [" + destination.toString() + "] to NONJMS_MQ");
+		log.debug("[{}] set target client for queue [{}] to NONJMS_MQ", getName(), destination.toString());
 		try {
 			ClassUtils.invokeSetter(destination, "setTargetClient", 1); //JMSC.MQJMS_CLIENT_NONJMS_MQ
 		} catch (Exception e) {

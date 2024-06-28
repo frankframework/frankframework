@@ -95,15 +95,15 @@ public class PollGuard extends TimerTask {
 	}
 
 	private void warn(String message) {
-		log.warn(springJmsConnector.getLogPrefix() + message);
+		log.warn("{}{}", springJmsConnector.getLogPrefix(), message);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeper.MessageKeeperLevel.WARN);
 	}
 	private void error(String message) {
-		log.error(springJmsConnector.getLogPrefix() + message);
+		log.error("{}{}", springJmsConnector.getLogPrefix(), message);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeper.MessageKeeperLevel.ERROR);
 	}
 	private void error(String message, @Nonnull Throwable t) {
-		log.error(springJmsConnector.getLogPrefix() + message, t);
+		log.error("{}{}", springJmsConnector.getLogPrefix(), message, t);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message + "; " + t.getMessage(), MessageKeeper.MessageKeeperLevel.ERROR);
 	}
 

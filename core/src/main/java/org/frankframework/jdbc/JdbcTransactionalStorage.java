@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -193,7 +193,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		checkedTables.add(storageRefKey);
 		IDbmsSupport dbms=getDbmsSupport();
 		String schemaOwner=getSchemaOwner4Check();
-		log.debug("checking for presence of table ["+getTableName()+"] in schema/catalog ["+schemaOwner+"]");
+		log.debug("checking for presence of table [{}] in schema/catalog [{}]", getTableName(), schemaOwner);
 		if (dbms.isTablePresent(connection, getTableName())) {
 			checkTableColumnPresent(connection,dbms,getKeyField());
 			checkTableColumnPresent(connection,dbms,getTypeField());
@@ -316,7 +316,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				log.warn("could check database", e);
 			}
 		} else {
-			log.info(getLogPrefix()+"checking of table and indices is not enabled");
+			log.info("{}checking of table and indices is not enabled", getLogPrefix());
 		}
 	}
 
@@ -405,24 +405,22 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				throw new ConfigurationException("Cannot convert [selectKeyForMessageQuery]", e);
 			}
 		}
-		if (DOCUMENT_QUERIES && log.isDebugEnabled()) {
-			log.debug(
-					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
-					documentQuery("selectKeyForMessageQuery",selectKeyForMessageQuery,"Controleer of slot-id + message-id al voorkomen in de tabel")+
-					documentQuery("deleteQuery",deleteQuery,"Verwijder een regel uit de tabel, via de primary key")+
-					documentQuery("selectContextQuery",selectContextQuery,"Haal de niet blob velden van een regel op, via de primary key")+
-					documentQuery("selectListQuery",getSelectListQuery(dbmsSupport, null, null, null),"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op")+
-					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
-					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")
-//					+"\n"
-//					+"\n- slotId en type zou via ? kunnen"
-//					+"\n- selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen"
-//					+"\n- selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen"
-//					+"\n- we zouden de index hint via een custom property aan en uit kunnen zetten"
-					);
-		}
+		/*
+		 * insertQuery: Voeg een regel toe aan de tabel
+		 * selectKeyForMessageQuery: Controleer of slot-id   message-id al voorkomen in de tabel
+		 * deleteQuery: Verwijder een regel uit de tabel, via de primary key
+		 * selectContextQuery: Haal de niet blob velden van een regel op, via de primary key
+		 * selectListQuery: bmsSupport, null, null, null),"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op
+		 * selectDataQuery: Haal de blob van een regel op, via de primary key
+		 * checkMessageIdQuery: bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.
+		 * checkCorrelationIdQuery: bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.
+		 * getMessageCountQuery: tel het aantal regels in een gedeelte van de tabel. Kan via index.
+		 *
+		 * slotId en type zou via ? kunnen
+		 * selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen
+		 * selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen
+		 * we zouden de index hint via een custom property aan en uit kunnen zetten...
+		 */
 	}
 
 	private String documentQuery(String name, String query, String purpose) {
@@ -444,16 +442,16 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					}
 					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated?"NOT ":""));
 				} catch (JdbcException e) {
-					log.warn(getLogPrefix()+"exception determining existence of table ["+getPrefix()+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
+					log.warn("{}exception determining existence of table [{}{}] for transactional storage, trying to create anyway.{}", getLogPrefix(), getPrefix(), getTableName(), e.getMessage());
 					tableMustBeCreated=true;
 				}
 			} else {
-				log.info("did not check for existence of table ["+getPrefix()+getTableName()+"]");
+				log.info("did not check for existence of table [{}{}]", getPrefix(), getTableName());
 				tableMustBeCreated = false;
 			}
 
 			if (isCreateTable() && tableMustBeCreated) {
-				log.info(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] for transactional storage");
+				log.info("{}creating table [{}{}] for transactional storage", getLogPrefix(), getPrefix(), getTableName());
 				try (Statement stmt = conn.createStatement()) {
 					createStorage(conn, stmt, dbmsSupport);
 				}
@@ -508,7 +506,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			if (resultString != null) return resultString;
 		}
 		log.debug("preparing insert statement [{}]", insertQuery);
-		try (PreparedStatement stmt = conn.prepareStatement(insertQuery, new String[]{ getKeyField().toLowerCase() });) { // Field name should be lowercase for PostgreSQL
+		try (PreparedStatement stmt = conn.prepareStatement(insertQuery, new String[]{ getKeyField().toLowerCase() })) { // Field name should be lowercase for PostgreSQL
 			stmt.clearParameters();
 			int parPos = 0;
 
@@ -700,14 +698,14 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				try {
 					return retrieveObject(storageKey, rs,columnIndex,true);
 				} catch (ZipException e1) {
-					log.warn(getLogPrefix()+"could not extract compressed blob, trying non-compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
+					log.warn("{}could not extract compressed blob, trying non-compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
 					return retrieveObject(storageKey, rs,columnIndex,false);
 				}
 			}
 			try {
 				return retrieveObject(storageKey, rs,columnIndex,false);
 			} catch (Exception e1) {
-				log.warn(getLogPrefix()+"could not extract non-compressed blob, trying compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
+				log.warn("{}could not extract non-compressed blob, trying compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
 				return retrieveObject(storageKey, rs,columnIndex,true);
 			}
 		} catch (Exception e2) {

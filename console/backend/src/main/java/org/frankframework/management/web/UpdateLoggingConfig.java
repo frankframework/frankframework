@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,7 +45,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Relation("logging")
 	@Description("update the application log configuration")
 	@PutMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateLogConfiguration(Map<String, Object> json) {
+	public ResponseEntity<?> updateLogConfiguration(@RequestBody Map<String, Object> json) {
 		Level loglevel = Level.toLevel(RequestUtils.getValue(json, "loglevel"), null);
 		Boolean logIntermediaryResults = RequestUtils.getBooleanValue(json, "logIntermediaryResults");
 		Integer maxMessageLength = RequestUtils.getIntegerValue(json, "maxMessageLength");
@@ -72,7 +73,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Relation("logging")
 	@Description("update the loglevel of a specific logger")
 	@PutMapping(value = "/server/logging/settings", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateLogDefinition(Map<String, Object> json) {
+	public ResponseEntity<?> updateLogDefinition(@RequestBody Map<String, Object> json) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
 		for (Map.Entry<String, Object> entry : json.entrySet()) {

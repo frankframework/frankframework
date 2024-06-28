@@ -15,6 +15,9 @@
 */
 package org.frankframework.extensions.mqtt;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -22,21 +25,17 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.util.CredentialFactory;
+import org.springframework.context.ApplicationContext;
 
 @Log4j2
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	private final @Getter String domain = "MQTT";
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -107,7 +106,7 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		try {
 			client.disconnect();
 		} catch (MqttException e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		}
 	}
 

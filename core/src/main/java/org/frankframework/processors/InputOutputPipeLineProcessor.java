@@ -32,7 +32,7 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
 				messageId= UUIDUtil.createSimpleUUID();
-				log.error("null value for messageId, setting to ["+messageId+"]");
+			log.error("null value for messageId, setting to [{}]", messageId);
 
 		}
 		if (message == null) {

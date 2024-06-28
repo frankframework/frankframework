@@ -123,7 +123,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				getSender().close();
 			}
 		} catch (Exception e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		}
 	}
 
@@ -234,7 +234,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert message", e);
 		}
-		if (log.isDebugEnabled()) log.debug("wrapped message [" + replyMessage + "]");
+		if (log.isDebugEnabled()) log.debug("wrapped message [{}]", replyMessage);
 		return replyMessage;
 	}
 
@@ -286,10 +286,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				sendReply(plr, replyTo, replyCid, timeToLive, ignoreInvalidDestinationException, session, properties);
 			} else {
 				if (getSender() == null) {
-					log.info("[" + getName() + "] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
+					log.info("[{}] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.", getName());
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("[" + getName() + "] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
+						log.debug("[{}] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [{}] [{}]", getName(), replyCid, plr.getResult());
 					}
 					try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 						pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, replyCid);
@@ -307,10 +307,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				if (isJmsTransacted()) {
 					Session queueSession = (Session) session.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 					if (queueSession == null) {
-						log.error(getLogPrefix() + "session is null, cannot commit or roll back session");
+						log.error("{}session is null, cannot commit or roll back session", getLogPrefix());
 					} else {
 						if (plr.getState() != ExitState.SUCCESS) {
-							log.warn(getLogPrefix() + "got exit state [" + plr.getState() + "], rolling back session");
+							log.warn("{}got exit state [{}], rolling back session", getLogPrefix(), plr.getState());
 							queueSession.rollback();
 						} else {
 							queueSession.commit();
@@ -319,10 +319,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				} else {
 					if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
-							log.debug(getLogPrefix() + "acknowledging message");
+							log.debug("{}acknowledging message", getLogPrefix());
 							rawMessageWrapper.getRawMessage().acknowledge();
 						} else {
-							log.warn(getLogPrefix() + "got exit state [" + plr.getState() + "], skipping acknowledge");
+							log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
 						}
 					}
 				}
@@ -392,7 +392,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				Object value = param.getValue();
 
 				if (StringUtils.isNotEmpty(param.getSessionKey())) {
-					log.debug("trying to resolve sessionKey[" + param.getSessionKey() + "]");
+					log.debug("trying to resolve sessionKey[{}]", param.getSessionKey());
 					Object resolvedValue = threadContext.get(param.getSessionKey());
 					if (resolvedValue != null) {
 						value = resolvedValue;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -300,7 +300,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 			return bsonValue.asObjectId().getValue().toString();
 		}
 		if (bsonValue.isString()) {
-			return bsonValue.asString().getValue().toString();
+			return bsonValue.asString().getValue();
 		}
 		return bsonValue.toString();
 	}

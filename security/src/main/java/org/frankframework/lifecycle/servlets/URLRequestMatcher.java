@@ -19,11 +19,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
-
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class URLRequestMatcher implements RequestMatcher {
@@ -79,9 +77,7 @@ public class URLRequestMatcher implements RequestMatcher {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Absolute RequestPatterns ").append(this.absoluteEndpoints);
-		sb.append(" Wildcard RequestPatterns ").append(this.wildcardEndpoints);
-		return sb.toString();
+		return "Absolute RequestPatterns " + absoluteEndpoints +
+				" Wildcard RequestPatterns " + wildcardEndpoints;
 	}
 }

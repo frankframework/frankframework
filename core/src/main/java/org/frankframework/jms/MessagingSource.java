@@ -19,29 +19,27 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.naming.Context;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
 import jakarta.jms.Session;
 import jakarta.jms.TemporaryQueue;
-import javax.naming.Context;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
@@ -66,8 +64,8 @@ public class MessagingSource  {
 
 	private final @Getter String id;
 
-	private Context context = null;
-	private ConnectionFactory connectionFactory = null;
+	private Context context;
+	private ConnectionFactory connectionFactory;
 	private Connection globalConnection=null; // only used when connections are not pooled
 
 	private final Map<String,MessagingSource> siblingMap;
@@ -142,7 +140,7 @@ public class MessagingSource  {
 	}
 
 	/** The QCF is wrapped in a Spring TransactionAwareConnectionFactoryProxy, this should always be the most outer wrapped QCF. */
-	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		if(getConnectionFactory() instanceof TransactionAwareConnectionFactoryProxy) {
 			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(), "targetConnectionFactory");
 		}
@@ -165,7 +163,7 @@ public class MessagingSource  {
 			if (qcf != null) {
 				return qcf;
 			}
-			log.warn(getLogPrefix() + "could not determine managed connection factory", e);
+			log.warn("{}could not determine managed connection factory", getLogPrefix(), e);
 			return null;
 		}
 	}
@@ -198,8 +196,7 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof JmsPoolConnectionFactory) {
-			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+		if (qcfd instanceof JmsPoolConnectionFactory poolcf) {
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
@@ -248,7 +245,7 @@ public class MessagingSource  {
 				connection.close();
 				openConnectionCount.decrementAndGet();
 			} catch (JMSException e) {
-				log.error(getLogPrefix()+"Exception closing Connection", e);
+				log.error("{}Exception closing Connection", getLogPrefix(), e);
 			}
 		}
 	}
@@ -284,7 +281,7 @@ public class MessagingSource  {
 				session.close();
 				openSessionCount.decrementAndGet();
 			} catch (JMSException e) {
-				log.error(getLogPrefix() + "Exception closing Session", e);
+				log.error("{}Exception closing Session", getLogPrefix(), e);
 			} finally {
 				releaseConnection(connection);
 			}
@@ -295,7 +292,7 @@ public class MessagingSource  {
 			log.debug("{}closing Session", this::getLogPrefix);
 			session.close();
 		} catch (JMSException e) {
-			log.error(getLogPrefix() + "Exception closing Session", e);
+			log.error("{}Exception closing Session", getLogPrefix(), e);
 		}
 	}
 
@@ -325,10 +322,9 @@ public class MessagingSource  {
 	private void deleteDynamicQueue(Queue queue) throws JmsException {
 		if (queue!=null) {
 			try {
-				if (!(queue instanceof TemporaryQueue)) {
+				if (!(queue instanceof TemporaryQueue tqueue)) {
 					throw new JmsException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
 				}
-				TemporaryQueue tqueue = (TemporaryQueue)queue;
 				tqueue.delete();
 			} catch (JMSException e) {
 				throw new JmsException("cannot delete temporary queue",e);
@@ -343,7 +339,8 @@ public class MessagingSource  {
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					if(log.isInfoEnabled()) log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					if(log.isInfoEnabled())
+						log.info("{}created dynamic replyQueue [{}]", getLogPrefix(), globalDynamicReplyQueue.getQueueName());
 				}
 			}
 			log.trace("Got global dynamic reply queue, lock released on {}", this);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,14 +22,13 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.IDocumentBuilder;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.XmlWriter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
-
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.XmlWriter;
 
 /**
  * Builds a XML-element with attributes and sub-elements. Attributes can be
@@ -48,10 +47,10 @@ import org.frankframework.xml.XmlWriter;
 public class XmlBuilder {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private final String CDATA_END="]]>";
+	private static final String CDATA_END="]]>";
 
-	private String root;
-	private AttributesImpl attributes = new AttributesImpl();
+	private final String root;
+	private final AttributesImpl attributes = new AttributesImpl();
 	private List<XmlBuilder> subElements;
 	private String text;
 	private boolean parseText;

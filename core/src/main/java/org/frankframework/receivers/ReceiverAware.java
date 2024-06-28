@@ -24,7 +24,7 @@ package org.frankframework.receivers;
  */
 public interface ReceiverAware<M> {
 
-	public void setReceiver(Receiver<M> receiver);
-	public Receiver<M> getReceiver();
+	void setReceiver(Receiver<M> receiver);
+	Receiver<M> getReceiver();
 
 }

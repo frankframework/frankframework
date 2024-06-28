@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IListener;
@@ -42,7 +43,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.FileListener;
 import org.frankframework.larva.FileSender;
-import org.frankframework.larva.HttpServletResponseMock;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
@@ -55,8 +55,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class QueueWrapper extends HashMap<String, Object> implements Queue {
@@ -72,7 +70,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
 		put(queueKey, configurable);
 
-		if(configurable instanceof IPushingListener listener) {
+		if (configurable instanceof IPushingListener listener) {
 			ListenerMessageHandler<?> handler = new ListenerMessageHandler<>();
 			listener.setHandler(handler);
 			put(MESSAGE_HANDLER_KEY, handler);
@@ -151,76 +149,51 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		while (!processed) {
 			String name = properties.getProperty(_param + i + _name);
 			if (name != null) {
-				Object value;
 				String type = properties.getProperty(_param + i + _type);
-				if ("httpResponse".equals(type)) {
-					String outputFile;
-					String filename = properties.getProperty(_param + i + ".filename");
+				String propertyValue = properties.getProperty(_param + i + ".value");
+				Object value = propertyValue;
+
+				if (value == null) {
+					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
 					if (filename != null) {
-						outputFile = properties.getProperty(_param + i + ".filename.absolutepath");
+						value = new FileMessage(new File(filename));
 					} else {
-						outputFile = properties.getProperty(_param + i + ".outputfile");
-					}
-					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
-					httpServletResponseMock.setOutputFile(outputFile);
-					value = httpServletResponseMock;
-				}
-				else {
-					value = properties.getProperty(_param + i + ".value");
-					if (value == null) {
-						String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
-						if (filename != null) {
-							value = new FileMessage(new File(filename));
-						} else {
-							String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
-							if (inputStreamFilename != null) {
-								throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
-							}
+						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+						if (inputStreamFilename != null) {
+							throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
 						}
 					}
 				}
 				if ("node".equals(type)) {
 					try {
-						value = XmlUtils.buildNode(Message.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
+						value = XmlUtils.buildNode(propertyValue, true);
+					} catch (DomBuilderException e) {
 						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("domdoc".equals(type)) {
 					try {
-						value = XmlUtils.buildDomDocument(Message.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
+						value = XmlUtils.buildDomDocument(propertyValue, true);
+					} catch (DomBuilderException e) {
 						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
-					try {
-						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
-						List<String> list = new LinkedList<>();
-						for (String part : parts) {
-							list.add(part);
-						}
-						value = list;
-					} catch (IOException e) {
-						throw new IllegalStateException("Could not build a list for parameter '" + name + "' with value: " + value, e);
-					}
+					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+					value = new LinkedList<>(parts);
 				} else if ("map".equals(type)) {
-					try {
-						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
-						Map<String, String> map = new LinkedHashMap<>();
-						for (String part : parts) {
-							String[] splitted = part.split("\\s*(=\\s*)+", 2);
-							if (splitted.length==2) {
-								map.put(splitted[0], splitted[1]);
-							} else {
-								map.put(splitted[0], "");
-							}
+					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+					Map<String, String> map = new LinkedHashMap<>();
+					for (String part : parts) {
+						String[] splitted = part.split("\\s*(=\\s*)+", 2);
+						if (splitted.length == 2) {
+							map.put(splitted[0], splitted[1]);
+						} else {
+							map.put(splitted[0], "");
 						}
-						value = map;
-					} catch (IOException e) {
-						throw new IllegalStateException("Could not build a map for parameter '" + name + "' with value: " + value, e);
 					}
+					value = map;
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(_param + i + ".pattern");
+					String pattern = properties.getProperty(_param + i + ".pattern");
 					if (value == null && pattern == null) {
 						throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
 					} else {
@@ -231,12 +204,11 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 								parameter.setSessionKey(name);
 								session.put(name, value);
 							} else {
-								parameter.setValue((String)value);
+								parameter.setValue((String) value);
 								parameter.setPattern(pattern);
 							}
 							parameter.configure();
 							result.put(name, parameter);
-//							debugMessage("Add param with name '" + name + "', value '" + value + "' and pattern '" + pattern + "' for property '" + property + "'", writers);
 						} catch (ConfigurationException e) {
 							throw new IllegalStateException("Parameter '" + name + "' could not be configured");
 						}
@@ -246,7 +218,6 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 						throw new IllegalStateException("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
 					} else {
 						result.put(name, value);
-//						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);
 					}
 				}
 				i++;
@@ -284,7 +255,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 				((IListener<?>) get()).open();
 			}
 		} catch (SenderException | ListenerException e) {
-			throw new ConfigurationException("error opening ["+get()+"]", e);
+			throw new ConfigurationException("error opening [" + get() + "]", e);
 		}
 	}
 
@@ -302,13 +273,11 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 
 	@Override
 	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
-		if(get() instanceof FileSender) {
-			FileSender fileSender = (FileSender)get();
+		if (get() instanceof FileSender fileSender) {
 			fileSender.sendMessage(fileContent);
 			return LarvaTool.RESULT_OK;
 		}
-		if (get() instanceof DelaySender) {
-			DelaySender delaySender = (DelaySender) get();
+		if (get() instanceof DelaySender delaySender) {
 			SenderResult senderResult = delaySender.sendMessage(new Message(fileContent), null);
 			try {
 				senderResult.getResult().close();
@@ -317,14 +286,12 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			}
 			return LarvaTool.RESULT_OK;
 		}
-		if(get() instanceof XsltProviderListener) {
-			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+		if (get() instanceof XsltProviderListener xsltProviderListener) {
 			xsltProviderListener.processRequest(fileContent, parameters);
 			return LarvaTool.RESULT_OK;
 		}
-		if(get() instanceof ISender) {
-			ISender sender = (ISender)get();
-			Boolean convertExceptionToMessage = (Boolean)get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
+		if (get() instanceof ISender sender) {
+			Boolean convertExceptionToMessage = (Boolean) get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
 			PipeLineSession session = getSession();
 			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage, correlationId);
 			senderThread.start();
@@ -332,13 +299,13 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			setSenderThread(senderThread); // 'put' and 'set' do something similar
 			return LarvaTool.RESULT_OK;
 		}
-		if(get() instanceof IListener<?>) {
+		if (get() instanceof IListener<?>) {
 			ListenerMessageHandler listenerMessageHandler = getMessageHandler();
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
 			PipeLineSession context = new PipeLineSession();
-			ListenerMessage requestListenerMessage = (ListenerMessage)get("listenerMessage");
+			ListenerMessage requestListenerMessage = (ListenerMessage) get("listenerMessage");
 			if (requestListenerMessage != null) {
 				context = requestListenerMessage.getContext();
 			}
@@ -346,26 +313,23 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			listenerMessageHandler.putResponseMessage(listenerMessage);
 			return LarvaTool.RESULT_OK;
 		}
-		throw new SenderException("Could not perform executeWrite() for queue ["+get()+"]");
+		throw new SenderException("Could not perform executeWrite() for queue [" + get() + "]");
 	}
 
 
 	@Override
 	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
-		if(get() instanceof FileSender) {
-			FileSender fileSender = (FileSender)get();
+		if (get() instanceof FileSender fileSender) {
 			return fileSender.getMessage();
 		}
-		if(get() instanceof FileListener) {
-			FileListener fileListener = (FileListener)get();
+		if (get() instanceof FileListener fileListener) {
 			return fileListener.getMessage();
 		}
-		if(get() instanceof XsltProviderListener) {
-			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+		if (get() instanceof XsltProviderListener xsltProviderListener) {
 			return xsltProviderListener.getResult();
 		}
-		if(get() instanceof ISender) {
-			SenderThread senderThread = (SenderThread)remove(SENDER_THREAD_KEY);
+		if (get() instanceof ISender) {
+			SenderThread senderThread = (SenderThread) remove(SENDER_THREAD_KEY);
 			removeSenderThread();
 			if (senderThread == null) {
 				throw new SenderException("No SenderThread found, no corresponding write request?");
@@ -384,6 +348,6 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			}
 			return senderThread.getResponse();
 		}
-		throw new SenderException("Could not perform executeRead() for queue ["+get()+"]");
+		throw new SenderException("Could not perform executeRead() for queue [" + get() + "]");
 	}
 }

@@ -80,7 +80,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 				return requestMessage;
 			}
 		} catch (InterruptedException e) {
-			log.error("interrupted while waiting for "+messageType+" message", e);
+			log.error("interrupted while waiting for {} message", messageType, e);
 			Thread.currentThread().interrupt();
 		}
 

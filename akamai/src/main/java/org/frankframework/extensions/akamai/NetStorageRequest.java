@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Setter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -38,22 +39,20 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
 
-import lombok.Setter;
-
 /**
  * Translates the request, adds required headers per action, creates a hash and signs the message.
  *
  * @author Niels Meijer
  */
 public class NetStorageRequest {
-	private Logger log = LogUtil.getLogger(NetStorageRequest.class);
+	private final Logger log = LogUtil.getLogger(NetStorageRequest.class);
 
 	private int version = 1;
 	private Message file = null;
 	private Action action = null;
 	private @Setter HashAlgorithm hashAlgorithm = null;
-	private Map<String, String> actionHeader = new HashMap<>();
-	private HttpRequestBase method;
+	private final Map<String, String> actionHeader = new HashMap<>();
+	private final HttpRequestBase method;
 
 	protected NetStorageRequest(Action action) {
 		this(null, action);
@@ -163,7 +162,7 @@ public class NetStorageRequest {
 		Map<String, String> headers = signer.computeHeaders(this);
 
 		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+			if(log.isDebugEnabled()) log.debug("append header [{}] with value [{}]", entry.getKey(), entry.getValue());
 
 			method.setHeader(entry.getKey(), entry.getValue());
 		}

@@ -24,12 +24,11 @@ import javax.xml.transform.URIResolver;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.Resource;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
 import org.xml.sax.SAXException;
-
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.core.Resource;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
@@ -43,7 +42,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private final List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
 
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
-		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider [{}]", scopeProvider);
 		this.scopeProvider = scopeProvider;
 	}
 
@@ -62,7 +61,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 				if(allowedProtocols.isEmpty()) {
 					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
 				} else if(!allowedProtocols.contains(protocol)) {
-					throw new TransformerException("Cannot lookup resource ["+href+"] not allowed with protocol ["+protocol+"] allowedProtocols "+allowedProtocols.toString());
+					throw new TransformerException("Cannot lookup resource ["+href+"] not allowed with protocol ["+protocol+"] allowedProtocols "+ allowedProtocols);
 				}
 			}
 		} else {
@@ -83,7 +82,8 @@ public class ClassLoaderURIResolver implements URIResolver {
 		String ref=absoluteOrRelativeRef;
 		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
 		if (resource==null && globalClasspathRef!=null) {
-			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+globalClasspathRef+"] protocol ["+protocol+"]");
+			if (log.isDebugEnabled())
+				log.debug("Could not resolve href [{}] base [{}] as [{}], now trying ref2 [{}] protocol [{}]", href, base, ref, globalClasspathRef, protocol);
 			ref=globalClasspathRef;
 			resource = Resource.getResource(scopeProvider, ref, null);
 		}
@@ -93,7 +93,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
-		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to resource ["+resource+"]");
+		if (log.isDebugEnabled()) log.debug("resolved href [{}] base [{}] to resource [{}]", href, base, resource);
 		return resource;
 	}
 

@@ -100,7 +100,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		try {
 			openFacade();
 			SapServerDataProvider serverDataProvider = SapServerDataProvider.getInstance();
-			log.debug(getLogPrefix()+"start server");
+			log.debug("{}start server", getLogPrefix());
 			serverDataProvider.registerListener(this);
 			JCoIDocServer server = JCoIDoc.getServer(getName());
 			server.setCallHandlerFactory(functionHandlerFactory);
@@ -123,7 +123,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void close() throws ListenerException {
 		try {
-			log.debug(getLogPrefix()+"stop server");
+			log.debug("{}stop server", getLogPrefix());
 			SapServerDataProvider.getInstance().getServerDataEventListener().deleted(getName());
 
 			JCoServer server = JCoServerFactory.getServer(getName());
@@ -172,26 +172,26 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		try (PipeLineSession session = new PipeLineSession()) {
 			handler.processRawMessage(this, wrapRawMessage(jcoFunction, session), session, false);
 		} catch (Throwable t) {
-			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
+			log.warn("{}Exception caught and handed to SAP", getLogPrefix(), t);
 			throw new AbapException("IbisException", t.getMessage());
 		}
 	}
 
 	@Override
 	public void handleRequest(JCoServerContext serverCtx, IDocDocumentList documentList) {
-		if(log.isDebugEnabled()) log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
+		if(log.isDebugEnabled()) log.debug("{}Incoming IDoc list request containing {} documents...", getLogPrefix(), documentList.getNumDocuments());
 		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
 		while (iterator.hasNext()) {
 			IDocDocument doc = iterator.next();
-			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
+			if(log.isTraceEnabled()) log.trace("{}Processing document no. [{}] of type [{}]", getLogPrefix(), doc.getIDocNumber(), doc.getIDocType());
 			try (PipeLineSession session = new PipeLineSession()) {
 				String rawMessage = xmlProcessor.render(doc);
 				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
 				//noinspection unchecked
 				handler.processRequest(this, rawMessageWrapper, new Message(rawMessage), session);
 			} catch (Throwable t) {
-				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
+				log.warn("{}Exception caught and handed to SAP", getLogPrefix(), t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());
 			}
 		}
@@ -258,7 +258,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public boolean checkTID(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"is requested to check TID ["+tid+"]; (currently ignored)");
+			log.debug("{}is requested to check TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 		return true;
 	}
@@ -273,7 +273,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void confirmTID(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"is requested to confirm TID ["+tid+"]; (currently ignored)");
+			log.debug("{}is requested to confirm TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 	}
 
@@ -287,7 +287,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void commit(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"is requested to commit TID ["+tid+"]; (currently ignored)");
+			log.debug("{}is requested to commit TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 	}
 
@@ -301,7 +301,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void rollback(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.warn(getLogPrefix()+"is requested to rollback TID ["+tid+"]; (currently ignored)");
+			log.warn("{}is requested to rollback TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 	}
 

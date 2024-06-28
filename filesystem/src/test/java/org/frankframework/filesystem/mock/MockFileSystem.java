@@ -8,11 +8,14 @@ import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,13 +27,15 @@ import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.ISupportsCustomFileAttributes;
 import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ISupportsCustomFileAttributes<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -170,18 +175,29 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		}
 		return files.size();
 	}
+
 	@Override
-	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
+	public DirectoryStream<M> list(String folderName, TypeFilter filter) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = getMockFolder(folderName);
 		if (folder==null) {
 			throw new FolderNotFoundException("folder ["+folderName+"] is does not exist");
 		}
-		Map<String,MockFile> files = folder.getFiles();
-		if (files==null) {
-			throw new FileSystemException("files in folder ["+folderName+"] is null");
+		// Files
+		Map<String,MockFile> files = switch (filter) {
+			case FILES_ONLY, FILES_AND_FOLDERS -> folder.getFiles();
+			case FOLDERS_ONLY -> Collections.emptyMap();
+		};
+		if (files == null) {
+			throw new FileSystemException("files in folder [" + folderName + "] is null");
 		}
+		// Folders
+		Map<String,MockFolder> folders = switch (filter) {
+			case FOLDERS_ONLY, FILES_AND_FOLDERS -> folder.getFolders();
+			case FILES_ONLY -> Collections.emptyMap();
+		};
 		List<M> fileList = new ArrayList<>();
+		fileList.addAll((Collection<? extends M>) folders.values());
 		fileList.addAll((Collection<? extends M>) files.values());
 		return FileSystemUtils.getDirectoryStream(fileList.iterator());
 	}
@@ -192,6 +208,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return f.getOwner()!=null
 				&& (f.getOwner().getFiles().containsKey(f.getName())
 						|| f.getOwner().getFolders().containsKey(f.getName()));
+	}
+
+	@Override
+	public boolean isFolder(M m) {
+		return m.getName().endsWith("/");
 	}
 
 	@Override
@@ -345,9 +366,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	@Nullable
-	public Map<String, Object> getAdditionalFileProperties(M f) {
+	public Map<String, Object> getAdditionalFileProperties(M file) {
 		checkOpen();
-		return f.getAdditionalProperties();
+		Map<String, Object> additionalProperties = new LinkedHashMap<>(file.getAdditionalProperties());
+		additionalProperties.putAll(file.getCustomAttributes());
+		return additionalProperties;
 	}
 
 	@Override
@@ -355,4 +378,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return "Mock!";
 	}
 
+	@Nonnull
+	public Map<String, String> getCustomAttributes(@Nonnull M file) {
+		return file.getCustomAttributes();
+	}
+
+	@Override
+	public void setCustomFileAttribute(@Nonnull M file, @Nonnull String key, @Nonnull String value) {
+		file.getCustomAttributes().put(key, value);
+	}
 }

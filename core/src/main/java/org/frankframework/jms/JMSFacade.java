@@ -185,12 +185,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	public enum SubscriberType {
 		DURABLE,
-		TRANSIENT;
+		TRANSIENT
 	}
 
 	public enum DestinationType {
 		QUEUE,
-		TOPIC;
+		TOPIC
 	}
 
 	/**
@@ -545,32 +545,16 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return builder.toString();
 	}
 
-	/**
-	  * Gets the queueSender for a specific queue, not the one in <code>destination</code>
-	  * @see QueueSender
-	  * @return The queueReceiver value
-	  */
-	private QueueSender getQueueSender(QueueSession session, Queue destination) throws JMSException {
-		return session.createSender(destination);
-	}
-
-	/**
-	 * Gets a topicPublisher for a specified topic
-	 */
-	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws JMSException {
-		return session.createPublisher(topic);
-	}
-
 	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws JMSException {
 		MessageConsumer messageConsumer;
 		switch (subscriberType) {
 		case DURABLE:
 			messageConsumer = session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + getName()  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[{}] got durable subscriber for topic [{}] with selector [{}]", getName(), destinationName, selector);
 			break;
 		case TRANSIENT:
 			messageConsumer = session.createConsumer(topic, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[{}] got transient subscriber for topic [{}] with selector [{}]", getName(), destinationName, selector);
 			break;
 		default:
 			throw new IllegalStateException("Unexpected subscriberType ["+subscriberType+"]");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.ldap;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -37,6 +37,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import lombok.Getter;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -56,8 +57,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -154,10 +153,10 @@ import lombok.Getter;
  */
 public class LdapSender extends JndiBase implements ISenderWithParameters {
 
-	private final String FILTER = "filterExpression";
-	private final String ENTRYNAME = "entryName";
+	private static final String FILTER = "filterExpression";
+	private static final String ENTRYNAME = "entryName";
 
-	private @Getter int searchTimeout=20000;
+	private @Getter int searchTimeout = 20_000;
 
 	private static final String INITIAL_CONTEXT_FACTORY ="com.sun.jndi.ldap.LdapCtxFactory";
 
@@ -248,13 +247,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 * 	  <li>parameter 'newPassword', new password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
 		 * </ul>
 		 */
-		@EnumLabel("changeUnicodePwd") CHANGE_UNICODE_PWD;
+		@EnumLabel("changeUnicodePwd") CHANGE_UNICODE_PWD
 	}
 
 	public enum Manipulation {
 		ENTRY,
 		ATTRIBUTE
-	};
+	}
 
 	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
@@ -362,7 +361,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 			ldapError.setValue(message);
 			String reasonXml=ldapError.toXML();
-			if (log.isDebugEnabled()) { log.debug("sessionKey ["+getErrorSessionKey()+"] loaded with error message ["+reasonXml+"]"); }
+			if (log.isDebugEnabled()) {log.debug("sessionKey [{}] loaded with error message [{}]", getErrorSessionKey(), reasonXml); }
 			session.put(getErrorSessionKey(),reasonXml);
 		}
 		log.debug("exit storeLdapException");
@@ -380,7 +379,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	}
 
 	private String[] splitCommaSeparatedString(String toSeparate) {
-		if(toSeparate == null || toSeparate == "") return null;
+		if (toSeparate == null || toSeparate.isEmpty()) return null;
 
 		List<String> list = new ArrayList<>();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
@@ -422,7 +421,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// Sun:
 			//   [LDAP: error code 32 - No Such Object...
 			if(e.getMessage().startsWith("[LDAP: error code 32 - ") ) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
+				if (log.isDebugEnabled()) log.debug("Operation [{}] found nothing - no such entryName: {}", getOperation(), entryName);
 				return DEFAULT_RESULT_READ;
 			}
 			storeLdapException(e, session);
@@ -436,8 +435,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		String entryNameAfter = entryName;
 		if (paramValueMap != null){
 			String newEntryName = (String)paramValueMap.get("newEntryName");
-			if (newEntryName != null && StringUtils.isNotEmpty(newEntryName)) {
-				if (log.isDebugEnabled()) log.debug("newEntryName=["+newEntryName+"]");
+			if (StringUtils.isNotEmpty(newEntryName)) {
+				if (log.isDebugEnabled()) log.debug("newEntryName=[{}]", newEntryName);
 				DirContext dirContext = null;
 				try{
 					dirContext = getDirContext(paramValueMap);
@@ -470,7 +469,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			NamingEnumeration<?> na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
-				log.debug("Update attribute: " + a.getID());
+				log.debug("Update attribute: {}", a.getID());
 				NamingEnumeration<?> values;
 				try {
 					values = a.getAll();
@@ -487,7 +486,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
 							log.debug("Update value: ***");
 						} else {
-							log.debug("Update value: " + value);
+							log.debug("Update value: {}", value);
 						}
 					}
 					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
@@ -549,7 +548,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			NamingEnumeration<?> na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
-				log.debug("Create attribute: " + a.getID());
+				log.debug("Create attribute: {}", a.getID());
 				NamingEnumeration<?> values;
 				try {
 					values = a.getAll();
@@ -566,7 +565,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
 							log.debug("Create value: ***");
 						} else {
-							log.debug("Create value: " + value);
+							log.debug("Create value: {}", value);
 						}
 					}
 					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
@@ -585,7 +584,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						// Sun:
 						//   [LDAP: error code 20 - Attribute Or Value Exists]
 						if (e.getMessage().startsWith("[LDAP: error code 20 - ")) {
-							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+							if (log.isDebugEnabled()) log.debug("Operation [{}] successful: {}", getOperation(), e.getMessage());
 							result = DEFAULT_RESULT_CREATE_OK;
 						} else {
 							storeLdapException(e, session);
@@ -620,7 +619,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			return DEFAULT_RESULT;
 		} catch (NamingException e) {
 			// if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-			if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
+			if (log.isDebugEnabled()) log.debug("Exception in operation [{}] entryName [{}]: {}", getOperation(), entryName, e.getMessage());
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
 			//   68 LDAP_ALREADY_EXISTS Indicates that the add operation attempted to add an entry that already exists, or that the modify operation attempted to rename an entry to the name of an entry that already exists.
 			// Sun:
@@ -641,7 +640,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			NamingEnumeration<?> na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
-				log.debug("Delete attribute: " + a.getID());
+				log.debug("Delete attribute: {}", a.getID());
 				NamingEnumeration<?> values;
 				try {
 					values = a.getAll();
@@ -658,7 +657,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
 							log.debug("Delete value: ***");
 						} else {
-							log.debug("Delete value: " + value);
+							log.debug("Delete value: {}", value);
 						}
 					}
 					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
@@ -682,7 +681,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						//   [LDAP: error code 16 - 00002085: AtrErr: DSID-03151F03, #1...
 						if (e.getMessage().startsWith("[LDAP: error code 16 - ")
 								|| e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+							if (log.isDebugEnabled()) log.debug("Operation [{}] successful: {}", getOperation(), e.getMessage());
 							result = DEFAULT_RESULT_DELETE;
 						} else {
 							storeLdapException(e, session);
@@ -709,7 +708,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// Sun:
 			//   [LDAP: error code 32 - No Such Object...
 			if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+				if (log.isDebugEnabled()) log.debug("Operation [{}] successful: {}", getOperation(), e.getMessage());
 				return DEFAULT_RESULT_DELETE;
 			}
 			storeLdapException(e, session);
@@ -740,7 +739,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
 		} catch (NamingException e) {
 			if (isReplyNotFound() && "Unprocessed Continuation Reference(s)".equals(e.getMessage())) {
-				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[" + filterExpression + "]");
+				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[{}]", filterExpression);
 				return DEFAULT_RESULT_SEARCH;
 			}
 			storeLdapException(e, session);
@@ -787,7 +786,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
 			//   49 LDAP_INVALID_CREDENTIALS Indicates that during a bind operation one of the following occurred: The client passed either an incorrect DN or password, or the password is incorrect because it has expired, intruder detection has locked the account, or another similar reason. This is equivalent to AD error code 52e.
 			if(e.getMessage().startsWith("[LDAP: error code 49 - ") ) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] invalid credentials for: " + principal);
+				if (log.isDebugEnabled()) log.debug("Operation [{}] invalid credentials for: {}", getOperation(), principal);
 				return DEFAULT_RESULT_CHALLENGE_NOK;
 			}
 			storeLdapException(e, session);
@@ -816,7 +815,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// AD:
 			//   [LDAP: error code 19 - 0000052D: AtrErr: DSID-03191041, #1...
 			if(e.getMessage().startsWith("[LDAP: error code 19 - ") ) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] old password doesn't match or new password doesn't comply with policy for: " + entryName);
+				if (log.isDebugEnabled())
+					log.debug("Operation [{}] old password doesn't match or new password doesn't comply with policy for: {}", getOperation(), entryName);
 				return DEFAULT_RESULT_CHANGE_UNICODE_PWD_NOK;
 			}
 			storeLdapException(e, session);
@@ -837,7 +837,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		if (paramList != null){
 			paramValueMap = paramList.getValues(message, session).getValueMap();
 			entryName = (String)paramValueMap.get("entryName");
-			if (log.isDebugEnabled()) log.debug("entryName=["+entryName+"]");
+			if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);
 		}
 		if ((entryName == null || StringUtils.isEmpty(entryName)) && getOperation() != Operation.CHALLENGE) {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
@@ -894,7 +894,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		} catch (NamingException e) {
 			storeLdapException(e, session);
-			log.error("Exception in operation [" + getOperation()+ "]: ", e);
+			log.error("Exception in operation [{}]: ", getOperation(), e);
 		}
 
 		return contextElem;
@@ -908,7 +908,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		contextElem.addSubElement(currentContextElem);
 
 		if (subs != null) {
-			log.error("Subs.length = " + subs.length);
+			log.error("Subs.length = {}", subs.length);
 			for (int i = 0; i<subs.length; i++) {
 				XmlBuilder subContextElem = new XmlBuilder("SubContext");
 				subContextElem.setValue(subs[i]);
@@ -926,10 +926,10 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		String[] retValue = null;
 
 		try {
-			// Create a vector object and add the names of all of the sub-contexts to it
+			// Create a vector object and add the names of all the sub-contexts to it
 			Vector<NameClassPair> n = new Vector<>();
 			NamingEnumeration<?> list = parentContext.list(relativeContext);
-			if (log.isDebugEnabled()) log.debug("getSubCOntextList(context) : context = " + relativeContext);
+			if (log.isDebugEnabled()) log.debug("getSubCOntextList(context) : context = {}", relativeContext);
 			while(list.hasMoreElements()) {
 				NameClassPair nc = (NameClassPair)list.nextElement();
 				n.addElement(nc);
@@ -945,7 +945,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		} catch (NamingException e) {
 			storeLdapException(e, session);
-			log.error("Exception in operation [" + getOperation()+ "] ", e);
+			log.error("Exception in operation [{}] ", getOperation(), e);
 		}
 
 		return retValue;
@@ -974,7 +974,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		digester.addCallMethod("*/attributes/attribute/value","add",0);
 
 		try {
-			return (Attributes) digester.parse(message.asReader());
+			return digester.parse(message.asReader());
 		} catch (Exception e) {
 			throw new SenderException("[" + this.getClass().getName() + "] exception in digesting",	e);
 		}
@@ -988,30 +988,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			throw new SenderException("cannot obtain resultset for [" + message + "]", e);
 		}
 	}
-
-	//	protected Attributes getAttributesFromParameters(ParameterResolutionContext prc) throws ParameterException {
-	//		Parameter2AttributeHelper helper = new Parameter2AttributeHelper();
-	//		prc.forAllParameters(paramList, helper);
-	//		Attributes result = helper.result;
-	//
-	//		log.debug("LDAP STEP:	applyParameters(String message, ParameterResolutionContext prc)");
-	//		log.debug("collected LDAP Attributes from parameters ["+result.toString()+"]");
-	//		return result;
-	//	}
-	//
-	//	private class Parameter2AttributeHelper implements IParameterHandler {
-	//		private Attributes result = new BasicAttributes(true); // ignore attribute name case
-	//
-	//		public void handleParam(String paramName, Object value) throws ParameterException {
-	//
-	//			if (result.get(paramName) == null)
-	//				result.put(new BasicAttribute(paramName, value));
-	//			else
-	//				result.get(paramName).add(value);
-	//
-	//			log.debug("LDAP STEP:	(Parameter2 ATTRIBUTE Helper)handleParam(String paramName, Object value) - result = [" + result.toString() +"]");
-	//		}
-	//	}
 
 	/**
 	 *Strips all the values from the attributes in <code>input</code>. This is performed to be able to delete
@@ -1056,7 +1032,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 				// Disable connection pooling
 				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "false");
 			}
-			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + newJndiEnv.get("java.naming.provider.url") + "]");
+			if (log.isDebugEnabled())
+				log.debug("created environment for LDAP provider URL [{}]", newJndiEnv.get("java.naming.provider.url"));
 			dirContext = new InitialDirContext(newJndiEnv);
 			if (!principalParameterFound) {
 				jndiEnv = newJndiEnv;
@@ -1085,38 +1062,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 		}
 	}
-
-	/*	protected String searchResultsToXml(NamingEnumeration<?> searchresults) {
-			// log.debug("SearchResultsToXml for class ["+searchresults.getClass().getName()+"]:"+ToStringBuilder.reflectionToString(searchresults));
-			log.debug("LDAP STEP:	SearchResultsToXml(NamingEnumeration<?> searchresults)");
-			XmlBuilder searchresultsElem = new XmlBuilder("searchresults");
-			if (searchresults!=null) {
-				try {
-					while (searchresults.hasMore()) {
-						SearchResult sr = (SearchResult)searchresults.next();
-						// log.debug("result:"+ sr.toString());
-
-						XmlBuilder itemElem = new XmlBuilder("item");
-						itemElem.addAttribute("name",sr.getName());
-						try {
-							itemElem.addSubElement(attributesToXml(sr.getAttributes()));
-						} catch (NamingException e) {
-							itemElem.addAttribute("exceptionType",e.getClass().getName());
-							itemElem.addAttribute("exceptionExplanation",e.getExplanation());
-						} catch (Throwable t) {
-							itemElem.addAttribute("exceptionType",t.getClass().getName());
-							itemElem.addAttribute("exceptionExplanation",t.getMessage());
-							itemElem.addAttribute("itemclass",sr.getClass().getName());
-						}
-						searchresultsElem.addSubElement(itemElem);
-					}
-				} catch (NamingException e) {
-					searchresultsElem.addAttribute("exceptionType",e.getClass().getName());
-					searchresultsElem.addAttribute("exceptionExplanation",e.getExplanation());
-				}
-			}
-			return searchresultsElem.toXML();
-		}*/
 
 	protected XmlBuilder attributesToXml(Attributes atts)
 		throws NamingException {
@@ -1169,11 +1114,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private byte[] encodeUnicodePwd(Object value) throws SenderException {
 		log.debug("Encode unicodePwd value");
 		String quotedPassword = "\"" + value + "\"";
-		try {
-			return quotedPassword.getBytes("UTF-16LE");
-		} catch (UnsupportedEncodingException e) {
-			throw new SenderException(e);
-		}
+		return quotedPassword.getBytes(StandardCharsets.UTF_16LE);
 	}
 
 	@Override

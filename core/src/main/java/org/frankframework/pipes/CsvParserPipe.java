@@ -59,7 +59,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	public enum HeaderCase {
 		LOWERCASE,
-		UPPERCASE;
+		UPPERCASE
 	}
 
 	@Override

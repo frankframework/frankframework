@@ -6,14 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -27,6 +24,13 @@ import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class InputOutputPipeProcessorTest {
 
@@ -37,7 +41,10 @@ public class InputOutputPipeProcessorTest {
 	private PipeLineSession session;
 
 	@BeforeEach
-	public void setUp() throws ConfigurationException {
+	public void setUp() throws Exception {
+		File tempDirectory = FileUtils.getTempDirectory("restoreMovedElements");
+		org.apache.commons.io.FileUtils.cleanDirectory(tempDirectory);
+
 		processor = new InputOutputPipeProcessor();
 		PipeProcessor chain = new PipeProcessor() {
 			@Override
@@ -64,6 +71,13 @@ public class InputOutputPipeProcessorTest {
 		pipe.registerForward(forward);
 
 		session = new PipeLineSession();
+	}
+
+	// ensure that no files are in the 'restoreMovedElements' folder
+	@AfterEach
+	public void teardown() throws IOException {
+		File tempDirectory = FileUtils.getTempDirectory("restoreMovedElements");
+		assertEquals(0, Files.list(tempDirectory.toPath()).count());
 	}
 
 	@Test
@@ -160,6 +174,7 @@ public class InputOutputPipeProcessorTest {
 		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
 
 		assertEquals("<xml>result [ReplacedValue]</xml>", prr.getResult().asString());
+		session.close();
 	}
 
 	@Test

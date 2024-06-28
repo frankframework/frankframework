@@ -1,10 +1,11 @@
 package org.frankframework.xml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLEventReader;
 
@@ -28,18 +29,18 @@ public class StaxParserTest {
 
 	@Test
 	public void getProperXMLEventReader() throws Exception {
-		InputStream input = new ByteArrayInputStream(validDocument.getBytes("UTF-8"));
+		InputStream input = new ByteArrayInputStream(validDocument.getBytes(StandardCharsets.UTF_8));
 		EwsServiceMultiResponseXmlReader impl = EwsServiceMultiResponseXmlReader.create(input, null);
 		impl.read(new XmlNodeType(XmlNodeType.START_DOCUMENT));
 		impl.read(new XmlNodeType(XmlNodeType.START_ELEMENT));
 		XMLEventReader ewsXmlReader = impl.getXmlReaderForNode();
-		assertTrue(ewsXmlReader instanceof XMLEventReader);
+		assertInstanceOf(XMLEventReader.class, ewsXmlReader);
 		impl.read(new XmlNodeType(XmlNodeType.END_DOCUMENT));
 	}
 
 	@Test
 	public void testReadValidDocument() throws Exception {
-		byte[] bytes = validDocument.getBytes("UTF-8");
+		byte[] bytes = validDocument.getBytes(StandardCharsets.UTF_8);
 		EwsXmlReader impl = new EwsXmlReader(new ByteArrayInputStream(bytes));
 		impl.read(new XmlNodeType(XmlNodeType.START_DOCUMENT));
 		impl.read(new XmlNodeType(XmlNodeType.START_ELEMENT));
@@ -50,7 +51,7 @@ public class StaxParserTest {
 
 	@Test
 	public void testAcceptXml10InvalidCharacters() throws Exception {
-		byte[] bytes = invalidDocument.getBytes("UTF-8");
+		byte[] bytes = invalidDocument.getBytes(StandardCharsets.UTF_8);
 		EwsXmlReader impl = new EwsXmlReader(new ByteArrayInputStream(bytes));
 		impl.read(new XmlNodeType(XmlNodeType.START_DOCUMENT));
 		impl.read(new XmlNodeType(XmlNodeType.START_ELEMENT));

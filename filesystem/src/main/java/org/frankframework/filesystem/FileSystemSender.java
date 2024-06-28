@@ -38,11 +38,12 @@ import org.frankframework.util.SpringUtils;
  *
  * @see FileSystemActor
  *
- * @ff.parameter action overrides attribute <code>action</code>.
- * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
- * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
- * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
- * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
+ * @ff.parameter action Overrides attribute <code>action</code>.
+ * @ff.parameter filename Overrides attribute <code>filename</code>. If not present, the input message is used.
+ * @ff.parameter destination Destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
+ * @ff.parameter contents Content for action <code>write</code> and <code>append</code>.
+ * @ff.parameter inputFolder Folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
+ * @ff.parameter typeFilter Filter for action <code>list</code>. Specify <code>FILES_ONLY</code>, <code>FOLDERS_ONLY</code> or <code>FILES_AND_FOLDERS</code>. By default, only files are listed.
  *
  * @ff.forward fileNotFound If the input file was expected to exist, but was not found
  * @ff.forward folderNotFound If the folder does not exist
@@ -52,15 +53,15 @@ import org.frankframework.util.SpringUtils;
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.ENDPOINT)
-public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
+public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private FS fileSystem;
-	private FileSystemActor<F,FS> actor = new FileSystemActor<>();
+	private S fileSystem;
+	private final FileSystemActor<F,S> actor = new FileSystemActor<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		FS fileSystem = getFileSystem();
+		S fileSystem = getFileSystem();
 		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
 		try {
@@ -73,7 +74,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@Override
 	public void open() throws SenderException {
 		try {
-			FS fileSystem=getFileSystem();
+			S fileSystem=getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
@@ -123,10 +124,10 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		return getFileSystem().getDomain();
 	}
 
-	public void setFileSystem(FS fileSystem) {
+	public void setFileSystem(S fileSystem) {
 		this.fileSystem=fileSystem;
 	}
-	public FS getFileSystem() {
+	public S getFileSystem() {
 		return fileSystem;
 	}
 
@@ -215,5 +216,10 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@ReferTo(FileSystemActor.class)
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		actor.setOutputFormat(outputFormat);
+	}
+
+	@ReferTo(FileSystemActor.class)
+	public void setTypeFilter(TypeFilter typeFilter) {
+		actor.setTypeFilter(typeFilter);
 	}
 }

@@ -40,7 +40,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 				throw new PipeRunException(null, "error while setting lock ["+locker+"]", e);
 			}
 			if (objectId == null) {
-				log.info("could not obtain lock ["+locker+"]");
+				log.info("could not obtain lock [{}]", locker);
 				pipeLineResult = new PipeLineResult();
 				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {

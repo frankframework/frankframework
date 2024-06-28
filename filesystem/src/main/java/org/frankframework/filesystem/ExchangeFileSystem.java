@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -392,7 +392,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	/**
-	 * find a folder for listFiles(), getNumberOfFilesInFolder(), folderExists.
+	 * find a folder for list(), getNumberOfFilesInFolder(), folderExists.
 	 * If folderName is empty, the result defaults to the baseFolder.
 	 * If baseFolder is null, the folder is searched in the root of the message folder hierarchy.
 	 * If the folder is not found, null is returned.
@@ -510,11 +510,18 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		}
 	}
 
+	@Override
+	public boolean isFolder(ExchangeMessageReference exchangeMessageReference) {
+		return false; // Currently only supports messages
+	}
 
 	@Override
-	public DirectoryStream<ExchangeMessageReference> listFiles(final String folder) throws FileSystemException {
+	public DirectoryStream<ExchangeMessageReference> list(final String folder, TypeFilter filter) throws FileSystemException {
 		if (!isOpen()) {
 			return null;
+		}
+		if (filter.includeFolders()) {
+			throw new FileSystemException("Filtering on folders is not supported");
 		}
 		final ExchangeObjectReference reference = asObjectReference(folder);
 		final ExchangeService exchangeService = getConnection(reference);
@@ -538,7 +545,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 				return FileSystemUtils.getDirectoryStream((Iterator<ExchangeMessageReference>) null);
 			}
 			Iterator<Item> itemIterator = findResults.getItems().iterator();
-			DirectoryStream<ExchangeMessageReference> result = FileSystemUtils.getDirectoryStream(new Iterator<ExchangeMessageReference>() {
+			DirectoryStream<ExchangeMessageReference> result = FileSystemUtils.getDirectoryStream(new Iterator<>() {
 
 				@Override
 				public boolean hasNext() {
@@ -550,7 +557,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 					return ExchangeMessageReference.of(reference, (EmailMessage) itemIterator.next());
 				}
 
-			}, (Runnable) () -> releaseConnection(exchangeService, false));
+			}, () -> releaseConnection(exchangeService, false));
 			closeConnectionOnExit = false;
 			return result;
 		} catch (Exception e) {

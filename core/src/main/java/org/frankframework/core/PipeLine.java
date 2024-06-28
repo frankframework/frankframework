@@ -24,10 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
-import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -158,7 +157,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
 		exitHandlers.add(exitHandler);
-		log.info("registered exithandler ["+exitHandler.getName()+"]");
+		log.info("registered exithandler [{}]", exitHandler.getName());
 	}
 
 	/**
@@ -178,7 +177,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
 			registerPipeLineExit(defaultExit);
-			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
+			log.debug("Created default Exit named [{}], state [{}]", defaultExit.getName(), defaultExit.getState());
 		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
@@ -570,7 +569,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * Optional global forwards that will be added to every pipe, when the forward name has not been explicitly set.
-	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>'exception'</code> forward to every pipe in the pipeline.
+	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>exception</code> forward to every pipe in the pipeline.
 	 */
 	public void setGlobalForwards(PipeForwards forwards){
 		for(PipeForward forward: forwards.getForwards()) {

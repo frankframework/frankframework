@@ -49,7 +49,7 @@ public class FileSystemUtils {
 	/**
 	 * Check if a source file exists.
 	 */
-	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileNotFoundException, FileSystemException {
+	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileSystemException {
 		if (!fileSystem.exists(source)) {
 			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(source)+"], does not exist");
 		}
@@ -256,7 +256,7 @@ public class FileSystemUtils {
 
 		log.debug("Deleting files in folder [{}] that have a name starting with [{}] and are older than [{}] days", folder, srcFilename, rotateDays);
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			for (F f : ds) {
 				String filename = fileSystem.getName(f);
 				if (filename != null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime() < threshold) {
@@ -270,8 +270,8 @@ public class FileSystemUtils {
 	}
 
 	@Nonnull
-	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException {
-		DirectoryStream<F> ds = fileSystem.listFiles(folder);
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard, @Nonnull TypeFilter typeFilter) throws FileSystemException {
+		DirectoryStream<F> ds = fileSystem.list(folder, typeFilter);
 		if (ds==null) {
 			return Stream.empty();
 		}
@@ -306,7 +306,6 @@ public class FileSystemUtils {
 	}
 
 	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {
-
 		try (ObjectBuilder file = nodeBuilder.startObject()) {
 			String name = fileSystem.getName(f);
 			file.addAttribute("name", name);
@@ -320,6 +319,9 @@ public class FileSystemUtils {
 					log.warn("cannot get canonicalName for file [{}]", name, e);
 					file.addAttribute("canonicalName", name);
 				}
+				// Add type of item: file or folder
+				file.addAttribute("type", fileSystem.isFolder(f) ? "folder" : "file");
+
 				// Get the modification date of the file
 				Date modificationDate = fileSystem.getModificationTime(f);
 				//add date
@@ -341,5 +343,4 @@ public class FileSystemUtils {
 			}
 		}
 	}
-
 }

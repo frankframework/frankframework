@@ -29,7 +29,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class AsposeLicenseLoader {
 	enum AsposeLibrary {
-		WORDS, CELLS, EMAIL, PDF, SLIDES, IMAGING;
+		WORDS, CELLS, EMAIL, PDF, SLIDES, IMAGING
 	}
 
 	private static final Map<AsposeLibrary, LicenseWrapper> loadedLicenses = new EnumMap<>(AsposeLibrary.class);

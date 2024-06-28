@@ -58,12 +58,12 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	@Override
 	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
-		log.debug("found namespace["+serviceName+"]");
+		log.debug("found namespace[{}]", serviceName);
 		return sd.dispatchRequest(serviceName, message, pipelineSession);
 	}
 
 	public String findNamespaceUri() throws ListenerException {
-		log.debug("trying to find serviceName from soapMessage["+soapMessage+"]");
+		log.debug("trying to find serviceName from soapMessage[{}]", soapMessage);
 
 		try {
 			SOAPBody body = soapMessage.getSOAPBody();

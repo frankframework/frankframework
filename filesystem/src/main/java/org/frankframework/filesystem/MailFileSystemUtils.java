@@ -35,16 +35,17 @@ import org.xml.sax.SAXException;
 public class MailFileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
 
-	public static final List<String> specialHeaders = Arrays.asList(new String[] {
-				IMailFileSystem.TO_RECIPIENTS_KEY,
-				IMailFileSystem.CC_RECIPIENTS_KEY,
-				IMailFileSystem.BCC_RECIPIENTS_KEY,
-				IMailFileSystem.FROM_ADDRESS_KEY,
-				IMailFileSystem.SENDER_ADDRESS_KEY,
-				IMailFileSystem.REPLY_TO_RECIPIENTS_KEY,
-				IMailFileSystem.DATETIME_SENT_KEY,
-				IMailFileSystem.DATETIME_RECEIVED_KEY,
-				IMailFileSystem.BEST_REPLY_ADDRESS_KEY} );
+	public static final List<String> specialHeaders = Arrays.asList(
+			IMailFileSystem.TO_RECIPIENTS_KEY,
+			IMailFileSystem.CC_RECIPIENTS_KEY,
+			IMailFileSystem.BCC_RECIPIENTS_KEY,
+			IMailFileSystem.FROM_ADDRESS_KEY,
+			IMailFileSystem.SENDER_ADDRESS_KEY,
+			IMailFileSystem.REPLY_TO_RECIPIENTS_KEY,
+			IMailFileSystem.DATETIME_SENT_KEY,
+			IMailFileSystem.DATETIME_RECEIVED_KEY,
+			IMailFileSystem.BEST_REPLY_ADDRESS_KEY
+	);
 
 
 	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
@@ -185,7 +186,7 @@ public class MailFileSystemUtils {
 			}
 			return result.toString();
 		} catch (AddressException | UnsupportedEncodingException e) {
-			log.warn("type ["+type+"] address ["+address+"] is invalid: "+e.getMessage());
+			log.warn("type [{}] address [{}] is invalid: {}", type, address, e.getMessage());
 			return null;
 		}
 	}

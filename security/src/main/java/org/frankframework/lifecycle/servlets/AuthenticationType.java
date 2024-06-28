@@ -30,7 +30,7 @@ public enum AuthenticationType {
 	 */
 	private final @Getter Class<? extends IAuthenticator> authenticator;
 
-	private AuthenticationType(Class<? extends IAuthenticator> clazz) {
+	AuthenticationType(Class<? extends IAuthenticator> clazz) {
 		authenticator = clazz;
 	}
 }

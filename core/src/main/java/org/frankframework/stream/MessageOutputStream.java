@@ -15,7 +15,6 @@
 */
 package org.frankframework.stream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,34 +29,33 @@ import java.util.Set;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.stream.document.Json2XmlHandler;
-import org.frankframework.stream.json.JsonTee;
-import org.frankframework.stream.json.JsonWriter;
-import org.frankframework.stream.xml.XmlTee;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamCaptureUtils;
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.ThreadConnectingFilter;
-import org.frankframework.xml.XmlWriter;
-import org.xml.sax.ContentHandler;
-
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
+import org.frankframework.stream.document.Json2XmlHandler;
+import org.frankframework.stream.json.JsonTee;
+import org.frankframework.stream.json.JsonWriter;
+import org.frankframework.stream.xml.XmlTee;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.ThreadConnectingFilter;
+import org.frankframework.xml.XmlWriter;
+import org.xml.sax.ContentHandler;
 
 public class MessageOutputStream implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(MessageOutputStream.class);
 
-	private INamedObject owner;
+	private final INamedObject owner;
 	protected Object requestStream;
 	private Message response;
 	private PipeForward forward;
-	private String conversionCharset;
+	private final String conversionCharset;
 
 	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
@@ -153,7 +151,7 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public void closeRequestStream() throws IOException {
 		if (requestStream instanceof Closeable closeable) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "closing stream");
+			if (log.isDebugEnabled()) log.debug("{}closing stream", getLogPrefix());
 			closeable.close();
 		}
 	}
@@ -216,7 +214,7 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 	public Object asNative() {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning native["+ClassUtils.nameOf(requestStream)+"]");
+		if (log.isDebugEnabled()) log.debug("{}returning native[{}]", getLogPrefix(), ClassUtils.nameOf(requestStream));
 		return requestStream;
 	}
 
@@ -233,19 +231,19 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public OutputStream asStream(String charset) throws StreamingException {
 		if (requestStream instanceof OutputStream stream) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning OutputStream as OutputStream");
+			if (log.isDebugEnabled()) log.debug("{}returning OutputStream as OutputStream", getLogPrefix());
 			return stream;
 		}
 		if (requestStream instanceof Writer writer) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning Writer as OutputStream");
+			if (log.isDebugEnabled()) log.debug("{}returning Writer as OutputStream", getLogPrefix());
 			return new WriterOutputStream(writer, StringUtils.isNotEmpty(charset)?charset:StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 		if (requestStream instanceof ContentHandler handler) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
+			if (log.isDebugEnabled()) log.debug("{}returning ContentHandler as OutputStream", getLogPrefix());
 			return new ContentHandlerOutputStream(handler, threadConnector);
 		}
 		if (requestStream instanceof JsonEventHandler handler) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonEventHandler as OutputStream");
+			if (log.isDebugEnabled()) log.debug("{}returning JsonEventHandler as OutputStream", getLogPrefix());
 			return new JsonEventHandlerOutputStream(handler, threadConnector);
 		}
 		return null;
@@ -253,12 +251,12 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public Writer asWriter() throws StreamingException {
 		if (requestStream instanceof Writer writer) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as Writer");
+			if (log.isDebugEnabled()) log.debug("{}returning Writer as Writer", getLogPrefix());
 			return writer;
 		}
 		if (requestStream instanceof OutputStream stream) {
 			try {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as Writer");
+				if (log.isDebugEnabled()) log.debug("{}returning OutputStream as Writer", getLogPrefix());
 				return new OutputStreamWriter(stream, StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
@@ -266,7 +264,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof ContentHandler handler) {
 			try {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as Writer");
+				if (log.isDebugEnabled()) log.debug("{}returning ContentHandler as Writer", getLogPrefix());
 				return new OutputStreamWriter(new ContentHandlerOutputStream(handler, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
@@ -274,7 +272,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof JsonEventHandler handler) {
 			try {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as Writer");
+				if (log.isDebugEnabled()) log.debug("{}returning JsonEventHandler as Writer", getLogPrefix());
 				return new OutputStreamWriter(new JsonEventHandlerOutputStream(handler, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
@@ -285,20 +283,20 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public ContentHandler asContentHandler() throws StreamingException {
 		if (requestStream instanceof ContentHandler handler) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as ContentHandler");
+			if (log.isDebugEnabled()) log.debug("{}returning ContentHandler as ContentHandler", getLogPrefix());
 			return handler;
 		}
 		if (requestStream instanceof JsonEventHandler) {
 			throw new StreamingException("Cannot handle XML as JSON");
 		}
 		if (requestStream instanceof OutputStream stream) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as ContentHandler");
+			if (log.isDebugEnabled()) log.debug("{}returning OutputStream as ContentHandler", getLogPrefix());
 			XmlWriter xmlWriter = new XmlWriter(stream);
 			xmlWriter.setIncludeXmlDeclaration(true);
 			return xmlWriter;
 		}
 		if (requestStream instanceof Writer writer) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as ContentHandler");
+			if (log.isDebugEnabled()) log.debug("{}returning Writer as ContentHandler", getLogPrefix());
 			return new XmlWriter(writer);
 		}
 		return null;
@@ -306,18 +304,18 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public JsonEventHandler asJsonEventHandler() {
 		if (requestStream instanceof JsonEventHandler handler) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as JsonEventHandler");
+			if (log.isDebugEnabled()) log.debug("{}returning JsonEventHandler as JsonEventHandler", getLogPrefix());
 			return handler;
 		}
 		if (requestStream instanceof ContentHandler handler) {
 			return new Json2XmlHandler(handler, false);
 		}
 		if (requestStream instanceof OutputStream stream) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
+			if (log.isDebugEnabled()) log.debug("{}returning OutputStream as JsonEventHandler", getLogPrefix());
 			return new JsonWriter(stream);
 		}
 		if (requestStream instanceof Writer writer) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonEventHandler");
+			if (log.isDebugEnabled()) log.debug("{}returning Writer as JsonEventHandler", getLogPrefix());
 			return new JsonWriter(writer);
 		}
 		return null;
@@ -325,15 +323,13 @@ public class MessageOutputStream implements AutoCloseable {
 
 	public StringWriter captureCharacterStream() {
 		StringWriter result = new StringWriter();
-		captureCharacterStream(result);
+		captureCharacterStream(result, 10_000);
 		return result;
 	}
-	public void captureCharacterStream(Writer writer) {
-		captureCharacterStream(writer, 10000);
-	}
+
 	@SuppressWarnings("resource")
 	public void captureCharacterStream(Writer writer, int maxSize) {
-		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		log.debug("creating capture of {}", ClassUtils.nameOf(requestStream));
 		closeOnClose(writer);
 		if (requestStream instanceof Writer writer1) {
 			requestStream = StreamCaptureUtils.captureWriter(writer1, writer, maxSize);
@@ -354,17 +350,9 @@ public class MessageOutputStream implements AutoCloseable {
 		log.warn("captureCharacterStream() called before stream is installed.");
 	}
 
-	public ByteArrayOutputStream captureBinaryStream() {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		captureBinaryStream(result);
-		return result;
-	}
-	public void captureBinaryStream(OutputStream outputStream) {
-		captureBinaryStream(outputStream, 10000);
-	}
 	@SuppressWarnings("resource")
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
-		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		log.debug("creating capture of {}", ClassUtils.nameOf(requestStream));
 		closeOnClose(outputStream);
 		if (requestStream instanceof OutputStream stream) {
 			requestStream = StreamCaptureUtils.captureOutputStream(stream, outputStream, maxSize);

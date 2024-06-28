@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
-import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
 
 import jakarta.jms.Connection;
@@ -59,7 +58,6 @@ import org.frankframework.pipes.TimeoutGuardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
-
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.XmlBuilder;
@@ -143,7 +141,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 
 		Connection connection = null;
-		Session jSession = null;
+		Session jSession;
 		TibjmsAdmin admin = null;
 		try {
 			admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
@@ -275,12 +273,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qTimestamp.setCdataValue(DateFormatUtils.format(msg.getJMSTimestamp()));
 						qMessageXml.addSubElement(qTimestamp);
 
-						StringBuilder sb = new StringBuilder("");
+						StringBuilder sb = new StringBuilder();
 						Enumeration<?> propertyNames = msg.getPropertyNames();
 						while (propertyNames.hasMoreElements()) {
 							String propertyName = (String) propertyNames .nextElement();
 							Object object = msg.getObjectProperty(propertyName);
-							if (sb.length() > 0) {
+							if (!sb.isEmpty()) {
 								sb.append("; ");
 							}
 							sb.append(propertyName);
@@ -354,10 +352,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qMessageXml.toXML();
 	}
 
-	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName) throws TibjmsAdminInvalidNameException, TibjmsAdminException {
+	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName) throws TibjmsAdminException {
 		QueueInfo queueInfo = admin.getQueue(queueName);
 		long pendingMessageCount = queueInfo.getPendingMessageCount();
-		return "<qCount>" + String.valueOf(pendingMessageCount) + "</qCount>";
+		return "<qCount>" + pendingMessageCount + "</qCount>";
 	}
 
 	private String getQueuesInfo(Session jSession, TibjmsAdmin admin, boolean showAge, LdapSender ldapSender) throws TibjmsAdminException {
@@ -386,7 +384,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				XmlBuilder qInfoXml = qInfoToXml(qInfo);
 				qInfosXml.addSubElement(qInfoXml);
 				XmlBuilder aclXml = new XmlBuilder("acl");
-				aclXml.setValue((String) aclMap.get(qInfo.getName()));
+				aclXml.setValue(aclMap.get(qInfo.getName()));
 				qInfoXml.addSubElement(aclXml);
 				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 				if (consumersMap.containsKey(qInfo.getName())) {
@@ -552,7 +550,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		} catch (Exception e) {
-			log.debug("Caught exception retrieving description for principal [" + principal + "]", e);
+			log.debug("Caught exception retrieving description for principal [{}]", principal, e);
 			return null;
 		}
 		return principalDescription;
@@ -563,14 +561,14 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
-			log.debug("Caught URISyntaxException while resolving url [" + url + "]", e);
+			log.debug("Caught URISyntaxException while resolving url [{}]", url, e);
 			return null;
 		}
 		InetAddress inetAddress = null;
 		try {
 			inetAddress = InetAddress.getByName(uri.getHost());
 		} catch (UnknownHostException e) {
-			log.debug("Caught UnknownHostException while resolving url [" + url + "]", e);
+			log.debug("Caught UnknownHostException while resolving url [{}]", url, e);
 			return null;
 		}
 		return inetAddress.getCanonicalHostName();

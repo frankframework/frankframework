@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.aad.msal4j.HttpRequest;
+import com.microsoft.aad.msal4j.IHttpClient;
+import com.microsoft.aad.msal4j.IHttpResponse;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -30,11 +34,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.Logger;
-
-import com.microsoft.aad.msal4j.HttpRequest;
-import com.microsoft.aad.msal4j.IHttpClient;
-import com.microsoft.aad.msal4j.IHttpResponse;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
@@ -80,7 +79,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 			Message response = sendMessageOrThrow(request, session);
 			return new MsalResponse(response, session);
 		} catch (Exception e) {
-			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [" + httpRequest.url().toString() + "]", e);
+			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [{}]", httpRequest.url().toString(), e);
 			throw e;
 		} finally {
 			session.close();
@@ -156,14 +155,14 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	private class MsalResponse implements IHttpResponse {
 		protected Logger log = LogUtil.getLogger(this);
 
-		private int statusCode;
-		private Map<String, List<String>> headers = new HashMap<>();
+		private final int statusCode;
+		private final Map<String, List<String>> headers = new HashMap<>();
 		private String body = "";
 
 		public MsalResponse(Message response, PipeLineSession session) {
 			this.statusCode = Integer.parseInt((String) session.get(STATUS_CODE_SESSION_KEY));
 			if(log.isDebugEnabled())
-				log.debug("Parsing status code [" + statusCode + "]");
+				log.debug("Parsing status code [{}]", statusCode);
 
 			String[] headersAsCsv = ((String) session.get(RESPONSE_HEADERS_SESSION_KEY)).split(",");
 			for (String headerName : headersAsCsv) {
@@ -172,7 +171,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 				values.add(headerValue);
 
 				if(log.isDebugEnabled())
-					log.debug("Parsing header [" + headerName + "] [" + headerValue + "]");
+					log.debug("Parsing header [{}] [{}]", headerName, headerValue);
 				this.headers.put(headerName, values);
 			}
 

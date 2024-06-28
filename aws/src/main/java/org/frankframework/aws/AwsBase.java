@@ -18,14 +18,13 @@ package org.frankframework.aws;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.regions.Regions;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -46,7 +45,7 @@ public class AwsBase {
 
 	public String getClientRegion() {
 		if (StringUtils.isEmpty(clientRegion) || !AVAILABLE_REGIONS.contains(clientRegion)) {
-			throw new IllegalStateException("invalid region [" + clientRegion + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+			throw new IllegalStateException("invalid region [" + clientRegion + "] please use one of the following supported regions " + AVAILABLE_REGIONS);
 		}
 		return clientRegion;
 	}

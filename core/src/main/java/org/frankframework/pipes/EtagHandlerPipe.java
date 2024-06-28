@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -34,8 +35,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 
-import lombok.Getter;
-
 /**
  * Pipe to manage RESTFUL etag caching
  *
@@ -52,7 +51,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 
 //	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	public enum EtagAction {
-		GENERATE, GET, SET, DELETE, FLUSH, CLEAR;
+		GENERATE, GET, SET, DELETE, FLUSH, CLEAR
 	}
 
 	@Override

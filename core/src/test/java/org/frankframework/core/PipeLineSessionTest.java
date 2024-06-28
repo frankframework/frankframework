@@ -22,12 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.input.ReaderInputStream;
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import org.apache.commons.io.input.ReaderInputStream;
+import org.frankframework.stream.Message;
 
 /**
  * Lots of bugs tests, focus on getMessage(String)
@@ -61,7 +62,7 @@ public class PipeLineSessionTest {
 		session.put("key8", 123);
 		session.put("key8b", "456");
 		session.put("key8c", Message.asMessage("456"));
-		session.put("key8d", Message.asByteArray((Object)"456"));
+		session.put("key8d", "456".getBytes());
 		session.put("key9", true);
 		session.put("key9b", "true");
 		session.put("key9c", "false");

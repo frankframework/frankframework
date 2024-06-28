@@ -291,7 +291,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		query.append(" order by ");
 		query.append(metadataNames.get(0) + " desc");
-		log.debug("Metadata query: " + query.toString());
+		log.debug("Metadata query: {}", query.toString());
 		List<List<Object>> metadata;
 		try {
 			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),

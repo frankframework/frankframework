@@ -13,6 +13,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,6 +74,24 @@ class StringUtilTest {
 		String a = "test";
 		String res = StringUtil.hide(a);
 		assertEquals("****", res);
+	}
+
+	/**
+	 * Method: {@link StringUtil#hideAll(String string, Collection regexes})
+	 */
+	@Test
+	public void testHideAll() {
+		// Arrange
+		String input = "<t1>test1</t1><t2>test2</t2><t3>test3</t3><t1>test1 again</t1>";
+		Pattern t1 = Pattern.compile("(?<=<t1>)(.*?)(?=</t1>)");
+		Pattern t2 = Pattern.compile("<t2>.*?.<t2>"); // Pattern won't match
+		Pattern t3 = Pattern.compile("(?<=<t3>)(.*?)(?=</t3>)");
+
+		// Act
+		String res = StringUtil.hideAll(input, List.of(t1, t2, t3));
+
+		// Assert
+		assertEquals("<t1>*****</t1><t2>test2</t2><t3>*****</t3><t1>***********</t1>", res);
 	}
 
 	/**
@@ -237,13 +256,14 @@ class StringUtilTest {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static class ToStringTestClass {
-		private String field1 = "tralala";
-		private String field2 = "lalala";
-		private boolean field3 = false;
-		private String password = "top-secret";
-		private String hoofdletterPassword = "bottom-secret";
-		private Properties props = new Properties();
+		private final String field1 = "tralala";
+		private final String field2 = "lalala";
+		private final boolean field3 = false;
+		private final String password = "top-secret";
+		private final String hoofdletterPassword = "bottom-secret";
+		private final Properties props = new Properties();
 
 		public ToStringTestClass() {
 			props.put("no-string-password", Collections.singletonList("something"));

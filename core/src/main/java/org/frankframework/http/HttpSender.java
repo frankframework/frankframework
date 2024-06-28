@@ -17,7 +17,6 @@ package org.frankframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletResponse;
-
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
+import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -49,7 +50,6 @@ import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -69,11 +69,6 @@ import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-import lombok.Getter;
 
 /**
  * Sender for the HTTP protocol using {@link HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
@@ -126,7 +121,7 @@ public class HttpSender extends HttpSenderBase {
 		/** Yields a multipart/form-data form entity */
 		FORMDATA,
 		/** Yields a MTOM multipart/related form entity */
-		MTOM;
+		MTOM
 	}
 
 	@Override
@@ -214,12 +209,12 @@ public class HttpSender extends HttpSenderBase {
 			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
+					if (log.isDebugEnabled()) log.debug("{}path after appending of parameters [{}]", getLogPrefix(), relativePath);
 				}
 
 				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
+				if (log.isDebugEnabled()) log.debug("{}HttpSender constructed GET-method [{}]", getLogPrefix(), getMethod.getURI().getQuery());
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
@@ -297,7 +292,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
-				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
+				log.debug("{}appended parameter [{}] with value [{}]", getLogPrefix(), getFirstBodyPartName(), message);
 			}
 			if (parameters!=null) {
 				for(ParameterValue pv : parameters) {
@@ -306,7 +301,7 @@ public class HttpSender extends HttpSenderBase {
 
 					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
 						requestFormElements.add(new BasicNameValuePair(name,value));
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+						if (log.isDebugEnabled()) log.debug("{}appended parameter [{}] with value [{}]", getLogPrefix(), name, value);
 					}
 				}
 			}
@@ -345,7 +340,7 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 			entity.addPart(createStringBodypart(message));
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
+			if (log.isDebugEnabled()) log.debug("{}appended stringpart [{}] with value [{}]", getLogPrefix(), getFirstBodyPartName(), message);
 		}
 		if (parameters!=null) {
 			for(ParameterValue pv : parameters) {
@@ -372,9 +367,9 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
 			String multipartXml = session.getString(getMultipartXmlSessionKey());
-			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+			log.debug("{}building multipart message with MultipartXmlSessionKey [{}]", getLogPrefix(), multipartXml);
 			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
+				log.warn("{}sessionKey [{}] is empty", getLogPrefix(), getMultipartXmlSessionKey());
 			} else {
 				Element partsElement;
 				try {
@@ -384,7 +379,7 @@ public class HttpSender extends HttpSenderBase {
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 				if (parts.isEmpty()) {
-					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
+					log.warn("{}no part(s) in multipart xml [{}]", getLogPrefix(), multipartXml);
 				} else {
 					for (final Node part : parts) {
 						Element partElement = (Element) part;
@@ -435,7 +430,7 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			log.warn(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "]");
+			log.warn("{}httpstatus [{}] reason [{}]", getLogPrefix(), statusCode, responseHandler.getStatusLine().getReasonPhrase());
 			return new Message(body);
 		}
 
@@ -477,7 +472,7 @@ public class HttpSender extends HttpSenderBase {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(String mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
 		Message result = null;
 		try {
 			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream); //the entire InputStream will be read here!
@@ -494,24 +489,6 @@ public class HttpSender extends HttpSenderBase {
 			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
-	}
-
-	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
-		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType);
-		}
-		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition);
-		}
-		if (StringUtils.isNotEmpty(redirectLocation)) {
-			response.sendRedirect(redirectLocation);
-		}
-		if (is != null) {
-			try (OutputStream outputStream = response.getOutputStream()) {
-				StreamUtil.streamToStream(is, outputStream);
-				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
-			}
-		}
 	}
 
 	/**

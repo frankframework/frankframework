@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,23 +18,22 @@ package org.frankframework.jms;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.jms.Connection;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.ConnectionMetaData;
-import jakarta.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.ConnectionMetaData;
+import jakarta.jms.JMSException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IbisException;
-import org.frankframework.util.AppConstants;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 
 /**
  * Factory for {@link JmsMessagingSource}s, to share them for JMS Objects that can use the same.
- *
+ * <p>
  * JMS related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
  * between all IBIS objects that have the same connectionFactoryName.
  *
@@ -49,7 +48,6 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	private static final Map<String,MessagingSource> JMS_MESSAGING_SOURCE_MAP = new HashMap<>();
 
 	private final JMSFacade jmsFacade;
-	private final String applicationServerType = AppConstants.getInstance().getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	public JmsMessagingSourceFactory(JMSFacade jmsFacade) {
 		this.jmsFacade = jmsFacade;
@@ -99,7 +97,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			if (connectionFactoryInfo==null) {
 				connectionFactoryInfo = connectionFactory.toString();
 			}
-			log.info(jmsFacade.getLogPrefix()+"looked up connection factory ["+cfName+"]: ["+connectionFactoryInfo+"]");
+			log.info("{}looked up connection factory [{}]: [{}]", jmsFacade.getLogPrefix(), cfName, connectionFactoryInfo);
 		}
 		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
 	}
