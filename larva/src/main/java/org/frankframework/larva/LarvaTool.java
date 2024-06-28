@@ -2407,11 +2407,11 @@ public class LarvaTool {
 	*/
 	public static List<String> findAttributesForIgnore(String propertyName) {
 		return switch (propertyName) {
-			case "decodeUnzipContentBetweenKeys" -> new ArrayList<>(Arrays.asList("key1", "key2", "replaceNewlines"));
+			case "decodeUnzipContentBetweenKeys" -> List.of("key1", "key2", "replaceNewlines");
 			case "canonicaliseFilePathContentBetweenKeys", "replaceRegularExpressionKeys", "ignoreContentBetweenKeys", "ignoreKeysAndContentBetweenKeys",
 				 "removeKeysAndContentBetweenKeys", "replaceKey", "formatDecimalContentBetweenKeys", "replaceEverywhereKey" -> List.of("key1", "key2");
 			case "ignoreRegularExpressionKey", "removeRegularExpressionKey", "ignoreContentBeforeKey", "ignoreContentAfterKey" -> List.of("key");
-			case "ignoreCurrentTimeBetweenKeys" -> new ArrayList<>(Arrays.asList("key1", "key2", "pattern", "margin", "errorMessageOnRemainingString"));
+			case "ignoreCurrentTimeBetweenKeys" -> List.of("key1", "key2", "pattern", "margin", "errorMessageOnRemainingString");
 			case "ignoreKey", "removeKey" ->
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
