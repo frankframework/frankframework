@@ -17,10 +17,16 @@ package org.frankframework.logging;
 
 import java.io.Serial;
 import java.nio.charset.Charset;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -58,7 +64,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * This is required to be set for each thread individually.
 	 */
-	private static final ThreadLocal<Set<Pattern>> threadLocalReplace = new ThreadLocal<>();
+	private static final ThreadLocal<Deque<Pattern>> threadLocalReplace = new ThreadLocal<>();
 
 	/**
 	 * Set of regex strings to hide globally, meaning for every thread/adapter.
@@ -193,48 +199,59 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		globalReplace = new HashSet<>();
 	}
 
-	public static void addToThreadLocalReplace(Set<Pattern> hideRegexSet) {
+	public static void setThreadLocalReplace(@Nullable Collection<Pattern> hideRegexSet) {
 		if (hideRegexSet == null || hideRegexSet.isEmpty()) return;
 
-		if (threadLocalReplace.get() == null)
-			createThreadLocalReplace();
-
-		threadLocalReplace.get().addAll(hideRegexSet);
+		clearThreadLocalReplace();
+		Deque<Pattern> stack = getOrCreateThreadLocalReplace();
+		stack.addAll(hideRegexSet);
 	}
 
 	/**
-	 * Add regex to hide locally, meaning for specific threads/adapters.
-	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
+	 * Collection of regex strings to hide locally, meaning for specific threads/adapters.
+	 * Can return null when not used/initialized!
 	 */
-	public static void addToThreadLocalReplace(Pattern regex) {
-		if(regex == null) return;
-
-		if (threadLocalReplace.get() == null)
-			createThreadLocalReplace();
-		threadLocalReplace.get().add(regex);
+	@Nullable
+	public static Collection<Pattern> getThreadLocalReplace() {
+		Deque<Pattern> stack = threadLocalReplace.get();
+		if (stack == null) return null;
+		return Collections.unmodifiableCollection(stack);
 	}
 
-	public static void removeFromThreadLocalReplace(Pattern regex) {
-		if (regex == null) return;
-
-		if (threadLocalReplace.get() == null) return;
-
-		threadLocalReplace.get().remove(regex);
+	@Nonnull
+	private static Deque<Pattern> getOrCreateThreadLocalReplace() {
+		Deque<Pattern> stack = threadLocalReplace.get();
+		if (stack == null) {
+			return createThreadLocalReplace();
+		}
+		return stack;
 	}
 
-	/**
-	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
-	 * Can return null when not used/initalized!
-	 */
-	public static Set<Pattern> getThreadLocalReplace() {
-		return threadLocalReplace.get();
-	}
-
-	private static void createThreadLocalReplace() {
-		threadLocalReplace.set(new HashSet<>());
+	@Nonnull
+	private static Deque<Pattern> createThreadLocalReplace() {
+		Deque<Pattern> stack = new ArrayDeque<>();
+		threadLocalReplace.set(stack);
+		return stack;
 	}
 
 	public static void clearThreadLocalReplace() {
 		threadLocalReplace.remove();
+	}
+
+	@Nonnull
+	public static HideRegexContext pushToThreadLocalReplace(@Nullable Pattern pattern) {
+		if (pattern == null) {
+			return () -> {
+				// No-op
+			};
+		}
+		Deque<Pattern> stack = getOrCreateThreadLocalReplace();
+		stack.push(pattern);
+		return stack::pop;
+	}
+
+	public interface HideRegexContext extends AutoCloseable {
+		@Override
+		void close();
 	}
 }

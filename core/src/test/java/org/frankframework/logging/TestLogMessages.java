@@ -70,8 +70,7 @@ public class TestLogMessages {
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
-		}
-		finally {
+		} finally {
 			IbisMaskingLayout.clearGlobalReplace();
 			globalReplace.forEach(IbisMaskingLayout::addToGlobalReplace);
 			TestAppender.removeAppender(appender);
