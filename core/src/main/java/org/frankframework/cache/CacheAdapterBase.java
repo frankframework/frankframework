@@ -87,7 +87,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 			try {
 				input=keyTp.transform(input, null);
 			} catch (Exception e) {
-				log.error(getLogPrefix()+"cannot determine cache key",e);
+				log.error("{}cannot determine cache key", getLogPrefix(), e);
 			}
 		}
 		if (StringUtils.isEmpty(input)) {
@@ -109,7 +109,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 			try{
 				value=new Message(valueTp.transform(value, null));
 			} catch (Exception e) {
-				log.error(getLogPrefix() + "transformValue() cannot transform cache value [" + value + "], will not cache", e);
+				log.error("{}transformValue() cannot transform cache value [{}], will not cache", getLogPrefix(), value, e);
 				return null;
 			}
 		}

@@ -143,7 +143,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	private void configureServletSecurity(String propertyPrefix) {
 		String roleNames = environment.getProperty(propertyPrefix+"securityRoles");
 		if(environment.containsProperty(propertyPrefix+"securityroles")) { //Deprecated warning
-			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
+			log.warn("property [{}securityroles] has been replaced with [{}securityRoles]", propertyPrefix, propertyPrefix);
 			roleNames = environment.getProperty(propertyPrefix+"securityroles");
 		}
 

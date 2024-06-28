@@ -53,7 +53,7 @@ public class SapSystemFactory {
 	public String getSapSystemInfo(String sapSystemName) {
 		Object sapSystem = sapSystems.get(sapSystemName);
 		if (sapSystem == null) {
-			log.error("no SapSystem found under name [" + sapSystem	+ "], factory contents [" + this + "]");
+			log.error("no SapSystem found under name [{}], factory contents [{}]", sapSystem, this);
 			return null;
 		}
 		SapSystem sapSystem3 = (SapSystem) sapSystem;
@@ -81,8 +81,7 @@ public class SapSystemFactory {
 
 	public void registerSapSystem(Object sapSystem, String name) {
 		sapSystems.put(name, sapSystem);
-		log.debug("SapSystemFactory registered sapSystem ["
-				+ sapSystem.toString() + "]");
+		log.debug("SapSystemFactory registered sapSystem [{}]", sapSystem.toString());
 	}
 
 	@Override

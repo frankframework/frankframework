@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.springframework.util.DigestUtils;
@@ -262,6 +263,7 @@ public abstract class MessageUtils {
 	/**
 	 * Resource intensive operation, preserves the message and calculates an MD5 hash over the entire message.
 	 */
+	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	public static String generateMD5Hash(Message message) {
 		try {
 			if(!message.isRepeatable()) {
@@ -326,6 +328,30 @@ public abstract class MessageUtils {
 		} catch (IOException e) {
 			LOG.warn("unable to read Message", e);
 			return Message.MESSAGE_SIZE_UNKNOWN;
+		}
+	}
+
+	/**
+	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
+	 */
+	@Deprecated
+	public static String asString(Object object) throws IOException {
+		if (object == null) {
+			return null;
+		}
+		if (object instanceof String string) {
+			return string;
+		}
+		if (object instanceof Message message) {
+			message.assertNotClosed();
+			return message.asString();
+		}
+		if (object instanceof MessageWrapper wrapper) {
+			return wrapper.getMessage().asString();
+		}
+		// In other cases, message can be closed directly after converting to String.
+		try (Message message = Message.asMessage(object)) {
+			return message.asString();
 		}
 	}
 }

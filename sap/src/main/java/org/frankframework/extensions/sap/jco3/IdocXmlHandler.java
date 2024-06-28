@@ -70,7 +70,7 @@ public class IdocXmlHandler extends DefaultHandler {
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		//log.debug("startElement("+localName+")");
 		if (doc==null) {
-			log.debug("creating Idoc ["+localName+"]");
+			log.debug("creating Idoc [{}]", localName);
 			try {
 				doc = JCoIDoc.getIDocFactory().createIDocDocument(sapSystem.getIDocRepository(), localName);
 			} catch (IDocMetaDataUnavailableException e) {
@@ -85,7 +85,7 @@ public class IdocXmlHandler extends DefaultHandler {
 				if (localName.startsWith("EDI_DC")) {
 					parsingEdiDcHeader=true;
 				} else {
-					log.debug("creating segment ["+localName+"]");
+					log.debug("creating segment [{}]", localName);
 					IDocSegment parentSegment = segmentStack.get(segmentStack.size()-1);
 					IDocSegment segment;
 					try {
@@ -110,7 +110,7 @@ public class IdocXmlHandler extends DefaultHandler {
 			String value=currentFieldValue.toString().trim();
 			if (StringUtils.isNotEmpty(value)) {
 				if (parsingEdiDcHeader) {
-					if (log.isDebugEnabled()) log.debug("parsed header field ["+currentField+"] value ["+value+"]");
+					if (log.isDebugEnabled()) log.debug("parsed header field [{}] value [{}]", currentField, value);
 					try {
 						if ("ARCKEY".equals(currentField)) 		{ doc.setArchiveKey(value); }
 						else if ("MANDT".equals(currentField))  { doc.setClient(value); }
@@ -150,7 +150,7 @@ public class IdocXmlHandler extends DefaultHandler {
 						else if ("STATUS".equals(currentField)) { doc.setStatus(value); }
 						else if ("TEST".equals(currentField))   { doc.setTestFlag(value); }
 						else {
-							log.warn("header field ["+currentField+"] value ["+value+"] discarded");
+							log.warn("header field [{}] value [{}] discarded", currentField, value);
 						}
 					} catch (IDocConversionException e) {
 						throw new SAXException("could not parse header field, idoc conversion exception", e);
@@ -159,7 +159,7 @@ public class IdocXmlHandler extends DefaultHandler {
 					}
 				} else {
 					IDocSegment segment = segmentStack.get(segmentStack.size()-1);
-					if (log.isDebugEnabled()) log.debug("setting field ["+currentField+"] to ["+value+"]");
+					if (log.isDebugEnabled()) log.debug("setting field [{}] to [{}]", currentField, value);
 					try {
 						segment.setValue(currentField,value);
 					} catch (IDocFieldNotFoundException e) {

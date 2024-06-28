@@ -80,7 +80,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Transformer ["+getName()+"] record before XSL transformation ["+xml+"]");
+				log.debug("Transformer [{}] record before XSL transformation [{}]", getName(), xml);
 			}
 			Message message = new Message(xml);
 			ParameterValueList pvl = paramList==null?null:paramList.getValues(message, session);

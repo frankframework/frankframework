@@ -550,7 +550,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		} catch (Exception e) {
-			log.debug("Caught exception retrieving description for principal [" + principal + "]", e);
+			log.debug("Caught exception retrieving description for principal [{}]", principal, e);
 			return null;
 		}
 		return principalDescription;
@@ -561,14 +561,14 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
-			log.debug("Caught URISyntaxException while resolving url [" + url + "]", e);
+			log.debug("Caught URISyntaxException while resolving url [{}]", url, e);
 			return null;
 		}
 		InetAddress inetAddress = null;
 		try {
 			inetAddress = InetAddress.getByName(uri.getHost());
 		} catch (UnknownHostException e) {
-			log.debug("Caught UnknownHostException while resolving url [" + url + "]", e);
+			log.debug("Caught UnknownHostException while resolving url [{}]", url, e);
 			return null;
 		}
 		return inetAddress.getCanonicalHostName();

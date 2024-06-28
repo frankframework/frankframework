@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import lombok.Getter;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -79,8 +79,6 @@ import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -280,25 +278,15 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		CredentialFactory cf = new CredentialFactory(cfAuthAlias, cfUsername, cdPassword);
 		try {
 			Map<String, String> headers = new HashMap<>();
-			if(pvl != null) {
-				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
-					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
-						headers.put(entry.getKey(), parseAsString(entry));
-					}
-				}
+			if (pvl != null) {
+				pvl.stream()
+						.filter(pv -> pv.getName().startsWith(HEADER_PARAM_PREFIX))
+						.forEach(pv -> headers.put(pv.getName(), pv.asStringValue()));
 			}
 			return getSessionBuilder().build(cf.getUsername(), cf.getPassword(), headers);
 		}
 		catch (CmisSessionException e) {
 			throw new SenderException(e);
-		}
-	}
-
-	private String parseAsString(Entry<String, Object> entry) throws SenderException {
-		try {
-			return Message.asString(entry.getValue());
-		} catch (IOException e) {
-			throw new SenderException("unable to convert parameter ["+entry.getKey()+"] value to String", e);
 		}
 	}
 
@@ -386,7 +374,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage= "document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}{}", getLogPrefix(), errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -495,11 +483,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (isUseRootFolder()) {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
-			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
+			log.debug("{}created new document [{}]", getLogPrefix(), document.getId());
 			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
+		log.debug("{}created new document [{}]", getLogPrefix(), objectId.getId());
 		return new SenderResult(objectId.getId());
 	}
 
@@ -547,14 +535,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					}
 					props.put(nameAttr, calendar);
 				} else {
-					log.warn(getLogPrefix() + "unknown type ["+ typeAttr +"], assuming 'string'");
+					log.warn("{}unknown type [{}], assuming 'string'", getLogPrefix(), typeAttr);
 					props.put(nameAttr, property);
 				}
 				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix() + "set property name ["+ nameAttr +"] value ["+ property +"]");
+					log.debug("{}set property name [{}] value [{}]", getLogPrefix(), nameAttr, property);
 				}
 			} else {
-				log.debug(getLogPrefix() + "empty property found, ignoring");
+				log.debug("{}empty property found, ignoring", getLogPrefix());
 			}
 		}
 	}
@@ -569,7 +557,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}{}", getLogPrefix(), errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -904,7 +892,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}{}", getLogPrefix(), errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);

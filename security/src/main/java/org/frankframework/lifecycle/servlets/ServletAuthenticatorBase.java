@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +36,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -45,12 +44,18 @@ import org.springframework.security.config.annotation.web.configurers.AnonymousC
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
@@ -170,7 +175,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
-			if(csrfEnabled){
+			if(csrfEnabled) {
 				//HttpOnly needs to be false for Angular to read it
 				CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 				if(!StringUtils.isEmpty(csrfCookiePath)) {
@@ -192,8 +197,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
 			http.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
-			http.logout(LogoutConfigurer::disable); //Disable the logout endpoint on every filter
-//			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
+
+			//logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
+			http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
+			http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
 			if(!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
 				http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
@@ -209,6 +216,27 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			return configure(http);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
+		}
+	}
+
+	// Match when the client matches '<servlet-path>/logout'.
+	private boolean requestMatcher(HttpServletRequest request) {
+		return ("GET".equals(request.getMethod()) && "/logout".equals(request.getPathInfo()));
+	}
+
+	private static class RedirectToServletRoot implements LogoutSuccessHandler {
+		// force a 401 status to clear any www-authenticate cache.
+		@Override
+		public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
+			response.setHeader("Location", determineTargetUrl(request));
+		}
+
+		// redirect the client to the servlet root
+		private String determineTargetUrl(HttpServletRequest request) {
+			String path = request.getServletPath();
+			if(!path.endsWith("/")) path += "/";
+			return path;
 		}
 	}
 

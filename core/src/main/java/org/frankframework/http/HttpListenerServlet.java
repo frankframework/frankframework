@@ -68,7 +68,7 @@ public class HttpListenerServlet extends HttpServletBase {
 				messageContext.put(paramName, paramValue);
 			}
 			try {
-				log.debug("HttpListenerServlet calling service ["+service+"]");
+				log.debug("HttpListenerServlet calling service [{}]", service);
 				Message result = sd.dispatchRequest(service, message, messageContext);
 				if (result.isBinary()) {
 					StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 16384);

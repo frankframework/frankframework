@@ -73,7 +73,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		try {
 			openFacade();
 		} catch (SapException e) {
-			log.error(getLogPrefix() + "Exception on opening SapFunctionFacade", e);
+			log.error("{}Exception on opening SapFunctionFacade", getLogPrefix(), e);
 			close();
 			throw new SenderException(getLogPrefix()+"exception starting", e);
 		}
@@ -96,9 +96,9 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			throw new SapException("could not determine sapSystemName using parameter ["+getSapSystemNameParam()+"]");
 		}
 		SapSystemImpl result = getSapSystem(SapSystemName);
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"determined SapSystemName ["+SapSystemName+"]");
+		if (log.isDebugEnabled()) log.debug("{}determined SapSystemName [{}]", getLogPrefix(), SapSystemName);
 		if (result==null) {
-			log.warn(getLogPrefix()+"could not find a SapSystem ["+SapSystemName+"] from Parameter ["+getSapSystemNameParam()+"]");
+			log.warn("{}could not find a SapSystem [{}] from Parameter [{}]", getLogPrefix(), SapSystemName, getSapSystemNameParam());
 		}
 		return getSapSystem(SapSystemName);
 	}

@@ -117,7 +117,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 
 		schedulerHelper.scheduleJob(jobDetail, cronExpression);
 		if (log.isDebugEnabled()) {
-			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
+			log.debug("SchedulerSender [{}] has send job [{}] to the scheduler", getName(), jobName);
 		}
 	}
 

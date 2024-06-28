@@ -115,7 +115,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			}
 			String correlationID = session==null ? null : session.getCorrelationId();
 			message2FunctionCall(function, message.asString(), correlationID, pvl);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
+			if (log.isDebugEnabled()) log.debug("{} function call [{}]", getLogPrefix(), functionCall2message(function));
 
 			JCoDestination destination = getDestination(session, sapSystem);
 			tid = getTid(destination,sapSystem);

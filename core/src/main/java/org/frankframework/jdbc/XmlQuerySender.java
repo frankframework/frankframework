@@ -410,32 +410,32 @@ public class XmlQuerySender extends DirectQuerySender {
 		for (Column column : columns) {
 			if (column.getParameter() != null) {
 				if (column.getParameter() instanceof Integer) {
-					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter() + "]");
+					log.debug("parm [{}] is an Integer with value [{}]", var, column.getParameter());
 					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Boolean) {
-					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter() + "]");
+					log.debug("parm [{}] is an Boolean with value [{}]", var, column.getParameter());
 					statement.setBoolean(var, Boolean.parseBoolean(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Double) {
-					log.debug("parm [" + var + "] is a Double with value [" + column.getParameter() + "]");
+					log.debug("parm [{}] is a Double with value [{}]", var, column.getParameter());
 					statement.setDouble(var, Double.parseDouble(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Float) {
-					log.debug("parm [" + var + "] is a Float with value [" + column.getParameter() + "]");
+					log.debug("parm [{}] is a Float with value [{}]", var, column.getParameter());
 					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Timestamp) {
-					log.debug("parm [" + var + "] is a Timestamp with value [" + column.getParameter() + "]");
+					log.debug("parm [{}] is a Timestamp with value [{}]", var, column.getParameter());
 					statement.setTimestamp(var, (Timestamp) column.getParameter());
 					var++;
 				} else if (column.getParameter() instanceof byte[]) {
-					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter() + "] = [" + new String((byte[]) column.getParameter()) + "]");
+					log.debug("parm [{}] is a byte array with value [{}] = [{}]", var, column.getParameter(), new String((byte[]) column.getParameter()));
 					statement.setBytes(var, (byte[]) column.getParameter());
 					var++;
 				} else {
 					//if (column.getParameter() instanceof String)
-					log.debug("parm [" + var + "] is a String with value [" + column.getParameter() + "]");
+					log.debug("parm [{}] is a String with value [{}]", var, column.getParameter());
 					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
 					var++;
 				}

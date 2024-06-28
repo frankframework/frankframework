@@ -188,7 +188,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		for (Entry<String, String> entry : map.entrySet()) {
 			String attribute = entry.getKey();
 			if (log.isTraceEnabled()) {
-				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
+				log.trace("checking attribute [{}] on bean [{}]", attribute, getObjectName());
 			}
 			handleAttribute(attribute, entry.getValue(), map);
 		}

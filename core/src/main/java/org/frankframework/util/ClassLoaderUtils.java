@@ -93,7 +93,8 @@ public abstract class ClassLoaderUtils {
 				protocols.addAll(toList(allowedProtocols));
 				return getResourceNative(resourceToUse, protocols);
 			} else {
-				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and no protocol to try as URL");
+				if(log.isDebugEnabled())
+					log.debug("Cannot lookup resource [{}] in classloader [{}] and no protocol to try as URL", resource, nameOf(classLoader));
 			}
 		}
 

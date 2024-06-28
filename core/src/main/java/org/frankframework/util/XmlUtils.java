@@ -607,12 +607,12 @@ public class XmlUtils {
 	 * Convert an XML string to a Document, then return the root-element as a Node
 	 */
 	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
-		log.debug("buildNode() ["+s+"],["+namespaceAware+"]");
+		log.debug("buildNode() [{}],[{}]", s, namespaceAware);
 		return buildElement(s,namespaceAware);
 	}
 
 	public static Node buildNode(String s) throws DomBuilderException {
-		log.debug("buildNode() ["+s+"]");
+		log.debug("buildNode() [{}]", s);
 		return buildElement(s,isNamespaceAwareByDefault());
 	}
 
@@ -900,7 +900,7 @@ public class XmlUtils {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
 			String version=tpVersion.transform(xsltString, null, true);
-			log.debug("detected version ["+version+"] for xslt ["+xsltString+"]");
+			log.debug("detected version [{}] for xslt [{}]", version, xsltString);
 			return interpretXsltVersion(version);
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
@@ -1160,7 +1160,7 @@ public class XmlUtils {
 			num = Long.parseLong(str);
 		} catch (NumberFormatException e) {
 			num = defaultValue;
-			log.error("Tag [" + tag + "] has no integer value",e);
+			log.error("Tag [{}] has no integer value", tag, e);
 		}
 		return num;
 	}
@@ -1306,16 +1306,16 @@ public class XmlUtils {
 			if (value != null) {
 				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
 					try {
-						value = Message.asString(value);
+						value = MessageUtils.asString(value);
 					} catch (IOException e) {
 						throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
 					}
 				}
 				t.setParameter(paramName, value);
-				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
+				log.debug("setting parameter [{}] on transformer from class [{}]", paramName, value.getClass().getTypeName());
 			}
 			else {
-				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
+				log.info("omitting setting of parameter [{}] on transformer, as it has a null-value", paramName);
 			}
 		}
 	}
@@ -1501,7 +1501,7 @@ public class XmlUtils {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn("unable to execute xpath expression ["+xpath+"]", e);
+			log.warn("unable to execute xpath expression [{}]", xpath, e);
 			return null;
 		}
 	}

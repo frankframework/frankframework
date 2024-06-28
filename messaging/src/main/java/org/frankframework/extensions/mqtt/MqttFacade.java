@@ -106,7 +106,7 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		try {
 			client.disconnect();
 		} catch (MqttException e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		}
 	}
 

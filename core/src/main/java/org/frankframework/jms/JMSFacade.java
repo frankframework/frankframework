@@ -550,11 +550,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		switch (subscriberType) {
 		case DURABLE:
 			messageConsumer = session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + getName()  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[{}] got durable subscriber for topic [{}] with selector [{}]", getName(), destinationName, selector);
 			break;
 		case TRANSIENT:
 			messageConsumer = session.createConsumer(topic, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[{}] got transient subscriber for topic [{}] with selector [{}]", getName(), destinationName, selector);
 			break;
 		default:
 			throw new IllegalStateException("Unexpected subscriberType ["+subscriberType+"]");

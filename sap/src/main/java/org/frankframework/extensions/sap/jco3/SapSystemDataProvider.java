@@ -117,7 +117,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	}
 
 	public synchronized void updateSystem(SapSystemImpl sapSystem) {
-		log.debug("Update " + sapSystem.getName());
+		log.debug("Update {}", sapSystem.getName());
 		destinationDataEventListener.updated(sapSystem.getName());
 	}
 
@@ -127,7 +127,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	}
 
 	public synchronized void deleteSystem(SapSystemImpl sapSystem) {
-		log.debug("Delete " + sapSystem.getName());
+		log.debug("Delete {}", sapSystem.getName());
 		destinationDataEventListener.deleted(sapSystem.getName());
 	}
 }

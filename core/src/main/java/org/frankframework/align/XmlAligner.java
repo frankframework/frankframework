@@ -134,7 +134,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attributes) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
+		if (log.isTraceEnabled()) log.trace("startElement() uri [{}] localName [{}] qName [{}]", namespaceUri, localName, qName);
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
 		typeDefinition=getTypeDefinition(psviProvider);
 		if (typeDefinition==null && !isTypeContainsWildcard()) {
@@ -148,16 +148,17 @@ public class XmlAligner extends XMLFilterImpl {
 				multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle());
 				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
-				if (log.isTraceEnabled()) log.trace("element ["+localName+"] is parentOfSingleMultipleOccurringChildElement ["+parentOfSingleMultipleOccurringChildElement+"]");
+				if (log.isTraceEnabled())
+					log.trace("element [{}] is parentOfSingleMultipleOccurringChildElement [{}]", localName, parentOfSingleMultipleOccurringChildElement);
 			} else {
 				multipleOccurringChildElements=null;
 				parentOfSingleMultipleOccurringChildElement=false;
 				typeContainsWildcard=!typeContainsWildcards.isEmpty() && typeContainsWildcards.peek();
 				if (log.isTraceEnabled()) {
 					if (typeDefinition==null) {
-						log.trace("element ["+localName+"] is a SimpleType, and therefor not multiple");
+						log.trace("element [{}] is a SimpleType, and therefor not multiple", localName);
 					} else {
-						log.trace("no type definition found for element ["+localName+"], assuming not multiple");
+						log.trace("no type definition found for element [{}], assuming not multiple", localName);
 					}
 				}
 			}
@@ -169,7 +170,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("endElement() uri ["+uri+"] localName ["+localName+"] qName ["+qName+"]");
+		if (log.isTraceEnabled()) log.trace("endElement() uri [{}] localName [{}] qName [{}]", uri, localName, qName);
 		boolean knownElement = context.getTypeDefinition()!=null;
 		context = context.getParent();
 		indentLevel--;
@@ -204,26 +205,27 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term==null) {
 			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
 		}
-		if (log.isTraceEnabled()) log.trace("term name ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"] term ["+ToStringBuilder.reflectionToString(term)+"]");
+		if (log.isTraceEnabled())
+			log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term.getName(), particle.getMaxOccursUnbounded(), particle.getMaxOccurs(), ToStringBuilder.reflectionToString(term));
 		if (term instanceof XSModelGroup modelGroup) {
 			short compositor = modelGroup.getCompositor();
 			XSObjectList particles = modelGroup.getParticles();
 			switch (compositor) {
 			case XSModelGroup.COMPOSITOR_SEQUENCE:
 			case XSModelGroup.COMPOSITOR_ALL: {
-				if (log.isTraceEnabled()) log.trace("sequence or all particles ["+ToStringBuilder.reflectionToString(particles)+"]");
+				if (log.isTraceEnabled()) log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
 				ChildOccurrence result=ChildOccurrence.EMPTY;
 				for (int i=0;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
 					ChildOccurrence current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-					if (log.isTraceEnabled()) log.trace("sequence or all, particle ["+i+"] current result ["+current+"]");
+					if (log.isTraceEnabled()) log.trace("sequence or all, particle [{}] current result [{}]", i, current);
 					switch (current) {
 					case EMPTY:
 						break;
 					case ONE_SINGLE_OCCURRING_ELEMENT:
 					case ONE_MULTIPLE_OCCURRING_ELEMENT:
 						if (result.ordinal()>ChildOccurrence.EMPTY.ordinal()) {
-							if (log.isTraceEnabled()) log.trace("sequence or all, result ["+result+"] current ["+current+"]");
+							if (log.isTraceEnabled()) log.trace("sequence or all, result [{}] current [{}]", result, current);
 							return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 						}
 						result=current;
@@ -234,29 +236,29 @@ public class XmlAligner extends XMLFilterImpl {
 						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence ["+current+"]");
 					}
 				}
-				if (log.isTraceEnabled()) log.trace("end of sequence or all, returning ["+result+"]");
+				if (log.isTraceEnabled()) log.trace("end of sequence or all, returning [{}]", result);
 				return result;
 			}
 			case XSModelGroup.COMPOSITOR_CHOICE: {
-				if (log.isTraceEnabled()) log.trace("choice particles ["+ToStringBuilder.reflectionToString(particles)+"]");
+				if (log.isTraceEnabled()) log.trace("choice particles [{}]", ToStringBuilder.reflectionToString(particles));
 				if (particles.getLength()==0) {
-					if (log.isTraceEnabled()) log.trace("choice length 0, returning ["+ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING+"]");
+					if (log.isTraceEnabled()) log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 					return ChildOccurrence.EMPTY;
 				}
 				ChildOccurrence result=determineIsParentOfSingleMultipleOccurringChildElement((XSParticle)particles.item(0));
 				if (result==ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
-					if (log.isTraceEnabled()) log.trace("choice single mixed, returning ["+ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING+"]");
+					if (log.isTraceEnabled()) log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 					return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 				}
 				for (int i=1;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
 					ChildOccurrence current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
 					if (current!=result) {
-						if (log.isTraceEnabled()) log.trace("break out of choice, returning ["+ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING+"]");
+						if (log.isTraceEnabled()) log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 					}
 				}
-				if (log.isTraceEnabled()) log.trace("end of choice, returning ["+result+"]");
+				if (log.isTraceEnabled()) log.trace("end of choice, returning [{}]", result);
 				return result;
 			}
 			default:
@@ -265,7 +267,8 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 		if (term instanceof XSElementDeclaration elementDeclaration) {
 			String elementName=elementDeclaration.getName();
-			if (log.isTraceEnabled()) log.trace("ElementDeclaration name ["+elementName+"] unbounded ["+particle.getMaxOccursUnbounded()+"] maxOccurs ["+particle.getMaxOccurs()+"]");
+			if (log.isTraceEnabled())
+				log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", elementName, particle.getMaxOccursUnbounded(), particle.getMaxOccurs());
 			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
 				return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
 			}
@@ -327,7 +330,7 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 		if (term instanceof XSElementDeclaration elementDeclaration) {
 			String elementName=elementDeclaration.getName();
-			if (log.isTraceEnabled()) log.trace("ElementDeclaration name ["+elementName+"]");
+			if (log.isTraceEnabled()) log.trace("ElementDeclaration name [{}]", elementName);
 			elementNames.add(elementName);
 		}
 	}
@@ -342,14 +345,15 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term==null) {
 			throw new IllegalStateException("findMultipleOccurringChildElements particle.term is null");
 		}
-		if (log.isTraceEnabled()) log.trace("term name ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"] term ["+ToStringBuilder.reflectionToString(term)+"]");
+		if (log.isTraceEnabled())
+			log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term.getName(), particle.getMaxOccursUnbounded(), particle.getMaxOccurs(), ToStringBuilder.reflectionToString(term));
 		if (particle.getMaxOccursUnbounded()||particle.getMaxOccurs()>1) {
 			collectChildElements(particle,result);
 			return result;
 		}
 		if (term instanceof XSModelGroup modelGroup) {
 			XSObjectList particles = modelGroup.getParticles();
-				if (log.isTraceEnabled()) log.trace("modelGroup particles ["+ToStringBuilder.reflectionToString(particles)+"]");
+				if (log.isTraceEnabled()) log.trace("modelGroup particles [{}]", ToStringBuilder.reflectionToString(particles));
 				for (int i=0;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
 					result.addAll(findMultipleOccurringChildElements(childParticle));
@@ -370,7 +374,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
 			return complexTypeDefinition.getAttributeUses();
 		}
-		if (log.isTraceEnabled()) log.trace("typeDefinition ["+typeDefinition.getClass().getSimpleName()+"] SimpleType, no attributes");
+		if (log.isTraceEnabled()) log.trace("typeDefinition [{}] SimpleType, no attributes", typeDefinition.getClass().getSimpleName());
 		return null;
 	}
 
@@ -407,7 +411,7 @@ public class XmlAligner extends XMLFilterImpl {
 			return;
 		}
 
-		log.debug("setting feature ["+feature+"] to ["+value+"]");
+		log.debug("setting feature [{}] to [{}]", feature, value);
 		super.setFeature(feature, value);
 	}
 
@@ -447,7 +451,7 @@ public class XmlAligner extends XMLFilterImpl {
 	protected XSElementDeclaration findElementDeclarationForName(String namespace, String name) throws SAXException {
 		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(namespace, name);
 		if (elementDeclarations==null) {
-			log.warn("No element declarations found for ["+namespace+"]:["+name+"]");
+			log.warn("No element declarations found for [{}]:[{}]", namespace, name);
 			return null;
 		}
 		if (elementDeclarations.size()>1) {
@@ -469,7 +473,7 @@ public class XmlAligner extends XMLFilterImpl {
 			for (int i=0;i<components.getLength();i++) {
 				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
 				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
-					if (log.isTraceEnabled()) log.trace("name ["+item.getName()+"] found in namespace ["+item.getNamespace()+"]");
+					if (log.isTraceEnabled()) log.trace("name [{}] found in namespace [{}]", item.getName(), item.getNamespace());
 					result.add(item);
 				}
 			}

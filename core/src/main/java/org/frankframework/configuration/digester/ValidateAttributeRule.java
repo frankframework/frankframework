@@ -128,7 +128,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			// so we cannot assume setting it to "" has no effect
 		} catch (Exception e) {
 			addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+readMethod.getName()+"] with type ["+readMethod.getReturnType()+"]");
-			log.warn("Error on getting default for object [" + getObjectName() + "] with method [" + readMethod.getName() + "] attribute ["+name+"] value ["+value+"]", e);
+			log.warn("Error on getting default for object [{}] with method [{}] attribute [{}] value [{}]", getObjectName(), readMethod.getName(), name, value, e);
 		}
 	}
 

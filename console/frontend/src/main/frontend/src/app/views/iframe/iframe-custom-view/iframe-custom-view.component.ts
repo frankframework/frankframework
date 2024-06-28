@@ -1,9 +1,10 @@
 import { LocationStrategy } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { BaseIframeComponent } from '../iframe.base';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-iframe-custom-view',
@@ -12,12 +13,15 @@ import { BaseIframeComponent } from '../iframe.base';
 })
 export class IframeCustomViewComponent
   extends BaseIframeComponent
-  implements OnInit
+  implements OnInit, OnDestroy
 {
+  private routeSubscription?: Subscription;
+
   constructor(
     sanitizer: DomSanitizer,
     appService: AppService,
     private router: Router,
+    private route: ActivatedRoute,
     private location: LocationStrategy,
     private window: Window,
   ) {
@@ -25,21 +29,38 @@ export class IframeCustomViewComponent
   }
 
   ngOnInit(): void {
+    this.routeSubscription = this.route.url.subscribe((url) => {
+      if (url[0].path == 'customView') {
+        this.loadPage();
+      }
+    });
+  }
+
+  loadPage(): void {
     const routeState = this.location.getState() as Record<
       string,
       { name: string; url: string }
     >;
 
-    if (!('view' in routeState) || routeState['view'].url == '')
+    if (!('view' in routeState) || routeState['view'].url == '') {
       this.router.navigate(['status']);
+    }
 
     const view = routeState['view'];
 
     if (view['url'].includes('http')) {
       this.window.open(view['url'], view['name']);
       this.redirectURL = view['url'];
-    } else this.url = this.appService.getServerPath() + view['url'];
+      this.url = '';
+    } else {
+      this.url = this.appService.getServerPath() + view['url'];
+    }
+
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
     this.appService.setIframePopoutUrl(this.url);
+  }
+
+  ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
   }
 }

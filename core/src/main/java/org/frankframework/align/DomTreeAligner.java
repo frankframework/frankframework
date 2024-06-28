@@ -68,7 +68,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, Node node, String childName) throws SAXException {
 		// TODO this does not take overrideValues and defaultValues into account...
-		if (log.isTraceEnabled()) log.trace("hasChild() node ["+node+"] childName ["+childName+"]");
+		if (log.isTraceEnabled()) log.trace("hasChild() node [{}] childName [{}]", node, childName);
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			if (cur.getNodeType()==Node.ELEMENT_NODE && childName.equals(getNodeName(cur))) {
 				return true;
@@ -79,12 +79,12 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
 	@Override
 	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"]");
+		if (log.isTraceEnabled()) log.trace("getAllChildNames() node [{}]", node);
 		Set<String> children = new HashSet<>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			//if (log.isTraceEnabled()) log.trace("getAllChildNames() found node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"] ["+ToStringBuilder.reflectionToString(cur)+"]");
 			if (cur.getNodeType()==Node.ELEMENT_NODE) {
-				if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
+				if (log.isTraceEnabled()) log.trace("getAllChildNames() node [{}] added node [{}] type [{}]", node, getNodeName(cur), cur.getNodeType());
 				children.add(getNodeName(cur));
 			}
 		}
@@ -94,11 +94,11 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	@Override
 	public Iterable<Node> getNodeChildrenByName(Node node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] name ["+name+"]");
+		if (log.isTraceEnabled()) log.trace("getChildrenByName() node [{}] name [{}]", node, name);
 		List<Node> children = new LinkedList<>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			if (cur.getNodeType()==Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
-				if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
+				if (log.isTraceEnabled()) log.trace("getChildrenByName() node [{}] added node [{}]", node, getNodeName(cur));
 				children.add(cur);
 			}
 		}
