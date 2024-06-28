@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.amazonaws.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;

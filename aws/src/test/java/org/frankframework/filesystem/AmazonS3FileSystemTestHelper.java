@@ -9,27 +9,34 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Iterator;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.testutil.PropertyUtil;
-import org.frankframework.util.StringUtil;
-
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import io.findify.s3mock.S3Mock;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.util.StringUtil;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
@@ -38,12 +45,12 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
-	private final Regions clientRegion = Regions.EU_WEST_1;
+	private final Region clientRegion = Region.EU_WEST_1;
 	public static final int S3_PORT = 19090;
 	private final String serviceEndpoint = "http://localhost:" + S3_PORT;
 	private final boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
 
-	private @Getter AmazonS3 s3Client;
+	private @Getter S3Client s3Client;
 
 	public Path tempFolder;
 
@@ -65,18 +72,22 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 			cleanUpFolder(null);
 		}
 
-		if (!s3Client.doesBucketExistV2(bucketName)) {
-			s3Client.createBucket(bucketName);
+		if (s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build()) != null) {
+			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
 		}
 	}
 
 	//For testing purposes
-	public AmazonS3 createS3Client() {
-		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(false)
-				.withForceGlobalBucketAccessEnabled(false)
-				.withClientConfiguration(new ClientConfiguration().withSocketTimeout(1000).withConnectionTimeout(1000))
-				.enablePathStyleAccess();
+	public S3Client createS3Client() {
+		S3Configuration.Builder s3Configuration = S3Configuration.builder()
+				.chunkedEncodingEnabled(true)
+				.multiRegionEnabled(false);
+
+		S3ClientBuilder s3ClientBuilder = S3Client.builder()
+				.forcePathStyle(true)
+				.serviceConfiguration(s3Configuration.build())
+				.httpClientBuilder(ApacheHttpClient.builder().socketTimeout(Duration.ofMillis(1000L)).connectionTimeout(Duration.ofMillis(1000L)))
+				.region(clientRegion);
 
 		BasicAWSCredentials awsCreds;
 		if(runLocalStub) {
@@ -84,9 +95,9 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
 		} else {
 			awsCreds = new BasicAWSCredentials(accessKey, secretKey);
-			s3ClientBuilder.withRegion(clientRegion);
 		}
-		s3ClientBuilder.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+		StaticCredentialsProvider.create(awsCreds);
+		s3ClientBuilder.credentialsProvider(new AwsCredentialsProvider(awsCreds));
 
 		return s3ClientBuilder.build();
 	}
@@ -101,14 +112,14 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public boolean _fileExists(String folder, String filename) {
 		String objectName;
-		if(filename == null) {
+		if (filename == null) {
 			objectName = folder;
-		}else {
-			objectName = folder == null ? filename : folder +"/"+ filename;
+		} else {
+			objectName = folder == null ? filename : folder + "/" + filename;
 		}
 		try {
-			return s3Client.doesObjectExist(bucketName, objectName);
-		} catch(AmazonS3Exception e) {
+			return s3Client.headObject(HeadObjectRequest.builder().key(objectName).bucket(bucketName).build()) != null;
+		} catch (AmazonS3Exception e) {
 			return false;
 		}
 	}
@@ -116,11 +127,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public void _deleteFile(String folder, String filename) {
 		String filePath = folder == null ? filename : folder +"/" + filename;
-		s3Client.deleteObject(bucketName, filePath);
+		s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(filePath).build());
 	}
 
 	@Override
-	public OutputStream _createFile(final String foldername, final String filename) throws IOException {
+	public OutputStream _createFile(final String folderName, final String filename) throws IOException {
 
 		String fileName = tempFolder.toAbsolutePath()+"tempFile";
 
@@ -133,10 +144,8 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 				super.close();
 
 				FileInputStream fis = new FileInputStream(file);
-				ObjectMetadata metaData = new ObjectMetadata();
-				metaData.setContentLength(file.length());
-				String filePath = foldername == null ? filename : foldername + "/" + filename;
-				s3Client.putObject(bucketName, filePath, fis, metaData);
+				String filePath = folderName == null ? filename : folderName + "/" + filename;
+				s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(filePath).build(), RequestBody.fromInputStream(fis, file.length()));
 
 				fis.close();
 				file.delete();

@@ -7,15 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Path;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.PropertyUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.PropertyUtil;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
@@ -35,7 +35,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
 		AmazonS3FileSystem s3 = new AmazonS3FileSystem() {
 			@Override
-			public AmazonS3 createS3Client() {
+			public S3Client createS3Client() {
 				return awsHelper.createS3Client();
 			}
 		};
@@ -71,9 +71,9 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey("456");
 
 		fileSystem.configure();
-		AWSCredentials credentials = fileSystem.getCredentialProvider().getCredentials();
-		assertEquals("123", credentials.getAWSAccessKeyId());
-		assertEquals("456", credentials.getAWSSecretKey());
+		AwsCredentials credentials = fileSystem.getCredentialProvider().resolveCredentials();
+		assertEquals("123", credentials.accessKeyId());
+		assertEquals("456", credentials.secretAccessKey());
 	}
 
 	@Test
@@ -81,8 +81,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setAuthAlias("alias1");
 
 		fileSystem.configure();
-		AWSCredentials credentials = fileSystem.getCredentialProvider().getCredentials();
-		assertEquals("username1", credentials.getAWSAccessKeyId());
+		AwsCredentials credentials = fileSystem.getCredentialProvider().resolveCredentials();
+		assertEquals("username1", credentials.accessKeyId());
 	}
 
 	@Test
@@ -138,11 +138,10 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		String combinedFilename = bucketname +"|" + filename;
 
 		// act
-		S3Object ref = fileSystem.toFile(combinedFilename);
+		S3Object f = fileSystem.toFile(combinedFilename);
 
 		// assert
-		assertEquals(bucketname, ref.getBucketName());
-		assertEquals(filename, ref.getKey());
+		assertEquals(filename, f.key());
 	}
 
 	@Test
@@ -158,7 +157,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		S3Object ref = fileSystem.toFile(combinedFilename);
 
 		// assert
-		assertEquals(bucketname, ref.getBucketName());
-		assertEquals(foldername +"/"+ filename, ref.getKey());
+		assertEquals(foldername +"/"+ filename, ref.key());
 	}
 }
