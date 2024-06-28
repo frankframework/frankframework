@@ -92,8 +92,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		String pipeName = BusMessageUtils.getHeader(message, HEADER_PIPE_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 
-		IMessageBrowser<?> storage = null;
-		StorageItemDTO storageItem = null;
+		IMessageBrowser<?> storage;
+		StorageItemDTO storageItem;
 		if(StringUtils.isNotEmpty(pipeName)) {
 			storage = getStorageFromPipe(adapter, pipeName);
 			storageItem = getMessageWithMetadata(storage, null, messageId);
@@ -121,7 +121,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		String pipeName = BusMessageUtils.getHeader(message, HEADER_PIPE_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 
-		String storageItem = null;
+		String storageItem;
 		if(StringUtils.isNotEmpty(pipeName)) {
 			storageItem = getMessage(getStorageFromPipe(adapter, pipeName), messageId);
 		} else if(StringUtils.isNotEmpty(receiverName)) {

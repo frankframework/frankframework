@@ -189,7 +189,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return globalReplace;
 	}
 
-	public static void cleanGlobalReplace() {
+	public static void clearGlobalReplace() {
 		globalReplace = new HashSet<>();
 	}
 
@@ -214,6 +214,14 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		threadLocalReplace.get().add(regex);
 	}
 
+	public static void removeFromThreadLocalReplace(Pattern regex) {
+		if (regex == null) return;
+
+		if (threadLocalReplace.get() == null) return;
+
+		threadLocalReplace.get().remove(regex);
+	}
+
 	/**
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * Can return null when not used/initalized!
@@ -226,7 +234,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		threadLocalReplace.set(new HashSet<>());
 	}
 
-	public static void removeThreadLocalReplace() {
+	public static void clearThreadLocalReplace() {
 		threadLocalReplace.remove();
 	}
 }

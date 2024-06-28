@@ -60,7 +60,7 @@ public class TestLogMessages {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
 		TestAppender.addToRootLogger(appender);
 		Set<Pattern> globalReplace = IbisMaskingLayout.getGlobalReplace();
-		IbisMaskingLayout.cleanGlobalReplace();
+		IbisMaskingLayout.clearGlobalReplace();
 		// Password matching regex that is intentionally different from the default
 		IbisMaskingLayout.addToGlobalReplace("(?<=password=\").+?(?=\")");
 		try {
@@ -72,7 +72,7 @@ public class TestLogMessages {
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
 		}
 		finally {
-			IbisMaskingLayout.cleanGlobalReplace();
+			IbisMaskingLayout.clearGlobalReplace();
 			globalReplace.forEach(IbisMaskingLayout::addToGlobalReplace);
 			TestAppender.removeAppender(appender);
 		}

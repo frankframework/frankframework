@@ -124,7 +124,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 				}
 			}
 		} finally {
-			IbisMaskingLayout.removeThreadLocalReplace();
+			IbisMaskingLayout.clearThreadLocalReplace();
 		}
 		return result;
 	}
@@ -154,7 +154,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 				}
 			}
 		} finally {
-			IbisMaskingLayout.removeThreadLocalReplace();
+			IbisMaskingLayout.clearThreadLocalReplace();
 		}
 		return result;
 	}

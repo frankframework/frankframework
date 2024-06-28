@@ -603,7 +603,7 @@ public class Adapter implements IAdapter, NamedBean {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
 			}
 
-			IbisMaskingLayout.removeThreadLocalReplace();
+			IbisMaskingLayout.removeFromThreadLocalReplace(composedHideRegexPattern);
 		}
 	}
 
