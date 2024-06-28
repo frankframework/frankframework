@@ -17,12 +17,14 @@ package org.frankframework.aws;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.NoArgsConstructor;
 import org.frankframework.util.CredentialFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class AwsUtil {
 
 	private static final boolean REUSE_LAST_PROVIDER = true;
