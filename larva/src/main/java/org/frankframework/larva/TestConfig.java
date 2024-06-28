@@ -51,7 +51,11 @@ public class TestConfig {
 	public void flushWriters() {
 		try {
 			if (out != null) {
-				synchronized (out) {
+				if (multiThreaded) {
+					synchronized (out) {
+						out.flush();
+					}
+				} else {
 					out.flush();
 				}
 			}
@@ -67,11 +71,13 @@ public class TestConfig {
 			return;
 		}
 		if (silentOut != null) {
-			synchronized (silentOut) {
-				try {
-					silentOut.write(message);
-				} catch (Exception ignored) {
-				}
+			try {
+				if (multiThreaded) {
+					synchronized (silentOut) {
+						silentOut.write(message);
+					}
+				} else silentOut.write(message);
+			} catch (Exception ignored) {
 			}
 		}
 	}

@@ -144,7 +144,7 @@ public class LarvaTool {
 	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
-		String paramMultithreaded = request.getParameter("multithreaded");
+		String paramMultiThreaded = request.getParameter("multithreaded");
 		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
 		String paramGlobalTimeout = request.getParameter("timeout");
@@ -158,7 +158,7 @@ public class LarvaTool {
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		LarvaTool larvaTool = new LarvaTool();
-		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultithreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
+		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
@@ -561,14 +561,22 @@ public class LarvaTool {
 		}
 		if (logLevel == null || config.getLogLevel().shouldLog(logLevel)) {
 			try {
-				synchronized (writer) { // Needs to be synced to prevent interleaving of messages or that the output stops
-					writer.write(html + "\n");
-					if (scroll && config.isAutoScroll()) {
-						writer.write("<script type=\"text/javascript\"><!--\nscrollToBottom();\n--></script>\n");
+				if (config.isMultiThreaded()) {
+					synchronized (writer) { // Needs to be synced to prevent interleaving of messages or that the output stops
+						doWriteHtml(html, scroll, writer);
 					}
+				} else {
+					doWriteHtml(html, scroll, writer);
 				}
 			} catch (IOException ignored) {
 			}
+		}
+	}
+
+	private void doWriteHtml(String html, boolean scroll, Writer writer) throws IOException {
+		writer.write(html + "\n");
+		if (scroll && config.isAutoScroll()) {
+			writer.write("<script type=\"text/javascript\"><!--\nscrollToBottom();\n--></script>\n");
 		}
 	}
 
@@ -2348,7 +2356,7 @@ public class LarvaTool {
 
 			// Extract ignore type
 			String ignore = key.split(Pattern.quote("."))[0];
-			ArrayList<String> attributes = findAttributesForIgnore(ignore);
+			List<String> attributes = findAttributesForIgnore(ignore);
 
 			if(attributes != null){
 				// Extract identifier
@@ -2397,19 +2405,17 @@ public class LarvaTool {
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
 	*/
-	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
+	public static List<String> findAttributesForIgnore(String propertyName) {
 		return switch (propertyName) {
 			case "decodeUnzipContentBetweenKeys" -> new ArrayList<>(Arrays.asList("key1", "key2", "replaceNewlines"));
 			case "canonicaliseFilePathContentBetweenKeys", "replaceRegularExpressionKeys", "ignoreContentBetweenKeys", "ignoreKeysAndContentBetweenKeys",
-				 "removeKeysAndContentBetweenKeys", "replaceKey", "formatDecimalContentBetweenKeys", "replaceEverywhereKey" ->
-					new ArrayList<>(Arrays.asList("key1", "key2"));
-			case "ignoreRegularExpressionKey", "removeRegularExpressionKey", "ignoreContentBeforeKey", "ignoreContentAfterKey" ->
-					new ArrayList<>(List.of("key"));
+				 "removeKeysAndContentBetweenKeys", "replaceKey", "formatDecimalContentBetweenKeys", "replaceEverywhereKey" -> List.of("key1", "key2");
+			case "ignoreRegularExpressionKey", "removeRegularExpressionKey", "ignoreContentBeforeKey", "ignoreContentAfterKey" -> List.of("key");
 			case "ignoreCurrentTimeBetweenKeys" -> new ArrayList<>(Arrays.asList("key1", "key2", "pattern", "margin", "errorMessageOnRemainingString"));
 			case "ignoreKey", "removeKey" ->
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
-					new ArrayList<>(Arrays.asList("key", ""));
+					List.of("key", "");
 			default -> null;
 		};
 	}

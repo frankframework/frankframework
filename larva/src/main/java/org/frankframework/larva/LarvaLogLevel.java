@@ -41,7 +41,7 @@ public enum LarvaLogLevel {
 
 	public static LarvaLogLevel parse(String value, LarvaLogLevel defaultValue) {
 		for (LarvaLogLevel level : values()) {
-			if (level.name.equals(value)) {
+			if (level.name.equalsIgnoreCase(value)) {
 				return level;
 			}
 		}
