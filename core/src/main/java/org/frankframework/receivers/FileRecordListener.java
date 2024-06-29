@@ -51,7 +51,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Johan Verrips
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
 public class FileRecordListener implements IPullingListener<String> {
 	protected Logger log = LogUtil.getLogger(this);

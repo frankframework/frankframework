@@ -119,7 +119,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	 * @ff.default true
 	 * @deprecated the current implementation always uses SecureRandom. Please remove this attribute from the Configuration.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "8.2.0")
 	@ConfigurationWarning("the current implementation always uses SecureRandom. Please remove this attribute from the Configuration.")
 	public void setUseSecureRandom(boolean b) {
 		// do nothing

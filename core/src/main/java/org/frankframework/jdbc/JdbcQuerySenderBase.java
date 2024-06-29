@@ -975,7 +975,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 * If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1078,7 +1078,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 * When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB
 	 * @ff.default true
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}

@@ -210,7 +210,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		qs.close();
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
