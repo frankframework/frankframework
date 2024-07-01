@@ -165,23 +165,6 @@
 					</executions>
 				</plugin>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>npm install</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution><execution>
-							<id>ng build</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
 					<executions>
