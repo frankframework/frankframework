@@ -22,7 +22,9 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.web.RequestMessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
+@Component
 public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
@@ -30,11 +32,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.UPDATES);
 
 		Message<?> message = sendSyncMessageWithoutHttp(builder);
-		Message<?> response = convertMessageToDiff(builder.getBusMessageName(), message);
-
-		if (!response.getPayload().equals("{}")) {
-			this.messagingTemplate.convertAndSend("/event/server-warnings", response.getPayload());
-		}
+		this.messagingTemplate.convertAndSend("/event/server-warnings", message.getPayload());
 	}
 
 	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)

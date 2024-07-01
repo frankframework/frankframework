@@ -219,126 +219,115 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.consoleState.init === appInitState.UN_INIT) {
-      this.consoleState.init = appInitState.PRE_INIT;
-      this.debugService.log('Initializing Frank!Console');
-    } else if (this.consoleState.init === appInitState.PRE_INIT) {
+    if (this.consoleState.init !== appInitState.UN_INIT) {
       this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
-    } else {
-      this.debugService.info('Loading Frank!Console', this.consoleState.init);
     }
+    this.consoleState.init = appInitState.PRE_INIT;
+    this.debugService.log('Initializing Frank!Console');
 
-    if (this.consoleState.init === appInitState.PRE_INIT) {
-      this.consoleState.init = appInitState.INIT;
-      this.appService.getServerInfo().subscribe({
-        next: (data) => {
-          this.serverInfo = data;
+    this.consoleState.init = appInitState.INIT;
+    this.appService.getServerInfo().subscribe({
+      next: (data) => {
+        this.serverInfo = data;
 
-          this.consoleState.init = appInitState.POST_INIT;
-          if (!this.router.url.includes('login')) {
-            this.idle.watch();
-            this.renderer.removeClass(document.body, 'gray-bg');
-          }
+        this.consoleState.init = appInitState.POST_INIT;
+        if (!this.router.url.includes('login')) {
+          this.idle.watch();
+          this.renderer.removeClass(document.body, 'gray-bg');
+        }
 
-          this.appService.dtapStage = data['dtap.stage'];
-          this.dtapStage = data['dtap.stage'];
-          this.dtapSide = data['dtap.side'];
-          // appService.userName = data["userName"];
-          this.userName = data['userName'];
+        this.appService.dtapStage = data['dtap.stage'];
+        this.dtapStage = data['dtap.stage'];
+        this.dtapSide = data['dtap.side'];
+        // appService.userName = data["userName"];
+        this.userName = data['userName'];
 
-          const serverTime = Date.parse(
-            new Date(data.serverTime).toUTCString(),
+        const serverTime = Date.parse(new Date(data.serverTime).toUTCString());
+        const localTime = Date.parse(new Date().toUTCString());
+        this.consoleState.timeOffset = serverTime - localTime;
+        // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
+        this.appConstants['timezoneOffset'] = 0;
+        //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
+
+        const updateTime = (): void => {
+          const serverDate = new Date();
+          serverDate.setTime(
+            serverDate.getTime() - this.consoleState.timeOffset,
           );
-          const localTime = Date.parse(new Date().toUTCString());
-          this.consoleState.timeOffset = serverTime - localTime;
-          // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
-          this.appConstants['timezoneOffset'] = 0;
-          //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
+          this.serverTime = formatDate(
+            serverDate,
+            this.appConstants['console.dateFormat'] as string,
+            this.locale,
+          );
+        };
+        window.setInterval(updateTime, 1000);
+        updateTime();
 
-          const updateTime = (): void => {
-            const serverDate = new Date();
-            serverDate.setTime(
-              serverDate.getTime() - this.consoleState.timeOffset,
-            );
-            this.serverTime = formatDate(
-              serverDate,
-              this.appConstants['console.dateFormat'] as string,
-              this.locale,
-            );
-          };
-          window.setInterval(updateTime, 1000);
-          updateTime();
+        this.appService.updateInstanceName(data.instance.name);
 
-          this.appService.updateInstanceName(data.instance.name);
+        const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
+        if (iafInfoElement)
+          iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
 
-          const iafInfoElement =
-            document.querySelector<HTMLElement>('.iaf-info');
-          if (iafInfoElement)
-            iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
+        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
-          this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
+        if (this.appService.dtapStage == 'LOC') {
+          this.debugService.setLevel(3);
+        }
 
-          if (this.appService.dtapStage == 'LOC') {
-            this.debugService.setLevel(3);
-          }
+        //Was it able to retrieve the serverinfo without logging in?
+        if (!this.loggedin) {
+          this.idle.setTimeout(0);
+        }
 
-          //Was it able to retrieve the serverinfo without logging in?
-          if (!this.loggedin) {
-            this.idle.setTimeout(0);
-          }
+        this.appService.getConfigurations().subscribe((data) => {
+          this.appService.updateConfigurations(data);
+        });
 
-          this.appService.getConfigurations().subscribe((data) => {
-            this.appService.updateConfigurations(data);
-          });
+        this.initializeWarnings();
+        this.initializeWebsocket();
+        this.checkIafVersions();
+      },
+      error: (error: HttpErrorResponse) => {
+        // HTTP 5xx error
+        if (error.status.toString().startsWith('5')) {
+          this.router.navigate(['error']);
+        }
+      },
+    });
+    this.appService.getEnvironmentVariables().subscribe((data) => {
+      if (data['Application Constants']) {
+        this.appConstants = Object.assign(
+          this.appConstants,
+          data['Application Constants']['All'],
+        ); //make FF!Application Constants default
 
-          this.initializeWebsocket();
-          this.checkIafVersions();
-          this.initializeWarnings();
-        },
-        error: (error: HttpErrorResponse) => {
-          // HTTP 5xx error
-          if (error.status.toString().startsWith('5')) {
-            this.router.navigate(['error']);
-          }
-        },
-      });
-      this.appService.getEnvironmentVariables().subscribe((data) => {
-        if (data['Application Constants']) {
-          this.appConstants = Object.assign(
-            this.appConstants,
-            data['Application Constants']['All'],
-          ); //make FF!Application Constants default
-
-          const idleTime =
-            Number.parseInt(this.appConstants['console.idle.time'] as string) >
-            0
+        const idleTime =
+          Number.parseInt(this.appConstants['console.idle.time'] as string) > 0
+            ? Number.parseInt(this.appConstants['console.idle.time'] as string)
+            : 0;
+        if (idleTime > 0) {
+          const idleTimeout =
+            Number.parseInt(
+              this.appConstants['console.idle.timeout'] as string,
+            ) > 0
               ? Number.parseInt(
-                  this.appConstants['console.idle.time'] as string,
+                  this.appConstants['console.idle.timeout'] as string,
                 )
               : 0;
-          if (idleTime > 0) {
-            const idleTimeout =
-              Number.parseInt(
-                this.appConstants['console.idle.timeout'] as string,
-              ) > 0
-                ? Number.parseInt(
-                    this.appConstants['console.idle.timeout'] as string,
-                  )
-                : 0;
-            this.idle.setIdle(idleTime);
-            this.idle.setTimeout(idleTimeout);
-          } else {
-            this.idle.stop();
-          }
-          this.appService.updateDatabaseSchedulesEnabled(
-            this.appConstants['loadDatabaseSchedules.active'] === 'true',
-          );
-          this.appService.triggerAppConstants();
+          this.idle.setIdle(idleTime);
+          this.idle.setTimeout(idleTimeout);
+        } else {
+          this.idle.stop();
         }
-      });
-    }
+        this.appService.updateDatabaseSchedulesEnabled(
+          this.appConstants['loadDatabaseSchedules.active'] === 'true',
+        );
+        this.appService.triggerAppConstants();
+      }
+    });
 
     const token = sessionStorage.getItem('authToken');
     this.loggedin = token != null && token != 'null' ? true : false;
@@ -436,7 +425,11 @@ export class AppComponent implements OnInit, OnDestroy {
         (data) => this.pollerCallback(data),
       );
     });
-    this.websocketService.activate();
+
+    this.appService.getAdapters('all').subscribe((data) => {
+      this.pollerCallback(data);
+      this.websocketService.activate();
+    });
   }
 
   initializeWarnings(): void {
@@ -502,10 +495,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //Get base information first, then update it with more details
     this.appService
       .getAdapters()
-      .pipe(first())
-      .subscribe((data: Record<string, Adapter>) => {
-        this.finalizeStartup(data);
-      });
+      .subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
   pollerCallback(allAdapters: Record<string, Adapter>): void {
