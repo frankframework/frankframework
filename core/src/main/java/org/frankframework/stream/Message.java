@@ -843,30 +843,6 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
-	 */
-	public static String asString(Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof String string) {
-			return string;
-		}
-		if (object instanceof Message message) {
-			message.assertNotClosed();
-			return message.asString();
-		}
-		if (object instanceof MessageWrapper wrapper) {
-			return wrapper.getMessage().asString();
-		}
-
-		// In other cases, message can be closed directly after converting to String.
-		try (Message message = Message.asMessage(object)) {
-			return message.asString();
-		}
-	}
-
-	/**
 	 * Check if the message passed is null or empty.
 	 *
 	 * @param message Message to check. Can be {@code null}.
