@@ -16,6 +16,7 @@
 package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -130,7 +131,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		try {
 			callSyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("no StorageSource provided", be.getMessage());
 		}
@@ -272,7 +273,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		try {
 			callAsyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("unable to retry message with id [2]: testing message ->2", be.getMessage());
 		}
@@ -291,7 +292,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		try {
 			callAsyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("unable to delete message with id [2]: testing message ->2", be.getMessage());
 
@@ -393,18 +394,15 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 	public RawMessageWrapper<String> messageMock(InvocationOnMock invocation) {
 		String id = (String) invocation.getArguments()[0];
-		switch (id) {
-		case "1":
-			return new RawMessageWrapper<>(JSON_MESSAGE, id, null);
-		case "2":
-			return new RawMessageWrapper<>(XML_MESSAGE, id, null);
-		default:
-			return new RawMessageWrapper<>("<xml>"+id+"</xml>", id, null);
-		}
+		return switch (id) {
+			case "1" -> new RawMessageWrapper<>(JSON_MESSAGE, id, null);
+			case "2" -> new RawMessageWrapper<>(XML_MESSAGE, id, null);
+			default -> new RawMessageWrapper<>("<xml>" + id + "</xml>", id, null);
+		};
 	}
 
 	public static class DummyMessageBrowsingIterator implements IMessageBrowsingIterator {
-		private Deque<IMessageBrowsingIteratorItem> items = new LinkedList<>();
+		private final Deque<IMessageBrowsingIteratorItem> items = new LinkedList<>();
 		public DummyMessageBrowsingIterator() {
 			items.add(DummyMessageBrowsingIteratorItem.newInstance("1"));
 			items.add(DummyMessageBrowsingIteratorItem.newInstance("2"));
@@ -454,7 +452,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public String getOriginalId() throws ListenerException {
+		public String getOriginalId() {
 			return messageId;
 		}
 	}
