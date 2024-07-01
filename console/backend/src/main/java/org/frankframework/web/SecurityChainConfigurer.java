@@ -18,6 +18,12 @@ package org.frankframework.web;
 import java.lang.reflect.Method;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -29,15 +35,11 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import lombok.Setter;
-import org.frankframework.lifecycle.servlets.AuthenticationType;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
 
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
+import lombok.Setter;
 
 @Configuration
 @EnableWebSecurity //Enables Spring Security (classpath)
@@ -75,11 +77,15 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	}
 
 	@Bean
-	public SecurityFilterChain configureChain(HttpSecurity http) {
+	public SecurityFilterChain configureChain(HttpSecurity http) throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		authenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
+
+		//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
+		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+		http.csrf(CsrfConfigurer::disable);
 
 		return authenticator.configureHttpSecurity(http);
 	}

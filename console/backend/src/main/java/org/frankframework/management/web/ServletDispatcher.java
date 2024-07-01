@@ -13,9 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.web;
+package org.frankframework.management.web;
 
-import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletConfig;
@@ -24,66 +27,30 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
-import org.springframework.web.servlet.DispatcherServlet;
 
-@Component
-@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Log4j2
-public class ServletDispatcher extends DispatcherServlet implements DynamicRegistration.Servlet {
+public class ServletDispatcher extends DispatcherServlet {
 
 	private static final long serialVersionUID = 4L;
 
 	private final transient Logger secLog = LogManager.getLogger("SEC");
 
-	@Value("${iaf-api.enabled:true}")
-	private transient boolean isEnabled;
-
-
 	public ServletDispatcher() {
-		setNamespace(getName());
-		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext.xml");
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		//don't wire the parent's (EnvironmentContext) ApplicationContext,
+		setNamespace(getServletName());
 	}
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if (!isEnabled) {
-			return;
-		}
-		ServletRegistration.Dynamic servletRegistration = (ServletRegistration.Dynamic) servletConfig.getServletContext().getServletRegistration(getName());
+		ServletRegistration.Dynamic servletRegistration = (ServletRegistration.Dynamic) servletConfig.getServletContext().getServletRegistration(getServletName());
 		servletRegistration.setAsyncSupported(true);
 		servletRegistration.setMultipartConfig(new MultipartConfigElement(""));
 
-		log.debug("initialize {} servlet", this::getName);
+		log.debug("initialize {} servlet", this::getServletName);
 		super.init(servletConfig);
 	}
 
 	@Override
 	public void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		if (!isEnabled) {
-			try {
-				response.sendError(404, "api backend not enabled");
-			} catch (IOException e) {
-				log.trace("unable to send 404 error to client", e);
-			}
-
-			return;
-		}
-
 		// Log POST, PUT and DELETE requests
 		final String method = request.getMethod();
 		if (!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
@@ -97,28 +64,7 @@ public class ServletDispatcher extends DispatcherServlet implements DynamicRegis
 	}
 
 	@Override
-	public String getName() {
+	public String getServletName() {
 		return "IAF-API";
 	}
-
-	@Override
-	public int loadOnStartUp() {
-		return 0;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return isEnabled;
-	}
-
-	@Override
-	public String[] getAccessGrantingRoles() {
-		return ALL_IBIS_USER_ROLES;
-	}
-
-	@Override
-	public String getUrlMapping() {
-		return "iaf/api/*,!/iaf/api/server/health";
-	}
-
 }
