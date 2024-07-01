@@ -165,6 +165,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			httpSecurityConfigurer.csrf(CsrfConfigurer::disable); //Disable CSRF, post requests should be possible.
 			httpSecurityConfigurer.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); //Disable the logout filter
+			httpSecurityConfigurer.headers(h -> h.frameOptions(o -> o.sameOrigin()));
 
 			return configureHttpSecurity(httpSecurityConfigurer);
 		} catch (Exception e) {
