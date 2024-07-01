@@ -185,7 +185,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				http.csrf(csrf -> csrf
 						.csrfTokenRepository(csrfTokenRepository)
 						.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-						.ignoringRequestMatchers(request -> request.getRequestURI().endsWith("/iaf/larva/index.jsp"), request -> request.getRequestURI().endsWith("/iaf/testtool"))
+						.ignoringRequestMatchers(
+								request -> request.getRequestURI().endsWith("/iaf/larva/index.jsp"),
+								request -> request.getRequestURI().endsWith("/iaf/testtool"),
+								request -> request.getRequestURI().endsWith("/iaf/ladybug")
+						)
 				);
 			} else {
 				http.csrf(CsrfConfigurer::disable);
