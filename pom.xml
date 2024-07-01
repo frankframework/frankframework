@@ -28,7 +28,7 @@
 		<tomcat.version>10.1.25</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
-		<narayana.version>7.0.1.Final</narayana.version>
+		<narayana.version>7.0.2.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
 		<micrometer.version>1.13.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
