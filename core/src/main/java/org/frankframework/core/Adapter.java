@@ -132,8 +132,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
-	private String composedHideRegex;
-	private Pattern composedHideRegexPattern;
+	private @Getter String composedHideRegex;
+	private @Getter Pattern composedHideRegexPattern;
 
 	private static class SenderLastExitState {
 		private final String lastExitState;

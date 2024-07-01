@@ -34,6 +34,7 @@ import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
+import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -70,15 +71,27 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	private static final TransactionDefinition TXNEW_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
 	/**
-	 * Edits the input string according to the regex and the hide method specified.
+	 * Cleans sensitive information from the input string according to the regexes and the hide method specified
+	 * in the Adapter and MessageBrowser.
+	 *
+	 * @see IPipe#setHideRegex(String)
+	 * @see IMessageBrowser#setHideRegex(String)
 	 * @see StringUtil#hideAll(String, String, int)
 	 */
-	public static String cleanseMessage(String inputString, String regexForHiding, IMessageBrowser.HideMethod hideMethod) {
-		if (StringUtils.isEmpty(regexForHiding) || StringUtils.isEmpty(inputString)) {
+	public static String cleanseMessage(String inputString, Adapter adapter, IMessageBrowser<?> messageBrowser) {
+		if (StringUtils.isEmpty(inputString)) {
 			return inputString;
 		}
 		// Ordinal of the HideMethod enum matches to the mode parameter value for hideAll method
-		return StringUtil.hideAll(inputString, regexForHiding, hideMethod.ordinal());
+		int hideMode = messageBrowser.getHideMethod().ordinal();
+		String result = StringUtil.hideAll(inputString, IbisMaskingLayout.getGlobalReplace(), hideMode);
+		if (adapter.getComposedHideRegexPattern() != null) {
+			result = StringUtil.hideAll(result, adapter.getComposedHideRegexPattern(), hideMode);
+		}
+		if (messageBrowser.getHideRegex() != null) {
+			result = StringUtil.hideAll(result, messageBrowser.getHideRegex(), hideMode);
+		}
+		return result;
 	}
 
 	@ActionSelector(BusAction.GET)
@@ -96,13 +109,13 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		StorageItemDTO storageItem;
 		if(StringUtils.isNotEmpty(pipeName)) {
 			storage = getStorageFromPipe(adapter, pipeName);
-			storageItem = getMessageWithMetadata(storage, null, messageId);
+			storageItem = getMessageWithMetadata(adapter, storage, null, messageId);
 		} else if(StringUtils.isNotEmpty(receiverName)) {
 			ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
 			Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 
 			storage = receiver.getMessageBrowser(processState);
-			storageItem = getMessageWithMetadata(storage, receiver.getListener(), messageId);
+			storageItem = getMessageWithMetadata(adapter, storage, receiver.getListener(), messageId);
 		} else {
 			throw new BusException("no StorageSource provided");
 		}
@@ -123,13 +136,13 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 		String storageItem;
 		if(StringUtils.isNotEmpty(pipeName)) {
-			storageItem = getMessage(getStorageFromPipe(adapter, pipeName), messageId);
+			storageItem = getMessage(adapter, getStorageFromPipe(adapter, pipeName), messageId);
 		} else if(StringUtils.isNotEmpty(receiverName)) {
 			ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
 			Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 
 			IMessageBrowser<?> storage = receiver.getMessageBrowser(processState);
-			storageItem = getMessage(storage, receiver.getListener(), messageId);
+			storageItem = getMessage(adapter, storage, receiver.getListener(), messageId);
 		} else {
 			throw new BusException("no StorageSource provided");
 		}
@@ -301,8 +314,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		return storage;
 	}
 
-	private StorageItemDTO getMessageWithMetadata(IMessageBrowser<?> storage, IListener<?> listener, String messageId) {
-		String message = getMessage(storage, listener, messageId);
+	private StorageItemDTO getMessageWithMetadata(Adapter adapter, IMessageBrowser<?> storage, IListener<?> listener, String messageId) {
+		String message = getMessage(adapter, storage, listener, messageId);
 		try(IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
 			StorageItemDTO dto = new StorageItemDTO(item);
 			dto.setMessage(message);
@@ -312,10 +325,11 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		}
 	}
 
-	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
-		return getMessage(messageBrowser, null, messageId);
+	private String getMessage(Adapter adapter, IMessageBrowser<?> messageBrowser, String messageId) {
+		return getMessage(adapter, messageBrowser, null, messageId);
 	}
-	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
+
+	private String getMessage(Adapter adapter, IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
 		if(messageBrowser == null) {
 			throw new BusException("no MessageBrowser found");
 		}
@@ -331,7 +345,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		if (StringUtils.isEmpty(msg)) {
 			msg = "<no message found/>";
 		} else {
-			msg = cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
+			msg = cleanseMessage(msg, adapter, messageBrowser);
 		}
 
 		return msg;
