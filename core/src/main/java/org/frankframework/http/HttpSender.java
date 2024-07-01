@@ -503,7 +503,7 @@ public class HttpSender extends HttpSenderBase {
 	 * If false and <code>methodType</code>=<code>POST</code>, request parameters are put in the request body instead of in the url
 	 * @ff.default true
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
 			if(postType != PostType.MTOM && postType != PostType.FORMDATA) { //Don't override if another type has explicitly been set

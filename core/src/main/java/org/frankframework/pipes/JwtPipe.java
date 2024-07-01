@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,16 +53,16 @@ import org.frankframework.util.MessageUtils;
 /**
  * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
  *
+ * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>. This parameter has worse performance, compared to this pipes attribute.
+ * 
  * @author Niels Meijer
- * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>. This parameter has worse performance, compared with the JwtPipe attribute.
  * @since 7.9
  */
 @Category("Basic")
 public class JwtPipe extends FixedForwardPipe {
 	static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
 
-	private @Setter(AccessLevel.PACKAGE) boolean jwtAllowWeakSecrets = AppConstants.getInstance()
-			.getBoolean("application.security.jwt.allowWeakSecrets", false);
+	private @Setter(AccessLevel.PACKAGE) boolean jwtAllowWeakSecrets = AppConstants.getInstance().getBoolean("application.security.jwt.allowWeakSecrets", false);
 
 	private JWSHeader jwtHeader;
 	private JWSSigner globalSigner;

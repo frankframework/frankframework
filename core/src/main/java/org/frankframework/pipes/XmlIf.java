@@ -144,7 +144,7 @@ public class XmlIf extends AbstractPipe {
 		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use getInputFromSessionKey instead.")
 	/** name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code> */
 	public void setSessionKey(String sessionKey){

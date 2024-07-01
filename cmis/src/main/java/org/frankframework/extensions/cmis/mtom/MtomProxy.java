@@ -41,7 +41,7 @@ import org.frankframework.util.StringUtil;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
-@Deprecated // remove this class, use default webservices endpoints in combination with the CmisFilter
+@Deprecated(forRemoval = true, since = "7.6.0") // remove this class, use default webservices endpoints in combination with the CmisFilter
 public class MtomProxy extends HttpServletBase implements InitializingBean, ApplicationContextAware {
 
 	private final Logger log = LogUtil.getLogger(this);

@@ -824,7 +824,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 *
 	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setPersistent(boolean value) {
 		persistent = value;
 	}
@@ -868,7 +868,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * relied this specific functionality. New configurations should not use it.
 	 *
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setJmsTransacted(boolean jmsTransacted) {
 		this.jmsTransacted = jmsTransacted;
 	}

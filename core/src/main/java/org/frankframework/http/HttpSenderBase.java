@@ -535,22 +535,22 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		charSet = string;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
 		setKeystore(string);
 	}
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("has been replaced with keystoreType")
 	public void setCertificateType(KeystoreType value) {
 		setKeystoreType(value);
 	}
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
 	public void setCertificateAuthAlias(String string) {
 		setKeystoreAuthAlias(string);
 	}
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use attribute keystorePassword instead")
 	public void setCertificatePassword(String string) {
 		setKeystorePassword(string);

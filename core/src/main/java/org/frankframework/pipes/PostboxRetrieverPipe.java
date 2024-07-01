@@ -47,8 +47,8 @@ import org.frankframework.stream.Message;
   *
  * @author  John Dekker
  */
-@Deprecated
-public class PostboxRetrieverPipe  extends FixedForwardPipe {
+@Deprecated(forRemoval = true, since = "7.7.0")
+public class PostboxRetrieverPipe extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
