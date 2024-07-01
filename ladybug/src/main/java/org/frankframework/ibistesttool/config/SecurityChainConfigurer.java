@@ -40,6 +40,9 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.context.ServletContextAware;
@@ -118,7 +121,7 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 		webSecurity.addSecurityFilterChainBuilder(() -> chain);
 	}
 
-	public SecurityFilterChain configureChain() {
+	private SecurityFilterChain configureChain() throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
 
 		authenticator.registerServlet(createServletConfig("backendServletBean"));
@@ -126,6 +129,10 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 		authenticator.registerServlet(createServletConfig("testtoolServletBean"));
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
+
+		httpSecurity.csrf(CsrfConfigurer::disable); //Disable CSRF, should be configured in the Ladybug
+		httpSecurity.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
+		httpSecurity.logout(LogoutConfigurer::disable); //Disable the logout filter
 		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 
