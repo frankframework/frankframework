@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.stream.IntStream;
 
@@ -43,16 +43,15 @@ public class ReplacingVariablesInputStream extends InputStream {
 
 	private final InputStream in;
 	private final byte[] variablePrefix;
-	private final Map<String, String> keyValuePairs;
+	private final Properties properties;
 	private final Queue<Integer> inQueue;
 	private final Queue<Integer> outQueue;
 	private boolean lookingForSuffix = false;
 
-
-	protected ReplacingVariablesInputStream(InputStream in, String variablePrefix, Map<String, String> keyValuePairs) {
+	protected ReplacingVariablesInputStream(InputStream in, String variablePrefix, Properties properties) {
 		this.in = in;
 		this.variablePrefix = (variablePrefix + "{").getBytes();
-		this.keyValuePairs = keyValuePairs;
+		this.properties = properties;
 
 		this.inQueue = new LinkedList<>();
 		this.outQueue = new LinkedList<>();
@@ -83,8 +82,8 @@ public class ReplacingVariablesInputStream extends InputStream {
 	private byte[] getReplacementValue(byte[] matchingKeyInBytes) {
 		String matchingKey = new String(matchingKeyInBytes);
 
-		if (keyValuePairs.containsKey(matchingKey)) {
-			return keyValuePairs.get(matchingKey).getBytes();
+		if (properties.containsKey(matchingKey)) {
+			return properties.getProperty(matchingKey).getBytes();
 		}
 
 		// If no match for the key was found, return the original value

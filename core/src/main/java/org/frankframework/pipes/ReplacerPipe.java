@@ -16,7 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -127,30 +127,22 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 */
 	private ReplacingVariablesInputStream wrapWithSubstituteVarsInputStreamIfNeeded(ReplacingVariablesInputStream replaceParametersStream) {
 		if (substituteVars) {
-			return new ReplacingVariablesInputStream(replaceParametersStream, "$", getKeyValueMapForAppConstants());
+			return new ReplacingVariablesInputStream(replaceParametersStream, "$", appConstants);
 		}
 
 		return replaceParametersStream;
 	}
 
 	/**
-	 * @return the appConstants as a key/value map combined with the session values
-	 */
-	private Map<String, String> getKeyValueMapForAppConstants() {
-		return appConstants.entrySet().stream()
-				.collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString()));
-	}
-
-	/**
 	 * @return the pipe's parameters as key/value map
 	 * @throws PipeRunException
 	 */
-	private Map<String, String> getKeyValueMapForParameters(Message message, PipeLineSession session) throws PipeRunException {
+	private Properties getKeyValueMapForParameters(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			ParameterValueList pvl = getParameterList().getValues(message, session);
 
 			return StreamSupport.stream(pvl.spliterator(), false)
-					.collect(Collectors.toMap(ParameterValue::getName, pv -> pv.asStringValue("")));
+					.collect(Collectors.toMap(ParameterValue::getName, pv -> pv.asStringValue(""), (prev, next) -> next, Properties::new));
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}

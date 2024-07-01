@@ -167,6 +167,15 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
+	public void testPropertyReferenceInProperty() throws Exception {
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>${unresolved.property}<br /></test>", session);
+		assertEquals("<test>123<br /></test>", res.getResult().asString());
+	}
+
+	@Test
 	@DisplayName("Make sure that nothing is replaced if the ${} / ?{} syntax isn't closed")
 	public void testSubstituteVarsIncorrectSyntax() throws Exception {
 		session.put("varToSubstitute", "substitutedValue");
