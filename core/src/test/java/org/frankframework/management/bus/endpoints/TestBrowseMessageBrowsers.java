@@ -26,6 +26,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.Deque;
@@ -75,6 +76,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 public class TestBrowseMessageBrowsers extends BusTestBase {
 	private static final String JSON_MESSAGE = "{\"dummy\":1}";
 	private static final String XML_MESSAGE = "<dummy>2</dummy>";
+
 	private Adapter adapter;
 
 	@BeforeEach
@@ -304,9 +306,17 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	 */
 	@Test
 	public void testCleanseMessageHideAll() {
+		// Arrange
 		String s = "Donald Duck 23  Hey hey  14  Wooo";
 		String regex = "\\d";
-		String res = BrowseMessageBrowsers.cleanseMessage(s, regex, IMessageBrowser.HideMethod.ALL);
+		IMessageBrowser<?> messageBrowser = mock(IMessageBrowser.class);
+		when(messageBrowser.getHideRegex()).thenReturn(regex);
+		when(messageBrowser.getHideMethod()).thenReturn(IMessageBrowser.HideMethod.ALL);
+
+		// Act
+		String res = BrowseMessageBrowsers.cleanseMessage(s, adapter, messageBrowser);
+
+		// Assert
 		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
 	}
 
@@ -316,9 +326,17 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	 */
 	@Test
 	public void testCleanseMessageHideFirstHalf() {
+		// Arrange
 		String s = "1 Donald Duck 123  Hey hey  45  Wooo  6789 and 12345";
 		String regex = "\\d+";
-		String res = BrowseMessageBrowsers.cleanseMessage(s, regex, IMessageBrowser.HideMethod.FIRSTHALF);
+		IMessageBrowser<?> messageBrowser = mock(IMessageBrowser.class);
+		when(messageBrowser.getHideRegex()).thenReturn(regex);
+		when(messageBrowser.getHideMethod()).thenReturn(IMessageBrowser.HideMethod.FIRSTHALF);
+
+		// Act
+		String res = BrowseMessageBrowsers.cleanseMessage(s, adapter, messageBrowser);
+
+		// Assert
 		assertEquals("* Donald Duck **3  Hey hey  *5  Wooo  **89 and ***45", res);
 	}
 
@@ -357,6 +375,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	private ITransactionalStorage getTransactionalStorage() {
 		ITransactionalStorage<String> browser = mock(ITransactionalStorage.class);
 		try {
+			doReturn(IMessageBrowser.HideMethod.ALL).when(browser).getHideMethod();
 			doReturn("silly mock because the storage requires a name").when(browser).getName();
 			doAnswer(DummyMessageBrowsingIteratorItem.newMock()).when(browser).getContext(anyString());
 			DummyMessageBrowsingIterator iterator = new DummyMessageBrowsingIterator();
