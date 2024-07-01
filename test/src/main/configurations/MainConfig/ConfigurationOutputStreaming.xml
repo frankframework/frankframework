@@ -28,7 +28,7 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<FixedResultPipe name="createData" returnString="data" storeResultInSessionKey="ref_FileContent" />
+			<PutInSessionPipe name="createData" value="data" sessionKey="ref_FileContent" />
 			<pipe
 				name="TransformResponse"
 				className="org.frankframework.pipes.XsltPipe"

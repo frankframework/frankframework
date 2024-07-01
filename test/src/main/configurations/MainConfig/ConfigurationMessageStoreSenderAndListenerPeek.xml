@@ -29,7 +29,7 @@
 				<sender className="org.frankframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener2" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -10,7 +10,8 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="make unique message"
-                  className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
+                  className="org.frankframework.pipes.ReplacerPipe"
+				getInputFromFixedValue="&lt;msg mid=&quot;?{MID}&quot; action=&quot;?{ACTION}&quot; /&gt;">
 				<param name="MID" sessionKey="mid" />
 				<param name="ACTION" xpathExpression="request/@action" />
 			</pipe>

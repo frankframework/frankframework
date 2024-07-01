@@ -10,7 +10,7 @@
 				</exits>
 				<!-- Test needs a deprecated (pipe) element -->
 				<pipe name="DeprecatedPipe1InAdapter1"
-					  className="org.frankframework.pipes.FixedResult" returnString="Hello World">
+					  className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World">
 					<forward name="success" path="EXIT"/>
 				</pipe>
 				<!-- Test needs a pipe with deprecated property -->
@@ -32,7 +32,7 @@
 				</exits>
 				<!-- Test needs a deprecated (pipe) element -->
 				<pipe name="DeprecatedPipe1InAdapter2"
-					  className="org.frankframework.pipes.FixedResult" returnString="Hello Universe">
+					  className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello Universe">
 					<forward name="success" path="EXIT"/>
 				</pipe>
 				<!-- Test needs a pipe with deprecated property -->

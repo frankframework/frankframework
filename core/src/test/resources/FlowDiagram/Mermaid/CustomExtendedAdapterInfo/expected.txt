@@ -5,7 +5,7 @@ flowchart
 	d2e8("<b>WebServiceListener</b><br/><a style='color:#909090;'>org.frankframework.http.</a>WebServiceListener"):::normal
 	d2e10("<b>testtool-HelloLines-2</b><br/><a style='color:#909090;'>org.frankframework.receivers.</a>JavaListener"):::normal
 	d2e15("<b>ValidateInput</b><br/><a style='color:#909090;'>org.frankframework.soap.</a>SoapValidator"):::normal
-	d2e68("<b>Create example plain text message</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>FixedResultPipe<br/>output sessionKey: <i>exampleMessage</i>"):::errorOutline
+	d2e68("<b>Create example plain text message</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>PutInSession"):::errorOutline
 	d2e73("<b>Transform plain text message to XML</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>Text2XmlPipe"):::errorOutline
 	d2e77("<b>Add position to elements</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>XsltPipe<br/>output sessionKey: <i>exampleMessageAsXml</i>"):::errorOutline
 	d2e81("<b>Transform XML message to JSON message</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>Json2XmlValidator<br/>output sessionKey: <i>exampleMessageAsJson</i><br/>replaces result with computed pipe input"):::errorOutline

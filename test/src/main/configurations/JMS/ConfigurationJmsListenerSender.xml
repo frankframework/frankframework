@@ -11,9 +11,9 @@
 			</exits>
 			<XmlSwitchPipe name="select branch" xpathExpression="*/@branch" />
 
-			<FixedResultPipe name="defaultExit" returnString="&lt;/root&gt;branch not found&lt;/root&gt;">
+			<EchoPipe name="defaultExit" getInputFromFixedValue="&lt;/root&gt;branch not found&lt;/root&gt;">
 				<forward name="success" path="EXIT" />
-			</FixedResultPipe>
+			</EchoPipe>
 
 			<pipe name="CallListenerWithListenerEmbeddedResponseSender,LinkViaMessageID"
 				className="org.frankframework.pipes.SenderPipe">
@@ -198,15 +198,19 @@
 				<forward name="greaterthan" path="IdAndCidDifferent" />
 			</CompareStringPipe>
 
-			<FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame">
-				<forward name="success" path="displayKeys" />
-			</FixedResultPipe>
-			<FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame">
-				<forward name="success" path="displayKeys" />
-			</FixedResultPipe>
+			<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
+				<forward name="success" path="putOriginalMessageInSession" />
+			</PutInSessionPipe>
+			<PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
+				<forward name="success" path="putOriginalMessageInSession" />
+			</PutInSessionPipe>
 
-			<pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe" returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
-				<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*/@branch" />
+			<!-- The getInputFromFixedValue replaces the original message, put this in session first -->
+			<PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/>
+
+			<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
+				getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
+				<param name="BRANCH" sessionKey="incomingMessage" xpathExpression="*/@branch" />
 				<param name="MID" sessionKey="id" />
 				<param name="CID" sessionKey="cid" />
 				<param name="SAME" sessionKey="IdAndCidSame" />
@@ -310,8 +314,8 @@
 					slotId="${applicationId}/JmsFFSenderWithRead" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe"
-				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -332,8 +336,8 @@
 					<param name="destination" sessionKey="originalMessage" xpathExpression="*/@destination" />
 				</sender>
 			</pipe>
-			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe"
-				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

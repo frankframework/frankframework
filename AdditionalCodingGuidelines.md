@@ -1,6 +1,13 @@
 Code Style Guidelines
 =====================
 
+The code style has been defined in a few different formats:
+* `.editorconfig`
+* `Frank_Framework_CodeStyle IntelliJ.xml`
+* `Frank_Framework_CodeStyle Eclipse.xml`
+
+Please apply the appropriate file to the project if it's not picked up automatically.
+
 I want to suggest a few additional code style guidelines.
 
 Aim of these code style guidelines is to promote code that is:

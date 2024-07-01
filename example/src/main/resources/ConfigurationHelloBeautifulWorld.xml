@@ -20,12 +20,12 @@ http://schemas.frankframework.org/frankdoc.xsd, OK
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
-			<FixedResultPipe
+			<EchoPipe
 				name="HelloBeautifulWorld"
-				returnString="Hello Beautiful World"
+				getInputFromFixedValue="Hello Beautiful World"
 				>
 				<Forward name="success" path="EXIT"/>
-			</FixedResultPipe>
+			</EchoPipe>
 			<Exit name="EXIT" state="success"/>
 		</Pipeline>
 	</Adapter>

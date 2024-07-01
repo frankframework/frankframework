@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -23,7 +22,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.stream.IntStream;
 
-import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -32,8 +30,12 @@ import org.frankframework.util.XmlEncodingUtils;
  * Based on original concept created by simon on 8/29/17.
  * Copyright 2017 Simon Haoran Liang
  * <a href="https://gist.github.com/lhr0909/e6ac2d6dd6752871eb57c4b083799947">...</a>
+ * <p>
+ * Find / Replace InputStream implementation
+ *
+ * @author Erik van Dongen
  */
-public class ReplacingInputStream extends FilterInputStream {
+public class ReplacingInputStream extends InputStream {
 
 	private final boolean allowUnicodeSupplementaryCharacters;
 	private final Queue<Integer> inQueue;
@@ -42,11 +44,12 @@ public class ReplacingInputStream extends FilterInputStream {
 	private final boolean replaceNonXmlChars;
 	private final byte[] replacement;
 	private final byte[] search;
+	private final InputStream in;
 
 	public ReplacingInputStream(InputStream in, String search, String replacement, boolean replaceNonXmlChars,
 								String nonXmlReplacementCharacter, boolean allowUnicodeSupplementaryCharacters) {
 
-		super(in);
+		this.in = in;
 		this.replaceNonXmlChars = replaceNonXmlChars;
 		this.nonXmlReplacementCharacter = StringUtils.isEmpty(nonXmlReplacementCharacter) ? 0 : nonXmlReplacementCharacter.charAt(0);
 		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
@@ -78,46 +81,8 @@ public class ReplacingInputStream extends FilterInputStream {
 		return outQueue.remove();
 	}
 
-	@Override
-	public int read(byte[] b) throws IOException {
-		return read(b, 0, b.length);
-	}
-
-	/**
-	 * copied straight from InputStream implementation, just needed to use {@link #read()} from this class
-	 *
-	 * @see InputStream#read(byte[], int, int)
-	 */
-	@Override
-	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
-		if (off < 0 || len < 0 || len > b.length - off) {
-			throw new IndexOutOfBoundsException();
-		} else if (len == 0) {
-			return 0;
-		}
-
-		int c = read();
-		if (c == -1) {
-			return -1;
-		}
-		b[off] = (byte) c;
-
-		int i = 1;
-		try {
-			for (; i < len; i++) {
-				c = read();
-				if (c == -1) {
-					break;
-				}
-				b[off + i] = (byte) c;
-			}
-		} catch (IOException ee) {
-		}
-		return i;
-	}
-
 	private int getNextValue() throws IOException {
-		int next = super.read();
+		int next = in.read();
 
 		if (next != -1 && replaceNonXmlChars && !XmlEncodingUtils.isPrintableUnicodeChar(next, allowUnicodeSupplementaryCharacters)) {
 			// '0' is the default value for a char

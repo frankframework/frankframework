@@ -45,7 +45,8 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directInsertWithNamedParams -->
-			<pipe className="org.frankframework.pipes.FixedResultPipe" name="directInsertWithNamedParams" returnString="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES (?{name},?{value},NULL,?{lastmodby})">
+			<pipe className="org.frankframework.pipes.ReplacerPipe" name="directInsertWithNamedParams"
+				getInputFromFixedValue="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES (?{name},?{value},NULL,?{lastmodby})">
 				<forward name="success" path="doDirectInsertWithNamedParams" />
 			</pipe>
 			<pipe name="doDirectInsertWithNamedParams">
