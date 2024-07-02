@@ -15,7 +15,7 @@
 */
 package org.frankframework.senders;
 
-import com.amazonaws.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemDelegator;

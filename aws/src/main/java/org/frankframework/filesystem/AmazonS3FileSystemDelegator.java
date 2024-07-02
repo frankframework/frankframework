@@ -15,7 +15,7 @@
 */
 package org.frankframework.filesystem;
 
-import com.amazonaws.services.s3.model.StorageClass;
+import software.amazon.awssdk.services.s3.model.StorageClass;
 
 import org.frankframework.doc.ReferTo;
 

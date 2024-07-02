@@ -1,26 +1,25 @@
 package org.frankframework.filesystem;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3Object, AmazonS3FileSystem> {
 
 	@TempDir
-	private Path tempdir;
+	private Path tempDir;
 
 	@Override
 	protected AmazonS3FileSystem createFileSystem() {
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
 		AmazonS3FileSystem s3 = new AmazonS3FileSystem() { //can't use Mockito as it mucks up the JDWP
 			@Override
-			public AmazonS3 createS3Client() {
+			public S3Client createS3Client() {
 				return awsHelper.getS3Client();
 			}
 		};
@@ -30,28 +29,28 @@ public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttrib
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		return new AmazonS3FileSystemTestHelper(tempDir);
 	}
 
 	@Disabled("Amazon S3 does not support the APPEND action")
 	@Test
 	@Override
-	public void fileSystemActorAppendActionWithRolloverBySize() throws Exception {
+	public void fileSystemActorAppendActionWithRolloverBySize() {
 		//Ignore this test
 	}
 
 	@Disabled("Amazon S3 does not support the APPEND action")
 	@Test
 	@Override
-	public void fileSystemActorAppendActionWriteLineSeparatorDisabled() throws Exception {
+	public void fileSystemActorAppendActionWriteLineSeparatorDisabled() {
 		//Ignore this test
 	}
 
 	@Disabled("Amazon S3 does not support the APPEND action")
 	@Test
 	@Override
-	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() throws Exception {
+	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() {
 		//Ignore this test
 	}
 }

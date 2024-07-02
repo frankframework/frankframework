@@ -15,43 +15,26 @@
 */
 package org.frankframework.aws;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
-import com.amazonaws.regions.Regions;
-
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 
 public class AwsBase {
-	protected Logger log = LogUtil.getLogger(this);
 
-	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
-
-	private @Getter String accessKey;
-	private @Getter String secretKey;
+	private @Setter @Getter String accessKey;
+	private @Setter @Getter String secretKey;
 	private @Getter String authAlias;
 
-	private String clientRegion = Regions.EU_WEST_1.getName();
+	private @Getter Region clientRegion = Region.EU_WEST_1;
 
-	private @Getter String proxyHost = null;
-	private @Getter Integer proxyPort = null;
-
-	public String getClientRegion() {
-		if (StringUtils.isEmpty(clientRegion) || !AVAILABLE_REGIONS.contains(clientRegion)) {
-			throw new IllegalStateException("invalid region [" + clientRegion + "] please use one of the following supported regions " + AVAILABLE_REGIONS);
-		}
-		return clientRegion;
-	}
+	private @Setter @Getter String proxyHost = null;
+	private @Setter @Getter Integer proxyPort = null;
 
 	public AwsCredentialsProvider getAwsCredentialsProvider() {
-		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+		if ((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
 			throw new IllegalStateException("invalid credential fields, please provide AWS credentials (accessKey and secretKey)");
 		}
 
@@ -59,37 +42,7 @@ public class AwsBase {
 		if (StringUtils.isNotEmpty(getAuthAlias()) || (StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
 			cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 		}
-		return AwsUtil.getAwsCredentialsProvider(cf);
-	}
-
-	public static List<String> getAvailableRegions() {
-		List<String> availableRegions = new ArrayList<>(Regions.values().length);
-		for (Regions region : Regions.values())
-			availableRegions.add(region.getName());
-
-		return availableRegions;
-	}
-
-	protected ClientConfiguration getProxyConfig() {
-		ClientConfiguration proxyConfig = null;
-		if (this.getProxyHost() != null && this.getProxyPort() != null) {
-			proxyConfig = new ClientConfiguration();
-			proxyConfig.setProtocol(Protocol.HTTPS);
-			proxyConfig.setProxyHost(this.getProxyHost());
-			proxyConfig.setProxyPort(this.getProxyPort());
-		}
-		return proxyConfig;
-	}
-
-
-	/** AWS accessKey */
-	public void setAccessKey(String accessKey) {
-		this.accessKey = accessKey;
-	}
-
-	/** AWS secretKey */
-	public void setSecretKey(String secretKey) {
-		this.secretKey = secretKey;
+		return AwsUtil.createCredentialProviderChain(cf);
 	}
 
 	/** AuthAlias to provide accessKey and secretKey */
@@ -97,21 +50,14 @@ public class AwsBase {
 		this.authAlias = authAlias;
 	}
 
-	/** AWS Client region
+	/**
+	 * AWS Client region
+	 *
 	 * @ff.default eu-west-1
 	 */
-	public void setClientRegion(String clientRegion) {
+	public void setClientRegion(Region clientRegion) {
+		if (clientRegion == null) throw new IllegalStateException("invalid region [null], please use one of the following supported regions.");
 		this.clientRegion = clientRegion;
-	}
-
-	/** Proxy host to use to connect to AWS service */
-	public void setProxyHost(String proxyHost) {
-		this.proxyHost = proxyHost;
-	}
-
-	/** Proxy port to use to connect to AWS service */
-	public void setProxyPort(Integer proxyPort) {
-		this.proxyPort = proxyPort;
 	}
 
 }

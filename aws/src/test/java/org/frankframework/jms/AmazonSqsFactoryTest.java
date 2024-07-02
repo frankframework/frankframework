@@ -2,28 +2,26 @@ package org.frankframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
-
-import org.frankframework.testutil.PropertyUtil;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.amazonaws.regions.Regions;
-
+import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.LogUtil;
+import software.amazon.awssdk.regions.Region;
 
-public class AmazonSqsFactoryTest {
+class AmazonSqsFactoryTest {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected String PROPERTY_FILE = "AmazonS3.properties";
 
 	protected String accessKey = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
 	protected String secretKey = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
-	private final Regions clientRegion = Regions.EU_WEST_1;
+	private final Region clientRegion = Region.EU_WEST_1;
 
 	private AmazonSqsFactory sqsFactory;
 
@@ -32,11 +30,11 @@ public class AmazonSqsFactoryTest {
 		sqsFactory = new AmazonSqsFactory();
 		sqsFactory.setAccessKey(accessKey);
 		sqsFactory.setSecretKey(secretKey);
-		sqsFactory.setClientRegion(clientRegion.getName());
+		sqsFactory.setClientRegion(clientRegion);
 	}
 
 	@Test
-	public void testCreateConnectionFactory() {
+	void testCreateConnectionFactory() {
 		// Arrange / Act
 		ConnectionFactory cf = sqsFactory.createConnectionFactory();
 
@@ -50,23 +48,17 @@ public class AmazonSqsFactoryTest {
 	}
 
 	@Test
-	public void testGetConnection() throws JMSException {
-		// Arrange / Act
-		Connection connection = createConnection();
-
-		// Assert
-		assertNotNull(connection);
-	}
-
-	@Test
-	public void testGetSession() throws JMSException {
+	void testGetSession() throws JMSException {
 		// Arrange
 		Connection connection = createConnection();
+		assertNotNull(connection);
 
 		// Act
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 		// Assert
 		assertNotNull(session);
+		session.close();
+		connection.close();
 	}
 }
