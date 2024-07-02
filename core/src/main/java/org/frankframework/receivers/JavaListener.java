@@ -132,7 +132,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		try {
 			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-			try (Message message = Message.asMessage(rawMessage);
+			try (Message message = new Message(rawMessage);
 				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
 					return result.asString();
 			}

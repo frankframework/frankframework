@@ -112,7 +112,7 @@ public class JwtPipe extends FixedForwardPipe {
 
 		final JWSSigner signer = getSigner(sharedSecretParam);
 		String jwtToken = createAndSignJwtToken(signer, claimsSetBuilder.build());
-		return new PipeRunResult(getSuccessForward(), Message.asMessage(jwtToken));
+		return new PipeRunResult(getSuccessForward(), new Message(jwtToken));
 	}
 
 	/**

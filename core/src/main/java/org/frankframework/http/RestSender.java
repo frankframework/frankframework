@@ -62,6 +62,6 @@ public class RestSender extends HttpSender {
 			result.addSubElement(message);
 		}
 
-		return Message.asMessage(result.toXML());
+		return new Message(result.toXML());
 	}
 }

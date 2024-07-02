@@ -567,7 +567,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		Checkpoint checkpoint = checkpoints.get(0);
-		Message message = Message.asMessage(checkpoint.getMessage());
+		Message message = new Message(checkpoint.getMessage());
 		Configuration config = ibisDebugger.getIbisManager().getConfiguration(DELETE_ADAPTER_CONFIG);
 		if (config == null) {
 			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");

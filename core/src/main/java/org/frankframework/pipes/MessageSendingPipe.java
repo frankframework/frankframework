@@ -557,7 +557,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		correlationID = logToMessageLog(input, session, originalMessage, messageID, correlationID);
 
 		if (getListener() != null) {
-			Message result = Message.asMessage(listenerProcessor.getMessage(getListener(), correlationID, session));
+			Message result = listenerProcessor.getMessage(getListener(), correlationID, session);
 			sendResult.setResult(result);
 		}
 		if (Message.isNull(sendResult.getResult())) {
@@ -706,7 +706,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (outputValidator != null) {
 			log.debug("validating response");
 			PipeRunResult validationResult;
-			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(output), session);
+			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, output, session);
 			if (validationResult!=null) {
 				if (!validationResult.isSuccessful()) {
 					return validationResult;

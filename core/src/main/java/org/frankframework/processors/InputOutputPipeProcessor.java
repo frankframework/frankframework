@@ -97,12 +97,12 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getGetInputFromFixedValue);
 				message.closeOnCloseOf(pipeLineSession, owner);
-				message = Message.asMessage(pipe.getGetInputFromFixedValue());
+				message = new Message(pipe.getGetInputFromFixedValue());
 			}
 
 			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
 				log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getEmptyInputReplacement);
-				message = Message.asMessage(pipe.getEmptyInputReplacement());
+				message = new Message(pipe.getEmptyInputReplacement());
 			}
 
 			PipeRunResult pipeRunResult = null;

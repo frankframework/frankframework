@@ -85,7 +85,7 @@ public class HttpListenerServlet extends HttpServletBase {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		String message = request.getParameter(MESSAGE_PARAM);
-		invoke(Message.asMessage(message), request,response);
+		invoke(new Message(message), request,response);
 	}
 
 	@Override
