@@ -179,7 +179,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(2, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [queryType.INSERT] is deprecated: Use queryType 'OTHER' instead", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [queryType.INSERT] has been deprecated since v8.1.0: Use queryType 'OTHER' instead", configWarnings.get(0));
 		assertEquals("ClassWithEnum attribute [queryType] already has a default value [INSERT]", configWarnings.get(1));
 	}
 
@@ -205,6 +205,41 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningString] is deprecated: my deprecated test warning", configWarnings.get(0));
+	}
+
+	@Test
+	public void testDeprecatedAttributeWithConfigWarningSinceAndForRemoval() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("deprecatedConfigWarningSinceAndForRemoval", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningSinceAndForRemoval] has been deprecated since v8.0.0 and has been marked for removal: this is since and for removal", configWarnings.get(0));
+	}
+
+	@Test
+	public void testDeprecatedAttributeWithConfigWarningSince() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("deprecatedConfigWarningSince", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningSince] has been deprecated since v8.0.0: this is since", configWarnings.get(0));
+	}
+	@Test
+	public void testDeprecatedAttributeWithConfigWarningForRemoval() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("deprecatedConfigWarningForRemoval", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningForRemoval] is deprecated and has been marked for removal: this is for removal", configWarnings.get(0));
 	}
 
 	@Test
@@ -548,20 +583,38 @@ public class ValidateAttributeRuleTest extends Mockito {
 			deprecatedConfigWarningString = str;
 		}
 
+		@ConfigurationWarning("this is for removal")
+		@Deprecated(forRemoval = true)
+		public void setDeprecatedConfigWarningForRemoval(String str) {
+			deprecatedConfigWarningString = str;
+		}
+
+		@ConfigurationWarning("this is since")
+		@Deprecated(since = "8.0.0")
+		public void setDeprecatedConfigWarningSince(String str) {
+			deprecatedConfigWarningString = str;
+		}
+
+		@ConfigurationWarning("this is since and for removal")
+		@Deprecated(since = "8.0.0", forRemoval = true)
+		public void setDeprecatedConfigWarningSinceAndForRemoval(String str) {
+			deprecatedConfigWarningString = str;
+		}
+
 		@Protected
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
 		}
 	}
 
-	public static abstract class ClassWithEnumBase {
+	public abstract static class ClassWithEnumBase {
 		private @Setter @Getter QueryType queryType = QueryType.INSERT;
 
 		public enum QueryType {
 			OTHER,
 			/** Deprecated: Use OTHER instead */
 			@ConfigurationWarning("Use queryType 'OTHER' instead")
-			@Deprecated(since = "8.1") INSERT,
+			@Deprecated(since = "8.1.0") INSERT,
 			@ConfigurationWarning("Select might be slow")
 			SELECT
 		}
