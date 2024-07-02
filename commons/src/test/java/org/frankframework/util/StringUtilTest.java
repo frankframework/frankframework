@@ -108,11 +108,11 @@ class StringUtilTest {
 	 * Method: hideFirstHalf(String inputString, String regex)
 	 */
 	@Test
-	public void testHideFirstHalf() {
-		String s = "Donald Duck     Hey hey     Wooo";
-		String hideRegex = "[^\\s*].*[^\\s*]";
-		String res = StringUtil.hideFirstHalf(s, hideRegex);
-		assertEquals("****************Hey hey     Wooo", res);
+	public void testHideAllMode1() {
+		String s = "1 Donald Duck 123  Hey hey  45  Wooo  6789 and 12345";
+		String regex = "\\d+";
+		String res = StringUtil.hideAll(s, regex, 1);
+		assertEquals("* Donald Duck **3  Hey hey  *5  Wooo  **89 and ***45", res);
 	}
 
 	/**

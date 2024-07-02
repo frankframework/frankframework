@@ -84,7 +84,16 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	void deleteMessage(String storageKey) throws ListenerException;
 	int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
 
-	/** Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
+	/**
+	 * Regular expression to mask strings in the errorStore/logStore.
+	 * Every character between to the strings in this expression will be replaced by a '*'.
+	 * <br/>
+	 * For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every
+	 * character between keys &lt;party&gt; and &lt;/party&gt;
+	 * <br/>
+	 * When no hideRegex is configured on the errorStore / logStore but is configured on the {@link org.frankframework.receivers.Receiver#setHideRegex(String)},
+	 * then the Receiver's hideRegex is used for the errorStore / logStore.
+	 */
 	void setHideRegex(String hideRegex);
 	String getHideRegex();
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -99,9 +99,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 
 		@Override
 		public StringBuilder toSerializable(final LogEvent event, final StringBuilder buffer) {
-			final int len = formatters.length;
-			for (int i = 0; i < len; i++) {
-				PatternFormatter formatter = formatters[i];
+			for (PatternFormatter formatter : formatters) {
 				formatter.format(event, buffer);
 			}
 			return buffer;
