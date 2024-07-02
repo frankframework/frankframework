@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
@@ -112,10 +113,10 @@ public class AdapterWithSubAdapterTest {
 		return adapter;
 	}
 
-	private static @NotNull IPipe createLoggingPipe(String name, String hideRegex) {
+	private static @NotNull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
 		IPipe pipe = new FixedForwardPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				// Should be hidden in context of main adapter, may be visible when logged from receiver logs
 				message.getContext().put("secret1", MAIN_ADAPTER_SECRET);
 
@@ -125,7 +126,11 @@ public class AdapterWithSubAdapterTest {
 				// Log something containing current adapter name and all the things we're trying to hide
 				log.info("[{}] I expect logging to hide the text in brackets: Main Adapter - [{}]-[{}]; Sub Adapter - [{}]-[{}]", getAdapter().getName(), MAIN_ADAPTER_SECRET, MAIN_RECEIVER_SECRET, SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET);
 
-				// Hand off to super
+				if (doThrowException) { // Exception Messages should not contain strings you want hidden
+					throw new PipeRunException(this, "[%s] Gotta Throw what we Gotta Throw" // + " [%s]-[%s] [%s]-[%s]"
+							.formatted(getAdapter().getName())); //, MAIN_ADAPTER_SECRET, MAIN_RECEIVER_SECRET, SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET));
+				}
+				// Return a result
 				return new PipeRunResult(getSuccessForward(), message);
 			}
 		};
@@ -153,9 +158,9 @@ public class AdapterWithSubAdapterTest {
 	}
 
 	private <M> JavaListener<String> createParentAdapter(JavaListener<M> subAdapterListener, String name) throws ConfigurationException {
-		IPipe pipe1 = createLoggingPipe("echo1", null);
+		IPipe pipe1 = createLoggingPipe("echo1", null, false);
 		IPipe pipe2 = createSubAdapterCallPipe(subAdapterListener.getName(), MAIN_ADAPTER_SECRET);
-		IPipe pipe3 = createLoggingPipe("echo2", null);
+		IPipe pipe3 = createLoggingPipe("echo2", null, false);
 
 		JavaListener<String> listener = setupJavaListener(name);
 		Receiver<String> receiver = setupReceiver(listener, MAIN_RECEIVER_SECRET);
@@ -164,11 +169,11 @@ public class AdapterWithSubAdapterTest {
 		return listener;
 	}
 
-	private JavaListener<String> createSubAdapter(String name) throws ConfigurationException {
-		IPipe pipe = createLoggingPipe("echo", SUB_ADAPTER_SECRET);
+	private JavaListener<String> createSubAdapter(String name, PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
+		IPipe pipe = createLoggingPipe("echo", SUB_ADAPTER_SECRET, doThrowException);
 		JavaListener<String> listener = setupJavaListener(name);
 		Receiver<String> receiver = setupReceiver(listener, SUB_RECEIVER_SECRET);
-		setupAdapter(receiver, PipeLine.ExitState.SUCCESS, name, pipe);
+		setupAdapter(receiver, exitState, name, pipe);
 
 		return listener;
 	}
@@ -176,7 +181,7 @@ public class AdapterWithSubAdapterTest {
 	@Test
 	public void testNestedHideRegexesProcessSuccess() throws ConfigurationException, ListenerException {
 		// Arrange
-		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter");
+		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", PipeLine.ExitState.SUCCESS, false);
 		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
 
 		configuration.configure();
@@ -185,11 +190,12 @@ public class AdapterWithSubAdapterTest {
 		// Wait until all adapters are started
 		for (Adapter adapter : configuration.getRegisteredAdapters()) {
 			waitWhileInState(adapter, RunState.STOPPED, RunState.STARTING);
-
 			assertEquals(RunState.STARTED, adapter.getRunState());
 		}
 
 		String inputMessage = "Message to hide: [" + MAIN_RECEIVER_SECRET + "]";
+
+		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
 
 		// Act
@@ -198,10 +204,13 @@ public class AdapterWithSubAdapterTest {
 		// Assert
 		assertEquals(inputMessage, result);
 
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
+
 		List<String> logLines = appender.getLogLines();
-//		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
-//		System.err.println(logLines);
-//		System.err.println("--- <<END All Captured Loglines>> ---");
+		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
+		System.err.println(logLines);
+		System.err.println("--- <<END All Captured Loglines>> ---");
 		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
 		assertThat(logLines, not(hasItem(allOf(containsString("Adapter"), containsString(MAIN_ADAPTER_SECRET)))));
 		assertThat(logLines, not(hasItem(allOf(containsString("[main-adapter]"), containsString(MAIN_ADAPTER_SECRET)))));
@@ -210,6 +219,98 @@ public class AdapterWithSubAdapterTest {
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_RECEIVER_SECRET))));
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_ADAPTER_SECRET))));
 
+		// But these can not
+		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
+		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
+	}
+
+	@Test
+	public void testNestedHideRegexesProcessWithError() throws ConfigurationException, ListenerException {
+		// Arrange
+		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", PipeLine.ExitState.ERROR, false);
+		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
+
+		configuration.configure();
+		configuration.start();
+
+		// Wait until all adapters are started
+		for (Adapter adapter : configuration.getRegisteredAdapters()) {
+			waitWhileInState(adapter, RunState.STOPPED, RunState.STARTING);
+			assertEquals(RunState.STARTED, adapter.getRunState());
+		}
+
+		String inputMessage = "Message to hide: [" + MAIN_RECEIVER_SECRET + "]";
+
+		// Start capturing logs
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
+
+		// Assert
+		assertEquals(inputMessage, result);
+
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
+
+		List<String> logLines = appender.getLogLines();
+		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
+		System.err.println(logLines);
+		System.err.println("--- <<END All Captured Loglines>> ---");
+		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
+		assertThat(logLines, not(hasItem(allOf(containsString("Adapter"), containsString(MAIN_ADAPTER_SECRET)))));
+		assertThat(logLines, not(hasItem(allOf(containsString("[main-adapter]"), containsString(MAIN_ADAPTER_SECRET)))));
+
+		// These can appear
+		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_RECEIVER_SECRET))));
+		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_ADAPTER_SECRET))));
+
+		// But these can not
+		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
+		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
+	}
+
+	@Test
+	public void testNestedHideRegexesProcessWithException() throws ConfigurationException {
+		// Arrange
+		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", PipeLine.ExitState.ERROR, true);
+		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
+
+		configuration.configure();
+		configuration.start();
+
+		// Wait until all adapters are started
+		for (Adapter adapter : configuration.getRegisteredAdapters()) {
+			waitWhileInState(adapter, RunState.STOPPED, RunState.STARTING);
+			assertEquals(RunState.STARTED, adapter.getRunState());
+		}
+
+		String inputMessage = "Message to hide: [" + MAIN_RECEIVER_SECRET + "]";
+
+		// Start capturing logs
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		assertThrows(ListenerException.class, ()->mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>()));
+
+		// Assert
+
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
+
+		List<String> logLines = appender.getLogLines();
+		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
+		System.err.println(logLines);
+		System.err.println("--- <<END All Captured Loglines>> ---");
+		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
+		assertThat(logLines, not(hasItem(allOf(containsString("Adapter"), containsString(MAIN_ADAPTER_SECRET)))));
+		assertThat(logLines, not(hasItem(allOf(containsString("[main-adapter]"), containsString(MAIN_ADAPTER_SECRET)))));
+
+		// These can appear
+		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_RECEIVER_SECRET))));
+		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_ADAPTER_SECRET))));
+
+		// But these can not
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
 	}

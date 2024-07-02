@@ -670,11 +670,11 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public void startRunning() {
 		switch(getRunState()) {
-			case STARTING:
-			case EXCEPTION_STARTING:
-			case STARTED:
-			case STOPPING:
-			case EXCEPTION_STOPPING:
+			case STARTING,
+				 EXCEPTION_STARTING,
+				 STARTED,
+				 STOPPING,
+				 EXCEPTION_STOPPING:
 				log.warn("cannot start adapter [{}] that is stopping, starting or already started", name);
 				return;
 			default:
