@@ -383,8 +383,8 @@ export class AppService {
 
   messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, MessageLog>): void {
-    this.messageLog = messageLog;
-    this.messageLogSubject.next(messageLog);
+    this.messageLog = { ...this.messageLog, ...messageLog };
+    this.messageLogSubject.next(this.messageLog);
   }
 
   instanceName = '';

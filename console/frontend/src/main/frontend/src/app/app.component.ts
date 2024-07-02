@@ -32,6 +32,8 @@ import { formatDate } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
+// @ts-expect-error lodash.merge does not have types
+import * as deepMerge from 'lodash.merge';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
@@ -287,7 +289,6 @@ export class AppComponent implements OnInit, OnDestroy {
         });
 
         this.initializeWarnings();
-        this.initializeWebsocket();
         this.checkIafVersions();
       },
       error: (error: HttpErrorResponse) => {
@@ -427,7 +428,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     this.appService.getAdapters('all').subscribe((data) => {
-      this.pollerCallback(data);
+      this.processAdapters(data);
       this.websocketService.activate();
     });
   }
@@ -444,49 +445,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .get<
         Record<string, MessageLog>
       >(`${this.appService.absoluteApiPath}server/warnings`)
-      .subscribe((data) => {
-        const configurations = data as Record<string, MessageLog>;
-        this.appService.updateAlerts([]); //Clear all old alerts
-
-        configurations['All'] = {
-          messages: configurations['messages'] as unknown as AdapterMessage[],
-          errorStoreCount: configurations[
-            'totalErrorStoreCount'
-          ] as unknown as number,
-          messageLevel: 'ERROR',
-        };
-        delete configurations['messages'];
-        delete configurations['totalErrorStoreCount'];
-
-        if (configurations['warnings']) {
-          for (const warning of configurations[
-            'warnings'
-          ] as unknown as string[]) {
-            this.appService.addWarning('', warning);
-          }
-        }
-
-        for (const index in configurations) {
-          const configuration = configurations[index];
-          if (configuration.exception)
-            this.appService.addException(index, configuration.exception);
-          if (configuration.warnings) {
-            for (const warning of configuration.warnings) {
-              this.appService.addWarning(index, warning);
-            }
-          }
-
-          configuration.messageLevel = 'INFO';
-          for (const x in configuration.messages) {
-            const level = configuration.messages[x].level;
-            if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-              configuration.messageLevel = 'WARN';
-            if (level == 'ERROR') configuration.messageLevel = 'ERROR';
-          }
-        }
-
-        this.appService.updateMessageLog(configurations);
-      });
+      .subscribe((data) => this.processWarnings(data));
 
     this.initializeAdapters();
   }
@@ -498,23 +457,66 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
-  pollerCallback(allAdapters: Record<string, Adapter>): void {
+  processWarnings(configurations: Record<string, MessageLog>): void {
+    this.appService.updateAlerts([]); //Clear all old alerts
+
+    configurations['All'] = {
+      messages: configurations['messages'] as unknown as AdapterMessage[],
+      errorStoreCount: configurations[
+        'totalErrorStoreCount'
+      ] as unknown as number,
+      messageLevel: 'ERROR',
+    };
+    delete configurations['messages'];
+    delete configurations['totalErrorStoreCount'];
+
+    if (configurations['warnings']) {
+      for (const warning of configurations['warnings'] as unknown as string[]) {
+        this.appService.addWarning('', warning);
+      }
+    }
+
+    for (const index in configurations) {
+      const configuration = configurations[index];
+      if (configuration !== null) {
+        if (configuration.exception)
+          this.appService.addException(index, configuration.exception);
+        if (configuration.warnings) {
+          for (const warning of configuration.warnings) {
+            this.appService.addWarning(index, warning);
+          }
+        }
+
+        configuration.messageLevel = 'INFO';
+        for (const x in configuration.messages) {
+          const level = configuration.messages[x].level;
+          if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+            configuration.messageLevel = 'WARN';
+          if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+        }
+      }
+    }
+
+    this.appService.updateMessageLog(configurations);
+  }
+
+  processAdapters(adapters: Record<string, Adapter>): void {
     let reloadedAdapters = false;
     const updatedAdapters: typeof this.appService.adapters = {};
     const deletedAdapters: string[] = [];
 
     for (const index in this.serializedRawAdapterData) {
       //Check if any old adapters should be removed
-      if (!allAdapters[index]) {
+      if (!adapters[index]) {
         deletedAdapters.push(index);
         delete this.serializedRawAdapterData[index];
         this.debugService.log(`removing adapter [${index}]`);
       }
     }
 
-    for (const adapterName in allAdapters) {
+    for (const adapterName in adapters) {
       //Add new adapter information
-      const adapter = allAdapters[adapterName];
+      const adapter = adapters[adapterName];
 
       const serializedAdapter = JSON.stringify(adapter);
       if (this.serializedRawAdapterData[adapter.name] != serializedAdapter) {
@@ -596,20 +598,27 @@ export class AppComponent implements OnInit, OnDestroy {
       );
   }
 
+  pollerCallback(adapters: Record<string, Adapter>): void {
+    // const allAdapters: Record<string, Adapter> = {
+    //   ...this.appService.adapters,
+    //   ...adapters,
+    // };
+    /* const allAdapters: Record<string, Adapter> = deepMerge(
+      {},
+      this.appService.adapters,
+      adapters,
+    );
+    this.processAdapters(allAdapters); */
+    this.processAdapters(adapters);
+  }
+
   finalizeStartup(data: Record<string, Adapter>): void {
-    this.pollerCallback(data);
+    this.processAdapters(data);
 
     setTimeout(() => {
       this.appService.updateLoading(false);
       this.loading = false;
-
-      /* this.pollerService.add(
-        'adapters?expanded=all',
-        (data: unknown) => {
-          this.pollerCallback(data as Record<string, Adapter>);
-        },
-        undefined,
-      ); */
+      this.initializeWebsocket();
     });
   }
 

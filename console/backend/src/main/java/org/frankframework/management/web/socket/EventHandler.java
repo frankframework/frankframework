@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.web.RequestMessageBuilder;
+import org.frankframework.util.JacksonUtils;
 import org.springframework.messaging.Message;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,11 @@ public class EventHandler extends FrankApiWebSocketBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.UPDATES);
 
 		Message<?> message = sendSyncMessageWithoutHttp(builder);
+		Message<?> response = convertMessageToDiff(builder.getBusMessageName(), message);
+
+		if (!response.getPayload().equals("{}")) {
+			this.messagingTemplate.convertAndSend("/event/server-warnings", response.getPayload());
+		}
 		this.messagingTemplate.convertAndSend("/event/server-warnings", message.getPayload());
 	}
 
