@@ -85,10 +85,9 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isEmpty(value))
-				continue;
-
-			ClassUtils.invokeSetter(authenticator, method, value);
+			if(StringUtils.isNotEmpty(value)) {
+				ClassUtils.invokeSetter(authenticator, method, value);
+			}
 		}
 
 		return authenticator;
@@ -107,11 +106,6 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 			http.csrf(csrf -> csrf
 					.csrfTokenRepository(csrfTokenRepository)
 					.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-//					.ignoringRequestMatchers(
-//							request -> request.getRequestURI().endsWith("/iaf/larva/index.jsp"),
-//							request -> request.getRequestURI().endsWith("/iaf/testtool"),
-//							request -> request.getRequestURI().endsWith("/iaf/ladybug")
-//					)
 			);
 		} else {
 			http.csrf(CsrfConfigurer::disable);

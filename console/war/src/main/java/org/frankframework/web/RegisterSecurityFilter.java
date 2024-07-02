@@ -25,12 +25,11 @@ import org.springframework.web.filter.DelegatingFilterProxy;
  * Programmatically (re-)enable the 'springSecurityFilterChain'. This is only required when running in standalone jar/war mode.
  */
 @Configuration
-public class SecurityFilterChainConfigurer {
+public class RegisterSecurityFilter {
 
 	@Bean
 	public FilterRegistrationBean<DelegatingFilterProxy> registration() {
 		DelegatingFilterProxy springSecurityFilterChain = new DelegatingFilterProxy(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
-		FilterRegistrationBean<DelegatingFilterProxy> registration = new FilterRegistrationBean<>(springSecurityFilterChain);
-		return registration;
+		return new FilterRegistrationBean<>(springSecurityFilterChain);
 	}
 }

@@ -19,20 +19,22 @@ import org.frankframework.console.ConsoleFrontend;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.management.web.ServletDispatcher;
 import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.DispatcherServlet;
+
+import jakarta.servlet.MultipartConfigElement;
 
 @Configuration
 public class RegisterServletEndpoints implements ApplicationContextAware {
 	private ApplicationContext applicationContext;
 
 	@Bean
-	public ServletRegistration<ServletDispatcher> backendServletBean() {
+	public ServletRegistration<DispatcherServlet> backendServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
 		servletConfiguration.setName("IAF-API");
 		servletConfiguration.setUrlMapping("iaf/api/*,!/iaf/api/server/health");
@@ -40,7 +42,10 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 		servletConfiguration.setLoadOnStartup(1);
 		servletConfiguration.loadProperties();
 
-		return new ServletRegistration<>(ServletDispatcher.class, servletConfiguration);
+		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(DispatcherServlet.class, servletConfiguration);
+		servlet.setMultipartConfig(new MultipartConfigElement(""));
+		servlet.setAsyncSupported(true);
+		return servlet;
 	}
 
 	@Bean

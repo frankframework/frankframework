@@ -22,6 +22,7 @@ import org.frankframework.web.filters.CacheControlFilter;
 import org.frankframework.web.filters.CorsFilter;
 import org.frankframework.web.filters.CspFilter;
 import org.frankframework.web.filters.CsrfCookieFilter;
+import org.frankframework.web.filters.SecurityLogFilter;
 import org.frankframework.web.filters.WeakShallowEtagHeaderFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
@@ -37,13 +38,14 @@ import lombok.Setter;
  * Configuration class (without annotation so it's not picked up automatically) to register all Filters.
  */
 @Configuration
-public class StandaloneFilterConfigurer implements ApplicationContextAware {
+public class RegisterServletFilters implements ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
 
 	private enum DynamicFilters {
 		CORS_FILTER(CorsFilter.class, "backendServletBean"),
 		CACHE_CONTROL_FILTER(CacheControlFilter.class, "backendServletBean"),
 		ETAG_FILTER(WeakShallowEtagHeaderFilter.class, "backendServletBean"),
+		SECURITY_LOG_FILTER(SecurityLogFilter.class, "backendServletBean"),
 		CSP_FILTER(CspFilter.class, "frontendServletBean"),
 		CSRF_COOKIE_FILTER(CsrfCookieFilter.class, "frontendServletBean");
 
@@ -78,6 +80,11 @@ public class StandaloneFilterConfigurer implements ApplicationContextAware {
 	@Bean
 	public FilterRegistrationBean<Filter> createCsrfCookieFilter() {
 		return createFilter(DynamicFilters.CSRF_COOKIE_FILTER);
+	}
+
+	@Bean
+	public FilterRegistrationBean<Filter> createSecurityLogFilter() {
+		return createFilter(DynamicFilters.SECURITY_LOG_FILTER);
 	}
 
 	private FilterRegistrationBean<Filter> createFilter(DynamicFilters df) {

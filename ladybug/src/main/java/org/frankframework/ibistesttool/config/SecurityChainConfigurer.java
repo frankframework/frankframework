@@ -98,10 +98,9 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isEmpty(value))
-				continue;
-
-			ClassUtils.invokeSetter(authenticator, method, value);
+			if(StringUtils.isNotEmpty(value)) {
+				ClassUtils.invokeSetter(authenticator, method, value);
+			}
 		}
 
 		return authenticator;
