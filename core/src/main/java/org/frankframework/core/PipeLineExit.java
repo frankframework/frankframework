@@ -57,7 +57,7 @@ public class PipeLineExit implements IForwardTarget {
 		this.name = name;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	@ConfigurationWarning("The attribute 'path' has been renamed to: 'name'")
 	public void setPath(String path) {
 		setName(path);
