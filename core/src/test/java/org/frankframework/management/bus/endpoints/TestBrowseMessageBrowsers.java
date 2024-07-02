@@ -447,13 +447,13 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public String getId() throws ListenerException {
+		public String getId() {
 			return messageId;
 		}
 
 		@Override
 		public String getOriginalId() {
-			return messageId;
+			return getId();
 		}
 	}
 }
