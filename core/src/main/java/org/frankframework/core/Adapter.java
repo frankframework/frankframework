@@ -503,7 +503,9 @@ public class Adapter implements IAdapter, NamedBean {
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
-			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
+			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
+				 IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
+			) {
 				PipeLineResult result = new PipeLineResult();
 				boolean success = false;
 				try {
@@ -551,57 +553,55 @@ public class Adapter implements IAdapter, NamedBean {
 		incNumOfMessagesInProcess(startTime);
 
 		PipeLineResult result = null;
-		try(IbisMaskingLayout.HideRegexContext ignored = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)) {
-			try {
-				String additionalLogging = getAdditionalLogging(pipeLineSession);
-				if (msgLog.isDebugEnabled()) {
-					logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started" + additionalLogging, "request", message);
-				}
-				log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
+		try {
+			String additionalLogging = getAdditionalLogging(pipeLineSession);
+			if (msgLog.isDebugEnabled()) {
+				logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started" + additionalLogging, "request", message);
+			}
+			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
-				if (Message.isEmpty(message) && isReplaceNullMessage()) {
-					log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
-					//noinspection resource
-					message = new Message("");
-					message.closeOnCloseOf(pipeLineSession, "Empty Message from Adapter");
-				}
-				result = pipeline.process(messageId, message, pipeLineSession);
-				return result;
-			} catch (Throwable t) {
-				// TODO: Check if t really can never be instance of ListenerException when caught. (Doesn't look likely, perhaps a SneakyThrows somewhere?)
-				ListenerException e;
-				if (t instanceof ListenerException) {
-					e = (ListenerException) t;
-				} else {
-					e = new ListenerException(t);
-				}
-				processingSuccess = false;
-				incNumOfMessagesInError();
-				warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
-				result = new PipeLineResult();
-				result.setState(ExitState.ERROR);
-				result.setResult(new Message(e.getMessage()));
-				throw e;
-			} finally {
-				long endTime = System.currentTimeMillis();
-				long duration = endTime - startTime;
-				//reset the InProcess fields, and increase processedMessagesCount
-				decNumOfMessagesInProcess(duration, processingSuccess);
-				ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
-				if (result.getExitCode() != 0) {
-					ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
-				}
-				ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
-				if (log.isDebugEnabled()) {
-					log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
-							getName(), messageId, result.getState(),
-							DateFormatUtils.format(startTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
-							DateFormatUtils.format(endTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
-							duration
-					);
-				} else {
-					log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
-				}
+			if (Message.isEmpty(message) && isReplaceNullMessage()) {
+				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
+				//noinspection resource
+				message = new Message("");
+				message.closeOnCloseOf(pipeLineSession, "Empty Message from Adapter");
+			}
+			result = pipeline.process(messageId, message, pipeLineSession);
+			return result;
+		} catch (Throwable t) {
+			// TODO: Check if t really can never be instance of ListenerException when caught. (Doesn't look likely, perhaps a SneakyThrows somewhere?)
+			ListenerException e;
+			if (t instanceof ListenerException) {
+				e = (ListenerException) t;
+			} else {
+				e = new ListenerException(t);
+			}
+			processingSuccess = false;
+			incNumOfMessagesInError();
+			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
+			result = new PipeLineResult();
+			result.setState(ExitState.ERROR);
+			result.setResult(new Message(e.getMessage()));
+			throw e;
+		} finally {
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			//reset the InProcess fields, and increase processedMessagesCount
+			decNumOfMessagesInProcess(duration, processingSuccess);
+			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
+			if (result.getExitCode() != 0) {
+				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
+			}
+			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
+			if (log.isDebugEnabled()) {
+				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
+						getName(), messageId, result.getState(),
+						DateFormatUtils.format(startTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
+						DateFormatUtils.format(endTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
+						duration
+				);
+			} else {
+				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
 			}
 		}
 	}

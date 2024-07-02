@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Setter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Filter.Result;
@@ -29,8 +30,6 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.frankframework.logging.IbisPatternLayout;
 import org.frankframework.logging.IbisThreadFilter;
 import org.frankframework.util.LogUtil;
-
-import lombok.Setter;
 
 public class TestAppender extends AbstractAppender {
 	private final List<String> logMessages = new ArrayList<>();
@@ -93,6 +92,7 @@ public class TestAppender extends AbstractAppender {
 	}
 
 	public List<String> getLogLines() {
+		// NB: By getting here a copy we are sure that there will be no concurrent modifications while we go over the log messages to verify tests.
 		return new ArrayList<>(logMessages);
 	}
 
@@ -115,6 +115,7 @@ public class TestAppender extends AbstractAppender {
 	}
 
 	public static void removeAppender(TestAppender appender) {
+		if (appender == null) return;
 		Logger logger = getRootLogger();
 		logger.removeAppender(appender);
 	}

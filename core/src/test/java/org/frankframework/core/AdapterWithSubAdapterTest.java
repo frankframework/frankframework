@@ -10,7 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,6 +36,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.UUIDUtil;
 import org.jetbrains.annotations.NotNull;
@@ -47,18 +51,19 @@ public class AdapterWithSubAdapterTest {
 
 	private TestConfiguration configuration;
 	private TestAppender appender;
+	private PipeLineSession pipeLineSession;
 
 	@BeforeEach
 	public void setUp() {
 		configuration = TransactionManagerType.DATASOURCE.create(false);
 		appender = TestAppender.newBuilder().useIbisPatternLayout("[%level] - [%class] - %m").build();
-
+		pipeLineSession = new PipeLineSession();
 	}
 
 	@AfterEach
 	public void tearDown() {
-		configuration.close();
 		TestAppender.removeAppender(appender);
+		CloseUtils.closeSilently(pipeLineSession, configuration);
 	}
 
 	public JavaListener<String> setupJavaListener(String name) {
@@ -179,7 +184,104 @@ public class AdapterWithSubAdapterTest {
 	}
 
 	@Test
-	public void testNestedHideRegexesProcessSuccess() throws ConfigurationException, ListenerException {
+	public void testHideRegexesProcessDirectSuccess() throws ConfigurationException, IOException {
+		// Arrange
+		IPipe pipe = createLoggingPipe("echo", MAIN_ADAPTER_SECRET, false);
+		Receiver<?> receiver = mock(Receiver.class);
+		when(receiver.getRunState()).thenReturn(RunState.STOPPED);
+		Adapter adapter = setupAdapter(receiver, PipeLine.ExitState.SUCCESS, "main-adapter", pipe);
+
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED, RunState.STARTING);
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
+
+		// Start capturing logs
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		PipeLineResult result = adapter.processMessage(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+
+		// Assert
+		assertEquals(inputMessage.asString(), result.getResult().asString());
+
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
+
+		List<String> logLines = appender.getLogLines();
+		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
+	}
+
+	@Test
+	public void testHideRegexesProcessDirectWithError() throws ConfigurationException, IOException {
+		// Arrange
+		IPipe pipe = createLoggingPipe("echo", MAIN_ADAPTER_SECRET, false);
+		Receiver<?> receiver = mock(Receiver.class);
+		when(receiver.getRunState()).thenReturn(RunState.STOPPED);
+		Adapter adapter = setupAdapter(receiver, PipeLine.ExitState.ERROR, "main-adapter", pipe);
+
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED, RunState.STARTING);
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
+
+		// Start capturing logs
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		PipeLineResult result = adapter.processMessage(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+
+		// Assert
+		assertEquals(inputMessage.asString(), result.getResult().asString());
+
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
+
+		List<String> logLines = appender.getLogLines();
+		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
+	}
+
+	@Test
+	public void testHideRegexesProcessDirectWithException() throws ConfigurationException, IOException {
+		// Arrange
+		IPipe pipe = createLoggingPipe("echo", MAIN_ADAPTER_SECRET, true);
+		Receiver<?> receiver = mock(Receiver.class);
+		when(receiver.getRunState()).thenReturn(RunState.STOPPED);
+		Adapter adapter = setupAdapter(receiver, PipeLine.ExitState.ERROR, "main-adapter", pipe);
+
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED, RunState.STARTING);
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
+
+		// Start capturing logs
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		PipeLineResult result = adapter.processMessage(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+
+		// Assert
+		assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
+
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
+
+		List<String> logLines = appender.getLogLines();
+		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
+	}
+
+
+	@Test
+	public void testNestedHideRegexesProcessViaReceiverSuccess() throws ConfigurationException, ListenerException {
 		// Arrange
 		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", PipeLine.ExitState.SUCCESS, false);
 		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
@@ -193,7 +295,7 @@ public class AdapterWithSubAdapterTest {
 			assertEquals(RunState.STARTED, adapter.getRunState());
 		}
 
-		String inputMessage = "Message to hide: [" + MAIN_RECEIVER_SECRET + "]";
+		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
@@ -208,24 +310,20 @@ public class AdapterWithSubAdapterTest {
 		TestAppender.removeAppender(appender);
 
 		List<String> logLines = appender.getLogLines();
-		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
-		System.err.println(logLines);
-		System.err.println("--- <<END All Captured Loglines>> ---");
 		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
-		assertThat(logLines, not(hasItem(allOf(containsString("Adapter"), containsString(MAIN_ADAPTER_SECRET)))));
-		assertThat(logLines, not(hasItem(allOf(containsString("[main-adapter]"), containsString(MAIN_ADAPTER_SECRET)))));
+		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
 
-		// These can appear
+		// This can be logged from the main adapter
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_RECEIVER_SECRET))));
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_ADAPTER_SECRET))));
 
-		// But these can not
+		// But should not be logged from the sub adapter
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
 	}
 
 	@Test
-	public void testNestedHideRegexesProcessWithError() throws ConfigurationException, ListenerException {
+	public void testNestedHideRegexesProcessViaReceiverWithError() throws ConfigurationException, ListenerException {
 		// Arrange
 		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", PipeLine.ExitState.ERROR, false);
 		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
@@ -239,7 +337,7 @@ public class AdapterWithSubAdapterTest {
 			assertEquals(RunState.STARTED, adapter.getRunState());
 		}
 
-		String inputMessage = "Message to hide: [" + MAIN_RECEIVER_SECRET + "]";
+		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
@@ -254,24 +352,20 @@ public class AdapterWithSubAdapterTest {
 		TestAppender.removeAppender(appender);
 
 		List<String> logLines = appender.getLogLines();
-		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
-		System.err.println(logLines);
-		System.err.println("--- <<END All Captured Loglines>> ---");
 		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
-		assertThat(logLines, not(hasItem(allOf(containsString("Adapter"), containsString(MAIN_ADAPTER_SECRET)))));
-		assertThat(logLines, not(hasItem(allOf(containsString("[main-adapter]"), containsString(MAIN_ADAPTER_SECRET)))));
+		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
 
-		// These can appear
+		// This can be logged from the main adapter
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_RECEIVER_SECRET))));
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_ADAPTER_SECRET))));
 
-		// But these can not
+		// But should not be logged from the sub adapter
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
 	}
 
 	@Test
-	public void testNestedHideRegexesProcessWithException() throws ConfigurationException {
+	public void testNestedHideRegexesProcessViaReceiverWithException() throws ConfigurationException {
 		// Arrange
 		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", PipeLine.ExitState.ERROR, true);
 		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
@@ -285,7 +379,7 @@ public class AdapterWithSubAdapterTest {
 			assertEquals(RunState.STARTED, adapter.getRunState());
 		}
 
-		String inputMessage = "Message to hide: [" + MAIN_RECEIVER_SECRET + "]";
+		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
@@ -299,18 +393,14 @@ public class AdapterWithSubAdapterTest {
 		TestAppender.removeAppender(appender);
 
 		List<String> logLines = appender.getLogLines();
-		System.err.println("--- <<BEGIN All Captured Loglines>> ---");
-		System.err.println(logLines);
-		System.err.println("--- <<END All Captured Loglines>> ---");
 		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
-		assertThat(logLines, not(hasItem(allOf(containsString("Adapter"), containsString(MAIN_ADAPTER_SECRET)))));
-		assertThat(logLines, not(hasItem(allOf(containsString("[main-adapter]"), containsString(MAIN_ADAPTER_SECRET)))));
+		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
 
-		// These can appear
+		// This can be logged from the main adapter
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_RECEIVER_SECRET))));
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString(SUB_ADAPTER_SECRET))));
 
-		// But these can not
+		// But should not be logged from the sub adapter
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
 	}

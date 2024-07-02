@@ -276,7 +276,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
 	private @Getter String hideRegex = null;
-	private Pattern compiledHideRegex = null;
+	private Pattern hideRegexPattern = null;
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
@@ -702,7 +702,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 
 			if (StringUtils.isNotEmpty(hideRegex)) {
-				compiledHideRegex = Pattern.compile(hideRegex);
+				hideRegexPattern = Pattern.compile(hideRegex);
 
 				if (getErrorStorage() != null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
 					getErrorStorage().setHideRegex(getHideRegex());
@@ -1177,7 +1177,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session);
-			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(compiledHideRegex);
+			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
+			 final IbisMaskingLayout.HideRegexContext ignored3 = IbisMaskingLayout.pushToThreadLocalReplace(getAdapter().getComposedHideRegexPattern());
 		) {
 			lastMessageDate = startProcessingTimestamp;
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
