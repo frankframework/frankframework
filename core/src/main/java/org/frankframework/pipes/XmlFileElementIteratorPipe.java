@@ -46,7 +46,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @deprecated Please replace with ForEachChildElementPipe.
  * @author  Peter Leeuwenburgh
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with ForEachChildElementPipe. ElementName and elementChain can be replaced with containerElement and/or targetElement. It is not a 1 to 1 replacement, different values may be required!")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 

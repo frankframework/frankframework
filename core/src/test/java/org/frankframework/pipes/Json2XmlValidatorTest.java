@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
@@ -20,8 +23,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -385,7 +386,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -409,7 +410,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -431,7 +432,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -468,7 +469,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -499,7 +500,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -531,7 +532,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -555,7 +556,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -578,7 +579,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -599,7 +600,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String expected = TestFileUtils.getTestFile("/Align/TextAndAttributes/input.xml");
 
 		PipeRunResult prr = doPipe(pipe, input,session);
-		String actualXml = Message.asString(prr.getResult());
+		String actualXml = prr.getResult().asString();
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 

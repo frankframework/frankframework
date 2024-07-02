@@ -135,7 +135,7 @@ public class HashPipe extends FixedForwardPipe {
 		this.algorithm = algorithm;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("attribute encoding has been replaced with attribute charset, default has changed from ISO8859_1 to UTF-8")
 	public void setEncoding(String encoding) {
 		setCharset(encoding);
@@ -155,7 +155,7 @@ public class HashPipe extends FixedForwardPipe {
 	public void setHashEncoding(HashEncoding hashEncoding) {
 		this.hashEncoding = hashEncoding;
 	}
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("use attribute hashEncoding instead")
 	public void setBinaryToTextEncoding(HashEncoding hashEncoding) {
 		setHashEncoding(hashEncoding);

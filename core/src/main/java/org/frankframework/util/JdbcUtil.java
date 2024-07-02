@@ -424,7 +424,7 @@ public class JdbcUtil {
 						throw new JdbcException(e);
 					}
 				} else {
-					rawMessage = Message.asString(result);
+					rawMessage = MessageUtils.asString(result);
 				}
 			} else {
 				rawMessage = new String(bytes, charset);

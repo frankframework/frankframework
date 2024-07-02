@@ -309,7 +309,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	/** Name of the {@link WebServiceListener} that should be called */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}

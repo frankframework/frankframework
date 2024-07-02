@@ -22,6 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
@@ -37,15 +40,13 @@ import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.UUIDUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -222,7 +223,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			log.debug("hiding parameter [{}] value", parameter::getName);
 			String hiddenValue;
 			try {
-				hiddenValue = StringUtil.hide(Message.asString(value));
+				hiddenValue = StringUtil.hide(MessageUtils.asString(value));
 			} catch (IOException e) {
 				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
 				log.warn(hiddenValue, e);

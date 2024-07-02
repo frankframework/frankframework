@@ -2043,7 +2043,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("attribute is no longer used. Please use attribute returnedSessionKeys of the JavaListener if the set of sessionsKeys that can be returned to callers session must be limited.")
 	public void setReturnedSessionKeys(String string) {
 		// no longer used

@@ -17,7 +17,7 @@ package org.frankframework.pipes;
 
 import org.frankframework.configuration.ConfigurationWarning;
 
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Use FixedResultPipe instead")
 public class FixedResult extends FixedResultPipe {
 

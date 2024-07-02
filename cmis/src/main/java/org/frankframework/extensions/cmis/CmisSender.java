@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import lombok.Getter;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -79,8 +79,6 @@ import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -280,25 +278,15 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		CredentialFactory cf = new CredentialFactory(cfAuthAlias, cfUsername, cdPassword);
 		try {
 			Map<String, String> headers = new HashMap<>();
-			if(pvl != null) {
-				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
-					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
-						headers.put(entry.getKey(), parseAsString(entry));
-					}
-				}
+			if (pvl != null) {
+				pvl.stream()
+						.filter(pv -> pv.getName().startsWith(HEADER_PARAM_PREFIX))
+						.forEach(pv -> headers.put(pv.getName(), pv.asStringValue()));
 			}
 			return getSessionBuilder().build(cf.getUsername(), cf.getPassword(), headers);
 		}
 		catch (CmisSessionException e) {
 			throw new SenderException(e);
-		}
-	}
-
-	private String parseAsString(Entry<String, Object> entry) throws SenderException {
-		try {
-			return Message.asString(entry.getValue());
-		} catch (IOException e) {
-			throw new SenderException("unable to convert parameter ["+entry.getKey()+"] value to String", e);
 		}
 	}
 
@@ -1016,7 +1004,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/** (Only used when <code>action</code>=<code>get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("configure forward 'notFound' instead")
 	public void setResultOnNotFound(String string) {
 		resultOnNotFound = string;

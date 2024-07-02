@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -14,8 +17,6 @@ import org.frankframework.senders.SenderSeries;
 import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class InputOutputSenderWrapperProcessorTest {
 
@@ -34,21 +35,23 @@ public class InputOutputSenderWrapperProcessorTest {
 			@Override
 			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new SenderResult("Sender 1: ["+message.asString()+"]");
+					return new SenderResult("Sender 1: [" + message.asString() + "]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
-			}});
+			}
+		});
 		sender.registerSender(new SenderBase() {
 			@Override
 			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
+					secondSenderOutput = "Sender 2: [" + message.asString() + "]";
 					return new SenderResult(secondSenderOutput);
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
-			}});
+			}
+		});
 	}
 
 	private void testInputOutputSenderWrapperProcessor(SenderWrapperBase sender, String input, String expectedSecondSenderOutput, String expectedWrapperOutput, String expectedSessionKeyValue) throws Exception {
@@ -69,17 +72,16 @@ public class InputOutputSenderWrapperProcessorTest {
 		assertEquals(expectedSecondSenderOutput, secondSenderOutput, "unexpected output of last sender");
 		assertEquals(expectedWrapperOutput, actual.getResult().asString(), "unexpected wrapper output");
 		assertTrue(actual.isSuccess(), "unexpected wrapper output");
-		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")), "unexpected session variable value");
+		assertEquals(expectedSessionKeyValue, session.getString("storedResult"), "unexpected session variable value");
 	}
 
 	@Test
 	public void testBasic() throws Exception {
 		String input = "abc";
 		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [abc]]";
-		String expectedWrapperOutput = expectedSecondSenderOutput;
 		String expectedSessionKeyValue = null;
 
-		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedWrapperOutput, expectedSessionKeyValue);
+		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedSecondSenderOutput, expectedSessionKeyValue);
 	}
 
 	@Test
@@ -88,10 +90,9 @@ public class InputOutputSenderWrapperProcessorTest {
 
 		String input = "abc";
 		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [def]]";
-		String expectedWrapperOutput = expectedSecondSenderOutput;
 		String expectedSessionKeyValue = null;
 
-		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedWrapperOutput, expectedSessionKeyValue);
+		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedSecondSenderOutput, expectedSessionKeyValue);
 	}
 
 	@Test
