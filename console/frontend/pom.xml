@@ -67,9 +67,9 @@
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<executable>npx</executable>
+							<executable>npm</executable>
 							<arguments>
-								<argument>ng</argument>
+								<argument>run</argument>
 								<argument>build</argument>
 							</arguments>
 						</configuration>
