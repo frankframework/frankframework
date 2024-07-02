@@ -61,7 +61,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>ng build</id>
+						<id>npm build</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
