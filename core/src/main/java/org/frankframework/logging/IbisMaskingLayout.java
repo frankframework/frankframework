@@ -234,7 +234,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return stack;
 	}
 
-	public static void clearThreadLocalReplace() {
+	public static void 	clearThreadLocalReplace() {
 		threadLocalReplace.remove();
 	}
 

@@ -99,20 +99,13 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 
 		@Override
 		public StringBuilder toSerializable(final LogEvent event, final StringBuilder buffer) {
-			for (PatternFormatter formatter : formatters) {
-				formatter.format(event, buffer);
-			}
+			Arrays.stream(formatters).forEach(formatter -> formatter.format(event, buffer));
 			return buffer;
 		}
 
 		@Override
 		public boolean requiresLocation() {
-			for (PatternFormatter formatter : formatters) {
-				if (formatter.requiresLocation()) {
-					return true;
-				}
-			}
-			return false;
+			return Arrays.stream(formatters).anyMatch(PatternFormatter::requiresLocation);
 		}
 
 		@Override

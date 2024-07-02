@@ -343,12 +343,10 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		}
 
 		if (StringUtils.isEmpty(msg)) {
-			msg = "<no message found/>";
+			return "<no message found/>";
 		} else {
-			msg = cleanseMessage(msg, adapter, messageBrowser);
+			return cleanseMessage(msg, adapter, messageBrowser);
 		}
-
-		return msg;
 	}
 
 	private MediaType getMediaType(String msg) {
