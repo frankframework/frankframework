@@ -24,6 +24,7 @@
 
 		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.web\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.management\.web\..*"/>
 	</context:component-scan>
 
@@ -32,12 +33,6 @@
 	</bean>
 
 	<bean id="NoopSecurityFilterChain" class="org.frankframework.lifecycle.servlets.NoopSecurityFilterChain" />
-
-	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
-		<property name="allowSemicolon" value="true"/>
-		<property name="allowUrlEncodedPercent" value="true"/>
-		<property name="allowUrlEncodedSlash" value="true"/>
-	</bean>
 
 	<bean id="inboundGatewayFactory" class="org.frankframework.management.bus.InboundGatewayFactory">
 		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />

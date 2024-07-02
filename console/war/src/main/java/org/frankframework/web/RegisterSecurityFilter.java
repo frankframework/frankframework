@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,21 @@
 */
 package org.frankframework.web;
 
-import org.frankframework.console.ConsoleFrontend;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
+/**
+ * Programmatically (re-)enable the 'springSecurityFilterChain'. This is only required when running in standalone jar/war mode.
+ */
 @Configuration
-public class RegisterServletEndpoints {
+public class RegisterSecurityFilter {
 
 	@Bean
-	public ServletRegistration backendServletBean() {
-		return new ServletRegistration(ServletDispatcher.class);
-	}
-
-	@Bean
-	public ServletRegistration frontendServletBean() {
-		ServletRegistration registration = new ServletRegistration(ConsoleFrontend.class);
-		registration.addUrlMappings("/*"); //Also host the console on the ROOT
-		return registration;
+	public FilterRegistrationBean<DelegatingFilterProxy> registration() {
+		DelegatingFilterProxy springSecurityFilterChain = new DelegatingFilterProxy(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
+		return new FilterRegistrationBean<>(springSecurityFilterChain);
 	}
 }

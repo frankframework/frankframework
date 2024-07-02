@@ -20,7 +20,7 @@ import org.springframework.web.filter.ShallowEtagHeaderFilter;
 /** Generate an ETag identifier for each request so the client knows that the contents are not modified if they match */
 public class WeakShallowEtagHeaderFilter extends ShallowEtagHeaderFilter {
 
-	WeakShallowEtagHeaderFilter(){
+	WeakShallowEtagHeaderFilter() {
 		super();
 		this.setWriteWeakETag(true);
 	}

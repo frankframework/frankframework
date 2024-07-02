@@ -60,11 +60,6 @@ public class CspFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
 		HttpServletResponse response = (HttpServletResponse) resp;
 		cspWriter.writeHeaders((HttpServletRequest) request, response);
-
-		response.setHeader("X-Content-Type-Options", "nosniff");
-		response.setHeader("X-Frame-Options", "SAMEORIGIN");
-		response.setHeader("X-XSS-Protection", "1; mode=block");
-
 		chain.doFilter(request, response);
 	}
 

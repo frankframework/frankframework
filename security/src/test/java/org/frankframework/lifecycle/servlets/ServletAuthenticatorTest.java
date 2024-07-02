@@ -54,7 +54,7 @@ class ServletAuthenticatorTest {
 	}
 
 	@Test
-	void testMultilineUrl() {
+	void testMultilineUrl() throws Exception {
 		// Arrange
 		DummyAuthenticator authenticator = new DummyAuthenticator();
 

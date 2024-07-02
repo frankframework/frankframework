@@ -36,7 +36,6 @@ import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.Job;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
@@ -330,7 +329,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getState() == state;
 	}
 
-	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
+	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link IJob Scheduled Jobs}. */
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}

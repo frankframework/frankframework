@@ -54,6 +54,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
+		setRegisterErrorPageFilter(false);
 
 		builder.bannerMode(Mode.OFF);
 		return super.configure(builder);

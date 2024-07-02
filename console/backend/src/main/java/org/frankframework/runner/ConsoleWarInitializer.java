@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,15 @@ package org.frankframework.runner;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -29,7 +34,9 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * @author Niels Meijer
  */
+@Order(500)
 public class ConsoleWarInitializer extends SpringBootServletInitializer {
+	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	@Configuration
 	public static class WarConfiguration {
@@ -39,13 +46,17 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
+		setRegisterErrorPageFilter(false);
+		builder.bannerMode(Mode.OFF);
 		return super.configure(builder);
 	}
 
 	@Override
 	protected WebApplicationContext run(SpringApplication application) {
+		APPLICATION_LOG.debug("Starting Frank!Framework Console");
 		Set<String> set = new HashSet<>();
 		set.add("FrankConsoleContext.xml");
+		application.setWebApplicationType(WebApplicationType.NONE);
 		application.setSources(set);
 
 		return super.run(application);
