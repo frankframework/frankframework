@@ -91,7 +91,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 				log.error("unable to list all attachments", e);
 				throw new SenderException(e);
 			}
-			return new SenderResult(Message.asMessage(attachments.toString()));
+			return new SenderResult(new Message(attachments.toString()));
 		}
 	}
 

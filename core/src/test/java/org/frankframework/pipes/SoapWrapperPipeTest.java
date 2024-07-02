@@ -538,7 +538,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		SoapWrapperPipe outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP11, true);
 
 		// Act: message through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap12), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 
 		// Assert: message is determined as SOAP 1.2
@@ -559,7 +559,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		session = new PipeLineSession();
 
 		// Act: message SOAP11 through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap11), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap11), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 
 		// Assert: but the output is determined as SOAP 1.2 instead, as configured
@@ -577,7 +577,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		session = new PipeLineSession();
 
 		// Act: message SOAP12 through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap12), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 
 		// Assert: but the output is determined as SOAP 1.2 instead, as configured
@@ -624,7 +624,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		session = new PipeLineSession();
 
 		// Act: message SOAP12 through pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap12), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 		PipeRunResult pipeRunResult3 = doPipe(outputWrapper2, pipeRunResult2.getResult(), session);
 

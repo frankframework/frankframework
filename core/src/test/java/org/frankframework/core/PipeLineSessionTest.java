@@ -61,7 +61,7 @@ public class PipeLineSessionTest {
 		session.put("key7", new Date());
 		session.put("key8", 123);
 		session.put("key8b", "456");
-		session.put("key8c", Message.asMessage("456"));
+		session.put("key8c", new Message("456"));
 		session.put("key8d", "456".getBytes());
 		session.put("key9", true);
 		session.put("key9b", "true");
@@ -179,7 +179,7 @@ public class PipeLineSessionTest {
 		// Arrange
 		session.put("key8e", "123");
 		session.put("key8f", 123L);
-		session.put("key8g", Message.asMessage("123"));
+		session.put("key8g", new Message("123"));
 
 		// Act / Assert
 		assertEquals(123, session.getInteger("key8"));
@@ -244,7 +244,7 @@ public class PipeLineSessionTest {
 		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId); //key inserted as String
 		assertEquals(messageId, session.getMessageId());
 
-		session.put(PipeLineSession.MESSAGE_ID_KEY, Message.asMessage(messageId)); //key inserted as Message
+		session.put(PipeLineSession.MESSAGE_ID_KEY, new Message(messageId)); //key inserted as Message
 		assertEquals(messageId, session.getMessageId());
 	}
 
@@ -255,7 +255,7 @@ public class PipeLineSessionTest {
 		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId); //key inserted as String
 		assertEquals(correlationId, session.getCorrelationId());
 
-		session.put(PipeLineSession.CORRELATION_ID_KEY, Message.asMessage(correlationId)); //key inserted as Message
+		session.put(PipeLineSession.CORRELATION_ID_KEY, new Message(correlationId)); //key inserted as Message
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
@@ -288,7 +288,7 @@ public class PipeLineSessionTest {
 		from.put("a", 15);
 		from.put("b", 16);
 
-		Message message1 = Message.asMessage("17");
+		Message message1 = new Message("17");
 		from.put("c", message1);
 		to.put("c", message1);
 
@@ -305,9 +305,9 @@ public class PipeLineSessionTest {
 		// Arrange
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
-		Message message = Message.asMessage("a message");
+		Message message = new Message("a message");
 		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
-		Message closeable2 = Message.asMessage("a message is closeable");
+		Message closeable2 = new Message("a message is closeable");
 		from.put("a", 15);
 		from.put("b", 16);
 		from.put("c", message);
@@ -345,8 +345,8 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 
-		Message message1 = Message.asMessage("m1");
-		Message message2 = Message.asMessage("m2");
+		Message message1 = new Message("m1");
+		Message message2 = new Message("m2");
 
 		String keys = "a,c";
 		from.put("a", 15);

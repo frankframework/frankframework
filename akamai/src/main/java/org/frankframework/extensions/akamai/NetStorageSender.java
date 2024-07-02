@@ -261,7 +261,7 @@ public class NetStorageSender extends HttpSenderBase {
 			}
 		}
 
-		return Message.asMessage(result.toXML());
+		return new Message(result.toXML());
 	}
 
 	private String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {

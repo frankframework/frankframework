@@ -90,7 +90,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		Message input = new Message(url.openStream());
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 		assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
 	}
 }

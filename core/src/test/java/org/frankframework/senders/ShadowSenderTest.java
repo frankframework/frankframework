@@ -68,7 +68,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-			result = Message.asMessage(message);
+			result = message;
 			return super.sendMessage(message, session);
 		}
 	}

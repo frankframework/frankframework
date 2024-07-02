@@ -206,7 +206,7 @@ public class InputOutputPipeProcessorTest {
 		pipe.configure();
 		pipe.start();
 
-		Message input = Message.asMessage(INPUT_MESSAGE_TEXT);
+		Message input = new Message(INPUT_MESSAGE_TEXT);
 
 		// This should be true
 		assertTrue(pipe.skipPipe(input, session));
@@ -226,7 +226,7 @@ public class InputOutputPipeProcessorTest {
 		pipe.configure();
 		pipe.start();
 
-		Message input = Message.asMessage("dummy");
+		Message input = new Message("dummy");
 		session.put("this-key-is-there", "the-key-the-value");
 
 		// This should be true
@@ -245,7 +245,7 @@ public class InputOutputPipeProcessorTest {
 
 		session.put("this-key-is-there", "value");
 
-		Message input = Message.asMessage(INPUT_MESSAGE_TEXT);
+		Message input = new Message(INPUT_MESSAGE_TEXT);
 
 		// This should be true
 		assertTrue(pipe.skipPipe(input, session));
@@ -347,7 +347,7 @@ public class InputOutputPipeProcessorTest {
 		pipe.configure();
 		pipe.start();
 
-		Message input = Message.asMessage(INPUT_MESSAGE_TEXT);
+		Message input = new Message(INPUT_MESSAGE_TEXT);
 
 		// This should be true, b/c input message is empty
 		assertTrue(pipe.skipPipe(input, session));

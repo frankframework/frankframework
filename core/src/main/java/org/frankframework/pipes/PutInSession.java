@@ -65,7 +65,7 @@ public class PutInSession extends FixedForwardPipe {
 				}
 				v = message;
 			} else {
-				v = Message.asMessage(getValue());
+				v = new Message(getValue());
 			}
 			session.put(getSessionKey(), v);
 			log.debug("stored [{}] in pipeLineSession under key [{}]", v, getSessionKey());

@@ -230,7 +230,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
-		val.validate(Message.asMessage("""
+		val.validate(new Message("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
 					<s:Body>
@@ -242,7 +242,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				"""), session, true, null);
 
 		session.put("SOAPAction", "sub");
-		val.validate(Message.asMessage("""
+		val.validate(new Message("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
 					<s:Body>
@@ -253,7 +253,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				</s:Envelope>\
 				"""), session, true, null);
 
-		val.validate(Message.asMessage("""
+		val.validate(new Message("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
 					<s:Body>

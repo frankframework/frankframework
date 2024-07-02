@@ -135,7 +135,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 				&& charDataBuilder.substring(0, VALUE_MOVE_START.length()).equals(VALUE_MOVE_START));
 
 		if (moveElementFound) {
-			Message message = Message.asMessage(charDataBuilder.toString());
+			Message message = new Message(charDataBuilder.toString());
 			try {
 				message.preserve();
 			} catch (IOException e) {

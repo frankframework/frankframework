@@ -52,7 +52,7 @@ public abstract class MockListenerBase implements IListener<String> {
 		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);
 		}
-		return Message.asMessage(text);
+		return new Message(text);
 	}
 
 	@Override

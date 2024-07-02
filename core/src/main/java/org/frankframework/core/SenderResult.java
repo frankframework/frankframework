@@ -34,7 +34,7 @@ public class SenderResult implements AutoCloseable {
 	private @Getter @Setter String forwardName;
 
 	public SenderResult(String result) {
-		this(Message.asMessage(result));
+		this(new Message(result));
 	}
 
 	public SenderResult(@Nonnull Message result) {

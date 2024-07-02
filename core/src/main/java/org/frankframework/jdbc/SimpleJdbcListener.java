@@ -130,7 +130,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String,Object> context) {
-		return Message.asMessage(rawMessage.getRawMessage());
+		return new Message(rawMessage.getRawMessage());
 	}
 
 	protected ResultSet executeQuery(Connection conn, String query) throws ListenerException {

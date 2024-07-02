@@ -478,7 +478,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 				}
 			}
 
-			result = Message.asMessage(xhtml);
+			result = new Message(xhtml);
 		}
 
 		if (result == null) {

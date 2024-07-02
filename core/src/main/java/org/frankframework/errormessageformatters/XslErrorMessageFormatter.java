@@ -83,7 +83,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 				}
 				Source resultSource = result.asSource();
 				result.close();
-				return Message.asMessage(transformerPool.transform(resultSource, parameterValues));
+				return new Message(transformerPool.transform(resultSource, parameterValues));
 			} catch (IOException e) {
 				log.error(" cannot retrieve [{}]", getStyleSheet(), e);
 			} catch (TransformerConfigurationException te) {

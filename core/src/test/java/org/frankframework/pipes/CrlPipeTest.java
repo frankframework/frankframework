@@ -30,8 +30,8 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
-		Message issuer_cert = Message.asMessage(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE).openStream());
-		Message crl = Message.asMessage(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
+		Message issuer_cert = new Message(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE).openStream());
+		Message crl = new Message(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
 		session.put(issuerKey, issuer_cert);
 
 		// act
@@ -50,7 +50,7 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		configureAndStartPipe();
 
 		InputStream issuer_cert = TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE).openStream();
-		Message crl = Message.asMessage(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
+		Message crl = new Message(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
 		session.put(issuerKey, issuer_cert);
 
 		// act
@@ -68,8 +68,8 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
-		Message issuer_cert = Message.asMessage(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE_WRONG).openStream());
-		Message crl = Message.asMessage(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
+		Message issuer_cert = new Message(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE_WRONG).openStream());
+		Message crl = new Message(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
 		session.put(issuerKey, issuer_cert);
 
 		// act

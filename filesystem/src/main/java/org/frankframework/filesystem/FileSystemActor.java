@@ -364,12 +364,12 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return createFile(input, pvl, null);
 				}
 				case DELETE: {
-					return Message.asMessage(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
+					return new Message(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case READ: {
 					F file = getFile(input, pvl);
@@ -406,17 +406,17 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					}
 
 					((IWritableFileSystem<F>)fileSystem).appendFile(file, getContents(input, pvl, charset));
-					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case MKDIR: {
 					String folder = determineInputFolderName(input, pvl);
 					fileSystem.createFolder(folder);
-					return Message.asMessage(folder);
+					return new Message(folder);
 				}
 				case RMDIR: {
 					String folder = determineInputFolderName(input, pvl);
 					fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
-					return Message.asMessage(folder);
+					return new Message(folder);
 				}
 				case RENAME: {
 					F source=getFile(input, pvl);
@@ -429,15 +429,15 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 						destination = fileSystem.toFile(folderPath,destinationName);
 					}
 					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
-					return Message.asMessage(fileSystem.getName(renamed));
+					return new Message(fileSystem.getName(renamed));
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
-					return Message.asMessage(processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return new Message(processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
 				}
 				case COPY: {
 					String destinationFolder = determineDestination(pvl);
-					return Message.asMessage(processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return new Message(processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
 				}
 				case FORWARD: {
 					F file=getFile(input, pvl);
@@ -467,7 +467,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 			}
 		}
-		return Message.asMessage(directoryBuilder.toString());
+		return new Message(directoryBuilder.toString());
 	}
 
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
@@ -482,7 +482,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 
 		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
-		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+		return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
 
 

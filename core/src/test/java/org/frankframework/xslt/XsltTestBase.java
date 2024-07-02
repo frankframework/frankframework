@@ -267,7 +267,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "<dummy name=\"input\"/>", session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect("b", result, session);
 	}
@@ -282,7 +282,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -330,7 +330,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -347,7 +347,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -365,7 +365,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -386,7 +386,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected.trim(), result.trim(), session); // trim is necessary on IBM JDK
 	}
@@ -421,7 +421,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -440,7 +440,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}

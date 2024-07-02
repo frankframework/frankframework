@@ -43,7 +43,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 			String result = "["+message.asString()+"]";
 			resultLog.append(result).append("\n");
 			if (message.asString().contains("error")) {
-				return new SenderResult(Message.asMessage(result), "Error triggered");
+				return new SenderResult(new Message(result), "Error triggered");
 			}
 			return new SenderResult(result);
 		} catch (IOException e) {

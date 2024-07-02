@@ -39,7 +39,7 @@ public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 		prr = doPipe(Message.nullMessage());
 		assertEquals("<text/>", prr.getResult().asString());
 
-		prr = doPipe(Message.asMessage(""));
+		prr = doPipe(new Message(""));
 		assertEquals("<text/>", prr.getResult().asString());
 	}
 

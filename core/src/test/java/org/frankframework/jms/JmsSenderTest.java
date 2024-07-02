@@ -72,7 +72,7 @@ class JmsSenderTest {
 	@Test
 	void testSendMessageModeAutoWithTextMessage() throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message");
+		Message message = new Message("A Textual Message");
 		jmsSender.setMessageClass(JMSFacade.MessageClass.AUTO);
 
 		// Act
@@ -105,14 +105,14 @@ class JmsSenderTest {
 		BytesMessage bytesMessage = (BytesMessage) jmsMessage;
 		byte[] data = new byte[(int) bytesMessage.getBodyLength()];
 		bytesMessage.readBytes(data);
-		Message result = Message.asMessage(data);
+		Message result = new Message(data);
 		assertEquals(message.asString(), result.asString());
 	}
 
 	@Test
 	void testSendMessageModeBytesWithTextMessage() throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message");
+		Message message = new Message("A Textual Message");
 		jmsSender.setMessageClass(JMSFacade.MessageClass.BYTES);
 
 		// Act
@@ -132,7 +132,7 @@ class JmsSenderTest {
 	@Test
 	void testSendMessageModeTextWithBinaryMessage() throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message".getBytes(StandardCharsets.UTF_8));
+		Message message = new Message("A Textual Message".getBytes(StandardCharsets.UTF_8));
 		jmsSender.setMessageClass(JMSFacade.MessageClass.TEXT);
 
 		// Act

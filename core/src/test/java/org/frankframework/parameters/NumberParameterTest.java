@@ -299,7 +299,7 @@ public class NumberParameterTest {
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
-		session.put("sessionkey", Message.asMessage("8".getBytes()));
+		session.put("sessionkey", new Message("8".getBytes()));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());

@@ -80,7 +80,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 		Message sessionKey = session.getMessage("sessionKey");
 		assertEquals(expected, sessionKey.asString());
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 		assertEquals(result, input);
 	}
 
