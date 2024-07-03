@@ -28,6 +28,14 @@ import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 
+/**
+ * Connect a parent thread and a child thread to carry over important state from the parent
+ * thread to the child thread, such as {@link ThreadContext}, thread-local hide-regexes
+ * for masking sensitive information from logs (See {@link IbisMaskingLayout}, and transaction state
+ * via a {@link TransactionConnector}.
+ *
+ * @param <T> Type of the {@code threadInfo} maintained by the {@link ThreadLifeCycleEventListener}.
+ */
 public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
