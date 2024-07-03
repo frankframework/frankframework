@@ -56,9 +56,8 @@ import org.xml.sax.SAXException;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
- * When a file is found, it is moved to an process-folder, so that it isn't found more then once.
+ * When a file is found, it is moved to a process-folder, so that it isn't found more than once.
  * The name of the moved file is passed to the pipeline.
- *
  *
  * @author Gerrit van Brakel
  */
@@ -236,7 +235,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		log.trace("Get Raw Message");
 		FS fileSystem=getFileSystem();
 		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
-		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
+		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
 			Optional<F> fo = findFirstStableFile(ds);
 			if (fo.isEmpty()) {
 				return null;
@@ -325,7 +324,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					return Message.asMessage(result);
 				}
 			}
-			log.warn("no attribute [" + getMessageType() + "] found for file [" + getFileSystem().getName(file) + "]");
+			log.warn("no attribute [{}] found for file [{}]", getMessageType(), getFileSystem().getName(file));
 			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -345,7 +344,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					messageId = (String)attributes.get(getMessageIdPropertyKey());
 				}
 				if (StringUtils.isEmpty(messageId)) {
-					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
+					log.warn("no attribute [{}] found, will use filename as messageId", getMessageIdPropertyKey());
 				}
 			}
 			if (StringUtils.isEmpty(messageId)) {

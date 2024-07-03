@@ -105,7 +105,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
-				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
+				log.info("Cannot create constructor for DirContext [{}], will try again with dummy SocketFactory", e.getMessage(), e);
 				ctx = new InitialLdapContext(env, null); //Try again without connection request controls.
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");

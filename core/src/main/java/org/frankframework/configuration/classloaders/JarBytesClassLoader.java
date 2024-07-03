@@ -53,7 +53,7 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 						fileName = fileName.substring(getBasePath().length());
 					} else { //Found a file that's not in the BasePath folder
 						if(!fileName.endsWith(".class")) { //Allow classes to be in the root path, but not resources
-							log.warn("invalid file ["+fileName+"] not in folder ["+getBasePath()+"]");
+							log.warn("invalid file [{}] not in folder [{}]", fileName, getBasePath());
 							continue; //Don't add the file to the resources lists
 						}
 					}

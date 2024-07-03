@@ -24,21 +24,19 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jms.JmsRealm;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
-
+import org.frankframework.jms.JmsRealm;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -48,7 +46,7 @@ import org.frankframework.util.LogUtil;
  */
 public class JndiBase implements IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -100,7 +98,7 @@ public class JndiBase implements IConfigurable {
 			try {
 				jndiEnv.load(url.openStream());
 			} catch (IOException e) {
-				throw new NamingException("cannot load jndiProperties ["+getJndiProperties()+"] from url ["+url.toString()+"]");
+				throw new NamingException("cannot load jndiProperties ["+getJndiProperties()+"] from url ["+ url +"]");
 			}
 		}
 		if (StringUtils.isNotEmpty(getInitialContextFactoryName())) {
@@ -130,7 +128,7 @@ public class JndiBase implements IConfigurable {
 			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
 				String key=(String) it.next();
 				String value=jndiEnv.getProperty(key);
-				log.debug("jndiEnv ["+key+"] = ["+value+"]");
+				log.debug("jndiEnv [{}] = [{}]", key, value);
 			}
 		}
 		return jndiEnv;

@@ -15,6 +15,9 @@
 */
 package org.frankframework.scheduler;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -30,10 +33,6 @@ import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.quartz.JobDetail;
 import org.springframework.context.ApplicationContext;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -289,7 +288,7 @@ import lombok.Setter;
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
 	private @Getter boolean configured;
@@ -360,7 +359,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		if (!incrementCountThreads()) {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg);
+			log.error("{}{}", getLogPrefix(), msg);
 			return;
 		}
 		try {
@@ -371,7 +370,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
 						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-						log.error(getLogPrefix()+e.getMessage());
+						log.error("{}{}", getLogPrefix(), e.getMessage());
 					}
 					if (objectId!=null) {
 						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
@@ -380,7 +379,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 							runJob();
 						} finally {
 							if (tg.cancel()) {
-								log.error(getLogPrefix()+"thread has been interrupted");
+								log.error("{}thread has been interrupted", getLogPrefix());
 							}
 						}
 						try {
@@ -388,7 +387,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						} catch (Exception e) {
 							String msg = "error while removing lock: " + e.getMessage();
 							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-							log.warn(getLogPrefix()+msg);
+							log.warn("{}{}", getLogPrefix(), msg);
 						}
 					} else {
 						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
@@ -414,7 +413,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		} catch (Exception e) {
 			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg, e);
+			log.error("{}{}", getLogPrefix(), msg, e);
 		}
 
 		long endTime = System.currentTimeMillis();

@@ -28,21 +28,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.binder.DigesterLoader;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.binder.DigesterLoader;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.digester.FrankDigesterRules;
 import org.frankframework.configuration.digester.IncludeFilter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
@@ -66,6 +57,14 @@ import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -109,7 +108,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private final boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
-		private String schema;
+		private final String schema;
 		public XmlErrorHandler(String schema) {
 			this.schema = schema;
 		}
@@ -182,10 +181,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	public void digest() throws ConfigurationException {
-		if(!(applicationContext instanceof Configuration)) {
+		if(!(applicationContext instanceof Configuration configurationContext)) {
 			throw new IllegalStateException("no suitable Configuration found");
 		}
-		Configuration configurationContext = (Configuration)applicationContext;
 
 		digestConfiguration(configurationContext);
 	}
@@ -202,7 +200,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		try {
 			digester = getDigester(configuration);
 
-			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
+			if (log.isDebugEnabled())
+				log.debug("digesting configuration [{}] configurationFile [{}]", configuration.getName(), configurationFile);
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);

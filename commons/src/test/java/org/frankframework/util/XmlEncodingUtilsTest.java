@@ -1,6 +1,7 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URL;
@@ -13,7 +14,34 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class XmlEncodingUtilsTest {
+class XmlEncodingUtilsTest {
+
+	@Test
+	public void encodesSpecialCharacters() {
+		String input = "<>&\"'\n";
+		String expected = "&lt;&gt;&amp;&quot;&#39;&#10;";
+		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
+	}
+
+	@Test
+	public void encodeCharsReturnsNullForNullInput() {
+		assertNull(XmlEncodingUtils.encodeChars(null, true));
+	}
+
+	@Test
+	public void encodeCharsDoesNotEncodeNewLinesWhenFlagIsFalse() {
+		String input = "\n";
+		String expected = "\n";
+		assertEquals(expected, XmlEncodingUtils.encodeChars(input, false));
+		assertEquals(expected, XmlEncodingUtils.encodeChars(input));
+	}
+
+	@Test
+	public void encodeCharsEncodesNewLinesWhenFlagIsTrue() {
+		String input = "\n";
+		String expected = "&#10;";
+		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
+	}
 
 	private static Stream<Arguments> testFileWithXmlDeclaration() {
 		return Stream.of(

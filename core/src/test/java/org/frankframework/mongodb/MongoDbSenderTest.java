@@ -74,6 +74,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		} catch (IOException e) {
 			log.warn("Error when closing MongoDB connection", e);
 		}
+		super.tearDown();
 	}
 
 	@Override
@@ -94,18 +95,11 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Override
 	public MongoDbSender createSender() {
-		MongoDbSender result = new MongoDbSender();
-		result.setMongoClientFactory(mongoClientFactory);
-		result.setDatabase(database);
-		result.setCollection(collection);
-		return result;
-	}
-
-	@Test
-	void testOpen() throws SenderException, ConfigurationException {
-		sender.setAction(MongoAction.FINDONE);
-		sender.configure();
-		sender.open();
+		MongoDbSender mongoDbSender = new MongoDbSender();
+		mongoDbSender.setMongoClientFactory(mongoClientFactory);
+		mongoDbSender.setDatabase(database);
+		mongoDbSender.setCollection(collection);
+		return mongoDbSender;
 	}
 
 	@Test
@@ -179,11 +173,14 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		System.out.println("FindOne: [" + result.asString() + "]");
-		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores>"));
+		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><classes><item>4</item>" +
+				"<item>4</item><item>3</item></classes><scores><item><grade>4</grade></item><item><grade>4</grade></item><item><grade>3</grade></item></scores>"));
 	}
 
 	@Test
 	void testFindMany() throws Exception {
+		insertStudentRecord();
+
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.configure();
@@ -195,6 +192,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testFindManyXml() throws Exception {
+		insertStudentRecord();
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.setOutputFormat(DocumentFormat.XML);
@@ -203,11 +201,15 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		System.out.println("FindManyXml: [" + result.asString() + "]");
-		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno></item><item>"));
+		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><classes><item>4</item>" +
+				"<item>4</item><item>3</item></classes><scores><item><grade>4</grade></item><item><grade>4</grade></item><item><grade>3</grade></item></scores>" +
+				"<cities><item><houses>40</houses><girls><item>20</item><item>24</item></girls></item><item><houses>40</houses><girls><item>20</item>" +
+				"<item>24</item></girls></item><item><houses>30</houses><girls><item>15</item><item>18</item></girls></item></cities><seatno>10</seatno>"));
 	}
 
 	@Test
 	void testFindManyUsingParameter() throws Exception {
+		insertStudentRecord();
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		Parameter param = new Parameter();
@@ -223,6 +225,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testFindManyCountOnly() throws Exception {
+		insertStudentRecord();
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.setCountOnly(true);
@@ -267,17 +270,27 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	void testUpdateMany() throws Exception {
+		// Arrange: clean up first
+		sender.setCollection("Students");
+		sender.setAction(MongoAction.DELETEMANY);
+		sender.configure();
+		sender.open();
+		result = sendMessage("{ \"student_id\": \"Evert\" }");
+
+		// Arrange: insert student
+		insertStudentRecord();
 		String filter = "{ \"student_id\": \"Evert\" }";
 		String update = "{\"$set\": {\"seatno\":" + 10 + "}}";
 
+		// Act
 		sender.setAction(MongoAction.UPDATEMANY);
-		sender.setCollection("Students");
 		sender.setFilter(filter);
-		sender.configure();
-		sender.open();
-
 		result = sendMessage(update);
-		assertThat(result.asString(), StringContains.containsString("\"modifiedCount\":"));
+
+		// Assert
+		String returnMessage = result.asString();
+		log.debug("UpdateMany: {}", returnMessage);
+		assertThat(returnMessage, StringContains.containsString("\"acknowledged\":true,\"matchedCount\":1,\"modifiedCount\":1"));
 	}
 
 	@Test
@@ -311,18 +324,39 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		studentId.forEach(id -> {
 			JsonObjectBuilder builder = Json.createObjectBuilder();
 			builder.add("student_id", id).add("class_id", classId);
-			builder.add("scores", getScores(grades));
+			builder.add("classes", getArrayOfIntegers(grades));
+			builder.add("scores", getScores(grades)); // array of objects
+			builder.add("cities", getCities(grades)); // array of objects with an array
 			students.add(builder.build());
 		});
 		return students;
 	}
 
-	public JsonArray getScores(Integer... grades) {
-		JsonArrayBuilder scores = Json.createArrayBuilder();
-		for (int grade : grades) {
-			scores.add(grade);
+	private static JsonArray getArrayOfIntegers(Integer... classes) {
+		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+		for (int grade : classes) {
+			arrayBuilder.add(grade);
 		}
-		return scores.build();
+		return arrayBuilder.build();
+	}
+
+	private static JsonArray getScores(Integer[] grades) {
+		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+		for (Integer grade : grades) {
+			arrayBuilder.add(Json.createObjectBuilder().add("grade", grade));
+		}
+		return arrayBuilder.build();
+	}
+
+	private static JsonArray getCities(Integer[] grades) {
+		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+		for (Integer grade : grades) {
+			JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+			objectBuilder.add("houses", grade * 10);
+			objectBuilder.add("girls", getArrayOfIntegers(grade * 5, grade * 6));
+			arrayBuilder.add(objectBuilder);
+		}
+		return arrayBuilder.build();
 	}
 
 }

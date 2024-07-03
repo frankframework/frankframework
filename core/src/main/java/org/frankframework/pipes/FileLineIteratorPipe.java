@@ -34,7 +34,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.8.0")
 @ConfigurationWarning("Please use StreamLineIteratorPipe")
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 

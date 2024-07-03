@@ -23,11 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -57,10 +55,10 @@ public class HashPipe extends FixedForwardPipe {
 	private @Getter HashEncoding hashEncoding = HashEncoding.Base64;
 
 	public enum HashAlgorithm {
-		HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384, HmacSHA512;
+		HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384, HmacSHA512
 	}
 	public enum HashEncoding {
-		Base64, Hex;
+		Base64, Hex
 	}
 
 	@Override
@@ -137,7 +135,7 @@ public class HashPipe extends FixedForwardPipe {
 		this.algorithm = algorithm;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("attribute encoding has been replaced with attribute charset, default has changed from ISO8859_1 to UTF-8")
 	public void setEncoding(String encoding) {
 		setCharset(encoding);
@@ -157,7 +155,7 @@ public class HashPipe extends FixedForwardPipe {
 	public void setHashEncoding(HashEncoding hashEncoding) {
 		this.hashEncoding = hashEncoding;
 	}
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("use attribute hashEncoding instead")
 	public void setBinaryToTextEncoding(HashEncoding hashEncoding) {
 		setHashEncoding(hashEncoding);

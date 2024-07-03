@@ -37,12 +37,12 @@ public class DelaySender extends SenderBase {
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
+			log.info("{}starts waiting for {} ms.", getLogPrefix(), getDelayTime());
 			Thread.sleep(getDelayTime());
 		} catch (InterruptedException e) {
 			throw new SenderException(getLogPrefix()+"delay interrupted", e);
 		}
-		log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
+		log.info("{}ends waiting for {} ms.", getLogPrefix(), getDelayTime());
 		return new SenderResult(message);
 	}
 

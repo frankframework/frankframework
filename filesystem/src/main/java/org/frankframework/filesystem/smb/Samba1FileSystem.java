@@ -43,6 +43,7 @@ import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 
@@ -79,7 +80,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
 			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());
-			log.debug("setting authentication to [" + auth.toString() + "]");
+			log.debug("setting authentication to [{}]", auth);
 		}
 	}
 
@@ -109,9 +110,9 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public DirectoryStream<SmbFile> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<SmbFile> list(String folder, TypeFilter filter) throws FileSystemException {
 		try {
-			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(folder));
+			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(folder, filter));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -166,7 +167,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		}
 	}
 
-	private boolean isFolder(SmbFile f) throws FileSystemException {
+	@Override
+	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
 		} catch (SmbException e) {
@@ -202,7 +204,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			if (!folderExists(normalized)) {
 				throw new FolderNotFoundException("Cannot remove folder [" + normalized + "]. Directory does not exist.");
 			}
-			if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+			if(!removeNonEmptyFolder && list(folder, TypeFilter.FILES_ONLY).iterator().hasNext()) {
 				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 			}
 
@@ -283,14 +285,18 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		private final SmbFile[] files;
 		private int i = 0;
 
-		public SmbFileIterator(String folder) throws IOException {
-			SmbFileFilter filter = file -> (!isListHiddenFiles() && !file.isHidden()) && file.isFile();
+		public SmbFileIterator(String folder, TypeFilter typeFilter) throws IOException {
+			SmbFileFilter filter = switch (typeFilter) {
+				case FILES_ONLY -> file -> (!isListHiddenFiles() && !file.isHidden()) && file.isFile();
+				case FOLDERS_ONLY -> file -> (!isListHiddenFiles() && !file.isHidden()) && file.isDirectory();
+				case FILES_AND_FOLDERS -> file -> (!isListHiddenFiles() && !file.isHidden());
+			};
 			SmbFile f = smbContext;
-			if(StringUtils.isNotBlank(folder)) {
-				String normalizedFolder = FilenameUtils.normalizeNoEndSeparator(folder, true)+"/";
+			if (StringUtils.isNotBlank(folder)) {
+				String normalizedFolder = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 				f = new SmbFile(smbContext, normalizedFolder);
 			}
-			this.files = f.listFiles(filter);
+			files = f.listFiles(filter);
 		}
 
 		@Override

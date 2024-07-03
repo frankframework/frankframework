@@ -193,7 +193,7 @@ public class XmlSwitch extends AbstractPipe {
 	 * stylesheet may return a string representing the forward to look up
 	 * @ff.default <i>a stylesheet that returns the name of the root-element</i>
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("Please use the attribute styleSheetName.")
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
 		setStyleSheetName(newServiceSelectionStylesheetFilename);
@@ -209,17 +209,16 @@ public class XmlSwitch extends AbstractPipe {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
 	/**
 	 * Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified.
 	 * If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward.
 	 * If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.
 	 */
+	@Deprecated(forRemoval = true, since = "7.7.0")
+	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
-	@Deprecated
 	public String getSessionKey() {
 		return this.sessionKey;
 	}

@@ -49,10 +49,8 @@ import javax.xml.transform.dom.DOMSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import lombok.Getter;
 import lombok.Lombok;
-
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -845,54 +843,6 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
-	 */
-	public static String asString(Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof String string) {
-			return string;
-		}
-		if (object instanceof Message message) {
-			message.assertNotClosed();
-			return message.asString();
-		}
-		if (object instanceof MessageWrapper wrapper) {
-			return wrapper.getMessage().asString();
-		}
-		// In other cases, message can be closed directly after converting to String.
-		try (Message message = Message.asMessage(object)) {
-			return message.asString();
-		}
-	}
-
-	/**
-	 * Convert an object to a byte array. Does not close object when it is of type Message or MessageWrapper.
-	 */
-	public static byte[] asByteArray(Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof byte[] bytes) {
-			return bytes;
-		}
-		if (object instanceof String string) {
-			return string.getBytes();
-		}
-		if (object instanceof Message message) {
-			return message.asByteArray();
-		}
-		if (object instanceof MessageWrapper wrapper) {
-			return wrapper.getMessage().asByteArray();
-		}
-		// In other cases, message can be closed directly after converting to byte array.
-		try (Message message = Message.asMessage(object)) {
-			return message.asByteArray();
-		}
-	}
-
-	/**
 	 * Check if the message passed is null or empty.
 	 *
 	 * @param message Message to check. Can be {@code null}.
@@ -1065,9 +1015,9 @@ public class Message implements Serializable, Closeable {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
 		if (isBinary()) {
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize, true);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize);
 		} else {
-			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize, true);
+			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize);
 		}
 		closeOnClose(outputStream);
 	}
@@ -1095,10 +1045,10 @@ public class Message implements Serializable, Closeable {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
 		if (!isBinary()) {
-			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize, true);
+			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
 		} else {
 			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize);
 		}
 		closeOnClose(writer);
 	}

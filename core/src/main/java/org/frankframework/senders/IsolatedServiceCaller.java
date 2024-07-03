@@ -46,13 +46,13 @@ public class IsolatedServiceCaller {
 	@Setter @Getter private TaskExecutor taskExecutor;
 
 	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws IOException {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
+		IsolatedServiceExecutor ise = new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 	}
 
 	public SenderResult callServiceIsolated(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException, IOException {
 		CountDownLatch guard = new CountDownLatch(1);
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
+		IsolatedServiceExecutor ise = new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.await();
@@ -60,11 +60,12 @@ public class IsolatedServiceCaller {
 			Thread.currentThread().interrupt();
 			throw new ListenerException(ClassUtils.nameOf(this)+" was interrupted",e);
 		}
-		if (ise.getThrowable() != null) {
-			if (ise.getThrowable() instanceof ListenerException) {
-				throw (ListenerException)ise.getThrowable();
+		Throwable throwable = ise.getThrowable();
+		if (throwable != null) {
+			if (throwable instanceof ListenerException listenerException) {
+				throw listenerException;
 			}
-			throw new ListenerException(ise.getThrowable());
+			throw new ListenerException(throwable);
 		}
 		return ise.getReply();
 	}

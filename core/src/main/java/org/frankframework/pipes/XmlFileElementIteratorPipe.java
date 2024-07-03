@@ -19,13 +19,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -40,15 +40,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import lombok.Getter;
-
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
  *
  * @deprecated Please replace with ForEachChildElementPipe.
  * @author  Peter Leeuwenburgh
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with ForEachChildElementPipe. ElementName and elementChain can be replaced with containerElement and/or targetElement. It is not a 1 to 1 replacement, different values may be required!")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
@@ -70,12 +68,10 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	private class ItemCallbackCallingHandler extends DefaultHandler {
-
 		private final ItemCallback callback;
 		private final StringBuilder elementBuffer = new StringBuilder();
 		private final List<String> elements = new ArrayList<>();
 		private boolean sElem = false;
-		private Exception rootException = null;
 		private final int startLength;
 		private StopReason stopReason;
 		@Getter private TimeoutException timeoutException;
@@ -143,7 +139,6 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					if (e instanceof TimeoutException exception) {
 						timeoutException = exception;
 					}
-					rootException = e;
 					Throwable rootCause = e;
 					while (rootCause.getCause() != null) {
 						rootCause = rootCause.getCause();
@@ -154,34 +149,21 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 				}
 				if (isStopRequested()) {
-					throw new SAXException("stop maar");
+					throw new SAXException("stop requested");
 				}
 			}
 			elements.remove(lastIndex);
 		}
 
 		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
+		public void characters(char[] ch, int start, int length) {
 			if (sElem) {
-				elementBuffer.append(XmlEncodingUtils.encodeChars(ch, start, length));
+				elementBuffer.append(XmlEncodingUtils.encodeChars(ch, start, length, false));
 			}
 		}
 
 		private String elementsToString() {
-			String chain = null;
-			for (Iterator<String> it = elements.iterator(); it.hasNext();) {
-				String element = it.next();
-				if (chain == null) {
-					chain = element;
-				} else {
-					chain = chain + ";" + element;
-				}
-			}
-			return chain;
-		}
-
-		public Exception getRootException() {
-			return rootException;
+			return String.join(";", elements);
 		}
 
 		public boolean isStopRequested() {
@@ -200,7 +182,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
 
-		log.debug("obtaining list of elements [" + getElementName() + "] using sax parser");
+		log.debug("obtaining list of elements [{}] using sax parser", getElementName());
 		try {
 			SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 			parserFactory.setNamespaceAware(true);
@@ -222,7 +204,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		return handler.stopReason;
 	}
 
-	/** the name of the element to iterate over (alternatively: <code>elementchain</code>) */
+	/** the name of the element to iterate over (alternatively: <code>elementChain</code>) */
 	public void setElementName(String string) {
 		elementName = string;
 	}

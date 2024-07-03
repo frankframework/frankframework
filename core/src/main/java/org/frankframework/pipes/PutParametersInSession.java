@@ -32,7 +32,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Peter Leeuwenburgh
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.7.0")
 @ConfigurationWarning("Please replace with PutInSessionPipe")
 public class PutParametersInSession extends FixedForwardPipe {
 

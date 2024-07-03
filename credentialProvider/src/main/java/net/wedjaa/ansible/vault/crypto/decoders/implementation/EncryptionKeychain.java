@@ -16,12 +16,12 @@
 
 package net.wedjaa.ansible.vault.crypto.decoders.implementation;
 
-import de.rtner.security.auth.spi.PBKDF2Engine;
-import de.rtner.security.auth.spi.PBKDF2Parameters;
-
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
+
+import de.rtner.security.auth.spi.PBKDF2Engine;
+import de.rtner.security.auth.spi.PBKDF2Parameters;
+import org.frankframework.util.UUIDUtil;
 
 
 public class EncryptionKeychain
@@ -104,7 +104,7 @@ public class EncryptionKeychain
     private byte[] generateSalt(int length)
     {
         byte[] salt = new byte[length];
-        new Random().nextBytes(salt);
+        UUIDUtil.RANDOM.nextBytes(salt);
         return salt;
     }
 

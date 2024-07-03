@@ -22,5 +22,5 @@ package org.frankframework.monitoring;
  * @since   4.7
  */
 public enum EventType {
-	TECHNICAL, FUNCTIONAL, HEARTBEAT, CLEARING;
+	TECHNICAL, FUNCTIONAL, HEARTBEAT, CLEARING
 }

@@ -22,7 +22,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.LogUtil;
@@ -30,7 +29,7 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
 public class MessageZipEntry extends ZipEntry {
-	private Logger log = LogUtil.getLogger(MessageZipEntry.class);
+	private final Logger log = LogUtil.getLogger(MessageZipEntry.class);
 	private final Message message;
 
 	public MessageZipEntry(Message message) {
@@ -46,7 +45,7 @@ public class MessageZipEntry extends ZipEntry {
 			setSize(message.size());
 		} else {
 			this.message = Message.nullMessage();
-			log.warn("contents of zip entry ["+filename+"] is null");
+			log.warn("contents of zip entry [{}] is null", filename);
 		}
 	}
 
@@ -89,6 +88,6 @@ public class MessageZipEntry extends ZipEntry {
 
 	@Override
 	public String toString() {
-		return new StringBuilder("ZipEntry for [").append(message.getRequestClass()).append("]").toString();
+		return "ZipEntry for [" + message.getRequestClass() + "]";
 	}
 }

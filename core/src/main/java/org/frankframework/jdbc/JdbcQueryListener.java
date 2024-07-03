@@ -29,7 +29,7 @@ import org.frankframework.core.ProcessState;
  *
  * @since   4.7
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved manageability")
 public class JdbcQueryListener extends JdbcListener {
 
@@ -45,7 +45,7 @@ public class JdbcQueryListener extends JdbcListener {
 			throw new ConfigurationException("keyField must be specified");
 		}
 		if (!knownProcessStates().contains(ProcessState.ERROR)) {
-			log.info(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
+			log.info("{}has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead", getLogPrefix());
 			setUpdateStatusQuery(ProcessState.ERROR,getUpdateStatusQuery(ProcessState.DONE));
 		}
 		super.configure();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -112,10 +116,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -196,12 +196,12 @@ import lombok.Setter;
  */
 @Category("Basic")
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	public TransactionDefinition TXNEW_PROC;
+	private TransactionDefinition newTransaction;
 
 	public static final String THREAD_CONTEXT_KEY_NAME = "listener";
 	public static final String THREAD_CONTEXT_KEY_TYPE = "listener.type";
@@ -251,7 +251,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private @Getter boolean forceRetryFlag = false;
 	private @Getter boolean checkForDuplicates=false;
-	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID };
+	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID }
+
 	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
 	private @Getter int maxDeliveries=5;
 	private @Getter int maxRetries=1;
@@ -364,7 +365,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				String strValue = "messageText".equals(key) ? "(... see elsewhere ...)" : String.valueOf(value);
 				contextDump.append(" ").append(key).append("=[").append(hiddenSessionKeys.contains(key) ? StringUtil.hide(strValue) : strValue).append("]");
 			});
-			log.debug(getLogPrefix()+contextDump);
+			log.debug("{}{}", getLogPrefix(), contextDump);
 		}
 	}
 
@@ -376,7 +377,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
 	protected void info(String msg) {
-		log.info(getLogPrefix()+msg);
+		log.info("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add(getLogPrefix() + msg);
 		}
@@ -386,7 +387,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn(getLogPrefix()+msg);
+		log.warn("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperLevel.WARN);
 		}
@@ -396,7 +397,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(String msg, Throwable t) {
-		log.error(getLogPrefix()+msg, t);
+		log.error("{}{}", getLogPrefix(), msg, t);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
 		}
@@ -456,7 +457,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	protected void closeAllResources() {
 		TimeoutGuard timeoutGuard = new TimeoutGuard(getStopTimeout(), "stopping receiver ["+getName()+"]");
-		log.debug(getLogPrefix()+"closing");
+		log.debug("{}closing", getLogPrefix());
 		try {
 			try {
 				getListener().close();
@@ -500,9 +501,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				// Force an exception and catch it, so we have a stacktrace.
 				Throwable t = new Throwable("Timeout Stopping Receiver [" + getName() + "] in thread [" + Thread.currentThread().getName() + "]");
 				t.fillInStackTrace();
-				log.warn(getLogPrefix() + "timeout stopping", t);
+				log.warn("{}timeout stopping", getLogPrefix(), t);
 			} else {
-				log.debug(getLogPrefix()+"closed");
+				log.debug("{}closed", getLogPrefix());
 				if (isInRunState(RunState.STOPPING) || isInRunState(RunState.EXCEPTION_STOPPING)) {
 					runState.setRunState(RunState.STOPPED);
 				}
@@ -569,7 +570,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			registerEvent(RCV_RESUMED_MONITOR_EVENT);
 			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
-			TXNEW_PROC = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
+			newTransaction = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
 
 			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
@@ -582,13 +583,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (getListener() instanceof ReceiverAware) {
 				((ReceiverAware)getListener()).setReceiver(this);
 			}
-			if (getListener() instanceof IPushingListener) {
-				IPushingListener<M> pl = (IPushingListener<M>)getListener();
+			if (getListener() instanceof IPushingListener<M> pl) {
 				pl.setHandler(this);
 				pl.setExceptionListener(this);
 			}
-			if (getListener() instanceof IPortConnectedListener) {
-				IPortConnectedListener<M> pcl = (IPortConnectedListener<M>) getListener();
+			if (getListener() instanceof IPortConnectedListener<M> pcl) {
 				pcl.setReceiver(this);
 			}
 			if (getListener() instanceof IPullingListener) {
@@ -611,8 +610,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					info("Listener has answer-sender on "+destination.getPhysicalDestinationName());
 				}
 			}
-			if (getListener() instanceof ITransactionRequirements) {
-				ITransactionRequirements tr=(ITransactionRequirements)getListener();
+			if (getListener() instanceof ITransactionRequirements tr) {
 				if (tr.transactionalRequired() && !isTransacted()) {
 					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 					//throw new ConfigurationException(msg);
@@ -740,20 +738,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (adapter != null) {
 				RunState adapterRunState = adapter.getRunState();
 				if (adapterRunState!=RunState.STARTED) {
-					log.warn(getLogPrefix()+"on adapter [" + adapter.getName() + "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
+					log.warn("{}on adapter [{}] was tried to start, but the adapter is in state [{}]. Ignoring command.", getLogPrefix(), adapter.getName(), adapterRunState);
 					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
 					return;
 				}
 			}
 			// See also Adapter.startRunning()
 			if (!configurationSucceeded) {
-				log.error("configuration of receiver [" + getName() + "] did not succeed, therefore starting the receiver is not possible");
+				log.error("configuration of receiver [{}] did not succeed, therefore starting the receiver is not possible", getName());
 				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
 				runState.setRunState(RunState.ERROR);
 				return;
 			}
 			if (adapter.getConfiguration().isUnloadInProgressOrDone()) {
-				log.error( "configuration of receiver [" + getName() + "] unload in progress or done, therefore starting the receiver is not possible");
+				log.error("configuration of receiver [{}] unload in progress or done, therefore starting the receiver is not possible", getName());
 				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
 				return;
 			}
@@ -1128,7 +1126,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				return;
 			}
 			PlatformTransactionManager txManager = getTxManager();
-			IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
+			IbisTransaction itx = new IbisTransaction(txManager, newTransaction, "receiver [" + getName() + "]");
 			RawMessageWrapper<Serializable> msg = null;
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {
@@ -1659,18 +1657,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public boolean isThreadCountReadable() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.isThreadCountReadable();
 		}
 		return getListener() instanceof IPullingListener;
 	}
 	@Override
 	public boolean isThreadCountControllable() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.isThreadCountControllable();
 		}
 		return getListener() instanceof IPullingListener;
@@ -1678,9 +1672,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public int getCurrentThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.getCurrentThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1691,9 +1683,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public int getMaxThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.getMaxThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1704,9 +1694,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public void increaseThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			tcc.increaseThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -1716,9 +1704,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public void decreaseThreadCount() {
-		if (getListener() instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-
+		if (getListener() instanceof IThreadCountControllable tcc) {
 			tcc.decreaseThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
@@ -2057,7 +2043,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("attribute is no longer used. Please use attribute returnedSessionKeys of the JavaListener if the set of sessionsKeys that can be returned to callers session must be limited.")
 	public void setReturnedSessionKeys(String string) {
 		// no longer used

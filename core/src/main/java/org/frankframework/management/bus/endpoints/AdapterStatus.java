@@ -34,7 +34,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
-
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -96,7 +95,8 @@ public class AdapterStatus extends BusEndpointBase {
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			for(Adapter adapter: config.getRegisteredAdapters()) {
 				Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
-				adapterList.put((String) adapterInfo.get("name"), adapterInfo);
+				String uniqueKey = String.format("%s/%s", adapter.getConfiguration().getName(), adapter.getName());
+				adapterList.put(uniqueKey, adapterInfo);
 			}
 		}
 
@@ -272,7 +272,7 @@ public class AdapterStatus extends BusEndpointBase {
 				messageLogCount="?";
 			}
 		} catch (Exception e) {
-			log.warn("Cannot determine number of messages in messageLog ["+store.getName()+"]", e);
+			log.warn("Cannot determine number of messages in messageLog [{}]", store.getName(), e);
 			messageLogCount="error";
 		}
 		data.put("messageLogCount", messageLogCount);
@@ -290,7 +290,7 @@ public class AdapterStatus extends BusEndpointBase {
 			try {
 				return ts.getMessageCount();
 			} catch (Exception e) {
-				log.warn("Cannot determine number of messages in MessageBrowser ["+ClassUtils.nameOf(ts)+"]", e);
+				log.warn("Cannot determine number of messages in MessageBrowser [{}]", ClassUtils.nameOf(ts), e);
 				return "error";
 			}
 		} else {
@@ -398,7 +398,7 @@ public class AdapterStatus extends BusEndpointBase {
 			MessageKeeperMessage msg = adapter.getMessageKeeper().getMessage(t);
 
 			message.put("message", msg.getMessageText());
-			message.put("date", msg.getMessageDate());
+			message.put("date", Date.from(msg.getMessageDate()));
 			message.put("level", msg.getMessageLevel());
 			message.put("capacity", adapter.getMessageKeeper().capacity());
 
@@ -411,8 +411,7 @@ public class AdapterStatus extends BusEndpointBase {
 		Map<String, Object> adapterInfo = new HashMap<>();
 		Configuration config = adapter.getConfiguration();
 
-		String adapterName = adapter.getName();
-		adapterInfo.put("name", adapterName);
+		adapterInfo.put("name", adapter.getName());
 		adapterInfo.put("description", adapter.getDescription());
 		adapterInfo.put("configuration", config.getName() );
 		RunState adapterRunState = adapter.getRunState();

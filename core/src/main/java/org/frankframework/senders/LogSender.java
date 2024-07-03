@@ -17,11 +17,10 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -73,7 +72,7 @@ public class LogSender extends SenderWithParametersBase {
 		try {
 			logger.log(level, message.asString());
 		} catch (IOException io) {
-			log.warn("unable to log message: " + message.toString());
+			log.warn("unable to log message: {}", message);
 		}
 		if (getParameterList() != null && pvl != null) {
 			for (ParameterValue param : pvl) {

@@ -22,15 +22,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IPullingListener;
@@ -45,6 +42,7 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
+import org.springframework.context.ApplicationContext;
 
 /**
  * File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
@@ -53,11 +51,11 @@ import org.frankframework.util.WildCardFilter;
  *
  * @author Johan Verrips
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
 public class FileRecordListener implements IPullingListener<String> {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
@@ -220,7 +218,7 @@ public class FileRecordListener implements IPullingListener<String> {
 			String fileContent = "";
 			try {
 				fullInputFileName = inputFile.getCanonicalPath();
-				fileContent = StreamUtil.fileToString(fullInputFileName, "\n");
+				fileContent = StreamUtil.fileToString(fullInputFileName, "\n", false);
 				inputFileName = archiveFile(inputFile);
 
 			} catch (IOException e) {

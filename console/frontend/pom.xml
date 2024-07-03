@@ -40,34 +40,38 @@
 		<defaultGoal>generate-resources</defaultGoal>
 		<plugins>
 			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<workingDirectory>${frontend.source.location}</workingDirectory>
+				</configuration>
 				<executions>
-					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-					</execution>
 					<execution>
 						<id>npm install</id>
 						<goals>
-							<goal>npm</goal>
+							<goal>exec</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>install</arguments>
+							<executable>npm</executable>
+							<arguments>
+								<argument>ci</argument>
+							</arguments>
 						</configuration>
 					</execution>
 					<execution>
 						<id>npm build</id>
 						<goals>
-							<goal>npx</goal>
+							<goal>exec</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>ng build -c development</arguments>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>build</argument>
+							</arguments>
 						</configuration>
 					</execution>
 				</executions>
@@ -107,21 +111,6 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>com.github.eirslett</groupId>
-										<artifactId>frontend-maven-plugin</artifactId>
-										<versionRange>[1.12,)</versionRange>
-										<goals>
-											<goal>install-node-and-npm</goal>
-											<goal>npm</goal>
-											<goal>npx</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
 										<groupId>com.github.hazendaz.maven</groupId>
 										<artifactId>directory-maven-plugin</artifactId>
 										<versionRange>[1,)</versionRange>
@@ -133,18 +122,21 @@
 										<ignore />
 									</action>
 								</pluginExecution>
+								<pluginExecution> <!-- Eclipse thinks that target/frontend is a source folder -->
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-resources-plugin</artifactId>
+										<versionRange>[3.3.1,)</versionRange>
+										<goals>
+											<goal>copy-resources</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>com.github.eirslett</groupId>
-					<artifactId>frontend-maven-plugin</artifactId>
-					<version>1.15.0</version>
-					<configuration>
-						<nodeVersion>v20.11.1</nodeVersion>
-						<workingDirectory>${frontend.source.location}</workingDirectory><!-- frontend resources -->
-						<installDirectory>${project.build.directory}</installDirectory><!-- npm + npx install folder -->
 					</configuration>
 				</plugin>
 				<plugin>
@@ -189,6 +181,12 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -226,58 +224,4 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 	</developers>
-
-	<profiles>
-		<profile>
-			<id>ci</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.github.eirslett</groupId>
-						<artifactId>frontend-maven-plugin</artifactId>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.3.0</version>
-						<configuration>
-							<workingDirectory>${frontend.source.location}</workingDirectory>
-						</configuration>
-						<executions>
-							<execution>
-								<id>npm install</id>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-									</arguments>
-								</configuration>
-							</execution>
-							<execution>
-								<id>ng build</id>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npx</executable>
-									<arguments>
-										<argument>ng</argument>
-										<argument>build</argument>
-									</arguments>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

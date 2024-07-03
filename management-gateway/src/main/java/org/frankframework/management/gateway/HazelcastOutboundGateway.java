@@ -15,11 +15,25 @@
 */
 package org.frankframework.management.gateway;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.hazelcast.cluster.Member;
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
+import com.hazelcast.collection.IQueue;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.topic.ITopic;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
+import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
 import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,22 +46,12 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.hazelcast.collection.IQueue;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.impl.DefaultNodeContext;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.topic.ITopic;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.extern.log4j.Log4j2;
-
 @Log4j2
 public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {
 	private HazelcastInstance hzInstance;
 	private ApplicationContext applicationContext;
 
-	private String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
+	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
 
 	@Override
@@ -92,6 +96,21 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		return null;
 	}
 
+	@Override
+	public List<ClusterMember> getMembers() {
+		Set<Member> members = hzInstance.getCluster().getMembers();
+		return members.stream().map(this::mapMember).toList();
+	}
+
+	private ClusterMember mapMember(Member member) {
+		ClusterMember cm = new ClusterMember();
+		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
+		cm.setId(member.getUuid());
+		cm.setName(member.getAttribute("name"));
+		cm.setLocalMember(member.localMember());
+		return cm;
+	}
+
 	private @Nonnull Authentication getAuthentication() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if(authentication == null) {
@@ -132,9 +151,23 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		hzInstance = HazelcastInstanceFactory.newHazelcastInstance(HazelcastConfig.createHazelcastConfig(), "console-node", new DefaultNodeContext());
+		hzInstance = HazelcastConfig.newHazelcastInstance("console");
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
+
+		hzInstance.getCluster().addMembershipListener(new MembershipListener() {
+
+			@Override
+			public void memberAdded(MembershipEvent e) {
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.ADD_MEMBER, mapMember(e.getMember())));
+			}
+
+			@Override
+			public void memberRemoved(MembershipEvent e) {
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.REMOVE_MEMBER, mapMember(e.getMember())));
+			}
+
+		});
 	}
 }

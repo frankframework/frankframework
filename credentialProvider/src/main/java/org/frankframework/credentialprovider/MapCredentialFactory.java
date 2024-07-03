@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,11 +33,11 @@ import org.frankframework.util.ClassUtils;
 
 public abstract class MapCredentialFactory implements ICredentialFactory {
 
-	public final String USERNAME_SUFFIX_PROPERTY=getPropertyBase()+".usernameSuffix";
-	public final String PASSWORD_SUFFIX_PROPERTY=getPropertyBase()+".passwordSuffix";
+	private final String usernameSuffixProperty = getPropertyBase() + ".usernameSuffix";
+	private final String passwordSuffixProperty = getPropertyBase() + ".passwordSuffix";
 
-	public static final String USERNAME_SUFFIX_DEFAULT="/username";
-	public static final String PASSWORD_SUFFIX_DEFAULT="/password";
+	public static final String USERNAME_SUFFIX_DEFAULT = "/username";
+	public static final String PASSWORD_SUFFIX_DEFAULT = "/password";
 
 	private String usernameSuffix;
 	private String passwordSuffix;
@@ -53,8 +53,8 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
 		}
 
-		usernameSuffix = appConstants.getProperty(USERNAME_SUFFIX_PROPERTY, USERNAME_SUFFIX_DEFAULT);
-		passwordSuffix = appConstants.getProperty(PASSWORD_SUFFIX_PROPERTY, PASSWORD_SUFFIX_DEFAULT);
+		usernameSuffix = appConstants.getProperty(usernameSuffixProperty, USERNAME_SUFFIX_DEFAULT);
+		passwordSuffix = appConstants.getProperty(passwordSuffixProperty, PASSWORD_SUFFIX_DEFAULT);
 	}
 
 	protected abstract String getPropertyBase();

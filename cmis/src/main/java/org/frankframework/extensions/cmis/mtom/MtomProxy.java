@@ -41,7 +41,7 @@ import org.frankframework.util.StringUtil;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
-@Deprecated // remove this class, use default webservices endpoints in combination with the CmisFilter
+@Deprecated(forRemoval = true, since = "7.6.0") // remove this class, use default webservices endpoints in combination with the CmisFilter
 public class MtomProxy extends HttpServletBase implements InitializingBean, ApplicationContextAware {
 
 	private final Logger log = LogUtil.getLogger(this);
@@ -80,7 +80,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 		ServletConfiguration config = servletManager.getServlet(PROXY_SERVLET);
 
 		if(cmisWebServiceServlet == null || config == null) {
-			log.warn("unable to find servlet [" + PROXY_SERVLET + "]");
+			log.warn("unable to find servlet [{}]", PROXY_SERVLET);
 			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] not found");
 		}
 		if(config.getLoadOnStartup() < 0) {

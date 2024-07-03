@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,7 +46,7 @@ public class ExecuteJdbcQuery extends FrankApiBase {
 	@PostMapping(value = "/jdbc/query", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("execute a JDBC query on a datasource")
-	public ResponseEntity<?> executeJdbcQuery(Map<String, Object> json) {
+	public ResponseEntity<?> executeJdbcQuery(@RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String query = RequestUtils.getValue(json, "query");

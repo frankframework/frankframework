@@ -18,6 +18,10 @@ package org.frankframework.pipes;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -43,11 +47,6 @@ import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -82,7 +81,7 @@ import lombok.Setter;
  * @see PipeLineSession
  */
 public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasStatistics {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -205,7 +204,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
 					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
 				} else {
-					log.info("PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+					log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
 				}
 			}
 		} else {
@@ -408,16 +407,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		secLogSessionKeys = string;
 	}
 
-	/** when set, the value in AppConstants is overwritten (for this pipe only) */
+	@Override
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}
 
-	/**
-	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
-	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
-	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
-	 */
+	@Override
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

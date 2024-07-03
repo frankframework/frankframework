@@ -20,6 +20,8 @@ import jakarta.servlet.ServletException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -49,6 +51,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE+1)
 @Log4j2
 public class ApiExceptionHandler {
 
@@ -66,7 +69,7 @@ public class ApiExceptionHandler {
 			Exception.class
 	})
 	protected final ResponseEntity<Object> handleException(Exception ex) {
-		if (ex instanceof ErrorResponse errorResponseEx){
+		if (ex instanceof ErrorResponse errorResponseEx) {
 			return handleSpringException(ex, errorResponseEx.getStatusCode(), errorResponseEx.getHeaders());
 		}
 		return handleExceptionLowLevel(ex);
@@ -84,7 +87,7 @@ public class ApiExceptionHandler {
 			MethodValidationException.class,
 			BindException.class
 	})
-	protected final ResponseEntity<Object> handleExceptionLowLevel(Exception ex){
+	protected final ResponseEntity<Object> handleExceptionLowLevel(Exception ex) {
 		HttpHeaders headers = new HttpHeaders();
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		if (ex instanceof ServletException

@@ -706,7 +706,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		assertTrue(_folderExists(processedFolder), "Error folder must exist");
 		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
-		assertTrue(!_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
+		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
 		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 	@Test

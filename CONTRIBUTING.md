@@ -82,7 +82,7 @@ Start reading our code, and you'll get the hang of it. We optimize for readabili
 
 The Frank!Framework community has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
 
-* With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
+* With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on a non-private class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
 * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
 See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code examples to help create more readable, testable and maintainable code.
@@ -127,7 +127,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
-- We prefer to run the Frank!Framework on Java 17. Please install a Java 17 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
+- We prefer to run the Frank!Framework on Java 17. Please install a Java 17 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://adoptium.net/temurin/releases/?package=jdk&version=17). This is a distribution of the OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
 
 *Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
 
@@ -157,6 +157,11 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Double click Tomcat v10.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v10.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
+
+### Install latest LTS NodeJS
+
+- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
+- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
 
 ### In some cases you might want/need to:
 
@@ -212,6 +217,13 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
+### Install latest LTS NodeJS
+
+- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
+- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
+
+### Setup IntelliJ
+
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
@@ -244,7 +256,6 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 	  build (providing this is supported by your JDK)
     - Name your configuration and save it
 - Run your configuration and you are ready to go. The IAF-Test configuration has all scenarios built-in for testing the Frank!Framework from the Larva test-tool.
-
 
 # Frank!Doc - Documentation for Frank developers
 

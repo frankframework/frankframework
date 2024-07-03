@@ -41,6 +41,7 @@ import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
@@ -98,9 +99,9 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public DirectoryStream<FTPFileRef> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<FTPFileRef> list(String folder, TypeFilter filter) throws FileSystemException {
 		try {
-			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folder, ftpClient.listFiles(folder)));
+			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folder, ftpClient.listFiles(folder), filter));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -109,6 +110,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public boolean exists(FTPFileRef file) throws FileSystemException {
 		return findFile(file) != null;
+	}
+
+	@Override
+	public boolean isFolder(FTPFileRef ftpFileRef) {
+		return ftpFileRef.isDirectory();
 	}
 
 	private @Nullable FTPFileRef findFile(FTPFileRef file) throws FileSystemException {
@@ -167,7 +173,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		String pwd = null;
+		String pwd;
 		try {
 			pwd = ftpClient.printWorkingDirectory();
 			try {
@@ -348,7 +354,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("user", f.getUser());
 		attributes.put("group", f.getGroup());
-		attributes.put("type", f.getType());
 		attributes.put("rawListing", f.getRawListing());
 		attributes.put("link", f.getLink());
 		attributes.put("hardLinkCount", f.getHardLinkCount());
@@ -370,16 +375,17 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	private class FTPFilePathIterator implements Iterator<FTPFileRef> {
-
-		private List<FTPFileRef> files;
+		private final List<FTPFileRef> files = new ArrayList<>();
 		private int i = 0;
 
-		FTPFilePathIterator(String folder, FTPFile[] filesArr) {
-			files = new ArrayList<>();
+		FTPFilePathIterator(String folder, FTPFile[] filesArr, TypeFilter filter) {
 			for (FTPFile ftpFile : filesArr) {
-				if(ftpFile.isFile()) {
-					FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile, folder);
-					log.debug("adding FTPFileRef [{}] to the collection", fileRef);
+				FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile, folder);
+				if (ftpFile.isDirectory() && filter.includeFolders()) {
+					log.debug("adding directory FTPFileRef [{}] to the collection", fileRef);
+					files.add(fileRef);
+				} else if (ftpFile.isFile() && filter.includeFiles()) {
+					log.debug("adding file FTPFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
 				}
 			}
@@ -387,7 +393,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 		@Override
 		public boolean hasNext() {
-			return files != null && i < files.size();
+			return i < files.size();
 		}
 
 		@Override

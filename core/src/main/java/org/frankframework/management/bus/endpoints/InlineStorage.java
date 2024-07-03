@@ -66,7 +66,7 @@ public class InlineStorage extends BusEndpointBase {
 										storeItemsGroupedByProcessState.get(state.getName()).setTotalMessageCount(storeItemsGroupedByProcessState.get(state.getName()).getTotalMessageCount() + count);
 									}
 								} catch(ListenerException e) {
-									log.warn("Cannot determine number of messages in process state ["+state+"]", e);
+									log.warn("Cannot determine number of messages in process state [{}]", state, e);
 								}
 							}
 						}

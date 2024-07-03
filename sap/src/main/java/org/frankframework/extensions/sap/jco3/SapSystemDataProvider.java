@@ -17,12 +17,10 @@ package org.frankframework.extensions.sap.jco3;
 
 import java.util.Properties;
 
-import org.frankframework.extensions.sap.SapException;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
@@ -111,23 +109,13 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		return true;
 	}
 
-	@Deprecated
-	public synchronized void registerSystem(SapSystemImpl sapSystem) throws SapException {
-		registerSystem(sapSystem);
-	}
-
 	public synchronized void updateSystem(SapSystemImpl sapSystem) {
-		log.debug("Update " + sapSystem.getName());
+		log.debug("Update {}", sapSystem.getName());
 		destinationDataEventListener.updated(sapSystem.getName());
 	}
 
-	@Deprecated
-	public synchronized void unregisterSystem(SapSystemImpl sapSystem) {
-		deleteSystem(sapSystem);
-	}
-
 	public synchronized void deleteSystem(SapSystemImpl sapSystem) {
-		log.debug("Delete " + sapSystem.getName());
+		log.debug("Delete {}", sapSystem.getName());
 		destinationDataEventListener.deleted(sapSystem.getName());
 	}
 }

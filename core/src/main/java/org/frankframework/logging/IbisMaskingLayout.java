@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package org.frankframework.logging;
 
+import java.io.Serial;
 import java.nio.charset.Charset;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
@@ -29,7 +30,6 @@ import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
-
 import org.frankframework.util.StringUtil;
 
 /**
@@ -58,12 +58,12 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * This is required to be set for each thread individually.
 	 */
-	private static final ThreadLocal<Set<String>> threadLocalReplace = new ThreadLocal<>();
+	private static final ThreadLocal<Set<Pattern>> threadLocalReplace = new ThreadLocal<>();
 
 	/**
 	 * Set of regex strings to hide globally, meaning for every thread/adapter.
 	 */
-	private static Set<String> globalReplace = new HashSet<>();
+	private static Set<Pattern> globalReplace = new HashSet<>();
 
 	/**
 	 * @param config
@@ -80,8 +80,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
-			message = StringUtil.hideAll(message, globalReplace);
-			message = StringUtil.hideAll(message, threadLocalReplace.get());
+			message = maskSensitiveInfo(message);
 
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {
@@ -97,13 +96,22 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return serializeEvent(event);
 	}
 
+	public static String maskSensitiveInfo(String message) {
+		if (StringUtils.isBlank(message)) {
+			return message;
+		}
+		String tmpResult = StringUtil.hideAll(message, globalReplace);
+		return StringUtil.hideAll(tmpResult, threadLocalReplace.get());
+	}
+
 	/**
 	 * Wrapper around SimpleMessage so we can persist throwables, if any.
 	 */
 	private static class LogMessage extends SimpleMessage {
+		@Serial
 		private static final long serialVersionUID = 3907571033273707664L;
 
-		private Throwable throwable;
+		private final Throwable throwable;
 
 		public LogMessage(String message, Throwable throwable) {
 			super(message);
@@ -118,10 +126,10 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	/**
 	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
-	 *
+	 * <br/>
 	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
 	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
-	 *
+	 * <br/>
 	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
 	 * This is done by taking a snapshot of the stack and walking it, see {@link StackLocatorUtil#calcLocation(String)}).
 	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
@@ -170,14 +178,14 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static void addToGlobalReplace(String regex) {
+		globalReplace.add(Pattern.compile(regex));
+	}
+
+	public static void addToGlobalReplace(Pattern regex) {
 		globalReplace.add(regex);
 	}
 
-	public static void removeFromGlobalReplace(String regex) {
-		globalReplace.remove(regex);
-	}
-
-	public static Set<String> getGlobalReplace() {
+	public static Set<Pattern> getGlobalReplace() {
 		return globalReplace;
 	}
 
@@ -185,21 +193,21 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		globalReplace = new HashSet<>();
 	}
 
-	public static void addToThreadLocalReplace(Collection<String> collection) {
-		if(collection == null) return;
+	public static void addToThreadLocalReplace(Set<Pattern> hideRegexSet) {
+		if (hideRegexSet == null || hideRegexSet.isEmpty()) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
 
-		threadLocalReplace.get().addAll(collection);
+		threadLocalReplace.get().addAll(hideRegexSet);
 	}
 
 	/**
 	 * Add regex to hide locally, meaning for specific threads/adapters.
 	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
 	 */
-	public static void addToThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
+	public static void addToThreadLocalReplace(Pattern regex) {
+		if(regex == null) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
@@ -207,23 +215,10 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	/**
-	 * Remove regex to hide locally, meaning for specific threads/adapters.
-	 * When the last item is removed the Set will be removed as well.
-	 */
-	public static void removeFromThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
-
-		threadLocalReplace.get().remove(regex);
-
-		if(threadLocalReplace.get().isEmpty())
-			removeThreadLocalReplace();
-	}
-
-	/**
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * Can return null when not used/initalized!
 	 */
-	public static Set<String> getThreadLocalReplace() {
+	public static Set<Pattern> getThreadLocalReplace() {
 		return threadLocalReplace.get();
 	}
 

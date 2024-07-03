@@ -53,7 +53,7 @@ import org.frankframework.stream.Message;
  * @deprecated
  * @author  Milan Tomc
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
 public class LdapChallengePipe extends FixedForwardPipe {
 
@@ -132,14 +132,14 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		ldapSender.setCredentials(credentials);
 		ldapSender.setOperation(Operation.READ);
 		try {
-			log.debug("Looking up context for principal ["+principal+"]");
+			log.debug("Looking up context for principal [{}]", principal);
 			ldapSender.configure();
-			log.debug("Succesfully looked up context for principal ["+principal+"]");
+			log.debug("Successfully looked up context for principal [{}]", principal);
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
 				ldapSender.storeLdapException(e, pls);
 			} else {
-				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
+				log.warn("LDAP error looking up context for principal [{}]", principal, e);
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}

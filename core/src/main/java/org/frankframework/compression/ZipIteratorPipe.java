@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,9 +25,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IDataIterator;
@@ -35,9 +32,9 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.pipes.IteratingPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Misc;
-
 import org.frankframework.util.StreamUtil;
+
+import lombok.Getter;
 
 
 /**
@@ -61,7 +58,6 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	private @Getter boolean streamingContents=true;
 	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private @Getter boolean skipBOM=false;
 	private @Getter boolean processFile=false;
 
 	@Override
@@ -120,17 +116,11 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 				String filename=current.getName();
 				if (isStreamingContents()) {
 					log.debug("storing stream to contents of zip entries under session key [{}]", ()->getContentsSessionKey());
-					session.put(getContentsSessionKey(),StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
+					session.put(getContentsSessionKey(), StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else {
 					log.debug("storing contents of zip entry under session key [{}]", ()->getContentsSessionKey());
-					String content;
-					if (isSkipBOM()) {
-						byte[] contentBytes = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);
-						content = Misc.byteArrayToString(contentBytes, null, false);
-					} else {
-						content = StreamUtil.streamToString(StreamUtil.dontClose(source),null,getCharset());
-					}
-					session.put(getContentsSessionKey(),content);
+					String content = StreamUtil.streamToString(StreamUtil.dontClose(source), null, getCharset());
+					session.put(getContentsSessionKey(), content);
 				}
 				return filename;
 			} catch (IOException e) {
@@ -224,18 +214,10 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	}
 
 	/**
-	 * If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)
-	 * @ff.default false
-	 */
-	public void setSkipBOM(boolean b) {
-		skipBOM = b;
-	}
-
-	/**
 	 * If set <code>true</code>, each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {
 		processFile = b;

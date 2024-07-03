@@ -54,13 +54,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import jakarta.annotation.Nullable;
+import jakarta.json.JsonException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -96,8 +97,6 @@ import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-
-import jakarta.json.JsonException;
 
 /**
  * @author Jaco de Groot
@@ -2238,75 +2237,53 @@ public class LarvaTool {
 		while (!processed) {
 			String name = properties.getProperty(property + _param + i + _name);
 			if (name != null) {
-				Object value;
 				String type = properties.getProperty(property + _param + i + _type);
-				if ("httpResponse".equals(type)) {
-					String outputFile;
-					String filename = properties.getProperty(property + _param + i + ".filename");
+				String propertyValue = properties.getProperty(property + _param + i + ".value");
+				Object value = propertyValue;
+
+				if (value == null) {
+					String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
 					if (filename != null) {
-						outputFile = properties.getProperty(property + _param + i + ".filename.absolutepath");
+						value = new FileMessage(new File(filename));
 					} else {
-						outputFile = properties.getProperty(property + _param + i + ".outputfile");
-					}
-					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
-					httpServletResponseMock.setOutputFile(outputFile);
-					value = httpServletResponseMock;
-				} else {
-					value = properties.getProperty(property + _param + i + ".value");
-					if (value == null) {
-						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
-						if (filename != null) {
-							value = new FileMessage(new File(filename));
-						} else {
-							String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
-							if (inputStreamFilename != null) {
-								errorMessage("valuefileinputstream is no longer supported use valuefile instead");
-							}
+						String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
+						if (inputStreamFilename != null) {
+							errorMessage("valuefileinputstream is no longer supported use valuefile instead");
 						}
 					}
 				}
 				if ("node".equals(type)) {
 					try {
-						value = XmlUtils.buildNode(Message.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
+						value = XmlUtils.buildNode(propertyValue, true);
+					} catch (DomBuilderException e) {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("domdoc".equals(type)) {
 					try {
-						value = XmlUtils.buildDomDocument(Message.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
+						value = XmlUtils.buildDomDocument(propertyValue, true);
+					} catch (DomBuilderException e) {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
-					try {
-						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
-						List<String> list = new LinkedList<>();
-						for (String part : parts) {
-							list.add(part);
-						}
-						value = list;
-					} catch (IOException e) {
-						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e);
-					}
+					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+
+					value = new LinkedList<>(parts);
 				} else if ("map".equals(type)) {
-					try {
-						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
-						Map<String, String> map = new LinkedHashMap<>();
-						for (String part : parts) {
-							String[] splitted = part.split("\\s*(=\\s*)+", 2);
-							if (splitted.length==2) {
-								map.put(splitted[0], splitted[1]);
-							} else {
-								map.put(splitted[0], "");
-							}
+					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+					Map<String, String> map = new LinkedHashMap<>();
+
+					for (String part : parts) {
+						String[] splitted = part.split("\\s*(=\\s*)+", 2);
+						if (splitted.length==2) {
+							map.put(splitted[0], splitted[1]);
+						} else {
+							map.put(splitted[0], "");
 						}
-						value = map;
-					} catch (IOException e) {
-						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e);
 					}
+					value = map;
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(property + _param + i + ".pattern");
+					String pattern = properties.getProperty(property + _param + i + ".pattern");
 					if (value == null && pattern == null) {
 						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern");
 					} else {

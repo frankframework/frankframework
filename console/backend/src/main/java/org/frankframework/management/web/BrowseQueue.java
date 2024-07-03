@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -44,7 +45,7 @@ public class BrowseQueue extends FrankApiBase {
 	@PostMapping(value = "/jms/browse", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of messages on a specific JMS queue")
-	public ResponseEntity<?> browseQueue(Map<String, Object> json) {
+	public ResponseEntity<?> browseQueue(@RequestBody Map<String, Object> json) {
 		String connectionFactory = RequestUtils.getValue(json, "connectionFactory");
 		String destination = RequestUtils.getValue(json, "destination");
 		Boolean rowNumbersOnly = RequestUtils.getBooleanValue(json, "rowNumbersOnly");

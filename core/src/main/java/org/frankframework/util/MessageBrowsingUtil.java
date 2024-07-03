@@ -20,7 +20,6 @@ import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IListener;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -34,27 +33,25 @@ public class MessageBrowsingUtil {
 			return null;
 		}
 
-		if(rawMessageWrapper instanceof MessageWrapper messageWrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper messageWrapper) {
 			return messageWrapper.getMessage().asString();
 		}
 		Object rawMessage = rawMessageWrapper.getRawMessage();
-		if(rawMessage instanceof Message message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+		if (rawMessage instanceof Message message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
 			return message.asString();
-		} else if(rawMessage instanceof String string) { // For backwards compatibility: earlier MessageLog messages were stored as String.
+		} else if (rawMessage instanceof String string) { // For backwards compatibility: earlier MessageLog messages were stored as String.
 			return string;
 		} else if (listener != null) {
-			String msg = null;
 			try {
-				msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
+				String msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
+				if (StringUtils.isNotEmpty(msg)) {
+					return msg;
+				}
 			} catch (Exception e) {
-				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawMessageWrapper + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
+				log.warn("{} cannot extract raw message [{}] ({}): {}", ClassUtils.nameOf(listener), rawMessageWrapper, ClassUtils.nameOf(e), e.getMessage(), e);
 			}
-			if (StringUtils.isEmpty(msg)) {
-				msg = Message.asString(rawMessage);
-			}
-			return msg;
-		} else {
-			return Message.asString(rawMessage);
 		}
+
+		return MessageUtils.asString(rawMessage);
 	}
 }

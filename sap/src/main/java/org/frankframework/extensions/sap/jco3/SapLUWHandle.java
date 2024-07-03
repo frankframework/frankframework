@@ -47,7 +47,7 @@ public class SapLUWHandle {
 	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystemImpl sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result!=null) {
-			log.warn("LUWHandle already exists under key ["+sessionKey+"]");
+			log.warn("LUWHandle already exists under key [{}]", sessionKey);
 		}
 		result = new SapLUWHandle(sapSystem);
 		result.setUseTid(useTid);
@@ -71,7 +71,7 @@ public class SapLUWHandle {
 	public static void releaseHandle(PipeLineSession session, String sessionKey) throws JCoException {
 		SapLUWHandle handle=(SapLUWHandle)session.get(sessionKey);
 		if (handle==null) {
-			log.debug("no handle found under session key ["+sessionKey+"]");
+			log.debug("no handle found under session key [{}]", sessionKey);
 		} else {
 			handle.release();
 			session.remove(sessionKey);
@@ -83,7 +83,7 @@ public class SapLUWHandle {
 	public void begin() throws JCoException {
 		if (isUseTid()) {
 			tid=destination.createTID();
-			log.debug("begin: created SAP TID ["+tid+"]");
+			log.debug("begin: created SAP TID [{}]", tid);
 		} else {
 			// Use a stateful connection to make commit through BAPI work, this is
 			// probably not needed when using tid, but haven't found
@@ -96,14 +96,14 @@ public class SapLUWHandle {
 	public void commit() throws JCoException {
 		if (isUseTid()) {
 			destination.confirmTID(tid);
-			log.debug("commit: confirmed SAP TID ["+tid+"]");
+			log.debug("commit: confirmed SAP TID [{}]", tid);
 		} else {
 			log.warn("Should Execute COMMIT by calling COMMIT BAPI");
 		}
 	}
 
 	public void rollback() {
-		log.debug("rollback: forget about SAP TID ["+tid+"], throw exception to signal SAP");
+		log.debug("rollback: forget about SAP TID [{}], throw exception to signal SAP", tid);
 		tid=null;
 		throw new RollbackException();
 	}

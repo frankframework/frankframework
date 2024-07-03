@@ -18,6 +18,15 @@ package org.frankframework.management.gateway;
 import java.io.InputStream;
 import java.util.UUID;
 
+import com.hazelcast.collection.IQueue;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.topic.ITopic;
+import com.hazelcast.topic.MessageListener;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Lombok;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.frankframework.util.SpringUtils;
 import org.springframework.context.ApplicationContext;
@@ -33,18 +42,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-import com.hazelcast.collection.IQueue;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.impl.DefaultNodeContext;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.topic.ITopic;
-import com.hazelcast.topic.MessageListener;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Lombok;
-import lombok.extern.log4j.Log4j2;
-
 @Log4j2
 public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
@@ -52,12 +49,12 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 	private HazelcastInstance hzInstance;
 
-	private String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
+	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
 
 	@Override
 	protected void onInit() {
-		hzInstance = HazelcastInstanceFactory.newHazelcastInstance(HazelcastConfig.createHazelcastConfig(), "worker-node", new DefaultNodeContext());
+		hzInstance = HazelcastConfig.newHazelcastInstance("worker");
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
 

@@ -85,13 +85,13 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			if (i != -1) { //Configuration file contains a path, derive the BasePath from the path
 				setBasePath(configurationFile.substring(0, i + 1));
 				setConfigurationFile(configurationFile.substring(i + 1));
-				log.info("derived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
+				log.info("derived basepath [{}] from configurationFile [{}]", getBasePath(), configurationFile);
 			} else if(!(getConfigurationName().equalsIgnoreCase(instanceName) && this instanceof WebAppClassLoader)) {
 				setBasePath(getConfigurationName());
 			}
 		}
 
-		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"] basepath ["+getBasePath()+"]");
+		log.info("[{}] created classloader [{}] basepath [{}]", getConfigurationName(), this.toString(), getBasePath());
 	}
 
 	/**
@@ -207,12 +207,14 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		}
 
 		url = getLocalResource(normalizedFilename);
-		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
+		if(log.isTraceEnabled())
+			log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
 
 		//URL without basepath cannot be found, follow parent hierarchy
 		if(url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" resource ["+name+"] from parent");
+			if(log.isTraceEnabled())
+				log.trace("[{}] {} resource [{}] from parent", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", name);
 		}
 
 		return url;
@@ -236,7 +238,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		//Add all files found in the classpath's parent
 		urls.addAll(Collections.list(getParent().getResources(name)));
 
-		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] retrieved files ["+name+"] found urls " + urls);
+		if(log.isTraceEnabled()) log.trace("[{}] retrieved files [{}] found urls {}", getConfigurationName(), name, urls);
 
 		return urls.elements();
 	}
@@ -325,14 +327,14 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public void reload() throws ClassLoaderException {
-		log.debug("reloading classloader ["+getConfigurationName()+"]");
+		log.debug("reloading classloader [{}]", getConfigurationName());
 
 		AppConstants.removeInstance(this);
 	}
 
 	@Override
 	public void destroy() {
-		log.debug("removing classloader ["+this.toString()+"]");
+		log.debug("removing classloader [{}]", this.toString());
 
 		AppConstants.removeInstance(this);
 	}

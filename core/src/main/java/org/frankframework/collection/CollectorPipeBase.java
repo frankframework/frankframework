@@ -16,11 +16,10 @@
 package org.frankframework.collection;
 
 import jakarta.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.CloseableThreadContext;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -29,7 +28,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 
 /**
@@ -51,8 +49,8 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		LAST,
 		/** Finalize the collection */
 		CLOSE,
-		@Deprecated
-		STREAM;
+		@Deprecated(forRemoval = true, since = "7.9.0")
+		STREAM
 	}
 
 	/**

@@ -41,7 +41,7 @@ public class ConfigurationStatus extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
-	@Description("view a list of all adapters")
+	@Description("view a list of all adapters, prefixed with the configuration name")
 	@GetMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapters(@RequestParam(value = "expanded", required = false) String expanded, @RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
@@ -178,7 +178,7 @@ public class ConfigurationStatus extends FrankApiBase {
 			builder.addHeader("action", action.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-			builder.addHeader("receiver", receiver);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 			callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}

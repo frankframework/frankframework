@@ -25,7 +25,6 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.INamedObject;
 
 /**
@@ -100,7 +99,7 @@ public class GlobalListItem implements INamedObject {
 			configure();
 		}
 		items.put(getName(), this);
-		log.debug("globalItemList registered item [" + toString() + "]");
+		log.debug("globalItemList registered item [{}]", this);
 	}
 
 	@Override

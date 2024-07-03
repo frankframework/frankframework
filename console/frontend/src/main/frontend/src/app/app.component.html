@@ -4,7 +4,6 @@
   <!-- Navigation -->
   <app-pages-navigation
     (shouldOpenInfo)="openInfoModel()"
-    (shouldOpenFeedback)="sendFeedback()"
     [queryParams]="routeQueryParams"
   ></app-pages-navigation>
 
@@ -15,7 +14,6 @@
     <!-- Page wrapper -->
     <app-pages-topnavbar
       class="topnavbar"
-      (shouldOpenFeedback)="sendFeedback($event)"
       [serverTime]="serverTime"
       [dtapSide]="dtapSide"
       [dtapStage]="dtapStage"

@@ -15,6 +15,7 @@
 */
 package org.frankframework.filesystem;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -28,8 +29,8 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.pipes.IteratingPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Misc;
 import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 
 public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extends IteratingPipe<A> {
@@ -69,7 +70,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 
 	private class AttachmentIterator implements IDataIterator<A> {
 
-		private Iterator<A> it;
+		private final Iterator<A> it;
 
 		AttachmentIterator(Iterator<A> it) {
 			this.it = it;
@@ -168,7 +169,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 		if (onlyProperties==null) {
 			onlyProperties=new LinkedHashSet<>();
 		}
-		Misc.addItemsToList(onlyProperties,onlyPropertiesList,"properties to list",false);
+		addItemsToList(onlyProperties, onlyPropertiesList, "properties to list");
 	}
 	public Set<String> getOnlyPropertiesSet() {
 		return onlyProperties;
@@ -179,9 +180,23 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 		if (excludeProperties==null) {
 			excludeProperties=new LinkedHashSet<>();
 		}
-		Misc.addItemsToList(excludeProperties,excludePropertiesList,"properties not to list",false);
+		addItemsToList(excludeProperties, excludePropertiesList, "properties not to list");
 	}
 	public Set<String> getExcludePropertiesSet() {
 		return excludeProperties;
+	}
+
+	/**
+	 * Adds items on a string, added by comma separator (ex: "1,2,3"), into a list.
+	 */
+	void addItemsToList(Collection<String> collection, String list, String collectionDescription) {
+		if (list==null) {
+			return;
+		}
+		collection.addAll(StringUtil.split(list));
+		if (list.trim().endsWith(",")) {
+			log.debug("adding item to "+collectionDescription+" <empty string>");
+			collection.add("");
+		}
 	}
 }

@@ -100,18 +100,18 @@ public class FxfListener extends EsbJmsListener {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateProcessedDirectory()) {
 					if (dstFile.getParentFile().mkdirs()) {
-						log.debug("Created directory [" + dstFile.getParent() + "]");
+						log.debug("Created directory [{}]", dstFile.getParent());
 					} else {
-						log.warn("Directory [" + dstFile.getParent() + "] could not be created");
+						log.warn("Directory [{}] could not be created", dstFile.getParent());
 					}
 				} else {
-					log.warn("Directory [" + dstFile.getParent() + "] does not exist");
+					log.warn("Directory [{}] does not exist", dstFile.getParent());
 				}
 			}
 			if (FileUtils.moveFile(srcFile, dstFile, 1, 0) == null) {
 				warn("Could not move file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
 			} else {
-				log.info("Moved file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
+				log.info("Moved file [{}] to file [{}]", srcFile.getAbsolutePath(), dstFile.getAbsolutePath());
 			}
 		} catch (Exception e) {
 			String sourcePath = srcFile != null ? srcFile.getAbsolutePath() : "<unknown>";

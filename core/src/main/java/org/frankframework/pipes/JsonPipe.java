@@ -55,7 +55,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	public enum Direction {
 		JSON2XML,
-		XML2JSON;
+		XML2JSON
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public class JsonPipe extends FixedForwardPipe {
 		direction = value;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	public void setVersion(String version) {
 		if("1".equals(version)) {
 			setAddXmlRootElement(true);

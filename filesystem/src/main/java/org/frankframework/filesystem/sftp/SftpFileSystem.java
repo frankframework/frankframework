@@ -43,6 +43,7 @@ import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
@@ -98,7 +99,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
-			List<LsEntry> files = list(folder);
+			List<LsEntry> files = listFolder(folder);
 			return (int) files.stream().filter(f -> !f.getAttrs().isDir()).count();
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -106,9 +107,9 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public DirectoryStream<SftpFileRef> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<SftpFileRef> list(String folder, TypeFilter filter) throws FileSystemException {
 		try {
-			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(folder, list(folder)));
+			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(folder, listFolder(folder), filter));
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}
@@ -123,9 +124,14 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		}
 	}
 
+	@Override
+	public boolean isFolder(SftpFileRef sftpFileRef) {
+		return sftpFileRef.isDirectory();
+	}
+
 	private SftpFileRef findFile(SftpFileRef file) throws SftpException {
 		try {
-			List<LsEntry> files = list(file.getName());
+			List<LsEntry> files = listFolder(file.getName());
 			if(!files.isEmpty()) {
 				return SftpFileRef.fromLsEntry(files.get(0));
 			}
@@ -137,7 +143,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		return null;
 	}
 
-	private List<LsEntry> list(String folder) throws SftpException {
+	private List<LsEntry> listFolder(String folder) throws SftpException {
 		String path = folder == null ? "*" : folder;
 		return new ArrayList<>(ftpClient.ls(path));
 	}
@@ -267,9 +273,9 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		String pwd = ftpClient.pwd();
 		List<LsEntry> files;
 		if (StringUtils.isNotEmpty(folder) && folder.startsWith("/")) {
-			files = list(folder);
+			files = listFolder(folder);
 		} else {
-			files = list(pwd + "/" + folder);
+			files = listFolder(pwd + "/" + folder);
 		}
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
@@ -417,24 +423,30 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	private class SftpFilePathIterator implements Iterator<SftpFileRef> {
-
-		private final List<SftpFileRef> files;
+		private final List<SftpFileRef> items;
 		private int i = 0;
 
-		SftpFilePathIterator(String folder, List<LsEntry> fileEnties) {
-			files = new ArrayList<>();
-			for (LsEntry ftpFile : fileEnties) {
-				if(!ftpFile.getAttrs().isDir()) {
+		SftpFilePathIterator(String folder, List<LsEntry> fileEntities, TypeFilter filter) {
+			items = new ArrayList<>();
+			for (LsEntry ftpFile : fileEntities) {
+				if (ftpFile.getAttrs().isDir() && filter.includeFolders()) {
 					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
-					log.debug("adding SftpFileRef [{}] to the collection", fileRef);
-					files.add(fileRef);
+					// Skip folders without name, like '.' and '..'
+					if (StringUtils.isNotBlank(fileRef.getFilename())) {
+						log.debug("adding directory SftpFileRef [{}] to the collection", fileRef);
+						items.add(fileRef);
+					}
+				} else if (!ftpFile.getAttrs().isDir() && filter.includeFiles()) {
+					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
+					log.debug("adding file SftpFileRef [{}] to the collection", fileRef);
+					items.add(fileRef);
 				}
 			}
 		}
 
 		@Override
 		public boolean hasNext() {
-			return files != null && i < files.size();
+			return items != null && i < items.size();
 		}
 
 		@Override
@@ -443,12 +455,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				throw new NoSuchElementException();
 			}
 
-			return files.get(i++);
+			return items.get(i++);
 		}
 
 		@Override
 		public void remove() {
-			SftpFileRef file = files.get(i++);
+			SftpFileRef file = items.get(i++);
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {

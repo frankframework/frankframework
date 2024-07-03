@@ -52,11 +52,11 @@ public enum FrankMeterType {
 	private final @Getter Type meterType;
 	private final @Getter String baseUnit;
 
-	private FrankMeterType(String meterName, Type type) {
+	FrankMeterType(String meterName, Type type) {
 		this(meterName, type, null);
 	}
 
-	private FrankMeterType(String meterName, Type type, String units) {
+	FrankMeterType(String meterName, Type type, String units) {
 		this.meterName = meterName;
 		this.meterType = type;
 		this.baseUnit = units;

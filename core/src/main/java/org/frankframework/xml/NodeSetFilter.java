@@ -41,7 +41,7 @@ public class NodeSetFilter extends FullXmlFilter {
 	private boolean inTargetElement;
 	private boolean copying;
 
-	private List<PrefixMapping> pendingNamespaceDefinitions=new ArrayList<>();
+	private final List<PrefixMapping> pendingNamespaceDefinitions=new ArrayList<>();
 
 	public NodeSetFilter(String targetElement, ContentHandler handler) {
 		this(null, targetElement, true, false, handler);
@@ -97,7 +97,7 @@ public class NodeSetFilter extends FullXmlFilter {
 			super.endPrefixMapping(prefix);
 		} else {
 			if (pendingNamespaceDefinitions.size()<=0) {
-				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]");
+				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix [{}]", prefix);
 				return;
 			}
 			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);
@@ -153,7 +153,7 @@ public class NodeSetFilter extends FullXmlFilter {
 		globalLevel--;
 		if (--level>0 || (includeTarget && level==0) || (includeRoot && globalLevel==0)) {
 			super.endElement(uri, localName, qName);
-			if (level==0 + (includeTarget ? 0:1)) {
+			if (level == (includeTarget ? 0 : 1)) {
 				for(int i=pendingNamespaceDefinitions.size()-1;i>=0;i--) {
 					PrefixMapping mapping=pendingNamespaceDefinitions.get(i);
 					if (!mappingIsOverridden(mapping, i)) {

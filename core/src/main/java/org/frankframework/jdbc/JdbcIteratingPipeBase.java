@@ -147,7 +147,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		return querySender.getPhysicalDestinationName();
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
@@ -194,7 +194,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@ReferTo(JdbcQuerySenderBase.class)
-	@Deprecated //BLOBs are binary, they should not contain character data
+	@Deprecated(forRemoval = true, since = "7.9.0")
+	//BLOBs are binary, they should not contain character data!
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -56,7 +57,7 @@ public class Scheduler extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateScheduler(Map<String, Object> json) {
+	public ResponseEntity<?> updateScheduler(@RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		return callSyncGateway(builder);
@@ -65,7 +66,7 @@ public class Scheduler extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> trigger(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName, Map<String, Object> json) {
+	public ResponseEntity<?> trigger(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		builder.addHeader("job", jobName);
@@ -119,9 +120,9 @@ public class Scheduler extends FrankApiBase {
 		builder.addHeader("cron", RequestUtils.resolveRequiredProperty("cron", multipartBody.getCron(), ""));
 		builder.addHeader("interval", RequestUtils.resolveRequiredProperty("interval", multipartBody.getInterval(), -1));
 
-		builder.addHeader("adapter", RequestUtils.resolveRequiredProperty("adapter", multipartBody.getAdapter(), null));
-		builder.addHeader("receiver", RequestUtils.resolveRequiredProperty("receiver", multipartBody.getReceiver(), ""));
-		builder.addHeader("configuration", RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.getConfiguration(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, RequestUtils.resolveRequiredProperty("adapter", multipartBody.getAdapter(), null));
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, RequestUtils.resolveRequiredProperty("receiver", multipartBody.getReceiver(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.getConfiguration(), ""));
 		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", multipartBody.getListener(), ""));
 
 		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.isPersistent(), false));

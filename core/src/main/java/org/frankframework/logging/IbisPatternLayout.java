@@ -40,7 +40,7 @@ import org.apache.logging.log4j.core.pattern.PatternParser;
 public class IbisPatternLayout extends IbisMaskingLayout {
 
 	private static final String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X %c{2} - %m%n";
-	private Serializer serializer;
+	private final Serializer serializer;
 
 	/**
 	 * @param pattern the pattern to use or DEFAULT when null
@@ -119,12 +119,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 
 		@Override
 		public String toString() {
-			final StringBuilder builder = new StringBuilder();
-			builder.append(super.toString());
-			builder.append("[formatters=");
-			builder.append(Arrays.toString(formatters));
-			builder.append("]");
-			return builder.toString();
+			return super.toString() + "[formatters=" + Arrays.toString(formatters) + "]";
 		}
 	}
 }

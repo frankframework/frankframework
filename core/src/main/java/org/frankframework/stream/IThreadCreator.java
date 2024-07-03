@@ -17,6 +17,6 @@ package org.frankframework.stream;
 
 public interface IThreadCreator {
 
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);
+	void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);
 
 }
