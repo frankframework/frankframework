@@ -366,22 +366,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} finally {
 			closeStatementSet(queryExecutionContext);
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
-			if (isCloseInputstreamOnExit() && newParameterList!=null) {
-				for (int i = 0; i < newParameterList.size(); i++) {
-					IParameter param = newParameterList.getParameter(i);
-					if (param.getType() == ParameterType.INPUTSTREAM) {
-						log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
-						try {Object object = param.getValue(null, message, session, true);
-							if(object instanceof AutoCloseable closeable) {
-								closeable.close();
-							} else {
-								log.error("unable to auto-close parameter [{}]", param.getName());
+			if (isCloseInputstreamOnExit() && newParameterList != null) {
+				newParameterList.stream()
+						.filter(param -> param.getType() == ParameterType.INPUTSTREAM)
+						.forEach(param -> {
+							log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
+							try {
+								Object object = param.getValue(null, message, session, true);
+								if (object instanceof AutoCloseable closeable) {
+									closeable.close();
+								} else {
+									log.error("{}unable to auto-close parameter [{}]", this::getLogPrefix, param::getName);
+								}
+							} catch (Exception e) {
+								log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
 							}
-						} catch (Exception e) {
-							log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
-						}
-					}
-				}
+						});
 			}
 		}
 	}
