@@ -24,16 +24,13 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IAdapter;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 
 /**
@@ -104,14 +101,14 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
 	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return new SenderResult(sendMessageOnConnection(blockHandle, message, session, null).getResult());
+		return new SenderResult(sendMessageOnConnection(blockHandle, message, session).getResult());
 	}
 
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message);
 			try {
-				return executeStatementSet(queryExecutionContext, message, session, next);
+				return executeStatementSet(queryExecutionContext, message, session);
 			} finally {
 				closeStatementSet(queryExecutionContext);
 			}

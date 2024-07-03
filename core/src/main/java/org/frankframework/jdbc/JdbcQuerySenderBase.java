@@ -45,7 +45,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
@@ -308,7 +307,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
+	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -328,9 +327,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 						String contentType = session.getString("contentType");
 						String contentDisposition = session.getString("contentDisposition");
-						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
 					} else {
-						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
 					}
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
@@ -358,10 +357,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryType()+"]");
 			}
 		} catch (SenderException e) {
-			if (e.getCause() instanceof SQLException sqle) {
-				if  (sqle.getErrorCode() == 1013) {
-					throw new TimeoutException("Timeout of ["+getTimeout()+"] sec expired");
-				}
+			if (e.getCause() instanceof SQLException sqle && sqle.getErrorCode() == 1013) {
+				throw new TimeoutException("Timeout of ["+getTimeout()+"] sec expired");
 			}
 			throw new SenderException(e);
 		} catch (Throwable t) {
@@ -374,11 +371,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					IParameter param = newParameterList.getParameter(i);
 					if (param.getType() == ParameterType.INPUTSTREAM) {
 						log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
-						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
+						try {Object object = param.getValue(null, message, session, true);
 							if(object instanceof AutoCloseable closeable) {
 								closeable.close();
-							}
-							else {
+							} else {
 								log.error("unable to auto-close parameter [{}]", param.getName());
 							}
 						} catch (Exception e) {
@@ -450,10 +446,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
-		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null, null, null).getResult();
+		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null).getResult();
 	}
 
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -478,7 +474,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						return new PipeRunResult(null, Message.nullMessage());
 					}
 					if (!isBlobSmartGet()) {
-						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 							if (StringUtils.isNotEmpty(getBlobCharset())) {
 								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), target.asWriter(), isCloseOutputstreamOnExit());
 							} else {
@@ -495,7 +491,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
 						return new PipeRunResult(null, Message.nullMessage());
 					}
-					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
 						return target.getPipeRunResult();
 					} catch (Exception e) {
@@ -522,7 +518,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return new PipeRunResult(null, new Message(result));
 		}
-		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 			// Create XML and give the maxlength as a parameter
 			if (getOutputFormat()==null) {
 				DB2XMLWriter db2xml = buildDb2XMLWriter();
@@ -537,7 +533,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2document.setGetBlobSmart(isBlobSmartGet());
 				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			}
-			target.close();
+			target.close(); // Have to close early! B/c otherwise the result is not complete!
 			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new JdbcException(e);
@@ -626,11 +622,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return new Message(clobWriter.getWarnings().toXML());
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{
-		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null, session, next);
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
+		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws SenderException{
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
@@ -642,7 +638,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					resultset.absolute(getStartRow()-1);
 					log.debug("{}Index set at position: {}", getLogPrefix(), resultset.getRow());
 				}
-				return getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition, session, next);
+				return getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition);
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e );

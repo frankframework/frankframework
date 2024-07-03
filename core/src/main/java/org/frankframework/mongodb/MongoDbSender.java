@@ -59,7 +59,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageOutputStream;
-import org.frankframework.stream.MessageOutputStreamCap;
 import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
@@ -171,7 +170,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		message.closeOnCloseOf(session, this);
 		MongoAction mongoAction = getAction();
-		try (MessageOutputStream target = MongoAction.isFind(mongoAction) ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
+		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
