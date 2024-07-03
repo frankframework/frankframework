@@ -132,8 +132,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
-	private String composedHideRegex;
-	private Pattern composedHideRegexPattern;
+	private @Getter String composedHideRegex;
+	private @Getter Pattern composedHideRegexPattern;
 
 	private static class SenderLastExitState {
 		private final String lastExitState;
@@ -499,11 +499,25 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	/**
+	 * Direct call to the Adapter PipeLine, foregoing any listeners and receivers. This method
+	 * does an amount of setup which is otherwise done by the {@link Receiver}.
+	 * <br/>
+	 * This method does not throw any exceptions, and will always return a {@link PipeLineResult}. If an
+	 * error occurred, the error information is in the {@code PipeLineResult}.
+	 *
+	 * @param messageId ID of the message
+	 * @param message {@link Message} to be processed
+	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
+	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
+	 */
 	@Override
-	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
+	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
-			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
+			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
+				 IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
+			) {
 				PipeLineResult result = new PipeLineResult();
 				boolean success = false;
 				try {
@@ -536,6 +550,23 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	/**
+	 * This method does the real processing of messages by the adapter. This method is to
+	 * be called either from the {@link Receiver}, or from {@link #processMessageDirect(String, Message, PipeLineSession)}.
+	 * <br/>
+	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information
+	 * is among things that should be set up by the caller.</em>
+	 * <br/>
+	 * This method will return a {@link PipeLineResult} with results of the processing. This
+	 * might indicate an error if the message could not be processed successfully. If there
+	 * was an exception from the {@link PipeLine}, a {@link ListenerException} might be thrown.
+	 *
+	 * @param messageId ID of the message
+	 * @param message {@link Message} to be processed
+	 * @param pipeLineSession {@link PipeLineSession} in which the message is to be processed
+	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
+	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
+	 */
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
@@ -552,19 +583,17 @@ public class Adapter implements IAdapter, NamedBean {
 
 		PipeLineResult result = null;
 		try {
-			if (composedHideRegexPattern != null) {
-				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegexPattern);
-			}
-
 			String additionalLogging = getAdditionalLogging(pipeLineSession);
-			if(msgLog.isDebugEnabled()) {
-				logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message);
+			if (msgLog.isDebugEnabled()) {
+				logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started" + additionalLogging, "request", message);
 			}
 			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
+				//noinspection resource
 				message = new Message("");
+				message.closeOnCloseOf(pipeLineSession, "Empty Message from Adapter");
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
@@ -589,7 +618,7 @@ public class Adapter implements IAdapter, NamedBean {
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
 			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
-			if (result.getExitCode()!=0) {
+			if (result.getExitCode() != 0) {
 				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
 			}
 			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
@@ -598,12 +627,11 @@ public class Adapter implements IAdapter, NamedBean {
 						getName(), messageId, result.getState(),
 						DateFormatUtils.format(startTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
 						DateFormatUtils.format(endTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
-						duration);
+						duration
+				);
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
 			}
-
-			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
 
@@ -671,11 +699,11 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public void startRunning() {
 		switch(getRunState()) {
-			case STARTING:
-			case EXCEPTION_STARTING:
-			case STARTED:
-			case STOPPING:
-			case EXCEPTION_STOPPING:
+			case STARTING,
+				 EXCEPTION_STARTING,
+				 STARTED,
+				 STOPPING,
+				 EXCEPTION_STOPPING:
 				log.warn("cannot start adapter [{}] that is stopping, starting or already started", name);
 				return;
 			default:

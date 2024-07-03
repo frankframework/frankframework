@@ -112,14 +112,6 @@ public class StringUtil {
 	}
 
 	/**
-	 * Hides the first half of the string.
-	 * @see #hideAll(String, String, int)
-	 */
-	public static String hideFirstHalf(String inputString, String regex) {
-		return hideAll(inputString, regex, 1);
-	}
-
-	/**
 	 * Hide all characters matching the given Regular Expression.
 	 * If the set of expressions is null or empty it will return the raw message.
 	 * @see #hideAll(String, Collection, int)
@@ -173,7 +165,7 @@ public class StringUtil {
 			result.append(inputString, previous, matcher.start());
 			int len = matcher.end() - matcher.start();
 			if (mode == 1) {
-				int lenFirstHalf = (int) Math.ceil((double) len / 2);
+				int lenFirstHalf = (len + 1) >> 1;
 				result.append(StringUtils.repeat("*", lenFirstHalf));
 				result.append(inputString, matcher.start()
 						+ lenFirstHalf, matcher.start() + len);

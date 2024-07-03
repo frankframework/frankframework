@@ -18,6 +18,8 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.IAdapter;
@@ -37,9 +39,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-
 /**
  * @author Jaco de Groot
  */
@@ -57,7 +56,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (adapter == null) {
 				log.warn("adapterToRunBefore with specified name [{}] could not be retrieved", pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			} else {
-				PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
+				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pipeLineSession);
 				if (plr == null || !plr.isSuccessful()) {
 					throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 				}
