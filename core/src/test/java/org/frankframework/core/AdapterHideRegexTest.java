@@ -294,6 +294,11 @@ public class AdapterHideRegexTest {
 		// But should not be logged from the sub adapter
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_RECEIVER_SECRET)))));
 		assertThat(logLines, not(hasItem(allOf(containsString("[sub-adapter]"), containsString(SUB_ADAPTER_SECRET)))));
+
+		// Verify that things are actually hidden
+		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString("Main Adapter - [**]-[**]; Sub Adapter - [%s]-[%s]".formatted(SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET)))));
+		assertThat(logLines, hasItem(allOf(containsString("[sub-adapter]"), containsString("Main Adapter - [**]-[**]; Sub Adapter - [**]-[**]"))));
+
 	}
 
 	@Test
