@@ -146,7 +146,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
-		if (getConsumes() != MediaTypes.DETECT) {
+		if (getConsumes() == MediaTypes.DETECT) {
 			throw new ConfigurationException("cannot set consumes attribute to [DETECT]");
 		}
 
