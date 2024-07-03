@@ -41,7 +41,7 @@ public class ConfigurationStatus extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
-	@Description("view a list of all adapters")
+	@Description("view a list of all adapters, prefixed with the configuration name")
 	@GetMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapters(@RequestParam(value = "expanded", required = false) String expanded, @RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
