@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -51,7 +52,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 	private final AppConstants ac = AppConstants.getInstance();
 	private Path dir;
-	private int SINCE = (int) TimeUnit.MILLISECONDS.toMinutes(Date.from(Instant.parse("2020-01-01T01:00:00.00Z")).getTime());
+	private final int SINCE = (int) TimeUnit.MILLISECONDS.toMinutes(Date.from(Instant.parse("2020-01-01T01:00:00.00Z")).getTime());
 
 	@Override
 	public String getButtonText() {
@@ -83,17 +84,17 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			}
 			return adapterScenarios.stream();
 		}).collect(Collectors.toList());
-		String successResultsString = scenarios.stream().filter(scenario -> scenario.error == null)
-				.map(scenario -> "<br/>&nbsp;&nbsp;[" + scenario.reportName + "]")
-				.collect(Collectors.joining(""));
-		String errorResultsString = scenarios.stream().filter(scenario -> scenario.error != null)
-				.map(scenario -> scenario.error)
-				.collect(Collectors.joining(""));
+		String successResultsString = scenarios.stream().filter(scenario -> !scenario.error)
+				.map(scenario -> scenario.reportName)
+				.collect(Collectors.joining(", "));
+		String errorResultsString = scenarios.stream().filter(scenario -> !scenario.error)
+				.map(scenario -> scenario.reportName)
+				.collect(Collectors.joining(", "));
 		if (!successResultsString.isEmpty()) {
-			customReportActionResult.setSuccessMessage("Successfully generated larva test scenario(s) for reports:" + successResultsString);
+			customReportActionResult.setSuccessMessage("Success:" + successResultsString);
 		}
 		if (!errorResultsString.isEmpty()) {
-			customReportActionResult.setErrorMessage("Following reports could not be converted:" + errorResultsString);
+			customReportActionResult.setErrorMessage("Error:" + errorResultsString);
 		}
 		return customReportActionResult;
 	}
@@ -170,7 +171,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private int longestCommonPropertyName = 0;
 		private int longestScenarioPropertyName = 0;
 
-		public String error = null;
+		public boolean error = false;
 
 		public Scenario(Report report, Path baseDir, String adapterName, int uuid) {
 			suffix = Integer.toString(uuid, Character.MAX_RADIX);
@@ -264,7 +265,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				}
 			}
 			if (skipUntilEndOfSender) {
-				handleError( "Response of sender: [" + skipUntilEndOfSenderName + "] could not be found. Likely caused by a faulty ladybug report");
+				handleError();
 				return;
 			}
 			String adapterOutputMessage = checkpoints.get(checkpoints.size() - 1).getMessage();
@@ -278,7 +279,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				Files.writeString(scenarioFilePath, scenarioPropertiesToString());
 				newFiles.add(scenarioFilePath);
 			} catch (IOException e) {
-				handleError("Could not write properties to file [" + scenarioFilePath.toAbsolutePath().normalize() + "]");
+				handleError();
 				return;
 			}
 			try {
@@ -286,14 +287,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					try {
 						addModifiedFile(commonFilePath, Files.readString(commonFilePath));
 					} catch (IOException ex) {
-						handleError("Could not read existing common file [" + commonFilePath.toAbsolutePath().normalize() + "]");
+						handleError();
 						return;
 					}
 				}
 				Files.writeString(commonFilePath, commonPropertiesToString());
 				newFiles.add(commonFilePath);
 			} catch (IOException e) {
-				handleError("Could not write properties to file [" + commonFilePath.toAbsolutePath().normalize() + "]");
+				handleError();
 			}
 		}
 
@@ -310,7 +311,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		private boolean checkReportType() {
 			if (!reportName.startsWith("Pipeline ")) {
-				handleError("This not a pipeline report. Test generation isn't implemented for this type of report.");
+				handleError();
 				return false;
 			}
 			return true;
@@ -321,7 +322,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				// Tries to create dir and parents. Does not throw error if it/they already exist(s)
 				Files.createDirectories(testDir);
 			} catch (IOException e) {
-				handleError("Could not create test directory [" + testDir.toAbsolutePath().normalize() + "]");
+				handleError();
 				return false;
 			}
 			return true;
@@ -329,7 +330,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		private boolean checkSuffixNotInUse(Path testDir) {
 			if (Files.exists(testDir.resolve(suffix)) || Files.exists(testDir.resolve("scenario" + suffix + ".properties"))) {
-				handleError("Scenario suffix [" + suffix + "] was already in use");
+				handleError();
 				return false;
 			}
 			return true;
@@ -340,17 +341,17 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				try {
 					Files.createDirectory(scenarioDirPath);
 				} catch (IOException e) {
-					handleError("Could not create scenario directory [" + scenarioDirPath.toAbsolutePath().normalize() + "]");
+					handleError();
 					return false;
 				}
 			} else {
 				try(Stream<Path> files = Files.list(scenarioDirPath)) {
 					if (files.findAny().isPresent()) {
-						handleError("Scenario directory [" + scenarioDirPath.toAbsolutePath().normalize() + "] already exists and is not empty");
+						handleError();
 						return false;
 					}
 				} catch (IOException e) {
-					handleError("Scenario directory [" + scenarioDirPath.toAbsolutePath().normalize() + "] already exists and could not be checked for files inside of it");
+					handleError();
 					return false;
 				}
 			}
@@ -363,7 +364,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			} catch (FileAlreadyExistsException e) {
 				return true;
 			} catch (IOException e) {
-				handleError("Could not create common file [" + commonFilePath.toAbsolutePath().normalize() + "]");
+				handleError();
 				return false;
 			}
 			newFiles.add(commonFilePath);
@@ -392,11 +393,11 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					newFiles.add(messageFilePath);
 					Files.writeString(messageFile.toPath(), message);
 				} else {
-					handleError("Message file: [" + messageFilePath.toAbsolutePath().normalize() + "] already exists");
+					handleError();
 					return false;
 				}
 			} catch (IOException e) {
-				handleError("Could not create message file: [" + messageFilePath.toAbsolutePath().normalize() + "]");
+				handleError();
 				return false;
 			}
 			return true;
@@ -408,7 +409,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				InputStream stream = Files.newInputStream(commonFilePath);
 				currentCommonProps.load(stream);
 			} catch (IOException e) {
-				handleError("Could not read common.properties [" + commonFilePath.toAbsolutePath().normalize() + "]");
+				handleError();
 				return false;
 			}
 
@@ -477,8 +478,9 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			}
 		}
 
-		private void handleError(String reason) {
-			error = "<br/>&nbsp;&nbsp;[" + reportName + "]: " + reason + "<br/>" + cleanupModifiedFiles();
+		private void handleError() {
+			error = true;
+			cleanupModifiedFiles();
 		}
 
 		private String cleanupModifiedFiles() {
@@ -493,6 +495,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			newFiles.forEach(path -> {
 				try {
 					Files.delete(path);
+				} catch (NoSuchFileException ignored) {
 				} catch (IOException e) {
 					errors.add("Newly created file [" + path.toAbsolutePath().normalize() + "] could not be deleted.");
 				}
