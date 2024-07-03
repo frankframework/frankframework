@@ -32,6 +32,7 @@ import org.frankframework.receivers.DummySender;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.senders.IbisLocalSender;
+import org.frankframework.senders.IsolatedServiceCaller;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
@@ -42,7 +43,7 @@ import org.frankframework.util.UUIDUtil;
 import org.jetbrains.annotations.NotNull;
 
 @Log4j2
-public class AdapterWithSubAdapterTest {
+public class AdapterHideRegexTest {
 
 	public static final String MAIN_ADAPTER_SECRET = "A1";
 	public static final String MAIN_RECEIVER_SECRET = "R1";
@@ -144,14 +145,19 @@ public class AdapterWithSubAdapterTest {
 		return pipe;
 	}
 
-	private IPipe createSubAdapterCallPipe(String subAdapterName, String hideRegex) {
+	private IPipe createSubAdapterCallPipe(String subAdapterName, String hideRegex, boolean subAdapterInSeparateThread) {
 		IbisLocalSender localSender = configuration.createBean(IbisLocalSender.class);
 		configuration.autowireByName(localSender);
 		localSender.setName(subAdapterName);
 		localSender.setJavaListener(subAdapterName);
 		localSender.setCheckDependency(true);
-		localSender.setIsolated(false);
+		localSender.setIsolated(subAdapterInSeparateThread);
 		localSender.setSynchronous(true);
+
+		if (subAdapterInSeparateThread) {
+			IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
+			localSender.setIsolatedServiceCaller(serviceCaller);
+		}
 
 		SenderPipe senderPipe = configuration.createBean(SenderPipe.class);
 		configuration.autowireByName(senderPipe);
@@ -162,9 +168,9 @@ public class AdapterWithSubAdapterTest {
 		return senderPipe;
 	}
 
-	private <M> JavaListener<String> createParentAdapter(JavaListener<M> subAdapterListener, String name) throws ConfigurationException {
+	private <M> JavaListener<String> createMainAdapter(JavaListener<M> subAdapterListener, String name, boolean subAdapterInSeparateThread) throws ConfigurationException {
 		IPipe pipe1 = createLoggingPipe("echo1", null, false);
-		IPipe pipe2 = createSubAdapterCallPipe(subAdapterListener.getName(), MAIN_ADAPTER_SECRET);
+		IPipe pipe2 = createSubAdapterCallPipe(subAdapterListener.getName(), MAIN_ADAPTER_SECRET, subAdapterInSeparateThread);
 		IPipe pipe3 = createLoggingPipe("echo2", null, false);
 
 		JavaListener<String> listener = setupJavaListener(name);
@@ -262,9 +268,9 @@ public class AdapterWithSubAdapterTest {
 		verifyLoglinesBasicScenario();
 	}
 
-	private JavaListener<String> setupNestedAdapters(PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
+	private JavaListener<String> setupNestedAdapters(PipeLine.ExitState exitState, boolean doThrowException, boolean subAdapterInSeparateThread) throws ConfigurationException {
 		JavaListener<String> subAdapterListener = createSubAdapter("sub-adapter", exitState, doThrowException);
-		JavaListener<String> mainAdapterListener = createParentAdapter(subAdapterListener, "main-adapter");
+		JavaListener<String> mainAdapterListener = createMainAdapter(subAdapterListener, "main-adapter", subAdapterInSeparateThread);
 
 		configuration.configure();
 		configuration.start();
@@ -293,7 +299,7 @@ public class AdapterWithSubAdapterTest {
 	@Test
 	public void testNestedHideRegexesProcessViaReceiverSuccess() throws ConfigurationException, ListenerException {
 		// Arrange
-		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.SUCCESS, false);
+		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.SUCCESS, false, false);
 
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
@@ -315,7 +321,7 @@ public class AdapterWithSubAdapterTest {
 	@Test
 	public void testNestedHideRegexesProcessViaReceiverWithError() throws ConfigurationException, ListenerException {
 		// Arrange
-		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.ERROR, false);
+		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.ERROR, false, false);
 
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
@@ -338,7 +344,7 @@ public class AdapterWithSubAdapterTest {
 	@Test
 	public void testNestedHideRegexesProcessViaReceiverWithException() throws ConfigurationException {
 		// Arrange
-		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.ERROR, true);
+		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.ERROR, true, false);
 
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
@@ -353,6 +359,28 @@ public class AdapterWithSubAdapterTest {
 		// Stop capturing logs
 		TestAppender.removeAppender(appender);
 
+		List<String> logLines = appender.getLogLines();
+		verifyLoglinesNestedAdapterScenario(logLines);
+	}
+
+	@Test
+	public void testNestedHideRegexesProcessWithIsolatedThreadCaller() throws ConfigurationException, ListenerException {
+		// Arrange
+		JavaListener<String> mainAdapterListener = setupNestedAdapters(PipeLine.ExitState.SUCCESS, false, true);
+
+		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
+
+		// Start capturing logs
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
+
+		// Assert
+		assertEquals(inputMessage, result);
+
+		// Stop capturing logs
+		TestAppender.removeAppender(appender);
 		List<String> logLines = appender.getLogLines();
 		verifyLoglinesNestedAdapterScenario(logLines);
 	}
