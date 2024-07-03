@@ -54,6 +54,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		threadInfo = threadLifeCycleEventListener != null ? threadLifeCycleEventListener.announceChildThread(owner, correlationId) : null;
 		log.trace("[{}] announced thread [{}] for owner [{}] correlationId [{}]", this, threadInfo, owner, correlationId);
 		parentThread = Thread.currentThread();
+		// Get thread-local hide regexes from the parent thread so they will be carried over to the child thread
 		hideRegex = IbisMaskingLayout.getThreadLocalReplace();
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 		saveThreadContext();
@@ -86,6 +87,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		}
 		if (childThread != parentThread) {
 			childThread.setName(parentThread.getName() + "/" + childThread.getName());
+			// Carry over hide regexes from the parent thread to the child thread
 			IbisMaskingLayout.setThreadLocalReplace(hideRegex);
 			if (threadLifeCycleEventListener!=null) {
 				threadState = ThreadState.CREATED;

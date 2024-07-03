@@ -51,7 +51,7 @@ public interface IAdapter extends IManagable, HasStatistics {
 	MessageKeeper getMessageKeeper();
 	Receiver<?> getReceiverByName(String receiverName);
 	Iterable<Receiver<?>> getReceivers();
-	PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession);
+	PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession);
 	PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException;
 
 	void setPipeLine(PipeLine pipeline) throws ConfigurationException;

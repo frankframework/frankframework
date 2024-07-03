@@ -190,7 +190,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *    <li>synchronous receivers give the result directly</li>
  *    <li>take care of connection, sessions etc. to startup and shutdown</li>
  * </ul>
- * Listeners call the IAdapter.processMessage(String correlationID,String message)
+ * Listeners call the Receiver#processRawMessage(). Internally the Receiver calls Adapter#processMessageWithException()
  * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
  * may observe the status in the <code>{@link PipeLineResult}</code> to perform committing
  * requests.
@@ -1176,6 +1176,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
+		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session);
 			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
 			 final IbisMaskingLayout.HideRegexContext ignored3 = IbisMaskingLayout.pushToThreadLocalReplace(getAdapter().getComposedHideRegexPattern());
