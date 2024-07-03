@@ -199,12 +199,22 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		globalReplace = new HashSet<>();
 	}
 
-	public static void setThreadLocalReplace(@Nullable Collection<Pattern> hideRegexSet) {
-		if (hideRegexSet == null || hideRegexSet.isEmpty()) return;
-
+	/**
+	 * Replace all thread-local hideRegexes. Always clears the current stack, even if the
+	 * new collection is null or empty.
+	 * This method should be used to initialize the stack of hideregexes at the start of a new thread
+	 * when there might be hideregexes to be carried over from a calling thread.
+	 *
+	 * @see org.frankframework.stream.ThreadConnector
+	 *
+	 * @param hideRegexCollection Collection of new hideRegexes. Can be null or empty.
+	 */
+	public static void setThreadLocalReplace(@Nullable Collection<Pattern> hideRegexCollection) {
 		clearThreadLocalReplace();
+		if (hideRegexCollection == null || hideRegexCollection.isEmpty()) return;
+
 		Deque<Pattern> stack = getOrCreateThreadLocalReplace();
-		stack.addAll(hideRegexSet);
+		stack.addAll(hideRegexCollection);
 	}
 
 	/**
@@ -234,10 +244,22 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return stack;
 	}
 
+	/**
+	 * Clear all thread-local hide-regexes.
+	 */
 	public static void 	clearThreadLocalReplace() {
 		threadLocalReplace.remove();
 	}
 
+	/**
+	 * Push a hide-regex pattern to the ThreadLocal replace-hideregex stack and
+	 * return a {@link HideRegexContext} that can be closed to pop the pattern from the
+	 * stack again.
+	 * This is meant to be used in try-with-resources construct.
+	 *
+	 * @param pattern Pattern used to find strings in loglines that need to be hidden.
+	 * @return {@link HideRegexContext} that can be closed to remove above pattern from the stack again.
+	 */
 	@Nonnull
 	public static HideRegexContext pushToThreadLocalReplace(@Nullable Pattern pattern) {
 		if (pattern == null) {
@@ -250,6 +272,14 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return stack::pop;
 	}
 
+	/**
+	 * Interface overrides {@link AutoCloseable#close()} to remove the exception so this
+	 * can be used in a try-with-resources without having to handle any exceptions, however
+	 * does not need to add any extra methods.
+	 * <br/>
+	 * Is used in the return value of {@link IbisMaskingLayout#pushToThreadLocalReplace(Pattern)}, instances
+	 * are lambdas or method references.
+	 */
 	public interface HideRegexContext extends AutoCloseable {
 		@Override
 		void close();

@@ -14,8 +14,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
@@ -283,6 +286,11 @@ public class AdapterHideRegexTest {
 		return mainAdapterListener;
 	}
 
+	private static void assertThreadLocalReplaceIsEmpty() {
+		Collection<Pattern> threadLocalReplace = IbisMaskingLayout.getThreadLocalReplace();
+		assertTrue(threadLocalReplace == null || threadLocalReplace.isEmpty(), "ThreadLocalReplace of IbisMaskingLayout should have been empty");
+	}
+
 	private static void verifyLoglinesNestedAdapterScenario(List<String> logLines) {
 		assertThat(logLines, not(hasItem(containsString(MAIN_RECEIVER_SECRET))));
 		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
@@ -310,11 +318,13 @@ public class AdapterHideRegexTest {
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
+		assertThreadLocalReplaceIsEmpty();
 
 		// Act
 		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
 
 		// Assert
+		assertThreadLocalReplaceIsEmpty();
 		assertEquals(inputMessage, result);
 
 		// Stop capturing logs
@@ -332,11 +342,13 @@ public class AdapterHideRegexTest {
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
+		assertThreadLocalReplaceIsEmpty();
 
 		// Act
 		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
 
 		// Assert
+		assertThreadLocalReplaceIsEmpty();
 		assertEquals(inputMessage, result);
 
 		// Stop capturing logs
@@ -355,11 +367,13 @@ public class AdapterHideRegexTest {
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
+		assertThreadLocalReplaceIsEmpty();
 
 		// Act
 		assertThrows(ListenerException.class, ()->mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>()));
 
 		// Assert
+		assertThreadLocalReplaceIsEmpty();
 
 		// Stop capturing logs
 		TestAppender.removeAppender(appender);
@@ -377,11 +391,13 @@ public class AdapterHideRegexTest {
 
 		// Start capturing logs
 		TestAppender.addToRootLogger(appender);
+		assertThreadLocalReplaceIsEmpty();
 
 		// Act
 		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
 
 		// Assert
+		assertThreadLocalReplaceIsEmpty();
 		assertEquals(inputMessage, result);
 
 		// Stop capturing logs
