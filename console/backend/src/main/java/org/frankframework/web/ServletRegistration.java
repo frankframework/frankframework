@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,38 +18,33 @@ package org.frankframework.web;
 import java.util.List;
 import java.util.Map;
 
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import jakarta.servlet.http.HttpServlet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.lifecycle.DynamicRegistration.Servlet;
-import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-
-import org.frankframework.util.SpringUtils;
-
 @Log4j2
-public class ServletRegistration extends ServletRegistrationBean<Servlet> implements ApplicationContextAware, InitializingBean {
+public class ServletRegistration<T extends HttpServlet> extends ServletRegistrationBean<T> implements ApplicationContextAware, InitializingBean {
 	private @Setter ApplicationContext applicationContext;
-	private @Getter ServletConfiguration servletConfiguration;
-	private final Class<?> servletClass;
+	private final @Getter ServletConfiguration servletConfiguration;
+	private final Class<T> servletClass;
 
-	public <T extends Servlet> ServletRegistration(Class<T> servletClass) {
+	public ServletRegistration(Class<T> servletClass, ServletConfiguration config) {
 		this.servletClass = servletClass;
+		this.servletConfiguration = config;
 	}
 
 	@Override
 	public void afterPropertiesSet() {
-		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
-		Servlet servlet = (Servlet) SpringUtils.createBean(applicationContext, servletClass);
-		servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
-		log.info("registering servlet [{}]", servlet::getName);
-		servletConfiguration.fromServlet(servlet);
+		T servlet = SpringUtils.createBean(applicationContext, servletClass);
+		log.info("registering servlet [{}]", servletConfiguration::getName);
 
 		Map<String, String> initParams = servletConfiguration.getInitParameters();
 		for(Map.Entry<String, String> entry : initParams.entrySet()) {
@@ -59,6 +54,8 @@ public class ServletRegistration extends ServletRegistrationBean<Servlet> implem
 		}
 		setName(servletConfiguration.getName());
 		addUrlMappings(servletConfiguration.getUrlMapping());
+		setEnabled(servletConfiguration.isEnabled());
+		setLoadOnStartup(servletConfiguration.getLoadOnStartup());
 		super.setServlet(servlet);
 
 		log.info("created servlet {} endpoint {}", this::getServletName, this::getUrlMappings);

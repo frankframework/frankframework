@@ -15,32 +15,32 @@
 */
 package org.frankframework.web.filters;
 
+import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+public class SecurityLogFilter extends OncePerRequestFilter {
 
-public class CsrfCookieFilter extends OncePerRequestFilter {
-
-	@Value("${csrf.enabled:true}")
-	private boolean csrfEnabled;
+	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-		if(csrfEnabled) {
-			CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
-			if(csrfToken == null) {
-				response.sendError(500, "CSRF is enabled but cannot be found in the Spring Context");
-				return;
-			}
-
-			csrfToken.getToken(); //Required to retrieve the cookie and store it in the HttpSession.
+		// Log POST, PUT and DELETE requests at info level
+		final String method = request.getMethod();
+		if ("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
+			SEC_LOG.debug("received http request with URI [{}:{}] issued by [{}]", () -> method, request::getRequestURI, BusMessageUtils::getUserPrincipalName);
+		} else {
+			SEC_LOG.info("received http request with URI [{}:{}] issued by [{}]", () -> method, request::getRequestURI, BusMessageUtils::getUserPrincipalName);
 		}
+
 		filterChain.doFilter(request, response);
 	}
 }

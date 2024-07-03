@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 package org.frankframework.runner;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.frankframework.web.StandaloneFilterConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 
@@ -37,7 +35,6 @@ public class ConsoleStandaloneInitializer {
 		Set<String> set = new HashSet<>();
 		set.add("SpringBootContext.xml");
 		app.setSources(set);
-		app.addPrimarySources(List.of(StandaloneFilterConfigurer.class));
 		app.run(args);
 	}
 
