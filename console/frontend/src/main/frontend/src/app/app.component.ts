@@ -32,8 +32,6 @@ import { formatDate } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
-// @ts-expect-error lodash.merge does not have types
-import * as deepMerge from 'lodash.merge';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
@@ -377,48 +375,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.websocketService.onConnected$.subscribe(() => {
       this.websocketService.subscribe<Record<string, MessageLog>>(
         '/event/server-warnings',
-        (configurations) => {
-          this.appService.updateAlerts([]); //Clear all old alerts
-
-          configurations['All'] = {
-            messages: configurations['messages'] as unknown as AdapterMessage[],
-            errorStoreCount: configurations[
-              'totalErrorStoreCount'
-            ] as unknown as number,
-            messageLevel: 'ERROR',
-          };
-          delete configurations['messages'];
-          delete configurations['totalErrorStoreCount'];
-
-          if (configurations['warnings']) {
-            for (const warning of configurations[
-              'warnings'
-            ] as unknown as string[]) {
-              this.appService.addWarning('', warning);
-            }
-          }
-
-          for (const index in configurations) {
-            const configuration = configurations[index];
-            if (configuration.exception)
-              this.appService.addException(index, configuration.exception);
-            if (configuration.warnings) {
-              for (const warning of configuration.warnings) {
-                this.appService.addWarning(index, warning);
-              }
-            }
-
-            configuration.messageLevel = 'INFO';
-            for (const x in configuration.messages) {
-              const level = configuration.messages[x].level;
-              if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-                configuration.messageLevel = 'WARN';
-              if (level == 'ERROR') configuration.messageLevel = 'ERROR';
-            }
-          }
-
-          this.appService.updateMessageLog(configurations);
-        },
+        (configurations) => this.processWarnings(configurations),
       );
 
       this.websocketService.subscribe<Record<string, Adapter>>(
@@ -458,8 +415,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   processWarnings(configurations: Record<string, MessageLog>): void {
-    this.appService.updateAlerts([]); //Clear all old alerts
-
     configurations['All'] = {
       messages: configurations['messages'] as unknown as AdapterMessage[],
       errorStoreCount: configurations[
@@ -478,22 +433,25 @@ export class AppComponent implements OnInit, OnDestroy {
 
     for (const index in configurations) {
       const configuration = configurations[index];
-      if (configuration !== null) {
-        if (configuration.exception)
-          this.appService.addException(index, configuration.exception);
-        if (configuration.warnings) {
-          for (const warning of configuration.warnings) {
-            this.appService.addWarning(index, warning);
-          }
-        }
+      if (configuration === null) {
+        this.appService.removeAlerts(configuration);
+        continue;
+      }
 
-        configuration.messageLevel = 'INFO';
-        for (const x in configuration.messages) {
-          const level = configuration.messages[x].level;
-          if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-            configuration.messageLevel = 'WARN';
-          if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+      if (configuration.exception)
+        this.appService.addException(index, configuration.exception);
+      if (configuration.warnings) {
+        for (const warning of configuration.warnings) {
+          this.appService.addWarning(index, warning);
         }
+      }
+
+      configuration.messageLevel = 'INFO';
+      for (const x in configuration.messages) {
+        const level = configuration.messages[x].level;
+        if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+          configuration.messageLevel = 'WARN';
+        if (level == 'ERROR') configuration.messageLevel = 'ERROR';
       }
     }
 
@@ -502,7 +460,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   processAdapters(adapters: Record<string, Adapter>): void {
     let reloadedAdapters = false;
-    const updatedAdapters: typeof this.appService.adapters = {};
+    const updatedAdapters: Record<string, Adapter> = {};
     const deletedAdapters: string[] = [];
 
     for (const index in this.serializedRawAdapterData) {

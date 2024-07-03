@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject, catchError, of } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
-import { computeServerPath } from './utils';
+import { computeServerPath, deepMerge, findIndexOfAll } from './utils';
 
 export type RunState =
   | 'ERROR'
@@ -383,7 +383,7 @@ export class AppService {
 
   messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, MessageLog>): void {
-    this.messageLog = { ...this.messageLog, ...messageLog };
+    this.messageLog = deepMerge({}, this.messageLog, messageLog);
     this.messageLogSubject.next(this.messageLog);
   }
 
@@ -433,6 +433,19 @@ export class AppService {
   }
   addException(configuration: string, message: string): void {
     this.addAlert('danger', configuration, message);
+  }
+
+  removeAlerts(configuration: string): void {
+    const indicesToRemove = findIndexOfAll(
+      this.alerts,
+      (alert) => alert.configuration === configuration,
+    );
+    const updatedAlerts = { ...this.alerts };
+
+    for (const index of indicesToRemove) {
+      updatedAlerts.splice(index, 1);
+    }
+    this.updateAlerts(updatedAlerts);
   }
 
   getServerPath(): string {
