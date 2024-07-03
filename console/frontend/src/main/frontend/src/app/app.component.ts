@@ -467,90 +467,75 @@ export class AppComponent implements OnInit, OnDestroy {
     const updatedAdapters: Record<string, Adapter> = {};
     const deletedAdapters: string[] = [];
 
-    for (const index in this.serializedRawAdapterData) {
-      //Check if any old adapters should be removed
-      if (!adapters[index]) {
-        deletedAdapters.push(index);
-        delete this.serializedRawAdapterData[index];
-        this.debugService.log(`removing adapter [${index}]`);
-      }
-    }
-
     for (const adapterName in adapters) {
-      //Add new adapter information
       const adapter = adapters[adapterName];
 
-      const serializedAdapter = JSON.stringify(adapter);
-      if (this.serializedRawAdapterData[adapter.name] != serializedAdapter) {
-        this.serializedRawAdapterData[adapter.name] = serializedAdapter;
+      if (adapter === null) {
+        deletedAdapters.push(adapterName);
+        this.debugService.log(`removing adapter [${adapterName}]`);
+        continue;
+      }
 
-        adapter.status = 'started';
+      adapter.status = 'started';
 
-        for (const x in adapter.receivers) {
-          const adapterReceiver = adapter.receivers[+x];
-          if (adapterReceiver.state != 'started') adapter.status = 'warning';
+      for (const index in adapter.receivers) {
+        const adapterReceiver = adapter.receivers[+index];
+        if (adapterReceiver.state != 'started') adapter.status = 'warning';
 
-          if (adapterReceiver.transactionalStores) {
-            const store = adapterReceiver.transactionalStores['ERROR'];
-            if (store && store.numberOfMessages > 0) {
-              adapter.status = 'warning';
-            }
+        if (adapterReceiver.transactionalStores) {
+          const store = adapterReceiver.transactionalStores['ERROR'];
+          if (store && store.numberOfMessages > 0) {
+            adapter.status = 'warning';
           }
         }
-        if (adapter.receiverReachedMaxExceptions) {
-          adapter.status = 'warning';
-        }
-        adapter.hasSender = false;
-        adapter.sendersMessageLogCount = 0;
-        adapter.senderTransactionalStorageMessageCount = 0;
-        for (const x in adapter.pipes) {
-          const pipe = adapter.pipes[+x];
-          if (pipe.sender) {
-            adapter.hasSender = true;
-            if (pipe.hasMessageLog) {
-              const count = Number.parseInt(pipe.messageLogCount ?? '');
-              if (!Number.isNaN(count)) {
-                if (pipe.isSenderTransactionalStorage) {
-                  adapter.senderTransactionalStorageMessageCount += count;
-                } else {
-                  adapter.sendersMessageLogCount += count;
-                }
+      }
+      if (adapter.receiverReachedMaxExceptions) {
+        adapter.status = 'warning';
+      }
+      adapter.hasSender = false;
+      adapter.sendersMessageLogCount = 0;
+      adapter.senderTransactionalStorageMessageCount = 0;
+      for (const index in adapter.pipes) {
+        const pipe = adapter.pipes[+index];
+        if (pipe.sender) {
+          adapter.hasSender = true;
+          if (pipe.hasMessageLog) {
+            const count = Number.parseInt(pipe.messageLogCount ?? '');
+            if (!Number.isNaN(count)) {
+              if (pipe.isSenderTransactionalStorage) {
+                adapter.senderTransactionalStorageMessageCount += count;
+              } else {
+                adapter.sendersMessageLogCount += count;
               }
             }
           }
         }
-        /*					//If last message is WARN or ERROR change adapter status to warning.
-                  if(adapter.messages.length > 0 && adapter.status != 'stopped') {
-                    let message = adapter.messages[adapter.messages.length -1];
-                    if(message.level != "INFO")
-                      adapter.status = 'warning';
-                  }
-        */
-        if (adapter.state != 'started') {
-          adapter.status = 'stopped';
-        }
-
-        if (!reloadedAdapters)
-          reloadedAdapters = this.hasAdapterReloaded(adapter);
-
-        updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
-
-        const selectedConfiguration =
-          this.routeQueryParams.get('configuration');
-        this.appService.updateAdapterSummary(
-          selectedConfiguration ?? 'All',
-          false,
-        );
-        this.updateAdapterNotifications(adapter);
       }
+      /*					//If last message is WARN or ERROR change adapter status to warning.
+                if(adapter.messages.length > 0 && adapter.status != 'stopped') {
+                  let message = adapter.messages[adapter.messages.length -1];
+                  if(message.level != "INFO")
+                    adapter.status = 'warning';
+                }
+      */
+      if (adapter.state != 'started') {
+        adapter.status = 'stopped';
+      }
+
+      if (!reloadedAdapters)
+        reloadedAdapters = this.hasAdapterReloaded(adapter);
+
+      updatedAdapters[adapterName] = adapter;
+
+      const selectedConfiguration = this.routeQueryParams.get('configuration');
+      this.appService.updateAdapterSummary(
+        selectedConfiguration ?? 'All',
+        false,
+      );
+      this.updateAdapterNotifications(adapter);
     }
 
-    const oldAdapters = { ...this.appService.adapters };
-    for (const index of deletedAdapters) {
-      delete oldAdapters[index];
-    }
-
-    this.appService.updateAdapters({ ...oldAdapters, ...updatedAdapters });
+    this.appService.updateAdapters(updatedAdapters);
 
     if (reloadedAdapters)
       this.toastService.success(
@@ -561,16 +546,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   pollerCallback(adapters: Record<string, Adapter>): void {
-    // const allAdapters: Record<string, Adapter> = {
-    //   ...this.appService.adapters,
-    //   ...adapters,
-    // };
-    /* const allAdapters: Record<string, Adapter> = deepMerge(
-      {},
-      this.appService.adapters,
-      adapters,
-    );
-    this.processAdapters(allAdapters); */
     this.processAdapters(adapters);
   }
 

@@ -354,7 +354,7 @@ export class AppService {
   }
 
   updateAdapters(adapters: Record<string, Adapter>): void {
-    this.adapters = adapters;
+    this.adapters = deepMerge({}, this.adapters, adapters);
     this.adaptersSubject.next(adapters);
   }
 
