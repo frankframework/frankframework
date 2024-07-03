@@ -471,7 +471,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	/** Charset used to read BLOB. When specified, then the BLOB will be converted into a string */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}

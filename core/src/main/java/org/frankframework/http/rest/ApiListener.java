@@ -340,7 +340,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	//TODO add authenticationType
 
 	/**
-	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property
+	 * Enables security for this listener. If you wish to use the application servers authorization roles [AUTHROLE], you need to enable them globally for all ApiListeners with the <code>servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService</code> property
 	 *
 	 * @ff.default <code>NONE</code>
 	 */
@@ -349,7 +349,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
+	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. <code>IbisTester,IbisObserver</code>
 	 */
 	public void setAuthenticationRoles(String authRoles) {
 		this.authenticationRoles = StringUtil.split(authRoles, ",;");

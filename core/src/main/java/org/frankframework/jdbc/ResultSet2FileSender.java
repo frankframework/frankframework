@@ -146,7 +146,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		this.statusFieldType = statusFieldType;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		setFilenameSessionKey(filenameSessionKey);

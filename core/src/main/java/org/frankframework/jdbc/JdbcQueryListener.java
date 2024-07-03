@@ -29,7 +29,7 @@ import org.frankframework.core.ProcessState;
  *
  * @since   4.7
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved manageability")
 public class JdbcQueryListener extends JdbcListener {
 

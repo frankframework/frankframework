@@ -24,6 +24,8 @@ If you want to use Queuing or a DBMS other than H2, you need to ensure the corre
 
 In Tomcat's launch configuration (go to the Java EE perspective to access your Tomcat server, find launch configuration in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
 
+Download the latest [LTS of NodeJS](https://nodejs.org/en) needed to build the frontend.
+
 ## 2. Tomcat configuration - Eclipse
 
 The module's test scenarios can be run manually with the Larva testtool. This will be done within an iaf-test instance running on your Tomcat server. To make this possible...

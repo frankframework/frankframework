@@ -49,7 +49,7 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		LAST,
 		/** Finalize the collection */
 		CLOSE,
-		@Deprecated
+		@Deprecated(forRemoval = true, since = "7.9.0")
 		STREAM
 	}
 

@@ -34,7 +34,7 @@ import org.frankframework.receivers.ServiceDispatcher;
  * @author  Gerrit van Brakel
  * @since   4.4.x (still experimental)
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.8.0")
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Http";

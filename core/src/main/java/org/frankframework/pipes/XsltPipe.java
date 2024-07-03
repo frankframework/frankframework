@@ -205,15 +205,14 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		sender.setXsltVersion(xsltVersion);
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
 	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	@Deprecated
-	public String getSessionKey() {
+	private String getSessionKey() {
 		return sessionKey;
 	}
 
