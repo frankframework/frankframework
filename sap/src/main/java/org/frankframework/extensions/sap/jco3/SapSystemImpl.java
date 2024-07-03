@@ -409,7 +409,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	@Override
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	@ConfigurationWarning("setServiceOffset not used in JCo3")
 	public void setServiceOffset(int i) {
 		log.warn("setServiceOffset not used in JCo3");

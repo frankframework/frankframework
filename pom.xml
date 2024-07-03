@@ -28,7 +28,7 @@
 		<tomcat.version>10.1.25</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
-		<narayana.version>7.0.1.Final</narayana.version>
+		<narayana.version>7.0.2.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
 		<micrometer.version>1.13.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
@@ -52,7 +52,7 @@
 		<activemq.driver.version>6.1.2</activemq.driver.version>
 		<artemis.driver.version>2.35.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.26.11</aws.java.sdk.version>
+		<aws.java.sdk.version>2.26.12</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.12.0</mockito.version>
@@ -518,7 +518,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.32</version>
+				<version>1.18.34</version>
 				<scope>provided</scope>
 			</dependency>
 
@@ -817,7 +817,7 @@
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.32</version>
+							<version>1.18.34</version>
 						</dependency>
 					</dependencies>
 					<executions>

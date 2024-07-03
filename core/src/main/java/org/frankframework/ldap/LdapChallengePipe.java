@@ -53,7 +53,7 @@ import org.frankframework.stream.Message;
  * @deprecated
  * @author  Milan Tomc
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
 public class LdapChallengePipe extends FixedForwardPipe {
 

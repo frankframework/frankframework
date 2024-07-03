@@ -1004,7 +1004,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/** (Only used when <code>action</code>=<code>get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("configure forward 'notFound' instead")
 	public void setResultOnNotFound(String string) {
 		resultOnNotFound = string;

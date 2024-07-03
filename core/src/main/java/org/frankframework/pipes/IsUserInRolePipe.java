@@ -117,11 +117,11 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		role = string;
 	}
 
-	@Deprecated
 	/**
 	 * name of forward returned if user is not allowed to assume the specified role
 	 * @ff.default notInRole
 	 */
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

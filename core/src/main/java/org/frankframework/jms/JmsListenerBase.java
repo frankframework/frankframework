@@ -342,7 +342,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	public void setSender(ISender newSender) {
 		sender = newSender;
 		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);

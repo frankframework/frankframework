@@ -158,6 +158,11 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Right click Tomcat v10.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
+### Install latest LTS NodeJS
+
+- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
+- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
+
 ### In some cases you might want/need to:
 
 - Right click iaf, Maven, Update Project..., OK.
@@ -212,6 +217,13 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
+### Install latest LTS NodeJS
+
+- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
+- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
+
+### Setup IntelliJ
+
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
@@ -244,7 +256,6 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 	  build (providing this is supported by your JDK)
     - Name your configuration and save it
 - Run your configuration and you are ready to go. The IAF-Test configuration has all scenarios built-in for testing the Frank!Framework from the Larva test-tool.
-
 
 # Frank!Doc - Documentation for Frank developers
 
