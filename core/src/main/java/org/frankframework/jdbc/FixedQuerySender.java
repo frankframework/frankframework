@@ -98,7 +98,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
 	public SenderResult sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return new SenderResult(executeStatementSet(blockHandle, message, session).getResult());
+		return executeStatementSet(blockHandle, message, session);
 	}
 
 	/** The SQL query text to be executed each time sendMessage() is called

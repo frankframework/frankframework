@@ -99,9 +99,9 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Connection connection, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			QueryExecutionContext queryExecutionContext = prepareStatementSet(blockHandle, message);
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session);
 			} finally {
