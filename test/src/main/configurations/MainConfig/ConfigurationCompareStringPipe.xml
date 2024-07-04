@@ -7,7 +7,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="org.frankframework.pipes.FixedResultPipe" name="FillSessionKey2" returnString="leeuw" storeResultInSessionKey="sessionKey2">
+			<pipe className="org.frankframework.pipes.PutInSession" name="FillSessionKey2" value="leeuw" sessionKey="sessionKey2">
 				<forward name="success" path="Compare"/>
 			</pipe>
 			<pipe name="Compare" className="org.frankframework.pipes.CompareStringPipe">
@@ -17,13 +17,13 @@
 				<forward name="greaterthan" path="greaterthanPipe"/>
 				<forward name="equals" path="equalsPipe"/>
 			</pipe>
-			<pipe className="org.frankframework.pipes.FixedResultPipe" name="lessthanPipe" returnString="[LESS_THAN]">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="lessthanPipe" getInputFromFixedValue="[LESS_THAN]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe className="org.frankframework.pipes.FixedResultPipe" name="greaterthanPipe" returnString="[GREATER_THAN]">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="greaterthanPipe" getInputFromFixedValue="[GREATER_THAN]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe className="org.frankframework.pipes.FixedResultPipe" name="equalsPipe" returnString="[EQUALS]">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="equalsPipe" getInputFromFixedValue="[EQUALS]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

@@ -20,6 +20,7 @@ import java.net.URL;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -38,18 +39,155 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.Misc;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
-
 /**
+ * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
+ * provide this by using the <code>filename</code> attribute or with a <code>param</code> element to be able to
+ * use a sessionKey for instance.
+ *
+ * <h2>Migrating from deprecated features</h2>
+ * The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
+ * a 'resultString' to find / replace values in. The following migrations are available:
+ *
+ * <h3>For using a 'resultString'</h3>
+ * You can use the {@link EchoPipe} for a static value. This looked like this before:
+ *
+ * <pre>
+ * {@code
+ * <pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World">
+ *     <forward name="success" path="EXIT"/>
+ * </pipe>
+ * }
+ * </pre>
+ * Becomes:
+ * <pre>
+ * {@code
+ * <pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World">
+ *     <forward name="success" path="EXIT"/>
+ * </pipe>
+ * }
+ * </pre>
+ *
+ * <h3>For replacing a value</h3>
+ * You can use the {@link ReplacerPipe} to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
+ * This looked like:
+ * <pre>
+ * {@code
+ * <pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
+ *     returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
+ *     <param name="MID" sessionKey="mid" />
+ * 	   <param name="ACTION" xpathExpression="request/@action" />
+ * </pipe>
+ * }
+ * </pre>
+ *
+ * And can now be written like this (note the ?{..} syntax):
+ * <pre>
+ * {@code
+ * <pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
+ *     getInputFromFixedValue="&lt;msg mid=&quot;?{MID}&quot; action=&quot;?{ACTION}&quot; /&gt;">
+ * 	   <param name="MID" sessionKey="mid" />
+ * 	   <param name="ACTION" xpathExpression="request/@action" />
+ * </pipe>
+ * }
+ * </pre>
+ *
+ * When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
+ * <pre>
+ * {@code
+ * <FixedResultPipe name="InputValidateError"
+ *     filename="ManageFileSystem/xml/ErrorMessage.xml"
+ *     replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
+ *     <forward name="success" path="EXIT" />
+ * </FixedResultPipe>
+ * }
+ * </pre>
+ *
+ * And now should be solved like this:
+ * <pre>
+ * {@code
+ * <FixedResultPipe name="InputValidateError"
+ *     filename="ManageFileSystem/xml/ErrorMessage.xml">
+ *     <forward name="success" path="replaceReasonCode" />
+ * </FixedResultPipe>
+ * <ReplacerPipe name="replaceReasonCode"
+ *     find="%reasonCode"
+ *     replace="NOT_WELL_FORMED_XML">
+ *     <forward name="success" path="EXIT" />
+ * </ReplacerPipe>
+ * }
+ * </pre>
+ * This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
+ *
+ * <h2>More complex configurations</h2>
+ * In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
+ * was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
+ * <pre>
+ * {@code
+ * 	<CompareStringPipe name="compareIdAndCid" >
+ * 		<param name="operand1" sessionKey="id"/>
+ * 		<param name="operand2" sessionKey="cid"/>
+ * 		<forward name="equals" path="IdAndCidSame" />
+ * 		<forward name="lessthan" path="IdAndCidDifferent" />
+ * 		<forward name="greaterthan" path="IdAndCidDifferent" />
+ * 	</CompareStringPipe>
+ * 	<FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame">
+ * 		<forward name="success" path="displayKeys" />
+ * 	</FixedResultPipe>
+ * 	<FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame">
+ * 		<forward name="success" path="displayKeys" />
+ * 	</FixedResultPipe>
+ *
+ *  <pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
+ * 		returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
+ * 		<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
+ * 		<param name="MID" sessionKey="id" />
+ * 		<param name="CID" sessionKey="cid" />
+ * 		<param name="SAME" sessionKey="IdAndCidSame" />
+ * 		<forward name="success" path="EXIT" />
+ * 	</pipe>
+ * }
+ * </pre>
+ *
+ * Was rewritten to the following:
+ * <pre>
+ * {@code
+ * 	<CompareStringPipe name="compareIdAndCid" >
+ * 		<param name="operand1" sessionKey="id"/>
+ * 		<param name="operand2" sessionKey="cid"/>
+ * 		<forward name="equals" path="IdAndCidSame" />
+ * 		<forward name="lessthan" path="IdAndCidDifferent" />
+ * 		<forward name="greaterthan" path="IdAndCidDifferent" />
+ * 	</CompareStringPipe>
+ *
+ * 	<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
+ * 		<forward name="success" path="putOriginalMessageInSession" />
+ * 	</PutInSessionPipe>
+ * 	<PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
+ * 		<forward name="success" path="putOriginalMessageInSession" />
+ * 	</PutInSessionPipe>
+ *
+ * 	<PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/>
+ *
+ * 	<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
+ * 		getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
+ * 		<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
+ * 		<param name="MID" sessionKey="id" />
+ * 		<param name="CID" sessionKey="cid" />
+ * 		<param name="SAME" sessionKey="IdAndCidSame" />
+ * 		<forward name="success" path="EXIT" />
+ * 	</pipe>
+ * }
+ * </pre>
+ * <p>
+ *
+ * <h2>The features/documentation of the deprecated features</h2>
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
- * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise the
+ * when <code>filename</code> or <code>filenameSessionKey</code> is specified. Otherwise, the
  * value of attribute <code>returnString</code> is returned.
  * <br/><br/>
  * Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
@@ -58,12 +196,12 @@ import lombok.Getter;
  * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.</li>
  * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
  * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>?{...}</code> here.</li>
- * 
+ *
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
  * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
  * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
  * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
- * 
+ *
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
@@ -87,7 +225,12 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
 
+	private static final String SUBSTITUTION_START_DELIMITER = "?{";
+
 	private AppConstants appConstants;
+
+	private TransformerPool transformerPool;
+
 	private @Getter String filename;
 	private @Getter String filenameSessionKey;
 	private @Getter String returnString;
@@ -96,9 +239,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter String replaceTo;
 	private @Getter String styleSheetName;
 	private @Getter boolean replaceFixedParams;
-	private @Getter String substitutionStartDelimiter = "?";
-
-	private TransformerPool transformerPool;
 
 	/**
 	 * checks for correct configuration, and translates the filename to
@@ -112,24 +252,24 @@ public class FixedResultPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
+
+		filename = getFilename();
+
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
+
 		if (StringUtils.isNotEmpty(getFilename())) {
-			URL resource = null;
+			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception searching for ["+getFilename()+"]", e);
+				throw new ConfigurationException("got exception searching for [" + getFilename() + "]", e);
 			}
-			if (resource==null) {
-				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
-			}
-			try {
-				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
-			} catch (Throwable e) {
-				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
+			if (resource == null) {
+				throw new ConfigurationException("cannot find resource [" + getFilename() + "]");
 			}
 		}
-		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString==null) { // allow an empty returnString to be specified
+
+		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString == null) { // allow an empty returnString to be specified
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
@@ -139,71 +279,113 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result=getReturnString();
-		String filename;
+		Message resultMessage = null;
+		String resultString = getReturnString();
+
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
 			filename = session.getString(getFilenameSessionKey());
 		} else {
 			filename = getFilename();
 		}
+
+		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
+
 		if (StringUtils.isNotEmpty(filename)) {
 			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, filename);
-			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception searching for ["+filename+"]", e);
+			} catch (Exception e) {
+				throw new PipeRunException(this, "got exception searching for [" + filename + "]", e);
 			}
+
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				}
-				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
+				throw new PipeRunException(this, "cannot find resource [" + filename + "]");
 			}
-			try (Message msg = new UrlMessage(resource)) {
-				result = msg.asString();
-			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
+
+			if (stringBasedOperationNeeded()) {
+				try (Message msg = new UrlMessage(resource)) {
+					resultString = msg.asString();
+				} catch (Exception e) {
+					throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
+				}
+			} else {
+				resultMessage = new UrlMessage(resource);
+				resultMessage.closeOnCloseOf(session, this);
 			}
 		}
-		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
-			result = result.replace(getReplaceFrom(), getReplaceTo());
+
+		// String based handling, scheduled for removal
+		if (stringBasedOperationNeeded()) {
+			if (StringUtils.isNotEmpty(getReplaceFrom()) && resultString != null) {
+				resultString = resultString.replace(getReplaceFrom(), getReplaceTo());
+			}
+
+			if (!getParameterList().isEmpty()) {
+				resultString = replaceParameters(resultString, message, session);
+			}
+
+			if (substituteVars) {
+				resultString = substituteVars(resultString, session);
+			}
+
+			if (transformerPool != null) {
+				try {
+					resultString = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(resultString));
+				} catch (SAXException e) {
+					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
+				} catch (IOException | TransformerException e) {
+					throw new PipeRunException(this, "got error transforming message [" + resultString + "] with [" + getStyleSheetName() + "]", e);
+				}
+			}
+
+			resultMessage = new Message(resultString);
 		}
-		if (!getParameterList().isEmpty()) {
+
+		log.debug("returning fixed result [{}]", resultMessage);
+		return new PipeRunResult(getSuccessForward(), resultMessage);
+	}
+
+	/**
+	 * @return whether a string based operation is needed to determine if can return a binary file or not
+	 */
+	private boolean stringBasedOperationNeeded() {
+		return getReturnString() != null
+				|| !getParameterList().isEmpty()
+				|| isSubstituteVars()
+				|| transformerPool != null;
+	}
+
+	private String substituteVars(String input, PipeLineSession session) {
+		if (isSubstituteVars()) {
+			return StringResolver.substVars(input, session, appConstants);
+		}
+
+		return input;
+	}
+
+	private String replaceParameters(String input, Message message, PipeLineSession session) throws PipeRunException {
+		String output = input;
+
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
-				for(ParameterValue pv : pvl) {
-					final String replaceFrom;
-					if (isReplaceFixedParams()) {
-						replaceFrom=pv.getName();
-					} else {
-						replaceFrom=substitutionStartDelimiter+"{"+pv.getName()+"}";
-					}
-					String to = pv.asStringValue("");
-					result= result.replace(replaceFrom, to);
+				for (ParameterValue pv : pvl) {
+					output = replaceSingle(output, pv.getName(), pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
-		}
 
-		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
-		if (isSubstituteVars()) {
-			result=StringResolver.substVars(result, session, appConstants);
-		}
+		return output;
+	}
 
-		if (transformerPool != null) {
-			try{
-				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
-			} catch (SAXException e) {
-				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
-			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this, "got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
-			}
-		}
+	private String replaceSingle(String value, String replaceFromValue, String to) {
+		final String from = (isReplaceFixedParams()) ? replaceFromValue : SUBSTITUTION_START_DELIMITER + replaceFromValue + "}";
 
-		log.debug("returning fixed result [{}]", result);
-		return new PipeRunResult(getSuccessForward(), result);
+		return value.replace(from, to);
 	}
 
 	/**
@@ -212,8 +394,10 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default false
 	 */
-	public void setSubstituteVars(boolean substitute){
-		this.substituteVars=substitute;
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("substituteVars is scheduled for removal. Please use the ReplacerPipe")
+	public void setSubstituteVars(boolean substitute) {
+		this.substituteVars = substitute;
 	}
 
 	/**
@@ -226,6 +410,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * Name of the session key containing the file name of the file containing the result message.
 	 */
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("fileNameSessionKey is scheduled for removal. Please use a <param> if you need a session value")
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
@@ -233,6 +419,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * Returned message.
 	 */
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("returnString is scheduled for removal. Please use the ReplacerPipe or EchoPipe if you need to control the output string")
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}
@@ -240,22 +428,28 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
 	 */
-	public void setReplaceFrom(String replaceFrom){
-		this.replaceFrom=replaceFrom;
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("replaceFrom is scheduled for removal. Please use the ReplacerPipe")
+	public void setReplaceFrom(String replaceFrom) {
+		this.replaceFrom = replaceFrom;
 	}
 
 	/**
 	 * See <code>replaceFrom</code>.
 	 */
-	public void setReplaceTo(String replaceTo){
-		this.replaceTo=replaceTo;
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("replaceTo is scheduled for removal. Please use the ReplacerPipe")
+	public void setReplaceTo(String replaceTo) {
+		this.replaceTo = replaceTo;
 	}
 
 	/**
 	 * File name of XSLT stylesheet to apply.
 	 */
-	public void setStyleSheetName (String styleSheetName){
-		this.styleSheetName=styleSheetName;
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("styleSheetName is scheduled for removal. Please use the XsltPipe")
+	public void setStyleSheetName(String styleSheetName) {
+		this.styleSheetName = styleSheetName;
 	}
 
 	/**
@@ -263,15 +457,9 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default false
 	 */
-	public void setReplaceFixedParams(boolean b){
-		replaceFixedParams=b;
-	}
-
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
-	public void setUseOldSubstitutionStartDelimiter(boolean old) {
-		if(old) {
-			substitutionStartDelimiter = "$";
-		}
+	@Deprecated(since = "8.2", forRemoval = true)
+	@ConfigurationWarning("replaceFixedParams is scheduled for removal. Please use the ReplacerPipe")
+	public void setReplaceFixedParams(boolean b) {
+		replaceFixedParams = b;
 	}
 }

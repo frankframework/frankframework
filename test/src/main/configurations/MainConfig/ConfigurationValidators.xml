@@ -171,11 +171,13 @@
 				<forward name="outputFailure" path="OutputValidationFailure" />
 			</JsonInputValidator>
 
-			<pipe name="InputValidationFailure" className="org.frankframework.pipes.FixedResultPipe" returnString="{ &quot;message&quot;:&quot;input validation failure: REASON&quot; }" replaceFixedParams="true" >
+			<pipe name="InputValidationFailure" className="org.frankframework.pipes.ReplacerPipe"
+				getInputFromFixedValue="{ &quot;message&quot;:&quot;input validation failure: ?{REASON}&quot; }">
 				<param name="REASON" sessionKey="failureReason" />
 				<forward name="success" path="BadRequest" />
 			</pipe>
-			<pipe name="OutputValidationFailure" className="org.frankframework.pipes.FixedResultPipe" returnString="{ &quot;message&quot;:&quot;output validation failure: REASON&quot; }" replaceFixedParams="true" >
+			<pipe name="OutputValidationFailure" className="org.frankframework.pipes.ReplacerPipe"
+				getInputFromFixedValue="{ &quot;message&quot;:&quot;output validation failure: ?{REASON}&quot; }">
 				<param name="REASON" sessionKey="failureReason" />
 				<forward name="success" path="ServerError" />
 			</pipe>

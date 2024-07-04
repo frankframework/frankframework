@@ -279,18 +279,17 @@
 			</pipe>
 
 			<pipe
-                    name="Fallthroug" className="org.frankframework.pipes.FixedResultPipe" returnString="fall through" >
+                    name="Fallthrough" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="fall through" >
 				<forward name="success" path="InternalError"/>
 			</pipe>
 			<pipe
-                    name="Called successfully" className="org.frankframework.pipes.FixedResultPipe" returnString="successful">
+                    name="Called successfully" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="successful">
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe
-                    name="Called unsuccessfully" className="org.frankframework.pipes.FixedResultPipe" returnString="unsuccessful">
+                    name="Called unsuccessfully" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="unsuccessful">
 				<forward name="success" path="InternalError"/>
 			</pipe>
 		</pipeline>
 	</adapter>
-
 </module>
