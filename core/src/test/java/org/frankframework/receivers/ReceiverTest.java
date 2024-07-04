@@ -627,7 +627,7 @@ public class ReceiverTest {
 		// Arrange
 		String rawTestMessage = "TEST";
 		RawMessageWrapper<String> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
@@ -689,7 +689,7 @@ public class ReceiverTest {
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
-		plr.setResult(Message.asMessage(testMessage));
+		plr.setResult(new Message(testMessage));
 		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act

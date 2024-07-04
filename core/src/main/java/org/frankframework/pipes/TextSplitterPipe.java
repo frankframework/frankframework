@@ -41,7 +41,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (Message.isNull(message) || message.isEmpty()) {
-			return new PipeRunResult(getSuccessForward(), Message.asMessage("<text/>"));
+			return new PipeRunResult(getSuccessForward(), new Message("<text/>"));
 		}
 
 		try {
