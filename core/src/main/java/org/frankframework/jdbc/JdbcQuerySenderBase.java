@@ -47,8 +47,8 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
@@ -307,7 +307,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	protected SenderResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -333,16 +333,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
+						return new SenderResult(executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
 					}
-					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
+					return new SenderResult(executeUpdateBlobQuery(statement, message));
 				case UPDATECLOB:
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateClobQuery(statement, session.getMessage(getClobSessionKey())));
+						return new SenderResult(executeUpdateClobQuery(statement, session.getMessage(getClobSessionKey())));
 					}
-					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
+					return new SenderResult(executeUpdateClobQuery(statement, message));
 				case PACKAGE:
-					return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
+					return new SenderResult(executePackageQuery(queryExecutionContext));
 				case OTHER:
 					Message result = executeOtherQuery(queryExecutionContext, message, session);
 					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
@@ -352,7 +352,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						statement.clearBatch();
 						queryExecutionContext.iteration=0;
 					}
-					return new PipeRunResult(null, result);
+					return new SenderResult(result);
 				default:
 					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryType()+"]");
 			}
@@ -452,7 +452,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null).getResult();
 	}
 
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+	protected SenderResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -470,11 +470,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							response.setHeader("Content-Disposition", contentDisposition);
 						}
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
-						return new PipeRunResult(null, Message.nullMessage());
+						return new SenderResult(Message.nullMessage());
 					}
 					if (blobSessionVar!=null) {
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
-						return new PipeRunResult(null, Message.nullMessage());
+						return new SenderResult(Message.nullMessage());
 					}
 					if (!isBlobSmartGet()) {
 						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
@@ -483,7 +483,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							} else {
 								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
 							}
-							return target.getPipeRunResult();
+							return new SenderResult(target.getPipeRunResult().getResult());
 						} catch (Exception e) {
 							throw new JdbcException(e);
 						}
@@ -492,11 +492,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (getDbmsSupport().isClobType(rsmeta, 1)) {
 					if (clobSessionVar!=null) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
-						return new PipeRunResult(null, Message.nullMessage());
+						return new SenderResult(Message.nullMessage());
 					}
 					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
-						return target.getPipeRunResult();
+						return new SenderResult(target.getPipeRunResult().getResult());
 					} catch (Exception e) {
 						throw new JdbcException(e);
 					}
@@ -519,7 +519,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} else if (isScalarExtended()) {
 					result="[absent]";
 			}
-			return new PipeRunResult(null, new Message(result));
+			return new SenderResult(new Message(result));
 		}
 		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 			// Create XML and give the maxlength as a parameter
@@ -537,7 +537,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			}
 			target.close(); // Have to call close try-with-resources closes it, c/c "close" calls "endDocument" under the hood so we get a completed result document.
-			return target.getPipeRunResult();
+			return new SenderResult(target.getPipeRunResult().getResult());
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}
@@ -625,11 +625,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return new Message(clobWriter.getWarnings().toXML());
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
+	protected SenderResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
 		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
+	private SenderResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));

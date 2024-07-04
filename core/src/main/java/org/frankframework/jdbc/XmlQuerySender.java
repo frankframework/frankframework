@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
@@ -239,7 +238,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		return new SenderResult(result);
 	}
 
-	private PipeRunResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order) throws SenderException, JdbcException {
+	private SenderResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order) throws SenderException, JdbcException {
 		StringBuilder queryBuilder = new StringBuilder("SELECT ");
 		if (columns != null && !columns.isEmpty()) {
 			String columnSelection = columns.stream()

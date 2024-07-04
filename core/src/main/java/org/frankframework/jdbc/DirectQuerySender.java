@@ -25,7 +25,6 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
@@ -104,8 +103,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		try {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(blockHandle, message);
 			try {
-				PipeRunResult result = executeStatementSet(queryExecutionContext, message, session);
-				return new SenderResult(result.getResult());
+				return executeStatementSet(queryExecutionContext, message, session);
 			} finally {
 				closeStatementSet(queryExecutionContext);
 			}
