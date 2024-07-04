@@ -74,6 +74,8 @@ export class AppComponent implements OnInit, OnDestroy {
     windowClass: 'animated fadeIn',
   };
 
+  private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -418,7 +420,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
-  processWarnings(configurations: Record<string, MessageLog>): void {
+  processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
     configurations['All'] = {
       messages: configurations['messages'] as unknown as AdapterMessage[],
       errorStoreCount: configurations[
@@ -436,6 +438,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     for (const index in configurations) {
+      const existingConfiguration = this.appService.messageLog[index];
       const configuration = configurations[index];
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
@@ -450,12 +453,21 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       }
 
-      configuration.messageLevel = 'INFO';
-      for (const x in configuration.messages) {
-        const level = configuration.messages[x].level;
-        if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-          configuration.messageLevel = 'WARN';
-        if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+      if (existingConfiguration && configuration.messages) {
+        configuration.messages = [
+          ...existingConfiguration.messages,
+          ...configuration.messages,
+        ].slice(-this.messageKeeperSize);
+      }
+
+      configuration.messageLevel = existingConfiguration.messageLevel ?? 'INFO';
+      if (configuration.messages) {
+        for (const x in configuration.messages) {
+          const level = configuration.messages[x].level;
+          if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+            configuration.messageLevel = 'WARN';
+          if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+        }
       }
     }
 

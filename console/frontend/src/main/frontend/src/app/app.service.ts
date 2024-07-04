@@ -141,7 +141,7 @@ export type MessageLog = {
   messages: AdapterMessage[];
   messageLevel: MessageLevel;
   exception?: string;
-  warnings?: string;
+  warnings?: string[];
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
@@ -386,7 +386,7 @@ export class AppService {
   }
 
   messageLog: Record<string, MessageLog> = {};
-  updateMessageLog(messageLog: Record<string, MessageLog>): void {
+  updateMessageLog(messageLog: Record<string, Partial<MessageLog>>): void {
     this.messageLog = deepMerge({}, this.messageLog, messageLog);
     this.messageLogSubject.next({ ...this.messageLog });
   }
