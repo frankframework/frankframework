@@ -382,7 +382,7 @@ export class AppComponent implements OnInit, OnDestroy {
         (configurations) => this.processWarnings(configurations),
       );
 
-      this.websocketService.subscribe<Record<string, Adapter>>(
+      this.websocketService.subscribe<Record<string, Partial<Adapter>>>(
         '/event/adapters',
         (data) => this.pollerCallback(data),
       );
@@ -462,54 +462,38 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appService.updateMessageLog(configurations);
   }
 
-  processAdapters(adapters: Record<string, Adapter>): void {
+  processAdapters(adapters: Record<string, Partial<Adapter>>): void {
     let reloadedAdapters = false;
-    const updatedAdapters: Record<string, Adapter> = {};
+    const updatedAdapters: Record<string, Partial<Adapter>> = {};
     const deletedAdapters: string[] = [];
 
-    for (const adapterName in adapters) {
-      const adapter = adapters[adapterName];
+    for (const adapterIndex in adapters) {
+      const adapter = adapters[adapterIndex];
+      const existingAdapter = this.appService.adapters[adapterIndex];
 
       if (adapter === null) {
-        deletedAdapters.push(adapterName);
-        this.debugService.log(`removing adapter [${adapterName}]`);
+        deletedAdapters.push(adapterIndex);
         continue;
       }
 
-      adapter.status = 'started';
-
-      for (const index in adapter.receivers) {
-        const adapterReceiver = adapter.receivers[+index];
-        if (adapterReceiver.state != 'started') adapter.status = 'warning';
-
-        if (adapterReceiver.transactionalStores) {
-          const store = adapterReceiver.transactionalStores['ERROR'];
-          if (store && store.numberOfMessages > 0) {
-            adapter.status = 'warning';
-          }
-        }
+      if (existingAdapter) {
+        adapter.status = existingAdapter.status;
+        adapter.hasSender = existingAdapter.hasSender;
+        adapter.sendersMessageLogCount = existingAdapter.sendersMessageLogCount;
+        adapter.senderTransactionalStorageMessageCount =
+          existingAdapter.senderTransactionalStorageMessageCount;
+      } else {
+        adapter.status = 'started';
+        adapter.hasSender = false;
+        adapter.sendersMessageLogCount = 0;
+        adapter.senderTransactionalStorageMessageCount = 0;
       }
+
+      this.processAdapterReceivers(adapter);
+      this.processAdapterPipes(adapter);
+
       if (adapter.receiverReachedMaxExceptions) {
         adapter.status = 'warning';
-      }
-      adapter.hasSender = false;
-      adapter.sendersMessageLogCount = 0;
-      adapter.senderTransactionalStorageMessageCount = 0;
-      for (const index in adapter.pipes) {
-        const pipe = adapter.pipes[+index];
-        if (pipe.sender) {
-          adapter.hasSender = true;
-          if (pipe.hasMessageLog) {
-            const count = Number.parseInt(pipe.messageLogCount ?? '');
-            if (!Number.isNaN(count)) {
-              if (pipe.isSenderTransactionalStorage) {
-                adapter.senderTransactionalStorageMessageCount += count;
-              } else {
-                adapter.sendersMessageLogCount += count;
-              }
-            }
-          }
-        }
       }
       /*					//If last message is WARN or ERROR change adapter status to warning.
                 if(adapter.messages.length > 0 && adapter.status != 'stopped') {
@@ -525,14 +509,22 @@ export class AppComponent implements OnInit, OnDestroy {
       if (!reloadedAdapters)
         reloadedAdapters = this.hasAdapterReloaded(adapter);
 
-      updatedAdapters[adapterName] = adapter;
+      updatedAdapters[adapterIndex] = adapter;
 
       const selectedConfiguration = this.routeQueryParams.get('configuration');
       this.appService.updateAdapterSummary(
         selectedConfiguration ?? 'All',
         false,
       );
-      this.updateAdapterNotifications(adapter);
+      this.updateAdapterNotifications(
+        adapter.name ?? existingAdapter.name,
+        adapter,
+      );
+    }
+
+    for (const deletedAdapter of deletedAdapters) {
+      this.appService.removeAdapter(deletedAdapter);
+      this.appService.removeAlerts(deletedAdapter);
     }
 
     this.appService.updateAdapters(updatedAdapters);
@@ -545,7 +537,7 @@ export class AppComponent implements OnInit, OnDestroy {
       );
   }
 
-  pollerCallback(adapters: Record<string, Adapter>): void {
+  pollerCallback(adapters: Record<string, Partial<Adapter>>): void {
     this.processAdapters(adapters);
   }
 
@@ -559,14 +551,50 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateAdapterNotifications(adapter: Adapter): void {
-    let name = adapter.name;
+  processAdapterReceivers(adapter: Partial<Adapter>): void {
+    for (const index in adapter.receivers) {
+      const adapterReceiver = adapter.receivers[+index];
+      if (adapterReceiver.state != 'started') adapter.status = 'warning';
+
+      if (adapterReceiver.transactionalStores) {
+        const store = adapterReceiver.transactionalStores['ERROR'];
+        if (store && store.numberOfMessages > 0) {
+          adapter.status = 'warning';
+        }
+      }
+    }
+  }
+
+  processAdapterPipes(adapter: Partial<Adapter>): void {
+    for (const index in adapter.pipes) {
+      const pipe = adapter.pipes[+index];
+      if (pipe.sender) {
+        adapter.hasSender = true;
+        if (pipe.hasMessageLog) {
+          const count = Number.parseInt(pipe.messageLogCount ?? '');
+          if (!Number.isNaN(count)) {
+            if (pipe.isSenderTransactionalStorage) {
+              adapter.senderTransactionalStorageMessageCount! += count;
+            } else {
+              adapter.sendersMessageLogCount! += count;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  updateAdapterNotifications(
+    adapterName: string,
+    adapter: Partial<Adapter>,
+  ): void {
+    let name = adapterName;
     if (name.length > 20) name = `${name.slice(0, 17)}...`;
-    if (adapter.started == true) {
+    if (adapter.started === true) {
       for (const x in adapter.receivers) {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
         // @ts-expect-error Receiver.started does not exist
-        if (adapter.receivers[+x].started == false) {
+        if (adapter.receivers[+x].started === false) {
           this.notificationService.add(
             'fa-exclamation-circle',
             `Receiver '${name}' stopped!`,
@@ -577,7 +605,7 @@ export class AppComponent implements OnInit, OnDestroy {
           );
         }
       }
-    } else {
+    } else if (adapter.started === false) {
       this.notificationService.add(
         'fa-exclamation-circle',
         `Adapter '${name}' stopped!`,
@@ -589,10 +617,13 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasAdapterReloaded(adapter: Adapter): boolean {
-    const oldAdapter =
-      this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
-    return adapter.upSince > oldAdapter?.upSince;
+  hasAdapterReloaded(adapter: Partial<Adapter>): boolean {
+    if (adapter.upSince) {
+      const oldAdapter =
+        this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
+      return adapter.upSince > oldAdapter?.upSince;
+    }
+    return false;
   }
 
   openInfoModel(): void {

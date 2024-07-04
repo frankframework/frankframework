@@ -353,9 +353,13 @@ export class AppService {
     this.appConstantsSubject.next();
   }
 
-  updateAdapters(adapters: Record<string, Adapter>): void {
+  updateAdapters(adapters: Record<string, Partial<Adapter>>): void {
     this.adapters = deepMerge({}, this.adapters, adapters);
-    this.adaptersSubject.next(adapters);
+    this.adaptersSubject.next({ ...this.adapters });
+  }
+
+  removeAdapter(adapter: string): void {
+    delete this.adapters[adapter];
   }
 
   updateAlerts(alerts: Alert[]): void {
@@ -384,7 +388,7 @@ export class AppService {
   messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, MessageLog>): void {
     this.messageLog = deepMerge({}, this.messageLog, messageLog);
-    this.messageLogSubject.next(this.messageLog);
+    this.messageLogSubject.next({ ...this.messageLog });
   }
 
   instanceName = '';
