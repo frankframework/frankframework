@@ -39,8 +39,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.Misc;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
@@ -269,12 +267,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 			if (resource == null) {
 				throw new ConfigurationException("cannot find resource [" + getFilename() + "]");
 			}
-
-			try {
-				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
-			} catch (Exception e) {
-				throw new ConfigurationException("got exception loading [" + getFilename() + "]", e);
-			}
 		}
 
 		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString == null) { // allow an empty returnString to be specified
@@ -287,7 +279,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result = getReturnString();
+		Message resultMessage = null;
+		String resultString = getReturnString();
 
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
 			filename = session.getString(getFilenameSessionKey());
@@ -313,33 +306,57 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "cannot find resource [" + filename + "]");
 			}
 
-			try (Message msg = new UrlMessage(resource)) {
-				result = msg.asString();
-			} catch (Exception e) {
-				throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
+			if (stringBasedOperationNeeded()) {
+				try (Message msg = new UrlMessage(resource)) {
+					resultString = msg.asString();
+				} catch (Exception e) {
+					throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
+				}
+			} else {
+				resultMessage = new UrlMessage(resource);
+				resultMessage.closeOnCloseOf(session, this);
 			}
 		}
 
 		// String based handling, scheduled for removal
-		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
-			result = result.replace(getReplaceFrom(), getReplaceTo());
-		}
-
-		result = replaceParameters(result, message, session);
-		result = substituteVars(result, session);
-
-		if (transformerPool != null) {
-			try {
-				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
-			} catch (SAXException e) {
-				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
-			} catch (IOException | TransformerException e) {
-				throw new PipeRunException(this, "got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+		if (stringBasedOperationNeeded()) {
+			if (StringUtils.isNotEmpty(getReplaceFrom()) && resultString != null) {
+				resultString = resultString.replace(getReplaceFrom(), getReplaceTo());
 			}
+
+			if (!getParameterList().isEmpty()) {
+				resultString = replaceParameters(resultString, message, session);
+			}
+
+			if (substituteVars) {
+				resultString = substituteVars(resultString, session);
+			}
+
+			if (transformerPool != null) {
+				try {
+					resultString = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(resultString));
+				} catch (SAXException e) {
+					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
+				} catch (IOException | TransformerException e) {
+					throw new PipeRunException(this, "got error transforming message [" + resultString + "] with [" + getStyleSheetName() + "]", e);
+				}
+			}
+
+			resultMessage = new Message(resultString);
 		}
 
-		log.debug("returning fixed result [{}]", result);
-		return new PipeRunResult(getSuccessForward(), result);
+		log.debug("returning fixed result [{}]", resultMessage);
+		return new PipeRunResult(getSuccessForward(), resultMessage);
+	}
+
+	/**
+	 * @return whether a string based operation is needed to determine if can return a binary file or not
+	 */
+	private boolean stringBasedOperationNeeded() {
+		return getReturnString() != null
+				|| !getParameterList().isEmpty()
+				|| isSubstituteVars()
+				|| transformerPool != null;
 	}
 
 	private String substituteVars(String input, PipeLineSession session) {
@@ -353,7 +370,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private String replaceParameters(String input, Message message, PipeLineSession session) throws PipeRunException {
 		String output = input;
 
-		if (!getParameterList().isEmpty()) {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for (ParameterValue pv : pvl) {
@@ -362,7 +378,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
-		}
 
 		return output;
 	}

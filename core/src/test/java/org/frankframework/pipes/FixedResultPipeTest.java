@@ -14,7 +14,6 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -34,18 +33,6 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	@Override
 	public FixedResultPipe createPipe() {
 		return new FixedResultPipe();
-	}
-
-	@Disabled("Should be enabled after removal of deprecated attributes")
-	@Test
-	public void testSuccessWithParam() throws Exception {
-		Parameter filename = ParameterBuilder.create().withName("filename").withValue(PIPES_2_TXT);
-
-		pipe.addParameter(filename);
-		pipe.configure();
-
-		PipeRunResult res = doPipe(pipe, "whatisthis", session);
-		assertEquals("inside the file", res.getResult().asString());
 	}
 
 	@Test
@@ -77,7 +64,6 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		assertThrows(ConfigurationException.class, this::configurePipe);
 	}
 
-	@Disabled("Should be enabled after removal of deprecated attributes")
 	@Test
 	public void testBinaryContent() throws Exception {
 		pipe.setFilename(PIPES_FILE_PDF);
@@ -96,16 +82,12 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		}
 	}
 
-	@Disabled("Should be enabled after removal of deprecated attributes")
-	@Test
-	public void testEmptyFileName(){
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
-		assertThat(e.getMessage(), Matchers.endsWith("No filename parameter found"));
-	}
-
 	private Parameter getParameter(String name){
 		session.put(name,"value");
-		return ParameterBuilder.create().withName(name).withValue("abs").withSessionKey("*");
+		return ParameterBuilder.create()
+				.withName(name)
+				.withValue("abs")
+				.withSessionKey("*");
 	}
 
 	@Test
