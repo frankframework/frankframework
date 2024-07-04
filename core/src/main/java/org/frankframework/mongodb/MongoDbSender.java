@@ -202,7 +202,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 			default:
 				throw new SenderException("Unknown action ["+getAction()+"]");
 			}
-			return new SenderResult(target.getPipeRunResult().getResult());
+			return new SenderResult(target.getResponse());
 		} catch (Exception e) {
 			throw new SenderException("Cannot execute action ["+getAction()+"]", e);
 		}

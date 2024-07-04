@@ -483,7 +483,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							} else {
 								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
 							}
-							return new SenderResult(target.getPipeRunResult().getResult());
+							return new SenderResult(target.getResponse());
 						} catch (Exception e) {
 							throw new JdbcException(e);
 						}
@@ -496,7 +496,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
-						return new SenderResult(target.getPipeRunResult().getResult());
+						return new SenderResult(target.getResponse());
 					} catch (Exception e) {
 						throw new JdbcException(e);
 					}
@@ -537,7 +537,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			}
 			target.close(); // Have to call close try-with-resources closes it, c/c "close" calls "endDocument" under the hood so we get a completed result document.
-			return new SenderResult(target.getPipeRunResult().getResult());
+			return new SenderResult(target.getResponse());
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}

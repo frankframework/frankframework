@@ -28,9 +28,7 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.INamedObject;
-import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.document.Json2XmlHandler;
 import org.frankframework.stream.json.JsonTee;
 import org.frankframework.stream.json.JsonWriter;
@@ -51,13 +49,11 @@ public class MessageOutputStream implements AutoCloseable {
 	private final INamedObject owner;
 	protected Object requestStream;
 	@Getter private Message response;
-	@Getter private final PipeForward forward;
 	private Set<AutoCloseable> resourcesToClose;
 	private ThreadConnector<?> threadConnector;
 
 	protected MessageOutputStream(INamedObject owner) {
 		this.owner = owner;
-		this.forward = new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null);
 	}
 
 	// this constructor for testing only
@@ -75,7 +71,7 @@ public class MessageOutputStream implements AutoCloseable {
 	// this constructor for testing only
 	<T> MessageOutputStream(ContentHandler handler) {
 		this((INamedObject) null);
-		threadConnector = new ThreadConnector<T>(null, null, null, null, (PipeLineSession)null);
+		threadConnector = new ThreadConnector<>(null, null, null, null, (PipeLineSession)null);
 		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
 	}
 
@@ -83,7 +79,7 @@ public class MessageOutputStream implements AutoCloseable {
 	<T> MessageOutputStream(JsonEventHandler handler) {
 		this((INamedObject) null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(null, null, null, null, (PipeLineSession)null);
+		threadConnector = new ThreadConnector<>(null, null, null, null, (PipeLineSession)null);
 	}
 
 	protected void setRequestStream(Object requestStream) {
@@ -225,9 +221,8 @@ public class MessageOutputStream implements AutoCloseable {
 		return result;
 	}
 
-	@SuppressWarnings("resource")
 	public void captureCharacterStream(Writer writer, int maxSize) {
-		log.debug("creating capture of {}", ClassUtils.nameOf(requestStream));
+		log.debug("creating capture of {}", ()->ClassUtils.nameOf(requestStream));
 		closeOnClose(writer);
 		if (requestStream instanceof Writer writer1) {
 			requestStream = StreamCaptureUtils.captureWriter(writer1, writer, maxSize);
@@ -248,9 +243,8 @@ public class MessageOutputStream implements AutoCloseable {
 		log.warn("captureCharacterStream() called before stream is installed.");
 	}
 
-	@SuppressWarnings("resource")
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
-		log.debug("creating capture of {}", ClassUtils.nameOf(requestStream));
+		log.debug("creating capture of {}", ()->ClassUtils.nameOf(requestStream));
 		closeOnClose(outputStream);
 		if (requestStream instanceof OutputStream stream) {
 			requestStream = StreamCaptureUtils.captureOutputStream(stream, outputStream, maxSize);
@@ -278,11 +272,6 @@ public class MessageOutputStream implements AutoCloseable {
 	 */
 	public void setResponse(Message response) {
 		this.response = response;
-	}
-
-
-	public PipeRunResult getPipeRunResult() {
-		return new PipeRunResult(getForward(), getResponse());
 	}
 
 	/**

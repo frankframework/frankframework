@@ -12,7 +12,6 @@ import java.io.Writer;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.INamedObject;
-import org.frankframework.core.PipeRunResult;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -34,9 +33,9 @@ public class MessageStreamCapTest {
 
 				capWriter.write(responseMessage);
 			}
-			PipeRunResult result = cap.getPipeRunResult();
+			Message result = cap.getResponse();
 
-			assertEquals(responseMessage,result.getResult().asString());
+			assertEquals(responseMessage,result.asString());
 		}
 		assertEquals(responseMessage,captureWriter.toString());
 	}
@@ -57,10 +56,10 @@ public class MessageStreamCapTest {
 
 				capStream.write(responseMessage);
 			}
-			PipeRunResult result = cap.getPipeRunResult();
+			Message result = cap.getResponse();
 
-			assertTrue("byte[]".equalsIgnoreCase(result.getResult().getRequestClass()));
-			assertArrayEquals(responseMessage, result.getResult().asByteArray());
+			assertTrue("byte[]".equalsIgnoreCase(result.getRequestClass()));
+			assertArrayEquals(responseMessage, result.asByteArray());
 		}
 		assertEquals(new String(responseMessage),captureWriter.toString());
 	}
@@ -85,9 +84,9 @@ public class MessageStreamCapTest {
 			capContentHandler.endElement("", "root", "root");
 			capContentHandler.endDocument();
 
-			PipeRunResult result = cap.getPipeRunResult();
+			Message result = cap.getResponse();
 
-			assertEquals(expectedResponseMessage,result.getResult().asString());
+			assertEquals(expectedResponseMessage,result.asString());
 		}
 		assertEquals(expectedResponseMessage,captureWriter.toString());
 	}
@@ -108,9 +107,9 @@ public class MessageStreamCapTest {
 			try (Writer capWriter = (Writer)capNative) {
 				capWriter.write(responseMessage);
 			}
-			PipeRunResult result = cap.getPipeRunResult();
+			Message result = cap.getResponse();
 
-			assertEquals(responseMessage,result.getResult().asString());
+			assertEquals(responseMessage,result.asString());
 		}
 		assertEquals(responseMessage,captureWriter.toString());
 	}
