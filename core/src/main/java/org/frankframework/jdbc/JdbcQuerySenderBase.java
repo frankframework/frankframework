@@ -367,22 +367,25 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			closeStatementSet(queryExecutionContext);
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList != null) {
+				//noinspection deprecation
 				newParameterList.stream()
 						.filter(param -> param.getType() == ParameterType.INPUTSTREAM)
-						.forEach(param -> {
-							log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
-							try {
-								Object object = param.getValue(null, message, session, true);
-								if (object instanceof AutoCloseable closeable) {
-									closeable.close();
-								} else {
-									log.error("{}unable to auto-close parameter [{}]", this::getLogPrefix, param::getName);
-								}
-							} catch (Exception e) {
-								log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
-							}
-						});
+						.forEach(param -> closeParameterInputStream(param, message, session));
 			}
+		}
+	}
+
+	private void closeParameterInputStream(IParameter param, Message message, PipeLineSession session) {
+		log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
+		try {
+			Object object = param.getValue(null, message, session, true);
+			if (object instanceof AutoCloseable closeable) {
+				closeable.close();
+			} else {
+				log.error("{}unable to auto-close parameter [{}]", this::getLogPrefix, param::getName);
+			}
+		} catch (Exception e) {
+			log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
 		}
 	}
 
@@ -533,7 +536,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2document.setGetBlobSmart(isBlobSmartGet());
 				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			}
-			target.close(); // Have to close early! B/c otherwise the result is not complete!
+			target.close(); // Have to call close try-with-resources closes it, c/c "close" calls "endDocument" under the hood so we get a completed result document.
 			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new JdbcException(e);

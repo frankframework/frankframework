@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,14 +101,11 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
 	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return new SenderResult(sendMessageOnConnection(blockHandle, message, session).getResult());
-	}
-
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message);
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(blockHandle, message);
 			try {
-				return executeStatementSet(queryExecutionContext, message, session);
+				PipeRunResult result = executeStatementSet(queryExecutionContext, message, session);
+				return new SenderResult(result.getResult());
 			} finally {
 				closeStatementSet(queryExecutionContext);
 			}
