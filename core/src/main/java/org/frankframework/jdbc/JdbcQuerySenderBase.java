@@ -449,10 +449,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
-		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null).getResult();
+		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null);
 	}
 
-	protected SenderResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -470,11 +470,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							response.setHeader("Content-Disposition", contentDisposition);
 						}
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
-						return new SenderResult(Message.nullMessage());
+						return Message.nullMessage();
 					}
 					if (blobSessionVar!=null) {
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
-						return new SenderResult(Message.nullMessage());
+						return Message.nullMessage();
 					}
 					if (!isBlobSmartGet()) {
 						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
@@ -483,7 +483,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							} else {
 								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
 							}
-							return new SenderResult(target.getResponse());
+							return target.getResponse();
 						} catch (Exception e) {
 							throw new JdbcException(e);
 						}
@@ -492,11 +492,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (getDbmsSupport().isClobType(rsmeta, 1)) {
 					if (clobSessionVar!=null) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
-						return new SenderResult(Message.nullMessage());
+						return Message.nullMessage();
 					}
 					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
-						return new SenderResult(target.getResponse());
+						return target.getResponse();
 					} catch (Exception e) {
 						throw new JdbcException(e);
 					}
@@ -519,7 +519,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} else if (isScalarExtended()) {
 					result="[absent]";
 			}
-			return new SenderResult(new Message(result));
+			return new Message(result);
 		}
 		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
 			// Create XML and give the maxlength as a parameter
@@ -537,7 +537,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
 			}
 			target.close(); // Have to call close try-with-resources closes it, c/c "close" calls "endDocument" under the hood so we get a completed result document.
-			return new SenderResult(target.getResponse());
+			return target.getResponse();
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}
@@ -641,7 +641,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					resultset.absolute(getStartRow()-1);
 					log.debug("{}Index set at position: {}", getLogPrefix(), resultset.getRow());
 				}
-				return getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition);
+				return new SenderResult(getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition));
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e );

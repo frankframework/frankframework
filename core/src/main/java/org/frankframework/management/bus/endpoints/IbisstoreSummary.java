@@ -33,7 +33,6 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderResult;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -162,7 +161,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected SenderResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SQLException {
+	protected org.frankframework.stream.Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;
@@ -269,7 +268,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 		}
 
 		JsonStructure result = types.build();
-		return new SenderResult(new org.frankframework.stream.Message(result.toString()));
+		return new org.frankframework.stream.Message(result.toString());
 	}
 }
 
