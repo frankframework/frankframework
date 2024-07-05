@@ -476,8 +476,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	public void fileSystemActorReadActionTest(FileSystemAction action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
+		fileSystemActorReadActionTest(action, fileViaAttribute, fileShouldStillExistAfterwards, "Tekst om te lezen");
+	}
+
+	public void fileSystemActorReadActionTest(FileSystemAction action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards, String contents) throws Exception {
 		String filename = "sender" + FILE1;
-		String contents = "Tekst om te lezen";
 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
@@ -496,6 +499,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		assertEquals(contents, result.asString());
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
+	}
+
+	@Test
+	public void testReadEmptyFile() throws Exception {
+		fileSystemActorReadActionTest(FileSystemAction.READ, false, true, "");
 	}
 
 	@Test

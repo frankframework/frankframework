@@ -72,7 +72,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		assertEquals("456", fileSystemSender.getFileSystem().getSecretKey());
 
 		fileSystemSender.setClientRegion("dummy-region");
-		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion());
+		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion().toString());
 
 		fileSystemSender.setChunkedEncodingDisabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isChunkedEncodingDisabled());

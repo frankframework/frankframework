@@ -25,12 +25,15 @@ import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
@@ -47,7 +50,7 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.http.apache.ProxyConfiguration;
@@ -62,18 +65,14 @@ import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.GetObjectTaggingRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectTaggingRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.StorageClass;
-import software.amazon.awssdk.services.s3.model.Tag;
-import software.amazon.awssdk.services.s3.model.Tagging;
-
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object>, ISupportsCustomFileAttributes<S3Object> {
 	private final @Getter String domain = "Amazon";
@@ -117,7 +116,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			throw new ConfigurationException("invalid region [" + getClientRegion() + "] please use one of the following supported regions " + Region.regions());
 		}
 
-		if (StringUtils.isEmpty(getBucketName()) || BucketUtils.isValidDnsBucketName(getBucketName(), false)) {
+		if (StringUtils.isEmpty(getBucketName()) || !BucketUtils.isValidDnsBucketName(getBucketName(), false)) {
 			throw new ConfigurationException("invalid or empty bucketName [" + getBucketName() + "] please visit AWS documentation to see correct bucket naming");
 		}
 	}
@@ -186,57 +185,40 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
-		String nextContinuationToken = null;
-		int totalObjects = 0;
-
-		String prefix;
-		if (folder != null && !folder.endsWith(FILE_DELIMITER)) {
-			prefix = folder + FILE_DELIMITER;
-		} else prefix = folder;
-
-		try {
-			do {
-				ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
-						.bucket(bucketName)
-						.prefix(prefix)
-						.continuationToken(nextContinuationToken);
-
-				ListObjectsV2Response response = s3Client.listObjectsV2(requestBuilder.build());
-				nextContinuationToken = response.nextContinuationToken();
-
-				totalObjects += response.contents().stream()
-						.reduce(0, (subtotal, element) -> subtotal + 1, Integer::sum);
-			} while (nextContinuationToken != null && (getMaxNumberOfMessagesToList() < 0 || getMaxNumberOfMessagesToList() > totalObjects));
-		} catch (AwsServiceException e) {
-			throw new FileSystemException("Cannot process listObjectsV2 action", e);
+		try (DirectoryStream<S3Object> files = list(folder, TypeFilter.FILES_ONLY)) {
+			return Math.toIntExact(StreamSupport.stream(files.spliterator(), false).count());
+		} catch (IOException e) {
+			throw new FileSystemException("Exception while counting number of files in [" + folder + "]. " + e.getMessage());
 		}
-		return totalObjects;
 	}
 
 	@Override
 	public DirectoryStream<S3Object> list(String folder, TypeFilter filter) throws FileSystemException {
-		List<S3Object> s3Objects = new ArrayList<>();
+		List<S3Object> files = new ArrayList<>();
 		List<CommonPrefix> subFolders = new ArrayList<>();
-		try {
-			int totalObjects = 0;
-			String nextContinuationToken = null;
-			do {
-				ListObjectsV2Request request = createListRequestV2(folder, nextContinuationToken);
-				ListObjectsV2Response listing = s3Client.listObjectsV2(request);
 
-				nextContinuationToken = listing.nextContinuationToken();
+		try {
+			ListObjectsV2Request.Builder request = createListRequestV2(folder);
+			ListObjectsV2Response listing;
+			int iterations = 0;
+
+			do {
+				if (iterations > 20) {
+					log.warn("unable to list all files in folder [{}]", folder);
+					break;
+				}
+
+				listing = s3Client.listObjectsV2(request.build());
 				if (filter.includeFiles()) {
-					s3Objects.addAll(listing.contents()); // Files
-					totalObjects += listing.contents().size();
+					files.addAll(listing.contents()); // Files
 				}
 				if (filter.includeFolders()) {
 					subFolders.addAll(listing.commonPrefixes()); // Folders
-					totalObjects += listing.commonPrefixes().size();
 				}
-			} while (nextContinuationToken != null && (getMaxNumberOfMessagesToList() <= 0 || getMaxNumberOfMessagesToList() > totalObjects));
-			if (totalObjects > getMaxNumberOfMessagesToList()) {
-				log.warn("unable to list all files in S3 bucket [{}] and folder [{}]. Continued with the amount 'maxNumberOfMessagesToList'.", bucketName, folder);
-			}
+
+				request.continuationToken(listing.nextContinuationToken());
+				iterations++;
+			} while (listing.isTruncated());
 		} catch (AwsServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
@@ -245,7 +227,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		for (CommonPrefix folderName : subFolders) {
 			list.add(createS3FolderObject(folderName.prefix()));
 		}
-		for (S3Object summary : s3Objects) {
+		for (S3Object summary : files) {
 			if (summary.key().endsWith(FILE_DELIMITER)) { // Omit the 'search' folder
 				continue;
 			}
@@ -280,6 +262,23 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void createFile(S3Object f, InputStream content) throws FileSystemException, IOException {
+		createFileWithMetadata(f, content, Collections.emptyMap());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @param file
+	 * @param contents
+	 * @param customFileAttributes
+	 * @throws FileSystemException
+	 * @throws IOException
+	 */
+	@Override
+	public void createFile(S3Object file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+		createFileWithMetadata(file, contents, customFileAttributes);
+	}
+
+	private void createFileWithMetadata(S3Object f, InputStream content, Map<String, String> metadata) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
 		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
 			throw new FolderNotFoundException("folder ["+folder+"] does not exist");
@@ -288,16 +287,42 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		// The inputStream content also be directly send to the s3Client.putObject(), when the File length is available.
 		// When uploading of unknown size is needed, the S3AsyncClient or S3TransferManager can be used in the future.
 		final File file = FileUtils.createTempFile(".s3-upload"); //The lesser evil to allow streaming uploads
-		try(FileOutputStream fos = new FileOutputStream(file)) {
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			StreamUtil.streamToStream(content, fos);
 		}
 
 		try (FileInputStream fis = new FileInputStream(file)) {
-			PutObjectRequest por = PutObjectRequest.builder().bucket(bucketName).key(f.key()).storageClass(storageClass).build(); //metadata???
-			s3Client.putObject(por, RequestBody.fromInputStream(fis, file.length()));
+			PutObjectRequest.Builder por = PutObjectRequest.builder()
+					.bucket(bucketName)
+					.contentEncoding("UTF-8")
+					.key(f.key())
+					.storageClass(storageClass);
+
+			addMetadata(por, file.length(), metadata);
+
+			RequestBody requestBody = (file.length() == 0) ? RequestBody.empty() : RequestBody.fromInputStream(fis, file.length());
+
+			s3Client.putObject(por.build(), requestBody);
 		} finally {
 			Files.delete(file.toPath());
 		}
+	}
+
+	private void addMetadata(PutObjectRequest.Builder por, long length, Map<String, String> userMetadata) {
+		Map<String, String> metadata = new HashMap<>();
+		metadata.put("Content-Length", String.valueOf(length));
+
+		if (userMetadata!= null && !userMetadata.isEmpty()) {
+			// Prefix the keys and encode the values according to rfc2047
+			// see https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#UserMetadata
+			metadata.putAll(
+					userMetadata.entrySet().stream()
+					.collect(Collectors.toMap(
+							entry -> "x-amz-meta-" + entry.getKey(),
+							entry -> AmazonEncodingUtils.rfc2047Encode(entry.getValue()))));
+		}
+
+		por.metadata(metadata);
 	}
 
 	@Override
@@ -319,10 +344,19 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object file, String charset) throws FileSystemException {
 		try {
-			GetObjectRequest objectRequest = GetObjectRequest.builder().bucket(bucketName).key(file.key()).build();
-			ResponseBytes<GetObjectResponse> s3ClientObject = s3Client.getObjectAsBytes(objectRequest);// Fetch a new copy
-			byte[] data = s3ClientObject.asByteArray();
-			return new Message(data, FileSystemUtils.getContext(this, file, charset));
+			GetObjectRequest objectRequest = GetObjectRequest.builder()
+					.bucket(bucketName)
+					.key(file.key())
+					.build();
+			ResponseInputStream<GetObjectResponse> s3ClientObject = s3Client.getObject(objectRequest);// Fetch a new copy
+
+			// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
+			if (s3ClientObject.response().contentLength() == 0) {
+				// Expects an empty message
+				return new Message("", FileSystemUtils.getContext(this, file, charset));
+			}
+
+			return new Message(s3ClientObject, FileSystemUtils.getContext(this, file, charset));
 		} catch (AwsServiceException e) {
 			throw new FileSystemException(e);
 		}
@@ -331,38 +365,44 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void deleteFile(S3Object f) throws FileSystemException {
 		try {
-			DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(f.key()).build();
+			DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+					.bucket(bucketName)
+					.key(f.key())
+					.build();
+
 			s3Client.deleteObject(deleteObjectRequest);
 		} catch (AwsServiceException e) {
 			throw new FileSystemException("Could not delete object [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 
-	private ListObjectsV2Request createListRequestV2(String folder, String continuationToken) {
+	private ListObjectsV2Request.Builder createListRequestV2(String folder) {
 		String prefix = folder != null ? FilenameUtils.normalizeNoEndSeparator(folder, true) + FILE_DELIMITER : null;
 		return ListObjectsV2Request.builder()
 				.bucket(bucketName)
 				.delimiter(FILE_DELIMITER)
-				.prefix(prefix)
-				.continuationToken(continuationToken)
-				.build();
+				.prefix(prefix);
 	}
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		try {
-			ListObjectsV2Response listing = null;
+			ListObjectsV2Request.Builder request = createListRequestV2(folder);
+			ListObjectsV2Response listing;
 			int iterations = 0;
+
 			do {
-				ListObjectsV2Request request = createListRequestV2(folder, listing == null ? null : listing.nextContinuationToken());
 				if (iterations > 20) {
 					log.warn("unable to list all files in folder [{}]", folder);
 					break;
 				}
-				listing = s3Client.listObjectsV2(request);
+
+				listing = s3Client.listObjectsV2(request.build());
 				if (listing.keyCount() > 0) { //If more then 1 result is returned, files also exist in this folder
 					return true;
 				}
+
+				request.continuationToken(listing.continuationToken());
 				iterations++;
 			} while (listing.isTruncated());
 		} catch (AwsServiceException e) {
@@ -378,6 +418,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if (folderExists(folder)) {
 			throw new FolderAlreadyExistsException("Create directory for [" + folderName + "] has failed. Directory already exists.");
 		}
+
 		PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(folderName)
@@ -388,7 +429,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (!folderExists(folder)) {
-			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Folder does not exist.");
+			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
 		// Check if there are files or folders, and not allowed to remove non-empty folder
 		if (!removeNonEmptyFolder) {
@@ -402,7 +443,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		}
 
 		final String absFolder = folder.endsWith(FILE_DELIMITER) ? folder : folder + FILE_DELIMITER; //Ensure it's a folder that's being removed
-		s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(absFolder).build());
+		s3Client.deleteObject(DeleteObjectRequest.builder()
+				.bucket(bucketName)
+				.key(absFolder)
+				.build());
 	}
 
 	// rename is implemented via copy & delete
@@ -455,15 +499,31 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) throws FileSystemException {
 		Map<String, Object> attributes = new LinkedHashMap<>();
+
 		attributes.put("bucketName", bucketName); // default attribute to identify the bucket
+		attributes.putAll(getCustomFileAttributes(f.key()));
+
+		return attributes;
+	}
+
+	private Map<String, String> getCustomFileAttributes(String fileKey) throws FileSystemException {
+		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileKey)
+				.build();
 
 		try {
-			GetObjectTaggingRequest taggingRequest = GetObjectTaggingRequest.builder().bucket(bucketName).key(f.key()).build();
-			s3Client.getObjectTagging(taggingRequest).tagSet().forEach(tag -> attributes.put(tag.key(), AmazonEncodingUtils.rfc2047Decode(tag.value())));
+			HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+			Map<String, String> metadata = headObjectResponse.metadata();
+			if (metadata == null || metadata.isEmpty()) {
+				return Collections.emptyMap();
+			}
+
+			return metadata.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, entry -> AmazonEncodingUtils.rfc2047Decode(entry.getValue())));
 		} catch (AwsServiceException e) {
-			throw new FileSystemException("Could not retrieve tags for object [" + f.key() + "], message: " + e.getMessage());
+			throw new FileSystemException("Could not retrieve tags for object [" + fileKey + "], message: " + e.getMessage());
 		}
-		return attributes;
 	}
 
 	@Override
@@ -491,12 +551,25 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public long getFileSize(S3Object f) {
-		return f.size();
+		return getFileAttributes(f).contentLength();
 	}
 
 	@Override
 	public Date getModificationTime(S3Object f) {
-		return Date.from(f.lastModified());
+		return Date.from(getFileAttributes(f).lastModified());
+	}
+
+	/**
+	 * Gets the object from s3 with the necessary information in it.
+	 */
+	private GetObjectResponse getFileAttributes(S3Object f) {
+		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.key(f.key())
+				.bucket(bucketName)
+				.build();
+
+		ResponseInputStream<GetObjectResponse> object = s3Client.getObject(getObjectRequest);
+		return object.response();
 	}
 
 	protected ApacheHttpClient.Builder getHttpClientBuilder() {
@@ -509,13 +582,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 					.build());
 		}
 		return httpClientBuilder;
-	}
-
-	//TODO: verify if setting a new attribute will overwrite the existing ones
-	@Override
-	public void setCustomFileAttribute(@Nonnull S3Object f, @Nonnull String key, @Nonnull String value) {
-		Tagging tag = Tagging.builder().tagSet(Tag.builder().key(key).value(AmazonEncodingUtils.rfc2047Encode(value)).build()).build();
-		s3Client.putObjectTagging(PutObjectTaggingRequest.builder().bucket(bucketName).key(f.key()).tagging(tag).build());
 	}
 
 	@Override
@@ -601,5 +667,4 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
-
 }

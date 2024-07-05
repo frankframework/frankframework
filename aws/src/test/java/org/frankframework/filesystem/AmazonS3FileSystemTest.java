@@ -15,6 +15,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
@@ -98,7 +100,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setBucketName("tr/89/**-alala");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
-		assertEquals("invalid or empty bucketName [tr/89/**-alala] please visit AWS to see correct bucket naming", e.getMessage());
+		assertEquals("invalid or empty bucketName [tr/89/**-alala] please visit AWS documentation to see correct bucket naming", e.getMessage());
 	}
 
 	@Disabled

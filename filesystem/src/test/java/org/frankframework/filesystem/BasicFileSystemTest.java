@@ -541,7 +541,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// assert
 		assertEquals(0, fileCount);
 
-
 		// arrange 2
 		createFile(folderName, FILE1, contents1);
 		createFile(folderName, FILE2, contents2);

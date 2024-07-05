@@ -9,11 +9,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -40,8 +42,11 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
@@ -80,7 +85,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 			cleanUpFolder(null);
 		}
 
-		if (s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build()) != null) {
+		try {
+			// Test whether the bucket exists
+			s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+		} catch (NoSuchBucketException noSuchBucketException) {
+			// Create the bucket if it doesn't exist
 			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
 		}
 	}
@@ -100,8 +109,15 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		AwsCredentials awsCredentials;
 		if (runLocalStub) {
 			awsCredentials = createAwsCredentials("user", "pass");
-			s3ClientBuilder.endpointOverride(new URI(serviceEndpoint)). // TODO: check how this should work with v2
-					s3ClientBuilder.endpointProvider(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.id()));
+
+			URI uri;
+			try {
+				uri = new URI(serviceEndpoint);
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+
+			s3ClientBuilder.endpointOverride(uri);
 		} else {
 			awsCredentials = createAwsCredentials(accessKey, secretKey);
 		}
@@ -140,8 +156,12 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 			objectName = folder == null ? filename : folder + "/" + filename;
 		}
 		try {
-			return s3Client.headObject(HeadObjectRequest.builder().key(objectName).bucket(bucketName).build()) != null;
-		} catch (AmazonS3Exception e) {
+			HeadObjectResponse headObjectResponse = s3Client.headObject(HeadObjectRequest.builder()
+					.key(objectName)
+					.bucket(bucketName)
+					.build());
+			return headObjectResponse != null;
+		} catch (NoSuchKeyException e) {
 			return false;
 		}
 	}
@@ -165,7 +185,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 				FileInputStream fis = new FileInputStream(file);
 				String filePath = folderName == null ? filename : folderName + "/" + filename;
-				s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(filePath).build(), RequestBody.fromInputStream(fis, file.length()));
+				s3Client.putObject(PutObjectRequest.builder()
+						.bucket(bucketName)
+						.key(filePath)
+						.metadata(Map.of("Content-Length", String.valueOf(file.length())))
+						.build(), RequestBody.fromInputStream(fis, file.length()));
 
 				fis.close();
 				Files.delete(file.toPath());
@@ -176,12 +200,23 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public InputStream _readFile(String folder, String filename) {
 		String path = StringUtil.concatStrings(folder, "/", filename);
-		ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(GetObjectRequest.builder().bucket(bucketName).key(path).build());
-		return new FilterInputStream(inputStream) {
+		ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(GetObjectRequest.builder()
+				.bucket(bucketName)
+				.key(path)
+				.build());
+
+		// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
+		if (inputStream.response().contentLength() == 0) {
+			inputStream = new ResponseInputStream<>(inputStream.response(), InputStream.nullInputStream());
+		}
+
+		ResponseInputStream<GetObjectResponse> finalInputStream = inputStream;
+
+		return new FilterInputStream(finalInputStream) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				inputStream.close();
+				finalInputStream.close();
 			}
 		};
 	}
@@ -218,6 +253,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 			// the listing was truncated. If so, continue until all objects have been deleted.
 			listResponse = s3Client.listObjects(ListObjectsRequest.builder().bucket(bucketName).prefix(foldername).build());
 			List<S3Object> listObjects = listResponse.contents();
+
+			if (listObjects == null || listObjects.isEmpty()) {
+				return;
+			}
+
 			List<ObjectIdentifier> objectsToDelete = new ArrayList<>();
 			for (S3Object s3Object : listObjects) {
 				objectsToDelete.add(ObjectIdentifier.builder().key(s3Object.key()).build());

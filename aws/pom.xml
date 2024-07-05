@@ -32,7 +32,6 @@
 			<artifactId>apache-client</artifactId>
 		</dependency>
 
-
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>amazon-sqs-java-messaging-lib</artifactId>

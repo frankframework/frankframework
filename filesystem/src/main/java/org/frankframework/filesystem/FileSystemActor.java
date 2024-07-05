@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -474,17 +475,26 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
 			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
-			file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+			file = getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 		}
 
-		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
-			((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
+		// Creates a file with custom file attributes if the fileSystem supports it and there are customFileAttributes to set
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && hasCustomFileAttributes(pvl)) {
+			((ISupportsCustomFileAttributes<F>)fileSystem).createFile(file, contents, getCustomFileAttributes(pvl));
+		} else {
+			((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		}
 
-		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
 
+	private boolean hasCustomFileAttributes(ParameterValueList pvl) {
+		return !getCustomFileAttributes(pvl).isEmpty();
+	}
+
+	private Map<String, String> getCustomFileAttributes(ParameterValueList pvl) {
+		return ((ISupportsCustomFileAttributes<F>) fileSystem).getCustomFileAttributes(pvl);
+	}
 
 	private interface FileAction<F> {
 		F execute(F f) throws FileSystemException;
