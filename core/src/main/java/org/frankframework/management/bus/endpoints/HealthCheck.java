@@ -21,24 +21,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-
-import jakarta.annotation.security.PermitAll;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IAdapter;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.RunState;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class HealthCheck extends BusEndpointBase {
@@ -171,7 +168,7 @@ public class HealthCheck extends BusEndpointBase {
 		Map<RunState, Integer> stateCount = new EnumMap<>(RunState.class);
 		List<String> errors = new ArrayList<>();
 
-		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+		for (Adapter adapter : configuration.getRegisteredAdapters()) {
 			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state==RunState.STARTED) {

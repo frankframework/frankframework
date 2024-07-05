@@ -22,13 +22,12 @@ import javax.management.ObjectName;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jmx.export.naming.IdentityNamingStrategy;
-
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
-import org.frankframework.util.LogUtil;
 
 public class JmxNamingStrategy extends IdentityNamingStrategy implements InitializingBean {
 
@@ -55,7 +54,7 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 			throw new MalformedObjectNameException("managedBean cannot be null");
 		}
 
-		if(managedBean instanceof IAdapter adapter) {
+		if(managedBean instanceof Adapter adapter) {
 			Configuration config = adapter.getConfiguration();
 			if (config != null) {
 				String version = null;

@@ -33,7 +33,7 @@ import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
@@ -572,7 +572,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		if (config == null) {
 			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");
 		}
-		IAdapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
+		Adapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
 		if (adapter == null) {
 			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
 		}

@@ -41,8 +41,10 @@ import org.frankframework.doc.Category;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
+import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -60,6 +62,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 /**
+ * The Adapter is the central manager in the framework. It has knowledge of both
+ * {@link Receiver}s as well as the {@link PipeLine} and statistics.
+ * The Adapter is the class that is responsible for configuring, initializing and
+ * accessing/activating Receivers, Pipelines, statistics etc.
+ * <br/>
  * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
  * that receive the messages and a {@link PipeLine} that transforms the incoming messages. Each adapter is part of a {@link Configuration}.
  * <br/>
@@ -80,7 +87,7 @@ import org.springframework.core.task.TaskExecutor;
  * @author Johan Verrips
  */
 @Category("Basic")
-public class Adapter implements IAdapter, NamedBean {
+public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private final Logger log = LogUtil.getLogger(this);
@@ -150,6 +157,14 @@ public class Adapter implements IAdapter, NamedBean {
 		return this;
 	}
 
+	/**
+	 * Instruct the adapter to configure itself. The adapter will call the pipeline
+	 * to configure itself, the pipeline will call the individual pipes to configure
+	 * themselves.
+	 *
+	 * @see AbstractPipe#configure()
+	 * @see PipeLine#configure()
+	 */
 	/*
 	 * This function is called by Configuration.registerAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
@@ -350,7 +365,6 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
-	@Override
 	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
@@ -390,7 +404,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * messages available, for instance for displaying it in the webcontrol
 	 * @see MessageKeeper
 	 */
-	@Override
 	public synchronized MessageKeeper getMessageKeeper() {
 		if (messageKeeper == null)
 			messageKeeper = new MessageKeeper(getMessageKeeperSize() < 1 ? 1 : getMessageKeeperSize());
@@ -449,7 +462,6 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
-	@Override
 	public Receiver<?> getReceiverByName(String receiverName) {
 		for (Receiver<?> receiver: receivers) {
 			if (receiver.getName().equalsIgnoreCase(receiverName)) {
@@ -459,7 +471,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return null;
 	}
 
-	@Override
 	public Iterable<Receiver<?>> getReceivers() {
 		return receivers;
 	}
@@ -511,7 +522,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
-	@Override
 	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
@@ -567,7 +577,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
@@ -671,19 +680,16 @@ public class Adapter implements IAdapter, NamedBean {
 	 *
 	 * @ff.mandatory
 	 */
-	@Override
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
-	@Override
 	public PipeLine getPipeLine() {
 		return pipeline;
 	}
 
-	@Override
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 	}

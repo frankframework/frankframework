@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -63,7 +63,7 @@ public class Debugger extends org.frankframework.ibistesttool.Debugger {
 		if (config == null) {
 			return "Configuration '" + RESEND_ADAPTER_CONFIG + "' not found";
 		}
-		IAdapter adapter = config.getRegisteredAdapter(RESEND_ADAPTER_NAME);
+		Adapter adapter = config.getRegisteredAdapter(RESEND_ADAPTER_NAME);
 		if (adapter == null) {
 			return "Adapter '" + RESEND_ADAPTER_NAME + "' not found";
 		}

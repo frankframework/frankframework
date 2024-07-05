@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lombok.Setter;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +28,8 @@ import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.CanUseSharedResource;
-import org.frankframework.core.IAdapter;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IbisException;
 import org.frankframework.core.SharedResource;
@@ -48,8 +49,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
-import lombok.Setter;
-
 /**
  * @author Niels Meijer
  */
@@ -64,7 +63,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	/**
 	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.
 	 */
-	private IAdapter currentAdapter = null;
+	private Adapter currentAdapter = null;
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used,
@@ -157,7 +156,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			}
 		}
 
-		if (top instanceof IAdapter adapter) {
+		if (top instanceof Adapter adapter) {
 			currentAdapter = adapter;
 		}
 

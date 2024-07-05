@@ -540,7 +540,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/**
-	 * This method is called by the <code>IAdapter</code> to let the
+	 * This method is called by the <code>Adapter</code> to let the
 	 * receiver do things to initialize itself before the <code>startListening</code>
 	 * method is called.
 	 * @see #startRunning
