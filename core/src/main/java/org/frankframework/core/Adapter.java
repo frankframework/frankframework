@@ -41,7 +41,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
-import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
@@ -162,7 +161,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 * to configure itself, the pipeline will call the individual pipes to configure
 	 * themselves.
 	 *
-	 * @see AbstractPipe#configure()
+	 * @see org.frankframework.pipes.AbstractPipe#configure()
 	 * @see PipeLine#configure()
 	 */
 	/*
