@@ -503,6 +503,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void testReadEmptyFile() throws Exception {
+		// Test to prove that we work around the bug in AWS v2 api that handles empty files incorrectly
+		// in org.frankframework.filesystem.AmazonS3FileSystem.readFile
 		fileSystemActorReadActionTest(FileSystemAction.READ, false, true, "");
 	}
 
