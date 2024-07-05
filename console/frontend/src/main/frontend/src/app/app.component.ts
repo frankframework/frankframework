@@ -44,6 +44,7 @@ import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { ToastService } from './services/toast.service';
 import { WebsocketService } from './services/websocket.service';
+import { deepMerge } from './utils';
 
 @Component({
   selector: 'app-root',
@@ -438,7 +439,9 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     for (const index in configurations) {
-      const existingConfiguration = this.appService.messageLog[index];
+      const existingConfiguration = this.appService.messageLog[index] as
+        | MessageLog
+        | undefined;
       const configuration = configurations[index];
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
@@ -460,7 +463,8 @@ export class AppComponent implements OnInit, OnDestroy {
         ].slice(-this.messageKeeperSize);
       }
 
-      configuration.messageLevel = existingConfiguration.messageLevel ?? 'INFO';
+      configuration.messageLevel =
+        existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
@@ -488,21 +492,14 @@ export class AppComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      if (existingAdapter) {
-        adapter.status = existingAdapter.status;
-        adapter.hasSender = existingAdapter.hasSender;
-        adapter.sendersMessageLogCount = existingAdapter.sendersMessageLogCount;
-        adapter.senderTransactionalStorageMessageCount =
-          existingAdapter.senderTransactionalStorageMessageCount;
-      } else {
-        adapter.status = 'started';
-        adapter.hasSender = false;
-        adapter.sendersMessageLogCount = 0;
-        adapter.senderTransactionalStorageMessageCount = 0;
-      }
+      adapter.status = 'started';
+      adapter.hasSender = false;
+      adapter.sendersMessageLogCount = 0;
+      adapter.senderTransactionalStorageMessageCount = 0;
 
-      this.processAdapterReceivers(adapter);
-      this.processAdapterPipes(adapter);
+      this.processAdapterReceivers(adapter, existingAdapter);
+      this.processAdapterPipes(adapter, existingAdapter);
+      this.processAdapterMessages(adapter, existingAdapter);
 
       if (adapter.receiverReachedMaxExceptions) {
         adapter.status = 'warning';
@@ -563,36 +560,70 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  processAdapterReceivers(adapter: Partial<Adapter>): void {
-    for (const index in adapter.receivers) {
-      const adapterReceiver = adapter.receivers[+index];
-      if (adapterReceiver.state != 'started') adapter.status = 'warning';
+  processAdapterReceivers(
+    adapter: Partial<Adapter>,
+    existingAdapter?: Adapter,
+  ): void {
+    if (adapter.receivers) {
+      if (existingAdapter?.receivers) {
+        adapter.receivers = deepMerge(
+          [],
+          existingAdapter.receivers,
+          adapter.receivers,
+        );
+      }
 
-      if (adapterReceiver.transactionalStores) {
-        const store = adapterReceiver.transactionalStores['ERROR'];
-        if (store && store.numberOfMessages > 0) {
-          adapter.status = 'warning';
+      for (const index in adapter.receivers) {
+        const adapterReceiver = adapter.receivers[+index];
+        if (adapterReceiver.state != 'started') adapter.status = 'warning';
+
+        if (adapterReceiver.transactionalStores) {
+          const store = adapterReceiver.transactionalStores['ERROR'];
+          if (store && store.numberOfMessages > 0) {
+            adapter.status = 'warning';
+          }
         }
       }
     }
   }
 
-  processAdapterPipes(adapter: Partial<Adapter>): void {
-    for (const index in adapter.pipes) {
-      const pipe = adapter.pipes[+index];
-      if (pipe.sender) {
+  processAdapterPipes(
+    adapter: Partial<Adapter>,
+    existingAdapter?: Adapter,
+  ): void {
+    if (adapter.pipes) {
+      if (existingAdapter?.pipes) {
+        adapter.pipes = deepMerge([], existingAdapter.pipes, adapter.pipes);
+      }
+
+      for (const index in adapter.pipes) {
+        const pipe = adapter.pipes[+index];
+
+        if (!pipe.sender) continue;
         adapter.hasSender = true;
-        if (pipe.hasMessageLog) {
-          const count = Number.parseInt(pipe.messageLogCount ?? '');
-          if (!Number.isNaN(count)) {
-            if (pipe.isSenderTransactionalStorage) {
-              adapter.senderTransactionalStorageMessageCount! += count;
-            } else {
-              adapter.sendersMessageLogCount! += count;
-            }
-          }
+
+        if (!pipe.hasMessageLog) continue;
+        const count = Number.parseInt(pipe.messageLogCount ?? '');
+
+        if (Number.isNaN(count)) continue;
+        if (pipe.isSenderTransactionalStorage) {
+          adapter.senderTransactionalStorageMessageCount! += count;
+        } else {
+          adapter.sendersMessageLogCount! += count;
         }
       }
+    }
+  }
+
+  processAdapterMessages(
+    adapter: Partial<Adapter>,
+    existingAdapter?: Adapter,
+  ): void {
+    if (existingAdapter?.messages && adapter.messages) {
+      adapter.messages = [
+        ...existingAdapter.messages!,
+        ...adapter.messages,
+      ].slice(-this.messageKeeperSize);
     }
   }
 

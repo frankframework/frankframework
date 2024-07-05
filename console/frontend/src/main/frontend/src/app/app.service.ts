@@ -482,9 +482,9 @@ export class AppService {
     );
   }
 
-  getAdapters(extended?: string): Observable<Record<string, Adapter>> {
+  getAdapters(expanded?: string): Observable<Record<string, Adapter>> {
     return this.http.get<Record<string, Adapter>>(
-      `${this.absoluteApiPath}adapters${extended ? `?extended=${extended}` : ''}`,
+      `${this.absoluteApiPath}adapters${expanded ? `?expanded=${expanded}` : ''}`,
     );
   }
 
