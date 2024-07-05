@@ -26,19 +26,15 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import org.frankframework.dbms.JdbcException;
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
@@ -71,7 +67,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
+	protected SenderResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		String fileName = session.getString(getFilenameSessionKey());
 		if (fileName == null) {
 			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]");
@@ -122,7 +118,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		} catch (SQLException | JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
-		return new PipeRunResult(null, new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
+		return new SenderResult(new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
 	}
 
 	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {

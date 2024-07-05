@@ -303,6 +303,11 @@
 					<artifactId>frankframework-batch</artifactId>
 					<scope>runtime</scope>
 				</dependency>
+				<dependency>
+					<groupId>jakarta.transaction</groupId>
+					<artifactId>jakarta.transaction-api</artifactId>
+					<scope>runtime</scope>
+				</dependency>
 			</dependencies>
 		</profile>
 		<profile>

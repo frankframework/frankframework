@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
@@ -89,6 +90,7 @@ import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.statistics.FrankMeterType;
@@ -188,7 +190,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *    <li>synchronous receivers give the result directly</li>
  *    <li>take care of connection, sessions etc. to startup and shutdown</li>
  * </ul>
- * Listeners call the IAdapter.processMessage(String correlationID,String message)
+ * Listeners call the Receiver#processRawMessage(). Internally the Receiver calls Adapter#processMessageWithException()
  * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
  * may observe the status in the <code>{@link PipeLineResult}</code> to perform committing
  * requests.
@@ -274,6 +276,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
 	private @Getter String hideRegex = null;
+	private Pattern hideRegexPattern = null;
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
@@ -698,16 +701,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				correlationIDTp=TransformerPool.configureTransformer0(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT,false,null,0);
 			}
 
-			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
-				getErrorStorage().setHideRegex(getHideRegex());
-				getErrorStorage().setHideMethod(getHideMethod());
-			}
-			if (StringUtils.isNotEmpty(getHideRegex()) && getMessageLog()!=null && StringUtils.isEmpty(getMessageLog().getHideRegex())) {
-				getMessageLog().setHideRegex(getHideRegex());
-				getMessageLog().setHideMethod(getHideMethod());
+			if (StringUtils.isNotEmpty(hideRegex)) {
+				hideRegexPattern = Pattern.compile(hideRegex);
+
+				if (getErrorStorage() != null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
+					getErrorStorage().setHideRegex(getHideRegex());
+					getErrorStorage().setHideMethod(getHideMethod());
+				}
+				if (getMessageLog() != null && StringUtils.isEmpty(getMessageLog().getHideRegex())) {
+					getMessageLog().setHideRegex(getHideRegex());
+					getMessageLog().setHideMethod(getHideMethod());
+				}
 			}
 		} catch (Throwable t) {
-			ConfigurationException e = null;
+			ConfigurationException e;
 			if (t instanceof ConfigurationException exception) {
 				e = exception;
 			} else {
@@ -1169,7 +1176,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
-		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
+		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session);
+			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
+			 final IbisMaskingLayout.HideRegexContext ignored3 = IbisMaskingLayout.pushToThreadLocalReplace(getAdapter().getComposedHideRegexPattern());
+		) {
 			lastMessageDate = startProcessingTimestamp;
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
@@ -1625,7 +1636,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
 		long currentInterval;
-		log.trace("Increase retry-interval, synchronize (lock) on Receiver {}", this::toString);
 		synchronized (this) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
@@ -1633,7 +1643,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				retryInterval = MAX_RETRY_INTERVAL;
 			}
 		}
-		log.trace("Increase retry-interval, lock on Receiver {} released", this::toString);
 		if (currentInterval>1) {
 			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		} else {
@@ -1651,6 +1660,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			} catch (Exception e2) {
 				error("sleep interrupted", e2);
 				stopRunning();
+				Thread.currentThread().interrupt();
 			}
 		}
 	}
@@ -2106,7 +2116,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		removeCompactMsgNamespaces = b;
 	}
 
-	/** Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
+	/** Regular expression to mask strings in the errorStore/logStore and logfiles. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

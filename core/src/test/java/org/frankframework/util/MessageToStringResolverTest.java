@@ -22,7 +22,7 @@ class MessageToStringResolverTest {
 	void setUp() {
 		propsA = new HashMap<>();
 		propsB = new HashMap<>();
-		message = Message.asMessage("My Message");
+		message = new Message("My Message");
 		propsA.put("msg", message);
 		propsB.put("msg", "Not My Message");
 	}

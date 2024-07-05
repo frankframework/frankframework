@@ -37,7 +37,7 @@ public class TestCollector implements ICollector<TestCollectorPart> {
 			input.append(part.asString());
 		}
 
-		return Message.asMessage(parts.size() + ":" + input.toString());
+		return new Message(parts.size() + ":" + input.toString());
 	}
 
 	@Override

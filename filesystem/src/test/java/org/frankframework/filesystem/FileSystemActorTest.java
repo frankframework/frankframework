@@ -544,7 +544,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message(folder + "/" + filename);
 		ParameterValueList pvl = null;
 
-		result = Message.asMessage(actor.doAction(message, pvl, session));
+		result = actor.doAction(message, pvl, session);
 
 		assertEquals(contents, result.asString());
 		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
@@ -569,7 +569,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message(filename);
 		ParameterValueList pvl = null;
 
-		result = Message.asMessage(actor.doAction(message, pvl, session));
+		result = actor.doAction(message, pvl, session);
 		assertEquals(contents, result.asString());
 	}
 
@@ -591,7 +591,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message(filename);
 		ParameterValueList pvl = null;
 
-		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		Message result = actor.doAction(message, pvl, session);
 		assertEquals(expected, result.asString());
 	}
 
@@ -669,7 +669,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		PipeLineSession session = new PipeLineSession();
-		Message sessionMessage = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
+		Message sessionMessage = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		session.put("writeLineSeparator", sessionMessage);
 
 		ParameterList params = new ParameterList();
@@ -751,7 +751,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
+		Message message = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		ParameterValueList pvl = params.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
@@ -1000,7 +1000,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		for (int i = 0; i < numOfWrites; i++) {
-			Message sessionMessage = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents + i).getBytes())));
+			Message sessionMessage = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents + i).getBytes())));
 			session.put("appendWriteLineSeparatorTest", sessionMessage);
 			ParameterValueList pvl = params.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
@@ -1719,7 +1719,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		InputStream contents = _readFile(null, filename);
 		// test
-		assertEquals("", Message.asMessage(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
+		assertEquals("", new Message(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
 	}
 
 	@Test
@@ -1744,7 +1744,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		InputStream contents = _readFile(null, filename);
 		// test
-		assertEquals("", Message.asMessage(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
+		assertEquals("", new Message(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
 	}
 
 	@Test

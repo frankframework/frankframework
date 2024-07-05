@@ -1358,7 +1358,7 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(String input, String root) {
-		return isWellFormed(Message.asMessage(input), root);
+		return isWellFormed(new Message(input), root);
 	}
 
 	public static boolean isWellFormed(Message input, String root) {
@@ -1470,7 +1470,7 @@ public class XmlUtils {
 			XmlWriter xmlWriter = new XmlWriter();
 			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
 			parseXml(input.asInputSource(), handler);
-			return Message.asMessage(xmlWriter.toString());
+			return new Message(xmlWriter.toString());
 		} catch (Exception e) {
 			throw new XmlException(e);
 		}

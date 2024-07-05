@@ -34,6 +34,11 @@ public class CsrfCookieFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		if(csrfEnabled) {
 			CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
+			if(csrfToken == null) {
+				response.sendError(500, "CSRF is enabled but cannot be found in the Spring Context");
+				return;
+			}
+
 			csrfToken.getToken(); //Required to retrieve the cookie and store it in the HttpSession.
 		}
 		filterChain.doFilter(request, response);

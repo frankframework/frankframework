@@ -45,6 +45,7 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
@@ -714,7 +715,7 @@ public class ParameterTest {
 		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
 
 		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", Message.asMessage(originalMessage));
+		session.put("originalMessage", new UrlMessage(originalMessage));
 
 		Parameter inputMessage = new Parameter();
 		inputMessage.setName("InputMessage");
@@ -735,7 +736,7 @@ public class ParameterTest {
 		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
 		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><block><XDOC><REF_ID>0</REF_ID><XX>0</XX></XDOC><XDOC><REF_ID>1</REF_ID></XDOC><XDOC><REF_ID>2</REF_ID></XDOC></block>";
 		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", Message.asMessage(originalMessage));
+		session.put("originalMessage", new UrlMessage(originalMessage));
 
 		Parameter parameter = new Parameter();
 		parameter.setName("InputMessage");
@@ -760,7 +761,7 @@ public class ParameterTest {
 		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
 		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><block><XDOC><REF_ID>0</REF_ID><XX>0</XX></XDOC><XDOC><REF_ID>1</REF_ID></XDOC><XDOC><REF_ID>2</REF_ID></XDOC></block>";
 		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", Message.asMessage(originalMessage));
+		session.put("originalMessage", new UrlMessage(originalMessage));
 
 		Parameter parameter = new Parameter();
 		parameter.setName("InputMessage");

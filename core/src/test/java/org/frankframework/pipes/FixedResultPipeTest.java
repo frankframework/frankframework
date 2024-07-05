@@ -3,41 +3,98 @@ package org.frankframework.pipes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.commons.io.IOUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * FixedResultPipe Tester.
  *
  * @author <Sina Sen>
  */
-public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
+public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 
-	private static final String sourceFolderPath = "/Pipes/2.txt";
+	private static final String PIPES_2_TXT = "/Pipes/2.txt";
+	private static final String PIPES_FILE_PDF = "/Pipes/file.pdf";
 
 	@Override
 	public FixedResultPipe createPipe() {
 		return new FixedResultPipe();
 	}
 
-	public Parameter setUp(String name){
+	@Test
+	public void testSuccessWithAttribute() throws Exception {
+		pipe.setFilename(PIPES_2_TXT);
+		pipe.configure();
+
+		PipeRunResult pipeRunResult = doPipe(pipe, "whatisthis", session);
+
+		try (InputStream inputStream = pipeRunResult.getResult().asInputStream()) {
+			String fileContents = new String(inputStream.readAllBytes());
+
+			assertEquals("inside the file", fileContents);
+		}
+	}
+
+	@Test
+	public void testFailureWithAttribute() {
+		pipe.setFilename(PIPES_2_TXT + "/something.txt");
+
+		assertThrows(ConfigurationException.class, this::configurePipe);
+	}
+
+	@Test
+	public void testFailureWithParam() {
+		Parameter filename = ParameterBuilder.create().withName("filename").withValue(PIPES_2_TXT + "/something.txt");
+		pipe.addParameter(filename);
+
+		assertThrows(ConfigurationException.class, this::configurePipe);
+	}
+
+	@Test
+	public void testBinaryContent() throws Exception {
+		pipe.setFilename(PIPES_FILE_PDF);
+		pipe.configure();
+
+		PipeRunResult pipeRunResult = doPipe(pipe, "whatisthis", session);
+
+		try (InputStream inputStreamFromPipe = pipeRunResult.getResult().asInputStream()) {
+			URL resourceFromClasspath = FixedResultPipe.class.getResource(PIPES_FILE_PDF);
+			InputStream inputStream = resourceFromClasspath.openStream();
+			boolean contentEquals = IOUtils.contentEquals(inputStreamFromPipe, inputStream);
+
+			inputStream.close();
+
+			assertTrue(contentEquals, "File contents differ");
+		}
+	}
+
+	private Parameter getParameter(String name){
 		session.put(name,"value");
-		return ParameterBuilder.create().withName(name).withValue("abs").withSessionKey("*");
+		return ParameterBuilder.create()
+				.withName(name)
+				.withValue("abs")
+				.withSessionKey("*");
 	}
 
 	@Test
 	public void testSuccess() throws Exception {
-		Parameter param = setUp("param1");
+		Parameter param = getParameter("param1");
 		pipe.addParameter(param);
-		pipe.setFilename(sourceFolderPath);
+		pipe.setFilename(PIPES_2_TXT);
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
 		pipe.setReturnString("?{param1}andandandparam2");
@@ -48,9 +105,9 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
 	@Test
 	public void testFailAsWrongDirectory() {
-		Parameter param = setUp("param1");
+		Parameter param = getParameter("param1");
 		pipe.addParameter(param);
-		pipe.setFilename(sourceFolderPath + "/something");
+		pipe.setFilename(PIPES_2_TXT + "/something");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
 		pipe.setReturnString("?{param1}andandandparam2");
@@ -60,14 +117,8 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void testEmptyFileName(){
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
-		assertThat(e.getMessage(), Matchers.endsWith("has neither filename nor filenameSessionKey nor returnString specified"));
-	}
-
-	@Test
 	public void xsltSuccess() throws Exception{
-		Parameter param = setUp("param1");
+		Parameter param = getParameter("param1");
 		pipe.addParameter(param);
 		pipe.setSubstituteVars(true);
 		pipe.setStyleSheetName("/Xslt/importNotFound/name.xsl");
@@ -81,7 +132,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
 	@Test
 	public void xsltFailForTransformation() throws Exception{
-		Parameter param = setUp("param1");
+		Parameter param = getParameter("param1");
 		pipe.addParameter(param);
 		pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
 		pipe.setReplaceFrom("param1");
@@ -110,7 +161,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsFromFile() throws Exception{
+	public void substituteVarsFromFile() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -124,7 +175,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsFromFileConfigureTimeLookup() throws Exception{
+	public void substituteVarsFromFileConfigureTimeLookup() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -138,13 +189,13 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void testFileNotFound() throws Exception{
+	public void testFileNotFound() {
 		pipe.setFilename("nofile");
 		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
-	public void substitudeVarsWithFileSessionKey() throws Exception{
+	public void substituteVarsWithFileSessionKey() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -177,7 +228,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsInCombinationOfReplacePair() throws Exception{
+	public void substituteVarsInCombinationOfReplacePair() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -193,22 +244,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsOld() throws Exception{
-		Parameter param = ParameterBuilder.create().withName("param");
-		param.setDefaultValue("DefaultValue");
-		pipe.addParameter(param);
-
-		pipe.setReturnString("This is ${param}");
-		pipe.setUseOldSubstitutionStartDelimiter(true);
-		pipe.configure();
-
-		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
-		assertEquals("success", res.getPipeForward().getName());
-		assertEquals("This is propValueFromInput", res.getResult().asString());
-	}
-
-	@Test
-	public void substitudeVarsInCombinationOfReplacePairWithReplaceFixedParams() throws Exception{
+	public void substituteVarsInCombinationOfReplacePairWithReplaceFixedParams() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -244,5 +280,20 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
 		assertEquals("success", res.getPipeForward().getName());
 		assertEquals("", res.getResult().asString());
+	}
+
+	@Test
+	@DisplayName("Proves that an unused param will not be replaced")
+	public void testUnusedParam() throws Exception {
+		// Arguments.of("?", Map.of("param", "parameterValue"), "hello ?{param} world ?{unusedParam}.", "hello parameterValue world ?{unusedParam}."),
+		pipe.setReturnString("hello ?{param} world ?{unusedParam}.");
+		Parameter param = ParameterBuilder.create()
+				.withName("param")
+				.withValue("parameterValue");
+		pipe.addParameter(param);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, Message.nullMessage(), session);
+		assertEquals("hello parameterValue world ?{unusedParam}.", res.getResult().asString());
 	}
 }

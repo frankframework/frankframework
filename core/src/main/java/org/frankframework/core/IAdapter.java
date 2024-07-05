@@ -26,9 +26,9 @@ import org.frankframework.util.MessageKeeper;
 
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
- * <code>IReceiver</code>s as well as the <code>PipeLine</code> and statistics.
+ * {@link Receiver}s as well as the {@link PipeLine} and statistics.
  * The Adapter is the class that is responsible for configuring, initializing and
- * accessing/activating IReceivers, Pipelines, statistics etc.
+ * accessing/activating Receivers, Pipelines, statistics etc.
  *
  **/
 public interface IAdapter extends IManagable, HasStatistics {
@@ -51,7 +51,7 @@ public interface IAdapter extends IManagable, HasStatistics {
 	MessageKeeper getMessageKeeper();
 	Receiver<?> getReceiverByName(String receiverName);
 	Iterable<Receiver<?>> getReceivers();
-	PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession);
+	PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession);
 	PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException;
 
 	void setPipeLine(PipeLine pipeline) throws ConfigurationException;

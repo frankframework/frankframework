@@ -92,13 +92,13 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private Message sendNonRepeatableMessage() throws SenderException, TimeoutException, IOException {
 		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
 		InputStream is = new Message("dummy-string").asInputStream();
-		return sendMessage(Message.asMessage(new FilterInputStream(is) {}));
+		return sendMessage(new Message(new FilterInputStream(is) {}));
 	}
 
 	//Send repeatable message
 	private Message sendRepeatableMessage() throws SenderException, TimeoutException, IOException {
 		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
-		return sendMessage(Message.asMessage(new Message("dummy-string").asByteArray()));
+		return sendMessage(new Message(new Message("dummy-string").asByteArray()));
 	}
 
 	@Test
@@ -424,7 +424,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		Message nonRepeatableMessage = new Message(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
 		session.put("binaryPart", nonRepeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
@@ -454,7 +454,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		Message repeatableMessage = Message.asMessage("dummy-string".getBytes());
+		Message repeatableMessage = new Message("dummy-string".getBytes());
 		session.put("binaryPart", repeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
@@ -483,7 +483,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		Message nonRepeatableMessage = new Message(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
 		session.put("binaryPart", nonRepeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));

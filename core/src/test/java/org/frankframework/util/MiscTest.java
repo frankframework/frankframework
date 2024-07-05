@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.io.IOException;
 import java.net.URL;
 
-import org.frankframework.core.IMessageBrowser.HideMethod;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 
 /**
  * Misc Tester.
@@ -96,18 +96,6 @@ public class MiscTest {
 	public void testParseAgeS() {
 		long res = Misc.parseAge("2S", 0);
 		assertEquals(2000, res);
-	}
-
-	/**
-	 * Method: cleanseMessage(String inputString, String hideRegex, String
-	 * hideMethod)
-	 */
-	@Test
-	public void testCleanseMessage() {
-		String s = "Donald Duck 23  Hey hey  14  Wooo";
-		String regex = "\\d";
-		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);
-		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
 	}
 
 	/**

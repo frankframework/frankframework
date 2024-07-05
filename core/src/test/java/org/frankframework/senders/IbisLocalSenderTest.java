@@ -193,7 +193,7 @@ class IbisLocalSenderTest {
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("my-parameter1", "parameter1-value");
-			session.put("my-parameter2", Message.asMessage("parameter2-value"));
+			session.put("my-parameter2", new Message("parameter2-value"));
 			Message message = new Message("my-parameter1");
 			session.put("session-message", message);
 

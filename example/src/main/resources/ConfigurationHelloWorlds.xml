@@ -53,8 +53,8 @@
 			</pipe>
 			<pipe
 				name="CreateExampleMessage"
-				className="org.frankframework.pipes.FixedResultPipe"
-				returnString="
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="
 						First line
 						&#10;
 						Second line

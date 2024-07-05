@@ -23,17 +23,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IMessageBrowser.HideMethod;
-
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -49,6 +46,10 @@ public class Misc {
 
 	private static final String[] BYTE_UNITS_SI = new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 	private static final String[] BYTE_UNITS_IEC = new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+
+	private Misc() {
+		// Private constructor to make sure no instances will be created.
+	}
 
 	public static String getHostname() {
 		String localHost;
@@ -219,21 +220,6 @@ public class Misc {
 			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
-	}
-
-	/**
-	 * Edits the input string according to the regex and the hide method specified.
-	 * @see StringUtil#hideFirstHalf(String, String)
-	 * @see StringUtil#hideAll(String, String)
-	 */
-	public static String cleanseMessage(String inputString, String regexForHiding, HideMethod hideMethod) {
-		if (StringUtils.isEmpty(regexForHiding)) {
-			return inputString;
-		}
-		if (hideMethod == HideMethod.FIRSTHALF) {
-			return StringUtil.hideFirstHalf(inputString, regexForHiding);
-		}
-		return StringUtil.hideAll(inputString, regexForHiding);
 	}
 
 	public static String jsonPretty(String json) {

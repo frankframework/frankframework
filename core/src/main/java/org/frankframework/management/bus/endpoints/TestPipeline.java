@@ -22,19 +22,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Transformer;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.security.RolesAllowed;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.MessageBase;
-import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.Data;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -44,10 +39,14 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlUtils;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.TEST_PIPELINE)
@@ -110,7 +109,7 @@ public class TestPipeline extends BusEndpointBase {
 					message = new org.frankframework.stream.Message(payload);
 				}
 
-				PipeLineResult plr = adapter.processMessage(messageId, message, pls);
+				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
 
 				if(!expectsReply) {
 					return null; //Abort here, we do not need a reply.

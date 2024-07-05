@@ -312,7 +312,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 								// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 								String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
 								pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-								PipeLineResult result = adapter.processMessage(messageId, inputMessage, pipeLineSession);
+								PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
 								try {
 									result.getResult().close();
 								} catch (IOException e) {

@@ -243,7 +243,7 @@ public class StoredProcedureQuerySenderTest {
 		p2.setSessionKey("data");
 		p2.setType(ParameterType.CHARACTER);
 		sender.addParameter(p2);
-		Message message1 = Message.asMessage(new StringReader(TEST_DATA_STRING));
+		Message message1 = new Message(new StringReader(TEST_DATA_STRING));
 		message1.getContext().withSize(TEST_DATA_STRING.getBytes().length);
 		session.put("data", message1);
 

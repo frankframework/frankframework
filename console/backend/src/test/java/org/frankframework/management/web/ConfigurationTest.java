@@ -6,7 +6,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@ContextConfiguration(classes = {WebTestConfiguration.class, Configuration.class})
+@ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationsEndpoint.class})
 public class ConfigurationTest extends FrankApiTestBase {
 
 	@Test
