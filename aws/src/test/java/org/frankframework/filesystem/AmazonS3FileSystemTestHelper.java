@@ -9,16 +9,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 
 import io.findify.s3mock.S3Mock;
 import lombok.Getter;
@@ -110,14 +106,9 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		if (runLocalStub) {
 			awsCredentials = createAwsCredentials("user", "pass");
 
-			URI uri;
-			try {
-				uri = new URI(serviceEndpoint);
-			} catch (URISyntaxException e) {
-				throw new RuntimeException(e);
+			if (StringUtils.isNotBlank(serviceEndpoint)) {
+				s3ClientBuilder.endpointOverride(URI.create(serviceEndpoint));
 			}
-
-			s3ClientBuilder.endpointOverride(uri);
 		} else {
 			awsCredentials = createAwsCredentials(accessKey, secretKey);
 		}
