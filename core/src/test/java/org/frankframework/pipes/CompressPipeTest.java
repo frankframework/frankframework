@@ -379,7 +379,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, () -> doPipe(Message.asMessage(DUMMY_STRING.getBytes())));
+		assertThrows(PipeRunException.class, () -> doPipe(new Message(DUMMY_STRING.getBytes())));
 	}
 
 	@Test

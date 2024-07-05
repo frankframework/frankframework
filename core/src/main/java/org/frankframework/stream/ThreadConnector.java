@@ -15,8 +15,8 @@
 */
 package org.frankframework.stream;
 
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
@@ -28,6 +28,14 @@ import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 
+/**
+ * Connect a parent thread and a child thread to carry over important state from the parent
+ * thread to the child thread, such as {@link ThreadContext}, thread-local hide-regexes
+ * for masking sensitive information from logs (See {@link IbisMaskingLayout}, and transaction state
+ * via a {@link TransactionConnector}.
+ *
+ * @param <T> Type of the {@code threadInfo} maintained by the {@link ThreadLifeCycleEventListener}.
+ */
 public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -36,7 +44,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private Thread childThread;
 	private Map<String,String> savedThreadContext;
 	private final T threadInfo;
-	private final Set<Pattern> hideRegex;
+	private final Collection<Pattern> hideRegex;
 
 	private enum ThreadState {
 		ANNOUNCED,
@@ -54,6 +62,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		threadInfo = threadLifeCycleEventListener != null ? threadLifeCycleEventListener.announceChildThread(owner, correlationId) : null;
 		log.trace("[{}] announced thread [{}] for owner [{}] correlationId [{}]", this, threadInfo, owner, correlationId);
 		parentThread = Thread.currentThread();
+		// Get thread-local hide regexes from the parent thread so they will be carried over to the child thread
 		hideRegex = IbisMaskingLayout.getThreadLocalReplace();
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 		saveThreadContext();
@@ -86,7 +95,8 @@ public class ThreadConnector<T> implements AutoCloseable {
 		}
 		if (childThread != parentThread) {
 			childThread.setName(parentThread.getName() + "/" + childThread.getName());
-			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
+			// Carry over hide regexes from the parent thread to the child thread
+			IbisMaskingLayout.setThreadLocalReplace(hideRegex);
 			if (threadLifeCycleEventListener!=null) {
 				threadState = ThreadState.CREATED;
 				log.trace("[{}] start thread [{}]", this, threadInfo);
@@ -124,7 +134,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 				}
 			}
 		} finally {
-			IbisMaskingLayout.removeThreadLocalReplace();
+			IbisMaskingLayout.clearThreadLocalReplace();
 		}
 		return result;
 	}
@@ -154,7 +164,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 				}
 			}
 		} finally {
-			IbisMaskingLayout.removeThreadLocalReplace();
+			IbisMaskingLayout.clearThreadLocalReplace();
 		}
 		return result;
 	}

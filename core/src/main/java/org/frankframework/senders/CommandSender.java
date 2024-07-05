@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -96,17 +95,6 @@ public class CommandSender extends SenderWithParametersBase {
 	}
 	public String getCommand() {
 		return command;
-	}
-
-	/**
-	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
-	 * @deprecated use {@link #setTimeout(int)} instead.
-	 * @ff.default 0
-	 */
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("Use attribute timeout instead")
-	public void setTimeOut(int timeout) {
-		this.timeout = timeout;
 	}
 
 	/**

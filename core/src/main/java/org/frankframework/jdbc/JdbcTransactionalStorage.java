@@ -790,7 +790,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		sequenceName = string;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Replaced with checkTable")
 	public void setCheckIfTableExists(boolean b) {
 		setCheckTable(b);
@@ -808,7 +808,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * If set to <code>true</code>, the table is created if it does not exist
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("if you want to create and maintain database tables, please enable Liquibase")
 	public void setCreateTable(boolean b) {
 		createTable = b;

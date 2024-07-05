@@ -94,7 +94,8 @@ public class AdapterStatus extends BusEndpointBase {
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			for(Adapter adapter: config.getRegisteredAdapters()) {
 				Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
-				adapterList.put((String) adapterInfo.get("name"), adapterInfo);
+				String uniqueKey = String.format("%s/%s", adapter.getConfiguration().getName(), adapter.getName());
+				adapterList.put(uniqueKey, adapterInfo);
 			}
 		}
 
@@ -403,8 +404,7 @@ public class AdapterStatus extends BusEndpointBase {
 		Map<String, Object> adapterInfo = new HashMap<>();
 		Configuration config = adapter.getConfiguration();
 
-		String adapterName = adapter.getName();
-		adapterInfo.put("name", adapterName);
+		adapterInfo.put("name", adapter.getName());
 		adapterInfo.put("description", adapter.getDescription());
 		adapterInfo.put("configuration", config.getName() );
 		RunState adapterRunState = adapter.getRunState();

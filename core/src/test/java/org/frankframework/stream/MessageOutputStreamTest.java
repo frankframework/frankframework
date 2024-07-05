@@ -32,14 +32,14 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.frankframework.core.IForwardTarget;
-import org.frankframework.stream.json.JsonUtils;
-import org.frankframework.util.XmlUtils;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import org.frankframework.stream.json.JsonUtils;
+import org.frankframework.util.XmlUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 
@@ -58,7 +58,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -74,7 +74,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
 			}
@@ -89,7 +89,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
@@ -106,7 +106,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			JsonEventHandler handler = stream.asJsonEventHandler();
 			JsonUtils.parseJson(testJson, handler);
 		}
@@ -120,7 +120,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
@@ -135,7 +135,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
 			}
@@ -150,7 +150,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
@@ -167,7 +167,7 @@ public class MessageOutputStreamTest {
 
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			JsonEventHandler handler = stream.asJsonEventHandler();
 			JsonUtils.parseJson(testJson, handler);
 		}
@@ -187,7 +187,7 @@ public class MessageOutputStreamTest {
 			}
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			try {
 				try (OutputStream outputstream = stream.asStream()) {
@@ -276,7 +276,7 @@ public class MessageOutputStreamTest {
 			}
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -368,7 +368,7 @@ public class MessageOutputStreamTest {
 
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
@@ -399,7 +399,7 @@ public class MessageOutputStreamTest {
 			}
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			JsonEventHandler handler = stream.asJsonEventHandler();
 
@@ -449,7 +449,7 @@ public class MessageOutputStreamTest {
 			}
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
@@ -500,7 +500,7 @@ public class MessageOutputStreamTest {
 			}
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 
 			JsonEventHandler handler = stream.asJsonEventHandler();
 

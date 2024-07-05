@@ -772,7 +772,7 @@ public class MessageTest {
 
 		File file = new File(url.toURI());
 		FileInputStream fis = new FileInputStream(file);
-		try (Message message = Message.asMessage(fis)) {
+		try (Message message = new Message(fis)) {
 			testAsInputStream(message);
 		}
 	}
@@ -1024,14 +1024,14 @@ public class MessageTest {
 
 	@Test
 	public void testMessageSizeString() throws IOException {
-		Message message = Message.asMessage("string");
+		Message message = new Message("string");
 		assertEquals(6, message.size(), "size differs or could not be determined");
 		message.close();
 	}
 
 	@Test
 	public void testMessageSizeByteArray() throws IOException {
-		Message message = Message.asMessage("string".getBytes());
+		Message message = new Message("string".getBytes());
 		assertEquals(6, message.size(), "size differs or could not be determined");
 		message.close();
 	}
@@ -1043,7 +1043,7 @@ public class MessageTest {
 
 		File file = new File(url.toURI());
 		try (FileInputStream fis = new FileInputStream(file);
-			 Message message = Message.asMessage(fis)) {
+			 Message message = new Message(fis)) {
 			assertEquals(33, message.size(), "size differs or could not be determined");
 		}
 	}
@@ -1054,7 +1054,7 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
-		try (Message message = Message.asMessage(file)) {
+		try (Message message = new FileMessage(file)) {
 			assertEquals(33, message.size(), "size differs or could not be determined");
 		}
 	}
@@ -1064,7 +1064,7 @@ public class MessageTest {
 		URL url = this.getClass().getResource("/file.xml");
 		assertNotNull(url, "cannot find testfile");
 
-		try (Message message = Message.asMessage(url)) {
+		try (Message message = new UrlMessage(url)) {
 			assertEquals(-1, message.size(), "size differs or could not be determined");
 		}
 	}
@@ -1081,7 +1081,7 @@ public class MessageTest {
 		URL url = new URL("http://www.file.xml");
 		assertNotNull(url, "cannot find testfile");
 
-		try (Message message = Message.asMessage(url)) {
+		try (Message message = new UrlMessage(url)) {
 			assertEquals(-1, message.size());
 		}
 	}
@@ -1236,7 +1236,7 @@ public class MessageTest {
 	@Test
 	public void testCopyMessage1() throws IOException {
 		// Arrange
-		Message msg1 = Message.asMessage("a");
+		Message msg1 = new Message("a");
 
 		// Act
 		Message msg2 = msg1.copyMessage();
@@ -1253,7 +1253,7 @@ public class MessageTest {
 	@Test
 	public void testCopyMessage2() throws IOException {
 		// Arrange
-		Message msg1 = Message.asMessage(new StringReader("á"));
+		Message msg1 = new Message(new StringReader("á"));
 
 		// Act
 		Message msg2 = msg1.copyMessage();
@@ -1270,7 +1270,7 @@ public class MessageTest {
 	@Test
 	public void testCopyMessage3() throws IOException {
 		// Arrange
-		Message msg1 = Message.asMessage(new ByteArrayInputStream("á".getBytes()));
+		Message msg1 = new Message(new ByteArrayInputStream("á".getBytes()));
 
 		// Act
 		Message msg2 = msg1.copyMessage();
@@ -1312,7 +1312,7 @@ public class MessageTest {
 	void testMessageAsStringDoesNotCloseMessage() throws IOException {
 		// Arrange
 		String text = "text";
-		Message msg = Message.asMessage(new StringReader(text));
+		Message msg = new Message(new StringReader(text));
 
 		// Act
 		String content = msg.asString();
@@ -1326,7 +1326,7 @@ public class MessageTest {
 	void testMessageAsStringDoesNotCloseMessageWrapper() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
 		String text = "text";
-		Message msg = Message.asMessage(new StringReader(text));
+		Message msg = new Message(new StringReader(text));
 		MessageWrapper<Message> wrapper = new MessageWrapper<>(msg, null, null);
 
 		// Act
@@ -1340,7 +1340,7 @@ public class MessageTest {
 	@Test
 	void testMessageAsByteArrayDoesNotCloseMessage() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Message msg = Message.asMessage(new StringReader("text"));
+		Message msg = new Message(new StringReader("text"));
 
 		// Act
 		byte[] content = msg.asByteArray();
@@ -1355,7 +1355,7 @@ public class MessageTest {
 	@Test
 	void testMessageAsByteArrayDoesNotCloseMessageWrapper() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Message msg = Message.asMessage(new StringReader("text"));
+		Message msg = new Message(new StringReader("text"));
 		MessageWrapper wrapper = new MessageWrapper<Message>(msg, null, null);
 
 		// Act

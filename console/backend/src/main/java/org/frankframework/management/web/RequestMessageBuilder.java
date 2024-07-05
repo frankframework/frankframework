@@ -100,15 +100,14 @@ public class RequestMessageBuilder {
 	public Message<?> build() {
 		if (SEC_LOG.isInfoEnabled()) {
 			String method = base.getServletRequest().getMethod();
-			String issuedBy = BusMessageUtils.getUserPrincipalName();
 			String request = base.getServletRequest().getRequestURI();
 			if ("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
-				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, request, issuedBy);
+				SEC_LOG.debug("created bus request from URI [{}:{}]", method, request);
 			} else {
 				String headers = customHeaders.entrySet().stream()
 						.map(this::mapHeaderForLog)
 						.collect(Collectors.joining(", "));
-				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, request, issuedBy, headers, payload);
+				SEC_LOG.info("created bus request from URI [{}:{}] with headers [{}] payload [{}]", method, request, headers, payload);
 			}
 		}
 

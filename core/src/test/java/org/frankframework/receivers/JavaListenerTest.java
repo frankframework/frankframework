@@ -144,7 +144,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessage() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setThrowException(true);
 
 		// start adapter
@@ -164,7 +164,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessageWithHttpRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setThrowException(true);
 
 		HttpServletRequest servletRequest = mock(HttpServletRequest.class);
@@ -186,7 +186,7 @@ public class JavaListenerTest {
 	@Test
 	public void testProcessRequestMessageWithException() throws Exception {
 		// Arrange 1
-		Message testMessage = Message.asMessage(new StringReader("TEST"));
+		Message testMessage = new Message(new StringReader("TEST"));
 		listener.setThrowException(true);
 		assertSame(Receiver.OnError.CONTINUE, receiver.getOnError()); // Validate default setting: in state CONTINUE after an error occurs
 
@@ -212,7 +212,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessageWithExceptionDoNotThrow() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setThrowException(false);
 
 		PipeLine pipeLine = adapter.getPipeLine();
@@ -236,7 +236,7 @@ public class JavaListenerTest {
 	public void testProcessRequestWithReturnSessionKeys() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		session.put("copy-this", "original-value");
 
 		// start adapter
@@ -259,7 +259,7 @@ public class JavaListenerTest {
 	public void testProcessRequestWithReturnSessionKeysWhenNoneConfigured() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setReturnedSessionKeys(null);
 		session.put("copy-this", "original-value");
 

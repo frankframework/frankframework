@@ -217,7 +217,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	 * If set <code>true</code>, each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {
 		processFile = b;

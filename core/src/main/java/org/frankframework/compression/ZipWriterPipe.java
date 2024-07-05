@@ -124,7 +124,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested. Deprecated, use collectionName instead.
 	 * @ff.default zipwriterhandle
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("Replaced with attribute collectionName")
 	public void setZipWriterHandle(String string) {
 		setCollectionName(string);
@@ -143,7 +143,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	 * When action is WRITE: Input will be 'piped' to the output, and the message will be preserved.
 	 * Avoid using this if possible.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
 		this.backwardsCompatibility = backwardsCompatibility;
 	}

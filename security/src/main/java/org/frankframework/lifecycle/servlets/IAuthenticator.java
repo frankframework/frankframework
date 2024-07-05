@@ -24,7 +24,7 @@ public interface IAuthenticator {
 	void registerServlet(ServletConfiguration config);
 
 	/** Spring invoked HttpSecurity */
-	SecurityFilterChain configureHttpSecurity(HttpSecurity http);
+	SecurityFilterChain configureHttpSecurity(HttpSecurity http) throws Exception;
 
 	void build();
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019,2020 WeAreFrank!
+   Copyright 2019,2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
+import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
@@ -36,13 +37,13 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 
 	private final ContentHandler handler;
 
-	private final ThreadConnector threadConnector;
+	private final ThreadConnector<?> threadConnector;
 
 	private PipedInputStream pipedInputStream=new PipedInputStream();
 	private final EventConsumer pipeReader=new EventConsumer();
-	private Throwable exception;
+	@Getter private Throwable exception;
 
-	public ContentHandlerOutputStream(ContentHandler handler, ThreadConnector threadConnector) throws StreamingException {
+	public ContentHandlerOutputStream(ContentHandler handler, ThreadConnector<?> threadConnector) throws StreamingException {
 		this.handler=handler;
 		this.threadConnector=threadConnector;
 		try {
@@ -91,14 +92,11 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 	}
 
 	@Override
-	public void uncaughtException(Thread arg0, Throwable t) {
+	public void uncaughtException(Thread thread, Throwable t) {
 		setException(t);
 	}
 
 	public void setException(Throwable exception) {
 		this.exception = exception;
-	}
-	public Throwable getException() {
-		return exception;
 	}
 }

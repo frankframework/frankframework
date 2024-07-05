@@ -132,7 +132,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		try {
 			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-			try (Message message = Message.asMessage(rawMessage);
+			try (Message message = new Message(rawMessage);
 				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
 					return result.asString();
 			}
@@ -254,21 +254,21 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		this.serviceName = jndiName;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setLocal(String name) {
 		throw new IllegalArgumentException("do not set attribute 'local=true', just leave serviceName empty!");
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setIsolated(boolean b) {
 		throw new IllegalArgumentException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
 	}
 
-	@Deprecated
 	/**
 	 * If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated
 	 * @ff.default true
 	 */
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}

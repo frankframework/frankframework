@@ -277,7 +277,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 		DB2XMLWriter db2xml = buildDb2XMLWriter();
 		String result = db2xml.getXML(getDbmsSupport(), callableStatement, alsoGetResultSets, outputParameters, getMaxRows(), isIncludeFieldDefinition());
-		return Message.asMessage(result);
+		return new Message(result);
 	}
 
 	/**

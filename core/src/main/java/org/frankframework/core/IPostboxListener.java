@@ -25,6 +25,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  *
  * @author  John Dekker
   */
+@Deprecated(forRemoval = true, since = "7.7.0")
 public interface IPostboxListener<M> extends IPullingListener<M> {
 	/**
 	 * Retrieves the first message found from queue or other channel, that matches the

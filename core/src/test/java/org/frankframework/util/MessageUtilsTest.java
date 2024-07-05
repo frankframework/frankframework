@@ -174,7 +174,7 @@ public class MessageUtilsTest {
 		URL url = TestFileUtils.getTestFileURL("/file.xml");
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
-			MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
+			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
 			assertEquals(null, ds.getName(), "filename is unknown");
 			assertEquals("application/octet-stream", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
@@ -187,7 +187,7 @@ public class MessageUtilsTest {
 		URL url = TestFileUtils.getTestFileURL("/log4j4ibis.xml");
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
-			MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
+			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
 			assertEquals(null, ds.getName(), "filename is unknown");
 			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
@@ -197,7 +197,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testJsonMessage() {
-		Message json = Message.asMessage("{\"GUID\": \"ABC\"}");
+		Message json = new Message("{\"GUID\": \"ABC\"}");
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
@@ -275,7 +275,7 @@ public class MessageUtilsTest {
 	@Test
 	void testMessageAsStringDoesNotCloseMessage() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Object msg = Message.asMessage(new StringReader("text"));
+		Object msg = new Message(new StringReader("text"));
 
 		// Act
 		String content = MessageUtils.asString(msg);
@@ -290,7 +290,7 @@ public class MessageUtilsTest {
 	@Test
 	void testMessageAsStringDoesNotCloseMessageWrapper() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Message msg = Message.asMessage(new StringReader("text"));
+		Message msg = new Message(new StringReader("text"));
 		Object wrapper = new MessageWrapper<Message>(msg, null, null);
 
 		// Act

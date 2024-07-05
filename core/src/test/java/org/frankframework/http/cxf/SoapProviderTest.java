@@ -305,7 +305,7 @@ public class SoapProviderTest {
 		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", "<parts><part sessionKey=\"part_file\"/></parts>");
-		session.put("part_file", Message.asMessage(getFile(attachmentFile).asString())); //as String message / no message context
+		session.put("part_file", new Message(getFile(attachmentFile).asString())); //as String message / no message context
 
 		SOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
 		SOAPProvider.setSession(session);

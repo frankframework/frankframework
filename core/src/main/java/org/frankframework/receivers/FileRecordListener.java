@@ -51,7 +51,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Johan Verrips
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
 public class FileRecordListener implements IPullingListener<String> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -248,7 +248,7 @@ public class FileRecordListener implements IPullingListener<String> {
 
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) {
-		return Message.asMessage(rawMessage.getRawMessage());
+		return new Message(rawMessage.getRawMessage());
 	}
 
 	@Override

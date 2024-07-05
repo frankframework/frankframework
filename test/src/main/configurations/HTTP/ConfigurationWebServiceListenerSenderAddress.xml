@@ -289,25 +289,19 @@
 				<exit path="READY" state="success"/>
 			</exits>
 
-			<pipe
-				name="call getUnifiedDocument" className="org.frankframework.pipes.FixedResultPipe"
-				returnString="fakeFileContents" storeResultInSessionKey="FileContent"
-			/>
-			<pipe
-				name="base64tostream2" className="org.frankframework.pipes.Base64Pipe"
-				getInputFromSessionKey="FileContent" preserveInput="true"
-				storeResultInSessionKey="multipart1"
-			/>
+			<pipe name="call getUnifiedDocument" className="org.frankframework.pipes.PutInSession"
+				value="fakeFileContents" sessionKey="FileContent" />
 
-			<pipe
-				name="createMultipartXml" className="org.frankframework.pipes.FixedResultPipe"
+			<pipe name="base64tostream2" className="org.frankframework.pipes.Base64Pipe"
+				getInputFromSessionKey="FileContent" preserveInput="true"
+				storeResultInSessionKey="multipart1" />
+
+			<pipe name="createMultipartXml" className="org.frankframework.pipes.FixedResultPipe"
 				storeResultInSessionKey="multipartXml"
-				filename="Multipart/MultipartXml.xml"
-			/>
-			<pipe
-				name="createResponse" className="org.frankframework.pipes.FixedResultPipe"
-				filename="Multipart/GetDocument_Response.xml"
-			>
+				filename="Multipart/MultipartXml.xml" />
+
+			<pipe name="createResponse" className="org.frankframework.pipes.FixedResultPipe"
+				filename="Multipart/GetDocument_Response.xml">
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>

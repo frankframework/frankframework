@@ -220,7 +220,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setSplitLines(true);
 		configureAndStartPipe();
 
-		PipeRunResult res = doPipe(Message.asMessage(""));
+		PipeRunResult res = doPipe(new Message(""));
 		MatchUtils.assertXmlEquals("<tests/>", res.getResult().asString());
 	}
 
@@ -229,7 +229,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setXmlTag("tests");
 		configureAndStartPipe();
 
-		PipeRunResult res = doPipe(Message.asMessage(""));
+		PipeRunResult res = doPipe(new Message(""));
 		assertEquals("<tests><![CDATA[]]></tests>", res.getResult().asString());
 	}
 

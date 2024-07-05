@@ -175,7 +175,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 	 * If set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations.
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use fileSystemPipe to read the file first.")
 	public void setInputIsFile(boolean b) {
 		inputIsFile = b;

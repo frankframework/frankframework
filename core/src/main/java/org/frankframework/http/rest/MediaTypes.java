@@ -32,7 +32,7 @@ public enum MediaTypes {
 
 	// common types
 	ANY("*/*", null),
-	/** (Only for produces) Attempts to detect the MimeType as well as charset when not known */
+	/* (Only for produces) Attempts to detect the MimeType as well as charset when not known */
 	DETECT("*/*"),
 	TEXT("text/plain"),
 	XML("application/xml"),

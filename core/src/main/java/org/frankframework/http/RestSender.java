@@ -24,7 +24,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 public class RestSender extends HttpSender {
 
 	@Override
@@ -62,6 +62,6 @@ public class RestSender extends HttpSender {
 			result.addSubElement(message);
 		}
 
-		return Message.asMessage(result.toXML());
+		return new Message(result.toXML());
 	}
 }

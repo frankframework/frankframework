@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
 import org.xml.sax.ContentHandler;
 
@@ -31,8 +30,8 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	private int captureSize;
 	private String charset;
 
-	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
-		super(owner, next, null);
+	public MessageOutputStreamCap(INamedObject owner) {
+		super(owner);
 	}
 
 	@Override
