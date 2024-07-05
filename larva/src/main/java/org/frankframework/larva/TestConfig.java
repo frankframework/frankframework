@@ -24,18 +24,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TestConfig {
-
 	private boolean silent = false;
 	private int timeout;
 	private Writer out;
 	private Writer silentOut = null;
 	private StringWriter htmlBuffer = new StringWriter();
 	private StringWriter logBuffer = new StringWriter();
-	private String logLevel;
+	private LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
-	private boolean autoScroll;
+	private boolean autoScroll = true;
 	private boolean useHtmlBuffer = false;
 	private boolean useLogBuffer = true;
+	private boolean multiThreaded = true;
 
 	private int messageCounter = 0;
 	private int scenarioCounter = 1;
@@ -51,12 +51,34 @@ public class TestConfig {
 	public void flushWriters() {
 		try {
 			if (out != null) {
-				out.flush();
+				if (multiThreaded) {
+					synchronized (out) {
+						out.flush();
+					}
+				} else {
+					out.flush();
+				}
 			}
 			if (silentOut != null) {
 				silentOut.flush();
 			}
 		} catch (Exception ignored) {
+		}
+	}
+
+	public void writeSilent(String message) {
+		if (!silent) {
+			return;
+		}
+		if (silentOut != null) {
+			try {
+				if (multiThreaded) {
+					synchronized (silentOut) {
+						silentOut.write(message);
+					}
+				} else silentOut.write(message);
+			} catch (Exception ignored) {
+			}
 		}
 	}
 
