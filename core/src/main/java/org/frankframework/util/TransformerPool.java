@@ -426,6 +426,11 @@ public class TransformerPool {
 		return transform(s, null, parameters);
 	}
 
+	//Todo return type should be Message
+	public String transform(@Nonnull Message input) throws TransformerException, IOException, SAXException {
+		return transform(input.asSource(), null, (Map<String,Object>) null);
+	}
+
 	/**
 	 * Transforms Frank messages.
 	 * TODO: turn Source argument into a Message...
@@ -439,6 +444,13 @@ public class TransformerPool {
 	 */
 	public Message transform(@Nonnull Source s, @Nullable ParameterValueList pvl) throws TransformerException, IOException {
 		return new Message(transform(s, null, pvl==null? null : pvl.getValueMap()));
+	}
+
+	/**
+	 * @deprecated only used in JsonPipe, need to refactor that first...
+	 */
+	public String transform(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
+		return transform(m.asSource(), null, parameters);
 	}
 
 	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {

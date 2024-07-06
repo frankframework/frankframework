@@ -107,7 +107,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		}
 		if (valueTp!=null) {
 			try{
-				value=new Message(valueTp.transform(value, null));
+				value = new Message(valueTp.transform(value));
 			} catch (Exception e) {
 				log.error("{}transformValue() cannot transform cache value [{}], will not cache", getLogPrefix(), value, e);
 				return null;

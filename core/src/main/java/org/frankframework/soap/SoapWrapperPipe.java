@@ -16,7 +16,6 @@
 package org.frankframework.soap;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 

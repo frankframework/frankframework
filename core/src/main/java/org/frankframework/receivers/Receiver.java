@@ -1409,7 +1409,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (labelTp != null) {
 			try {
 				message.preserve();
-				return labelTp.transform(message,null);
+				return labelTp.transform(message);
 			} catch (Exception e) {
 				log.warn("{} could not extract label: ({}) {}", this::getLogPrefix, ()-> ClassUtils.nameOf(e), e::getMessage);
 			}
@@ -1423,7 +1423,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (correlationIDTp != null) {
 			try {
 				messageWrapper.getMessage().preserve();
-				businessCorrelationId = correlationIDTp.transform(messageWrapper.getMessage(),null);
+				businessCorrelationId = correlationIDTp.transform(messageWrapper.getMessage());
 			} catch (Exception e) {
 				log.warn("{} could not extract businessCorrelationId", logPrefix);
 			}

@@ -7,11 +7,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.Properties;
 
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
@@ -19,10 +14,13 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.pipes.PipeTestBase;
-import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestBase<P> {
 
