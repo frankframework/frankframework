@@ -718,7 +718,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		prr = fileSystemPipe.doPipe(input, session);
 		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
-		String result=prr.getResult().asString();
+		Message result = prr.getResult();
 
 		log.debug(result);
 
@@ -731,6 +731,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //		}
 
 		assertFileCountEquals(result, numberOfFiles);
+		result.close();
 	}
 
 	@Test
@@ -813,9 +814,10 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		prr = fileSystemPipe.doPipe(input, session);
 		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
-		String result=prr.getResult().asString();
+		Message result = prr.getResult();
 		waitForActionToFinish();
 
 		assertFileCountEquals(result, 2);
+		result.close();
 	}
 }

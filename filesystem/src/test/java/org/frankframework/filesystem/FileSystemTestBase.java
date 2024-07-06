@@ -115,7 +115,7 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 		assertFalse(_fileExists(folder, filename), filename+" should not exist");
 	}
 
-	protected void assertFileCountEquals(Object result, int expectedFileCount) throws Exception {
+	protected void assertFileCountEquals(Message result, int expectedFileCount) throws Exception {
 		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/file[@type='file'])", OutputType.TEXT, false, null);
 		int resultCount = Integer.parseInt(tp.transform(Message.asMessage(result), null, false));
 		assertEquals(expectedFileCount, resultCount, "file count mismatch");
