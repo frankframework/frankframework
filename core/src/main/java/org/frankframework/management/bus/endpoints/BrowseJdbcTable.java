@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 
-import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
@@ -52,6 +52,8 @@ import org.frankframework.util.XmlUtils;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
+import jakarta.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
 
@@ -62,6 +64,19 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	private static final String COLUMN_SIZE = "COLUMN_SIZE";
 	private String countColumnName = "ROWCOUNTER";
 	private String rnumColumnName = "RNUM";
+	private Transformer transformer = null;
+
+	@Override
+	protected void doAfterPropertiesSet() {
+		URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
+		if (url != null) { //Should never be null but...
+			try {
+				transformer = XmlUtils.createTransformer(url, 2);
+			} catch (TransformerConfigurationException | IOException e) {
+				log.error("unable to create Transformer", e);
+			}
+		}
+	}
 
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
@@ -83,6 +98,10 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			throw new BusException("Rownum max must be greater than or equal to Rownum min");
 		if (maxRow - minRow >= 100) {
 			throw new BusException("Difference between Rownum max and Rownum min must be less than hundred");
+		}
+
+		if (transformer == null) {
+			throw new BusException("unable to create query transformer ["+DB2XML_XSLT+"]");
 		}
 
 		return doAction(datasource, tableName, where, order, numberOfRowsOnly, minRow, maxRow);
@@ -126,18 +145,16 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			fielddefinition.append("</fielddefinition>");
 
 			String browseJdbcTableExecuteREQ = browseJdbcTableExecuteREQ(dbmsSupport.getDbms(), table, where, order, numberOfRowsOnly, minRow, maxRow, fielddefinition.toString());
-			URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
-			if (url != null) {
-				Transformer t = XmlUtils.createTransformer(url);
-				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-			}
+			query = XmlUtils.transformXml(transformer, browseJdbcTableExecuteREQ);
 			try(PipeLineSession session = new PipeLineSession()) {
 				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session)) {
 					result = message.asString();
 				}
+			} catch (Exception t) {
+				throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
 			}
 		} catch (Exception t) {
-			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
+			throw new BusException("an error occurred while determining query to execute", t);
 		} finally {
 			qs.close();
 		}

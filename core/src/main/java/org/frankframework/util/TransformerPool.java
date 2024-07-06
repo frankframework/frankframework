@@ -46,6 +46,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
@@ -434,7 +435,9 @@ public class TransformerPool {
 	 * TODO: turn Source argument into a Message...
 	 */
 	public Message transform(@Nonnull Message m, @Nullable ParameterValueList pvl) throws TransformerException, IOException, SAXException {
-		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()));
+		MessageContext context = new MessageContext();
+		context.put("TransformerPool", 123); //get nice info from constructor
+		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()), context);
 	}
 
 	/**
