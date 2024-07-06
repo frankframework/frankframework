@@ -27,13 +27,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
@@ -53,10 +50,11 @@ import org.frankframework.stream.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.TransformerFilter;
-import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 
 /**
@@ -394,10 +392,6 @@ public class TransformerPool {
 		return t;
 	}
 
-	public String transform(Document d, Map<String,Object> parameters)	throws TransformerException, IOException {
-		return transform(new DOMSource(d),parameters);
-	}
-
 	//Unsure what is happening here but this seems very inefficient!
 	public String transform(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		if (namespaceAware) {
@@ -408,6 +402,10 @@ public class TransformerPool {
 		} catch (DomBuilderException e) {
 			throw new TransformerException(e);
 		}
+	}
+
+	public String transform(String s) throws TransformerException, IOException, SAXException {
+		return transform(XmlUtils.stringToSourceForSingleUse(s), null);
 	}
 
 	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
@@ -426,7 +424,7 @@ public class TransformerPool {
 		return transform(s, null, parameters);
 	}
 
-	//Todo return type should be Message
+	//TODO ideally the return type should be Message
 	public String transform(@Nonnull Message input) throws TransformerException, IOException, SAXException {
 		return transform(input.asSource(), null, (Map<String,Object>) null);
 	}
@@ -436,27 +434,29 @@ public class TransformerPool {
 	 * TODO: turn Source argument into a Message...
 	 */
 	public Message transform(@Nonnull Message m, @Nullable ParameterValueList pvl) throws TransformerException, IOException, SAXException {
-		return transform(m.asSource(), pvl);
+		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()));
 	}
 
 	/**
 	 * @deprecated only used in Parameter, need to refactor that first...
+	 * Renamed because of overloading issues.
 	 */
-	public Message transform(@Nonnull Source s, @Nullable ParameterValueList pvl) throws TransformerException, IOException {
-		return new Message(transform(s, null, pvl==null? null : pvl.getValueMap()));
+	public String deprecatedParameterTransformAction(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
+		return transform(s, r, pvl==null? null : pvl.getValueMap());
 	}
 
 	/**
 	 * @deprecated only used in JsonPipe, need to refactor that first...
+	 * Renamed because of overloading issues.
 	 */
-	public String transform(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
+	public String deprecatedJsonPipeTransformAction(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
 		return transform(m.asSource(), null, parameters);
 	}
 
-	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
-		return transform(s, r, pvl==null? null : pvl.getValueMap());
-	}
-	public String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
+	/*
+	 * Should ideally only used internally. Protected so it can be used in tests.
+	 */
+	protected String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {
 			XmlUtils.setTransformerParameters(transformer, parameters);

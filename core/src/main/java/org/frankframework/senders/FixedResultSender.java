@@ -108,7 +108,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 		if (transformerPool != null) {
 			try{
-				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
+				result = transformerPool.transform(result);
 			} catch (IOException | TransformerException e) {
 				throw new SenderException(getLogPrefix()+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			} catch (SAXException se) {

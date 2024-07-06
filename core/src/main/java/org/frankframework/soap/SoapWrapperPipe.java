@@ -206,7 +206,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			if (getDirection() == Direction.WRAP) {
 				Message payload = message;
 				if (rootTp != null) {
-					payload = new Message(rootTp.transform(payload.asSource()));
+					payload = rootTp.transform(payload, null);
 				}
 				if (outputNamespaceTp != null) {
 					payload = new Message(outputNamespaceTp.transform(payload.asSource()));

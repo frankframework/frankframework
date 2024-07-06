@@ -128,7 +128,7 @@ public class JsonPipe extends FixedForwardPipe {
 			case XML2JSON:
 				Map<String, Object> parameterValues = new HashMap<>(1);
 				parameterValues.put("includeRootElement", addXmlRootElement);
-				stringResult = tpXml2Json.transform(message, parameterValues);
+				stringResult = tpXml2Json.deprecatedJsonPipeTransformAction(message, parameterValues);
 				break;
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");

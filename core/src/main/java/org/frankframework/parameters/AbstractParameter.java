@@ -215,7 +215,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
-		pool.transform(xmlSource,transformResult, pvl);
+		pool.deprecatedParameterTransformAction(xmlSource, transformResult, pvl);
 		return (Document) transformResult.getNode();
 	}
 
@@ -345,7 +345,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							result = pool.transform(source, pvl);
+							result = pool.deprecatedParameterTransformAction(source, null, pvl);
 					}
 				}
 			} catch (Exception e) {
