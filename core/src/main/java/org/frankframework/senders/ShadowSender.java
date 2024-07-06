@@ -206,7 +206,7 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		builder.close();
-		return Message.asMessage(builder.toString());
+		return new Message(builder.toString());
 	}
 
 	protected void addResult(SaxDocumentBuilder builder, ISender sender, Map<ISender, ParallelSenderExecutor> executorMap, String tagName) throws SAXException, IOException {

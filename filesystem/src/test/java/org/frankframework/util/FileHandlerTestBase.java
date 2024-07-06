@@ -149,7 +149,7 @@ public abstract class FileHandlerTestBase {
 		String contents = MessageTestUtils.getMessage(BASEDIR + contentFile).asString();
 		assertNotNull(contents);
 		String stringContent = contents.replace("\r", ""); //Remove carriage return
-		String actFilename = (String) handler.handle(Message.asMessage(stringContent), session, paramList);
+		String actFilename = (String) handler.handle(new Message(stringContent), session, paramList);
 		if(filename == null) {
 			assertNotNull(actFilename);
 		} else {

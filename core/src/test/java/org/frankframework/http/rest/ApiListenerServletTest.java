@@ -904,7 +904,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
-		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = new Message(new Message("{\"tralalalallala\":true}").asByteArray());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
 			.withResponseContent(repeatableMessage)
 			.build();
@@ -929,7 +929,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerWithHeadMethodCall() throws Exception {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
-		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = new Message(new Message("{\"tralalalallala\":true}").asByteArray());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();
@@ -957,7 +957,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerWithHeadMethodCallAndEmptyMessage() throws Exception {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
-		Message repeatableMessage = Message.asMessage(new Message("").asByteArray());
+		Message repeatableMessage = new Message(new Message("").asByteArray());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();

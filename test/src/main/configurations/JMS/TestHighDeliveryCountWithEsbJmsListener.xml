@@ -39,7 +39,7 @@
 				</sender>
 			</pipe>
 
-			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

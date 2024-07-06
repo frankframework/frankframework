@@ -10,6 +10,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.stream.UrlMessage;
 import org.w3c.dom.Node;
 
 import org.frankframework.stream.Message;
@@ -22,7 +24,7 @@ public class TestPipeDescriptionProvider {
 		PipeDescription description = new PipeDescription();
 
 		URL url = TestPipeDescriptionProvider.class.getResource("/testSchemaLocation.xml");
-		Message input = Message.asMessage(url);
+		Message input = new UrlMessage(url);
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 		Node root = db.parse(input.asInputSource());
@@ -39,7 +41,7 @@ public class TestPipeDescriptionProvider {
 		PipeDescription description = new PipeDescription();
 
 		URL url = TestPipeDescriptionProvider.class.getResource("/testWithTwoSchemaLocations.xml");
-		Message input = Message.asMessage(url);
+		Message input = new UrlMessage(url);
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 		Node root = db.parse(input.asInputSource());
@@ -57,7 +59,7 @@ public class TestPipeDescriptionProvider {
 		PipeDescription description = new PipeDescription();
 
 		URL url = TestPipeDescriptionProvider.class.getResource("/testFilename.xml");
-		Message input = Message.asMessage(url);
+		Message input = new UrlMessage(url);
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 		Node root = db.parse(input.asInputSource());

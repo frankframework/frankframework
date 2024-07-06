@@ -815,6 +815,12 @@ public class Message implements Serializable, Closeable {
 		return "Message[" + Integer.toHexString(hashCode()) + ":" + getRequestClass() + "]";
 	}
 
+	/**
+	 * Please note that this method should only be used when you don't know the type of object. In all other cases,
+	 * use the constructor of {@link Message} or a more applicable subclass like {@link FileMessage} or {@link UrlMessage}
+	 *
+	 * @return a Message of the correct type for the given object
+	 */
 	public static Message asMessage(Object object) {
 		if (object == null) {
 			return nullMessage();

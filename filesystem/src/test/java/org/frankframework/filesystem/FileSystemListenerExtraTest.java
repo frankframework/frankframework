@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Date;
 
-import org.frankframework.receivers.RawMessageWrapper;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.receivers.RawMessageWrapper;
 
 public abstract class FileSystemListenerExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemListenerTest<F, FS> {
 

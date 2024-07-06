@@ -23,11 +23,9 @@
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
-
-			<pipe name="FixedResultPipe" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;success/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-
 		</pipeline>
 	</adapter>
 	<adapter name="ApiListener_SimpleGet">
@@ -41,11 +39,9 @@
 			/>
 		</receiver>
 		<pipeline>
-
-			<pipe name="FixedResultPipe" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;success/&gt;">
 				<forward name="success" path="READY" />
 			</pipe>
-
 		</pipeline>
 	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithTransactedException">
@@ -155,7 +151,7 @@
 				<forward name="500" path="FixedResultOnException" />
 			</pipe>
 
-			<pipe name="FixedResultOnException" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
+			<pipe name="FixedResultOnException" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;error/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

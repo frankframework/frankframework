@@ -68,7 +68,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 
-		PipeRunResult prr = doPipe(Message.asMessage("test123"));
+		PipeRunResult prr = doPipe(new Message("test123"));
 
 		assertEquals("success", prr.getPipeForward().getName());
 		assertTrue(Message.isEmpty(prr.getResult()));
