@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -421,43 +422,47 @@ public class TransformerPool {
 		return transform(s,(Map<String,Object>)null);
 	}
 
-	private String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
+	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
 
-	//TODO ideally the return type should be Message
+	// ideally the return type should be Message
 	public String transform(@Nonnull Message input) throws TransformerException, IOException, SAXException {
 		return transform(input.asSource(), null, (Map<String,Object>) null);
 	}
 
 	/**
 	 * Transforms Frank messages.
-	 * TODO: turn Source argument into a Message...
 	 */
 	public Message transform(@Nonnull Message m, @Nullable ParameterValueList pvl) throws TransformerException, IOException, SAXException {
-		MessageContext context = new MessageContext();
-		context.put("TransformerPool", 123); //get nice info from constructor
-		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()), context);
+		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()), createMessageContext());
+	}
+
+	private MessageContext createMessageContext() {
+		try {
+			MessageContext context = new MessageContext();
+			for(Entry<String, String> entry : getConfigMap().entrySet()) {
+				context.put("Xslt."+entry.getKey(), entry.getValue());
+			}
+			return context;
+		} catch (TransformerException | IOException e) {
+			//ignore errors
+			return new MessageContext();
+		}
 	}
 
 	/**
 	 * @deprecated only used in Parameter, need to refactor that first...
 	 * Renamed because of overloading issues.
+	 * When method parameter 'Result' is used, nothing will be returned.
 	 */
 	public String deprecatedParameterTransformAction(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
 		return transform(s, r, pvl==null? null : pvl.getValueMap());
 	}
 
-	/**
-	 * @deprecated only used in JsonPipe, need to refactor that first...
-	 * Renamed because of overloading issues.
-	 */
-	public String deprecatedJsonPipeTransformAction(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
-		return transform(m.asSource(), null, parameters);
-	}
-
 	/*
 	 * Should ideally only used internally. Protected so it can be used in tests.
+	 * When method parameter 'Result' is used, nothing will be returned. Should not be a public method!
 	 */
 	protected String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();

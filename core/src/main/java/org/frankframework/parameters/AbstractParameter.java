@@ -345,7 +345,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							result = pool.deprecatedParameterTransformAction(source, null, pvl);
+							String transformResult = pool.deprecatedParameterTransformAction(source, null, pvl);
+							if (StringUtils.isNotEmpty(transformResult)) {
+								result = transformResult;
+							}
 					}
 				}
 			} catch (Exception e) {
