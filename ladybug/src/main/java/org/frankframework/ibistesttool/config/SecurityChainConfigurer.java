@@ -42,6 +42,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
@@ -132,6 +133,7 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 		httpSecurity.csrf(CsrfConfigurer::disable); //Disable CSRF, should be configured in the Ladybug
 		httpSecurity.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
 		httpSecurity.logout(LogoutConfigurer::disable); //Disable the logout filter
+		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
 		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 
