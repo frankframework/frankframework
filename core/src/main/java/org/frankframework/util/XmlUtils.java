@@ -1328,13 +1328,6 @@ public class XmlUtils {
 		return transformXml(t, stringToSourceForSingleUse(s, namespaceAware));
 	}
 
-	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, SAXException {
-		synchronized (t) {
-			t.transform(stringToSourceForSingleUse(s), result);
-		}
-	}
-
-
 	public static String transformXml(Transformer t, Source s) throws TransformerException, IOException {
 
 		StringWriter out = new StringWriter(getBufSize());
@@ -1345,8 +1338,7 @@ public class XmlUtils {
 
 	}
 
-	public static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
-
+	private static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
 		Result result = new StreamResult(out);
 		synchronized (t) {
 			t.transform(s, result);

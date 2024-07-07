@@ -456,6 +456,7 @@ public class TransformerPool {
 	 * Renamed because of overloading issues.
 	 * When method parameter 'Result' is used, nothing will be returned.
 	 */
+	@Deprecated
 	public String deprecatedParameterTransformAction(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
 		return transform(s, r, pvl==null? null : pvl.getValueMap());
 	}
