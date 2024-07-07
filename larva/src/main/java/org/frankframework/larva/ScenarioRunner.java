@@ -82,7 +82,7 @@ public class ScenarioRunner {
 		parallelBlacklistDirs = new ArrayList<>(StringUtil.split(blackListDirs, ","));
 		log.info("Setting parallel blacklist dirs to: {}", parallelBlacklistDirs);
 
-		 threads = AppConstants.getInstance().getInt("larva.parallel.threads", 4);
+		threads = AppConstants.getInstance().getInt("larva.parallel.threads", 4);
 	}
 
 	public void runScenario(List<File> scenarioFiles, String currentScenariosRootDirectory) {
@@ -206,16 +206,18 @@ public class ScenarioRunner {
 				LocalTime start = LocalTime.now();
 				int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
 				LocalTime end = LocalTime.now();
-				String startStop = "Started: " + start + " Stopped: " + end + " Duration: " + start.until(end, ChronoUnit.MILLIS) + " ms";
 				if (stepPassed == RESULT_OK) {
-					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed. " + startStop));
+					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed."));
 				} else if (stepPassed == RESULT_AUTOSAVED) {
 					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
-						output.append(stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave"));
+						output.append(stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave."));
 					autoSaved = true;
 				} else {
-					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepFailedMessage("Step '" + stepDisplayName + "' failed. " + startStop));
+					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepFailedMessage("Step '" + stepDisplayName + "' failed."));
 					allStepsPassed = false;
+				}
+				if (logLevel.shouldLog(LarvaLogLevel.DEBUG)) {
+					output.append(" Test Duration: " + start.until(end, ChronoUnit.MILLIS) + " ms");
 				}
 				output.append("</div>");
 				if (flushLogsForEveryScenarioStep) {

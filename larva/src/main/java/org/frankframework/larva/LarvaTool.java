@@ -179,8 +179,8 @@ public class LarvaTool {
 		if (paramAutoScroll == null && paramLogLevel != null) {
 			config.setAutoScroll(false);
 		}
-		if (paramMultithreaded == null && paramLogLevel != null) {
-			config.setMultiThreaded(false);
+		if (("on".equals(paramMultithreaded) || Boolean.parseBoolean(paramMultithreaded)) && paramLogLevel != null) {
+			config.setMultiThreaded(true);
 		}
 
 		if (!silent) {
@@ -448,11 +448,11 @@ public class LarvaTool {
 		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
 		writeHtml("<table style=\"float:left;height:50px\">", false);
 		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Multi threaded (beta)</td>", false);
+		writeHtml("<td>Multi Threaded (experimental)</td>", false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TR_STARTING_TAG, false);
 		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"checkbox\" name=\"multithreaded\" value=\"true\"", false);
+		writeHtml("<input type=\"checkbox\" name=\"multithreaded\"", false);
 		if (config.isMultiThreaded()) {
 			writeHtml(" checked", false);
 		}
@@ -670,7 +670,7 @@ public class LarvaTool {
 		writeLog("<pre id='" + diffBoxId + "' class='diffBox'></pre>", method, false);
 		writeLog("</div>", method, false);
 
-		if (config.getLogLevel().shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED)) {
+		if (config.getLogLevel() == LarvaLogLevel.SCENARIO_PASSED_FAILED) {
 			writeLog("<h5 hidden='true'>Difference description:</h5>", LarvaLogLevel.SCENARIO_PASSED_FAILED, false);
 			writeLog("<p class='diffMessage' hidden='true'>" + XmlEncodingUtils.encodeChars(message) + "</p>",
 					LarvaLogLevel.SCENARIO_PASSED_FAILED, true);
