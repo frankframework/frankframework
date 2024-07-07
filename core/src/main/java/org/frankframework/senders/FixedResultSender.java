@@ -36,7 +36,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
