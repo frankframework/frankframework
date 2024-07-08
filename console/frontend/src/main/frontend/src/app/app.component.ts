@@ -470,8 +470,8 @@ export class AppComponent implements OnInit, OnDestroy {
       const adapter = allAdapters[adapterName];
 
       const serializedAdapter = JSON.stringify(adapter);
-      if (this.serializedRawAdapterData[adapter.name] != serializedAdapter) {
-        this.serializedRawAdapterData[adapter.name] = serializedAdapter;
+      if (this.serializedRawAdapterData[adapterName] != serializedAdapter) {
+        this.serializedRawAdapterData[adapterName] = serializedAdapter;
 
         adapter.status = 'started';
 
@@ -522,7 +522,11 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!reloadedAdapters)
           reloadedAdapters = this.hasAdapterReloaded(adapter);
 
-        updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
+        if (adapterName.includes('/')) {
+          updatedAdapters[adapterName] = adapter;
+        } else {
+          updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
+        }
 
         const selectedConfiguration =
           this.routeQueryParams.get('configuration');
