@@ -21,24 +21,22 @@ import java.io.Writer;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 public class TestConfig {
-	private boolean silent = false;
-	private int timeout;
-	private Writer out;
-	private Writer silentOut = null;
-	private StringWriter htmlBuffer = new StringWriter();
-	private StringWriter logBuffer = new StringWriter();
-	private LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
+	private @Getter @Setter boolean silent = false;
+	private @Getter @Setter int timeout;
+	private @Getter @Setter Writer out;
+	private @Getter @Setter Writer silentOut = null;
+	private @Getter @Setter StringWriter htmlBuffer = new StringWriter();
+	private @Getter @Setter StringWriter logBuffer = new StringWriter();
+	private @Getter @Setter LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
-	private boolean autoScroll = true;
-	private boolean useHtmlBuffer = false;
-	private boolean useLogBuffer = true;
-	private boolean multiThreaded = true;
+	private @Getter @Setter boolean autoScroll = true;
+	private @Getter @Setter boolean useHtmlBuffer = false;
+	private @Getter @Setter boolean useLogBuffer = true;
+	private @Getter @Setter boolean multiThreaded = false;
 
-	private int messageCounter = 0;
-	private int scenarioCounter = 1;
+	private @Getter @Setter int messageCounter = 0;
+	private @Getter @Setter int scenarioCounter = 1;
 
 	public void incrementMessageCounter() {
 		messageCounter++;
