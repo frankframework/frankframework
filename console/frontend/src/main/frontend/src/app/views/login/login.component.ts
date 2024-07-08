@@ -1,6 +1,7 @@
-import {Component, OnInit} from '@angular/core';
-import {Alert, AlertService} from 'src/app/services/alert.service';
-import {AuthService} from 'src/app/services/auth.service';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { Alert, AlertService } from 'src/app/services/alert.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 type Credentials = {
   username: string;
@@ -24,19 +25,26 @@ export class LoginComponent implements OnInit {
   constructor(
     private alertService: AlertService,
     private authService: AuthService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.authService.loggedin(); // Check whether the client is logged in.
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/']);
+    }
 
     window.setTimeout(() => {
       this.notifications = this.alertService.get();
-    }, 500);
+    }, 50);
 
     this.isUwu = !!localStorage.getItem('uwu');
   }
 
-  login(credentials: Credentials): void {
+  /* login(credentials: Credentials): void {
     this.authService.login(credentials.username, credentials.password);
+  } */
+  login(): void {
+    // this.authService.login(credentials.username, credentials.password);
+    this.router.navigate(['/']);
   }
 }

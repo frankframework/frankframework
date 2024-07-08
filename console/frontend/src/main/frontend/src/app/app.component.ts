@@ -52,7 +52,6 @@ import { ToastService } from './services/toast.service';
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: ServerInfo | null = null;
-  loggedin = false;
   monitoring = false;
   config_database = false;
   dtapStage = '';
@@ -145,8 +144,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.authService.loggedin(); //Check if the user is logged in.
-
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
       this.pollerService
         .getAll()
@@ -237,17 +234,18 @@ export class AppComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.serverInfo = data;
 
-          this.consoleState.init = appInitState.POST_INIT;
-          if (!this.router.url.includes('login')) {
-            this.idle.watch();
-            this.renderer.removeClass(document.body, 'gray-bg');
-          }
-
           this.appService.dtapStage = data['dtap.stage'];
           this.dtapStage = data['dtap.stage'];
           this.dtapSide = data['dtap.side'];
           // appService.userName = data["userName"];
           this.userName = data['userName'];
+          this.authService.setLoggedIn(this.userName);
+
+          this.consoleState.init = appInitState.POST_INIT;
+          if (!this.router.url.includes('login')) {
+            this.idle.watch();
+            this.renderer.removeClass(document.body, 'gray-bg');
+          }
 
           const serverTime = Date.parse(
             new Date(data.serverTime).toUTCString(),
@@ -286,7 +284,7 @@ export class AppComponent implements OnInit, OnDestroy {
           }
 
           //Was it able to retrieve the serverinfo without logging in?
-          if (!this.loggedin) {
+          if (!this.authService.isLoggedIn()) {
             this.idle.setTimeout(0);
           }
 
@@ -338,9 +336,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     }
-
-    const token = sessionStorage.getItem('authToken');
-    this.loggedin = token != null && token != 'null' ? true : false;
   }
 
   checkIafVersions(): void {
