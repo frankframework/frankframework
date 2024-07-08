@@ -15,26 +15,18 @@
 */
 package org.frankframework.scheduler.job;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.Adapter;
-
 import org.frankframework.doc.Mandatory;
-
 import org.frankframework.management.Action;
 import org.frankframework.scheduler.JobDef;
-
 import org.frankframework.util.EnumUtils;
 
-@ConfigurationWarning("IbisActionJob has been renamed to ActionJob")
-@Deprecated(since = "8.2.0", forRemoval = true)
-public class IbisActionJob extends JobDef {
+public class ActionJob extends JobDef {
 	private @Getter @Setter AdapterManager adapterManager;
 	private @Getter String configurationName;
 	private @Getter String adapterName;
@@ -60,8 +52,8 @@ public class IbisActionJob extends JobDef {
 			throw new ConfigurationException("an adapterName must be specified");
 		}
 		Adapter adapter = adapterManager.getAdapter(getAdapterName());
-		if(adapter == null) { //Make sure the adapter is registered in this configuration
-			String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
+		if (adapter == null) { //Make sure the adapter is registered in this configuration
+			String msg = "Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 			throw new ConfigurationException(msg);
 		}
 
@@ -70,7 +62,7 @@ public class IbisActionJob extends JobDef {
 				throw new ConfigurationException("a receiverName must be specified");
 			}
 			if (adapter.getReceiverByName(getReceiverName()) == null) {
-				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
+				String msg = "Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver [" + getReceiverName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
 		}

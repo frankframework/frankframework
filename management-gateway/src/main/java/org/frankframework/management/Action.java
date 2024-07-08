@@ -15,6 +15,6 @@
 */
 package org.frankframework.management;
 
-public enum IbisAction {
+public enum Action {
 	STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
 }
