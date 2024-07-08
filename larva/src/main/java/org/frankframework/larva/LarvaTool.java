@@ -179,7 +179,7 @@ public class LarvaTool {
 		if (paramAutoScroll == null && paramLogLevel != null) {
 			config.setAutoScroll(false);
 		}
-		if (("on".equals(paramMultithreaded) || Boolean.parseBoolean(paramMultithreaded)) && paramLogLevel != null) {
+		if (StringUtils.isNotEmpty(paramMultithreaded) && Boolean.parseBoolean(paramMultithreaded) && paramLogLevel != null) {
 			config.setMultiThreaded(true);
 		}
 
@@ -452,7 +452,7 @@ public class LarvaTool {
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TR_STARTING_TAG, false);
 		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"checkbox\" name=\"multithreaded\"", false);
+		writeHtml("<input type=\"checkbox\" name=\"multithreaded\" value=\"true\"", false);
 		if (config.isMultiThreaded()) {
 			writeHtml(" checked", false);
 		}
