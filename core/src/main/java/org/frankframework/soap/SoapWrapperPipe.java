@@ -16,7 +16,6 @@
 package org.frankframework.soap;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
@@ -31,6 +30,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Default;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -206,26 +206,28 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			if (getDirection() == Direction.WRAP) {
 				Message payload = message;
 				if (rootTp != null) {
-					payload = new Message(rootTp.transform(payload.asSource()));
+					payload = rootTp.transform(payload, null);
 				}
 				if (outputNamespaceTp != null) {
 					payload = new Message(outputNamespaceTp.transform(payload.asSource()));
 				}
-				Map<String, Object> parameterValues = null;
+				ParameterValueList parameterValueList = null;
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
-					parameterValues = getParameterList().getValues(payload, session).getValueMap();
+					parameterValueList = getParameterList().getValues(payload, session);
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
 					payload.preserve();
-					soapHeader = soapHeaderTp.transform(payload, parameterValues);
+					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList)) {
+						soapHeader = soapHeaderMsg.asString();
+					}
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = session.getString(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = new Message(soapBodyTp.transform(payload, parameterValues));
+					payload = soapBodyTp.transform(payload, parameterValueList);
 				}
 
 				result = wrapMessage(payload, soapHeader, session);

@@ -20,7 +20,6 @@ import java.net.URL;
 
 import javax.xml.transform.TransformerException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -41,8 +40,9 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
@@ -334,7 +334,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			if (transformerPool != null) {
 				try {
-					resultString = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(resultString));
+					resultString = transformerPool.transform(resultString);
 				} catch (SAXException e) {
 					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
 				} catch (IOException | TransformerException e) {

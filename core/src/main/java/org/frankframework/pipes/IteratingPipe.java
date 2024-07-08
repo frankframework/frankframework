@@ -47,6 +47,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
@@ -282,10 +283,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					long preprocessingStartTime = System.currentTimeMillis();
 
-					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
-					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
+					ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
+					Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
 					log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMsg);
-					message=new Message(transformedMsg);
+					message = transformedMsg;
 					long preprocessingEndTime = System.currentTimeMillis();
 					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
 					getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
