@@ -21,6 +21,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StringUtil;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -104,31 +105,17 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 		AwsCredentials awsCredentials;
 		if (runLocalStub) {
-			awsCredentials = createAwsCredentials("user", "pass");
+			awsCredentials = AwsBasicCredentials.create("user", "pass");
 
 			if (StringUtils.isNotBlank(serviceEndpoint)) {
 				s3ClientBuilder.endpointOverride(URI.create(serviceEndpoint));
 			}
 		} else {
-			awsCredentials = createAwsCredentials(accessKey, secretKey);
+			awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
 		}
 		s3ClientBuilder.credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
 
 		return s3ClientBuilder.build();
-	}
-
-	private AwsCredentials createAwsCredentials(String accessKey, String secretKey) {
-		return new AwsCredentials() {
-			@Override
-			public String accessKeyId() {
-				return accessKey;
-			}
-
-			@Override
-			public String secretAccessKey() {
-				return secretKey;
-			}
-		};
 	}
 
 	@Override
@@ -218,6 +205,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(folderName)
+				.metadata(Map.of("Content-Length", "0"))
 				.build();
 		s3Client.putObject(request, RequestBody.empty());
 	}
