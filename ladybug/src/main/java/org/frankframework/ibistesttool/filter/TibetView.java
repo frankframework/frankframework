@@ -18,7 +18,7 @@ package org.frankframework.ibistesttool.filter;
 import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.ibistesttool.IbisDebugger;
@@ -62,7 +62,7 @@ public class TibetView extends View {
 		if(config == null) {
 			return "Not allowed. Could not find config " + AUTHORISATION_CHECK_ADAPTER_CONFIG;
 		}
-		IAdapter adapter = config.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER_NAME);
+		Adapter adapter = config.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER_NAME);
 		if(adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER_NAME;
 		}

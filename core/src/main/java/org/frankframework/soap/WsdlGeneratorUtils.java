@@ -23,13 +23,10 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import javanet.staxutils.IndentingXMLStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.util.XMLChar;
-
-import javanet.staxutils.IndentingXMLStreamWriter;
-
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IAdapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IXmlValidator;
@@ -48,9 +45,9 @@ public abstract class WsdlGeneratorUtils {
 		// this class has no instances
 	}
 
-	public static Collection<IListener> getListeners(IAdapter adapter) {
-		List<IListener> result = new ArrayList<>();
-		for (Receiver receiver: adapter.getReceivers()) {
+	public static Collection<IListener<?>> getListeners(Adapter adapter) {
+		List<IListener<?>> result = new ArrayList<>();
+		for (Receiver<?> receiver: adapter.getReceivers()) {
 			result.add(receiver.getListener());
 		}
 		return result;

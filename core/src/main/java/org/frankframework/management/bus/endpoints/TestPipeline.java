@@ -30,7 +30,7 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.ActionSelector;
@@ -69,7 +69,7 @@ public class TestPipeline extends BusEndpointBase {
 	public BinaryMessage runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
-		IAdapter adapter = getAdapterByName(configurationName, adapterName);
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
 		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
 
@@ -91,7 +91,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	//Does not support async requests because receiver requests are synchronous
-	private BinaryMessage processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
+	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {

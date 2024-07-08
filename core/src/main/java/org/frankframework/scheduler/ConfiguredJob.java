@@ -15,13 +15,12 @@
 */
 package org.frankframework.scheduler;
 
-import org.frankframework.core.IAdapter;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
 import org.frankframework.scheduler.job.IJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import org.frankframework.configuration.Configuration;
 
 
 /**
@@ -41,7 +40,7 @@ import org.frankframework.configuration.Configuration;
  * </p>
  *
  * @author  Johan Verrips
- * @see IAdapter
+ * @see Adapter
  * @see Configuration
   */
 public class ConfiguredJob extends BaseJob {

@@ -22,7 +22,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.AdapterManager;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IPipeLineExitHandler;
@@ -52,7 +52,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 			log.debug("running adapterBeforeOnEmptyInput");
-			IAdapter adapter = adapterManager.getAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
+			Adapter adapter = adapterManager.getAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			if (adapter == null) {
 				log.warn("adapterToRunBefore with specified name [{}] could not be retrieved", pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			} else {
