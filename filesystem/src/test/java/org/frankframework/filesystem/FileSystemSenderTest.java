@@ -17,7 +17,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -408,15 +407,15 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertTrue(actual, "Expected file [" + dest + "] " + "to be present");
 	}
 
-	public void fileSystemSenderListActionTest(String inputFolder, int numberOfItems, TypeFilter typeFilter) throws Exception {
+	public void fileSystemSenderListActionTest(int numberOfItems, TypeFilter typeFilter) throws Exception {
+		String inputFolder = "folder";
+
 		_deleteFolder(inputFolder);
-		if (inputFolder != null) {
-			_createFolder("folder");
-		}
+		_createFolder(inputFolder);
 
 		for (int i = 0; i < numberOfItems; i++) {
 			String fileName = "toBeListedFile" + i;
-			String folderName = StringUtils.isNotEmpty(inputFolder) ? inputFolder + "/toBeListedFolder" + i : "toBeListedFolder" + i;
+			String folderName = inputFolder + "/toBeListedFolder" + i;
 			if (typeFilter.includeFiles() && !_fileExists(fileName)) {
 				createFile(inputFolder, fileName, "is not empty");
 			}
@@ -427,9 +426,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.setTypeFilter(typeFilter);
-		if (StringUtils.isNotEmpty(inputFolder)) {
-			fileSystemSender.setInputFolder(inputFolder);
-		}
+		fileSystemSender.setInputFolder(inputFolder);
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
@@ -448,31 +445,31 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderListActionTestInRootNoFiles() throws Exception {
-		fileSystemSenderListActionTest(null,0, TypeFilter.FILES_ONLY);
+		fileSystemSenderListActionTest(0, TypeFilter.FILES_ONLY);
 	}
 	@Test
 	public void fileSystemSenderListActionTestInRoot() throws Exception {
-		fileSystemSenderListActionTest(null,2, TypeFilter.FILES_ONLY);
+		fileSystemSenderListActionTest(2, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolderNoFiles() throws Exception {
-		fileSystemSenderListActionTest("folder",0, TypeFilter.FILES_ONLY);
+		fileSystemSenderListActionTest(0, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
-		fileSystemSenderListActionTest("folder",2, TypeFilter.FILES_ONLY);
+		fileSystemSenderListActionTest(2, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListFilesAndFoldersActionTestInFolder() throws Exception {
-		fileSystemSenderListActionTest("folder",2, TypeFilter.FILES_AND_FOLDERS);
+		fileSystemSenderListActionTest(2, TypeFilter.FILES_AND_FOLDERS);
 	}
 
 	@Test
 	public void fileSystemSenderListFoldersActionTestInFolder() throws Exception {
-		fileSystemSenderListActionTest(null, 3, TypeFilter.FOLDERS_ONLY);
+		fileSystemSenderListActionTest(3, TypeFilter.FOLDERS_ONLY);
 	}
 
 	public SenderResult fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
