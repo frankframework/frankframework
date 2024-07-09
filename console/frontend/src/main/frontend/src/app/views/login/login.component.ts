@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Alert, AlertService } from 'src/app/services/alert.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -13,7 +13,7 @@ type Credentials = {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
   credentials: Credentials = {
     username: '',
     password: '',
@@ -33,11 +33,11 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/']);
     }
 
-    window.setTimeout(() => {
-      this.notifications = this.alertService.get();
-    }, 50);
-
     this.isUwu = !!localStorage.getItem('uwu');
+  }
+
+  ngAfterViewInit(): void {
+    this.notifications = this.alertService.get();
   }
 
   /* login(credentials: Credentials): void {
