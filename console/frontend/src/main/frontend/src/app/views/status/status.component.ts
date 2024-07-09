@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { first, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
 import {
@@ -84,8 +84,8 @@ export class StatusComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
 
-  serverInfo?: ServerInfo;
-  freeDiskSpacePercentage?: number;
+  protected serverInfo?: ServerInfo;
+  protected freeDiskSpacePercentage?: number;
 
   constructor(
     private Poller: PollerService,
@@ -265,6 +265,7 @@ export class StatusComponent implements OnInit, OnDestroy {
         });
       });
   }
+
   fullReload(): void {
     this.reloading = true;
     this.Poller.getAll().stop();
@@ -326,14 +327,18 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   private getFreeDiskSpacePercentage(): void {
-    this.serverInfoService.serverInfo$.pipe(first()).subscribe((serverInfo) => {
-      this.serverInfo = serverInfo;
-      this.freeDiskSpacePercentage =
-        Math.round(
-          (serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) *
-            1000,
-        ) / 10;
-    });
+    const serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe(
+      (serverInfo) => {
+        this.serverInfo = serverInfo;
+        this.freeDiskSpacePercentage =
+          Math.round(
+            (serverInfo.fileSystem.freeSpace /
+              serverInfo.fileSystem.totalSpace) *
+              1000,
+          ) / 10;
+      },
+    );
+    this._subscriptions.add(serverInfoSubscription);
   }
 
   // Commented out in template, so unused
@@ -365,12 +370,14 @@ export class StatusComponent implements OnInit, OnDestroy {
       .updateAdapter(adapter.configuration, adapter.name, 'start')
       .subscribe();
   }
+
   stopAdapter(adapter: Adapter): void {
     adapter.state = 'stopping';
     this.statusService
       .updateAdapter(adapter.configuration, adapter.name, 'stop')
       .subscribe();
   }
+
   startReceiver(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
@@ -382,6 +389,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
+
   stopReceiver(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
@@ -393,6 +401,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
+
   addThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
@@ -404,6 +413,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
+
   removeThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
@@ -440,13 +450,10 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   private determineShowContent(adapter: Adapter): boolean {
-    if (adapter.status == 'stopped') {
-      return true;
-    } else if (this.adapterName != '' && adapter.name == this.adapterName) {
-      return true;
-    } else {
-      return false;
-    }
+    return (
+      adapter.status == 'stopped' ||
+      (this.adapterName != '' && adapter.name == this.adapterName)
+    );
   }
 
   private updateAdapterShownContent(): void {
