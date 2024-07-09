@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
 } from '@angular/core';
 import { convertToParamMap, Router, RouterModule } from '@angular/router';
@@ -11,6 +12,8 @@ import { ScrollToTopComponent } from './scroll-to-top.component';
 import { CommonModule } from '@angular/common';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
 import { SideNavigationDirective } from '../side-navigation.directive';
+import { InformationModalComponent } from '../information-modal/information-modal.component';
+import { ServerInfoService } from '../../../services/server-info.service';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -24,19 +27,32 @@ import { SideNavigationDirective } from '../side-navigation.directive';
     MinimalizaSidebarComponent,
     ScrollToTopComponent,
     SideNavigationDirective,
+    InformationModalComponent,
   ],
 })
-export class PagesNavigationComponent implements OnChanges {
+export class PagesNavigationComponent implements OnChanges, OnInit {
   @Input() queryParams = convertToParamMap({});
   @Output() shouldOpenInfo = new EventEmitter<void>();
 
   protected frankframeworkLogoPath: string = 'assets/images/ff-kawaii.svg';
   protected frankExclamationPath: string =
     'assets/images/frank-exclemation.svg';
+  protected encodedServerInfo: string = '';
 
   private readonly IMAGES_BASE_PATH = 'assets/images/';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private serverInfoService: ServerInfoService,
+  ) {}
+
+  ngOnInit(): void {
+    this.serverInfoService.serverInfo$.subscribe(() => {
+      this.encodedServerInfo = encodeURIComponent(
+        this.serverInfoService.getMarkdownFormatedServerInfo(),
+      );
+    });
+  }
 
   ngOnChanges(): void {
     const uwuEnabledString = localStorage.getItem('uwu') ? 'uwu-' : '';
