@@ -16,7 +16,6 @@ import {
   AppService,
   ConsoleState,
   MessageLog,
-  ServerInfo,
 } from './app.service';
 import {
   ActivatedRoute,
@@ -43,6 +42,7 @@ import { Title } from '@angular/platform-browser';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { ToastService } from './services/toast.service';
+import { ServerInfo, ServerInfoService } from './services/server-info.service';
 
 @Component({
   selector: 'app-root',
@@ -89,6 +89,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private appService: AppService,
     private idle: Idle,
     private modalService: NgbModal,
+    private serverInfoService: ServerInfoService,
     @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
@@ -233,7 +234,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (this.consoleState.init === appInitState.PRE_INIT) {
       this.consoleState.init = appInitState.INIT;
-      this.appService.getServerInfo().subscribe({
+      this.serverInfoService.refresh();
+      this.serverInfoService.serverInfo$.pipe(first()).subscribe({
         next: (data) => {
           this.serverInfo = data;
 

@@ -13,11 +13,14 @@ import {
   MessageLog,
   MessageSummary,
   Receiver,
-  ServerInfo,
   Summary,
 } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
+import {
+  ServerInfo,
+  ServerInfoService,
+} from '../../services/server-info.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -90,6 +93,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     private router: Router,
     private statusService: StatusService,
     private appService: AppService,
+    private serverInfoService: ServerInfoService,
   ) {}
 
   ngOnInit(): void {
@@ -322,18 +326,14 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   private getFreeDiskSpacePercentage(): void {
-    this.appService
-      .getServerInfo()
-      .pipe(first())
-      .subscribe((serverInfo) => {
-        this.serverInfo = serverInfo;
-        this.freeDiskSpacePercentage =
-          Math.round(
-            (serverInfo.fileSystem.freeSpace /
-              serverInfo.fileSystem.totalSpace) *
-              1000,
-          ) / 10;
-      });
+    this.serverInfoService.serverInfo$.pipe(first()).subscribe((serverInfo) => {
+      this.serverInfo = serverInfo;
+      this.freeDiskSpacePercentage =
+        Math.round(
+          (serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) *
+            1000,
+        ) / 10;
+    });
   }
 
   // Commented out in template, so unused
