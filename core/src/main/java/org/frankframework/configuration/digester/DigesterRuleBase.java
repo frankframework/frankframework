@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ import org.frankframework.core.IbisException;
 import org.frankframework.core.SharedResource;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.scheduler.job.ActionJob;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.IbisActionJob;
 import org.frankframework.scheduler.job.Job;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -162,7 +162,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
-		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
+		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof ActionJob)) {
 			map.remove("function");
 		}
 

@@ -37,7 +37,7 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
-import org.frankframework.management.IbisAction;
+import org.frankframework.management.Action;
 import org.frankframework.receivers.Receiver;
 
 /**
@@ -119,7 +119,7 @@ public class DefaultIbisManager implements IbisManager {
 	}
 
 	@Override
-	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
+	public void handleAction(Action action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		switch (action) {
 		case STOPADAPTER:
 			Assert.notNull(adapterName, "no adapterName provided");
