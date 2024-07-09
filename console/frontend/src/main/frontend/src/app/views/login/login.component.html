@@ -14,7 +14,7 @@
     <form
       class="m-t FrankLogin"
       role="form"
-      (submit)="login(credentials)"
+      (submit)="login()"
       ngNativeValidate
     >
       <div class="form-group">
@@ -27,6 +27,7 @@
           placeholder="Username"
           required
           autofocus
+          disabled
         />
       </div>
       <div class="form-group">
@@ -38,6 +39,7 @@
           name="password"
           placeholder="Password"
           required
+          disabled
         />
       </div>
       <div class="form-group">

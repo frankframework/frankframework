@@ -52,7 +52,6 @@ import { ServerInfo, ServerInfoService } from './services/server-info.service';
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: ServerInfo | null = null;
-  loggedin = false;
   monitoring = false;
   config_database = false;
   dtapStage = '';
@@ -146,8 +145,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.authService.loggedin(); //Check if the user is logged in.
-
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
       this.pollerService
         .getAll()
@@ -239,17 +236,18 @@ export class AppComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.serverInfo = data;
 
-          this.consoleState.init = appInitState.POST_INIT;
-          if (!this.router.url.includes('login')) {
-            this.idle.watch();
-            this.renderer.removeClass(document.body, 'gray-bg');
-          }
-
           this.appService.dtapStage = data['dtap.stage'];
           this.dtapStage = data['dtap.stage'];
           this.dtapSide = data['dtap.side'];
           // appService.userName = data["userName"];
           this.userName = data['userName'];
+          this.authService.setLoggedIn(this.userName);
+
+          this.consoleState.init = appInitState.POST_INIT;
+          if (!this.router.url.includes('login')) {
+            this.idle.watch();
+            this.renderer.removeClass(document.body, 'gray-bg');
+          }
 
           const serverTime = Date.parse(
             new Date(data.serverTime).toUTCString(),
@@ -288,7 +286,7 @@ export class AppComponent implements OnInit, OnDestroy {
           }
 
           //Was it able to retrieve the serverinfo without logging in?
-          if (!this.loggedin) {
+          if (!this.authService.isLoggedIn()) {
             this.idle.setTimeout(0);
           }
 
@@ -340,9 +338,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     }
-
-    const token = sessionStorage.getItem('authToken');
-    this.loggedin = token != null && token != 'null' ? true : false;
   }
 
   checkIafVersions(): void {
@@ -472,8 +467,8 @@ export class AppComponent implements OnInit, OnDestroy {
       const adapter = allAdapters[adapterName];
 
       const serializedAdapter = JSON.stringify(adapter);
-      if (this.serializedRawAdapterData[adapter.name] != serializedAdapter) {
-        this.serializedRawAdapterData[adapter.name] = serializedAdapter;
+      if (this.serializedRawAdapterData[adapterName] != serializedAdapter) {
+        this.serializedRawAdapterData[adapterName] = serializedAdapter;
 
         adapter.status = 'started';
 
@@ -524,7 +519,11 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!reloadedAdapters)
           reloadedAdapters = this.hasAdapterReloaded(adapter);
 
-        updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
+        if (adapterName.includes('/')) {
+          updatedAdapters[adapterName] = adapter;
+        } else {
+          updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
+        }
 
         const selectedConfiguration =
           this.routeQueryParams.get('configuration');
