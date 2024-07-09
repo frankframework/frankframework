@@ -30,7 +30,7 @@ import org.frankframework.util.UUIDUtil;
 
 public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
-	private static final String INPUT_FOLDER = "folder";
+	private static final String FOLDER_NAME = "folder";
 	protected FSS fileSystemSender;
 	private SenderResult senderResult;
 	private Message result;
@@ -220,17 +220,17 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolder() throws Exception {
-		fileSystemSenderMoveActionTest(null, INPUT_FOLDER, true, false);
+		fileSystemSenderMoveActionTest(null, FOLDER_NAME, true, false);
 	}
 
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolderCreateFolder() throws Exception {
-		fileSystemSenderMoveActionTest(null, INPUT_FOLDER, false, true);
+		fileSystemSenderMoveActionTest(null, FOLDER_NAME, false, true);
 	}
 
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		Exception e = assertThrows(Exception.class, () -> fileSystemSenderMoveActionTest(null, INPUT_FOLDER, false, false));
+		Exception e = assertThrows(Exception.class, () -> fileSystemSenderMoveActionTest(null, FOLDER_NAME, false, false));
 		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
 
@@ -461,17 +461,17 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderListActionTestInFolderNoFiles() throws Exception {
-		fileSystemSenderListActionTest(INPUT_FOLDER, 0, TypeFilter.FILES_ONLY);
+		fileSystemSenderListActionTest(FOLDER_NAME, 0, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
-		fileSystemSenderListActionTest(INPUT_FOLDER, 2, TypeFilter.FILES_ONLY);
+		fileSystemSenderListActionTest(FOLDER_NAME, 2, TypeFilter.FILES_ONLY);
 	}
 
 	@Test
 	public void fileSystemSenderListFilesAndFoldersActionTestInFolder() throws Exception {
-		fileSystemSenderListActionTest(INPUT_FOLDER, 2, TypeFilter.FILES_AND_FOLDERS);
+		fileSystemSenderListActionTest(FOLDER_NAME, 2, TypeFilter.FILES_AND_FOLDERS);
 	}
 
 	@Test
@@ -518,7 +518,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderCreateFile() throws Exception {
-		SenderResult result = fileSystemSenderCreateFile(INPUT_FOLDER, false, false);
+		SenderResult result = fileSystemSenderCreateFile(FOLDER_NAME, false, false);
 		assertFalse(result.isSuccess());
 		assertEquals("folderNotFound", result.getForwardName());
 		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
@@ -527,7 +527,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderCreateFileAlreadyExists() throws Exception {
-		SenderResult result = fileSystemSenderCreateFile(INPUT_FOLDER, true, false);
+		SenderResult result = fileSystemSenderCreateFile(FOLDER_NAME, true, false);
 		assertFalse(result.isSuccess());
 		assertEquals("fileAlreadyExists", result.getForwardName());
 		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
@@ -536,7 +536,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderCreateFileAndCreateFolderAttributeEnabled() throws Exception {
-		fileSystemSenderCreateFile(INPUT_FOLDER, false, true);
+		fileSystemSenderCreateFile(FOLDER_NAME, false, true);
 	}
 
 	public SenderResult fileSystemSenderWriteFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
@@ -621,10 +621,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderTestForFolderExistenceWithExistingFolder() throws Exception {
-		_createFolder(INPUT_FOLDER);
+		_createFolder(FOLDER_NAME);
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.setTypeFilter(TypeFilter.FILES_ONLY);
-		fileSystemSender.setInputFolder(INPUT_FOLDER);
+		fileSystemSender.setInputFolder(FOLDER_NAME);
 		fileSystemSender.configure();
 		fileSystemSender.open();
 	}
