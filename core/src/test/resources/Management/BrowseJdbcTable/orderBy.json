@@ -34,7 +34,7 @@
             "NAME": "DBTEST"
         }
     ],
-    "query": "SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rnum, * FROM testTable) AS x WHERE x.rnum BETWEEN 1 AND 100",
+    "query": "SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY date) AS rnum, * FROM testTable) AS x WHERE x.rnum BETWEEN 1 AND 100",
     "fielddefinition": {
         "RNUM": "INTEGER(0)"
     },
