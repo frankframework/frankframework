@@ -59,7 +59,6 @@ public class TestPipeline extends BusEndpointBase {
 
 	@Data
 	public static class PostedSessionKey {
-		int index;
 		String key;
 		String value;
 	}
