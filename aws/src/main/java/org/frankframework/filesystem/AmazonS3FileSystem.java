@@ -353,7 +353,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
 			if (s3ClientObject.response().contentLength() == 0) {
 				// Expects an empty message
-				return new Message("", FileSystemUtils.getContext(this, file, charset));
+				return Message.nullMessage(FileSystemUtils.getContext(this, file, charset));
 			}
 
 			return new Message(s3ClientObject, FileSystemUtils.getContext(this, file, charset));

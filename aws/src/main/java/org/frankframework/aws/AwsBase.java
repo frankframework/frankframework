@@ -56,8 +56,6 @@ public class AwsBase {
 	 * @ff.default eu-west-1
 	 */
 	public void setClientRegion(Region clientRegion) {
-		if (clientRegion == null) throw new IllegalStateException("invalid region [null], please use one of the following supported regions.");
 		this.clientRegion = clientRegion;
 	}
-
 }
