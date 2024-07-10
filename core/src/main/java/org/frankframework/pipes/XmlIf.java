@@ -40,9 +40,10 @@ import org.frankframework.util.XmlUtils;
 /**
  * Selects a forward, based on XPath evaluation
  *
- * @author Peter Leeuwenburgh
  * @ff.forward then The configured condition is met
  * @ff.forward else The configured condition is not met
+ *
+ * @author Peter Leeuwenburgh
  * @since 4.3
  */
 @ElementType(ElementTypes.ROUTER)
