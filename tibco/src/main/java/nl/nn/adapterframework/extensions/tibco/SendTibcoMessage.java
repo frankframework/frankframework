@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.tibco;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -79,6 +81,8 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private MessageProtocol messageProtocol;
 	private int replyTimeout = 5000;
 	private String soapAction;
+	private String emsPropertiesFile;
+	private Map<String, Object> emsProperties;
 
 	public enum MessageProtocol implements DocumentedEnum {
 		/** Request-Reply */
@@ -91,6 +95,16 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	public void configure() throws ConfigurationException {
 		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		if(StringUtils.isNotEmpty(emsPropertiesFile)) {
+			try {
+				emsProperties = new TibcoEmsProperties(this, emsPropertiesFile);
+			} catch (IOException e) {
+				throw new ConfigurationException("unable to find/load the EMS properties file", e);
+			}
+		} else {
+			emsProperties = Collections.emptyMap();
 		}
 
 		super.configure();
@@ -193,7 +207,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		try {
 			TibjmsAdmin admin;
 			try {
-				admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+				admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
 			} catch (TibjmsAdminException e) {
 				log.debug("caught exception", e);
 				admin = null;
@@ -216,7 +230,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties); //url, clientid, properties
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			destination = jSession.createQueue(queueName_work);
@@ -362,5 +376,10 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	public String getSoapAction() {
 		return soapAction;
+	}
+
+	/** Location to a <code>jndi.properties</code> file for additional EMS (SSL) properties */
+	public void setEmsPropertiesFile(String propertyFile) {
+		emsPropertiesFile = propertyFile;
 	}
 }
