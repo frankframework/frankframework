@@ -30,7 +30,7 @@
               <label class="col-sm-3 control-label label-height-30"><span *ngIf="$index==0">Session Key</span> </label>
               <div class="col-sm-4">
                 <input class="form-control" (blur)="updateSessionKeys(test)" name="sessionKey{{$index}}"
-                  placeholder="Name" type="text" [(ngModel)]="test.name" />
+                  placeholder="Name" type="text" [(ngModel)]="test.key" />
               </div>
               <div class="col-sm-5">
                 <input class="form-control" (blur)="updateSessionKeys(test)" name="sessionKeyValue{{$index}}"
