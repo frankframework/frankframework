@@ -192,7 +192,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 				child.waitFor();
 
 				// read output
-				result = StreamUtil.fileToString(outputFileName, "\n", true);
+				result = Utils.fileToString(outputFileName, "\n", true);
 			}
 			log.debug("completed call. Process exit code is: {}", child.exitValue());
 

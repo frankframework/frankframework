@@ -18,7 +18,6 @@ package org.frankframework.util;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterReader;
@@ -351,16 +350,6 @@ public class StreamUtil {
 			while ((charsRead=r.read(buffer,0, BUFFER_SIZE))>-1) {
 				writer.write(buffer,0,charsRead);
 			}
-		}
-	}
-
-	/**
-	 * Please consider using resourceToString() instead of relying on files.
-	 */
-	@Deprecated
-	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
-		try (FileReader reader = new FileReader(fileName)) {
-			return readerToString(reader, endOfLineString, xmlEncode);
 		}
 	}
 
