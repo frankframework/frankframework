@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.2.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.2.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -235,7 +235,7 @@
     <xs:attribute name="removeCompactMsgNamespaces" type="frankBoolean" />
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore and logfiles. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideMethod">
@@ -1988,6 +1988,14 @@
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="typeFilter">
+      <xs:annotation>
+        <xs:documentation>Filter for action &lt;code&gt;list&lt;/code&gt;. Specify &lt;code&gt;FILES_ONLY&lt;/code&gt;, &lt;code&gt;FOLDERS_ONLY&lt;/code&gt; or &lt;code&gt;FILES_AND_FOLDERS&lt;/code&gt;. Default: FILES_ONLY</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TypeFilterAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FileSystemSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="FileSystemSenderDeclaredAttributeGroup" />
@@ -2375,11 +2383,6 @@
     <xs:attribute name="command" type="xs:string">
       <xs:annotation>
         <xs:documentation>The command to be executed. Note: Executing a command in WAS requires &amp;lt;&amp;lt;ALL FILES&amp;gt;&amp;gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeOut" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="timeout" type="frankInt">
@@ -3504,11 +3507,6 @@
  The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="multipartResponse" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="dispatchType" type="xs:string">
       <xs:annotation>
         <xs:documentation>Set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath</xs:documentation>
@@ -3592,7 +3590,7 @@
   <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="merchantID" type="xs:string">
@@ -3669,7 +3667,7 @@
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="sAMLCertificateAlias" type="xs:string">
+    <xs:attribute name="samlCertificateAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
  The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
@@ -4507,7 +4505,14 @@
     </xs:attribute>
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore.
+ Every character between to the strings in this expression will be replaced by a '*'.
+ &lt;br/&gt;
+ For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every
+ character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;
+ &lt;br/&gt;
+ When no hideRegex is configured on the errorStore / logStore but is configured on the org.frankframework.receivers.Receiver#setHideRegex(String),
+ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideMethod">
@@ -4693,7 +4698,7 @@
         <xs:documentation>NetStorage action to be used</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="actionVersion" type="frankInt">
@@ -6335,7 +6340,7 @@
     </xs:attribute>
     <xs:attribute name="consumes">
       <xs:annotation>
-        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415 Unsupported Media Type&lt;/code&gt; is replied Default: ANY</xs:documentation>
+        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415 Unsupported Media Type&lt;/code&gt; is replied. Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -6343,7 +6348,8 @@
     </xs:attribute>
     <xs:attribute name="produces">
       <xs:annotation>
-        <xs:documentation>The specified contentType on response. When &lt;code&gt;ANY&lt;/code&gt; the response will determine the content type based on the return data. Default: ANY</xs:documentation>
+        <xs:documentation>The specified contentType on response. When &lt;code&gt;ANY&lt;/code&gt; the response will determine the content-type when it's known and will never calculate it. If no match is found &lt;code&gt;*&amp;#47;*&lt;/code&gt; will be used.
+ When &lt;code&gt;DETECT&lt;/code&gt; the framework attempts to detect the MimeType (as well as charset) when not known. Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -6362,7 +6368,7 @@
     </xs:attribute>
     <xs:attribute name="authenticationMethod">
       <xs:annotation>
-        <xs:documentation>Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property Default: &lt;code&gt;NONE&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Enables security for this listener. If you wish to use the application servers authorization roles [AUTHROLE], you need to enable them globally for all ApiListeners with the &lt;code&gt;servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService&lt;/code&gt; property Default: &lt;code&gt;NONE&lt;/code&gt;</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="AuthenticationMethodsAttributeValuesType variableRef" />
@@ -6370,7 +6376,7 @@
     </xs:attribute>
     <xs:attribute name="authenticationRoles" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})</xs:documentation>
+        <xs:documentation>Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. &lt;code&gt;IbisTester,IbisObserver&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartBodyName" type="xs:string">
@@ -8707,7 +8713,14 @@
     </xs:attribute>
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore.
+ Every character between to the strings in this expression will be replaced by a '*'.
+ &lt;br/&gt;
+ For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every
+ character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;
+ &lt;br/&gt;
+ When no hideRegex is configured on the errorStore / logStore but is configured on the org.frankframework.receivers.Receiver#setHideRegex(String),
+ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideMethod">
@@ -13261,7 +13274,6 @@
         <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;?{name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="useOldSubstitutionStartDelimiter" type="frankBoolean" />
   </xs:attributeGroup>
   <xs:attributeGroup name="FixedResultPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FixedResultPipeDeclaredAttributeGroup" />
@@ -13927,10 +13939,13 @@
         <xs:documentation>The scenario sub directory to execute</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="logLevel" type="xs:string">
+    <xs:attribute name="logLevel">
       <xs:annotation>
         <xs:documentation>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error] Default: wrong pipeline messages</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="LarvaLogLevelAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="waitBeforeCleanup" type="xs:string">
       <xs:annotation>
@@ -14203,6 +14218,14 @@
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="typeFilter">
+      <xs:annotation>
+        <xs:documentation>Filter for action &lt;code&gt;list&lt;/code&gt;. Specify &lt;code&gt;FILES_ONLY&lt;/code&gt;, &lt;code&gt;FOLDERS_ONLY&lt;/code&gt; or &lt;code&gt;FILES_AND_FOLDERS&lt;/code&gt;. Default: FILES_ONLY</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TypeFilterAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FileSystemPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FileSystemPipeDeclaredAttributeGroup" />
@@ -14280,7 +14303,7 @@
         <xs:documentation>Action to be taken when pipe is executed.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="recipients" type="xs:string">
@@ -14328,47 +14351,47 @@
   <xs:attributeGroup name="PasswordGeneratorPipeDeclaredAttributeGroup">
     <xs:attribute name="useSecureRandom" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>whether the securerandom algorithm is to be used (slower) Default: true</xs:documentation>
+        <xs:documentation>Whether the secureRandom algorithm is used. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lCharacters" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the lowercase characters to use Default: ('a'..'z')</xs:documentation>
+        <xs:documentation>The lowercase characters to use. Default: ('a'..'z')</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="uCharacters" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the uppercase characters to use Default: ('A'..'Z')</xs:documentation>
+        <xs:documentation>The uppercase characters to use. Default: ('A'..'Z')</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numbers" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the numbers to use Default: ('0'..'9')</xs:documentation>
+        <xs:documentation>The numbers to use. Default: ('0'..'9')</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="signs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the signs to use Default: (;:_%$#@!&amp;gt;&amp;lt;)</xs:documentation>
+        <xs:documentation>The signs to use. Default: (;:_%$#@!&amp;gt;&amp;lt;)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfLCharacters" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of lowercase characters in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of lowercase characters in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfDigits" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of digits in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of digits in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfSigns" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of sign characters in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of sign characters in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfUCharacters" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of uppercase characters in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of uppercase characters in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14825,6 +14848,11 @@
         <xs:documentation>Whether to allow Unicode supplementary characters (like a smiley) during replaceNonValidXmlCharacters Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="substituteVars" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Should properties (values between &lt;code&gt;${&lt;/code&gt; and &lt;code&gt;}&lt;/code&gt;) be resolved. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ReplacerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ReplacerPipeDeclaredAttributeGroup" />
@@ -15150,7 +15178,7 @@
         <xs:documentation>Action to be taken when pipe is executed. Default: SIGN</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_6 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="algorithm" type="xs:string">
@@ -15237,7 +15265,7 @@
   <xs:attributeGroup name="SkipPipeDeclaredAttributeGroup">
     <xs:attribute name="skip" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger then the length of the input Default: 0</xs:documentation>
+        <xs:documentation>Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger than the length of the input. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="length" type="frankInt">
@@ -15492,7 +15520,7 @@
   <xs:attributeGroup name="XmlFileElementIteratorPipeDeclaredAttributeGroup">
     <xs:attribute name="elementName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the name of the element to iterate over (alternatively: &lt;code&gt;elementchain&lt;/code&gt;)</xs:documentation>
+        <xs:documentation>the name of the element to iterate over (alternatively: &lt;code&gt;elementChain&lt;/code&gt;)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elementChain" type="xs:string">
@@ -15542,7 +15570,8 @@
     </xs:attribute>
     <xs:attribute name="regex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to be applied to the input-message (ignored if &lt;code&gt;xpathExpression&lt;/code&gt; is specified). The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
+        <xs:documentation>Regular expression to be applied to the input-message (ignored if &lt;code&gt;xpathExpression&lt;/code&gt; is specified).
+ The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -15667,11 +15696,6 @@
         <xs:documentation>Charset used when reading the contents of the entry (only used if streamingContents=false) Default: utf-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="skipBOM" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="processFile" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed. Default: false</xs:documentation>
@@ -15720,7 +15744,7 @@
         <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="collectionName" type="xs:string">
@@ -15754,6 +15778,15 @@
   </xs:group>
   <xs:group name="JobElementGroupBase">
     <xs:choice>
+      <xs:element name="ActionJob">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ActionJobType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="CheckReloadJob">
         <xs:complexType>
           <xs:complexContent>
@@ -15828,15 +15861,41 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="CheckReloadJobType">
+  <xs:complexType name="ActionJobType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="JobDefDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CheckReloadJob" />
+    <xs:attributeGroup ref="ActionJobCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.ActionJob" />
   </xs:complexType>
+  <xs:attributeGroup name="ActionJobDeclaredAttributeGroup">
+    <xs:attribute name="action" use="required">
+      <xs:simpleType>
+        <xs:union memberTypes="AvailableActionAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="configurationName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Configuration on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="adapterName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Adapter on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="receiverName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Receiver on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ActionJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ActionJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:group name="JobDefDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
@@ -15882,6 +15941,15 @@
     <xs:attributeGroup ref="JobDefDeclaredAttributeGroup" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="CheckReloadJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CheckReloadJob" />
+  </xs:complexType>
   <xs:complexType name="CleanupDatabaseJobType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -15958,35 +16026,9 @@
         <xs:group ref="JobDefDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="IbisActionJobCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="ActionJobCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.IbisActionJob" />
   </xs:complexType>
-  <xs:attributeGroup name="IbisActionJobDeclaredAttributeGroup">
-    <xs:attribute name="action" use="required">
-      <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="configurationName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Configuration on which job operates</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="adapterName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>Adapter on which job operates</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="receiverName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Receiver on which job operates</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="IbisActionJobCumulativeAttributeGroup">
-    <xs:attributeGroup ref="IbisActionJobDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="LoadDatabaseSchedulesJobType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -16371,6 +16413,13 @@
       <xs:pattern value="[jJ][sS][oO][nN]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="TypeFilterAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[fF][iI][lL][eE][sS][__][oO][nN][lL][yY]" />
+      <xs:pattern value="[fF][oO][lL][dD][eE][rR][sS][__][oO][nN][lL][yY]" />
+      <xs:pattern value="[fF][iI][lL][eE][sS][__][aA][nN][dD][__][fF][oO][lL][dD][eE][rR][sS]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="LinkMethodAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[mM][eE][sS][sS][aA][gG][eE][iI][dD]" />
@@ -16511,7 +16560,7 @@
       <xs:pattern value="[rR][eE][pP][oO][rR][tT]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:pattern value="[dD][iI][rR][eE][cC][tT][oO][rR][yY]" />
       <xs:pattern value="[rR][eE][sS][pP][oO][nN][sS][eE]" />
@@ -16576,7 +16625,7 @@
       <xs:pattern value="[sS][hH][aA][22][55][66]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_2">
+  <xs:simpleType name="ActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[dD][uU]" />
       <xs:pattern value="[dD][iI][rR]" />
@@ -16660,6 +16709,48 @@
       <xs:pattern value="[mM][uU][lL][tT][iI][pP][aA][rR][tT][__][rR][eE][lL][aA][tT][eE][dD]" />
       <xs:pattern value="[mM][uU][lL][tT][iI][pP][aA][rR][tT][__][fF][oO][rR][mM][dD][aA][tT][aA]" />
       <xs:pattern value="[mM][uU][lL][tT][iI][pP][aA][rR][tT]" />
+      <xs:pattern value="[tT][xX][tT]" />
+      <xs:pattern value="[cC][sS][sS]" />
+      <xs:pattern value="[cC][sS][vV]" />
+      <xs:pattern value="[mM][jJ][sS]" />
+      <xs:pattern value="[hH][tT][mM][lL]" />
+      <xs:pattern value="[jJ][aA][rR]" />
+      <xs:pattern value="[dD][oO][cC]" />
+      <xs:pattern value="[eE][pP][uU][bB]" />
+      <xs:pattern value="[vV][sS][dD]" />
+      <xs:pattern value="[aA][zZ][wW]" />
+      <xs:pattern value="[pP][pP][tT]" />
+      <xs:pattern value="[xX][lL][sS]" />
+      <xs:pattern value="[rR][aA][rR]" />
+      <xs:pattern value="[rR][tT][fF]" />
+      <xs:pattern value="[iI][cC][oO]" />
+      <xs:pattern value="[iI][cC][sS]" />
+      <xs:pattern value="[bB][mM][pP]" />
+      <xs:pattern value="[gG][iI][fF]" />
+      <xs:pattern value="[pP][nN][gG]" />
+      <xs:pattern value="[sS][vV][gG]" />
+      <xs:pattern value="[tT][iI][fF][fF]" />
+      <xs:pattern value="[jJ][pP][gG]" />
+      <xs:pattern value="[oO][tT][fF]" />
+      <xs:pattern value="[tT][tT][fF]" />
+      <xs:pattern value="[wW][oO][fF][fF]" />
+      <xs:pattern value="[wW][oO][fF][fF][22]" />
+      <xs:pattern value="[mM][pP][eE][gG]" />
+      <xs:pattern value="[mM][pP][33]" />
+      <xs:pattern value="[mM][pP][44]" />
+      <xs:pattern value="[mM][iI][dD][iI]" />
+      <xs:pattern value="[aA][aA][cC]" />
+      <xs:pattern value="[aA][vV][iI]" />
+      <xs:pattern value="[tT][sS]" />
+      <xs:pattern value="[wW][aA][vV]" />
+      <xs:pattern value="[wW][eE][bB][aA]" />
+      <xs:pattern value="[wW][eE][bB][mM]" />
+      <xs:pattern value="[wW][eE][bB][pP]" />
+      <xs:pattern value="[gG][zZ]" />
+      <xs:pattern value="[tT][aA][rR]" />
+      <xs:pattern value="[bB][zZ]" />
+      <xs:pattern value="[bB][zZ][22]" />
+      <xs:pattern value="[zZ][iI][pP]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="AuthenticationMethodsAttributeValuesType">
@@ -16840,13 +16931,27 @@
       <xs:pattern value="[xX][mM][lL][22][jJ][sS][oO][nN]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="LarvaLogLevelAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[dD][eE][bB][uU][gG]" />
+      <xs:pattern value="[pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS][__][pP][rR][eE][pP][aA][rR][eE][dD][__][fF][oO][rR][__][dD][iI][fF][fF]" />
+      <xs:pattern value="[pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS]" />
+      <xs:pattern value="[wW][rR][oO][nN][gG][__][pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS][__][pP][rR][eE][pP][aA][rR][eE][dD][__][fF][oO][rR][__][dD][iI][fF][fF]" />
+      <xs:pattern value="[wW][rR][oO][nN][gG][__][pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS]" />
+      <xs:pattern value="[sS][tT][eE][pP][__][pP][aA][sS][sS][eE][dD][__][fF][aA][iI][lL][eE][dD]" />
+      <xs:pattern value="[sS][cC][eE][nN][aA][rR][iI][oO][__][pP][aA][sS][sS][eE][dD][__][fF][aA][iI][lL][eE][dD]" />
+      <xs:pattern value="[sS][cC][eE][nN][aA][rR][iI][oO][__][fF][aA][iI][lL][eE][dD]" />
+      <xs:pattern value="[tT][oO][tT][aA][lL][sS]" />
+      <xs:pattern value="[eE][rR][rR][oO][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:pattern value="[oO][bB][fF][uU][sS][cC][aA][tT][eE]" />
       <xs:pattern value="[dD][eE][oO][bB][fF][uU][sS][cC][aA][tT][eE]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_5">
+  <xs:simpleType name="ActionAttributeValuesType_4">
     <xs:restriction base="xs:string">
       <xs:pattern value="[eE][nN][cC][rR][yY][pP][tT]" />
       <xs:pattern value="[sS][iI][gG][nN]" />
@@ -16866,7 +16971,7 @@
       <xs:pattern value="[fF][fF]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_6">
+  <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][iI][gG][nN]" />
       <xs:pattern value="[vV][eE][rR][iI][fF][yY]" />
@@ -16878,7 +16983,7 @@
       <xs:pattern value="[nN][uU][mM][eE][rR][iI][cC]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_4">
+  <xs:simpleType name="ActionAttributeValuesType_3">
     <xs:restriction base="xs:string">
       <xs:pattern value="[oO][pP][eE][nN]" />
       <xs:pattern value="[wW][rR][iI][tT][eE]" />
@@ -16896,7 +17001,7 @@
       <xs:pattern value="[tT][eE][rR][sS][eE]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType">
+  <xs:simpleType name="AvailableActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][tT][oO][pP][aA][dD][aA][pP][tT][eE][rR]" />
       <xs:pattern value="[sS][tT][aA][rR][tT][aA][dD][aA][pP][tT][eE][rR]" />
@@ -17233,7 +17338,7 @@
   </xs:attribute>
   <xs:attribute name="packageContent" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Controls wheter the returned package content is db2 format or xml format.
+      <xs:documentation>Controls if the returned package content is db2 format or xml format.
  Possible values:
  &lt;ul&gt;
  &lt;li&gt;select:&lt;/li&gt; xml content s expected
@@ -18028,7 +18133,9 @@
     <xs:annotation>
       <xs:documentation>Regular expression to mask strings in the log. For example, the regular expression &lt;code&gt;(?&amp;lt;=&amp;lt;password&amp;gt;).*?(?=&amp;lt;/password&amp;gt;)&lt;/code&gt;
  will replace every character between keys '&amp;lt;password&amp;gt;' and '&amp;lt;/password&amp;gt;'. &lt;b&gt;note:&lt;/b&gt; this feature is used at adapter level,
- so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</xs:documentation>
+ so a {@code hideRegex} set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
+ The regular expressions are matched against part of the log lines. See int)
+ with {@code mode = 0} for how regular expressions are matched and replaced.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="root" type="xs:string">
