@@ -1,4 +1,4 @@
-import {CommonModule} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -7,11 +7,11 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {RouterModule} from '@angular/router';
-import {IMessage} from '@stomp/stompjs';
-import {Subscription} from 'rxjs';
-import {WebsocketService} from 'src/app/services/websocket.service';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { IMessage } from '@stomp/stompjs';
+import { Subscription } from 'rxjs';
+import { WebsocketService } from 'src/app/services/websocket.service';
 
 @Component({
   selector: 'app-websocket-test',

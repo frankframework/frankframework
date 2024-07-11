@@ -1,6 +1,12 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Injectable, isDevMode } from '@angular/core';
+import {
+  Client,
+  IFrame,
+  IMessage,
+  IStompSocket,
+  StompSubscription,
+} from '@stomp/stompjs';
+import * as SockJS from 'sockjs-client';
 import { AppService } from '../app.service';
 import { Subject } from 'rxjs';
 
@@ -15,38 +21,58 @@ type ChannelMessage = {
 export class WebsocketService {
   private onConnectedSubject = new Subject<void>();
   private onDisconnectedSubject = new Subject<void>();
+  private onStompErrorSubject = new Subject<IFrame>();
   private onWebSocketCloseSubject = new Subject<void>();
   private onWebSocketErrorSubject = new Subject<Error>();
   private onMessageSubject = new Subject<ChannelMessage>();
 
   onConnected$ = this.onConnectedSubject.asObservable();
   onDisconnected$ = this.onDisconnectedSubject.asObservable();
+  onStompError$ = this.onStompErrorSubject.asObservable();
   onWebSocketClose$ = this.onWebSocketCloseSubject.asObservable();
   onWebSocketError$ = this.onWebSocketErrorSubject.asObservable();
   onMessage$ = this.onMessageSubject.asObservable();
 
+  private baseUrl: string = `${window.location.host}${this.appService.absoluteApiPath}`;
+  private errorCount: number = 0;
   private client: Client = new Client({
-    brokerURL: `ws://${window.location.host}${this.appService.absoluteApiPath}ws`,
-    reconnectDelay: 20_000,
-    connectionTimeout: 60_000,
-    debug: (message) => console.debug(message),
-    onConnect: () => this.onConnectedSubject.next(),
-    onDisconnect: () => this.onDisconnectedSubject.next(),
+    brokerURL: `ws://${this.baseUrl}ws`,
+    connectionTimeout: 3000,
+    debug: (message) => (): void => {
+      if (isDevMode()) console.debug(message);
+    },
+    onConnect: (): void => {
+      this.errorCount = 0;
+      this.onConnectedSubject.next();
+    },
+    onDisconnect: (): void => {
+      this.onDisconnectedSubject.next();
+    },
+    onStompError: (frame): void => {
+      console.error(`Broker reported error: ${frame.headers['message']}`);
+      console.error(`Additional details: ${frame.body}`);
+    },
     onWebSocketClose: () => this.onWebSocketCloseSubject.next(),
-    onWebSocketError: (event) => this.onWebSocketErrorSubject.next(event),
+    onWebSocketError: (event): void => {
+      this.errorCount += 1;
+      if (this.errorCount > 1) {
+        this.enableSockJs();
+      }
+      this.onWebSocketErrorSubject.next(event);
+    },
   });
   private stompSubscriptions: Map<string, StompSubscription> = new Map<
     string,
     StompSubscription
   >();
 
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  constructor(private appService: AppService) {}
 
   activate(): void {
     if (!this.client.connected) {
+      if (typeof WebSocket !== 'function') {
+        this.enableSockJs();
+      }
       this.client.activate();
     }
   }
@@ -79,5 +105,20 @@ export class WebsocketService {
       subscription.unsubscribe();
       this.stompSubscriptions.delete(channel);
     }
+  }
+
+  private enableSockJs(): void {
+    this.client.webSocketFactory = (): IStompSocket => {
+      return new SockJS(`http://${this.baseUrl}stomp`, undefined, {
+        transports: [
+          'xhr-streaming',
+          'xhr-polling',
+          // IE 6-9 support
+          'xdr-streaming',
+          'xdr-polling',
+          'jsonp-polling',
+        ],
+      }) as IStompSocket;
+    };
   }
 }

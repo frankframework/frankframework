@@ -33,11 +33,13 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws")
 				.setAllowedOriginPatterns("localhost:*");
+		registry.addEndpoint("/stomp")
+				.setAllowedOriginPatterns("localhost:*")
+				.withSockJS();
 	}
 
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
-//		config.setApplicationDestinationPrefixes("/app");
 		config.enableSimpleBroker("/event");
 	}
 }

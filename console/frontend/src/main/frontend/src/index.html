@@ -19,6 +19,9 @@
   <meta name="msapplication-TileColor" content="#1e1e1e">
   <meta name="msapplication-config" content="assets/favicon/browserconfig.xml?v=2">
   <meta name="theme-color" content="#1e1e1e">
+  <script>
+    window.global = window; // because sockjs developers don't understand using global might be a bad idea in non-node environments
+  </script>
 </head>
 <body id="page-top">
   <app-root>

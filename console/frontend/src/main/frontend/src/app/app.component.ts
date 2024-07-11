@@ -380,6 +380,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeWebsocket(): void {
     this.websocketService.onConnected$.subscribe(() => {
+      this.appService.updateLoading(false);
+      this.loading = false;
+
       this.websocketService.subscribe<Record<string, MessageLog>>(
         '/event/server-warnings',
         (configurations) => this.processWarnings(configurations),
@@ -552,12 +555,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   finalizeStartup(data: Record<string, Adapter>): void {
     this.processAdapters(data);
-
-    setTimeout(() => {
-      this.appService.updateLoading(false);
-      this.loading = false;
-      this.initializeWebsocket();
-    });
+    this.initializeWebsocket();
   }
 
   processAdapterReceivers(
