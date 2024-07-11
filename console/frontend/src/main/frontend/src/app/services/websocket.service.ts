@@ -6,7 +6,6 @@ import {
   IStompSocket,
   StompSubscription,
 } from '@stomp/stompjs';
-import * as SockJS from 'sockjs-client';
 import { AppService } from '../app.service';
 import { Subject } from 'rxjs';
 
@@ -109,7 +108,7 @@ export class WebsocketService {
 
   private enableSockJs(): void {
     this.client.webSocketFactory = (): IStompSocket => {
-      return new SockJS(`http://${this.baseUrl}stomp`, undefined, {
+      return new window.SockJS(`http://${this.baseUrl}stomp`, undefined, {
         transports: [
           'xhr-streaming',
           'xhr-polling',
