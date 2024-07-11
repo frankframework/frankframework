@@ -28,7 +28,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
-import io.findify.s3mock.S3Mock;
 import lombok.Getter;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
@@ -39,33 +38,25 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
 	private final Regions clientRegion = Regions.EU_WEST_1;
-	public static final int S3_PORT = 19090;
-	private final String serviceEndpoint = "http://localhost:" + S3_PORT;
+	private final String serviceEndpoint;
 	private final boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
 
 	private @Getter AmazonS3 s3Client;
 
 	public Path tempFolder;
 
-	private S3Mock s3Mock;
-
-	public AmazonS3FileSystemTestHelper(Path tempFolder) {
+	public AmazonS3FileSystemTestHelper(Path tempFolder, String serviceEndpoint) {
 		this.tempFolder = tempFolder;
+		this.serviceEndpoint = serviceEndpoint;
 	}
 
 	@Override
 	public void setUp() {
-		if(runLocalStub) {
-			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
-			s3Mock.start();
-		}
-
 		s3Client = createS3Client();
-		if(!runLocalStub) {
-			cleanUpFolder(null);
-		}
 
-		if (!s3Client.doesBucketExistV2(bucketName)) {
+		if (s3Client.doesBucketExistV2(bucketName)) {
+			cleanUpFolder(null);
+		} else {
 			s3Client.createBucket(bucketName);
 		}
 	}
@@ -78,24 +69,22 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 				.withClientConfiguration(new ClientConfiguration().withSocketTimeout(1000).withConnectionTimeout(1000))
 				.enablePathStyleAccess();
 
-		BasicAWSCredentials awsCreds;
+		BasicAWSCredentials awsCredentials;
 		if(runLocalStub) {
-			awsCreds = new BasicAWSCredentials("user", "pass");
+			awsCredentials = new BasicAWSCredentials("user", "pass");
 			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
 		} else {
-			awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+			awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
 			s3ClientBuilder.withRegion(clientRegion);
 		}
-		s3ClientBuilder.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+		s3ClientBuilder.withCredentials(new AWSStaticCredentialsProvider(awsCredentials));
 
 		return s3ClientBuilder.build();
 	}
 
 	@Override
 	public void tearDown() {
-		if(s3Mock != null) {
-			s3Mock.shutdown();
-		}
+		// not needed
 	}
 
 	@Override

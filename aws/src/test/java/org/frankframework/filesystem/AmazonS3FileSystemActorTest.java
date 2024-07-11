@@ -7,13 +7,21 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+@Testcontainers(disabledWithoutDocker = true)
 public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3Object, AmazonS3FileSystem> {
 
 	@TempDir
 	private Path tempdir;
+
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
 	@Override
 	protected AmazonS3FileSystem createFileSystem() {
@@ -31,7 +39,7 @@ public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttrib
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
 	@Disabled("Amazon S3 does not support the APPEND action")
