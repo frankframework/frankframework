@@ -83,7 +83,9 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	//For testing purposes
+	/**
+	 * @return a configured S3Client based on the settings found in AmazonS3.properties or a local testcontainer instance if not present
+	 */
 	public S3Client createS3Client() {
 		S3Configuration.Builder s3Configuration = S3Configuration.builder()
 				.chunkedEncodingEnabled(true)
@@ -110,7 +112,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void tearDown() {
-		//
+		// not needed
 	}
 
 	@Override
@@ -193,7 +195,6 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		PutObjectRequest request = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(folderName)
-				.metadata(Map.of("Content-Length", "0"))
 				.build();
 		s3Client.putObject(request, RequestBody.empty());
 	}
