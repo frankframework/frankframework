@@ -19,7 +19,7 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.17.1</jackson.version>
+		<jackson.version>2.17.2</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
 		<spring.version>6.1.10</spring.version>
 		<spring-security.version>6.3.1</spring-security.version>
@@ -30,7 +30,7 @@
 
 		<narayana.version>7.0.2.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.13.1</micrometer.version>
+		<micrometer.version>1.13.2</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>

@@ -29,9 +29,11 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
@@ -45,8 +47,6 @@ import org.frankframework.util.StreamUtil;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -567,12 +567,12 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		Checkpoint checkpoint = checkpoints.get(0);
-		Message message = Message.asMessage(checkpoint.getMessage());
+		Message message = new Message(checkpoint.getMessage());
 		Configuration config = ibisDebugger.getIbisManager().getConfiguration(DELETE_ADAPTER_CONFIG);
 		if (config == null) {
 			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");
 		}
-		IAdapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
+		Adapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
 		if (adapter == null) {
 			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
 		}
@@ -580,7 +580,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		PipeLineSession pipeLineSession = new PipeLineSession();
 		if(securityContext.getUserPrincipal() != null)
 			pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-		PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
+		PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
 		if (!processResult.isSuccessful()) {
 			throw new StorageException("Delete failed (see logging for more details)");
 		}

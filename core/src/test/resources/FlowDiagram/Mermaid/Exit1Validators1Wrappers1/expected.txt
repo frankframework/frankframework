@@ -5,7 +5,7 @@ flowchart
 	d2e8("<b>WebServiceListener</b><br/>WebServiceListener"):::normal
 	d2e10("<b>testtool-HelloLines-2</b><br/>JavaListener"):::normal
 	d2e15("<b>ValidateInput</b><br/>SoapValidator"):::normal
-	d2e71("<b>Create example plain text message</b><br/>FixedResultPipe"):::errorOutline
+	d2e71("<b>Create example plain text message</b><br/>EchoPipe"):::errorOutline
 	d2e75("<b>Transform plain text message to XML</b><br/>Text2XmlPipe"):::errorOutline
 	d2e79("<b>Add position to elements</b><br/>XsltPipe"):::errorOutline
 	d2e83("<b>Transform XML message to JSON message</b><br/>Json2XmlValidator"):::errorOutline

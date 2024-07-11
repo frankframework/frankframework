@@ -45,7 +45,7 @@ If you want to create custom images to run the framework, or wish to see how we 
 
 
 # Running the Frank-Framework
-You may choose to use our pre-build Docker images, which you can directly run without having to compile our code.
+You may choose to use our pre-built Docker images, which you can directly run without having to compile our code.
 More info about using and creating containers can be found in [Docker.md](Docker.md).
 
 All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/frankframework/charts).

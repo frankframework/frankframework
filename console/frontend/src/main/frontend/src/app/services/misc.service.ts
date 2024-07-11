@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Base64Service } from './base64.service';
-import { ServerInfo } from '../app.service';
+import { ServerInfo } from './server-info.service';
 
 @Injectable({
   providedIn: 'root',

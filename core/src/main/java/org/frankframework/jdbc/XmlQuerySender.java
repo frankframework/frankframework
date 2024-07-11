@@ -34,10 +34,10 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
@@ -192,8 +192,8 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException {
-		PipeRunResult result;
+	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		Message result;
 		try {
 			Element queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
@@ -209,21 +209,21 @@ public class XmlQuerySender extends DirectQuerySender {
 			String order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			if ("select".equalsIgnoreCase(root)) {
-				result = selectQuery(connection, tableName, columns, where, order, session, next);
+				result = selectQuery(blockHandle, tableName, columns, where, order).getResult();
 			} else if ("insert".equalsIgnoreCase(root)) {
-				result = new PipeRunResult(null, insertQuery(connection, tableName, columns));
+				result = insertQuery(blockHandle, tableName, columns);
 			} else if ("delete".equalsIgnoreCase(root)) {
-				result = new PipeRunResult(null, deleteQuery(connection, tableName, where));
+				result = deleteQuery(blockHandle, tableName, where);
 			} else if ("update".equalsIgnoreCase(root)) {
-				result = new PipeRunResult(null, updateQuery(connection, tableName, columns, where));
+				result = updateQuery(blockHandle, tableName, columns, where);
 			} else if ("alter".equalsIgnoreCase(root)) {
 				String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
 				int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-				result = new PipeRunResult(null, alterQuery(connection, sequenceName, startWith));
+				result = alterQuery(blockHandle, sequenceName, startWith);
 			} else if ("sql".equalsIgnoreCase(root)) {
 				String type = XmlUtils.getChildTagAsString(queryElement, "type");
 				String query = XmlUtils.getChildTagAsString(queryElement, "query");
-				result = new PipeRunResult(null, sql(connection, query, type));
+				result = sql(blockHandle, query, type);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 			}
@@ -235,10 +235,10 @@ public class XmlQuerySender extends DirectQuerySender {
 			throw new SenderException(getLogPrefix() + "got exception creating [" + message + "]", e);
 		}
 
-		return result;
+		return new SenderResult(result);
 	}
 
-	private PipeRunResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order, PipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
+	private SenderResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order) throws SenderException, JdbcException {
 		StringBuilder queryBuilder = new StringBuilder("SELECT ");
 		if (columns != null && !columns.isEmpty()) {
 			String columnSelection = columns.stream()
@@ -259,7 +259,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			String query = queryBuilder.toString();
 			PreparedStatement statement = getStatement(connection, query, QueryType.SELECT);
 			setBlobSmartGet(true);
-			return executeSelectQuery(statement,null,null, session, next);
+			return executeSelectQuery(statement,null,null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
 		}
@@ -318,14 +318,14 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && "select".equalsIgnoreCase(type)) {
-				return executeSelectQuery(statement,null,null, null, null).getResult();
+				return executeSelectQuery(statement,null,null).getResult();
 			} else if (StringUtils.isNotEmpty(type) && "ddl".equalsIgnoreCase(type)) {
 				//TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
 				for (String q : StringUtil.split(query, ";")) {
 					statement = getStatement(connection, q, QueryType.OTHER);
 					if (q.trim().toLowerCase().startsWith("select")) {
-						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());
+						result.append(executeSelectQuery(statement,null,null).getResult().asString());
 					} else {
 						result.append(executeOtherQuery(connection, statement, q, null, null, null, null, null).asString());
 					}

@@ -1328,13 +1328,6 @@ public class XmlUtils {
 		return transformXml(t, stringToSourceForSingleUse(s, namespaceAware));
 	}
 
-	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, SAXException {
-		synchronized (t) {
-			t.transform(stringToSourceForSingleUse(s), result);
-		}
-	}
-
-
 	public static String transformXml(Transformer t, Source s) throws TransformerException, IOException {
 
 		StringWriter out = new StringWriter(getBufSize());
@@ -1345,8 +1338,7 @@ public class XmlUtils {
 
 	}
 
-	public static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
-
+	private static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
 		Result result = new StreamResult(out);
 		synchronized (t) {
 			t.transform(s, result);
@@ -1358,7 +1350,7 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(String input, String root) {
-		return isWellFormed(Message.asMessage(input), root);
+		return isWellFormed(new Message(input), root);
 	}
 
 	public static boolean isWellFormed(Message input, String root) {
@@ -1470,7 +1462,7 @@ public class XmlUtils {
 			XmlWriter xmlWriter = new XmlWriter();
 			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
 			parseXml(input.asInputSource(), handler);
-			return Message.asMessage(xmlWriter.toString());
+			return new Message(xmlWriter.toString());
 		} catch (Exception e) {
 			throw new XmlException(e);
 		}

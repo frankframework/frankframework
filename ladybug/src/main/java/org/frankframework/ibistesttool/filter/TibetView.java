@@ -18,14 +18,14 @@ package org.frankframework.ibistesttool.filter;
 import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-
-import org.frankframework.util.ClassUtils;
 import org.frankframework.ibistesttool.IbisDebugger;
 import org.frankframework.ibistesttool.tibet2.Storage;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
@@ -62,7 +62,7 @@ public class TibetView extends View {
 		if(config == null) {
 			return "Not allowed. Could not find config " + AUTHORISATION_CHECK_ADAPTER_CONFIG;
 		}
-		IAdapter adapter = config.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER_NAME);
+		Adapter adapter = config.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER_NAME);
 		if(adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER_NAME;
 		}
@@ -73,7 +73,7 @@ public class TibetView extends View {
 		}
 		pipeLineSession.put("StorageId", storageId);
 		pipeLineSession.put("View", getName());
-		PipeLineResult processResult = adapter.processMessage(null, new Message("<dummy/>"), pipeLineSession);
+		PipeLineResult processResult = adapter.processMessageDirect(null, new Message("<dummy/>"), pipeLineSession);
 		if (processResult.isSuccessful()) {
 			return ReportsComponent.OPEN_REPORT_ALLOWED;
 		}

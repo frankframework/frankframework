@@ -193,35 +193,6 @@ export type IAFRelease = {
   reactions: Record<string, number>;
 };
 
-export type ServerInfo = {
-  fileSystem: {
-    freeSpace: number;
-    totalSpace: number;
-  };
-  framework: {
-    name: string;
-    version: string;
-  };
-  instance: {
-    name: string;
-    version: string;
-  };
-  applicationServer: string;
-  javaVersion: string;
-  serverTime: number;
-  'dtap.stage': string;
-  'dtap.side': string;
-  processMetrics: {
-    maxMemory: number;
-    freeMemory: number;
-    totalMemory: number;
-    heapSize: number;
-  };
-  machineName: string;
-  uptime: number;
-  userName?: string;
-};
-
 export type ServerEnvironmentVariables = {
   'Application Constants': Record<string, Record<string, string>>;
   'Environment Variables': Record<string, string>;
@@ -470,10 +441,6 @@ export class AppService {
           return of([]);
         }),
       );
-  }
-
-  getServerInfo(): Observable<ServerInfo> {
-    return this.http.get<ServerInfo>(`${this.absoluteApiPath}server/info`);
   }
 
   getConfigurations(): Observable<Configuration[]> {

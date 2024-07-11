@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -27,13 +28,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
@@ -49,14 +47,16 @@ import org.frankframework.core.Resource;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.TransformerFilter;
-import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 
 /**
@@ -394,52 +394,78 @@ public class TransformerPool {
 		return t;
 	}
 
-	public String transform(Document d, Map<String,Object> parameters)	throws TransformerException, IOException {
-		return transform(new DOMSource(d),parameters);
-	}
-
-	public String transform(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
-		return transform(m.asSource(),parameters);
-	}
-
+	//Unsure what is happening here but this seems very inefficient!
 	public String transform(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		if (namespaceAware) {
-			return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(),namespaceAware, null), parameters);
+			return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(), namespaceAware, null), parameters);
 		}
 		try {
-			return transform(XmlUtils.stringToSource(m.asString(),namespaceAware), parameters);
+			return transform(XmlUtils.stringToSource(m.asString(), namespaceAware), parameters);
 		} catch (DomBuilderException e) {
 			throw new TransformerException(e);
 		}
 	}
 
+	public String transform(String s) throws TransformerException, IOException, SAXException {
+		return transform(XmlUtils.stringToSourceForSingleUse(s), null);
+	}
+
 	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
-		return transform(XmlUtils.stringToSourceForSingleUse(s),parameters);
+		return transform(XmlUtils.stringToSourceForSingleUse(s), parameters);
 	}
 
 	public String transform(String s, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
-		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware),parameters);
+		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware), parameters);
 	}
 
 	public String transform(Source s) throws TransformerException, IOException {
 		return transform(s,(Map<String,Object>)null);
 	}
 
-	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException {
-		return transform(s, null, pvl==null? null : pvl.getValueMap());
-	}
-
 	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
 
-	public String transform(Source s, Result r) throws TransformerException, IOException {
-		return transform(s, r, (Map<String,Object>)null);
+	// ideally the return type should be Message
+	public String transform(@Nonnull Message input) throws TransformerException, IOException, SAXException {
+		return transform(input.asSource(), null, (Map<String,Object>) null);
 	}
-	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
+
+	/**
+	 * Transforms Frank messages.
+	 */
+	public Message transform(@Nonnull Message m, @Nullable ParameterValueList pvl) throws TransformerException, IOException, SAXException {
+		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()), createMessageContext());
+	}
+
+	private MessageContext createMessageContext() {
+		try {
+			MessageContext context = new MessageContext();
+			for(Entry<String, String> entry : getConfigMap().entrySet()) {
+				context.put("Xslt."+entry.getKey(), entry.getValue());
+			}
+			return context;
+		} catch (TransformerException | IOException e) {
+			//ignore errors
+			return new MessageContext();
+		}
+	}
+
+	/**
+	 * @deprecated only used in Parameter, need to refactor that first...
+	 * Renamed because of overloading issues.
+	 * When method parameter 'Result' is used, nothing will be returned.
+	 */
+	@Deprecated
+	public String deprecatedParameterTransformAction(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
 		return transform(s, r, pvl==null? null : pvl.getValueMap());
 	}
-	public String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
+
+	/*
+	 * Should ideally only used internally. Protected so it can be used in tests.
+	 * When method parameter 'Result' is used, nothing will be returned. Should not be a public method!
+	 */
+	protected String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {
 			XmlUtils.setTransformerParameters(transformer, parameters);

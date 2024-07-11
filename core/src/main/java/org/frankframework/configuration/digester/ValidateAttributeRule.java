@@ -17,6 +17,8 @@ package org.frankframework.configuration.digester;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +32,8 @@ import org.frankframework.util.StringResolver;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 
+import jakarta.annotation.Nullable;
+
 /**
  * @author Niels Meijer
  */
@@ -40,24 +44,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	 */
 	@Override
 	protected void handleBean() {
-		Class<?> clazz = getBeanClass();
-		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-		if (warning != null) {
-			String msg = "";
-			boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
-			if (isDeprecated) {
-				msg += "is deprecated";
-			}
-			if (StringUtils.isNotEmpty(warning.value())) {
-				msg += ": " + warning.value();
-			}
-
-			if (isDeprecated) {
-				addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
-			} else {
-				addLocalWarning(msg);
-			}
-		}
+		addConfigWarning(getBeanClass());
 	}
 
 	/**
@@ -146,10 +133,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	}
 
 	private void checkDeprecationAndConfigurationWarning(String name, String value, Method setterMethod) {
-		ConfigurationWarning warning = AnnotationUtils.findAnnotation(setterMethod, ConfigurationWarning.class);
-		String warningMessage = warning != null ? warning.value() : null;
-		boolean isDeprecated = AnnotationUtils.findAnnotation(setterMethod, Deprecated.class) != null;
-		addWarningForField(warningMessage, isDeprecated, name);
+		addConfigWarning(setterMethod, name);
 
 		// Check enum Configuration Warnings
 		Class<?> setterArgumentClass = setterMethod.getParameters()[0].getType();
@@ -158,30 +142,67 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		try {
 			Object o = ClassUtils.convertToType(setterArgumentClass, value);
 			if (o instanceof Enum<?> enumValue) {
-				warning = EnumUtils.findAnnotation(enumValue, ConfigurationWarning.class);
-				String configWarning = warning != null ? warning.value() : null;
-				isDeprecated = EnumUtils.findAnnotation(enumValue, Deprecated.class) != null;
-				addWarningForField(configWarning, isDeprecated, name + "." + enumValue);
+				addConfigWarning(enumValue, name);
 			}
 		} catch (IllegalArgumentException ignored) { // Can not happen with enums
 		}
 	}
 
-	private void addWarningForField(String warningMessage, boolean isDeprecated, String fieldName) {
-		if (warningMessage == null) {
-			return;
+	private void addConfigWarning(Class<?> clazz) {
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
+		if(warning != null) {
+			Deprecated deprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class);
+			addConfigWarning(warning.value(), deprecated, null);
 		}
-		String msg = "attribute [" + fieldName + "]";
+	}
 
-		if (isDeprecated) {
-			msg += " is deprecated";
+	private void addConfigWarning(Method setterMethod, String attributeName) {
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(setterMethod, ConfigurationWarning.class);
+		if(warning != null) {
+			Deprecated deprecated = AnnotationUtils.findAnnotation(setterMethod, Deprecated.class);
+			addConfigWarning(warning.value(), deprecated, attributeName);
+		}
+	}
+
+	private void addConfigWarning(Enum<?> enumValue, String attributeName) {
+		ConfigurationWarning warning = EnumUtils.findAnnotation(enumValue, ConfigurationWarning.class);
+		if(warning != null) {
+			Deprecated deprecatedEnum = EnumUtils.findAnnotation(enumValue, Deprecated.class);
+			addConfigWarning(warning.value(), deprecatedEnum, attributeName + "." + enumValue);
+		}
+	}
+
+	/**
+	 * Creates a formatted configuration warning.
+	 * @param warningMessage the {@link ConfigurationWarning} used to log
+	 * @param deprecated enriches the configuration warning using deprecated value/since/forRemoval text.
+	 * @param attributeName attribute to enrich the configuration warning
+	 */
+	private void addConfigWarning(@Nullable String warningMessage, @Nullable Deprecated deprecated, @Nullable String attributeName) {
+		List<String> messageBuilder = new ArrayList<>();
+
+		if (StringUtils.isNotEmpty(attributeName)) {
+			messageBuilder.add("attribute [" + attributeName + "]");
 		}
 
+		if (deprecated != null) {
+			String since = deprecated.since();
+			if(StringUtils.isNotEmpty(since)) {
+				messageBuilder.add("has been deprecated since v" + since);
+			} else {
+				messageBuilder.add("is deprecated");
+			}
+			if(deprecated.forRemoval()) {
+				messageBuilder.add("and has been marked for removal");
+			}
+		}
+
+		String msg = StringUtils.join(messageBuilder, " ");
 		if (StringUtils.isNotEmpty(warningMessage)) {
 			msg += ": " + warningMessage;
 		}
 
-		if (isDeprecated) {
+		if (deprecated != null) {
 			addSuppressibleWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 		} else {
 			addLocalWarning(msg);

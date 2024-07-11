@@ -26,7 +26,8 @@ import org.frankframework.scheduler.JobDefFunctions;
 /**
  * Placeholder class to allow legacy configuration notations <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
  * <p>
- * The attribute <code>function</code> has been removed in favor of explicit JobDefinitions such as: <code>SendMessageJob</code>, <code>ExecuteQueryJob</code> and <code>IbisActionJob</code>.
+ * The attribute <code>function</code> has been removed in favor of explicit JobDefinitions such as: <code>SendMessageJob</code>,
+ * <code>ExecuteQueryJob</code> and <code>ActionJob</code> (previously <code>IbisActionJob</code>).
  * Using the new elements enables the use of auto-completion for the specified type.
  *
  * @author Niels Meijer

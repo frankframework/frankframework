@@ -26,14 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IAdapter;
-import org.frankframework.core.IPipe;
-import org.frankframework.core.PipeLine;
-import org.frankframework.pipes.MessageSendingPipe;
-import org.frankframework.receivers.Receiver;
-import org.frankframework.statistics.FrankMeterType;
-
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -54,6 +46,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLine;
+import org.frankframework.pipes.MessageSendingPipe;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.statistics.FrankMeterType;
 
 public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat DECIMAL_FORMAT = new DecimalFormat("#");
@@ -75,7 +73,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return summary;
 	}
 
-	private Collection<Meter> findMeters(String configuration, IAdapter adapter) {
+	private Collection<Meter> findMeters(String configuration, Adapter adapter) {
 		List<Tag> searchTags = new ArrayList<>();
 		searchTags.add(Tag.of("configuration", configuration));
 		searchTags.add(Tag.of("adapter", adapter.getName()));
@@ -84,7 +82,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return search.meters();
 	}
 
-	public JsonStructure scrape(String configuration, IAdapter adapter) {
+	public JsonStructure scrape(String configuration, Adapter adapter) {
 		Collection<Meter> adapterScopedMeters = findMeters(configuration, adapter);
 
 		Map<String, JsonObjectBuilder> pipeDurations = getDistributionSummaries(adapterScopedMeters, FrankMeterType.PIPE_DURATION, "");
@@ -133,7 +131,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		root.add("pipeline", getPipelineStats(adapterScopedMeters));
 
 		root.add("receivers", getReceivers(adapter, adapterScopedMeters));
-		root.add("hourly", getHourlyStatistics((Adapter) adapter));
+		root.add("hourly", getHourlyStatistics(adapter));
 
 		JsonObjectBuilder totalMessageProcessingTime = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPELINE_DURATION);
 		if(totalMessageProcessingTime != null) {
@@ -197,7 +195,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return hourslyStatistics;
 	}
 
-	private JsonArrayBuilder getReceivers(IAdapter adapter, Collection<Meter> meters) {
+	private JsonArrayBuilder getReceivers(Adapter adapter, Collection<Meter> meters) {
 		JsonArrayBuilder receivers = Json.createArrayBuilder();
 
 		for (Receiver<?> receiver: adapter.getReceivers()) {

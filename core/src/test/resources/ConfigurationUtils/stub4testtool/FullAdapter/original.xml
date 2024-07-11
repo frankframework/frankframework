@@ -16,8 +16,8 @@
 			</exits>
 
 			<pipe name="CreateResponse"
-				className="org.frankframework.pipes.FixedResult"
-				returnString="Success ">
+				className="org.frankframework.pipes.EchoPipe"
+				inputFromFixedValue="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

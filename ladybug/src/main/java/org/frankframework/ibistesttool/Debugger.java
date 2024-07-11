@@ -28,7 +28,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
@@ -251,8 +251,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	/** Get all configurations */
-	private List<IAdapter> getRegisteredAdapters() {
-		List<IAdapter> registeredAdapters = new ArrayList<>();
+	private List<Adapter> getRegisteredAdapters() {
+		List<Adapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			if(configuration.isActive()) {
 				registeredAdapters.addAll(configuration.getRegisteredAdapters());
@@ -262,9 +262,9 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	/** Best effort attempt to locate the adapter. */
-	private IAdapter getRegisteredAdapter(String name) {
-		List<IAdapter> adapters = getRegisteredAdapters();
-		for (IAdapter adapter : adapters) {
+	private Adapter getRegisteredAdapter(String name) {
+		List<Adapter> adapters = getRegisteredAdapters();
+		for (Adapter adapter : adapters) {
 			if (name.equals(adapter.getName())) {
 				return adapter;
 			}
@@ -282,7 +282,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
 				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
-				IAdapter adapter = getRegisteredAdapter(pipelineName);
+				Adapter adapter = getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					RunState runState = adapter.getRunState();
 					if (runState == RunState.STARTED) {
@@ -312,7 +312,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 								// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 								String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
 								pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-								PipeLineResult result = adapter.processMessage(messageId, inputMessage, pipeLineSession);
+								PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
 								try {
 									result.getResult().close();
 								} catch (IOException e) {

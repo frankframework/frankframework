@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -128,7 +128,7 @@ public class JsonPipe extends FixedForwardPipe {
 			case XML2JSON:
 				Map<String, Object> parameterValues = new HashMap<>(1);
 				parameterValues.put("includeRootElement", addXmlRootElement);
-				stringResult = tpXml2Json.transform(message, parameterValues);
+				stringResult = tpXml2Json.transform(message.asSource(), parameterValues);
 				break;
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");

@@ -25,7 +25,7 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.IbisAction;
+import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-public class Configuration extends FrankApiBase {
+public class ConfigurationsEndpoint extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("application")
@@ -70,7 +70,7 @@ public class Configuration extends FrankApiBase {
 		Object value = json.get("action");
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
-			builder.addHeader("action", IbisAction.FULLRELOAD.name());
+			builder.addHeader("action", Action.FULLRELOAD.name());
 			callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}
@@ -117,7 +117,7 @@ public class Configuration extends FrankApiBase {
 		Object value = json.get("action");
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
-			builder.addHeader("action", IbisAction.RELOAD.name());
+			builder.addHeader("action", Action.RELOAD.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 			callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");

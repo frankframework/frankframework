@@ -31,9 +31,15 @@
 			</XsltPipe>
 			
 			<!-- ERRORS -->
-			<FixedResultPipe name="InputValidateError" filename="ManageFileSystem/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
-				<forward name="success" path="EXIT" />
+			<FixedResultPipe name="InputValidateError" filename="ManageFileSystem/xml/ErrorMessage.xml">
+				<forward name="success" path="replaceReasonCode" />
 			</FixedResultPipe>
+			<ReplacerPipe name="replaceReasonCode"
+				find="%reasonCode"
+				replace="NOT_WELL_FORMED_XML">
+				<forward name="success" path="EXIT" />
+			</ReplacerPipe>
+
 			<XsltPipe name="InputValidateFailure" styleSheetName="ManageFileSystem/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="INVALID_XML"/>
 				<param name="failureReason" sessionKey="failureReason" />

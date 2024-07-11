@@ -2,44 +2,47 @@
   <div class="modal-header">
     <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
   </div>
-  <div class="modal-body" *ngIf="!error">
-    <h3 *ngIf="framework.name === ''">Loading...</h3>
-    <p #environmentInformation>
-      <strong
-        >{{ framework.name
-        }}{{ framework.version ? ' ' + framework.version : '' }}</strong
-      >: {{ instance.name }} {{ instance.version }}<br />
-      Running on <strong>{{ machineName }}</strong> using
-      <strong>{{ applicationServer }}</strong
-      ><br />
-      Java Version: <strong>{{ javaVersion }}</strong
-      ><br />
-      Heap size:
-      <strong>{{ processMetrics.heapSize | humanFileSize }}</strong
-      >, total JVM memory:
-      <strong>{{ processMetrics.totalMemory | humanFileSize }}</strong
-      ><br />
-      Free memory:
-      <strong>{{ processMetrics.freeMemory | humanFileSize }}</strong
-      >, max memory:
-      <strong>{{ processMetrics.maxMemory | humanFileSize }}</strong
-      ><br />
-      Free disk space:
-      <strong>{{ fileSystem.freeSpace | humanFileSize }}</strong
-      >, total disk space:
-      <strong>{{ fileSystem.totalSpace | humanFileSize }}</strong
-      ><br />
-      Up since: <strong><span appToDate [time]="uptime"></span></strong> (<span
-        appTimeSince
-        [time]="uptime"
-      ></span
-      >)
-    </p>
-  </div>
-  <div class="modal-body" *ngIf="error">
-    <h3 class="text-center">
-      Unable to fetch server information due to an unexpected error.
-    </h3>
+  <div class="modal-body">
+    <ng-container *ngIf="error; else information">
+      <h3 class="text-center">
+        Unable to fetch server information due to an unexpected error.
+      </h3>
+    </ng-container>
+    <ng-template #information>
+      <h3 *ngIf="framework.name === ''">Loading...</h3>
+      <p #environmentInformation>
+        <strong
+          >{{ framework.name
+          }}{{ framework.version ? ' ' + framework.version : '' }}</strong
+        >: {{ instance.name }} {{ instance.version }}<br />
+        Running on <strong>{{ machineName }}</strong> using
+        <strong>{{ applicationServer }}</strong
+        ><br />
+        Java Version: <strong>{{ javaVersion }}</strong
+        ><br />
+        Heap size:
+        <strong>{{ processMetrics.heapSize | humanFileSize }}</strong
+        >, total JVM memory:
+        <strong>{{ processMetrics.totalMemory | humanFileSize }}</strong
+        ><br />
+        Free memory:
+        <strong>{{ processMetrics.freeMemory | humanFileSize }}</strong
+        >, max memory:
+        <strong>{{ processMetrics.maxMemory | humanFileSize }}</strong
+        ><br />
+        Free disk space:
+        <strong>{{ fileSystem.freeSpace | humanFileSize }}</strong
+        >, total disk space:
+        <strong>{{ fileSystem.totalSpace | humanFileSize }}</strong
+        ><br />
+        Up since:
+        <strong><span appToDate [time]="uptime"></span></strong> (<span
+          appTimeSince
+          [time]="uptime"
+        ></span
+        >)
+      </p>
+    </ng-template>
   </div>
   <div class="modal-footer">
     <span class="pull-left p-xxs">

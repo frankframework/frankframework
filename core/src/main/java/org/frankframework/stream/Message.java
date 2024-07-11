@@ -78,7 +78,7 @@ import org.xml.sax.SAXException;
 public class Message implements Serializable, Closeable {
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
-	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
+	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
@@ -815,6 +815,12 @@ public class Message implements Serializable, Closeable {
 		return "Message[" + Integer.toHexString(hashCode()) + ":" + getRequestClass() + "]";
 	}
 
+	/**
+	 * Please note that this method should only be used when you don't know the type of object. In all other cases,
+	 * use the constructor of {@link Message} or a more applicable subclass like {@link FileMessage} or {@link UrlMessage}
+	 *
+	 * @return a Message of the correct type for the given object
+	 */
 	public static Message asMessage(Object object) {
 		if (object == null) {
 			return nullMessage();

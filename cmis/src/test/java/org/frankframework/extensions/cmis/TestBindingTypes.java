@@ -116,7 +116,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		}
 		configure(bindingType, action);
 
-		String actualResult = sender.sendMessageOrThrow(Message.asMessage(input), session).asString();
+		String actualResult = sender.sendMessageOrThrow(new Message(input), session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 
@@ -126,7 +126,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		if (action != CmisSender.CmisAction.GET) return;
 		configure(bindingType, action);
 
-		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(Message.asMessage(input), session)));
+		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(new Message(input), session)));
 		Message message = (Message) session.get("fileContent");
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, message.asString());
 	}

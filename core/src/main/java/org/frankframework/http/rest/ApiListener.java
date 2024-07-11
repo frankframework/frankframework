@@ -146,6 +146,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
+		if (getConsumes() == MediaTypes.DETECT) {
+			throw new ConfigurationException("cannot set consumes attribute to [DETECT]");
+		}
 
 		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			if (StringUtils.isEmpty(getJwksUrl())) {
@@ -299,7 +302,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The required contentType on requests, if it doesn't match a <code>415 Unsupported Media Type</code> is replied
+	 * The required contentType on requests, if it doesn't match a <code>415 Unsupported Media Type</code> is replied.
 	 *
 	 * @ff.default ANY
 	 */
@@ -308,7 +311,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The specified contentType on response. When <code>ANY</code> the response will determine the content type based on the return data.
+	 * The specified contentType on response. When <code>ANY</code> the response will determine the content-type when it's known and will never calculate it. If no match is found <code>*&#47;*</code> will be used.
+	 * When <code>DETECT</code> the framework attempts to detect the MimeType (as well as charset) when not known.
 	 *
 	 * @ff.default ANY
 	 */

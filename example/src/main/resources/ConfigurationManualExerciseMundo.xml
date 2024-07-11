@@ -34,12 +34,12 @@
                 <Forward name="else" path="answerError" />
                 <Forward name="exception" path="answerError" />
             </XmlIfPipe>
-            <FixedResultPipe name="answerOk" returnString="ok">
+            <EchoPipe name="answerOk" getInputFromFixedValue="ok">
                 <Forward name="success" path="READY" />
-            </FixedResultPipe>
-            <FixedResultPipe name="answerError" returnString="error">
+            </EchoPipe>
+            <EchoPipe name="answerError" getInputFromFixedValue="error">
                 <Forward name="success" path="ERROR" />
-            </FixedResultPipe>
+            </EchoPipe>
         </Pipeline>
     </Adapter>
 </Module>

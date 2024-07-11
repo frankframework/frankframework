@@ -16,7 +16,6 @@ import {
   AppService,
   ConsoleState,
   MessageLog,
-  ServerInfo,
 } from './app.service';
 import {
   ActivatedRoute,
@@ -43,6 +42,7 @@ import { Title } from '@angular/platform-browser';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { ToastService } from './services/toast.service';
+import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
 
@@ -54,7 +54,6 @@ import { deepMerge } from './utils';
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: ServerInfo | null = null;
-  loggedin = false;
   monitoring = false;
   config_database = false;
   dtapStage = '';
@@ -94,6 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private appService: AppService,
     private idle: Idle,
     private modalService: NgbModal,
+    private serverInfoService: ServerInfoService,
     private websocketService: WebsocketService,
     @Inject(LOCALE_ID) private locale: string,
   ) {
@@ -150,8 +150,6 @@ export class AppComponent implements OnInit, OnDestroy {
           }
         }
       });
-
-    this.authService.loggedin(); //Check if the user is logged in.
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
       this.pollerService
@@ -235,9 +233,17 @@ export class AppComponent implements OnInit, OnDestroy {
     this.debugService.log('Initializing Frank!Console');
 
     this.consoleState.init = appInitState.INIT;
-    this.appService.getServerInfo().subscribe({
+    this.serverInfoService.refresh();
+    this.serverInfoService.serverInfo$.pipe(first()).subscribe({
       next: (data) => {
         this.serverInfo = data;
+
+          this.appService.dtapStage = data['dtap.stage'];
+          this.dtapStage = data['dtap.stage'];
+          this.dtapSide = data['dtap.side'];
+          // appService.userName = data["userName"];
+          this.userName = data['userName'];
+          this.authService.setLoggedIn(this.userName);
 
         this.consoleState.init = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
@@ -284,10 +290,10 @@ export class AppComponent implements OnInit, OnDestroy {
           this.debugService.setLevel(3);
         }
 
-        //Was it able to retrieve the serverinfo without logging in?
-        if (!this.loggedin) {
-          this.idle.setTimeout(0);
-        }
+          //Was it able to retrieve the serverinfo without logging in?
+          if (!this.authService.isLoggedIn()) {
+            this.idle.setTimeout(0);
+          }
 
         this.appService.getConfigurations().subscribe((data) => {
           this.appService.updateConfigurations(data);
@@ -334,9 +340,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.appService.triggerAppConstants();
       }
     });
-
-    const token = sessionStorage.getItem('authToken');
-    this.loggedin = token != null && token != 'null' ? true : false;
   }
 
   checkIafVersions(): void {

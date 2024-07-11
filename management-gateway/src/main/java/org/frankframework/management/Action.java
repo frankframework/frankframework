@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2023 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,12 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.pipes;
+package org.frankframework.management;
 
-import org.frankframework.configuration.ConfigurationWarning;
-
-@Deprecated(forRemoval = true, since = "7.6.0")
-@ConfigurationWarning("Use FixedResultPipe instead")
-public class FixedResult extends FixedResultPipe {
-
+public enum Action {
+	STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
 }

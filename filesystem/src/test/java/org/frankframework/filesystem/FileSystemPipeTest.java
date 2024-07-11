@@ -718,9 +718,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		prr = fileSystemPipe.doPipe(input, session);
 		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
-		String result=prr.getResult().asString();
+		Message result = prr.getResult();
 
-		log.debug(result);
+		log.debug(result.asString());
 
 		// TODO test that the fileSystemPipe has returned the an XML with the details of the file
 //		Iterator<F> it = result;
@@ -731,6 +731,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //		}
 
 		assertFileCountEquals(result, numberOfFiles);
+		result.close();
 	}
 
 	@Test
@@ -813,9 +814,10 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		prr = fileSystemPipe.doPipe(input, session);
 		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
-		String result=prr.getResult().asString();
+		Message result = prr.getResult();
 		waitForActionToFinish();
 
 		assertFileCountEquals(result, 2);
+		result.close();
 	}
 }

@@ -7,16 +7,6 @@ body:
       value: |
         > [!CAUTION]
         > Please do not add sensitive information in issues, you can provide extra information via email using the issue number as reference.
-  - type: dropdown
-    attributes:
-      label: Is your Frank!Framework up to date?
-      description: Have you tried updating to the latest version to see if the bug still exists?
-      options:
-        - Yes I've updated and the bug still exists
-        - Yes I've updated and the bug has been fixed, can it be backported?
-        - No, I can't update
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: Current Behavior

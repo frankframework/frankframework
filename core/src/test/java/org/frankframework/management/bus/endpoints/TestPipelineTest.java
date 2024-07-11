@@ -9,6 +9,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine.ExitState;
@@ -21,10 +26,6 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
-import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -62,7 +63,7 @@ public class TestPipelineTest extends BusTestBase {
 
 	public static class TestPipelineSessionAdapter extends Adapter {
 		@Override
-		public PipeLineResult processMessage(String messageId, org.frankframework.stream.Message message, PipeLineSession session) {
+		public PipeLineResult processMessageDirect(String messageId, org.frankframework.stream.Message message, PipeLineSession session) {
 			try {
 				String action = message.asString();
 				if(action.startsWith("sessionKey")) {
@@ -157,7 +158,7 @@ public class TestPipelineTest extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("sessionKey", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
 		request.setHeader("adapter", TEST_PIPELINE_ADAPER_NAME);
-		request.setHeader("sessionKeys", "[{\"index\":0,\"key\":\"sessionKeyName\",\"value\":\"sessionKeyValue\"}]");
+		request.setHeader("sessionKeys", "[{\"key\":\"sessionKeyName\",\"value\":\"sessionKeyValue\"}]");
 		Message<?> response = callSyncGateway(request);
 		assertEquals("sessionKey", responseToString(response.getPayload()));
 	}

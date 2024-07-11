@@ -28,13 +28,11 @@ import jakarta.json.JsonStructure;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -163,7 +161,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws SQLException {
+	protected org.frankframework.stream.Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;
@@ -270,7 +268,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 		}
 
 		JsonStructure result = types.build();
-		return new PipeRunResult(null, new org.frankframework.stream.Message(result.toString()));
+		return new org.frankframework.stream.Message(result.toString());
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,10 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.context.ServletContextAware;
@@ -95,10 +99,9 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isEmpty(value))
-				continue;
-
-			ClassUtils.invokeSetter(authenticator, method, value);
+			if(StringUtils.isNotEmpty(value)) {
+				ClassUtils.invokeSetter(authenticator, method, value);
+			}
 		}
 
 		return authenticator;
@@ -118,7 +121,7 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 		webSecurity.addSecurityFilterChainBuilder(() -> chain);
 	}
 
-	public SecurityFilterChain configureChain() {
+	private SecurityFilterChain configureChain() throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
 
 		authenticator.registerServlet(createServletConfig("backendServletBean"));
@@ -126,6 +129,11 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 		authenticator.registerServlet(createServletConfig("testtoolServletBean"));
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
+
+		httpSecurity.csrf(CsrfConfigurer::disable); //Disable CSRF, should be configured in the Ladybug
+		httpSecurity.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
+		httpSecurity.logout(LogoutConfigurer::disable); //Disable the logout filter
+		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
 		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 

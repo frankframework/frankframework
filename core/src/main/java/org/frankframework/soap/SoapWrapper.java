@@ -220,9 +220,9 @@ public class SoapWrapper {
 			return 0;
 		}
 		// Do not optimize transformer with extractMessageWithTransformers() method, since the output is always "0", even though fault parts are not found at all.
-		String faultCount = extractFaultCount11.transform(message.asSource());
+		String faultCount = extractFaultCount11.transform(message);
 		if (StringUtils.isEmpty(faultCount) || "0".equals(faultCount)) {
-			faultCount = extractFaultCount12.transform(message.asSource());
+			faultCount = extractFaultCount12.transform(message);
 		}
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");

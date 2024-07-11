@@ -13,6 +13,9 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.CloseUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,12 +24,22 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestBrowseJdbcTable extends BusTestBase {
+	private org.frankframework.stream.Message inputXmlMessage;
+
+	@BeforeEach
+	public void setup() {
+		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcTable/request.xml");
+		inputXmlMessage = new UrlMessage(url);
+	}
+
+	@AfterEach
+	public void teardown() {
+		CloseUtils.closeSilently(inputXmlMessage);
+	}
 
 	@Test
 	public void testBrowseTableWithoutTablename() {
-		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
-		org.frankframework.stream.Message responseXmlMessage = new UrlMessage(url);
-		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
 		try {
@@ -40,22 +53,54 @@ public class TestBrowseJdbcTable extends BusTestBase {
 
 	@Test
 	public void testBrowseTable() throws Exception {
-		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
-		org.frankframework.stream.Message responseXmlMessage = new UrlMessage(url);
-		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
 		request.setHeader("table", "testTable");
 		Message<?> response = callSyncGateway(request);
-		String expectedJson = TestFileUtils.getTestFile("/Management/BrowseJdbcResponseMessage.json");
+		String expectedJson = TestFileUtils.getTestFile("/Management/BrowseJdbcTable/default.json");
+		MatchUtils.assertJsonEquals(expectedJson, (String) response.getPayload());
+	}
+
+	@Test
+	public void testBrowseTableNumberOfRowsOnly() throws Exception {
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
+
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
+		request.setHeader("numberOfRowsOnly", true);
+		request.setHeader("table", "testTable");
+		Message<?> response = callSyncGateway(request);
+		String expectedJson = TestFileUtils.getTestFile("/Management/BrowseJdbcTable/nrOfRows.json");
+		MatchUtils.assertJsonEquals(expectedJson, (String) response.getPayload());
+	}
+
+	@Test
+	public void testBrowseTableOrderBy() throws Exception {
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
+
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
+		request.setHeader("order", "date");
+		request.setHeader("table", "testTable");
+		Message<?> response = callSyncGateway(request);
+		String expectedJson = TestFileUtils.getTestFile("/Management/BrowseJdbcTable/orderBy.json");
+		MatchUtils.assertJsonEquals(expectedJson, (String) response.getPayload());
+	}
+
+	@Test
+	public void testBrowseTableWhere() throws Exception {
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
+
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
+		request.setHeader("where", "something=\"true\"");
+		request.setHeader("table", "testTable");
+		Message<?> response = callSyncGateway(request);
+		String expectedJson = TestFileUtils.getTestFile("/Management/BrowseJdbcTable/where.json");
 		MatchUtils.assertJsonEquals(expectedJson, (String) response.getPayload());
 	}
 
 	@Test
 	public void testBrowseTableMaxSmallerThenMin() {
-		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
-		org.frankframework.stream.Message responseXmlMessage = new UrlMessage(url);
-		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
 		request.setHeader("table", "testTable");
@@ -72,9 +117,7 @@ public class TestBrowseJdbcTable extends BusTestBase {
 
 	@Test
 	public void testBrowseTableMaxMoreThen100() {
-		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
-		org.frankframework.stream.Message responseXmlMessage = new UrlMessage(url);
-		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);
+		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
 		request.setHeader("table", "testTable");

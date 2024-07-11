@@ -84,7 +84,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessageOrThrow(Message.asMessage("dummy"), session).asString();
+		String result = sender.sendMessageOrThrow(new Message("dummy"), session).asString();
 		assertEqualsIgnoreCRLF(getFile("testWithDefaultPort.txt"), result.trim());
 	}
 
@@ -98,7 +98,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessageOrThrow(Message.asMessage("dummy"), session).asString();
+		String result = sender.sendMessageOrThrow(new Message("dummy"), session).asString();
 		assertEqualsIgnoreCRLF(getFile("testWithRandomPort.txt"), result.trim());
 	}
 
@@ -801,7 +801,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.addParameter(new Parameter("string-part", "<string content/>"));
 
 		session.put("stringPart", new Message("mock pdf content"));
-		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		session.put("binaryPart", new Message(new Message("mock pdf content").asInputStream()));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
 		sender.configure();
@@ -837,7 +837,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.addParameter(new Parameter("string-part", "<string content/>"));
 
 		session.put("stringPart", new Message("mock pdf content"));
-		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		session.put("binaryPart", new Message(new Message("mock pdf content").asInputStream()));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
 		sender.configure();
@@ -871,7 +871,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.addParameter(new Parameter("string-part", "<string content/>"));
 
 		session.put("stringPart", new Message("mock pdf content"));
-		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		session.put("binaryPart", new Message(new Message("mock pdf content").asInputStream()));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
 		sender.configure();
@@ -906,7 +906,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.addParameter(new Parameter("string-part", "<string content/>"));
 
 		session.put("stringPart", new Message("mock pdf content"));
-		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		session.put("binaryPart", new Message(new Message("mock pdf content").asInputStream()));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
 		sender.configure();
