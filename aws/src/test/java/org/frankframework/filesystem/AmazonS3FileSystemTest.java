@@ -11,22 +11,30 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
+@Testcontainers(disabledWithoutDocker = true)
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
 	private static final int WAIT_TIMEOUT_MILLIS = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
 	@TempDir
 	private Path tempdir;
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
 	@Override

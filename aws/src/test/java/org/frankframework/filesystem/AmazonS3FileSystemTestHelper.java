@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import io.findify.s3mock.S3Mock;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.testutil.PropertyUtil;
@@ -56,35 +55,28 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
 	private final Region clientRegion = Region.EU_WEST_1;
-	public static final int S3_PORT = 19090;
-	private final String serviceEndpoint = "http://localhost:" + S3_PORT;
+	private final String serviceEndpoint;
 	private final boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
 
 	private @Getter S3Client s3Client;
 
 	public Path tempFolder;
 
-	private S3Mock s3Mock;
-
-	public AmazonS3FileSystemTestHelper(Path tempFolder) {
+	public AmazonS3FileSystemTestHelper(Path tempFolder, String serviceEndpoint) {
 		this.tempFolder = tempFolder;
+		this.serviceEndpoint = serviceEndpoint;
 	}
 
 	@Override
 	public void setUp() {
-		if (runLocalStub) {
-			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
-			s3Mock.start();
-		}
-
 		s3Client = createS3Client();
-		if (!runLocalStub) {
-			cleanUpFolder(null);
-		}
 
 		try {
 			// Test whether the bucket exists
 			s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+
+			// If the bucket exists, clean up the folder
+			cleanUpFolder(null);
 		} catch (NoSuchBucketException noSuchBucketException) {
 			// Create the bucket if it doesn't exist
 			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
@@ -107,9 +99,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		if (runLocalStub) {
 			awsCredentials = AwsBasicCredentials.create("user", "pass");
 
-			if (StringUtils.isNotBlank(serviceEndpoint)) {
-				s3ClientBuilder.endpointOverride(URI.create(serviceEndpoint));
-			}
+			s3ClientBuilder.endpointOverride(URI.create(serviceEndpoint));
 		} else {
 			awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
 		}
@@ -120,9 +110,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void tearDown() {
-		if (s3Mock != null) {
-			s3Mock.shutdown();
-		}
+		//
 	}
 
 	@Override
