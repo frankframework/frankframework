@@ -203,8 +203,8 @@ public class TransactionalStorage extends FrankApiBase {
 			@RequestParam(value = "startDate", required = false) String startDateStr,
 			@RequestParam(value = "endDate", required = false) String endDateStr,
 			@RequestParam(value = "sort", required = false) String sort,
-			@RequestParam(value = "skip", required = false) int skipMessages,
-			@RequestParam(value = "max", required = false) int maxMessages
+			@RequestParam(value = "skip", required = false, defaultValue = "0") int skipMessages,
+			@RequestParam(value = "max", required = false, defaultValue = "0") int maxMessages
 	) {
 		StorageSource storageSource = StorageSource.fromString(storageSourcePath);
 
