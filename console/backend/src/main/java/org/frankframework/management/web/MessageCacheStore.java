@@ -29,20 +29,9 @@ public class MessageCacheStore {
 
 	private final Map<String, MessageCache> messages = new HashMap<>();
 
-	/*public Message<?> getCachedOrLatest(String name, RequestMessageBuilder messageBuilder, FrankApiBase apiBase) {
-		Message<?> cachedMessage = getCachedMessage(name);
-		if(cachedMessage != null) {
-			return cachedMessage;
-		}
-
-		Message<?> latestMessage = apiBase.sendSyncMessageWithoutHttp(messageBuilder);
-		putMessage(name, latestMessage);
-		return latestMessage;
-	}*/
-
 	public Message<?> getCachedMessage(String name) {
 		MessageCache cache = messages.get(name);
-		if (cache != null/* && cache.expires().isAfter(Instant.now())*/) {
+		if (cache != null) {
 			return cache.message();
 		}
 
@@ -50,9 +39,9 @@ public class MessageCacheStore {
 	}
 
 	public void putMessage(String name, Message<?> message) {
-		this.messages.put(name, new MessageCache(name, message/*, Instant.now().plusSeconds(120)*/));
+		this.messages.put(name, new MessageCache(name, message));
 	}
 
-	protected record MessageCache(String name, Message<?> message/*, Instant expires*/) {}
+	protected record MessageCache(String name, Message<?> message) {}
 
 }

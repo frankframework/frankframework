@@ -38,7 +38,7 @@ import lombok.Getter;
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
 	@Autowired
-	protected MessageCacheStore messageCacheStore;
+	protected @Getter MessageCacheStore messageCacheStore;
 
 	@Autowired
 	protected @Getter HttpServletRequest servletRequest;

@@ -53,7 +53,7 @@ public class BusResponseTypesTest {
 	@Test
 	public void testJson() {
 		JsonMessage message = new JsonMessage("json");
-		assertEquals("\"json\"", message.getPayload());
+		assertEquals("json", message.getPayload());
 		assertEquals("application/json", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
 		assertEquals(200, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}
