@@ -140,7 +140,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 		email.addSubElement(message);
 		message.setValue(StreamUtil.streamToString(currentFile.getInputStream()));
 
-		Message msg=new Message(email.toXML());
+		Message msg=new Message(email.asXmlString());
 		System.out.println("email: ["+msg+"]");
 		mailSender.sendMessageOrThrow(msg, null);
 		Thread.sleep(5000);
