@@ -21,11 +21,13 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.IDocumentBuilder;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.XmlWriter;
+import org.springframework.http.MediaType;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -38,12 +40,11 @@ import org.xml.sax.helpers.AttributesImpl;
  * function returns the node and sub nodes as an indented xml string.
  * <p/>
  *
- * @deprecated Please replace with {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
+ * If possible, use {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
  *
  * @author Johan Verrips
  * @author Peter Leeuwenburgh
  */
-@Deprecated
 public class XmlBuilder {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -123,7 +124,7 @@ public class XmlBuilder {
 	}
 
 	public Message asMessage() {
-		return new Message(asXmlString());
+		return new Message(asXmlString(), new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 	}
 
 	public String asXmlString() {
