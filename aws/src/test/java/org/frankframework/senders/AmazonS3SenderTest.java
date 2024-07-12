@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import com.amazonaws.services.s3.model.S3Object;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
@@ -23,7 +24,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
-
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * AmazonS3Sender tests.
@@ -31,6 +33,7 @@ import org.frankframework.util.StreamUtil;
  * @author alisihab
  *
  */
+@Testcontainers(disabledWithoutDocker = true)
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
 	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
@@ -42,10 +45,12 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	@TempDir
 	private Path tempdir;
 
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
 	@Override
