@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class UtilsTest {
+public class RekenboxCallerTest {
 
 	@TempDir
 	private static Path tempDir;
@@ -28,7 +28,7 @@ public class UtilsTest {
 	public void testFileToStringFileNameEndLine() throws Exception {
 		// Misc.resourceToString()
 		writeToTestFile();
-		assertEquals("inside the lebron file", Utils.fileToString(file.toString(), " the end", false));
+		assertEquals("inside the lebron file", RekenBoxCaller.fileToString(file.toString(), " the end", false));
 	}
 
 	private void writeToTestFile() throws IOException {
