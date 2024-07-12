@@ -27,6 +27,7 @@ best practices and perform security testing before releasing your application.
 | Version | Supported                  | Security Fixes*  | Minimal JRE | Released         |
 | ------- | -------------------------- | ---------------- | ----------- | ---------------- |
 | latest  | :white_check_mark:         |:white_check_mark:| Java SE 17  |                  |
+| 8.2.x   | :white_check_mark:         |:white_check_mark:| Java SE 17  | Jul 11, 2024     |
 | 8.1.x   | :white_check_mark:         |:white_check_mark:| Java SE 17  | Apr 5, 2024      |
 | 8.0.x   | :white_check_mark:         |:white_check_mark:| Java SE 11  | Dec 23, 2023     |
 | 7.9.x   | :eight_pointed_black_star: |:white_check_mark:| Java SE 8   | Dec 14, 2023     |
