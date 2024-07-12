@@ -147,7 +147,7 @@ public class BisUtils {
 		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
-		return messageHeaderElement.toXML();
+		return messageHeaderElement.asXmlString();
 	}
 
 	public String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) {
@@ -197,7 +197,7 @@ public class BisUtils {
 			errorListElement.addSubElement(errorElement);
 			resultElement.addSubElement(errorListElement);
 		}
-		return resultElement.toXML();
+		return resultElement.asXmlString();
 	}
 	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
 		List<String> messages = new ArrayList<>();

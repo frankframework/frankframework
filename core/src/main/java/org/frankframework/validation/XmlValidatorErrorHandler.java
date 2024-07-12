@@ -127,7 +127,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 	}
 
 	public String getXmlReasons() {
-		return xmlReasons.toXML();
+		return xmlReasons.asXmlString();
 	}
 }
 

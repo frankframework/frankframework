@@ -588,7 +588,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command", e);
 		}
-		return new Message(blobOutputStream.getWarnings().toXML());
+		return blobOutputStream.getWarnings().asMessage();
 	}
 
 	private ClobWriter getClobWriter(PreparedStatement statement, int clobColumn) throws SQLException, JdbcException {
@@ -622,7 +622,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command", e);
 		}
-		return new Message(clobWriter.getWarnings().toXML());
+		return clobWriter.getWarnings().asMessage();
 	}
 
 	protected SenderResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{

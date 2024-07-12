@@ -360,8 +360,10 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 				}
 			}
 			ldapError.setValue(message);
-			String reasonXml=ldapError.toXML();
-			if (log.isDebugEnabled()) {log.debug("sessionKey [{}] loaded with error message [{}]", getErrorSessionKey(), reasonXml); }
+			String reasonXml = ldapError.asXmlString();
+			if (log.isDebugEnabled()) {
+				log.debug("sessionKey [{}] loaded with error message [{}]", getErrorSessionKey(), reasonXml);
+			}
 			session.put(getErrorSessionKey(),reasonXml);
 		}
 		log.debug("exit storeLdapException");
@@ -414,7 +416,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		DirContext dirContext = null;
 		try{
 			dirContext = getDirContext(paramValueMap);
-			return attributesToXml(dirContext.getAttributes(entryName, getAttributesReturnedParameter())).toXML();
+			return attributesToXml(dirContext.getAttributes(entryName, getAttributesReturnedParameter())).asXmlString();
 		} catch(NamingException e) {
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
 			//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations.
@@ -736,7 +738,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
-			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
+			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).asXmlString();
 		} catch (NamingException e) {
 			if (isReplyNotFound() && "Unprocessed Continuation Reference(s)".equals(e.getMessage())) {
 				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[{}]", filterExpression);
@@ -754,7 +756,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		try {
 			dirContext = getDirContext(paramValueMap);
 			String[] subs = getSubContextList(dirContext, entryName, session);
-			return subContextsToXml(entryName, subs, dirContext).toXML();
+			return subContextsToXml(entryName, subs, dirContext).asXmlString();
 		} catch (NamingException e) {
 			storeLdapException(e, session);
 			throw new SenderException(e);
@@ -767,7 +769,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
-			return getTree(dirContext, entryName, session, paramValueMap).toXML();
+			return getTree(dirContext, entryName, session, paramValueMap).asXmlString();
 		} finally {
 			closeDirContext(dirContext);
 		}
@@ -780,7 +782,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			// NamingException (with error code 49) being converted to
 			// SenderException.
 			dirContext = loopkupDirContext(paramValueMap);
-			attributesToXml(dirContext.getAttributes(principal, getAttributesReturnedParameter())).toXML();
+			attributesToXml(dirContext.getAttributes(principal, getAttributesReturnedParameter())).asXmlString();
 			return DEFAULT_RESULT_CHALLENGE_OK;
 		} catch(NamingException e) {
 			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
@@ -885,9 +887,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 				contextElem.addSubElement(attrs);
 			}
 			else {
-				for (int i = 0; i < subCtxList.length; i++)
-				{
-					contextElem.addSubElement( getTree((DirContext)parentContext.lookup(context), subCtxList[i], session, paramValueMap) );
+				for (String s : subCtxList) {
+					contextElem.addSubElement(getTree((DirContext) parentContext.lookup(context), s, session, paramValueMap));
 				}
 				contextElem.addSubElement( attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter())));
 			}

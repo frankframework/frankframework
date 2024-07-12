@@ -71,7 +71,7 @@ public class GetFromSession  extends FixedForwardPipe {
 					itemXml.setValue(items.get(item));
 					itemsXml.addSubElement(itemXml);
 				}
-				result = itemsXml.toXML();
+				result = itemsXml.asMessage();
 			}
 			log.debug("got [{}] from pipeLineSession under key [{}]", result, getSessionKey());
 		}

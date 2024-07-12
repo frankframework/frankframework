@@ -406,7 +406,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(propertiesXml);
-			return new SenderResult(cmisXml.toXML());
+			return new SenderResult(cmisXml.asMessage());
 		}
 
 		Message content = getMessageFromContentStream(document.getContentStream());
@@ -627,7 +627,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
 			cmisXml.addSubElement(rowsetXml);
 		}
-		return new SenderResult(cmisXml.toXML());
+		return new SenderResult(cmisXml.asMessage());
 	}
 
 	private CmisObject getCmisObject(Session cmisSession, Message message) throws SenderException, CmisObjectNotFoundException {
@@ -863,7 +863,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				throw new CmisNotSupportedException("Operation not implemented");
 		}
 
-		return new SenderResult(resultXml.toXML());
+		return new SenderResult(resultXml.asMessage());
 	}
 
 	private SenderResult sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException{

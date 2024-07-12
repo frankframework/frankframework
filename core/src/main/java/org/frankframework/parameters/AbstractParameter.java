@@ -289,7 +289,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 							itemXml.setValue(item);
 							itemsXml.addSubElement(itemXml);
 						}
-						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
+						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
 					} else if (getType() == ParameterType.MAP && sourceObject instanceof Map) {
 						// larva can produce the sourceObject as map
 						Map<String, String> items = (Map<String, String>) sourceObject;
@@ -300,7 +300,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 							itemXml.setValue(items.get(item));
 							itemsXml.addSubElement(itemXml);
 						}
-						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
+						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
 						if (StringUtils.isNotEmpty(getContextKey())) {
