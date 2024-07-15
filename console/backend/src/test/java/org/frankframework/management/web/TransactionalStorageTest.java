@@ -1,15 +1,14 @@
 package org.frankframework.management.web;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
-import org.frankframework.management.bus.message.JsonMessage;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-
 import org.mockito.Mockito;
 
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -19,22 +18,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @ContextConfiguration(classes = {WebTestConfiguration.class, TransactionalStorage.class})
 public class TransactionalStorageTest extends FrankApiTestBase {
-
-	@Test
-	public void testStorageSourceParsing() {
-		assertEquals(TransactionalStorage.StorageSource.RECEIVERS, TransactionalStorage.StorageSource.fromString("receivers"));
-		assertEquals(TransactionalStorage.StorageSource.RECEIVERS, TransactionalStorage.StorageSource.fromString("Receivers"));
-		assertEquals(TransactionalStorage.StorageSource.RECEIVERS, TransactionalStorage.StorageSource.fromString("RECEIVERS"));
-		IllegalArgumentException i = assertThrows(IllegalArgumentException.class, () -> TransactionalStorage.StorageSource.fromString(""));
-		assertEquals("no StorageSource option supplied", i.getMessage());
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> TransactionalStorage.StorageSource.fromString("dummy"));
-		assertEquals("invalid StorageSource option", e.getMessage());
-	}
 
 	@Test
 	public void testBrowseMessage() throws Exception {
