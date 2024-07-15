@@ -24,7 +24,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -51,17 +50,6 @@ public class TransactionalStorage extends FrankApiBase {
 
 	public enum StorageSource {
 		RECEIVERS, PIPES;
-
-		public static StorageSource fromString(String value) {
-			if (StringUtils.isNotBlank(value)) {
-				try {
-					return StorageSource.valueOf(value.toUpperCase());
-				} catch (IllegalArgumentException e) {
-					throw new IllegalArgumentException("invalid StorageSource option");
-				}
-			}
-			throw new IllegalArgumentException("no StorageSource option supplied");
-		}
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
