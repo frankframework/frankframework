@@ -21,10 +21,12 @@ import java.util.Optional;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGatewayFactory;
 import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
+import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
@@ -51,6 +53,11 @@ public class WebConfiguration implements WebMvcConfigurer, EnvironmentAware {
 
 		converters.add(new InputStreamHttpMessageConverter());
 		converters.add(new FormHttpMessageConverter());
+	}
+
+	@Override
+	public void addFormatters(FormatterRegistry registry) {
+		ApplicationConversionService.configure(registry);
 	}
 
 	@Bean

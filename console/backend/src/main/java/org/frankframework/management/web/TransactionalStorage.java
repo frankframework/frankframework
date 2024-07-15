@@ -69,13 +69,11 @@ public class TransactionalStorage extends FrankApiBase {
 	public ResponseEntity<?> browseMessage(
 			@PathVariable("configuration") String configuration,
 			@PathVariable("adapterName") String adapterName,
-			@PathVariable("storageSource") String storageSourcePath,
+			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
 			@PathVariable("messageId") String messageId
 	) {
-		StorageSource storageSource = StorageSource.fromString(storageSourcePath);
-
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
 
@@ -98,13 +96,11 @@ public class TransactionalStorage extends FrankApiBase {
 	public ResponseEntity<?> downloadMessage(
 			@PathVariable("configuration") String configuration,
 			@PathVariable("adapterName") String adapterName,
-			@PathVariable("storageSource") String storageSourcePath,
+			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
 			@PathVariable("messageId") String messageId
 	) {
-		StorageSource storageSource = StorageSource.fromString(storageSourcePath);
-
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
 
@@ -127,13 +123,11 @@ public class TransactionalStorage extends FrankApiBase {
 	public ResponseEntity<StreamingResponseBody> downloadMessages(
 			@PathVariable("configuration") String configuration,
 			@PathVariable("adapterName") String adapterName,
-			@PathVariable("storageSource") String storageSourcePath,
+			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
 			@RequestPart("messageIds") String messageIdsPart
 	) {
-		StorageSource storageSource = StorageSource.fromString(storageSourcePath);
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
@@ -188,7 +182,7 @@ public class TransactionalStorage extends FrankApiBase {
 	public ResponseEntity<?> browseMessages(
 			@PathVariable("configuration") String configuration,
 			@PathVariable("adapterName") String adapterName,
-			@PathVariable("storageSource") String storageSourcePath,
+			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
 
@@ -206,8 +200,6 @@ public class TransactionalStorage extends FrankApiBase {
 			@RequestParam(value = "skip", required = false, defaultValue = "0") int skipMessages,
 			@RequestParam(value = "max", required = false, defaultValue = "0") int maxMessages
 	) {
-		StorageSource storageSource = StorageSource.fromString(storageSourcePath);
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
