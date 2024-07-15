@@ -112,13 +112,13 @@ public class NetStorageSender extends HttpSenderBase {
 
 
 		ParameterList parameterList = getParameterList();
-		if(getAction() == Action.UPLOAD && parameterList.findParameter(FILE_PARAM_KEY) == null) {
+		if(getAction() == Action.UPLOAD && !parameterList.hasParameter(FILE_PARAM_KEY)) {
 			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
 		}
-		if(getAction() == Action.RENAME && parameterList.findParameter(DESTINATION_PARAM_KEY) == null) {
+		if(getAction() == Action.RENAME && !parameterList.hasParameter(DESTINATION_PARAM_KEY)) {
 			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
 		}
-		if(getAction() == Action.MTIME && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
+		if(getAction() == Action.MTIME && !parameterList.hasParameter(MTIME_PARAM_KEY)) {
 			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
 		}
 

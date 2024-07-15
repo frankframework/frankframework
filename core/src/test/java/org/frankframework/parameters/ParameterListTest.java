@@ -1,15 +1,18 @@
 package org.frankframework.parameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
 
 public class ParameterListTest {
 
@@ -25,8 +28,11 @@ public class ParameterListTest {
 		list.configure();
 
 		assertNotNull(list.findParameter("key1"));
+		assertTrue(list.hasParameter("key1"), "Expected to find parameter [key1] in parameter list");
 		assertNotNull(list.findParameter("key2"));
+		assertTrue(list.hasParameter("key2"), "Expected to find parameter [key2] in parameter list");
 		assertNull(list.findParameter("doesnt-exist"));
+		assertFalse(list.hasParameter("doesnt-exist"), "Expected not to find parameter [doesnt-exist] in parameter list");
 		assertEquals(4, list.size());
 
 		List<String> sortedList2 = new ArrayList<>();

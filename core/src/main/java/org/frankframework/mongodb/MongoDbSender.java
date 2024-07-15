@@ -138,7 +138,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		if (getAction()==null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getAction()!=MongoAction.FINDMANY) {
+		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().hasParameter(PARAM_LIMIT))) && getAction()!=MongoAction.FINDMANY) {
 			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
 		}
 	}

@@ -15,6 +15,7 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
@@ -25,8 +26,6 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-
-import jakarta.annotation.Nullable;
 
 /**
  * Provides a base class for senders with parameters.
@@ -64,7 +63,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	}
 
 	protected void checkStringAttributeOrParameter(String attributeName, String attributeValue, String parameterName) throws ConfigurationException {
-		if (StringUtils.isEmpty(attributeValue) && (getParameterList()==null || getParameterList().findParameter(parameterName)==null)) {
+		if (StringUtils.isEmpty(attributeValue) && (getParameterList()==null || !getParameterList().hasParameter(parameterName))) {
 			throw new ConfigurationException("either attribute "+attributeName+" or parameter "+parameterName+" must be specified");
 		}
 	}
