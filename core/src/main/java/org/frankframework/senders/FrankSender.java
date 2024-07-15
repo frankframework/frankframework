@@ -1,0 +1,323 @@
+/*
+   Copyright 2024 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package org.frankframework.senders;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Objects;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.frankframework.configuration.AdapterManager;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.IbisManager;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Category;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.receivers.ServiceClient;
+import org.frankframework.stream.IThreadCreator;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import nl.nn.adapterframework.dispatcher.DispatcherManager;
+
+/**
+ * Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
+ * <br/>
+ * TODO: Write out the full JavaDoc / Frank!Doc
+ */
+@Category("Basic")
+public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
+
+	/**
+	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
+	 */
+	public enum Scope { JVM, ADAPTER }
+
+	private @Getter Scope scope = Scope.ADAPTER;
+	private @Getter String target;
+	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly
+
+	private @Getter boolean synchronous=true;
+
+	private @Autowired @Setter IsolatedServiceCaller isolatedServiceCaller;
+	private @Autowired @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Autowired @Setter AdapterManager adapterManager;
+	private @Autowired @Setter IbisManager ibisManager;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ParameterList pl = getParameterList();
+		if (StringUtils.isBlank(getTarget()) && !pl.hasParameter("target")) {
+			throw new ConfigurationException("'target' required, either as parameter or as attribute in the configuration");
+		}
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		StringBuilder result = new StringBuilder();
+		ParameterList pl = getParameterList();
+		if (pl.hasParameter("scope")) {
+			result.append("param:scope");
+		} else {
+			result.append(getScope());
+		}
+		result.append("/");
+		if (pl.hasParameter("target")) {
+			result.append("param:target");
+		} else {
+			result.append(getTarget());
+		}
+		return result.toString();
+	}
+
+	@Override
+	public String getDomain() {
+		if (getParameterList().hasParameter("scope")) {
+			return "Dynamic";
+		} else {
+			return getScope().name();
+		}
+	}
+
+	@Override
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		ParameterValueList pvl = getParameterValueList(message, session);
+		Scope actualScope = determineActualScope(pvl);
+		String actualTarget = determineActualTarget(pvl);
+		log.info("{}Sending message to {} [{}]", this::getLogPrefix, ()->actualScope, ()->actualTarget);
+		ServiceClient serviceClient = switch (actualScope) {
+			case ADAPTER -> getAdapterServiceClient(actualTarget);
+			case JVM -> getJvmDispatcherServiceClient(actualTarget);
+		};
+		return invokeService(serviceClient, actualScope, actualTarget, message, session, pvl);
+	}
+
+	private SenderResult invokeService(ServiceClient serviceClient, Scope scope, String target, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeoutException {
+		try (PipeLineSession childSession = new PipeLineSession()) {
+			setupChildSession(session, pvl, childSession);
+
+			SenderResult result = doCallService(serviceClient, scope, target, message, session, childSession);
+
+			setExitState(result, childSession);
+
+			// Detach the result message from the child session, and attach to the parent session
+			result.getResult().unscheduleFromCloseOnExitOf(childSession);
+			result.getResult().closeOnCloseOf(session, this);
+
+			return result;
+		}
+	}
+
+	private static void setExitState(SenderResult result, PipeLineSession childSession) {
+		PipeLine.ExitState exitState = (PipeLine.ExitState) childSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+
+		String forwardName = Objects.toString(exitCode, null);
+		result.setForwardName(forwardName);
+		result.setSuccess(exitState==null || exitState== PipeLine.ExitState.SUCCESS);
+		result.setErrorMessage("exitState="+exitState);
+	}
+
+	private SenderResult doCallService(ServiceClient serviceClient, Scope scope, String target, Message message, PipeLineSession session, PipeLineSession childSession) throws TimeoutException, SenderException {
+		SenderResult result;
+		try {
+			if (isSynchronous()) {
+				result = new SenderResult(serviceClient.processRequest(message, childSession));
+			} else {
+				message.preserve();
+				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, session, threadLifeCycleEventListener);
+				result = new SenderResult(message);
+			}
+		} catch (ListenerException | IOException e) {
+			if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+				throw new TimeoutException(getLogPrefix()+"timeout calling " + scope + " [" + target + "]",e);
+			}
+			throw new SenderException(getLogPrefix()+"exception calling " + scope + " [" + target + "]",e);
+		} finally {
+			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
+			}
+
+			// The original message will be set by the InputOutputPipeLineProcessor, which adds it to the auto-closeable session resources list.
+			// The input message should not be managed by this sub-PipelineSession but rather the original pipeline and so it should be removed again.
+			childSession.unscheduleCloseOnSessionExit(message);
+			childSession.mergeToParentSession(getReturnedSessionKeys(), session);
+		}
+		return result;
+	}
+
+	private static void setupChildSession(PipeLineSession session, ParameterValueList pvl, PipeLineSession childSession) {
+		childSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));
+		String correlationId = session.getCorrelationId();
+		if (correlationId != null) {
+			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+		}
+		if (pvl != null) {
+			childSession.putAll(pvl.getValueMap());
+		}
+	}
+
+	private ServiceClient getJvmDispatcherServiceClient(String target) throws SenderException {
+		String serviceName;
+		boolean dllDispatch;
+		if (target.startsWith("DLL:")) {
+			dllDispatch = true;
+			serviceName = target.substring("DLL:".length());
+		} else {
+			dllDispatch = false;
+			serviceName = target;
+		}
+
+		DispatcherManager dm = getDispatcherManager(dllDispatch);
+		return ((message, session) -> {
+			try {
+				return new Message(dm.processRequest(serviceName, session.getCorrelationId(), message.asString(), session));
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix() + "Exception sending message to [" + target + "]", e);
+			}
+		});
+	}
+
+	private DispatcherManager getDispatcherManager(boolean dllDispatch) throws SenderException {
+		DispatcherManager dm;
+		try {
+			Class<?> c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
+
+			if (dllDispatch) {
+				String version = nl.nn.adapterframework.dispatcher.Version.version;
+				if (version.contains("IbisServiceDispatcher 1.3"))
+					throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
+
+				Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
+				dm = (DispatcherManager) getDispatcherManager.invoke(null, "DLL");
+			} else {
+				Method getDispatcherManager = c.getMethod("getDispatcherManager");
+				dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[]) null);
+			}
+		} catch (SenderException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SenderException("Could not load DispatcherManager", e);
+		}
+
+		return dm;
+	}
+
+	private ServiceClient getAdapterServiceClient(String target) {
+		Adapter adapter = findAdapter(target);
+		return (((message, session) -> {
+			PipeLineResult plr = adapter.processMessageDirect(null, message, session);
+			session.setExitState(plr);
+			return plr.getResult();
+		}));
+	}
+
+	private Adapter findAdapter(String target) {
+		AdapterManager actualAdapterManager;
+		String adapterName;
+		int configNameSeparator = target.indexOf('/');
+		if (configNameSeparator > 0) {
+			adapterName = target.substring(configNameSeparator + 1);
+			String configurationName = target.substring(0, configNameSeparator);
+			actualAdapterManager = ibisManager.getConfiguration(configurationName).getAdapterManager();
+		} else {
+			adapterName = target;
+			actualAdapterManager = adapterManager;
+		}
+		return actualAdapterManager.getAdapter(adapterName);
+	}
+
+	private Scope determineActualScope(ParameterValueList pvl) {
+		ParameterValue scopeParam = pvl != null ? pvl.findParameterValue("scope") : null;
+		if (scopeParam != null) {
+			return Scope.valueOf(scopeParam.asStringValue(getScope().name()));
+		}
+		return getScope();
+	}
+
+	private String determineActualTarget(ParameterValueList pvl) {
+		ParameterValue targetParam = pvl != null ? pvl.findParameterValue("target") : null;
+		if (targetParam != null) {
+			return targetParam.asStringValue(getTarget());
+		}
+		return getTarget();
+	}
+
+	/**
+	 * Synchronous or Asynchronous execution of the call to other adapter or system.
+	 * <br/>
+	 * Set to <code>false</code> to make the call asynchronously. This means that the current adapter
+	 * continues with the next pipeline and the result of the sub-adapter that was called, or other system that was called,
+	 * is ignored. Instead, the input message will be returned as the result message.
+	 *
+	 * @ff.default true
+	 */
+	public void setSynchronous(boolean b) {
+		synchronous = b;
+	}
+
+	/**
+	 * {@link Scope} decides if the FrankSender calls another adapter, or another Java program running in the same JVM.
+	 * <br/>
+	 * It is possible to set this via a parameter. If the parameter is defined but the value at runtime
+	 * is empty, then the value set via this attribute will be used as default.
+	 *
+	 * @param scope Either {@code ADAPTER} or {@code  JVM}
+	 *
+	 * @ff.default ADAPTER
+	 */
+	public void setScope(Scope scope) {
+		this.scope = scope;
+	}
+
+	/**
+	 * Target: service-name of service in other application that should be called, or name of adapter to be called.
+	 * If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a "/".
+	 * <br/>
+	 * It is possible to set a target at runtime via a parameter.
+	 * <br/>
+	 * If a parameter with name {@code target} exists but has no value, then the target configured
+	 * via the attribute will be used as a default.
+	 * 
+	 * @param target
+	 */
+	public void setTarget(String target) {
+		this.target = target;
+	}
+
+	/**
+	 * Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+	 * The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.
+	 */
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
+	}
+}

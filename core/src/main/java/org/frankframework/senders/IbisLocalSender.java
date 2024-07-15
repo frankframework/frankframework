@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.frankframework.configuration.Configuration;
@@ -43,11 +45,8 @@ import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
- * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
+ * Posts a message to another Frank!Framework-adapter in the same Frank!Framework instance. If the callee exits with an &lt;<code>exit</code>&gt;
  * that has state {@link PipeLine.ExitState#ERROR}, an error is considered to happen
  * in the caller which means that the <code>exception</code> forward is followed if it is present.
  * <p/>
@@ -102,7 +101,7 @@ import lombok.Setter;
  * @since  4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator{
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 
 	private final @Getter String domain = "Local";
 
