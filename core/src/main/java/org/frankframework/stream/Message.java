@@ -79,7 +79,7 @@ public class Message implements Serializable, Closeable {
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
-	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
+	public static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
