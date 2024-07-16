@@ -15,12 +15,11 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -64,11 +63,11 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			if (StringUtils.isEmpty(getFunctionNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"if attribute functionName is not specified, value of attribute functionNameParam must indicate parameter to obtain functionName from");
 			}
-			if (paramList==null || paramList.findParameter(getFunctionNameParam())==null) {
+			if (paramList==null || !paramList.hasParameter(getFunctionNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"functionName must be specified, either in attribute functionName, or via parameter ["+getFunctionNameParam()+"]");
 			}
 		} else {
-			if (StringUtils.isNotEmpty(getFunctionNameParam()) && paramList!=null && paramList.findParameter(getFunctionNameParam())!=null) {
+			if (StringUtils.isNotEmpty(getFunctionNameParam()) && paramList!=null && paramList.hasParameter(getFunctionNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"functionName cannot be specified both in attribute functionName ["+getFunctionName()+"] and via parameter ["+getFunctionNameParam()+"]");
 			}
 		}

@@ -249,7 +249,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		if (getParameterList() != null) {
 			// Legacy; check if the session should be created runtime (and thus for each call)
-			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null ) {
+			if(getParameterList().hasParameter("authAlias") || getParameterList().hasParameter("username")) {
 				runtimeSession = true;
 			}
 

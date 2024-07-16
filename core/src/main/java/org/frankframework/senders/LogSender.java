@@ -112,7 +112,7 @@ public class LogSender extends SenderWithParametersBase {
 
 	@Override
 	public String toString() {
-		String level = getParameterList() != null && getParameterList().findParameter(LOG_LEVEL_ATTRIBUTE_NAME)!=null ? "dynamic" : logLevel;
+		String level = getParameterList() != null && getParameterList().hasParameter(LOG_LEVEL_ATTRIBUTE_NAME) ? "dynamic" : logLevel;
 		return "LogSender ["+getName()+"] logLevel ["+level+"] logCategory ["+logCategory+"]";
 	}
 

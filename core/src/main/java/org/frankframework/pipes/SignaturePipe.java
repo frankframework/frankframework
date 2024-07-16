@@ -95,12 +95,12 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
-			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
+			if (!getParameterList().hasParameter(PARAMETER_SIGNATURE)) {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
 			if (failureForward==null)  {
-				throw new ConfigurationException("Forward [failure] must be specfied for action [" + action + "]");
+				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
 	}

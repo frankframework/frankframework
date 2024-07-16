@@ -290,7 +290,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList == null || (paramList.findParameter(ENTRYNAME) == null && getOperation() != Operation.CHALLENGE)) {
+		if (paramList == null || (!paramList.hasParameter(ENTRYNAME) && getOperation() != Operation.CHALLENGE)) {
 			throw new ConfigurationException("[" + getName()+ "] Required parameter with the name [entryName] not found!");
 		}
 		paramList.configure();
@@ -299,7 +299,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			throw new ConfigurationException("["+ getClass().getName()	+ "] manipulationSubject invalid for update operation (must be ['"
 					+ Manipulation.ATTRIBUTE + "'], which is default - remove from <pipe>)");
 		}
-		if (getOperation() == Operation.CHALLENGE && paramList.findParameter("principal") == null) {
+		if (getOperation() == Operation.CHALLENGE && !paramList.hasParameter("principal")) {
 			throw new ConfigurationException("principal should be specified using a parameter when using operation challenge");
 		}
 		IParameter credentials = paramList.findParameter("credentials");
@@ -314,8 +314,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		if (newPassword != null && !newPassword.isHidden()) {
 			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter newPassword.");
 		}
-		if (paramList.findParameter("principal") != null) {
-			if (paramList.findParameter("credentials") == null) {
+		if (paramList.hasParameter("principal")) {
+			if (!paramList.hasParameter("credentials")) {
 				throw new ConfigurationException("principal set as parameter, but no credentials parameter found");
 			}
 			principalParameterFound = true;
