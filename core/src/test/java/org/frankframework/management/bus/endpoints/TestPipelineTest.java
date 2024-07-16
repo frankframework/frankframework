@@ -151,7 +151,7 @@ public class TestPipelineTest extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("sessionKey", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
 		request.setHeader("adapter", TEST_PIPELINE_ADAPER_NAME);
-		request.setHeader("sessionKeys", "[{\"index\":0,\"key\":\"sessionKeyName\",\"value\":\"sessionKeyValue\"}]");
+		request.setHeader("sessionKeys", "[{\"key\":\"sessionKeyName\",\"value\":\"sessionKeyValue\"}]");
 		Message<?> response = callSyncGateway(request);
 		assertEquals("sessionKey", responseToString(response.getPayload()));
 	}
