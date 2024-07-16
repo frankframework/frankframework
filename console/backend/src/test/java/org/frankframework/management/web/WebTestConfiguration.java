@@ -16,6 +16,11 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 @Import(WebConfiguration.class)
 public class WebTestConfiguration {
 	@Bean
+	MessageCacheStore messageCacheStore() {
+		return new MessageCacheStore();
+	}
+
+	@Bean
 	SpringUnitTestLocalGateway outboundGateway() {
 		return Mockito.spy(SpringUnitTestLocalGateway.class);
 	}
