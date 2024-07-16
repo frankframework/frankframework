@@ -57,8 +57,14 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
+	 * {@code DLL} is a special way of invoking the other java application, loading the service via a DLL. See the
+	 * documentation of the <a href="https://github.com/frankframework/servicedispatcher">IbisServiceDispatcher</a> library for further details on how implement a Java program or DLL running
+	 * alongside the Frank!Framework that can be called from the Frank!Framework.
+	 *
+	 * <h3>See</h3>
+	 *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
 	 */
-	public enum Scope { JVM, ADAPTER }
+	public enum Scope { JVM, DLL, ADAPTER }
 
 	private @Getter Scope scope = Scope.ADAPTER;
 	private @Getter String target;
@@ -115,46 +121,45 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		log.info("{}Sending message to {} [{}]", this::getLogPrefix, ()->actualScope, ()->actualTarget);
 		ServiceClient serviceClient = switch (actualScope) {
 			case ADAPTER -> getAdapterServiceClient(actualTarget);
-			case JVM -> getJvmDispatcherServiceClient(actualTarget);
+			case JVM, DLL -> getJvmDispatcherServiceClient(actualScope, actualTarget);
 		};
 		return invokeService(serviceClient, actualScope, actualTarget, message, session, pvl);
 	}
 
-	private SenderResult invokeService(ServiceClient serviceClient, Scope scope, String target, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeoutException {
+	private SenderResult invokeService(ServiceClient serviceClient, Scope scope, String target, Message message, PipeLineSession parentSession, ParameterValueList pvl) throws SenderException, TimeoutException {
 		try (PipeLineSession childSession = new PipeLineSession()) {
-			setupChildSession(session, pvl, childSession);
+			setupChildSession(parentSession, pvl, childSession);
 
-			SenderResult result = doCallService(serviceClient, scope, target, message, session, childSession);
-
-			setExitState(result, childSession);
+			Message resultMessage = doCallService(serviceClient, scope, target, message, parentSession, childSession);
 
 			// Detach the result message from the child session, and attach to the parent session
-			result.getResult().unscheduleFromCloseOnExitOf(childSession);
-			result.getResult().closeOnCloseOf(session, this);
+			resultMessage.unscheduleFromCloseOnExitOf(childSession);
+			resultMessage.closeOnCloseOf(parentSession, this);
 
-			return result;
+			return createSenderResult(resultMessage, childSession);
 		}
 	}
 
-	private static void setExitState(SenderResult result, PipeLineSession childSession) {
+	private static SenderResult createSenderResult(Message resultMessage, PipeLineSession childSession) {
 		PipeLine.ExitState exitState = (PipeLine.ExitState) childSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-
 		String forwardName = Objects.toString(exitCode, null);
+
+		SenderResult result = new SenderResult(resultMessage);
 		result.setForwardName(forwardName);
 		result.setSuccess(exitState==null || exitState== PipeLine.ExitState.SUCCESS);
 		result.setErrorMessage("exitState="+exitState);
+
+		return result;
 	}
 
-	private SenderResult doCallService(ServiceClient serviceClient, Scope scope, String target, Message message, PipeLineSession session, PipeLineSession childSession) throws TimeoutException, SenderException {
-		SenderResult result;
+	private Message doCallService(ServiceClient serviceClient, Scope scope, String target, Message message, PipeLineSession parentSession, PipeLineSession childSession) throws TimeoutException, SenderException {
 		try {
 			if (isSynchronous()) {
-				result = new SenderResult(serviceClient.processRequest(message, childSession));
+				return serviceClient.processRequest(message, childSession);
 			} else {
-				message.preserve();
-				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, session, threadLifeCycleEventListener);
-				result = new SenderResult(message);
+				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, parentSession, threadLifeCycleEventListener);
+				return Message.nullMessage();
 			}
 		} catch (ListenerException | IOException e) {
 			if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
@@ -166,12 +171,11 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 				log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 			}
 
-			// The original message will be set by the InputOutputPipeLineProcessor, which adds it to the auto-closeable session resources list.
+			// The session-key originalMessage will be set by the InputOutputPipeLineProcessor, which adds it to the auto-closeable session resources list.
 			// The input message should not be managed by this sub-PipelineSession but rather the original pipeline and so it should be removed again.
 			childSession.unscheduleCloseOnSessionExit(message);
-			childSession.mergeToParentSession(getReturnedSessionKeys(), session);
+			childSession.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 		}
-		return result;
 	}
 
 	private static void setupChildSession(PipeLineSession session, ParameterValueList pvl, PipeLineSession childSession) {
@@ -185,25 +189,15 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		}
 	}
 
-	private ServiceClient getJvmDispatcherServiceClient(String target) throws SenderException {
-		String serviceName;
-		boolean dllDispatch;
-		if (target.startsWith("DLL:")) {
-			dllDispatch = true;
-			serviceName = target.substring("DLL:".length());
-		} else {
-			dllDispatch = false;
-			serviceName = target;
-		}
-
-		DispatcherManager dm = getDispatcherManager(dllDispatch);
-		return ((message, session) -> {
+	private ServiceClient getJvmDispatcherServiceClient(Scope scope, String target) throws SenderException {
+		DispatcherManager dm = getDispatcherManager(scope == Scope.DLL);
+		return (message, session) -> {
 			try {
-				return new Message(dm.processRequest(serviceName, session.getCorrelationId(), message.asString(), session));
+				return new Message(dm.processRequest(target, session.getCorrelationId(), message.asString(), session));
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix() + "Exception sending message to [" + target + "]", e);
 			}
-		});
+		};
 	}
 
 	private DispatcherManager getDispatcherManager(boolean dllDispatch) throws SenderException {
@@ -233,11 +227,11 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	private ServiceClient getAdapterServiceClient(String target) {
 		Adapter adapter = findAdapter(target);
-		return (((message, session) -> {
-			PipeLineResult plr = adapter.processMessageDirect(null, message, session);
+		return (message, session) -> {
+			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
 			session.setExitState(plr);
 			return plr.getResult();
-		}));
+		};
 	}
 
 	private Adapter findAdapter(String target) {
@@ -248,6 +242,9 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			adapterName = target.substring(configNameSeparator + 1);
 			String configurationName = target.substring(0, configNameSeparator);
 			actualAdapterManager = ibisManager.getConfiguration(configurationName).getAdapterManager();
+		} else if (configNameSeparator == 0) {
+			adapterName = target.substring(1);
+			actualAdapterManager = adapterManager;
 		} else {
 			adapterName = target;
 			actualAdapterManager = adapterManager;
