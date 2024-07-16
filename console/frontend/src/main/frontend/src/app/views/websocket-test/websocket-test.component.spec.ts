@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { WebsocketTestComponent } from './websocket-test.component';
 
@@ -8,10 +9,9 @@ describe('WebsocketTestComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WebsocketTestComponent]
-    })
-    .compileComponents();
-    
+      imports: [WebsocketTestComponent, HttpClientTestingModule],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(WebsocketTestComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
