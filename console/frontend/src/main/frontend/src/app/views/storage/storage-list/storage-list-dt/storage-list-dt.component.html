@@ -1,9 +1,9 @@
 <input
   icheck
   type="checkbox"
-  [(ngModel)]="storageService.selectedMessages[+message.id]"
+  [(ngModel)]="storageService.selectedMessages[message.id]"
 />
-<div *ngIf="!storageService.selectedMessages[+message.id]">
+<div *ngIf="!storageService.selectedMessages[message.id]">
   <a
     [routerLink]="['messages', message.id]"
     class="btn btn-info btn-xs"
