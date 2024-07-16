@@ -14,8 +14,8 @@ export type MessageStore = {
 }
 
 export type Message = {
-  id: string; //MessageId
-  originalId: string; //Made up Id?
+  id: string; //StorageId
+  originalId: string;
   correlationId: string;
   type: string;
   host: string;
