@@ -4,8 +4,8 @@ import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 
 type FormSessionKey = {
-  name: string,
-  value: string
+  key: string;
+  value: string;
 }
 
 type AlertState = {
@@ -34,7 +34,7 @@ export class TestPipelineComponent implements OnInit {
   result = "";
 
   formSessionKeys: FormSessionKey[] = [
-    { name: "", value: "" }
+    { key: "", value: "" }
   ];
 
   form = {
@@ -63,15 +63,15 @@ export class TestPipelineComponent implements OnInit {
   }
 
   updateSessionKeys(sessionKey: FormSessionKey){
-    if (sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != ""){
-      const keyIndex = this.formSessionKeys.slice(0, -1).findIndex(f => f.name === sessionKey.name);
+    if (sessionKey?.key != '' && sessionKey?.value != '') {
+      const keyIndex = this.formSessionKeys.slice(0, -1).findIndex(f => f.key === sessionKey.key);
       if(keyIndex > -1){
         if (this.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
           this.addNote("warning", "Session keys cannot have the same name!");
         return;
       }
 
-      this.formSessionKeys.push({ name: "", value: "" });
+      this.formSessionKeys.push({ key: "", value: "" });
       this.state = [];
     }
   }
@@ -108,13 +108,18 @@ export class TestPipelineComponent implements OnInit {
 
     if (this.formSessionKeys.length > 1) {
       this.formSessionKeys.pop();
-      const incompleteKeyIndex = this.formSessionKeys.findIndex(f => (f.name === "" || f.value === ""));
+      const incompleteKeyIndex = this.formSessionKeys.findIndex(f => (f.key === "" || f.value === ""));
       if (incompleteKeyIndex < 0) {
         fd.append("sessionKeys", JSON.stringify(this.formSessionKeys));
       } else {
         this.addNote("warning", "Please make sure all sessionkeys have name and value!");
         return;
       }
+
+      this.formSessionKeys.push({
+        key: '',
+        value: '',
+      });
     }
 
     this.processingMessage = true;
