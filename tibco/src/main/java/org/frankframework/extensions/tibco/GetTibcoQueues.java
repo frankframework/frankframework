@@ -96,7 +96,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+		if (getParameterList() != null && getParameterList().hasParameter("userName")) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
 		}
 

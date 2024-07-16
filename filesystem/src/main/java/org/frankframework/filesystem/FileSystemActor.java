@@ -179,7 +179,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			actions.addAll(Arrays.asList(ACTIONS_MAIL_FS));
 		}
 
-		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
+		if (parameterList!=null && parameterList.hasParameter(PARAMETER_CONTENTS2) && !parameterList.hasParameter(PARAMETER_CONTENTS1)) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
 		}
@@ -193,11 +193,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				action=FileSystemAction.WRITE;
 			}
 			checkConfiguration(getAction());
-		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
+		} else if (parameterList == null || !parameterList.hasParameter(PARAMETER_ACTION)) {
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+": either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
-		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.hasParameter(PARAMETER_INPUTFOLDER)) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
 
@@ -236,8 +236,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction == action) {
-			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
-			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
+			boolean parameter1Set = parameterList != null && parameterList.hasParameter(parameter1);
+			boolean parameter2Set = parameterList != null && parameterList.hasParameter(parameter2);
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
 				throw new ConfigurationException(ClassUtils.nameOf(owner)+": the ["+action+"] action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");

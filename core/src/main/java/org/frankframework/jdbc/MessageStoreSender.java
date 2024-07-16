@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -36,9 +38,6 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
-
-import lombok.Getter;
-import lombok.SneakyThrows;
 
 /**
  * Send messages to the IBISSTORE database table to have them processed exactly-once by another
@@ -141,7 +140,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
 			String messageId = session.getMessageId();
 			String correlationID = session.getCorrelationId();
-			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
+			if (paramList != null && paramList.hasParameter(PARAM_MESSAGEID)) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
 					messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
