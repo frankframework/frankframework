@@ -43,11 +43,14 @@ public class MessageBuilder {
 
 	/**
 	 * Directly stores to disk.
-	 * Mainly for legacy implementations
+	 * Mainly for legacy implementations which allows the user to choose where to save the file.
 	 */
 	public MessageBuilder(Path file) throws IOException {
-		if(!Files.exists(file)) throw new IOException("file ["+file+"] does not exist");
 		if(Files.isDirectory(file)) throw new IOException("location ["+file+"] may not be a folder");
+
+		if(!Files.exists(file)) {
+			Files.createFile(file);
+		}
 
 		this.location = file;
 		outputStream = Files.newOutputStream(location);
