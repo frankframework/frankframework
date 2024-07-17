@@ -456,7 +456,7 @@ public class HttpSender extends HttpSenderBase {
 				headerXml.setCdataValue(header.getValue());
 				headersXml.addSubElement(headerXml);
 			}
-			return new Message(headersXml.toXML());
+			return headersXml.asMessage();
 		}
 
 		return responseHandler.getResponseMessage();

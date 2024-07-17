@@ -177,7 +177,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					+ "Equal=\"" + allReportsPassed + "\"");
 		}
 		PipeForward forward = allReportsPassed ? getSuccessForward() : failureForward;
-		return new PipeRunResult(forward, results.toXML());
+		return new PipeRunResult(forward, results.asMessage());
 	}
 
 	private void writeToLogOrSysOut(String message) {
