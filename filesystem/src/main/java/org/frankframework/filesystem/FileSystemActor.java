@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -124,6 +123,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private INamedObject owner;
 	private S fileSystem;
 	private ParameterList parameterList;
+	private boolean hasCustomFileAttributes = false;
 
 	private byte[] eolArray=null;
 
@@ -220,6 +220,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				ConfigurationWarnings.add(owner, log, "Filesystem [" + ClassUtils.nameOf(fileSystem) + "] does not support setting custom file attribute meta-data: [" + parametersWithAttributePrefix + "]");
 			}
 		}
+
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?> scfa) {
+			hasCustomFileAttributes = scfa.hasCustomFileAttributes(parameterList);
+		}
+
 		eolArray = LINE_SEPARATOR.getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
@@ -471,6 +476,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return new Message(directoryBuilder.toString());
 	}
 
+	@SuppressWarnings("unchecked") //Casts to the required FileSystem type
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
@@ -479,21 +485,13 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 
 		// Creates a file with custom file attributes if the fileSystem supports it and there are customFileAttributes to set
-		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && hasCustomFileAttributes(pvl)) {
-			((ISupportsCustomFileAttributes<F>)fileSystem).createFile(file, contents, getCustomFileAttributes(pvl));
+		if (hasCustomFileAttributes && fileSystem instanceof ISupportsCustomFileAttributes<?> cfa) {
+			((ISupportsCustomFileAttributes<F>)fileSystem).createFile(file, contents, cfa.getCustomFileAttributes(pvl));
 		} else {
 			((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		}
 
 		return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
-	}
-
-	private boolean hasCustomFileAttributes(ParameterValueList pvl) {
-		return !getCustomFileAttributes(pvl).isEmpty();
-	}
-
-	private Map<String, String> getCustomFileAttributes(ParameterValueList pvl) {
-		return ((ISupportsCustomFileAttributes<F>) fileSystem).getCustomFileAttributes(pvl);
 	}
 
 	private interface FileAction<F> {
