@@ -64,6 +64,11 @@ export class TestPipelineComponent implements OnInit {
     this.state.push({ type: type, message: message });
   }
 
+  updateSelectedAdapter(): void {
+    if (this.selectedConfiguration !== '') return;
+    this.form.adapter = '';
+  }
+
   updateSessionKeys(sessionKey: FormSessionKey): void {
     if (sessionKey?.key != '' && sessionKey?.value != '') {
       const keyIndex = this.formSessionKeys
