@@ -146,7 +146,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 		} catch (Exception e) {
 			throw new SenderException("unable to read attachment attributes", e);
 		}
-		return new Message(result.toXML());
+		return result.asMessage();
 	}
 
 	public String getPhysicalDestinationName() {

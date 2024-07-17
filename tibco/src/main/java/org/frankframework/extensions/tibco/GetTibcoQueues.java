@@ -349,7 +349,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		}
 		qInfoXml.addSubElement(consumerXml);
 
-		return qMessageXml.toXML();
+		return qMessageXml.asXmlString();
 	}
 
 	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName) throws TibjmsAdminException {
@@ -413,7 +413,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return qInfosXml.toXML();
+		return qInfosXml.asXmlString();
 	}
 
 	private XmlBuilder qInfoToXml(QueueInfo qInfo) {

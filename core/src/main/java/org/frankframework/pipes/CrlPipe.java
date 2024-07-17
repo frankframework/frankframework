@@ -88,7 +88,7 @@ public class CrlPipe extends FixedForwardPipe {
 		} catch (CertificateException | IOException | CRLException e) {
 			throw new PipeRunException(this, "Could not read CRL", e);
 		}
-		String result = null;
+		Message result = null;
 		if (isCRLOK(crl, Message.asMessage(session.get(getIssuerSessionKey())))) {
 			XmlBuilder root = new XmlBuilder("SerialNumbers");
 			Iterator <? extends X509CRLEntry> it = crl.getRevokedCertificates().iterator();
@@ -98,7 +98,7 @@ public class CrlPipe extends FixedForwardPipe {
 				serialNumber.setValue(e.getSerialNumber().toString(16));
 				root.addSubElement(serialNumber);
 			}
-			result = root.toXML();
+			result = root.asMessage();
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}

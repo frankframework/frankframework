@@ -62,7 +62,7 @@ public abstract class MonitorDestinationBase implements IMonitorDestination, App
 		eventXml.addAttribute("type", eventType.name());
 		eventXml.addAttribute("severity", severity.name());
 		eventXml.addAttribute("event", eventCode);
-		return eventXml.toXML();
+		return eventXml.asXmlString();
 	}
 
 	@Override

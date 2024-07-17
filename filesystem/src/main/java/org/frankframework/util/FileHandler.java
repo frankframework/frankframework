@@ -637,7 +637,7 @@ public class FileHandler implements IScopeProvider {
 			XmlBuilder modificationTime = new XmlBuilder("modificationTime");
 			modificationTime.setValue(time);
 			fileXml.addSubElement(modificationTime);
-			return fileXml.toXML().getBytes();
+			return fileXml.asXmlString().getBytes();
 		}
 
 	}

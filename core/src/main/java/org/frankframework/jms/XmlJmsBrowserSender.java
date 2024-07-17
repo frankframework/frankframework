@@ -198,6 +198,6 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 				log.warn("{}exception on closing message browser iterator", getLogPrefix(), e);
 			}
 		}
-		return new SenderResult(result.toXML());
+		return new SenderResult(result.asMessage());
 	}
 }

@@ -69,7 +69,7 @@ public class IbisRepositoryService implements RepositoryService {
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML(), callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.asXmlString(), callContext);
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 
 			List<RepositoryInfo> repositoryInfoList = new ArrayList<>();
@@ -90,7 +90,7 @@ public class IbisRepositoryService implements RepositoryService {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORY_INFO, cmisXml.toXML(), callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORY_INFO, cmisXml.asXmlString(), callContext);
 
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 			Element repository = XmlUtils.getFirstChildTag(repositories, "repository");
@@ -119,7 +119,7 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("depth", depth));
 			cmisXml.addSubElement(buildXml("includePropertyDefinitions", includePropertyDefinitions));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.toXML(), callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.asXmlString(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDescendants");
 
 			return CmisUtils.xml2TypeDescendants(typesXml, callContext.getCmisVersion());
@@ -137,7 +137,7 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("typeId", typeId));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML(), callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.asXmlString(), callContext);
 
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDefinitions");
 
