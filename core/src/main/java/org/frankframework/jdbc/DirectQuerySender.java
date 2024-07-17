@@ -23,7 +23,7 @@ import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -56,7 +56,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		}
 	}
 
-	public void configure(IAdapter adapter) throws ConfigurationException {
+	public void configure(Adapter adapter) throws ConfigurationException {
 		super.configure();
 
 		if (adapter != null) {

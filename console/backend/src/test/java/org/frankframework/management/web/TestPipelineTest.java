@@ -18,6 +18,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ContextConfiguration(classes = {WebTestConfiguration.class, TestPipeline.class})
 public class TestPipelineTest extends FrankApiTestBase {
 
@@ -58,6 +60,28 @@ public class TestPipelineTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
 				.andExpect(MockMvcResultMatchers.jsonPath("message").value(""));
+	}
+
+	@Test
+	public void testWithSessionKeys() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			String sessionKeys = (String) in.getHeaders().get("meta-sessionKeys");
+			return mockResponseMessage(in, () -> "{\"sessionKeys\": " + sessionKeys + "}", 200, MediaType.TEXT_PLAIN);
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart(TEST_PIPELINE_ENDPOINT)
+						.file(createMockMultipartFile("message", null, "".getBytes()))
+						.part(new MockPart[]{
+								new MockPart("configuration", "TestConfiguration".getBytes()),
+								new MockPart("adapter", "HelloWorld".getBytes()),
+								new MockPart("sessionKeys", "[{\"key\":\"value\", \"key2\":\"value2\"}]".getBytes()),
+						})
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"sessionKeys\": [{\"key\":\"value\", \"key2\":\"value2\"}]}"));
 	}
 
 	@Test

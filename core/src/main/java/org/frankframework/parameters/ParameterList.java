@@ -22,14 +22,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-
-import lombok.Getter;
-import lombok.Setter;
 
 
 /**
@@ -90,6 +89,10 @@ public class ParameterList extends ArrayList<IParameter> {
 			}
 		}
 		return null;
+	}
+
+	public boolean hasParameter(String name) {
+		return stream().anyMatch(p -> p.getName().equals(name));
 	}
 
 	private boolean parameterEvaluationRequiresInputValue() {

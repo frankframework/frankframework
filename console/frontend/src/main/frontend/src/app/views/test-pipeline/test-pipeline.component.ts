@@ -4,7 +4,7 @@ import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 
 type FormSessionKey = {
-  name: string;
+  key: string;
   value: string;
 };
 
@@ -33,7 +33,7 @@ export class TestPipelineComponent implements OnInit {
   processingMessage = false;
   result = '';
 
-  formSessionKeys: FormSessionKey[] = [{ name: '', value: '' }];
+  formSessionKeys: FormSessionKey[] = [{ key: '', value: '' }];
 
   form = {
     adapter: '',
@@ -65,15 +65,10 @@ export class TestPipelineComponent implements OnInit {
   }
 
   updateSessionKeys(sessionKey: FormSessionKey): void {
-    if (
-      sessionKey.name &&
-      sessionKey.name != '' &&
-      sessionKey.value &&
-      sessionKey.value != ''
-    ) {
+    if (sessionKey?.key != '' && sessionKey?.value != '') {
       const keyIndex = this.formSessionKeys
         .slice(0, -1)
-        .findIndex((f) => f.name === sessionKey.name);
+        .findIndex((f) => f.key === sessionKey.key);
       if (keyIndex > -1) {
         if (
           this.state.findIndex(
@@ -85,7 +80,10 @@ export class TestPipelineComponent implements OnInit {
         return;
       }
 
-      this.formSessionKeys.push({ name: '', value: '' });
+      this.formSessionKeys.push({
+        key: '',
+        value: '',
+      });
       this.state = [];
     }
   }
@@ -130,8 +128,9 @@ export class TestPipelineComponent implements OnInit {
     if (this.formSessionKeys.length > 1) {
       this.formSessionKeys.pop();
       const incompleteKeyIndex = this.formSessionKeys.findIndex(
-        (f) => f.name === '' || f.value === '',
+        (f) => f.key === '' || f.value === '',
       );
+
       if (incompleteKeyIndex < 0) {
         fd.append('sessionKeys', JSON.stringify(this.formSessionKeys));
       } else {
@@ -141,6 +140,11 @@ export class TestPipelineComponent implements OnInit {
         );
         return;
       }
+
+      this.formSessionKeys.push({
+        key: '',
+        value: '',
+      });
     }
 
     this.processingMessage = true;

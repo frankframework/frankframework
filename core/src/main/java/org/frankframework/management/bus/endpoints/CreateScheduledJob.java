@@ -19,12 +19,12 @@ import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IAdapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
@@ -82,7 +82,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration", null);
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 
-		IAdapter adapter = getAdapter(configurationName, adapterName);
+		Adapter adapter = getAdapter(configurationName, adapterName);
 		//Make sure the adapter exists!
 		if(adapter == null) {
 			throw new BusException("Adapter ["+adapterName+"] not found");
@@ -195,7 +195,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		return EmptyMessage.created();
 	}
 
-	private IAdapter getAdapter(String configurationName, String adapterName) {
+	private Adapter getAdapter(String configurationName, String adapterName) {
 		Configuration configuration = null;
 		if(StringUtils.isNotEmpty(configurationName)) {
 			configuration = getIbisManager().getConfiguration(configurationName);
@@ -209,7 +209,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		return findAdapter(adapterName);
 	}
 
-	private IAdapter findAdapter(String adapterName) {
+	private Adapter findAdapter(String adapterName) {
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			if(config.isActive()) {
 				Adapter adapter = config.getRegisteredAdapter(adapterName);

@@ -384,7 +384,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				bericht.addSubElement(rubriek);
 			}
 		}
-		return bericht.toXML(true);
+		return bericht.asXmlString();
 	}
 
 	public void addItem(String item, XmlBuilder builder, Map nummer2naam, String naamLabel, String nummerLabel, String indexLabel) {

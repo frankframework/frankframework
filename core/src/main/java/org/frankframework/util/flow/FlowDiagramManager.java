@@ -28,7 +28,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
@@ -98,7 +98,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return null;
 	}
 
-	public InputStream get(IAdapter adapter) throws IOException {
+	public InputStream get(Adapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(destFile == null || !destFile.exists()) {
@@ -128,7 +128,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return new FileInputStream(destFile);
 	}
 
-	public void generate(IAdapter adapter) throws IOException {
+	public void generate(Adapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 		if(destFile == null) return;
 
@@ -170,7 +170,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		generateFlowDiagram(name, configurationsXml, destFile);
 	}
 
-	public String getAdapterConfigurationAsString(IAdapter adapter) {
+	public String getAdapterConfigurationAsString(Adapter adapter) {
 		String loadedConfig = adapter.getConfiguration().getLoadedConfiguration();
 		String encodedName = StringUtils.replace(adapter.getName(), "'", "''");
 		String xpath = "//adapter[@name='" + encodedName + "']";
@@ -188,8 +188,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return dotInput.toString();
 	}
 
-	private File retrieveAdapterFlowFile(IAdapter iAdapter) {
-		return retrieveFlowFile(adapterFlowDir, iAdapter.getName());
+	private File retrieveAdapterFlowFile(Adapter adapter) {
+		return retrieveFlowFile(adapterFlowDir, adapter.getName());
 	}
 
 	private File retrieveConfigurationFlowFile(Configuration configuration) {

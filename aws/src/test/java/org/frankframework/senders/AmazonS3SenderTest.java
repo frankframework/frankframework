@@ -27,7 +27,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-
 /**
  * AmazonS3Sender tests.
  *

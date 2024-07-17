@@ -90,7 +90,7 @@ import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.MessagingSource;
 import org.frankframework.jms.PushingJmsListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
-import org.frankframework.management.IbisAction;
+import org.frankframework.management.Action;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -661,7 +661,7 @@ public class ReceiverTest {
 			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 			assertEquals("TEST", result.asString());
 		} finally {
-			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+			configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		}
 	}
 
@@ -702,7 +702,7 @@ public class ReceiverTest {
 		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
 		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
 
-		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
 
 	@Test
@@ -782,7 +782,7 @@ public class ReceiverTest {
 						.until(()-> receiver.getSender().isSynchronous());
 		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); //isSynchronous ==> isClosed
 
-		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		await()
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
@@ -822,7 +822,7 @@ public class ReceiverTest {
 		assertEquals(RunState.STARTING, receiver.getRunState());
 
 		// Act
-		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), null, null, true);
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), null, null, true);
 		await()
 				.atMost(5, TimeUnit.SECONDS)
 				.pollInterval(1, TimeUnit.SECONDS)
@@ -873,7 +873,7 @@ public class ReceiverTest {
 		LOG.info("Receiver RunState "+receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
-		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
@@ -883,7 +883,7 @@ public class ReceiverTest {
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		new Thread(
-				()-> configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true),
+				()-> configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true),
 				"Stopping Adapter Async")
 				.start();
 		await()
@@ -913,7 +913,7 @@ public class ReceiverTest {
 		LOG.info("Receiver RunState "+receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
-		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
@@ -971,7 +971,7 @@ public class ReceiverTest {
 		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
 
 		// After
-		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
@@ -1017,7 +1017,7 @@ public class ReceiverTest {
 		// Receiver may be in state "stopping" (by PollGuard) or in state "starting" while we come out of sleep, so wait until it's started
 		waitForState(receiver, RunState.STARTED);
 
-		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
@@ -1061,7 +1061,7 @@ public class ReceiverTest {
 		taskExecutor.execute(()-> {
 			try {
 				LOG.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
-				configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+				configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 				waitForState(receiver, RunState.STOPPED);
 
 				if (receiver.getRunState() != RunState.STOPPED) {
@@ -1070,7 +1070,7 @@ public class ReceiverTest {
 				}
 
 				LOG.debug("Restarting receiver [{}] from executor-thread.", receiver.getName());
-				configuration.getIbisManager().handleAction(IbisAction.STARTRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+				configuration.getIbisManager().handleAction(Action.STARTRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 				waitForState(receiver, RunState.STARTING, RunState.EXCEPTION_STARTING);
 				waitWhileInState(receiver, RunState.STARTING);
 			} finally {
@@ -1082,7 +1082,7 @@ public class ReceiverTest {
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
 		// try to stop the started adapter
-		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		waitForState(adapter, RunState.STOPPED);
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());

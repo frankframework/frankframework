@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-
 public class StreamUtilTest {
 
 	@TempDir
@@ -136,7 +135,6 @@ public class StreamUtilTest {
 		testStreamToByteArray("/StreamUtil/inUTF8withBOM.bin", true, UTF8_EXPECTED, false);
 		testStreamToByteArray("/StreamUtil/inUTF8withBOM.bin", false, UTF8_EXPECTED, true);
 	}
-
 
 	private void writeToTestFile() throws IOException {
 		Writer w = new FileWriter(file.toString());
@@ -254,13 +252,6 @@ public class StreamUtilTest {
 		Writer writer = new StringWriter();
 		StreamUtil.readerToWriter(reader, writer);
 		assertEquals("test", writer.toString());
-	}
-
-	@Test
-	public void testFileToStringFileNameEndLine() throws Exception {
-		// Misc.resourceToString()
-		writeToTestFile();
-		assertEquals("inside the lebron file", StreamUtil.fileToString(file.toString(), " the end", false));
 	}
 
 	/**

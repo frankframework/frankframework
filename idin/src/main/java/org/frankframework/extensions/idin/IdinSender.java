@@ -445,7 +445,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			result.addSubElement(errorXml);
 		}
 
-		return new SenderResult(result.toXML());
+		return new SenderResult(result.asXmlString());
 	}
 
 	@Override

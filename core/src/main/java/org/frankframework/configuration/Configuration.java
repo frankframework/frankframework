@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -53,9 +55,6 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
@@ -353,7 +352,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	/**
 	 * Get a registered adapter by its name through {@link AdapterManager#getAdapter(String)}
 	 * @param name the adapter to retrieve
-	 * @return IAdapter
+	 * @return Adapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
 		if(adapterManager == null || !isActive()) {

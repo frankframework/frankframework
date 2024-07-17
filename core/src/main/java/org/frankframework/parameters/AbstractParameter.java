@@ -215,7 +215,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
-		pool.transform(xmlSource,transformResult, pvl);
+		pool.deprecatedParameterTransformAction(xmlSource, transformResult, pvl);
 		return (Document) transformResult.getNode();
 	}
 
@@ -289,7 +289,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 							itemXml.setValue(item);
 							itemsXml.addSubElement(itemXml);
 						}
-						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
+						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
 					} else if (getType() == ParameterType.MAP && sourceObject instanceof Map) {
 						// larva can produce the sourceObject as map
 						Map<String, String> items = (Map<String, String>) sourceObject;
@@ -300,7 +300,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 							itemXml.setValue(items.get(item));
 							itemsXml.addSubElement(itemXml);
 						}
-						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
+						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
 						if (StringUtils.isNotEmpty(getContextKey())) {
@@ -345,11 +345,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							String transformResult = pool.transform(source, pvl);
+							String transformResult = pool.deprecatedParameterTransformAction(source, null, pvl);
 							if (StringUtils.isNotEmpty(transformResult)) {
 								result = transformResult;
 							}
-							break;
 					}
 				}
 			} catch (Exception e) {

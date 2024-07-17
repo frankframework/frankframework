@@ -22,11 +22,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ITransactionalStorage;
@@ -47,8 +48,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
-
-import lombok.Getter;
 
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
@@ -221,7 +220,7 @@ public class CleanupDatabaseJob extends JobDef {
 				}
 			}
 
-			for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+			for (Adapter adapter : configuration.getRegisteredAdapters()) {
 				PipeLine pipeLine = adapter.getPipeLine();
 				if (pipeLine != null) {
 					for (IPipe pipe : pipeLine.getPipes()) {
@@ -260,7 +259,7 @@ public class CleanupDatabaseJob extends JobDef {
 			if (!configuration.isActive()) {
 				continue;
 			}
-			for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+			for (Adapter adapter : configuration.getRegisteredAdapters()) {
 				for (Receiver<?> receiver : adapter.getReceivers()) {
 					collectMessageLogs(messageLogs, receiver.getMessageLog());
 				}

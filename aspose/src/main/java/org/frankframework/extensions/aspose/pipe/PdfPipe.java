@@ -158,7 +158,8 @@ public class PdfPipe extends FixedForwardPipe {
 
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
-					Message message = new Message(main.toXML());
+
+					Message message = main.asMessage();
 					session.put(getConversionResultDocumentSessionKey(), message);
 
 					return new PipeRunResult(getSuccessForward(), message);

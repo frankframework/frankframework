@@ -18,7 +18,6 @@ package org.frankframework.ldap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IPipe;
@@ -65,16 +64,16 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")==null) {
+		if (StringUtils.isEmpty(ldapProviderURL) && !getParameterList().hasParameter("ldapProviderURL")) {
 			throw new ConfigurationException("ldapProviderURL must be specified, either as attribute or as parameter");
 		}
-		if (StringUtils.isNotEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")!=null) {
+		if (StringUtils.isNotEmpty(ldapProviderURL) && getParameterList().hasParameter("ldapProviderURL")) {
 			throw new ConfigurationException("ldapProviderURL can only be specified once, either as attribute or as parameter");
 		}
-		if (getParameterList().findParameter("principal")==null) {
+		if (!getParameterList().hasParameter("principal")) {
 			throw new ConfigurationException("Parameter 'principal' must be specified");
 		}
-		if (getParameterList().findParameter("credentials")==null) {
+		if (!getParameterList().hasParameter("credentials")) {
 			throw new ConfigurationException("Parameter 'credentials' must be specified");
 		}
 	}

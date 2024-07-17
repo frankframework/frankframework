@@ -19,7 +19,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.pipes.PipeTestBase;
-import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;

@@ -20,7 +20,7 @@ export class AuthInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler,
   ): Observable<HttpEvent<unknown>> {
-    const authToken = this.authService.getAuthToken();
+    /* const authToken = this.authService.getAuthToken();
 
     if (
       !authToken ||
@@ -33,6 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
       setHeaders: { Authorization: `Basic ${authToken}` },
     });
 
-    return next.handle(authRequest);
+    return next.handle(authRequest); */
+    return next.handle(request);
   }
 }

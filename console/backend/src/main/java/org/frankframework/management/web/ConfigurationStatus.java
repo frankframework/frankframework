@@ -21,7 +21,7 @@ import java.util.Map;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.IbisAction;
+import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -84,13 +84,13 @@ public class ConfigurationStatus extends FrankApiBase {
 	@PutMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapters(@RequestBody Map<String, Object> json) {
 
-		IbisAction action = null;
+		Action action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
 		String value = RequestUtils.getValue(json, "action");
 		if (StringUtils.isNotEmpty(value)) {
-			if ("stop".equals(value)) {action = IbisAction.STOPADAPTER;}
-			if ("start".equals(value)) {action = IbisAction.STARTADAPTER;}
+			if ("stop".equals(value)) {action = Action.STOPADAPTER;}
+			if ("start".equals(value)) {action = Action.STARTADAPTER;}
 		}
 		if (action == null) {
 			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
@@ -137,9 +137,9 @@ public class ConfigurationStatus extends FrankApiBase {
 	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @RequestBody Map<String, Object> json) {
 		Object value = json.get("action");
 		if (value instanceof String) {
-			IbisAction action = null;
-			if (value.equals("stop")) {action = IbisAction.STOPADAPTER;}
-			if (value.equals("start")) {action = IbisAction.STARTADAPTER;}
+			Action action = null;
+			if (value.equals("stop")) {action = Action.STOPADAPTER;}
+			if (value.equals("start")) {action = Action.STARTADAPTER;}
 			if (action == null) {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 			}
@@ -162,13 +162,13 @@ public class ConfigurationStatus extends FrankApiBase {
 	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @PathVariable("receiver") String receiver, @RequestBody Map<String, Object> json) {
 		Object value = json.get("action");
 		if (value instanceof String) {
-			IbisAction action = null;
-			if (value.equals("stop")) {action = IbisAction.STOPRECEIVER;} else if (value.equals("start")) {
-				action = IbisAction.STARTRECEIVER;
+			Action action = null;
+			if (value.equals("stop")) {action = Action.STOPRECEIVER;} else if (value.equals("start")) {
+				action = Action.STARTRECEIVER;
 			} else if (value.equals("incthread")) {
-				action = IbisAction.INCTHREADS;
+				action = Action.INCTHREADS;
 			} else if (value.equals("decthread")) {
-				action = IbisAction.DECTHREADS;
+				action = Action.DECTHREADS;
 			}
 			if (action == null) {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);

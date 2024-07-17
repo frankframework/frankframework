@@ -43,7 +43,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IAdapter;
 import org.frankframework.core.IListener;
 import org.frankframework.http.RestListener;
 import org.frankframework.http.WebServiceListener;
@@ -164,7 +163,7 @@ public class WebServices extends BusEndpointBase {
 		}
 	}
 
-	private String getServiceEndpoint(IAdapter adapter) {
+	private String getServiceEndpoint(Adapter adapter) {
 		String endpoint = "external address of ibis";
 		for(Receiver<?> receiver : adapter.getReceivers()) {
 			IListener<?> listener = receiver.getListener();
@@ -188,7 +187,7 @@ public class WebServices extends BusEndpointBase {
 			ApiDispatchConfig config = client.getValue();
 			ApiListener listener = config.getApiListener(config.getMethods().iterator().next()); // The first httpMethod will resolve in the right listener
 			Receiver<?> receiver = listener.getReceiver();
-			IAdapter adapter = receiver == null ? null : receiver.getAdapter();
+			Adapter adapter = receiver == null ? null : receiver.getAdapter();
 			ListenerDAO dao = new ListenerDAO(listener);
 			if (adapter != null) dao.setAdapter(adapter);
 			if (receiver != null) dao.setReceiver(receiver);
@@ -272,7 +271,7 @@ public class WebServices extends BusEndpointBase {
 			this.receiver = receiver.getName();
 		}
 
-		public void setAdapter(IAdapter adapter) {
+		public void setAdapter(Adapter adapter) {
 			this.adapter = adapter.getName();
 		}
 	}

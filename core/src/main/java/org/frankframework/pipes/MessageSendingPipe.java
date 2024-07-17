@@ -580,9 +580,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		String messageTrail="no audit trail";
 		if (auditTrailTp!=null) {
 			if (isUseInputForExtract()){
-				messageTrail=auditTrailTp.transform(originalMessage,null);
+				messageTrail=auditTrailTp.transform(originalMessage);
 			} else {
-				messageTrail=auditTrailTp.transform(input,null);
+				messageTrail=auditTrailTp.transform(input);
 			}
 		} else {
 			if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
@@ -599,9 +599,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				correlationID =correlationIDTp.transform(sourceString,null);
 			} else {
 				if (isUseInputForExtract()) {
-					correlationID =correlationIDTp.transform(originalMessage,null);
+					correlationID =correlationIDTp.transform(originalMessage);
 				} else {
-					correlationID =correlationIDTp.transform(input,null);
+					correlationID =correlationIDTp.transform(input);
 				}
 			}
 			if (StringUtils.isEmpty(correlationID)) {
@@ -611,9 +611,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		String label=null;
 		if (labelTp!=null) {
 			if (isUseInputForExtract()) {
-				label=labelTp.transform(originalMessage,null);
+				label=labelTp.transform(originalMessage);
 			} else {
-				label=labelTp.transform(input,null);
+				label=labelTp.transform(input);
 			}
 		}
 		messageLog.storeMessage(storedMessageID, correlationID,new Date(),messageTrail,label, new MessageWrapper(input, storedMessageID, correlationID));

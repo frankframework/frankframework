@@ -114,7 +114,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 		errorXml.addSubElement(originalMessageXml);
 
-		return new Message(errorXml.toXML());
+		return errorXml.asMessage();
 	}
 
 	protected String getErrorMessage(String message, Throwable t) {

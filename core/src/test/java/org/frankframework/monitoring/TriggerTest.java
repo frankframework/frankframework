@@ -268,6 +268,6 @@ public class TriggerTest implements EventThrowing {
 
 		// Assert
 		verify(trigger, times(1)).configure();
-		assertEquals(TestFileUtils.getTestFile("/Management/Monitoring/getManagerToXML.xml"), manager.toXml().toXML());
+		assertEquals(TestFileUtils.getTestFile("/Management/Monitoring/getManagerToXML.xml"), manager.toXml().asXmlString());
 	}
 }

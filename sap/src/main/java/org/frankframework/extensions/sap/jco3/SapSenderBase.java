@@ -15,6 +15,10 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
+
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
@@ -26,11 +30,6 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoException;
-
-import lombok.Getter;
 
 /**
  * Base class for functions that call SAP.
@@ -59,7 +58,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			if (StringUtils.isEmpty(getSapSystemNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"if attribute sapSystemName is not specified, value of attribute sapSystemNameParam must indicate parameter to obtain name of sapSystem from");
 			}
-			if (paramList==null || paramList.findParameter(getSapSystemNameParam())==null) {
+			if (paramList==null || !paramList.hasParameter(getSapSystemNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"sapSystem must be specified, either in attribute sapSystemName, or via parameter ["+getSapSystemNameParam()+"]");
 			}
 		}

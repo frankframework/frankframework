@@ -19,11 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -43,9 +38,12 @@ import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.UUIDUtil;
-import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@Log4j2
+import jakarta.annotation.Nonnull;
+
 public class AdapterHideRegexTest {
 
 	public static final String MAIN_ADAPTER_SECRET = "A1";
@@ -122,7 +120,7 @@ public class AdapterHideRegexTest {
 		return adapter;
 	}
 
-	private static @NotNull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
+	private static @Nonnull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
 		IPipe pipe = new FixedForwardPipe() {
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -192,7 +190,7 @@ public class AdapterHideRegexTest {
 		return listener;
 	}
 
-	private @NotNull Adapter setupBasicAdapter(PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
+	private @Nonnull Adapter setupBasicAdapter(PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
 		IPipe pipe = createLoggingPipe("echo", MAIN_ADAPTER_SECRET, doThrowException);
 		Receiver<?> receiver = mock(Receiver.class);
 		when(receiver.getRunState()).thenReturn(RunState.STOPPED);

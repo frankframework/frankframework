@@ -91,7 +91,7 @@ public class JwtPipe extends FixedForwardPipe {
 			}
 		}
 
-		if (globalSigner == null && getParameterList().findParameter(SHARED_SECRET_PARAMETER_NAME) == null) {
+		if (globalSigner == null && !getParameterList().hasParameter(SHARED_SECRET_PARAMETER_NAME)) {
 			throw new ConfigurationException("must either provide a [sharedSecret] (alias) or parameter");
 		}
 	}

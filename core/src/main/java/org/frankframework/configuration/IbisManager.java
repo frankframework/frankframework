@@ -18,7 +18,7 @@ package org.frankframework.configuration;
 import java.util.List;
 
 import org.frankframework.core.Adapter;
-import org.frankframework.management.IbisAction;
+import org.frankframework.management.Action;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,7 +51,7 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 	/**
 	 * Utility function to give commands to Adapters and Receivers
 	 */
-	void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
+	void handleAction(Action action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
 
 	/**
 	 * Unload specified configuration.

@@ -250,7 +250,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
-			String xml = mm.toXml().toXML();
+			String xml = mm.toXml().asXmlString();
 			return new StringMessage(xml, MediaType.APPLICATION_XML);
 		}
 
@@ -280,7 +280,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Message<String> getMonitor(MonitorManager manager, Monitor monitor, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
-			String xml = monitor.toXml().toXML();
+			String xml = monitor.toXml().asXmlString();
 			return new StringMessage(xml, MediaType.APPLICATION_XML);
 		}
 

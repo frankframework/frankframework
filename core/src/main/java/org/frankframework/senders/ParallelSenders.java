@@ -140,7 +140,7 @@ public class ParallelSenders extends SenderSeries {
 			}
 			resultsXml.addSubElement(resultXml);
 		}
-		return new SenderResult(success, new Message(resultsXml.toXML()), errorMessage, null);
+		return new SenderResult(success, resultsXml.asMessage(), errorMessage, null);
 	}
 
 	@Override

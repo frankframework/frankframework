@@ -18,12 +18,10 @@ package org.frankframework.extensions.fxf;
 import java.io.File;
 
 import jakarta.jms.Message;
-
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -128,9 +126,9 @@ public class FxfListener extends EsbJmsListener {
 		log.warn(msg, t);
 		Receiver<Message> receiver = getReceiver();
 		if (receiver != null) {
-			IAdapter iAdapter = receiver.getAdapter();
-			if (iAdapter != null) {
-				iAdapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
+			Adapter adapter = receiver.getAdapter();
+			if (adapter != null) {
+				adapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
 			}
 		}
 	}

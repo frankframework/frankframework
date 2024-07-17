@@ -731,6 +731,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //		}
 
 		assertFileCountEquals(result, numberOfFiles);
+		result.close();
 	}
 
 	@Test
@@ -817,5 +818,6 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 
 		assertFileCountEquals(result, 2);
+		result.close();
 	}
 }

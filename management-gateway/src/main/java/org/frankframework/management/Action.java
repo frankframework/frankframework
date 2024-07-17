@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 Nationale-Nederlanden
+   Copyright 2023 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,6 @@
 */
 package org.frankframework.management;
 
-public enum IbisAction {
+public enum Action {
 	STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
 }

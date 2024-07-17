@@ -21,24 +21,22 @@ import java.io.Writer;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 public class TestConfig {
+	private @Getter @Setter boolean silent = false;
+	private @Getter @Setter int timeout;
+	private @Getter @Setter Writer out;
+	private @Getter @Setter Writer silentOut = null;
+	private @Getter @Setter StringWriter htmlBuffer = new StringWriter();
+	private @Getter @Setter StringWriter logBuffer = new StringWriter();
+	private @Getter @Setter LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
-	private boolean silent = false;
-	private int timeout;
-	private Writer out;
-	private Writer silentOut = null;
-	private StringWriter htmlBuffer = new StringWriter();
-	private StringWriter logBuffer = new StringWriter();
-	private String logLevel;
+	private @Getter @Setter boolean autoScroll = true;
+	private @Getter @Setter boolean useHtmlBuffer = false;
+	private @Getter @Setter boolean useLogBuffer = true;
+	private @Getter @Setter boolean multiThreaded = false;
 
-	private boolean autoScroll;
-	private boolean useHtmlBuffer = false;
-	private boolean useLogBuffer = true;
-
-	private int messageCounter = 0;
-	private int scenarioCounter = 1;
+	private @Getter @Setter int messageCounter = 0;
+	private @Getter @Setter int scenarioCounter = 1;
 
 	public void incrementMessageCounter() {
 		messageCounter++;
@@ -51,12 +49,34 @@ public class TestConfig {
 	public void flushWriters() {
 		try {
 			if (out != null) {
-				out.flush();
+				if (multiThreaded) {
+					synchronized (out) {
+						out.flush();
+					}
+				} else {
+					out.flush();
+				}
 			}
 			if (silentOut != null) {
 				silentOut.flush();
 			}
 		} catch (Exception ignored) {
+		}
+	}
+
+	public void writeSilent(String message) {
+		if (!silent) {
+			return;
+		}
+		if (silentOut != null) {
+			try {
+				if (multiThreaded) {
+					synchronized (silentOut) {
+						silentOut.write(message);
+					}
+				} else silentOut.write(message);
+			} catch (Exception ignored) {
+			}
 		}
 	}
 

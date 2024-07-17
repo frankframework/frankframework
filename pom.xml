@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>8.2.0-SNAPSHOT</revision>
+		<revision>8.3.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -19,25 +19,25 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.17.1</jackson.version>
+		<jackson.version>2.17.2</jackson.version>
 		<cxf.version>4.0.4</cxf.version>
-		<spring.version>6.1.10</spring.version>
+		<spring.version>6.1.11</spring.version>
 		<spring-security.version>6.3.1</spring-security.version>
-		<spring-integration.version>6.3.1</spring-integration.version>
+		<spring-integration.version>6.3.2</spring-integration.version>
 		<spring.boot.version>3.3.1</spring.boot.version>
-		<tomcat.version>10.1.25</tomcat.version>
+		<tomcat.version>10.1.26</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
 		<narayana.version>7.0.2.Final</narayana.version>
 		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.13.1</micrometer.version>
+		<micrometer.version>1.13.2</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.7.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.2.224</h2.driver.version>
+		<h2.driver.version>2.3.230</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
 		<oracle.driver.version>23.4.0.24.05</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
@@ -488,7 +488,7 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.17.0</version>
+				<version>1.17.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -715,7 +715,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.3.1</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<excludedGroups>${junit.excludedTags}</excludedGroups>
@@ -732,7 +732,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.1.1</version>
 				<configuration>
 					<goals>deploy</goals>
 					<tagNameFormat>v@{project.version}</tagNameFormat>
@@ -1195,7 +1195,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.6.1</version>
+				<version>3.6.2</version>
 				<reportSets>
 					<reportSet>
 						<reports>

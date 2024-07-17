@@ -20,6 +20,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StringUtil;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;

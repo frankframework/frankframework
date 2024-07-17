@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lombok.Setter;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -27,15 +28,15 @@ import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.CanUseSharedResource;
-import org.frankframework.core.IAdapter;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IbisException;
 import org.frankframework.core.SharedResource;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.scheduler.job.ActionJob;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.IbisActionJob;
 import org.frankframework.scheduler.job.Job;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -47,8 +48,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
-
-import lombok.Setter;
 
 /**
  * @author Niels Meijer
@@ -64,7 +63,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	/**
 	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.
 	 */
-	private IAdapter currentAdapter = null;
+	private Adapter currentAdapter = null;
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used,
@@ -157,13 +156,13 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			}
 		}
 
-		if (top instanceof IAdapter adapter) {
+		if (top instanceof Adapter adapter) {
 			currentAdapter = adapter;
 		}
 
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
-		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
+		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof ActionJob)) {
 			map.remove("function");
 		}
 
