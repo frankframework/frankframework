@@ -353,13 +353,26 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
 			if (s3ClientObject.response().contentLength() == 0) {
 				// Expects an empty message
-				return new Message("", FileSystemUtils.getContext(this, file, charset));
+				return Message.nullMessage(FileSystemUtils.getContext(this, file, charset));
 			}
 
-			return new Message(s3ClientObject, FileSystemUtils.getContext(this, file, charset));
+			S3Object updatedFile = updateFileAttributes(file, s3ClientObject.response());
+			return new Message(s3ClientObject, FileSystemUtils.getContext(this, updatedFile, charset));
 		} catch (AwsServiceException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	/**
+	 * Updates the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 */
+	private S3Object updateFileAttributes(S3Object oldS3Object, GetObjectResponse s3ObjectResponse) {
+		S3Object.Builder builder = oldS3Object.toBuilder();
+		builder.lastModified(s3ObjectResponse.lastModified());
+		builder.size(s3ObjectResponse.contentLength());
+		builder.eTag(s3ObjectResponse.eTag());
+		builder.storageClass(s3ObjectResponse.storageClassAsString());
+		return builder.build();
 	}
 
 	@Override
@@ -551,11 +564,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public long getFileSize(S3Object f) {
+		if(f.size() != null) {
+			return f.size();
+		}
 		return getFileAttributes(f).contentLength();
 	}
 
 	@Override
 	public Date getModificationTime(S3Object f) {
+		if(f.lastModified() != null) {
+			return Date.from(f.lastModified());
+		}
 		return Date.from(getFileAttributes(f).lastModified());
 	}
 

@@ -234,12 +234,15 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		Date actual = fileSystem.getModificationTime(file);
-		long diff = actual.getTime() - date.getTime();
+		Date actual1 = fileSystem.getModificationTime(file);
+		Date actual2 = fileSystem.getModificationTime(file);
+		assertEquals(actual1, actual2);
 
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
+
 		// test
+		long diff = actual2.getTime() - date.getTime();
 		assertFalse(diff > 10000);
 	}
 
