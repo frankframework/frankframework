@@ -74,27 +74,26 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 
 
-
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
-		String xml = getXml(parsedRecord);
-		if (transformerPool!=null) {
+		XmlBuilder xml = getXml(parsedRecord);
+		if (transformerPool != null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Transformer [{}] record before XSL transformation [{}]", getName(), xml);
 			}
-			Message message = new Message(xml);
-			ParameterValueList pvl = paramList==null?null:paramList.getValues(message, session);
-			try(Message transformedMessage = transformerPool.transform(message, pvl)) {
+			Message message = xml.asMessage();
+			ParameterValueList pvl = paramList == null ? null : paramList.getValues(message, session);
+			try (Message transformedMessage = transformerPool.transform(message, pvl)) {
 				return transformedMessage.asString();
 			}
 		}
-		return xml;
+		return xml.asXmlString();
 	}
 
-	protected String getXml(List<String> parsedRecord) {
-		XmlBuilder record=new XmlBuilder(getRootTag());
+	protected XmlBuilder getXml(List<String> parsedRecord) {
+		XmlBuilder record = new XmlBuilder(getRootTag());
 		int ndx = 0;
-		for (Iterator<String> it = outputFields.iterator(); it.hasNext();) {
+		for (Iterator<String> it = outputFields.iterator(); it.hasNext(); ) {
 			// get tagname
 			String tagName = it.next();
 			// get value
@@ -109,13 +108,13 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 				}
 			}
 			// if tagname is empty, then it is not added to the XML
-			if (! StringUtils.isEmpty(tagName)) {
+			if (!StringUtils.isEmpty(tagName)) {
 				XmlBuilder field = new XmlBuilder(tagName);
 				field.setValue(value,true);
 				record.addSubElement(field);
 			}
 		}
-		return record.toXML();
+		return record;
 	}
 
 	/** comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized */

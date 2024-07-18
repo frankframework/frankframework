@@ -57,7 +57,7 @@ public class EsbJmsSender extends JmsSender {
 				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
-		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || !paramList.hasParameter("SoapAction"))) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");

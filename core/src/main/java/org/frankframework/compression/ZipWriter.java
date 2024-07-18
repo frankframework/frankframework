@@ -26,7 +26,6 @@ import org.frankframework.collection.CollectorPipeBase.Action;
 import org.frankframework.collection.ICollector;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -51,19 +50,17 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 				if(parameterList == null) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
 				}
-				IParameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
-				IParameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
-				if (filenameParameter==null && contentsParameter==null) {
+				if (!parameterList.hasParameter(PARAMETER_FILENAME) && !parameterList.hasParameter(PARAMETER_CONTENTS)) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
 				}
 				break;
 			case CLOSE:
-				if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME)!=null) {
+				if (parameterList != null && parameterList.hasParameter(PARAMETER_FILENAME)) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
 				}
 				break;
 			case STREAM:
-				if(parameterList == null || parameterList.findParameter(PARAMETER_FILENAME)==null) {
+				if(parameterList == null || !parameterList.hasParameter(PARAMETER_FILENAME)) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' is required");
 				}
 				break;

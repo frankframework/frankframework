@@ -87,7 +87,7 @@ public class JdbcUtil {
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
 		if (warningsElem != null) {
-			return warningsElem.toXML();
+			return warningsElem.asXmlString();
 		}
 		return null;
 	}

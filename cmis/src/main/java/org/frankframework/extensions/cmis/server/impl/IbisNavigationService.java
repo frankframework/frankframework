@@ -83,7 +83,7 @@ public class IbisNavigationService implements NavigationService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML(), callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.asXmlString(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectInFolderList");
 
 			return CmisUtils.xml2ObjectsInFolderList(typesXml);

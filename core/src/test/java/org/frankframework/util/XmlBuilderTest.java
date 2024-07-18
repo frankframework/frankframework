@@ -75,7 +75,7 @@ public class XmlBuilderTest {
 		sb.append("</messages>");
 		sb.append("</summary>");
 
-		MatchUtils.assertXmlEquals(sb.toString(), summaryXML.toXML());
+		MatchUtils.assertXmlEquals(sb.toString(), summaryXML.asXmlString());
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class XmlBuilderTest {
 		sb.append("</complexType>");
 		sb.append("</schema>");
 
-		MatchUtils.assertXmlEquals(sb.toString(), schema.toXML());
+		MatchUtils.assertXmlEquals(sb.toString(), schema.asXmlString());
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class XmlBuilderTest {
 		sb.append("</complexType>");
 		sb.append("</schema>");
 
-		MatchUtils.assertXmlEquals(sb.toString(), schema.toXML());
+		MatchUtils.assertXmlEquals(sb.toString(), schema.asXmlString());
 	}
 
 	@Test
@@ -151,7 +151,7 @@ public class XmlBuilderTest {
 		root.setValue(value);
 
 		String expected = "<root>" + XmlEncodingUtils.encodeChars(value) + "</root>";
-		MatchUtils.assertXmlEquals(expected, root.toXML(false));
+		MatchUtils.assertXmlEquals(expected, root.asXmlString());
 	}
 
 	@Test
@@ -166,7 +166,7 @@ public class XmlBuilderTest {
 		root.setCdataValue(value);
 
 		String expected = "<root>" + CDATA_START + value.replace(CDATA_END, CDATA_END_REPLACEMENT) + CDATA_END + "</root>";
-		MatchUtils.assertXmlEquals(expected, root.toXML(false));
+		MatchUtils.assertXmlEquals(expected, root.asXmlString());
 	}
 
 	@Test
@@ -178,7 +178,7 @@ public class XmlBuilderTest {
 
 		String expected = "<root><element>control char 1a [¿#26;]</element></root>";
 
-		MatchUtils.assertXmlEquals(expected, root.toXML());
+		MatchUtils.assertXmlEquals(expected, root.asXmlString());
 	}
 
 	@Test
@@ -190,7 +190,7 @@ public class XmlBuilderTest {
 
 		String expected = "<root><element>control char 1a [¿#26;]</element></root>";
 
-		MatchUtils.assertXmlEquals(expected, root.toXML());
+		MatchUtils.assertXmlEquals(expected, root.asXmlString());
 	}
 
 	@Test
@@ -198,7 +198,7 @@ public class XmlBuilderTest {
 		XmlBuilder root = new XmlBuilder("root");
 		root.addSubElement("elementName", "elementValue");
 		String expected = "<root>\n\t<elementName>elementValue</elementName>\n</root>";
-		String actual = root.toXML().trim().replace("  ", "\t").replaceAll(System.lineSeparator(), "\n");
+		String actual = root.asXmlString().trim().replace("  ", "\t").replaceAll(System.lineSeparator(), "\n");
 		assertEquals(expected, actual);
 	}
 
@@ -211,7 +211,7 @@ public class XmlBuilderTest {
 
 		String expected = "<root><element>Unicode characters [" + XML_RENDERED_UNICODE_CHARACTERS + "]</element></root>";
 
-		MatchUtils.assertXmlEquals(expected, root.toXML());
+		MatchUtils.assertXmlEquals(expected, root.asXmlString());
 	}
 
 	@Test
@@ -220,6 +220,6 @@ public class XmlBuilderTest {
 		root.addAttribute("attr1", "a b  c\td\re\nf\r\n\t\ng");
 		String expected = "<root attr1=\"a b  c d e f   g\" />";
 
-		MatchUtils.assertXmlEquals(expected, root.toXML());
+		MatchUtils.assertXmlEquals(expected, root.asXmlString());
 	}
 }

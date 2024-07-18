@@ -111,7 +111,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				// Make mime headers in request available as session key
 				@SuppressWarnings("unchecked")
 				Iterator<MimeHeader> mimeHeaders = request.getMimeHeaders().getAllHeaders();
-				String mimeHeadersXml = getMimeHeadersXml(mimeHeaders).toXML();
+				String mimeHeadersXml = getMimeHeadersXml(mimeHeaders).asXmlString();
 				pipelineSession.put("mimeHeaders", mimeHeadersXml);
 
 				// Make attachments in request (when present) available as session keys
@@ -139,7 +139,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					}
 					i++;
 				}
-				pipelineSession.put("attachments", attachments.toXML());
+				pipelineSession.put("attachments", attachments.asXmlString());
 
 				// Transform SOAP message to string
 				String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");

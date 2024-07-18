@@ -51,7 +51,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 		scheduleDummyTrigger("DummyJob", "DummyGroup A");
 		scheduleDummyTrigger("DummyJob", "DummyGroup B");
 
-		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(schedulerHelper.getScheduler(), null).toXML();
+		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(schedulerHelper.getScheduler(), null).asXmlString();
 		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
 	}
 
@@ -63,13 +63,13 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 		IbisManager ibisManager = mock(IbisManager.class);
 		when(ibisManager.getConfigurations()).thenReturn(new LinkedList<Configuration>());
 
-		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(schedulerHelper.getScheduler(), ibisManager).toXML();
+		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(schedulerHelper.getScheduler(), ibisManager).asXmlString();
 		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
 	}
 
 	@Test
 	public void testGetJobMessages() {
-		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).toXML().trim());
+		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).asXmlString().trim());
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 		jobDataMap.put(CORRELATIONID, "correlationId");
 		jobDataMap.put(MESSAGE, "message");
 
-		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).toXML().trim());
+		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).asXmlString().trim());
 	}
 
 	@Test
@@ -87,13 +87,13 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 		schedulerHelper.getScheduler().addCalendar("DummyCalendar A", new HolidayCalendar(), false, false);
 		schedulerHelper.getScheduler().addCalendar("DummyCalendar B", new HolidayCalendar(), false, false);
 
-		String result = schedulerAdapter.getSchedulerCalendarNamesToXml(schedulerHelper.getScheduler()).toXML();
+		String result = schedulerAdapter.getSchedulerCalendarNamesToXml(schedulerHelper.getScheduler()).asXmlString();
 		assertTrue(result.contains("DummyCalendar A") && result.contains("DummyCalendar B"));
 	}
 
 	@Test
 	public void testGetSchedulerMetaDataToXml() {
-		assertTrue(schedulerAdapter.getSchedulerMetaDataToXml(schedulerHelper.getScheduler()).toXML().contains("<schedulerMetaData "));
+		assertTrue(schedulerAdapter.getSchedulerMetaDataToXml(schedulerHelper.getScheduler()).asXmlString().contains("<schedulerMetaData "));
 	}
 
 	private void scheduleDummyTrigger(String jobName, String groupName) throws SchedulerException, ParseException {
@@ -104,7 +104,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	public void testTriggerToXmlBuilderWithCronSchedule() throws SchedulerException, ParseException {
 		schedulerHelper.scheduleJob(createServiceJob("DummyJob", "DummyGroup"), "0 0 5 * * ?)");
 
-		String scheduleXml = schedulerAdapter.triggerToXmlBuilder(schedulerHelper.getTrigger("DummyJob", "DummyGroup")).toXML();
+		String scheduleXml = schedulerAdapter.triggerToXmlBuilder(schedulerHelper.getTrigger("DummyJob", "DummyGroup")).asXmlString();
 		assertTrue(scheduleXml.contains("cronExpression="));
 	}
 }

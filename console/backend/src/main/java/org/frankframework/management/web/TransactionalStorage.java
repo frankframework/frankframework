@@ -24,7 +24,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -51,17 +50,6 @@ public class TransactionalStorage extends FrankApiBase {
 
 	public enum StorageSource {
 		RECEIVERS, PIPES;
-
-		public static StorageSource fromString(String value) {
-			if (StringUtils.isNotBlank(value)) {
-				try {
-					return StorageSource.valueOf(value.toUpperCase());
-				} catch (IllegalArgumentException e) {
-					throw new IllegalArgumentException("invalid StorageSource option");
-				}
-			}
-			throw new IllegalArgumentException("no StorageSource option supplied");
-		}
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -101,7 +89,6 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("processState") String processState,
 			@PathVariable("messageId") String messageId
 	) {
-
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
 
@@ -129,7 +116,6 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("processState") String processState,
 			@RequestPart("messageIds") String messageIdsPart
 	) {
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
@@ -199,11 +185,9 @@ public class TransactionalStorage extends FrankApiBase {
 			@RequestParam(value = "startDate", required = false) String startDateStr,
 			@RequestParam(value = "endDate", required = false) String endDateStr,
 			@RequestParam(value = "sort", required = false) String sort,
-			@RequestParam(value = "skip", required = false) int skipMessages,
-			@RequestParam(value = "max", required = false) int maxMessages
+			@RequestParam(value = "skip", required = false, defaultValue = "0") int skipMessages,
+			@RequestParam(value = "max", required = false, defaultValue = "0") int maxMessages
 	) {
-
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);

@@ -67,7 +67,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 			throw new ConfigurationException("forward [" + EQUALSFORWARD + "] is not defined");
 
 		ParameterList parameterList = getParameterList();
-		if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
+		if (!parameterList.hasParameter(OPERAND1) && !parameterList.hasParameter(OPERAND2)) {
 			throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
 		}
 	}

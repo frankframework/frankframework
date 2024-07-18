@@ -184,7 +184,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				part.addAttribute("mimeType", "application/octet-stream");
 				xmlMultipart.addSubElement(part);
 			}
-			session.put(getMultipartXmlSessionKey(), xmlMultipart.toXML());
+			session.put(getMultipartXmlSessionKey(), xmlMultipart.asXmlString());
 		}
 
 		if (isSoap()) {
