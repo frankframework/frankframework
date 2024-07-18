@@ -22,7 +22,7 @@
                   autocomplete="off"
                   data-cy-test-pipeline="selectConfig"
                   [(ngModel)]="selectedConfiguration"
-                  (ngModelChange)="updateSelectedAdapter()"
+                  (ngModelChange)="form.adapter = ''"
                   name="configuration"
                   class="form-control"
                 />
