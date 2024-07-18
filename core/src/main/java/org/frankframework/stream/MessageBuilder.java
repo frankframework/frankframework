@@ -24,7 +24,9 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.xml.XmlWriter;
 
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class MessageBuilder {
 	private static final long MAX_IN_MEMORY_SIZE = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
 
@@ -48,11 +50,11 @@ public class MessageBuilder {
 	public MessageBuilder(Path file) throws IOException {
 		if(Files.isDirectory(file)) throw new IOException("location ["+file+"] may not be a folder");
 
-		if(!Files.exists(file)) {
-			Files.createFile(file);
+		if(Files.exists(file)) {
+			log.info("location [{}] already exists, overwriting file-contents", file);
 		}
 
-		this.location = file;
+		location = file;
 		outputStream = Files.newOutputStream(location);
 	}
 

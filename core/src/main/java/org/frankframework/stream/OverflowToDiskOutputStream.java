@@ -26,8 +26,8 @@ import java.util.Arrays;
  * Writes to an in-memory buffer until it 'overflows', after which a file on disk will be created and the in-memory buffer will be flushed to it.
  */
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
-	private byte[] buf; // temporary buffer, once full, write to disk
-	private OutputStream fos;
+	private byte[] buffer; // temporary buffer, once full, write to disk
+	private OutputStream outputStream;
 
 	private final Path tempDirectory;
 	private Path fileLocation;
@@ -45,11 +45,11 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	public OverflowToDiskOutputStream(int bufferSize, Path tempDirectory) throws IOException {
 		this.tempDirectory = tempDirectory;
 
-		// either the buf or fos exists, but not both at the same time.
+		// either the buffer or outputStream exists, but not both at the same time.
 		if (bufferSize > 0) {
-			buf = new byte[bufferSize];
+			buffer = new byte[bufferSize];
 		} else {
-			fos = createFileOnDisk();
+			outputStream = createFileOnDisk();
 		}
 	}
 
@@ -59,15 +59,18 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	private OutputStream flushBufferToDisk() throws IOException {
-		if (count == 0 && fos != null) { //buffer has been reset, and fos exists.
-			return fos;
+		if (count == 0 && outputStream != null) { //buffer has been reset, and fos exists.
+			return outputStream;
 		}
 
+		// create the OutputStream and write the buffer to it.
 		OutputStream fos = createFileOnDisk();
-		fos.write(buf, 0, count);
+		fos.write(buffer, 0, count);
 
-		buf = null;
+		// empty the buffer, there is no need to keep this in memory any longer.
+		buffer = null;
 		count = 0;
+
 		return fos;
 	}
 
@@ -81,29 +84,35 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		if(closed) throw new IllegalStateException("stream already closed");
 
 		// Buffer has already been flushed
-		if(fos != null) {
-			fos.write(b, off, len);
+		if(outputStream != null) {
+			outputStream.write(b, off, len);
 			return;
 		}
 
 		// If the request length exceeds the size of the output buffer, flush the output buffer and then write the data directly.
-		if (len >= buf.length - count) {
-			fos = flushBufferToDisk();
-			fos.write(b, off, len);
+		if (len >= buffer.length - count) {
+			outputStream = flushBufferToDisk();
+			outputStream.write(b, off, len);
 			return;
 		}
 
 		// Write to the buffer
-		System.arraycopy(b, off, buf, count, len);
+		System.arraycopy(b, off, buffer, count, len);
 		count += len;
 	}
 
+	/**
+	 * If the contents was small enough to be kept in memory a ByteArray-message will be returned.
+	 * If the contents was written to disk a {@link PathMessage TemporaryMessage} will be returned.
+	 * @return A new {@link Message} object representing the contents written to this {@link OutputStream}.
+	 */
 	public Message toMessage() {
 		if(!closed) throw new IllegalStateException("stream has not yet been closed");
+
 		if(fileLocation != null) {
 			return PathMessage.asTemporaryMessage(fileLocation);
 		} else {
-			return new Message(Arrays.copyOf(buf, count));
+			return new Message(Arrays.copyOf(buffer, count));
 		}
 	}
 
@@ -116,15 +125,15 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	/**
-	 * Doesn't do anything if the message is kept in memory.
-	 * @param writeBufferToDisk Writes whatever has been kept in memory to disk.
+	 * Doesn't do anything if the message is kept in memory unless parameter {@code writeBufferToDisk} is true.
+	 * @param writeBufferToDisk Forces the in-memory buffer to be written to disk.
 	 */
 	public void flush(boolean writeBufferToDisk) throws IOException {
 		if(writeBufferToDisk) {
-			fos = flushBufferToDisk();
+			outputStream = flushBufferToDisk();
 		}
-		if(fos != null) {
-			fos.flush();
+		if(outputStream != null) {
+			outputStream.flush();
 		}
 	}
 
@@ -138,8 +147,8 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		}
 		closed = true;
 
-		if(fos != null) {
-			fos.close();
+		if(outputStream != null) {
+			outputStream.close();
 		}
 	}
 }
