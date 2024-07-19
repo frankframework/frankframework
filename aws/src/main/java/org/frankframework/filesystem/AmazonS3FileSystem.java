@@ -290,7 +290,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 		try (FileInputStream fis = new FileInputStream(file)) {
 			try(S3Object s3File = f) {
-				PutObjectRequest por = new PutObjectRequest(bucketName, s3File.getKey(), fis, metaData);
+				PutObjectRequest por = new PutObjectRequest(f.getBucketName(), s3File.getKey(), fis, metaData);
 				por.setStorageClass(getStorageClass());
 				s3Client.putObject(por);
 			}
