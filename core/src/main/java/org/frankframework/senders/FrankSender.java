@@ -55,6 +55,9 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
 @Category("Basic")
 public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 
+	public static final String TARGET_PARAM_NAME = "target";
+	public static final String SCOPE_PARAM_NAME = "scope";
+
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
 	 * {@code DLL} is a special way of invoking the other java application, loading the service via a DLL. See the
@@ -81,7 +84,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ParameterList pl = getParameterList();
-		if (StringUtils.isBlank(getTarget()) && !pl.hasParameter("target")) {
+		if (StringUtils.isBlank(getTarget()) && (pl == null || !pl.hasParameter(TARGET_PARAM_NAME))) {
 			throw new ConfigurationException("'target' required, either as parameter or as attribute in the configuration");
 		}
 	}
@@ -90,13 +93,13 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	public String getPhysicalDestinationName() {
 		StringBuilder result = new StringBuilder();
 		ParameterList pl = getParameterList();
-		if (pl.hasParameter("scope")) {
+		if (pl != null && pl.hasParameter(SCOPE_PARAM_NAME)) {
 			result.append("param:scope");
 		} else {
 			result.append(getScope());
 		}
 		result.append("/");
-		if (pl.hasParameter("target")) {
+		if (pl != null && pl.hasParameter(TARGET_PARAM_NAME)) {
 			result.append("param:target");
 		} else {
 			result.append(getTarget());
@@ -106,7 +109,8 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	@Override
 	public String getDomain() {
-		if (getParameterList().hasParameter("scope")) {
+		ParameterList pl = getParameterList();
+		if (pl != null && pl.hasParameter(SCOPE_PARAM_NAME)) {
 			return "Dynamic";
 		} else {
 			return getScope().name();
@@ -253,7 +257,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	}
 
 	private Scope determineActualScope(ParameterValueList pvl) {
-		ParameterValue scopeParam = pvl != null ? pvl.findParameterValue("scope") : null;
+		ParameterValue scopeParam = pvl != null ? pvl.findParameterValue(SCOPE_PARAM_NAME) : null;
 		if (scopeParam != null) {
 			return Scope.valueOf(scopeParam.asStringValue(getScope().name()));
 		}
@@ -261,7 +265,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	}
 
 	private String determineActualTarget(ParameterValueList pvl) {
-		ParameterValue targetParam = pvl != null ? pvl.findParameterValue("target") : null;
+		ParameterValue targetParam = pvl != null ? pvl.findParameterValue(TARGET_PARAM_NAME) : null;
 		if (targetParam != null) {
 			return targetParam.asStringValue(getTarget());
 		}
@@ -301,10 +305,10 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	 * <br/>
 	 * It is possible to set a target at runtime via a parameter.
 	 * <br/>
-	 * If a parameter with name {@code target} exists but has no value, then the target configured
+	 * If a parameter with name {@value  TARGET_PARAM_NAME} exists but has no value, then the target configured
 	 * via the attribute will be used as a default.
 	 * 
-	 * @param target
+	 * @param target Name of the target, adapter or registered service.
 	 */
 	public void setTarget(String target) {
 		this.target = target;
