@@ -291,7 +291,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	 * It is possible to set this via a parameter. If the parameter is defined but the value at runtime
 	 * is empty, then the value set via this attribute will be used as default.
 	 *
-	 * @param scope Either {@code ADAPTER} or {@code  JVM}
+	 * @param scope Either {@code ADAPTER}, {@code  JVM} or {@code DLL}.
 	 *
 	 * @ff.default ADAPTER
 	 */
@@ -305,7 +305,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	 * <br/>
 	 * It is possible to set a target at runtime via a parameter.
 	 * <br/>
-	 * If a parameter with name {@value  TARGET_PARAM_NAME} exists but has no value, then the target configured
+	 * If a parameter with name {@value #TARGET_PARAM_NAME} exists but has no value, then the target configured
 	 * via the attribute will be used as a default.
 	 * 
 	 * @param target Name of the target, adapter or registered service.
