@@ -27,6 +27,10 @@
 				</FrankSender>
 				<Forward name="success" path="Get Result From Session"/>
 			</SenderPipe>
+			<SenderPipe name="CallViaJvmDispatcher">
+				<FrankSender scope="JVM" target="iaf_test_FrankSenderCallViaJvmTest" returnedSessionKeys="resultKey"/>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
 
 			<GetFromSessionPipe name="Get Result From Session" sessionKey="resultKey"/>
 		</Pipeline>
@@ -49,6 +53,15 @@
 			<PutInSessionPipe name="parameterized return">
 				<Param name="resultKey" sessionKey="input1"/>
 			</PutInSessionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter4">
+		<Receiver>
+			<JavaListener serviceName="iaf_test_FrankSenderCallViaJvmTest" name="FrankSenderCallViaJvmTest"/>
+		</Receiver>
+		<Pipeline>
+			<PutInSessionPipe name="value to return" value="sub4" sessionKey="resultKey"/>
 		</Pipeline>
 	</Adapter>
 </Module>
