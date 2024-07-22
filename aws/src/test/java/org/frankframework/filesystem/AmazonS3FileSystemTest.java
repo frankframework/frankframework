@@ -3,12 +3,16 @@ package org.frankframework.filesystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -33,7 +37,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	private Path tempdir;
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
+	protected AmazonS3FileSystemTestHelper getFileSystemTestHelper() {
 		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
@@ -50,6 +54,41 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 		s3.setBucketName(awsHelper.getBucketName());
 		return s3;
+	}
+
+	@Test
+	public void writableFileSystemTestRenameToOtherFolderWithBucketNamePrefix() throws Exception {
+		String destinationFile = "fileRenamed.txt";
+		String bucketName = "other-bucket123";
+		String filename = bucketName+"|"+destinationFile;
+		String contents = "regeltje tekst";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) helper;
+		AmazonS3 s3Client = awsHelper.getS3Client();
+		try {
+			s3Client.createBucket(bucketName);
+			assertFalse(s3Client.doesObjectExist(bucketName, destinationFile));
+
+			S3Object file = fileSystem.toFile(filename);
+			assertEquals(bucketName, file.getBucketName());
+
+			fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
+			waitForActionToFinish();
+
+			// test
+			assertFalse(s3Client.doesObjectExist(awsHelper.getBucketName(), destinationFile));
+			assertTrue(s3Client.doesObjectExist(bucketName, destinationFile));
+		} finally {
+			try {
+				awsHelper.cleanUpFolder(bucketName, null);
+				s3Client.deleteBucket(bucketName);
+			} catch (Exception e) {
+				log.error("unable to remove bucket", e);
+			}
+		}
 	}
 
 	@Test

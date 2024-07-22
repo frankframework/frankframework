@@ -170,7 +170,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		cleanUpFolder(folder);
 	}
 
-	private void cleanUpFolder(String foldername) {
+	public void cleanUpFolder(String foldername) {
+		cleanUpFolder(bucketName, foldername);
+	}
+
+	public void cleanUpFolder(String bucketName, String foldername) {
 		ObjectListing objectListing = foldername!=null ? s3Client.listObjects(bucketName, foldername) : s3Client.listObjects(bucketName);
 		while (true) {
 			Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
