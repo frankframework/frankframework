@@ -209,7 +209,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 	}
 
 	@Test
-	public void basicFileSystemTestGetFileName() throws Exception {
+	public void basicFileSystemTestGetCanonicalFileName() throws Exception {
 		String filename = "readName" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -225,7 +225,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 	}
 
 	@Test
-	public void basicFileSystemTestGetFolderName() throws Exception {
+	public void basicFileSystemTestGetCanonicalFolderName() throws Exception {
 		String foldername = "dummy/folder/";
 
 		fileSystem.configure();

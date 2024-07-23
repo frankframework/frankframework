@@ -30,6 +30,8 @@ import java.util.NoSuchElementException;
 
 import jakarta.annotation.Nullable;
 import lombok.Getter;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -315,10 +317,17 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getName(FTPFileRef file) {
-		if(file == null) {
-			return null;
+		String name = file.getFileName();
+		if(StringUtils.isNotEmpty(name)) {
+			return name;
 		}
-		return file.getFileName();
+		String folder = file.getFolder();
+		if (folder != null) { // Folder: only take part before last slash
+			int lastSlashPos = folder.lastIndexOf('/', folder.length() - 2);
+			return folder.substring(lastSlashPos + 1);
+		}
+
+		return null;
 	}
 
 	@Override

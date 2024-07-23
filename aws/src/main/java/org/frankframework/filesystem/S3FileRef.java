@@ -109,11 +109,10 @@ public class S3FileRef {
 		if(StringUtils.isNotEmpty(name)) { // File: when not empty, return this immediately
 			return name;
 		}
-		if (folder != null) { // Folder: only take part before last slash
-			int lastSlashPos = folder.lastIndexOf('/', folder.length() - 2);
-			return folder.substring(lastSlashPos + 1);
-		}
-		return null;
+
+		// Folder: only take part before last slash
+		String removeEndSlash = StringUtils.chop(folder);
+		return StringUtils.substringAfterLast(removeEndSlash, '/');
 	}
 
 	public void addUserMetadata(String key, String value) {

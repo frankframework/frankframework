@@ -233,7 +233,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F file = fileSystem.toFile(foldername);
 		// test
-		assertEquals("folder/", fileSystem.getName(file));
+		assertEquals("folder", fileSystem.getName(file));
 	}
 
 	@Test
