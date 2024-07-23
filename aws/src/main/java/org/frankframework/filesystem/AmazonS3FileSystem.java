@@ -268,8 +268,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 		try (FileInputStream fis = new FileInputStream(file)) {
 			PutObjectRequest.Builder por = PutObjectRequest.builder()
 					.bucket(f.getBucketName())
-					.contentEncoding("UTF-8")
 					.key(f.getKey())
+					.contentEncoding("UTF-8")
 					.storageClass(storageClass);
 
 			addMetadata(por, file.length(), customFileAttributes);

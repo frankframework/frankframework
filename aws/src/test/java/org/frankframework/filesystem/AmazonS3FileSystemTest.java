@@ -72,7 +72,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 		try {
 			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
 
-			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, bucketName)));
+			assertFalse(awsHelper._fileExistsInBucket(destinationFile, bucketName)); // Actual check to see if the file is there or not
+			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, bucketName))); // Extra sanity check that this also works correctly
 
 			S3FileRef file = fileSystem.toFile(filename);
 			assertEquals(bucketName, file.getBucketName());
@@ -81,7 +82,9 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 			waitForActionToFinish();
 
 			// test
+			assertFalse(awsHelper._fileExistsInBucket(destinationFile, awsHelper.getBucketName()));
 			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, awsHelper.getBucketName())));
+			assertTrue(awsHelper._fileExistsInBucket(destinationFile, bucketName));
 			assertTrue(fileSystem.exists(new S3FileRef(destinationFile, bucketName)));
 		} finally {
 			try {

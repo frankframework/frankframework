@@ -124,6 +124,10 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		} else {
 			objectName = folder == null ? filename : folder + "/" + filename;
 		}
+		return _fileExists(objectName, bucketName);
+	}
+
+	public boolean _fileExistsInBucket(String objectName, String bucket) {
 		try {
 			HeadObjectResponse headObjectResponse = s3Client.headObject(HeadObjectRequest.builder()
 					.key(objectName)

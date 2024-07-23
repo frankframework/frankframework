@@ -55,9 +55,14 @@ public class S3FileRef {
 	@Nullable
 	private final String folder;
 
+	@Nullable
 	private @Getter @Setter Long contentLength = null;
+	@Nullable
 	private @Getter @Setter Instant lastModified = null;
+	@Nullable
 	private @Getter @Setter String bucketName;
+
+	@Nonnull //may be empty
 	private Map<String, String> userMetadata = new HashMap<>();
 
 	private @Getter InputStream objectContent;
@@ -81,20 +86,22 @@ public class S3FileRef {
 		this.folder = StringUtils.isNotEmpty(folder) ? folder + FILE_DELIMITER : null;
 	}
 
+	public S3FileRef(S3Object s3Object, String bucketName) {
+		this(s3Object.key(), bucketName);
+		setContentLength(s3Object.size());
+		setLastModified(s3Object.lastModified());
+	}
+
 	public S3FileRef(String key, String defaultBucketName) {
 		this(key);
 
-		if(StringUtils.isEmpty(bucketName)) {
+		if(StringUtils.isEmpty(bucketName) && StringUtils.isNotEmpty(defaultBucketName)) {
 			setBucketName(defaultBucketName);
 		}
 	}
 
 	public S3FileRef(String filename, String folderName, String bucketName) {
 		this(StringUtil.concatStrings(folderName, FILE_DELIMITER, filename), bucketName);
-	}
-
-	public S3FileRef(S3Object s3Object, String bucketName) {
-		this(s3Object.key(), bucketName);
 	}
 
 	/** Returns the canonical name inclusive file path when present */
@@ -134,7 +141,6 @@ public class S3FileRef {
 	private void updateMetadata(Map<String, String> metadata) {
 		if(metadata != null && !metadata.isEmpty()) {
 			userMetadata.putAll(metadata);
-//			metadata.forEach((key, value) -> userMetadata.put(key, AmazonEncodingUtils.rfc2047Decode(value)));
 		}
 	}
 }
