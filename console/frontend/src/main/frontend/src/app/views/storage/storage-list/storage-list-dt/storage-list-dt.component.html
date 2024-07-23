@@ -1,5 +1,5 @@
-<input icheck type="checkbox" [(ngModel)]="storageService.selectedMessages[+message.id]" />
-<div *ngIf="!storageService.selectedMessages[+message.id]">
+<input icheck type="checkbox" [(ngModel)]="storageService.selectedMessages[message.id]" />
+<div *ngIf="!storageService.selectedMessages[message.id]">
   <a [routerLink]="['messages', message.id]"
     class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>
   <button *ngIf="storageService.storageParams.processState=='Error'" [ladda]="message.resending" data-style="slide-down" title="Resend Message"
