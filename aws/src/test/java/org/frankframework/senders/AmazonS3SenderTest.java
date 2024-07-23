@@ -13,13 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
-import com.amazonaws.services.s3.model.S3Object;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.S3FileRef;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.PropertyUtil;
@@ -34,7 +34,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  *
  */
 @Testcontainers(disabledWithoutDocker = true)
-public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
+public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3FileRef, AmazonS3FileSystem> {
 
 	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 

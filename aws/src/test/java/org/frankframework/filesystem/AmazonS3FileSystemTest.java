@@ -23,10 +23,9 @@ import org.junit.jupiter.api.io.TempDir;
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
 
 @Testcontainers(disabledWithoutDocker = true)
-public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
+public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3FileSystem> {
 
 	private static final int WAIT_TIMEOUT_MILLIS = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
@@ -72,7 +71,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 			s3Client.createBucket(bucketName);
 			assertFalse(s3Client.doesObjectExist(bucketName, destinationFile));
 
-			S3Object file = fileSystem.toFile(filename);
+			S3FileRef file = fileSystem.toFile(filename);
 			assertEquals(bucketName, file.getBucketName());
 
 			fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
@@ -185,7 +184,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		String combinedFilename = bucketname +"|" + filename;
 
 		// act
-		S3Object ref = fileSystem.toFile(combinedFilename);
+		S3FileRef ref = fileSystem.toFile(combinedFilename);
 
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
@@ -202,10 +201,41 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		String combinedFilename = bucketname +"|" + foldername +"/"+ filename;
 
 		// act
-		S3Object ref = fileSystem.toFile(combinedFilename);
+		S3FileRef ref = fileSystem.toFile(combinedFilename);
 
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
 		assertEquals(foldername +"/"+ filename, ref.getKey());
+	}
+
+	@Test
+	public void basicFileSystemTestGetCanonicalFileName() throws Exception {
+		String filename = "readName" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		S3FileRef file = fileSystem.toFile(filename);
+		// test
+		assertEquals(file.getBucketName()+"|"+filename, fileSystem.getCanonicalName(file));
+	}
+
+	@Test
+	public void basicFileSystemTestGetCanonicalFolderName() throws Exception {
+		String foldername = "dummy/folder/";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(foldername);
+		waitForActionToFinish();
+
+		S3FileRef file = fileSystem.toFile(foldername);
+		// test
+		assertEquals(file.getBucketName()+"|"+foldername, fileSystem.getCanonicalName(file));
 	}
 }

@@ -334,6 +334,9 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public String getName(SmbFile f) {
+		if(f.getName().endsWith("/")) {
+			return StringUtils.chop(f.getName());
+		}
 		return f.getName();
 	}
 
