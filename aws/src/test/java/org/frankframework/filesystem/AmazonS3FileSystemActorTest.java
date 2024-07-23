@@ -9,13 +9,12 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
 
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
-public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3Object, AmazonS3FileSystem> {
+public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3FileRef, AmazonS3FileSystem> {
 
 	@TempDir
 	private Path tempdir;

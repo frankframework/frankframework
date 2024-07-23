@@ -206,7 +206,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	public void basicFileSystemTestGetName() throws Exception {
+	public void basicFileSystemTestGetFileName() throws Exception {
 		String filename = "readName" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -219,6 +219,21 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F file = fileSystem.toFile(filename);
 		// test
 		assertEquals(filename, fileSystem.getName(file));
+	}
+
+	@Test
+	public void basicFileSystemTestGetFolderName() throws Exception {
+		String foldername = "dummy/folder/";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(foldername);
+		waitForActionToFinish();
+
+		F file = fileSystem.toFile(foldername);
+		// test
+		assertEquals("folder/", fileSystem.getName(file));
 	}
 
 	@Test
