@@ -1,5 +1,6 @@
 package org.frankframework.filesystem.mock;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.FileSystemWithAttachmentsTest;
@@ -22,5 +23,12 @@ public class MockFileSystemWithAttachmentsTest extends FileSystemWithAttachments
 	@Test
 	public void basicFileSystemTestListDirsAndOrFolders() {
 		// Folder structure not correctly implemented in MockFileSystem. Mock tests are deleted in the near future, because they're not needed anymore.
+	}
+
+	@Test
+	@Override
+	@Disabled("mockfilesystem strips slashes in toFile method")
+	public void basicFileSystemTestGetFolderName() throws Exception {
+		super.basicFileSystemTestGetFolderName();
 	}
 }

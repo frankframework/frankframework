@@ -11,10 +11,9 @@ import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Testcontainers(disabledWithoutDocker = true)
-public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3Object, AmazonS3FileSystem> {
+public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3FileRef, AmazonS3FileSystem> {
 
 	@Container
 	private static final S3MockContainer s3Mock = new S3MockContainer("latest");

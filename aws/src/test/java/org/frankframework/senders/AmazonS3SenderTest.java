@@ -19,6 +19,7 @@ import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.S3FileRef;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.PropertyUtil;
@@ -34,7 +35,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
  *
  */
 @Testcontainers(disabledWithoutDocker = true)
-public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
+public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3FileRef, AmazonS3FileSystem> {
 
 	@Container
 	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
