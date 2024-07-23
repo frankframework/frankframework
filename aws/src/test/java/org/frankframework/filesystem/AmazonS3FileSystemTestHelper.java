@@ -215,7 +215,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		cleanUpFolder(folder);
 	}
 
-	private void cleanUpFolder(String foldername) {
+	public void cleanUpFolder(String foldername) {
+		cleanUpFolder(bucketName, foldername);
+	}
+
+	public void cleanUpFolder(String bucketName, String foldername) {
 		ListObjectsResponse listResponse;
 		do {
 			// If the bucket contains many objects, the listObjects() call might not return all the objects in the first listing. Check to see whether

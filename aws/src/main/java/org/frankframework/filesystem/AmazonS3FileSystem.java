@@ -293,7 +293,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 		try (FileInputStream fis = new FileInputStream(file)) {
 			PutObjectRequest.Builder por = PutObjectRequest.builder()
-					.bucket(bucketName)
+					.bucket(bucketName) //TODO make this dynamic with S3FileRef
 					.contentEncoding("UTF-8")
 					.key(f.key())
 					.storageClass(storageClass);

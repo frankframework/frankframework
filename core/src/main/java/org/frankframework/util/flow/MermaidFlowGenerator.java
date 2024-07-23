@@ -112,7 +112,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 			clazz = Class.forName(className);
 			type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
 			if (type == null) {
-				log.debug("Skipping class [{}]", clazz);
+				log.trace("Skipping class [{}]", clazz);
 				return;
 			}
 			methods = clazz.getMethods();
