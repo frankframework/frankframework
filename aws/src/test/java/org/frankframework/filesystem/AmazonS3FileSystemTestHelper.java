@@ -131,7 +131,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		try {
 			HeadObjectResponse headObjectResponse = s3Client.headObject(HeadObjectRequest.builder()
 					.key(objectName)
-					.bucket(bucketName)
+					.bucket(bucket)
 					.build());
 			return headObjectResponse != null;
 		} catch (NoSuchKeyException e) {
