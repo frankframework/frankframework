@@ -233,7 +233,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 	@Override
 	public boolean exists(S3FileRef f) throws FileSystemException {
 		try {
-			return updateFileAttributes(f) != null;
+			return getFileAttributes(f) != null;
 		} catch (NoSuchKeyException e) {
 			return false;
 		} catch (AwsServiceException e) {
@@ -340,21 +340,29 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 	/**
 	 * Attempts to update the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
 	 * Updates the Metadata context but does not retrieve the actual file handle.
+	 * @throws FileSystemException if it cannot find the resource in S3.
 	 */
-	private S3FileRef updateFileAttributes(S3FileRef f) throws FileSystemException {
+	private void updateFileAttributes(S3FileRef f) throws FileSystemException {
 		if(f.getContentLength() == null) {
-			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-					.bucket(f.getBucketName())
-					.key(f.getKey())
-					.build();
-
 			try {
-				HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
-				f.updateObject(headObjectResponse);
+				getFileAttributes(f);
 			} catch (AwsServiceException e) {
 				throw new FileSystemException("Could not retrieve tags for object [" + f.getKey() + "] in bucket ["+f.getBucketName()+"]", e);
 			}
 		}
+	}
+
+	/**
+	 * Attempts to update the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 * @throws AwsServiceException if it cannot find the resource in S3.
+	 */
+	private S3FileRef getFileAttributes(S3FileRef f) {
+		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+				.bucket(f.getBucketName())
+				.key(f.getKey())
+				.build();
+		HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+		f.updateObject(headObjectResponse);
 		return f;
 	}
 

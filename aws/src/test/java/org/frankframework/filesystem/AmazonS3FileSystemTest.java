@@ -9,17 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
-import java.util.function.Supplier;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 
@@ -27,7 +25,6 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 
 @Testcontainers(disabledWithoutDocker = true)
 public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3FileSystem> {
@@ -75,9 +72,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 		try {
 			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
 
-			//TODO test if this works for folders
-			Supplier<Boolean> exists = () -> s3Client.headObject(HeadObjectRequest.builder().bucket(bucketName).key(destinationFile).build()) != null;
-			assertFalse(exists.get());
+			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, bucketName)));
 
 			S3FileRef file = fileSystem.toFile(filename);
 			assertEquals(bucketName, file.getBucketName());
@@ -86,9 +81,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 			waitForActionToFinish();
 
 			// test
-			boolean existInPrimaryBucket = s3Client.headObject(HeadObjectRequest.builder().bucket(bucketName).key(destinationFile).build()) != null;
-			assertFalse(existInPrimaryBucket);
-			assertTrue(exists.get());
+			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, awsHelper.getBucketName())));
+			assertTrue(fileSystem.exists(new S3FileRef(destinationFile, bucketName)));
 		} finally {
 			try {
 				awsHelper.cleanUpFolder(bucketName, null);
@@ -196,6 +190,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 		S3FileRef ref = fileSystem.toFile(combinedFilename);
 
 		// assert
+		assertEquals(bucketname, ref.getBucketName());
 		assertEquals(filename, ref.getKey());
 	}
 
@@ -212,6 +207,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 		S3FileRef ref = fileSystem.toFile(combinedFilename);
 
 		// assert
+		assertEquals(bucketname, ref.getBucketName());
 		assertEquals(foldername +"/"+ filename, ref.getKey());
 	}
 
