@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.aws;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.CredentialFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -24,14 +23,14 @@ import software.amazon.awssdk.regions.Region;
 
 public class AwsBase {
 
-	private @Setter @Getter String accessKey;
-	private @Setter @Getter String secretKey;
+	private @Getter String accessKey;
+	private @Getter String secretKey;
 	private @Getter String authAlias;
 
 	private @Getter Region clientRegion = Region.EU_WEST_1;
 
-	private @Setter @Getter String proxyHost = null;
-	private @Setter @Getter Integer proxyPort = null;
+	private @Getter String proxyHost = null;
+	private @Getter Integer proxyPort = null;
 
 	public AwsCredentialsProvider getAwsCredentialsProvider() {
 		if ((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
@@ -45,6 +44,16 @@ public class AwsBase {
 		return AwsUtil.createCredentialProviderChain(cf);
 	}
 
+	/** AWS accessKey */
+	public void setAccessKey(String accessKey) {
+		this.accessKey = accessKey;
+	}
+
+	/** AWS secretKey */
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
+
 	/** AuthAlias to provide accessKey and secretKey */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
@@ -52,10 +61,20 @@ public class AwsBase {
 
 	/**
 	 * AWS Client region
-	 *
 	 * @ff.default eu-west-1
 	 */
 	public void setClientRegion(Region clientRegion) {
 		this.clientRegion = clientRegion;
 	}
+
+	/** Proxy host to use to connect to AWS service */
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	/** Proxy port to use to connect to AWS service */
+	public void setProxyPort(Integer proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+
 }
