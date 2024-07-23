@@ -29,6 +29,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,7 +51,9 @@ public class S3FileRef {
 	private static final String FILE_DELIMITER = "/";
 	public static final String BUCKET_OBJECT_SEPARATOR = "|";
 
+	@Nonnull //may be empty
 	private final String name;
+	@Nullable
 	private final String folder;
 
 	private @Getter @Setter Long contentLength = null;
