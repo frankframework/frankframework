@@ -40,6 +40,7 @@ public class TibcoEmsProperties extends HashMap<String, Object> {
 	}
 
 	public TibcoEmsProperties(URL externalURL) throws IOException {
+		if(externalURL == null) throw new IOException("file ["+externalURL+"] not found");
 		Properties properties = new Properties();
 		try(InputStream is = externalURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			properties.load(reader);
