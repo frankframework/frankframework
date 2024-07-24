@@ -18,6 +18,7 @@ package org.frankframework.filesystem;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -121,6 +121,25 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	@Override
 	public OutputStream createFile(Path f) throws IOException {
 		return Files.newOutputStream(f);
+	}
+
+	@Override
+	public void createFile(Path file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+		try {
+			// Create the file first
+			createFile(file, contents);
+
+			// Then add the custom attributes
+			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+
+			// Stream can't handle the possible IOException
+			for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
+				userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
+			}
+
+		} catch (Exception e) {
+			throw ExceptionUtils.asRuntimeException(e);
+		}
 	}
 
 	@Override
@@ -306,24 +325,6 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			return new String((buffer).array());
 		} else {
 			return attributeValue.toString();
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * This method will create the file in the filesystem if it does not yet exist.
-	 */
-	@Override
-	public void setCustomFileAttribute(@Nonnull Path file, @Nonnull String key, @Nonnull String value) {
-		try {
-			if (!Files.exists(file)) {
-				Files.createFile(file);
-			}
-			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
-			userDefinedAttributes.write(key, Charset.defaultCharset().encode(value));
-		} catch (Exception e) {
-			throw ExceptionUtils.asRuntimeException(e);
 		}
 	}
 

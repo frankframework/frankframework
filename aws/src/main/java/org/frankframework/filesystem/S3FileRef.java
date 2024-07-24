@@ -16,7 +16,7 @@
 package org.frankframework.filesystem;
 
 import java.io.InputStream;
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +24,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.StringUtil;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
  * Object to hold information about an object stored in Amazon S3.
@@ -56,9 +55,14 @@ public class S3FileRef {
 	@Nullable
 	private final String folder;
 
+	@Nullable
 	private @Getter @Setter Long contentLength = null;
-	private @Getter @Setter Date lastModified = null;
+	@Nullable
+	private @Getter @Setter Instant lastModified = null;
+	@Nullable
 	private @Getter @Setter String bucketName;
+
+	@Nonnull //may be empty
 	private Map<String, String> userMetadata = new HashMap<>();
 
 	private @Getter InputStream objectContent;
@@ -82,17 +86,16 @@ public class S3FileRef {
 		this.folder = StringUtils.isNotEmpty(folder) ? folder + FILE_DELIMITER : null;
 	}
 
-	public S3FileRef(S3ObjectSummary summary) {
-		this(summary.getKey());
-		setContentLength(summary.getSize());
-		setLastModified(summary.getLastModified());
-		setBucketName(summary.getBucketName());
+	public S3FileRef(S3Object s3Object, String bucketName) {
+		this(s3Object.key(), bucketName);
+		setContentLength(s3Object.size());
+		setLastModified(s3Object.lastModified());
 	}
 
 	public S3FileRef(String key, String defaultBucketName) {
 		this(key);
 
-		if(StringUtils.isEmpty(bucketName)) {
+		if(StringUtils.isEmpty(bucketName) && StringUtils.isNotEmpty(defaultBucketName)) {
 			setBucketName(defaultBucketName);
 		}
 	}
@@ -118,23 +121,26 @@ public class S3FileRef {
 		return StringUtils.substringAfterLast(removeEndSlash, '/');
 	}
 
-	public void addUserMetadata(String key, String value) {
-		userMetadata.put(key, value);
-	}
-
 	@Nonnull
 	public Map<String, String> getUserMetadata() {
 		return userMetadata;
 	}
 
-	public void updateObject(S3Object obj) {
-		objectContent = obj.getObjectContent();
-		updateObject(obj.getObjectMetadata());
+	public void updateObject(GetObjectResponse obj) {
+		setContentLength(obj.contentLength());
+		setLastModified(obj.lastModified());
+		updateMetadata(obj.metadata());
 	}
 
-	public void updateObject(ObjectMetadata omd) {
-		setContentLength(omd.getContentLength());
-		setLastModified(omd.getLastModified());
-		userMetadata.putAll(omd.getUserMetadata());
+	public void updateObject(HeadObjectResponse hor) {
+		setContentLength(hor.contentLength());
+		setLastModified(hor.lastModified());
+		updateMetadata(hor.metadata());
+	}
+
+	private void updateMetadata(Map<String, String> metadata) {
+		if(metadata != null && !metadata.isEmpty()) {
+			userMetadata.putAll(metadata);
+		}
 	}
 }

@@ -36,6 +36,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers(disabledWithoutDocker = true)
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3FileRef, AmazonS3FileSystem> {
 
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
+
 	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
@@ -44,9 +47,6 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3F
 
 	@TempDir
 	private Path tempdir;
-
-	@Container
-	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
@@ -61,7 +61,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3F
 
 		AmazonS3Sender sender = new AmazonS3Sender();
 		sender.setFileSystem(s3);
-		sender.setBucketName(awsHelper.getBucketName());
+		sender.setBucketName(awsHelper.getDefaultBucketName());
 		return sender;
 	}
 
@@ -77,7 +77,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3F
 		assertEquals("456", fileSystemSender.getFileSystem().getSecretKey());
 
 		fileSystemSender.setClientRegion("dummy-region");
-		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion());
+		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion().toString());
 
 		fileSystemSender.setChunkedEncodingDisabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isChunkedEncodingDisabled());
