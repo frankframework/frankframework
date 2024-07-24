@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.frankframework.stream.json.JsonWriter;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.xml.XmlWriter;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -47,7 +47,7 @@ public class MessageBuilder {
 	 */
 	public MessageBuilder() throws IOException {
 		int maxBufferSize = Math.toIntExact(MAX_IN_MEMORY_SIZE);
-		Path tempdir = FileUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY).toPath();
+		Path tempdir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
 		outputStream = new OverflowToDiskOutputStream(maxBufferSize, tempdir);
 	}
 

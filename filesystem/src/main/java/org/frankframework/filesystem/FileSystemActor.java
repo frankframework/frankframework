@@ -43,6 +43,7 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
@@ -370,7 +371,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return createFile(input, pvl, null);
 				}
 				case DELETE: {
-					return new Message(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
+					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
@@ -439,11 +440,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
-					return new Message(processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
 				case COPY: {
 					String destinationFolder = determineDestination(pvl);
-					return new Message(processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
 				case FORWARD: {
 					F file=getFile(input, pvl);
@@ -460,10 +461,12 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
-	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, SAXException {
+	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, IOException, SAXException {
 		String folder = arrangeFolder(determineInputFolderName(input, pvl));
 		typeFilter = determineTypeFilter(pvl);
-		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
+
+		MessageBuilder messageBuilder = new MessageBuilder();
+		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file", messageBuilder, true);
 		try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), typeFilter)) {
 			Iterator<F> it = stream.iterator();
 			while (it.hasNext()) {
@@ -473,7 +476,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 			}
 		}
-		return new Message(directoryBuilder.toString());
+		return messageBuilder.build();
 	}
 
 	@SuppressWarnings("unchecked") //Casts to the required FileSystem type
@@ -503,10 +506,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	 * @throws FileSystemException
 	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, SAXException {
+	private Message processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFolderName(input, pvl));
-			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file", messageBuilder, true);
 			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
@@ -518,12 +522,12 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 			}
 			deleteEmptyFolder(folder);
-			return directoryBuilder.toString();
+			return messageBuilder.build();
 		}
 		F file=getFile(input, pvl);
 		F resultFile = action.execute(file);
 		deleteEmptyFolder(file);
-		return resultFile!=null ? fileSystem.getName(resultFile) : null;
+		return resultFile!=null ? new Message(fileSystem.getName(resultFile)) : Message.nullMessage();
 	}
 
 	private String arrangeFolder(String determinedFolderName) throws FileSystemException {
