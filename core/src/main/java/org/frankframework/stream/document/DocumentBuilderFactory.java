@@ -18,8 +18,6 @@ package org.frankframework.stream.document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.StringWriter;
-
 import org.frankframework.stream.JsonEventHandler;
 import org.frankframework.stream.MessageBuilder;
 
@@ -39,9 +37,9 @@ public class DocumentBuilderFactory {
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException {
 		switch (format) {
 		case XML:
-			return new XmlDocumentBuilder(rootElement, new StringWriter());
+			return new XmlDocumentBuilder(rootElement);
 		case JSON:
-			return new JsonDocumentBuilder(new StringWriter());
+			return new JsonDocumentBuilder();
 		default:
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
