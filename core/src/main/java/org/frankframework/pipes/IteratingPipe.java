@@ -15,10 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,8 +51,6 @@ import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;

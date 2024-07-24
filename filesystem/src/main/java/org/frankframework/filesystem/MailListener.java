@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!
+   Copyright 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.xml.SaxElementBuilder;
-import org.frankframework.xml.XmlWriter;
 
 /**
  * Implementation of a {@link FileSystemListener} that enables a {@link Receiver} to look in a folder
@@ -84,8 +84,15 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
 			return super.extractMessage(rawMessage, context);
 		}
-		XmlWriter writer = new XmlWriter();
-		try (SaxElementBuilder emailXml = new SaxElementBuilder("email",writer)) {
+
+		final MessageBuilder msgBuilder;
+		try {
+			msgBuilder = new MessageBuilder();
+		} catch (IOException e) {
+			throw new ListenerException("unable to create XmlWriter", e);
+		}
+
+		try (SaxElementBuilder emailXml = new SaxElementBuilder("email", msgBuilder.asXmlWriter())) {
 			if (isSimple()) {
 				MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage.getRawMessage(), emailXml);
 			} else {
@@ -98,7 +105,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		} catch (SAXException | IOException | FileSystemException e) {
 			throw new ListenerException(e);
 		}
-		return new Message(writer.toString());
+		return msgBuilder.build();
 	}
 
 	/**

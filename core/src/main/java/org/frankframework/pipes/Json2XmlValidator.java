@@ -48,6 +48,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.EnumUtils;
@@ -320,7 +321,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.startParse(jsonStructure);
 				resultMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
 			} else {
-				XmlWriter xmlWriter = new XmlWriter();
+				MessageBuilder messageBuilder = new MessageBuilder();
+				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
 				ContentHandler handler = xmlWriter;
 				if (isProduceNamespacelessXml()) {
@@ -328,7 +330,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				sourceFilter.setContentHandler(handler);
 				aligner.startParse(jsonStructure);
-				resultMessage = createResultMessage(xmlWriter.toString(), MediaType.APPLICATION_XML);
+				resultMessage = messageBuilder.build();
 			}
 			validationResult = validator.finalizeValidation(context, session, null);
 		} catch (Exception e) {

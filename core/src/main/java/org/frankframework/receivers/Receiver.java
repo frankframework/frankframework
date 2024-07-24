@@ -97,6 +97,7 @@ import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
@@ -111,13 +112,13 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.XmlWriter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.SAXException;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -1349,8 +1350,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			try {
 				message.preserve();
 				message = compactMessage(message, session);
-			} catch (Exception e) {
-				String msg="error during compacting received message to more compact format";
+			} catch (IOException | SAXException e) {
+				String msg = "error during compacting received message to more compact format";
 				error(msg, e);
 				throw new ListenerException(msg, e);
 			}
@@ -1448,9 +1449,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return businessCorrelationId;
 	}
 
-	private Message compactMessage(Message message, PipeLineSession session) {
-		XmlWriter xmlWriter = new XmlWriter();
-		CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
+	private Message compactMessage(Message message, PipeLineSession session) throws IOException, SAXException {
+		MessageBuilder msgBuilder = new MessageBuilder();
+		CompactSaxHandler handler = new CompactSaxHandler(msgBuilder.asXmlWriter());
 		handler.setChompCharSize(getChompCharSize());
 		handler.setElementToMove(getElementToMove());
 		handler.setElementToMoveChain(getElementToMoveChain());
@@ -1458,13 +1459,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		handler.setRemoveCompactMsgNamespaces(isRemoveCompactMsgNamespaces());
 		handler.setContext(session);
 
-		try {
-			XmlUtils.parseXml(message.asInputSource(), handler);
-			return new Message(xmlWriter.toString());
-		} catch (Exception e) {
-			warn("received message could not be compacted: " + e.getMessage());
-			return message;
-		}
+		XmlUtils.parseXml(message.asInputSource(), handler);
+		return msgBuilder.build();
 	}
 
 	private void setExitState(Map<String,Object> threadContext, ExitState state, int code) {

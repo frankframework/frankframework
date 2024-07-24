@@ -17,7 +17,9 @@ package org.frankframework.stream;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -25,6 +27,8 @@ import org.apache.commons.io.output.XmlStreamWriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.xml.XmlWriter;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -34,6 +38,7 @@ public class MessageBuilder {
 
 	private final OutputStream outputStream;
 	private Path location;
+	private MimeType mimeType;
 
 	/**
 	 * Stores the message in the {@code temp-messages} folder.
@@ -61,11 +66,19 @@ public class MessageBuilder {
 	}
 
 	public Writer asWriter() {
-		return new XmlStreamWriter(asOutputStream());
+		return new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 	}
 
 	public XmlWriter asXmlWriter() {
-		return new XmlWriter(asOutputStream(), true);
+		mimeType = MediaType.APPLICATION_XML;
+		try {
+			Writer xmlWriter = XmlStreamWriter.builder().setOutputStream(asOutputStream()).get();
+			return new XmlWriter(xmlWriter, true);
+		} catch (IOException e) {
+			// This really should only happen if somebody from Apache Commons dun-goofed...
+			// Converting an OutputStream to an OutputStream cannot trigger an IOException...
+			throw new IllegalStateException("unable to create XmlWriter", e);
+		}
 	}
 
 	public OutputStream asOutputStream() {
@@ -77,9 +90,17 @@ public class MessageBuilder {
 	 * @return {@link SerializableFileReference} as {@link PathMessage}. Repeatable.
 	 */
 	public Message build() {
+		final Message result;
 		if(outputStream instanceof OverflowToDiskOutputStream odo) {
-			return odo.toMessage();
+			result = odo.toMessage();
+		} else {
+			result = new PathMessage(location);
 		}
-		return new PathMessage(location);
+
+		if(mimeType != null) {
+			result.getContext().withMimeType(mimeType);
+		}
+
+		return result;
 	}
 }

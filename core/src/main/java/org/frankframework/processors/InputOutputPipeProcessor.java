@@ -166,8 +166,16 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			return;
 		}
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
-		XmlWriter xmlWriter = new XmlWriter();
-		CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
+
+		final MessageBuilder messageBuilder;
+		try {
+			messageBuilder = new MessageBuilder();
+		} catch (IOException e) {
+			log.warn("Pipeline of adapter [{}] could not compact received message", owner.getName(), e);
+			return;
+		}
+
+		CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
 		handler.setChompCharSize(pipe.getChompCharSize());
 		handler.setElementToMove(pipe.getElementToMove());
 		handler.setElementToMoveChain(pipe.getElementToMoveChain());
@@ -177,8 +185,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		try {
 			XmlUtils.parseXml(inputSource, handler);
 			result.closeOnCloseOf(pipeLineSession, owner); // Directly closing the result fails, because the message can also exist and used in the session
-			pipeRunResult.setResult(xmlWriter.toString());
-		} catch (Exception e) {
+			pipeRunResult.setResult(messageBuilder.build());
+		} catch (IOException | SAXException e) {
 			log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner::getName, e::getMessage);
 		}
 	}
