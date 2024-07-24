@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private static final String MONGO_DOCKER_TAG = "mongo:7.0.9";
 
 	@Container
-	private final static MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_DOCKER_TAG);
+	private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_DOCKER_TAG);
 
 	private final String host = "localhost";
 	private final String database = "testdb";
@@ -55,14 +54,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private Message result;
 
 	private JndiMongoClientFactory mongoClientFactory;
-
-	@BeforeAll
-	public static void beforeAll() {
-		mongoDBContainer.start();
-		int mappedPort = mongoDBContainer.getMappedPort(27017);
-		System.setProperty("mongodb.container.port", String.valueOf(mappedPort));
-		log.debug("MongoDB container started on port: {}", mappedPort);
-	}
 
 	@AfterEach
 	@Override

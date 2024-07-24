@@ -48,6 +48,8 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class SerializableFileReference implements Serializable, AutoCloseable {
+	public static final String TEMP_MESSAGE_DIRECTORY = "temp-messages";
+
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
 
 	private static final long serialVersionUID = 1L;
@@ -261,7 +263,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException Thrown if there was any exception reading or writing the data.
 	 */
 	private static Path copyToTempFile(InputStream in, long maxBytes) throws IOException {
-		File tmpMessagesFolder = FileUtils.getTempDirectory("temp-messages");
+		File tmpMessagesFolder = FileUtils.getTempDirectory(TEMP_MESSAGE_DIRECTORY);
 		Path destination = File.createTempFile("msg", ".dat", tmpMessagesFolder).toPath();
 		try (OutputStream fileOutputStream = Files.newOutputStream(destination)) {
 			StreamUtil.copyPartialStream(in, fileOutputStream, maxBytes, 16384);

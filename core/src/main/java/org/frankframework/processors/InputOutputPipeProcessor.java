@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package org.frankframework.processors;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
@@ -32,9 +30,8 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.CompactSaxHandler;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RestoreMovedElementsHandler;
 import org.frankframework.util.StringUtil;
@@ -182,7 +179,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			result.closeOnCloseOf(pipeLineSession, owner); // Directly closing the result fails, because the message can also exist and used in the session
 			pipeRunResult.setResult(xmlWriter.toString());
 		} catch (Exception e) {
-			log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
+			log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner::getName, e::getMessage);
 		}
 	}
 
@@ -195,26 +192,22 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 
 		result.closeOnCloseOf(pipeLineSession, owner);
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
-		final File tempFile;
 
 		try {
-			File tempDirectory = FileUtils.getTempDirectory("restoreMovedElements");
-			tempFile = File.createTempFile("msg", ".xml", tempDirectory);
+			MessageBuilder messageBuilder = new MessageBuilder();
 
-			try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-				XmlWriter xmlWriter = new XmlWriter(fos);
-				RestoreMovedElementsHandler handler = new RestoreMovedElementsHandler(xmlWriter);
-				handler.setSession(pipeLineSession);
+			XmlWriter xmlWriter = messageBuilder.asXmlWriter();
+			RestoreMovedElementsHandler handler = new RestoreMovedElementsHandler(xmlWriter);
+			handler.setSession(pipeLineSession);
 
-				XmlUtils.parseXml(inputSource, handler);
-			}
+			XmlUtils.parseXml(inputSource, handler);
+
+			Message restoredResult = messageBuilder.build();
+			restoredResult.closeOnCloseOf(pipeLineSession, owner);
+			pipeRunResult.setResult(restoredResult);
 		} catch (SAXException | IOException e) {
 			throw new PipeRunException(pipe, "could not restore moved elements", e);
 		}
-
-		Message restoredResult = PathMessage.asTemporaryMessage(tempFile.toPath()); // SFR will be removed upon close.
-		restoredResult.closeOnCloseOf(pipeLineSession, owner);
-		pipeRunResult.setResult(restoredResult);
 	}
 
 	private static InputSource getInputSourceFromResult(Message result, IPipe pipe, INamedObject owner) throws PipeRunException {

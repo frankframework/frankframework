@@ -68,9 +68,9 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 	}
 
 	@Override
-	public void _createFolder(String filename) throws IOException {
-		Path f = getFileHandle(filename);
-		Files.createDirectory(f);
+	public void _createFolder(String foldername) throws IOException {
+		Path f = getFileHandle(foldername);
+		Files.createDirectories(f);
 	}
 
 	@Override

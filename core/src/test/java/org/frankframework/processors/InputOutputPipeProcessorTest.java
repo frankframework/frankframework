@@ -22,6 +22,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.FileUtils;
@@ -31,7 +32,9 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import net.jcip.annotations.NotThreadSafe;
 
+@NotThreadSafe //should be picked up by surefire
 public class InputOutputPipeProcessorTest {
 
 	public static final String INPUT_MESSAGE_TEXT = "input message";
@@ -42,7 +45,7 @@ public class InputOutputPipeProcessorTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		File tempDirectory = FileUtils.getTempDirectory("restoreMovedElements");
+		File tempDirectory = FileUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
 		org.apache.commons.io.FileUtils.cleanDirectory(tempDirectory);
 
 		processor = new InputOutputPipeProcessor();
@@ -76,7 +79,7 @@ public class InputOutputPipeProcessorTest {
 	// ensure that no files are in the 'restoreMovedElements' folder
 	@AfterEach
 	public void teardown() throws IOException {
-		File tempDirectory = FileUtils.getTempDirectory("restoreMovedElements");
+		File tempDirectory = FileUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
 		assertEquals(0, Files.list(tempDirectory.toPath()).count());
 	}
 

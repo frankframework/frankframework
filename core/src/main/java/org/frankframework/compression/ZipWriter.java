@@ -15,9 +15,8 @@
 */
 package org.frankframework.compression;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -29,10 +28,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.stream.MessageBuilder;
 import org.springframework.http.MediaType;
 
 public class ZipWriter implements ICollector<MessageZipEntry> {
@@ -107,21 +104,20 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	@Override
 	public Message build(List<MessageZipEntry> parts) throws IOException {
-		File file;
+		MessageBuilder messageBuilder;
 		if(StringUtils.isEmpty(zipLocation)) {
-			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
-			file = File.createTempFile("msg", ".zip", collectorsTempFolder);
+			messageBuilder = new MessageBuilder();
 		} else {
-			file = new File(zipLocation);
+			messageBuilder = new MessageBuilder(Paths.get(zipLocation));
 		}
 
-		try (FileOutputStream fos = new FileOutputStream(file); ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
+		try (ZipOutputStream zipoutput = new ZipOutputStream(messageBuilder.asOutputStream())) {
 			for(MessageZipEntry entry : parts) {
 				entry.writeEntry(zipoutput);
 			}
 		}
 
-		Message result = StringUtils.isEmpty(zipLocation) ? PathMessage.asTemporaryMessage(file.toPath()) : new FileMessage(file);
+		Message result = messageBuilder.build();
 		result.getContext().withMimeType(MIMETYPE_ZIP);
 		return result;
 	}
