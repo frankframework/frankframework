@@ -17,13 +17,17 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.frankframework.configuration.AdapterManager;
+import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -86,6 +90,13 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		ParameterList pl = getParameterList();
 		if (StringUtils.isBlank(getTarget()) && (pl == null || !pl.hasParameter(TARGET_PARAM_NAME))) {
 			throw new ConfigurationException("'target' required, either as parameter or as attribute in the configuration");
+		}
+		if (StringUtils.isNotBlank(getTarget()) && getScope() == Scope.ADAPTER) {
+			try {
+				findAdapter(getTarget());
+			} catch (SenderException e) {
+				throw new ConfigurationException("Cannot find adapter specified in configuration", e);
+			}
 		}
 	}
 
@@ -151,8 +162,8 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 		SenderResult result = new SenderResult(resultMessage);
 		result.setForwardName(forwardName);
-		result.setSuccess(exitState==null || exitState== PipeLine.ExitState.SUCCESS);
-		result.setErrorMessage("exitState="+exitState);
+		result.setSuccess(exitState == null || exitState == PipeLine.ExitState.SUCCESS);
+		result.setErrorMessage("exitState=" + exitState);
 
 		return result;
 	}
@@ -189,7 +200,10 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 		}
 		if (pvl != null) {
-			childSession.putAll(pvl.getValueMap());
+			Map<String, Object> valueMap = pvl.getValueMap();
+			valueMap.remove(TARGET_PARAM_NAME);
+			valueMap.remove(SCOPE_PARAM_NAME);
+			childSession.putAll(valueMap);
 		}
 	}
 
@@ -229,7 +243,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		return dm;
 	}
 
-	private ServiceClient getAdapterServiceClient(String target) {
+	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {
 			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
@@ -238,14 +252,19 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		};
 	}
 
-	private Adapter findAdapter(String target) {
+	@Nonnull
+	Adapter findAdapter(String target) throws SenderException {
 		AdapterManager actualAdapterManager;
 		String adapterName;
 		int configNameSeparator = target.indexOf('/');
 		if (configNameSeparator > 0) {
 			adapterName = target.substring(configNameSeparator + 1);
 			String configurationName = target.substring(0, configNameSeparator);
-			actualAdapterManager = ibisManager.getConfiguration(configurationName).getAdapterManager();
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			if (configuration == null) {
+				throw new SenderException(getLogPrefix()+"Configuration [" + configurationName + "] not found");
+			}
+			actualAdapterManager = configuration.getAdapterManager();
 		} else if (configNameSeparator == 0) {
 			adapterName = target.substring(1);
 			actualAdapterManager = adapterManager;
@@ -253,10 +272,14 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			adapterName = target;
 			actualAdapterManager = adapterManager;
 		}
-		return actualAdapterManager.getAdapter(adapterName);
+		Adapter adapter = actualAdapterManager.getAdapter(adapterName);
+		if (adapter == null) {
+			throw new SenderException(getLogPrefix() + "Cannot find adapter specified by [" + target + "]");
+		}
+		return adapter;
 	}
 
-	private Scope determineActualScope(ParameterValueList pvl) {
+	Scope determineActualScope(@Nullable ParameterValueList pvl) {
 		ParameterValue scopeParam = pvl != null ? pvl.findParameterValue(SCOPE_PARAM_NAME) : null;
 		if (scopeParam != null) {
 			return Scope.valueOf(scopeParam.asStringValue(getScope().name()));
@@ -264,7 +287,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		return getScope();
 	}
 
-	private String determineActualTarget(ParameterValueList pvl) {
+	String determineActualTarget(@Nullable ParameterValueList pvl) {
 		ParameterValue targetParam = pvl != null ? pvl.findParameterValue(TARGET_PARAM_NAME) : null;
 		if (targetParam != null) {
 			return targetParam.asStringValue(getTarget());

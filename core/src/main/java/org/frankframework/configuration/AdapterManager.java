@@ -23,20 +23,18 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.Nonnull;
-
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.Lifecycle;
-import org.springframework.context.LifecycleProcessor;
-
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -111,6 +109,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		stopAdapterThreads.remove(runnable);
 	}
 
+	@Nullable
 	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
 	}
