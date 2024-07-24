@@ -52,6 +52,7 @@ import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.TransformerPool;
@@ -451,13 +452,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		StopReason stopReason;
-		File tempFile = FileUtils.createTempFile();
+		MessageBuilder messageBuilder = new MessageBuilder();
 		try {
-			try (Writer resultWriter = Files.newBufferedWriter(tempFile.toPath())) {
-				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
+			try (Writer resultWriter = messageBuilder.asWriter()) {
+				ItemCallback callback = createItemCallBack(session, sender, resultWriter);
 				stopReason = iterateOverInput(input,session,threadContext, callback);
 			}
-			PipeRunResult prr = new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+
+			PipeRunResult prr = new PipeRunResult(getSuccessForward(), messageBuilder.build());
 			if(stopReason != null) {
 				PipeForward forward = getForwards().get(stopReason.getForwardName());
 				if(forward != null) {

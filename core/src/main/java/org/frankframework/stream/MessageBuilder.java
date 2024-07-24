@@ -17,9 +17,11 @@ package org.frankframework.stream;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.xml.XmlWriter;
@@ -56,6 +58,10 @@ public class MessageBuilder {
 
 		location = file;
 		outputStream = Files.newOutputStream(location);
+	}
+
+	public Writer asWriter() {
+		return new XmlStreamWriter(asOutputStream());
 	}
 
 	public XmlWriter asXmlWriter() {

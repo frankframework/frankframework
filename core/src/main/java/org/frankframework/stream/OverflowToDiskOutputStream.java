@@ -22,9 +22,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Writes to an in-memory buffer until it 'overflows', after which a file on disk will be created and the in-memory buffer will be flushed to it.
  */
+@Log4j2
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
 	private byte[] buffer; // temporary buffer, once full, write to disk
 	private OutputStream outputStream;
@@ -62,6 +65,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		if (count == 0 && outputStream != null) { //buffer has been reset, and fos exists.
 			return outputStream;
 		}
+		log.info("flushing buffer to disk");
 
 		// create the OutputStream and write the buffer to it.
 		OutputStream fos = createFileOnDisk();
@@ -91,6 +95,8 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 
 		// If the request length exceeds the size of the output buffer, flush the output buffer and then write the data directly.
 		if (len >= buffer.length - count) {
+			log.trace("size in memory exceeded");
+
 			outputStream = flushBufferToDisk();
 			outputStream.write(b, off, len);
 			return;
@@ -110,8 +116,10 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		if(!closed) throw new IllegalStateException("stream has not yet been closed");
 
 		if(fileLocation != null) {
+			log.trace("creating message from reference on disk");
 			return PathMessage.asTemporaryMessage(fileLocation);
 		} else {
+			log.trace("creating message from in-memory buffer");
 			return new Message(Arrays.copyOf(buffer, count));
 		}
 	}
@@ -143,7 +151,8 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	@Override
 	public void close() throws IOException {
 		if(closed) {
-			throw new IllegalStateException("already closed");
+			log.debug("already closed");
+			return;
 		}
 		closed = true;
 

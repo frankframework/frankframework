@@ -199,24 +199,6 @@ public class FileUtils {
 	}
 
 	/**
-	 * Creates a temporary file inside the ${ibis.tmpdir} using the default '.tmp' extension.
-	 */
-	public static File createTempFile() throws IOException {
-		return createTempFile(null);
-	}
-
-	/**
-	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
-	 */
-	public static File createTempFile(final String extension) throws IOException {
-		final File directory = new File( getTempDirectory() );
-		final String suffix = StringUtils.isNotEmpty(extension) ? extension : ".tmp";
-		final String prefix = "frank";
-		log.debug("creating tempfile prefix [{}] suffix [{}] directory [{}]", prefix, suffix, directory);
-		return File.createTempFile(prefix, suffix, directory);
-	}
-
-	/**
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
 	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
 	 */

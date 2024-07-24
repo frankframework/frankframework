@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package org.frankframework.pipes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
@@ -35,8 +33,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 
@@ -88,16 +85,16 @@ public class CsvParserPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			File tempFile = FileUtils.createTempFile();
+			MessageBuilder messageBuilder = new MessageBuilder();
 			try (Reader reader = message.asReader()) {
-				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", Files.newBufferedWriter(tempFile.toPath()), isPrettyPrint())) {
+				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", messageBuilder.asXmlWriter(), isPrettyPrint())) {
 					CSVParser csvParser = format.parse(reader);
 					for (CSVRecord csvRecord : csvParser) {
 						processCsvRecord(csvRecord, document);
 					}
 				}
 			}
-			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+			return new PipeRunResult(getSuccessForward(), messageBuilder.build());
 		} catch (IOException | SAXException e) {
 			throw new PipeRunException(this, "Cannot parse CSV", e);
 		}
