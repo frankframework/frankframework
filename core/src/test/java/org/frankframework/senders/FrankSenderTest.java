@@ -1,6 +1,7 @@
 package org.frankframework.senders;
 
 import static org.frankframework.testutil.mock.WaitUtils.waitForState;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,6 +12,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +32,8 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
@@ -298,24 +305,33 @@ class FrankSenderTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"ADAPTER, true, reply",
-			"JVM, true, reply",
+			"ADAPTER, true, cid1, reply",
+			"JVM, true, cid1, reply",
+			"ADAPTER, true, , reply",
+			"JVM, true, , reply",
+			"ADAPTER, false, , reply",
+			"JVM, false, , reply",
 	})
-	void sendMessage(FrankSender.Scope scope, boolean callSync, String expected) throws Exception {
+	void sendMessage(FrankSender.Scope scope, boolean callSync, String correlationId, String expected) throws Exception {
 		// Arrange
 		TestConfiguration configuration = new TestConfiguration(false);
 		FrankSender sender = configuration.createBean(FrankSender.class);
 		sender.setTarget(TARGET_SERVICE_NAME);
 		sender.setScope(scope);
 		sender.setSynchronous(callSync);
-		sender.setReturnedSessionKeys("session-key");
+		sender.setReturnedSessionKeys("session-key,cid");
 		sender.addParameter(ParameterBuilder
 				.create("session-key", null)
 				.withSessionKey("session-key"));
 
-		Adapter targetAdapter = createAdapter(configuration);
+		Semaphore semaphore = new Semaphore(0);
+		Adapter targetAdapter = createAdapter(configuration, semaphore);
 		if (scope != FrankSender.Scope.ADAPTER) {
 			createJavaListener(configuration, targetAdapter);
+		}
+		if (!callSync) {
+			IsolatedServiceCaller isc = configuration.createBean(IsolatedServiceCaller.class);
+			sender.setIsolatedServiceCaller(isc);
 		}
 
 		configuration.configure();
@@ -324,6 +340,7 @@ class FrankSenderTest {
 
 		session = new PipeLineSession();
 		session.put("session-key", expected);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		input = new Message("request");
 
@@ -341,9 +358,15 @@ class FrankSenderTest {
 			assertNotNull(resultMessage.asString());
 			String resultString = resultMessage.asString();
 			assertEquals(expected, resultString);
+			if (correlationId != null) {
+				assertThat(session, Matchers.hasKey(PipeLineSession.CORRELATION_ID_KEY));
+				assertEquals(correlationId, session.getCorrelationId());
+			}
 		} else {
 			assertTrue(Message.isNull(resultMessage), "Expected result from async call to be a NULL Message");
 			// TODO: Check async adapter finished
+			boolean acquired = semaphore.tryAcquire(1, TimeUnit.SECONDS);
+			assertTrue(acquired, "Failed to acquire semaphore, appears as if async adapter was not executed");
 		}
 	}
 
@@ -367,7 +390,7 @@ class FrankSenderTest {
 		listener.open();
 	}
 
-	private Adapter createAdapter(TestConfiguration configuration) throws ConfigurationException {
+	private Adapter createAdapter(TestConfiguration configuration, Semaphore semaphore) throws ConfigurationException {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		configuration.autowireByName(adapter);
 		adapter.setName(TARGET_SERVICE_NAME);
@@ -378,7 +401,13 @@ class FrankSenderTest {
 		PipeLine pl = configuration.createBean(PipeLine.class);
 		configuration.autowireByName(pl);
 		pl.setPipeLineProcessor(plp);
-		GetFromSession pipe = configuration.createBean(GetFromSession.class);
+		GetFromSession pipe = new GetFromSession() {
+			@Override
+			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+				semaphore.release();
+				return super.doPipe(message, session);
+			}
+		};
 		pipe.setSessionKey("session-key");
 		pipe.setName("test-pipe");
 		pl.addPipe(pipe);
