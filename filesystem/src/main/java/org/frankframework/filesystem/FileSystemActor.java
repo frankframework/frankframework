@@ -510,14 +510,15 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFolderName(input, pvl));
 			MessageBuilder messageBuilder = new MessageBuilder();
-			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file", messageBuilder, true);
-			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
-				Iterator<F> it = stream.iterator();
-				while(it.hasNext()) {
-					F file = it.next();
-					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
-						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
-						action.execute(file);
+			try (ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file", messageBuilder, true)) {
+				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
+					Iterator<F> it = stream.iterator();
+					while(it.hasNext()) {
+						F file = it.next();
+						try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
+							FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+							action.execute(file);
+						}
 					}
 				}
 			}
