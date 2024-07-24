@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -201,33 +202,12 @@ public class FileUtils {
 	/**
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
 	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
+	 * @deprecated use TemporaryDirectoryUtils.getTempDirectory instead.
 	 */
+	@Deprecated
 	public static @Nonnull String getTempDirectory() {
-		String directory = AppConstants.getInstance().getProperty("ibis.tmpdir");
-
-		if (StringUtils.isNotEmpty(directory)) {
-			File file = new File(directory);
-			if (!file.isAbsolute()) {
-				String absPath = new File("").getAbsolutePath();
-				file = new File(absPath, directory);
-			}
-			if(!file.exists()) {
-				file.mkdirs();
-			}
-			String fileDir = file.getPath();
-			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path ["+(StringUtils.isEmpty(fileDir)?"NULL":fileDir)+"]");
-			}
-			directory = file.getAbsolutePath();
-		}
-		log.debug("resolved temp directory to [{}]", directory);
-
-		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
-		if(StringUtils.isEmpty(directory)) {
-			log.error("unable to determine ibis temp directory, falling back to [java.io.tmpdir]");
-			return System.getProperty("java.io.tmpdir");
-		}
-		return directory;
+		Path tempDir = TemporaryDirectoryUtils.getTempDirectory();
+		return tempDir.toString();
 	}
 
 	/**
