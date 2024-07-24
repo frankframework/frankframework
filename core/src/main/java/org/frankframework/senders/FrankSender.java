@@ -248,6 +248,19 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		return (message, session) -> {
 			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
 			session.setExitState(plr);
+			if (plr.getState() == PipeLine.ExitState.ERROR) {
+				// Adapter.processMessageDirect() catches ListenerException and makes an error message from it, but
+				// we want to actually throw it.
+				String errorResult;
+				try {
+					errorResult = plr.getResult().asString();
+				} catch (IOException e) {
+					throw new ListenerException(getLogPrefix() + "Call resulted in error, but cannot get error message:", e);
+				}
+				if (errorResult != null && errorResult.contains("ListenerException")) {
+					throw new ListenerException(getLogPrefix() + errorResult);
+				}
+			}
 			return plr.getResult();
 		};
 	}
