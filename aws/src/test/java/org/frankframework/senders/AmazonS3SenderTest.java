@@ -26,7 +26,6 @@ import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
  * AmazonS3Sender tests.
@@ -62,7 +61,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3F
 
 		AmazonS3Sender sender = new AmazonS3Sender();
 		sender.setFileSystem(s3);
-		sender.setBucketName(awsHelper.getBucketName());
+		sender.setBucketName(awsHelper.getDefaultBucketName());
 		return sender;
 	}
 

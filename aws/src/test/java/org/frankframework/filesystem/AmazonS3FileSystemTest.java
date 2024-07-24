@@ -10,17 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.PropertyUtil;
-import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
@@ -53,7 +53,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 			}
 		};
 
-		s3.setBucketName(awsHelper.getBucketName());
+		s3.setBucketName(awsHelper.getDefaultBucketName());
 		return s3;
 	}
 
@@ -82,8 +82,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 			waitForActionToFinish();
 
 			// test
-			assertFalse(awsHelper._fileExistsInBucket(destinationFile, awsHelper.getBucketName()));
-			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, awsHelper.getBucketName())));
+			assertFalse(awsHelper._fileExistsInBucket(destinationFile, awsHelper.getDefaultBucketName()));
+			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, awsHelper.getDefaultBucketName())));
 			assertTrue(awsHelper._fileExistsInBucket(destinationFile, bucketName));
 			assertTrue(fileSystem.exists(new S3FileRef(destinationFile, bucketName)));
 		} finally {

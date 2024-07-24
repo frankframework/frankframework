@@ -20,7 +20,6 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StringUtil;
-
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -53,7 +52,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	protected String accessKey = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
 	protected String secretKey = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
 
-	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
+	protected @Getter String defaultBucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
 	private final Region clientRegion = Region.EU_WEST_1;
 	private final String serviceEndpoint;
@@ -74,13 +73,13 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 		try {
 			// Test whether the bucket exists
-			s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+			s3Client.headBucket(HeadBucketRequest.builder().bucket(defaultBucketName).build());
 
 			// If the bucket exists, clean up the folder
 			cleanUpFolder(null);
 		} catch (NoSuchBucketException noSuchBucketException) {
 			// Create the bucket if it doesn't exist
-			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+			s3Client.createBucket(CreateBucketRequest.builder().bucket(defaultBucketName).build());
 		}
 	}
 
@@ -124,14 +123,14 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		} else {
 			objectName = folder == null ? filename : folder + "/" + filename;
 		}
-		return _fileExistsInBucket(objectName, bucketName);
+		return _fileExistsInBucket(objectName, defaultBucketName);
 	}
 
-	public boolean _fileExistsInBucket(String objectName, String bucket) {
+	public boolean _fileExistsInBucket(String objectName, String bucketName) {
 		try {
 			HeadObjectResponse headObjectResponse = s3Client.headObject(HeadObjectRequest.builder()
 					.key(objectName)
-					.bucket(bucket)
+					.bucket(bucketName)
 					.build());
 			return headObjectResponse != null;
 		} catch (NoSuchKeyException e) {
@@ -142,7 +141,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public void _deleteFile(String folder, String filename) {
 		String filePath = folder == null ? filename : folder + "/" + filename;
-		s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(filePath).build());
+		s3Client.deleteObject(DeleteObjectRequest.builder().bucket(defaultBucketName).key(filePath).build());
 	}
 
 	@Override
@@ -159,7 +158,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 				FileInputStream fis = new FileInputStream(file);
 				String filePath = folderName == null ? filename : folderName + "/" + filename;
 				s3Client.putObject(PutObjectRequest.builder()
-						.bucket(bucketName)
+						.bucket(defaultBucketName)
 						.key(filePath)
 						.metadata(Map.of("Content-Length", String.valueOf(file.length())))
 						.build(), RequestBody.fromInputStream(fis, file.length()));
@@ -174,7 +173,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	public InputStream _readFile(String folder, String filename) {
 		String path = StringUtil.concatStrings(folder, "/", filename);
 		ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(GetObjectRequest.builder()
-				.bucket(bucketName)
+				.bucket(defaultBucketName)
 				.key(path)
 				.build());
 
@@ -198,7 +197,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	public void _createFolder(String folderNameInput) {
 		String folderName = folderNameInput.endsWith("/") ? folderNameInput : folderNameInput + "/";
 		PutObjectRequest request = PutObjectRequest.builder()
-				.bucket(bucketName)
+				.bucket(defaultBucketName)
 				.key(folderName)
 				.build();
 		s3Client.putObject(request, RequestBody.empty());
@@ -220,7 +219,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	public void cleanUpFolder(String foldername) {
-		cleanUpFolder(bucketName, foldername);
+		cleanUpFolder(defaultBucketName, foldername);
 	}
 
 	public void cleanUpFolder(String bucketName, String foldername) {

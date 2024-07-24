@@ -31,7 +31,7 @@ public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttrib
 			}
 		};
 
-		s3.setBucketName(awsHelper.getBucketName());
+		s3.setBucketName(awsHelper.getDefaultBucketName());
 		return s3;
 	}
 
