@@ -167,27 +167,21 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
 
-		final MessageBuilder messageBuilder;
 		try {
-			messageBuilder = new MessageBuilder();
-		} catch (IOException e) {
-			log.warn("Pipeline of adapter [{}] could not compact received message", owner.getName(), e);
-			return;
-		}
+			MessageBuilder messageBuilder = new MessageBuilder();
 
-		CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
-		handler.setChompCharSize(pipe.getChompCharSize());
-		handler.setElementToMove(pipe.getElementToMove());
-		handler.setElementToMoveChain(pipe.getElementToMoveChain());
-		handler.setElementToMoveSessionKey(pipe.getElementToMoveSessionKey());
-		handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
-		handler.setContext(pipeLineSession);
-		try {
+			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
+			handler.setChompCharSize(pipe.getChompCharSize());
+			handler.setElementToMove(pipe.getElementToMove());
+			handler.setElementToMoveChain(pipe.getElementToMoveChain());
+			handler.setElementToMoveSessionKey(pipe.getElementToMoveSessionKey());
+			handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
+			handler.setContext(pipeLineSession);
 			XmlUtils.parseXml(inputSource, handler);
 			result.closeOnCloseOf(pipeLineSession, owner); // Directly closing the result fails, because the message can also exist and used in the session
 			pipeRunResult.setResult(messageBuilder.build());
 		} catch (IOException | SAXException e) {
-			log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner::getName, e::getMessage);
+			log.warn("Pipeline of adapter [{}] could not compact received message", owner.getName(), e);
 		}
 	}
 
