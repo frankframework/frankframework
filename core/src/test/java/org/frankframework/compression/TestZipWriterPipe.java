@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -24,6 +26,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.MimeType;
 
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
@@ -218,5 +221,58 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
 			assertNull(zipin.getNextEntry());
 		}
+	}
+
+
+	@Test
+	void testBackwardsCompatibility(@TempDir Path tmpDir) throws Exception {
+		// Arrange
+		Path zipFile = tmpDir.resolve("tmp-zip-archive.zip");
+		Files.createFile(zipFile);
+		String zipFileLocation = zipFile.toString();
+		pipe.setAction(Action.OPEN);
+		pipe.setBackwardsCompatibility(true);
+		doPipe(zipFileLocation);
+		getCollectionFromSession(); // ensure its been created.
+
+		pipe.setAction(Action.WRITE);
+		pipe.addParameter(ParameterBuilder.create().withName("filename").withSessionKey("filename"));
+		configureAndStartPipe();
+
+		String fileContents1 = "some text to be compressed";
+		String fileContents2 = "more text to be compressed";
+
+		String filename1 = "filename1.txt";
+		String filename2 = "filename2.txt";
+
+		// Act1
+		session.put("filename", filename1);
+		PipeRunResult prr = doPipe(fileContents1);
+		assertEquals("success", prr.getPipeForward().getName());
+		assertEquals(fileContents1, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+
+		// Act2
+		session.put("filename", filename2);
+		prr = doPipe(fileContents2);
+		assertEquals("success", prr.getPipeForward().getName());
+		assertEquals(fileContents2, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+
+		// Assert contents
+		Message result = getCollectionFromSession().build();
+		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
+			ZipEntry entry = zipin.getNextEntry();
+			assertEquals(filename1, entry.getName());
+			assertEquals(fileContents1, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+
+			entry = zipin.getNextEntry();
+			assertEquals(filename2, entry.getName());
+			assertEquals(fileContents2, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+		}
+
+		// Assert file
+		assertEquals(zipFileLocation, result.getContext().get(MessageContext.METADATA_LOCATION));
+		result.close();
+		assertTrue(Files.exists(zipFile));
+		Files.delete(zipFile);
 	}
 }
