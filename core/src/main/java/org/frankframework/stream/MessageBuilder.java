@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.output.XmlStreamWriter;
+import org.frankframework.stream.json.JsonWriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.xml.XmlWriter;
@@ -79,6 +80,11 @@ public class MessageBuilder {
 			// Converting an OutputStream to an OutputStream cannot trigger an IOException...
 			throw new IllegalStateException("unable to create XmlWriter", e);
 		}
+	}
+
+	public JsonWriter asJsonWriter() {
+		mimeType = MediaType.APPLICATION_JSON;
+		return new JsonWriter(asWriter(), true);
 	}
 
 	public OutputStream asOutputStream() {

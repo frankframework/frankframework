@@ -55,13 +55,13 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder tempFile) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws StreamingException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, threadConnector, session, poolToUse, handler, tempFile);
+			return super.createHandler(input, threadConnector, session, poolToUse, handler, messageBuilder);
 		}
 
-		XmlJsonWriter xjw = new XmlJsonWriter(tempFile.asWriter());
-		handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, tempFile);
+		XmlJsonWriter xjw = new XmlJsonWriter(messageBuilder.asWriter());
+		handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, messageBuilder);
 		if (getXmlDebugger() != null) {
 			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler);
 		}

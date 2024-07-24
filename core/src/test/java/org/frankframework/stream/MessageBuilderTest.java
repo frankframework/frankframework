@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import org.frankframework.stream.json.JsonWriter;
 import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -19,6 +20,18 @@ public class MessageBuilderTest {
 		MessageBuilder msgBuilder = new MessageBuilder();
 		try (OutputStream out = msgBuilder.asOutputStream()) {
 			out.write("tralala".getBytes());
+		}
+
+		Message result = msgBuilder.build();
+		assertEquals("tralala", result.asString());
+		assertNull(result.getContext().get(MessageContext.METADATA_MIMETYPE), "should not have a mimetype");
+	}
+
+	@Test
+	public void testWriter() throws Exception {
+		MessageBuilder msgBuilder = new MessageBuilder();
+		try (Writer writer = msgBuilder.asWriter()) {
+			writer.append("tralala");
 		}
 
 		Message result = msgBuilder.build();
@@ -42,14 +55,18 @@ public class MessageBuilderTest {
 	}
 
 	@Test
-	public void testWriter() throws Exception {
+	public void testJsonWriter() throws Exception {
 		MessageBuilder msgBuilder = new MessageBuilder();
-		try (Writer writer = msgBuilder.asWriter()) {
-			writer.append("tralala");
-		}
+		JsonWriter writer = msgBuilder.asJsonWriter();
+		writer.startDocument();
+		writer.startObject();
+		writer.startObjectEntry("tralala");
+		writer.number("123");
+		writer.endObject();
+		writer.endDocument();
 
 		Message result = msgBuilder.build();
-		assertEquals("tralala", result.asString());
-		assertNull(result.getContext().get(MessageContext.METADATA_MIMETYPE), "should not have a mimetype");
+		assertEquals("{\"tralala\":123}", result.asString());
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 }
