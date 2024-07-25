@@ -63,7 +63,7 @@ import org.frankframework.stream.ThreadLifeCycleEventListener;
  *
  *
  * <h3>Configuration of the Adapter to be called</h3>
- * A call to another Adapter in the same IBIS instance is preferably made using the combination
+ * A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
  * however, a Receiver with a {@link WebServiceListener} is already present, that can be used in some cases, too.
  *
@@ -78,7 +78,7 @@ import org.frankframework.stream.ThreadLifeCycleEventListener;
  *   <li>Define a Receiver with a JavaListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourServiceName</i></li>
  *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
- *       from applications other than this IBIS-instance</li>
+ *       from applications other than this Frank!Framework-instance</li>
  * </ul>
  *
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
@@ -147,26 +147,26 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		super.open();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
 			boolean listenerOpened=false;
-			int loops = getDependencyTimeOut();
+			long sleepDelay = 25L;
+			long timeoutAt = getDependencyTimeOut() == -1 ? -1L : System.currentTimeMillis() + 1000L * getDependencyTimeOut();
 			while (!listenerOpened
 					&& !configuration.isUnloadInProgressOrDone()
-					&& (loops == -1 || loops > 0)) {
+					&& (timeoutAt == -1L || System.currentTimeMillis() < timeoutAt)) {
 				JavaListener<?> listener = JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
 				if (!listenerOpened && !configuration.isUnloadInProgressOrDone()) {
-					if (loops != -1) {
-						loops--;
-					}
 					try {
 						log.debug("waiting for JavaListener [{}] to open", getJavaListener());
-						Thread.sleep(1000);
+						Thread.sleep(sleepDelay);
+						if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
 					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
 						throw new SenderException(e);
 					}
 				}
-				if(loops == 0 && (listener==null || !listener.isOpen())) {
+				if(System.currentTimeMillis() >= timeoutAt && (listener==null || !listener.isOpen())) {
 					log.warn("Unable to open JavaListener [{}] in {} seconds. Make sure that the listener [{}] exists or increase the timeout so that the sub-adapter may start before timeout limit.", getJavaListener(), getDependencyTimeOut(), getJavaListener());
 				}
 			}

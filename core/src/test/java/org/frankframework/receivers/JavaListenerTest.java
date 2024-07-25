@@ -37,6 +37,7 @@ import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 
 public class JavaListenerTest {
@@ -58,8 +59,7 @@ public class JavaListenerTest {
 
 	@AfterEach
 	public void tearDown() throws Exception {
-		session.close();
-		configuration.stop();
+		CloseUtils.closeSilently(session, configuration);
 	}
 
 	Receiver<String> setupReceiver(JavaListener<String> listener) {

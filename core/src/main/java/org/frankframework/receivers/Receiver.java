@@ -1725,11 +1725,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			stopRunning();
 		}
 
-		log.trace("{} Setting run-state to {}, synchronize (lock) on run state {}", this::getLogPrefix, state::name, runState::toString);
 		synchronized (runState) {
 			runState.setRunState(state);
 		}
-		log.trace("{} Setting run-state, lock on run state {} released", this::getLogPrefix, runState::toString);
 	}
 
 	/**
@@ -1737,9 +1735,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	@Override
 	public RunState getRunState() {
-		RunState currentRunState = runState.getRunState();
-		log.trace("Receiver [{}] runstate: [{}]", name, currentRunState);
-		return currentRunState;
+		return runState.getRunState();
 	}
 
 	public boolean isInRunState(RunState someRunState) {
@@ -1752,7 +1748,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
 			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
-			getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
+			getSender().sendMessageOrThrow(result, session); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
 			error(msg, e);
