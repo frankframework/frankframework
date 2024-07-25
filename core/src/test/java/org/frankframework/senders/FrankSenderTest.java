@@ -18,13 +18,13 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -60,6 +60,7 @@ import org.jetbrains.annotations.NotNull;
 import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
+@Log4j2
 class FrankSenderTest {
 	private static final String TARGET_SERVICE_NAME = "TEST_TARGET_SERVICE";
 
@@ -68,24 +69,21 @@ class FrankSenderTest {
 	private SenderResult result;
 	private TestConfiguration configuration;
 
-	@BeforeEach
-	void setUp() {
-	}
-
 	@AfterEach
 	void tearDown() {
-		if (configuration != null) {
-			configuration.stop();
-		}
+		log.debug("FrankSenderTest: Teardown start, has configuration? [{}]", configuration != null);
+		log.debug("FrankSenderTest: Closing Configuration and other resources");
 		CloseUtils.closeSilently(input, result, session, configuration);
 
 		// In case JavaListener didn't close after end of test, deregister the service.
+		log.debug("FrankSenderTest: Unregistering services");
 		ServiceDispatcher.getInstance().unregisterServiceClient(TARGET_SERVICE_NAME);
 		try {
 			DispatcherManagerFactory.getDispatcherManager().unregister(TARGET_SERVICE_NAME);
 		} catch (DispatcherException e) {
 			// Ignore
 		}
+		log.debug("FrankSenderTest: Teardown done");
 	}
 
 	@Test
@@ -314,14 +312,15 @@ class FrankSenderTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource({
+	@CsvSource({ // Cannot test with DLL Scope
 			"ADAPTER, cid1, reply",
 			"JVM, cid1, reply",
 			"ADAPTER, , reply",
 			"JVM, , reply",
 	})
-	void sendSyncMessage(FrankSender.Scope scope, String correlationId, String expected) throws Exception {
+	void sendSyncMessage(FrankSender.Scope scope, String correlationId) throws Exception {
 		// Arrange
+		log.debug("Creating Configuration");
 		configuration = new TestConfiguration(false);
 		GetFromSession pipe = new GetFromSession();
 		pipe.setSessionKey("session-key");
@@ -330,12 +329,13 @@ class FrankSenderTest {
 		FrankSender sender = createFrankSender(scope, true, pipe);
 
 		session = new PipeLineSession();
-		session.put("session-key", expected);
+		session.put("session-key", "reply");
 		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		input = new Message("request");
 
 		// Act
+		log.debug("starting actual test");
 		result = sender.sendMessage(input, session);
 
 		// Assert
@@ -346,7 +346,7 @@ class FrankSenderTest {
 		Message resultMessage = result.getResult();
 		assertNotNull(resultMessage.asString());
 		String resultString = resultMessage.asString();
-		assertEquals(expected, resultString);
+		assertEquals("reply", resultString);
 		if (correlationId != null) {
 			assertThat(session, hasKey(PipeLineSession.CORRELATION_ID_KEY));
 			assertEquals(correlationId, session.getCorrelationId());
@@ -354,9 +354,10 @@ class FrankSenderTest {
 	}
 
 	@ParameterizedTest
-	@EnumSource(names = {"ADAPTER", "JVM"})
+	@EnumSource(names = {"ADAPTER", "JVM"}) // Cannot test with DLL Scope
 	void sendAsyncMessage(FrankSender.Scope scope) throws Exception {
 		// Arrange
+		log.debug("Creating Configuration");
 		configuration = new TestConfiguration(false);
 		Semaphore semaphore = new Semaphore(0);
 		IPipe pipe = new AbstractPipe() {
@@ -374,6 +375,7 @@ class FrankSenderTest {
 		input = new Message("request");
 
 		// Act
+		log.debug("starting actual test");
 		result = sender.sendMessage(input, session);
 
 		// Assert
@@ -387,16 +389,16 @@ class FrankSenderTest {
 		assertTrue(acquired, "Failed to acquire semaphore, appears as if async adapter was not executed");
 	}
 
-
 	@ParameterizedTest
-	@CsvSource({
-			"ADAPTER, cid1, reply",
-			"JVM, cid1, reply",
-			"ADAPTER, , reply",
-			"JVM, , reply",
+	@CsvSource({ // Cannot test with DLL Scope
+			"ADAPTER, cid1",
+			"JVM, cid1",
+			"ADAPTER,",
+			"JVM,",
 	})
-	void sendMessageHandleException(FrankSender.Scope scope, String correlationId, String expected) throws Exception {
+	void sendMessageHandleException(FrankSender.Scope scope, String correlationId) throws Exception {
 		// Arrange
+		log.debug("Creating Configuration");
 		configuration = new TestConfiguration(false);
 		ExceptionPipe pipe = new ExceptionPipe();
 		pipe.setName("test-pipe");
@@ -404,12 +406,12 @@ class FrankSenderTest {
 		FrankSender sender = createFrankSender(scope, true, pipe);
 
 		session = new PipeLineSession();
-		session.put("session-key", expected);
 		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		input = new Message("request");
 
 		// Act
+		log.debug("starting actual test");
 		SenderException exception = assertThrows(SenderException.class, () -> sender.sendMessage(input, session));
 
 		// Assert
