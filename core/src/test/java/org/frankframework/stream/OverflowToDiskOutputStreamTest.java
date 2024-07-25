@@ -1,11 +1,14 @@
 package org.frankframework.stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -141,13 +144,15 @@ public class OverflowToDiskOutputStreamTest {
 	}
 
 	@Test
-	public void testLargeFile() throws IOException {
+	public void testLargeFile() throws IOException, InterruptedException {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(5_000_000, tmpDir);
+		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 
 		URL data = OverflowToDiskOutputStreamTest.class.getResource("/Documents/doc001.pdf");
 		assertNotNull(data, "unable to find test file");
 		for (int i = 0; i < 100; i++) {
 			data.openStream().transferTo(oos);
+			data.openStream().transferTo(boas);
 		}
 
 		assertEquals(0, Files.list(tmpDir).count(), "no file should have been created");
@@ -155,6 +160,7 @@ public class OverflowToDiskOutputStreamTest {
 		oos.flush(true);
 		assertEquals(1, Files.list(tmpDir).count(), "file should have been created");
 		data.openStream().transferTo(oos);
+		data.openStream().transferTo(boas);
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
@@ -168,7 +174,12 @@ public class OverflowToDiskOutputStreamTest {
 		String location = (String) oos.toMessage().getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
 
-		oos.toMessage().close();
+		Message message = oos.toMessage();
+		assertInstanceOf(PathMessage.class, message);
+		byte[] content = message.asByteArray();
+		assertArrayEquals(boas.toByteArray(), content);
+
+		message.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 }

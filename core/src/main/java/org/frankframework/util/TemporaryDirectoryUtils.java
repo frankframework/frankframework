@@ -29,7 +29,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TemporaryDirectoryUtils {
 
-	private static Path FRANK_TEMP_DIR;
+	private TemporaryDirectoryUtils() {
+		// NO OP
+	}
+
+	private static final Path FRANK_TEMP_DIR = Paths.get(computeTempDirectory());
 
 	/**
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path.
@@ -62,14 +66,12 @@ public class TemporaryDirectoryUtils {
 		}
 		return directory;
 	}
+
 	/**
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path.
 	 * @return The absolute path of ${ibis.tmpdir} or IllegalStateException if it cannot be resolved.
 	 */
-	public static synchronized @Nonnull Path getTempDirectory() {
-		if(FRANK_TEMP_DIR == null) {
-			FRANK_TEMP_DIR = Paths.get(computeTempDirectory());
-		}
+	public static @Nonnull Path getTempDirectory() {
 		return FRANK_TEMP_DIR;
 	}
 
