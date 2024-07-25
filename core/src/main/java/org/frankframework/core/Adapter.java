@@ -798,9 +798,11 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 */
 	@Override
 	public void stopRunning() {
+		log.info("Stopping Adapter named [{}] with {} receivers", this::getName, receivers::size);
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
+				log.debug("Adapter.stopRunning - stop adapter thread for [{}] starting", () -> getName());
 				Thread.currentThread().setName("stopping Adapter " +getName());
 				try {
 					// See also Receiver.stopRunning()
@@ -817,6 +819,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
 						// Will not stop receivers that are in state "STARTING"
+						log.debug("Adapter.stopRunning: Stopping receiver [{}] in state [{}]", receiver::getName, receiver::getRunState);
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
@@ -825,17 +828,19 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 						if(receiver.getRunState() == RunState.ERROR) {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
+						long sleepDelay = 25L;
 						while (!receiver.getRunState().isStopped()) {
 							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
-								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", name, receiver.getName());
+								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", ()->name, receiver::getName);
 								receiver.stopRunning();
 							}
-							// Passing receiver.getRunState() as supplier could cause recursive log invocation so should be avoided
-							if (log.isDebugEnabled()) log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", name, receiver.getName(), receiver.getRunState());
+							log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", ()->name, receiver::getName, receiver::getRunState);
 							try {
-								Thread.sleep(1000);
+								Thread.sleep(sleepDelay);
+								if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
 							} catch (InterruptedException e) {
 								if (log.isWarnEnabled()) log.warn("Interrupted waiting for threads of receiver [{}] to end", receiver.getName(), e);
+								Thread.currentThread().interrupt();
 							}
 						}
 						log.info("Adapter [{}] stopped receiver [{}] {}.", name, receiver.getName(), receiver.isInRunState(RunState.EXCEPTION_STOPPING) ? "with error" : "successfully");
@@ -859,6 +864,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 					log.warn("Adapter [{}] in state ERROR", name, t);
 				} finally {
 					configuration.removeStopAdapterThread(this);
+					log.debug("Adapter.stopRunning - stop adapter thread for Adapter [{}] finished and completed", name);
 				}
 			}
 
