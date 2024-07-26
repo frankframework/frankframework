@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -1334,9 +1335,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
-	private boolean retryCountNotReached(MessageWrapper<M> messageWrapper, ProcessResultCacheItem prci) {
-		IListener<M> origin = getListener();
-		int receiveCount;
+	private boolean retryCountNotReached(@Nonnull final MessageWrapper<M> messageWrapper, @Nullable final ProcessResultCacheItem prci) {
+		final IListener<M> origin = getListener();
+		final int receiveCount;
 		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
 			receiveCount = knowsDeliveryCount.getDeliveryCount(messageWrapper);
 		} else if (prci != null) {
