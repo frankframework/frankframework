@@ -16,15 +16,19 @@
 package org.frankframework.stream;
 
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.Cleaner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -41,6 +45,9 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private final Path tempDirectory;
 	private Path fileLocation;
 	private boolean closed = false;
+
+	private static final Cleaner CLEANER = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
+	private CleanupFileAction cleanupFileAction;
 
 	/**
 	 * The number of bytes in the buffer. This value is always in the range
@@ -69,8 +76,43 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 
 	private OutputStream createFileOnDisk() throws IOException {
 		fileLocation = Files.createTempFile(tempDirectory, "msg", "dat");
+
 		OutputStream fos = Files.newOutputStream(fileLocation);
+		createCleanerAction(fileLocation, fos);
 		return new BufferedOutputStream(fos, StreamUtil.BUFFER_SIZE);
+	}
+
+	/**
+	 * Register the newly create file with the {@link Cleaner} in case an exception occurs during file writing, we want the file to be removed.
+	 */
+	private void createCleanerAction(final Path path, final Closeable closable) {
+		cleanupFileAction = new CleanupFileAction(path, closable);
+		CLEANER.register(this, cleanupFileAction);
+	}
+
+	private static class CleanupFileAction implements Runnable {
+		private final Path fileToClean;
+		private final Closeable closable;
+		private boolean shouldClean = true;
+
+		private CleanupFileAction(Path fileToClean, Closeable closable) {
+			this.fileToClean = fileToClean;
+			this.closable = closable;
+		}
+
+		@Override
+		public void run() {
+			if (shouldClean) {
+				log.info("Leak detection: File [{}] was never converted to a Message", fileToClean);
+
+				CloseUtils.closeSilently(closable);
+				try {
+					Files.deleteIfExists(fileToClean);
+				} catch (Exception e) {
+					log.warn("failed to remove file reference {}", fileToClean);
+				}
+			}
+		}
 	}
 
 	private OutputStream flushBufferToDisk() throws IOException {
@@ -156,7 +198,12 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 
 		if(fileLocation != null) {
 			log.trace("creating message from reference on disk");
-			return PathMessage.asTemporaryMessage(fileLocation);
+			try {
+				return PathMessage.asTemporaryMessage(fileLocation);
+			} finally {
+				//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
+				cleanupFileAction.shouldClean = false;
+			}
 		} else {
 			log.trace("creating message from in-memory buffer");
 			final byte[] out = new byte[currentBufferSize];
