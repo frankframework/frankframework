@@ -49,7 +49,7 @@ import org.frankframework.util.TemporaryDirectoryUtils;
 public class AsposeFontManager {
 
 	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; //lots of commonly used fonts
-	private static final String FONTS_RESOURCE_DIR = "/fonts/";
+	private static final String FONTS_RESOURCE_DIR = "fonts";
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
 
 	private File fontDirectory = null;
