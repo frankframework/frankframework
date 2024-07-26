@@ -16,6 +16,7 @@
 package org.frankframework.stream;
 
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -75,25 +77,27 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private OutputStream createFileOnDisk() throws IOException {
 		fileLocation = Files.createTempFile(tempDirectory, "msg", "dat");
 
-		createCleanerAction(fileLocation);
 		OutputStream fos = Files.newOutputStream(fileLocation);
+		createCleanerAction(fileLocation, fos);
 		return new BufferedOutputStream(fos, StreamUtil.BUFFER_SIZE);
 	}
 
 	/**
 	 * Register the newly create file with the {@link Cleaner} in case an exception occurs during file writing, we want the file to be removed.
 	 */
-	private void createCleanerAction(final Path path) {
-		cleanupFileAction = new CleanupFileAction(path);
+	private void createCleanerAction(final Path path, final Closeable closable) {
+		cleanupFileAction = new CleanupFileAction(path, closable);
 		CLEANER.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
 		private final Path fileToClean;
+		private final Closeable closable;
 		private boolean shouldClean = true;
 
-		private CleanupFileAction(Path fileToClean) {
+		private CleanupFileAction(Path fileToClean, Closeable closable) {
 			this.fileToClean = fileToClean;
+			this.closable = closable;
 		}
 
 		@Override
@@ -101,6 +105,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			if (shouldClean) {
 				log.info("Leak detection: File [{}] was never converted to a Message", fileToClean);
 
+				CloseUtils.closeSilently(closable);
 				try {
 					Files.deleteIfExists(fileToClean);
 				} catch (Exception e) {
