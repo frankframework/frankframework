@@ -35,6 +35,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
 	private List<BufferBlock> buffers; // temporary buffer, once full, write to disk
+	private BufferBlock lastBlock;
 	private OutputStream outputStream;
 
 	private final Path tempDirectory;
@@ -57,7 +58,8 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		// either the buffer or outputStream exists, but not both at the same time.
 		if (maxSize > 0) {
 			buffers = new ArrayList<>();
-			buffers.add(new BufferBlock());
+			lastBlock = new BufferBlock();
+			buffers.add(lastBlock);
 			this.maxBufferSize = maxSize;
 		} else {
 			outputStream = createFileOnDisk();
@@ -117,10 +119,11 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		// Write to the buffer
 		currentBufferSize += len;
 		while (len > 0) {
-			BufferBlock s = last();
+			BufferBlock s = lastBlock;
 			if (s.isFull()) {
 				s = new BufferBlock();
 				buffers.add(s);
+				lastBlock = s;
 			}
 			final int n = Math.min(s.buffer.length - s.count, len);
 			System.arraycopy(b, off, s.buffer, s.count, n);
@@ -128,13 +131,6 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			len -= n;
 			off += n;
 		}
-	}
-
-	/**
-	 * Returns the last block
-	 */
-	private BufferBlock last() {
-		return buffers.get(buffers.size() - 1);
 	}
 
 	static class BufferBlock {
