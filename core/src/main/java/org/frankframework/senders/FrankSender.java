@@ -226,8 +226,9 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		SenderResult result = new SenderResult(resultMessage);
 		result.setForwardName(forwardName);
 		result.setSuccess(exitState == null || exitState == PipeLine.ExitState.SUCCESS);
-		result.setErrorMessage("exitState=" + exitState);
-
+		if (!result.isSuccess()) {
+			result.setErrorMessage("exitState=" + exitState);
+		}
 		return result;
 	}
 
