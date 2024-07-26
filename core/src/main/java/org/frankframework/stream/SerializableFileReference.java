@@ -216,7 +216,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		if (cleanupFileAction != null) {
 			cleanupFileAction.calledByClose = true;
 			cleanable.clean();

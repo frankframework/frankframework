@@ -15,18 +15,27 @@
 */
 package org.frankframework.stream;
 
+import java.io.BufferedOutputStream;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.frankframework.util.StreamUtil;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Writes to an in-memory buffer until it 'overflows', after which a file on disk will be created and the in-memory buffer will be flushed to it.
  */
+@Log4j2
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
-	private byte[] buffer; // temporary buffer, once full, write to disk
+	private List<BufferBlock> buffers; // temporary buffer, once full, write to disk
+	private BufferBlock lastBlock;
 	private OutputStream outputStream;
 
 	private final Path tempDirectory;
@@ -40,38 +49,47 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 * 
 	 * When count equals {@link #MAX_IN_MEMORY_SIZE} the buffer will be flushed to the {@link OutputStream OutputStream out}.
 	 */
-	private int count = 0;
+	private int currentBufferSize = 0;
+	private final int maxBufferSize;
 
-	public OverflowToDiskOutputStream(int bufferSize, Path tempDirectory) throws IOException {
+	public OverflowToDiskOutputStream(int maxSize, Path tempDirectory) throws IOException {
 		this.tempDirectory = tempDirectory;
 
 		// either the buffer or outputStream exists, but not both at the same time.
-		if (bufferSize > 0) {
-			buffer = new byte[bufferSize];
+		if (maxSize > 0) {
+			buffers = new ArrayList<>();
+			lastBlock = new BufferBlock();
+			buffers.add(lastBlock);
+			this.maxBufferSize = maxSize;
 		} else {
 			outputStream = createFileOnDisk();
+			this.maxBufferSize = 0;
 		}
 	}
 
 	private OutputStream createFileOnDisk() throws IOException {
 		fileLocation = Files.createTempFile(tempDirectory, "msg", "dat");
-		return Files.newOutputStream(fileLocation);
+		OutputStream fos = Files.newOutputStream(fileLocation);
+		return new BufferedOutputStream(fos, StreamUtil.BUFFER_SIZE);
 	}
 
 	private OutputStream flushBufferToDisk() throws IOException {
-		if (count == 0 && outputStream != null) { //buffer has been reset, and fos exists.
+		if (outputStream != null) { //buffer has been reset, and fos exists.
 			return outputStream;
 		}
+		log.info("flushing buffer to disk");
 
 		// create the OutputStream and write the buffer to it.
-		OutputStream fos = createFileOnDisk();
-		fos.write(buffer, 0, count);
+		OutputStream overflow = createFileOnDisk();
+		for (BufferBlock b : buffers) {
+			overflow.write(b.buffer, 0, b.count);
+		}
 
 		// empty the buffer, there is no need to keep this in memory any longer.
-		buffer = null;
-		count = 0;
+		buffers = null;
+		currentBufferSize = 0;
 
-		return fos;
+		return overflow;
 	}
 
 	@Override
@@ -90,29 +108,70 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		}
 
 		// If the request length exceeds the size of the output buffer, flush the output buffer and then write the data directly.
-		if (len >= buffer.length - count) {
+		if (len >= maxBufferSize - currentBufferSize) {
+			log.trace("size in memory exceeded");
+
 			outputStream = flushBufferToDisk();
 			outputStream.write(b, off, len);
 			return;
 		}
 
 		// Write to the buffer
-		System.arraycopy(b, off, buffer, count, len);
-		count += len;
+		currentBufferSize += len;
+		while (len > 0) {
+			BufferBlock s = lastBlock;
+			if (s.isFull()) {
+				s = new BufferBlock();
+				buffers.add(s);
+				lastBlock = s;
+			}
+			final int n = Math.min(s.buffer.length - s.count, len);
+			System.arraycopy(b, off, s.buffer, s.count, n);
+			s.count += n;
+			len -= n;
+			off += n;
+		}
+	}
+
+	static class BufferBlock {
+
+		final byte[] buffer = new byte[StreamUtil.BUFFER_SIZE];
+
+		int count;
+
+		boolean isFull() {
+			return count == buffer.length;
+		}
 	}
 
 	/**
 	 * If the contents was small enough to be kept in memory a ByteArray-message will be returned.
 	 * If the contents was written to disk a {@link PathMessage TemporaryMessage} will be returned.
+	 * Once read the buffer will be removed.
 	 * @return A new {@link Message} object representing the contents written to this {@link OutputStream}.
 	 */
 	public Message toMessage() {
 		if(!closed) throw new IllegalStateException("stream has not yet been closed");
+		if(fileLocation == null && buffers == null) throw new IllegalStateException("stream has already been read");
 
 		if(fileLocation != null) {
+			log.trace("creating message from reference on disk");
 			return PathMessage.asTemporaryMessage(fileLocation);
 		} else {
-			return new Message(Arrays.copyOf(buffer, count));
+			log.trace("creating message from in-memory buffer");
+			final byte[] out = new byte[currentBufferSize];
+
+			int outPtr = 0;
+			Iterator<BufferBlock> i = buffers.iterator();
+			while (i.hasNext()) {
+				BufferBlock b = i.next();
+				System.arraycopy(b.buffer, 0, out, outPtr, b.count);
+				outPtr += b.count;
+				i.remove();
+			}
+
+			buffers = null; // clear everything that's kept in memory
+			return new Message(out);
 		}
 	}
 
@@ -143,12 +202,14 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	@Override
 	public void close() throws IOException {
 		if(closed) {
-			throw new IllegalStateException("already closed");
+			log.debug("already closed");
+			return;
 		}
 		closed = true;
 
 		if(outputStream != null) {
 			outputStream.close();
+			outputStream = null;
 		}
 	}
 }

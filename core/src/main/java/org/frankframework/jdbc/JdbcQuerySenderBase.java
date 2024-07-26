@@ -59,7 +59,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageOutputStream;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DB2DocumentWriter;
@@ -69,7 +69,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.ContentHandler;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -477,16 +476,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						return Message.nullMessage();
 					}
 					if (!isBlobSmartGet()) {
-						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
-							if (StringUtils.isNotEmpty(getBlobCharset())) {
-								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), target.asWriter(), isCloseOutputstreamOnExit());
-							} else {
-								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
-							}
-							return target.getResponse();
-						} catch (Exception e) {
-							throw new JdbcException(e);
+						MessageBuilder messageBuilder = new MessageBuilder();
+						if (StringUtils.isNotEmpty(getBlobCharset())) {
+							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), messageBuilder.asWriter(), isCloseOutputstreamOnExit());
+						} else {
+							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), messageBuilder.asOutputStream(), isCloseOutputstreamOnExit());
 						}
+						return messageBuilder.build();
 					}
 				}
 				if (getDbmsSupport().isClobType(rsmeta, 1)) {
@@ -494,12 +490,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
 						return Message.nullMessage();
 					}
-					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
-						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
-						return target.getResponse();
-					} catch (Exception e) {
-						throw new JdbcException(e);
-					}
+					MessageBuilder messageBuilder = new MessageBuilder();
+					JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, messageBuilder.asWriter(), isCloseOutputstreamOnExit());
+					return messageBuilder.build();
 				}
 				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), getBlobBase64Direction() == Direction.ENCODE);
 				if (resultset.wasNull()) {
@@ -521,12 +514,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return new Message(result);
 		}
-		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this)) {
+		try {
+			MessageBuilder messageBuilder = new MessageBuilder();
 			// Create XML and give the maxlength as a parameter
 			if (getOutputFormat()==null) {
 				DB2XMLWriter db2xml = buildDb2XMLWriter();
-				ContentHandler handler = target.asContentHandler();
-				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler, isPrettyPrint());
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), messageBuilder.asXmlWriter(), isPrettyPrint());
 			} else {
 				DB2DocumentWriter db2document = new DB2DocumentWriter();
 				db2document.setNullValue(getNullValue());
@@ -534,10 +527,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (StringUtils.isNotEmpty(getBlobCharset())) db2document.setBlobCharset(getBlobCharset());
 				db2document.setDecompressBlobs(isBlobsCompressed());
 				db2document.setGetBlobSmart(isBlobSmartGet());
-				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target, isPrettyPrint());
+				db2document.writeDocument(getOutputFormat(), getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), messageBuilder, isPrettyPrint());
 			}
-			target.close(); // Have to call close try-with-resources closes it, c/c "close" calls "endDocument" under the hood so we get a completed result document.
-			return target.getResponse();
+			return messageBuilder.build();
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}

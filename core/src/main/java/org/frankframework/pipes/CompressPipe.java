@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,9 +29,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -43,10 +39,12 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
 
 /**
  * Pipe to zip or unzip a message or file.
@@ -112,11 +110,11 @@ public class CompressPipe extends FixedForwardPipe {
 			}
 
 			if (resultIsContent) {
-				File tempFile = FileUtils.createTempFile();
-				try (OutputStream stream = new FileOutputStream(tempFile)) {
+				MessageBuilder messageBuilder = new MessageBuilder();
+				try (OutputStream stream = messageBuilder.asOutputStream()) {
 					processStream(stream, in, zipMultipleFiles, filename, session);
 				}
-				return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+				return new PipeRunResult(getSuccessForward(), messageBuilder.build());
 			}
 
 			String outFilename;

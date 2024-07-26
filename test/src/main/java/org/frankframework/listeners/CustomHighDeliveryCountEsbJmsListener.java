@@ -35,7 +35,7 @@ import org.frankframework.receivers.Receiver;
  * While attempting to read the message of the Queue and put it in an ErrorStorage, the TX timeout should kick in, resulting
  * in a message that keeps bouncing between EMS and the application.
  *
- * Don't forget to change the default transaction timeout to < 30 seconds, to speed up testing.
+ * Don't forget to change the default transaction timeout to &lt; 30 seconds, to speed up testing.
  */
 public class CustomHighDeliveryCountEsbJmsListener extends EsbJmsListener {
 

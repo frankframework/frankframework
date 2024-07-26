@@ -1607,7 +1607,7 @@ public class LarvaTool {
 
 		String extension = FileUtils.getFileNameExtension(originalFileName);
 
-		File tempFile = FileUtils.createTempFile("." + extension);
+		File tempFile = createTempFile("." + extension);
 		String tempFileMessage;
 		if ("XML".equalsIgnoreCase(extension)) {
 			tempFileMessage = XmlUtils.canonicalize(content);
@@ -1620,6 +1620,17 @@ public class LarvaTool {
 		outputStreamWriter.close();
 
 		return tempFile;
+	}
+
+	/**
+	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
+	 */
+	private static File createTempFile(final String extension) throws IOException {
+		final File directory = new File( FileUtils.getTempDirectory() );
+		final String suffix = StringUtils.isNotEmpty(extension) ? extension : ".tmp";
+		final String prefix = "frank";
+		LogUtil.getLogger(LarvaTool.class).debug("creating tempfile prefix [{}] suffix [{}] directory [{}]", prefix, suffix, directory);
+		return File.createTempFile(prefix, suffix, directory);
 	}
 
 	// Used by saveResultToFile.jsp

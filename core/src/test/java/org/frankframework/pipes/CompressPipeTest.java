@@ -188,7 +188,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
 
-		try (ZipInputStream zipin = new ZipInputStream(prr.getResult().asInputStream())) {
+		try (prr; ZipInputStream zipin = new ZipInputStream(prr.getResult().asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertNotNull(entry);
 			assertEquals("copyFile.txt", entry.getName());
