@@ -43,6 +43,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
@@ -53,8 +54,61 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 /**
  * Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
- * <br/>
- * TODO: Write out the full JavaDoc / Frank!Doc
+ * <p>
+ * Sends a message to another Frank!Framework-adapter in the same Frank!Framework instance, or an external program running in
+ * the same JVM as the Frank!Framework. If the callee exits with an {@code <Exit/>} that has state {@link PipeLine.ExitState#ERROR},
+ * an error is considered to happen in the caller which means that the {@code exception} forward is followed if it is present.
+ * </p>
+ * <p>
+ * Returns {@code exit.code} as forward name to the {@link SenderPipe}, provided that {@code exit.code} can be parsed as integer.
+ * For example, if the called adapter has an exit state with code
+ * {@code 2}, then the {@link SenderPipe} supports a forward with name {@code 2}
+ * that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example {@code c2}.
+ * </p>
+ * <p>
+ * A FrankSender makes a call to either an {@link Adapter} or an external program by setting the {@link #scope}. By default the scope is {@code ADAPTER}.
+ * </p>
+ *
+ *
+ * <h3>Configuration of the Adapter to be called</h3>
+ * A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
+ * of a FrankSender configured with the name of the adapter.
+ *
+ * <h4>Configuring FrankSender and Adapter</h4>
+ * <ul>
+ *   <li>Define a {@link SenderPipe} with a FrankSender</li>
+ *   <li>Set the attribute {@code target} to <i>targetAdapterName</i></li>
+ *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName}</li>
+ * </ul>
+ * In the Adapter to be called:
+ * <ul>
+ *   <li>The adapter does not need to have a receiver configured to be called from a FrankSender,</li>
+ *   <li>The adapter will run in the same transaction as the calling adapter,</li>
+ *   <li>If the called adapter does not to run in its own transaction, set the transaction attributes on the {@link PipeLine} attribute of this adapter
+ *   or on the {@link SenderPipe} that contains this {@code FrankSender}.</li>
+ * </ul>
+ *
+ * <h4>Configuring FrankSender and Remote Application</h4>
+ * <em>NB:</em> Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+ * <ul>
+ *     <li>Define a {@link SenderPipe} with a FrankSender</li>
+ *     <li>Set the attribute {@code scope} to either {@code JVM} for a Java application, or to {@code DLL} for code loaded from a DLL</li>
+ *     <li>Set the attribute {@code target} to the service-name the other application used to register itself</li>
+ * </ul>
+ * In the other application:
+ * <ul>
+ *     <li>Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library</li>
+ *     <li>Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}</li>
+ *     <li>See the implementation code of the {@code JavaListener} in the Frank!Framework for an example</li>
+ * </ul>
+ * See also the repository of the IbisServiceDispatcher:
+ *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
+ *
+ * @ff.parameter {@code scope} Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
+ * @ff.parameter {@code target} Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
+ * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
+ * @ff.forward "{@code <Exit.code>}" default
+ *
  */
 @Category("Basic")
 public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
@@ -64,11 +118,11 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
-	 * {@code DLL} is a special way of invoking the other java application, loading the service via a DLL. See the
+	 * {@code DLL} is a special way of invoking the other application, loading the service via a DLL. See the
 	 * documentation of the <a href="https://github.com/frankframework/servicedispatcher">IbisServiceDispatcher</a> library for further details on how implement a Java program or DLL running
 	 * alongside the Frank!Framework that can be called from the Frank!Framework.
 	 *
-	 * <h3>See</h3>
+	 * <h4>See</h4>
 	 *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
 	 */
 	public enum Scope { JVM, DLL, ADAPTER }
