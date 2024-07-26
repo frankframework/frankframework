@@ -59,7 +59,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
@@ -209,7 +208,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(InsertOneResult insertOneResult, MessageBuilder messageBuilder) throws SAXException, StreamingException {
+	protected void renderResult(InsertOneResult insertOneResult, MessageBuilder messageBuilder) throws SAXException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
@@ -218,7 +217,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(InsertManyResult insertManyResult, MessageBuilder messageBuilder) throws SAXException, StreamingException {
+	protected void renderResult(InsertManyResult insertManyResult, MessageBuilder messageBuilder) throws SAXException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertManyResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", insertManyResult.wasAcknowledged());
 			if (insertManyResult.wasAcknowledged()) {
@@ -237,45 +236,39 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(Document findResult, MessageBuilder messageBuilder) throws StreamingException {
+	protected void renderResult(Document findResult, MessageBuilder messageBuilder) throws SAXException {
 		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", messageBuilder, isPrettyPrint())) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
 			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
 			encoder.encode(jsonWriter, findResult, EncoderContext.builder().build());
-		} catch (Exception e) {
-			throw new StreamingException("Could not render collection", e);
 		}
 	}
 
-	protected void renderResult(FindIterable<Document> findResults, MessageBuilder messageBuilder) throws StreamingException {
-		try {
-			if (isCountOnly()) {
-				try (Writer writer = messageBuilder.asWriter()) {
-					int count=0;
-					for (Document doc : findResults) {
-						count++;
-					}
-					writer.write(Integer.toString(count));
-				}
-				return;
-			}
-			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", messageBuilder, isPrettyPrint())) {
-				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
-				Encoder<Document> encoder = new DocumentCodec();
+	protected void renderResult(FindIterable<Document> findResults, MessageBuilder messageBuilder) throws IOException, SAXException {
+		if (isCountOnly()) {
+			try (Writer writer = messageBuilder.asWriter()) {
+				int count=0;
 				for (Document doc : findResults) {
-					try (INodeBuilder element = builder.addElement()) {
-						JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings);
-						encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
-					}
+					count++;
+				}
+				writer.write(Integer.toString(count));
+			}
+			return;
+		}
+		try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", messageBuilder, isPrettyPrint())) {
+			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+			Encoder<Document> encoder = new DocumentCodec();
+			for (Document doc : findResults) {
+				try (INodeBuilder element = builder.addElement()) {
+					JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings);
+					encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
 				}
 			}
-		} catch (Exception e) {
-			throw new StreamingException("Could not render collection", e);
 		}
 	}
 
-	protected void renderResult(UpdateResult updateResult, MessageBuilder messageBuilder) throws SAXException, StreamingException {
+	protected void renderResult(UpdateResult updateResult, MessageBuilder messageBuilder) throws SAXException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", updateResult.wasAcknowledged());
 			if (updateResult.wasAcknowledged()) {
@@ -286,7 +279,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(DeleteResult deleteResult, MessageBuilder messageBuilder) throws SAXException, StreamingException {
+	protected void renderResult(DeleteResult deleteResult, MessageBuilder messageBuilder) throws SAXException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", deleteResult.wasAcknowledged());
 			if (deleteResult.wasAcknowledged()) {

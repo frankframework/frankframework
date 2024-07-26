@@ -27,6 +27,7 @@ import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -38,7 +39,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.stream.xml.XmlTap;
@@ -199,13 +199,17 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+		ParameterValueList pvl = null;
 		try {
-			ParameterValueList pvl=null;
 			if (paramList!=null) {
 				pvl = paramList.getValues(input, session);
 			}
+		} catch (ParameterException e) {
+			throw new TransformerException("unable to resolve input parameters for transformerHandler");
+		}
 
+		try {
 			TransformerPool.OutputType outputType = getOutputType();
 			if (log.isTraceEnabled()) log.trace("Configured outputmethod [{}]", outputType);
 			if (outputType == null) {
@@ -270,8 +274,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			handler=filterInput(mainFilter, session);
 
 			return handler;
-		} catch (Exception e) {
-			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
+		} catch (IOException e) {
+			throw new TransformerException("exception on creating transformerHandler chain", e);
 		}
 	}
 

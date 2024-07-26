@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.frankframework.core.SenderException;
 import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -72,7 +72,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 
 		// Assert
-		assertInstanceOf(StreamingException.class, e.getCause());
+		assertInstanceOf(SenderException.class, e.getCause());
 		assertThat(e.getMessage(), Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
 		assertThat(e.getCause().getMessage(), Matchers.endsWith("cannot stream: cannot configure: (IllegalStateException) something is wrong"));
 	}
