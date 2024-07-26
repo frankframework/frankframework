@@ -15,6 +15,8 @@
 */
 package org.frankframework.senders;
 
+import javax.xml.transform.TransformerException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.stream.xml.JsonXslt3XmlReader;
 import org.frankframework.util.TransformerPool;
@@ -29,7 +31,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.ThreadConnector;
 
 /**
@@ -55,7 +56,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		if (!isJsonResult()) {
 			return super.createHandler(input, threadConnector, session, poolToUse, handler, messageBuilder);
 		}

@@ -6,14 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
+import org.xml.sax.SAXException;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.Encoder;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.stream.document.IDocumentBuilder;
@@ -21,7 +20,7 @@ import org.frankframework.stream.document.IDocumentBuilder;
 class JsonDocumentWriterTest {
 
 	@Test
-	void testArrayListOfIntegers() throws StreamingException {
+	void testArrayListOfIntegers() throws SAXException {
 		List<Integer> classes = new ArrayList<>(List.of(4, 5, 6));
 		Document classes1 = new Document().append("classes", classes);
 		assertEquals("""
@@ -35,7 +34,7 @@ class JsonDocumentWriterTest {
 	}
 
 	@Test
-	void testArrayListOfObjects() throws StreamingException {
+	void testArrayListOfObjects() throws SAXException {
 		Document grade1 = new Document().append("grade", 5).append("topic", "math");
 		Document grade2 = new Document().append("grade", 5).append("topic", "science");
 		List<Document> scores = new ArrayList<>(List.of(grade1, grade2));
@@ -57,7 +56,7 @@ class JsonDocumentWriterTest {
 	}
 
 	@Test
-	void testNumberBooleanNull() throws StreamingException {
+	void testNumberBooleanNull() throws SAXException {
 		Document root = new Document().append("number", 5).append("boolean", true).append("null", null);
 		assertEquals("""
 				<FindOneResult>
@@ -69,7 +68,7 @@ class JsonDocumentWriterTest {
 	}
 
 	@Test
-	void testDouble() throws StreamingException {
+	void testDouble() throws SAXException {
 		Document root = new Document().append("double", 5.5);
 		assertEquals("""
 				<FindOneResult>
@@ -78,15 +77,13 @@ class JsonDocumentWriterTest {
 		assertEquals("{\"double\":5.5}", convertDocumentToString(root, DocumentFormat.JSON));
 	}
 
-	private static String convertDocumentToString(Document inputDocument, DocumentFormat documentFormat) throws StreamingException {
+	private static String convertDocumentToString(Document inputDocument, DocumentFormat documentFormat) throws SAXException {
 		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(documentFormat, "FindOneResult")) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
 			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
 			encoder.encode(jsonWriter, inputDocument, EncoderContext.builder().build());
 			return builder.toString();
-		} catch (Exception e) {
-			throw new StreamingException("Could not render collection", e);
 		}
 	}
 

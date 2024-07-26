@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
@@ -49,7 +48,7 @@ public class DB2DocumentWriter {
 		return JDBCType.valueOf(type).getName();
 	}
 
-	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageBuilder messageBuilder, boolean prettyPrint) throws StreamingException, SAXException {
+	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
 		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, messageBuilder, prettyPrint)) {
 			writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 		}
