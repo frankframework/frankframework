@@ -15,9 +15,7 @@
 */
 package org.frankframework.senders;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 
@@ -39,14 +37,13 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.stream.xml.XmlTap;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.PrettyPrintFilter;
@@ -202,7 +199,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, File tempFile) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws StreamingException {
 		try {
 			ParameterValueList pvl=null;
 			if (paramList!=null) {
@@ -237,8 +234,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			}
 
 			if (handler == null || disableOutputEscaping) {
-				XmlWriter xmlWriter = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
-				xmlWriter.setCloseWriterOnEndDocument(true);
+				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
 				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [{}]", omitXmlDeclaration);
 				if (outputType == TransformerPool.OutputType.XML) {
@@ -296,8 +292,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 
 		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
-			File tempFile = FileUtils.createTempFile();
-			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, tempFile);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, messageBuilder);
 			if (isDebugInput() && log.isDebugEnabled()) {
 				handler = new XmlTap(handler) {
 					@Override
@@ -310,7 +306,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			XMLReader reader = getXmlReader(session, handler);
 			InputSource source = message.asInputSource();
 			reader.parse(source);
-			return new SenderResult(PathMessage.asTemporaryMessage(tempFile.toPath()));
+			return new SenderResult(messageBuilder.build());
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "Cannot transform input", e);
 		}

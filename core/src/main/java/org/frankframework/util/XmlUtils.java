@@ -80,6 +80,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.validation.RootValidations;
 import org.frankframework.validation.XmlValidatorContentHandler;
 import org.frankframework.validation.XmlValidatorErrorHandler;
@@ -1459,10 +1460,10 @@ public class XmlUtils {
 
 	public static Message removeNamespaces(Message input) throws XmlException {
 		try {
-			XmlWriter xmlWriter = new XmlWriter();
-			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ContentHandler handler = new NamespaceRemovingFilter(messageBuilder.asXmlWriter());
 			parseXml(input.asInputSource(), handler);
-			return new Message(xmlWriter.toString());
+			return messageBuilder.build();
 		} catch (Exception e) {
 			throw new XmlException(e);
 		}

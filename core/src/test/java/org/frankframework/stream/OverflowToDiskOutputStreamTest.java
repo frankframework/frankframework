@@ -1,11 +1,14 @@
 package org.frankframework.stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -30,14 +33,16 @@ public class OverflowToDiskOutputStreamTest {
 		oos.flush(); //shouldn't do anything
 		oos.write(48);
 
+		oos.flush();
 		assertEquals(0, Files.list(tmpDir).count(), "no file should have been created");
 		oos.close();
 
-		String location = (String) oos.toMessage().getContext().get(MessageContext.METADATA_LOCATION);
+		Message msg = oos.toMessage();
+		String location = (String) msg.getContext().get(MessageContext.METADATA_LOCATION);
 		assertNull(location, "there should not be a file location, the file should be in memory");
 
-		assertEquals(testString+"00", oos.toMessage().asString(), "contents of Message differs from the file");
-		oos.toMessage().close();
+		assertEquals(testString+"00", msg.asString(), "contents of Message differs from the file");
+		msg.close();
 	}
 
 	@Test
@@ -73,12 +78,12 @@ public class OverflowToDiskOutputStreamTest {
 
 		oos.write(testString.getBytes());
 
+		oos.close();
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
 		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
 		assertEquals(testString + testString, fileContents, "contents of both files differ, do we have the correct test file?");
 
-		oos.close();
 		assertTrue(Files.exists(files.get(0)), "closing the OverflowOutputStream should not remove the file");
 		assertEquals(testString + testString, oos.toMessage().asString(), "contents of Message differs from the file");
 
@@ -97,6 +102,9 @@ public class OverflowToDiskOutputStreamTest {
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
+		assertEquals(0, Files.newInputStream(files.get(0)).available(), "default buffer size not exceeded nothing will be written until close is called");
+		oos.close();
+
 		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
 		assertEquals(testString, fileContents, "contents of both files differ, do we have the correct test file?");
 
@@ -120,6 +128,8 @@ public class OverflowToDiskOutputStreamTest {
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
+
+		oos.close();
 		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
 		assertEquals("00", fileContents, "contents of both files differ, do we have the correct test file?");
 
@@ -134,13 +144,15 @@ public class OverflowToDiskOutputStreamTest {
 	}
 
 	@Test
-	public void testLargeFile() throws IOException {
+	public void testLargeFile() throws IOException, InterruptedException {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(5_000_000, tmpDir);
+		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 
 		URL data = OverflowToDiskOutputStreamTest.class.getResource("/Documents/doc001.pdf");
 		assertNotNull(data, "unable to find test file");
 		for (int i = 0; i < 100; i++) {
 			data.openStream().transferTo(oos);
+			data.openStream().transferTo(boas);
 		}
 
 		assertEquals(0, Files.list(tmpDir).count(), "no file should have been created");
@@ -148,6 +160,7 @@ public class OverflowToDiskOutputStreamTest {
 		oos.flush(true);
 		assertEquals(1, Files.list(tmpDir).count(), "file should have been created");
 		data.openStream().transferTo(oos);
+		data.openStream().transferTo(boas);
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
@@ -161,7 +174,12 @@ public class OverflowToDiskOutputStreamTest {
 		String location = (String) oos.toMessage().getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
 
-		oos.toMessage().close();
+		Message message = oos.toMessage();
+		assertInstanceOf(PathMessage.class, message);
+		byte[] content = message.asByteArray();
+		assertArrayEquals(boas.toByteArray(), content);
+
+		message.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 }

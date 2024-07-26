@@ -18,8 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @ContextConfiguration(classes = {WebTestConfiguration.class, TestPipeline.class})
 public class TestPipelineTest extends FrankApiTestBase {
 

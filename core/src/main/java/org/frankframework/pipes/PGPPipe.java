@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Integration Partners
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
 */
 package org.frankframework.pipes;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -35,8 +32,7 @@ import org.frankframework.pgp.PGPAction;
 import org.frankframework.pgp.Sign;
 import org.frankframework.pgp.Verify;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.stream.MessageBuilder;
 
 /**
  * <p>Performs various PGP (Pretty Good Privacy) actions such as Encrypt, Sign, Decrypt, Verify.</p>
@@ -132,15 +128,12 @@ public class PGPPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			File tempFile = FileUtils.createTempFile();
-			try (OutputStream out = Files.newOutputStream(tempFile.toPath())) {
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (OutputStream out = messageBuilder.asOutputStream()) {
 				pgpAction.run(message.asInputStream(), out);
-				return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
-			} catch (Exception e) {
-				Files.deleteIfExists(tempFile.toPath());
-				throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);
 			}
-		} catch (IOException e) {
+			return new PipeRunResult(getSuccessForward(), messageBuilder.build());
+		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);
 		}
 	}

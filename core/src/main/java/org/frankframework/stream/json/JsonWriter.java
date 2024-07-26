@@ -33,6 +33,7 @@ import org.frankframework.xml.SaxException;
 public class JsonWriter implements JsonEventHandler {
 
 	private Writer writer;
+	private boolean closeWriterOnEndDocument = false;
 
 	private Deque<NodeState> stateStack = new ArrayDeque<>();
 
@@ -54,8 +55,13 @@ public class JsonWriter implements JsonEventHandler {
 	}
 
 	public JsonWriter(Writer writer) {
+		this(writer, false);
+	}
+
+	public JsonWriter(Writer writer, boolean closeWriterOnEndDocument) {
 		this.writer=writer;
 		stateStack.push(new NodeState(false));
+		this.closeWriterOnEndDocument = closeWriterOnEndDocument;
 	}
 
 	@Override
@@ -66,7 +72,11 @@ public class JsonWriter implements JsonEventHandler {
 	@Override
 	public void endDocument() throws SAXException {
 		try {
-			writer.flush();
+			if (closeWriterOnEndDocument) {
+				writer.close();
+			} else {
+				writer.flush();
+			}
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}

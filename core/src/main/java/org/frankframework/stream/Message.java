@@ -701,7 +701,7 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof String string) {
 			return string.getBytes(charset);
 		}
-		if (request instanceof ThrowingSupplier) { // asInputStream handles the exception and cast for us.
+		if (request instanceof ThrowingSupplier || request instanceof SerializableFileReference) {
 			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
 			return StreamUtil.streamToByteArray(asInputStream(), false, (int) size() + 32);
 		}

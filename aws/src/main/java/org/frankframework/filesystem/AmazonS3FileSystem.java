@@ -15,15 +15,11 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,8 +30,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import jakarta.annotation.Nullable;
-import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -44,10 +38,13 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
+
+import jakarta.annotation.Nullable;
+import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -260,31 +257,28 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 
 		// The inputStream content also be directly send to the s3Client.putObject(), when the File length is available.
 		// When uploading of unknown size is needed, the S3AsyncClient or S3TransferManager can be used in the future.
-		final File file = FileUtils.createTempFile(".s3-upload"); //The lesser evil to allow streaming uploads
-		try (FileOutputStream fos = new FileOutputStream(file)) {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (OutputStream fos = messageBuilder.asOutputStream()) {
 			StreamUtil.streamToStream(content, fos);
 		}
 
-		try (FileInputStream fis = new FileInputStream(file)) {
+		try (Message message = messageBuilder.build()) {
 			PutObjectRequest.Builder por = PutObjectRequest.builder()
 					.bucket(f.getBucketName())
 					.key(f.getKey())
 					.contentEncoding("UTF-8")
 					.storageClass(storageClass);
 
-			addMetadata(por, file.length(), customFileAttributes);
+			addMetadata(por, customFileAttributes);
 
-			RequestBody requestBody = (file.length() == 0) ? RequestBody.empty() : RequestBody.fromInputStream(fis, file.length());
+			RequestBody requestBody = (Message.isEmpty(message)) ? RequestBody.empty() : RequestBody.fromInputStream(message.asInputStream(), message.size());
 
 			s3Client.putObject(por.build(), requestBody);
-		} finally {
-			Files.delete(file.toPath());
 		}
 	}
 
-	private void addMetadata(PutObjectRequest.Builder por, long length, Map<String, String> userMetadata) {
+	private void addMetadata(PutObjectRequest.Builder por, Map<String, String> userMetadata) {
 		Map<String, String> metadata = new HashMap<>();
-		metadata.put("Content-Length", String.valueOf(length));
 
 		if (userMetadata!= null && !userMetadata.isEmpty()) {
 			// Prefix the keys and encode the values according to rfc2047
