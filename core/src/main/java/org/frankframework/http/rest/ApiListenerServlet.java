@@ -501,7 +501,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageContext.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
 						response.sendError(400, "Could not read mime multipart request");
-						LOG.warn("{} Could not read mime multipart request", () -> createAbortMessage(remoteUser, 400));
+						LOG.warn("{} Could not read mime multipart request", createAbortMessage(remoteUser, 400), e);
 						return;
 					}
 				} else {
