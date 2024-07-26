@@ -144,7 +144,7 @@ public class OverflowToDiskOutputStreamTest {
 	}
 
 	@Test
-	public void testLargeFile() throws IOException, InterruptedException {
+	public void testLargeFile() throws IOException {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(5_000_000, tmpDir);
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 

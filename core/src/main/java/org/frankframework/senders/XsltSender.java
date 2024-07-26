@@ -103,7 +103,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		super.configure();
 
 		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
-		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
+		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap<>(transformerPoolMapSize));
 
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
 			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);

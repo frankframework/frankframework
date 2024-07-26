@@ -29,7 +29,7 @@ import com.eclipsesource.v8.V8Value;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.flow.ResultHandler;
 
 public class J2V8 implements JavascriptEngine<V8> {
@@ -52,7 +52,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	 */
 	@Override
 	public void startRuntime() throws JavascriptException {
-		String tempDirectory = FileUtils.getTempDirectory();
+		String tempDirectory = TemporaryDirectoryUtils.getTempDirectory().toString();
 
 		// preload the library to avoid having to set ALL FILES execute permission
 		if (!j2v8LibraryLoaded) {

@@ -15,8 +15,6 @@
 */
 package org.frankframework.javascript;
 
-import java.nio.file.Path;
-
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -26,7 +24,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.flow.ResultHandler;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
@@ -61,7 +59,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		context = Context.newBuilder()
 				.allowHostClassLookup(className -> true)
 				.allowAllAccess(true)
-				.currentWorkingDirectory(Path.of(FileUtils.getTempDirectory()))
+				.currentWorkingDirectory(TemporaryDirectoryUtils.getTempDirectory())
 				.option("js.nashorn-compat", NASHORN_COMPATIBILITY)
 				.allowExperimentalOptions(true)
 				.engine(Engine.create("js")).build();

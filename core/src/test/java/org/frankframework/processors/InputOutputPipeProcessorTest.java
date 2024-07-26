@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -25,10 +25,11 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.FileSystemUtils;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -45,8 +46,7 @@ public class InputOutputPipeProcessorTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		File tempDirectory = FileUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
-		org.apache.commons.io.FileUtils.cleanDirectory(tempDirectory);
+		FileSystemUtils.deleteRecursively(TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY));
 
 		processor = new InputOutputPipeProcessor();
 		PipeProcessor chain = new PipeProcessor() {
@@ -79,8 +79,8 @@ public class InputOutputPipeProcessorTest {
 	// ensure that no files are in the 'restoreMovedElements' folder
 	@AfterEach
 	public void teardown() throws IOException {
-		File tempDirectory = FileUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
-		assertEquals(0, Files.list(tempDirectory.toPath()).count());
+		Path tempDirectory = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
+		assertEquals(0, Files.list(tempDirectory).count());
 	}
 
 	@Test

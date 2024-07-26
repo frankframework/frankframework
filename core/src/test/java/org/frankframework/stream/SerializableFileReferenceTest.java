@@ -69,7 +69,7 @@ public class SerializableFileReferenceTest {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if (reference != null) {
 			reference.close();
 		}

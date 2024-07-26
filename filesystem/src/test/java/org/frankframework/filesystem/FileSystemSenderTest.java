@@ -579,11 +579,11 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderWriteNewFileInFolder() throws Exception {
-		SenderResult result = fileSystemSenderWriteFile("folder1", false, false);
-		assertFalse(result.isSuccess());
-		assertEquals("folderNotFound", result.getForwardName());
-		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("folder1] does not exist"));
+		senderResult = fileSystemSenderWriteFile("folder1", false, false);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("folderNotFound", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("folder1] does not exist"));
 	}
 
 	@Test
@@ -593,20 +593,20 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderWritingFileThatAlreadyExists() throws Exception {
-		SenderResult result = fileSystemSenderWriteFile("folder3", true, false);
-		assertFalse(result.isSuccess());
-		assertEquals("fileAlreadyExists", result.getForwardName());
-		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("writefile1.txt] already exists"));
+		senderResult = fileSystemSenderWriteFile("folder3", true, false);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("fileAlreadyExists", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("writefile1.txt] already exists"));
 	}
 
 	@Test
 	public void fileSystemSenderWritingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
-		SenderResult result = fileSystemSenderWriteFile("folder4", true, true);
-		assertFalse(result.isSuccess());
-		assertEquals("fileAlreadyExists", result.getForwardName());
-		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder4/writefile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("writefile1.txt] already exists"));
+		senderResult = fileSystemSenderWriteFile("folder4", true, true);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("fileAlreadyExists", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder4/writefile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("writefile1.txt] already exists"));
 	}
 
 	@Test
