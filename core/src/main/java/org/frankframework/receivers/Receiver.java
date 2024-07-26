@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -1283,7 +1284,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				ProcessResultCacheItem prci = cacheProcessResult(messageId, errorMessage, Instant.ofEpochMilli(startProcessingTimestamp));
 				try {
 					if (!isTransacted() && messageInError && !manualRetry
-							&& !(getListener() instanceof IRedeliveringListener<?> && ((IRedeliveringListener)getListener()).messageWillBeRedeliveredOnExitStateError(session))) {
+							&& !(getListener() instanceof IRedeliveringListener<?> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError())) {
 						moveInProcessToError(messageWrapper, session, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, TXNEW_CTRL);
 					}
 					try {
@@ -1322,7 +1323,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && !duplicatesAlreadyChecked) {
+						if (messageInError && !duplicatesAlreadyChecked && retryCountNotReached(messageWrapper, prci)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
@@ -1333,6 +1334,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
 			return result;
 		}
+	}
+
+	private boolean retryCountNotReached(@Nonnull final MessageWrapper<M> messageWrapper, @Nullable final ProcessResultCacheItem prci) {
+		final IListener<M> origin = getListener();
+		final int receiveCount;
+		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+			receiveCount = knowsDeliveryCount.getDeliveryCount(messageWrapper);
+		} else if (prci != null) {
+			receiveCount = prci.receiveCount;
+		} else {
+			receiveCount = 1;
+		}
+		if (origin instanceof IRedeliveringListener<M> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError()) {
+			return receiveCount < maxDeliveries;
+		}
+		return receiveCount < maxRetries;
 	}
 
 	private String ensureMessageIdNotEmpty(String messageId) {
@@ -1499,9 +1516,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public int getDeliveryCount(RawMessageWrapper<M> rawMessage) {
 		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		log.debug("{} checking delivery count for messageId [{}]", this::getLogPrefix, rawMessage::getId);
-		if (origin instanceof IKnowsDeliveryCount) {
-			//noinspection unchecked
-			return ((IKnowsDeliveryCount<M>)origin).getDeliveryCount(rawMessage)-1;
+		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+			return knowsDeliveryCount.getDeliveryCount(rawMessage)-1;
 		}
 		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(rawMessage.getId());
 		return oprci.map(prci -> prci.receiveCount + 1).orElse(1);
