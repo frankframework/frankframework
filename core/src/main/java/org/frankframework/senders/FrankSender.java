@@ -143,7 +143,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		super.configure();
 		ParameterList pl = getParameterList();
 		if (StringUtils.isBlank(getTarget()) && (pl == null || !pl.hasParameter(TARGET_PARAM_NAME))) {
-			throw new ConfigurationException("'target' required, either as parameter or as attribute in the configuration");
+			throw new ConfigurationException("[target] required, either as parameter or as attribute in the configuration");
 		}
 		if (StringUtils.isNotBlank(getTarget()) && getScope() == Scope.ADAPTER) {
 			try {
