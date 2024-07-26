@@ -1226,8 +1226,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
 
-						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
-						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
+						session.setExitState(pipeLineResult);
 						result=pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
@@ -1404,12 +1403,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					moveInProcessToErrorAndDoPostProcessing(origin, messageWrapper, session, prci, "too many redeliveries or retries");
 				}
 				numRejected.increment();
-				setExitState(session, ExitState.REJECTED, 500);
+				session.setExitState(ExitState.REJECTED, 500);
 				return true;
 			}
 			resetRetryInterval();
 			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId)) {
-				setExitState(session, ExitState.SUCCESS, 304);
+				session.setExitState(ExitState.SUCCESS, 304);
 				return true;
 			}
 			if (cachedProcessResult.isPresent()) {
@@ -1478,13 +1477,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 		XmlUtils.parseXml(message.asInputSource(), handler);
 		return msgBuilder.build();
-	}
-
-	private void setExitState(Map<String,Object> threadContext, ExitState state, int code) {
-		if (threadContext!=null) {
-			threadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
-			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
-		}
 	}
 
 	@SuppressWarnings("synthetic-access")

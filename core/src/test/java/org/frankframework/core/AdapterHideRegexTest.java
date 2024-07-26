@@ -19,6 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -38,11 +43,6 @@ import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.UUIDUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import jakarta.annotation.Nonnull;
 
 public class AdapterHideRegexTest {
 
@@ -79,7 +79,7 @@ public class AdapterHideRegexTest {
 	private  <M> Receiver<M> setupReceiver(IListener<M> listener, String hideRegex) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(listener);
+		configuration.autowireByName(receiver);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);

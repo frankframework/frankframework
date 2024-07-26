@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -38,11 +43,9 @@ import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
 @Log4j2
 public class ReceiverSubAdapterTest {
@@ -60,7 +63,13 @@ public class ReceiverSubAdapterTest {
 	@AfterEach
 	void tearDown() {
 		log.info("*>>> Test done, wrapping up and destroying");
+		// In case JavaListener didn't close after end of test, deregister the service.
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
+		try {
+			DispatcherManagerFactory.getDispatcherManager().unregister(SERVICE_NAME);
+		} catch (DispatcherException e) {
+			// Ignore
+		}
 	}
 
 	private FailurePipe createFailurePipe() throws ConfigurationException {
@@ -92,6 +101,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private JavaListener<String> createJavaListener(TestConfiguration configuration, Receiver<String> receiver) throws Exception {
+		@SuppressWarnings("unchecked")
 		JavaListener<String> listener = configuration.createBean(JavaListener.class);
 		listener.setName(receiver.getName());
 		listener.setHandler(receiver);
@@ -105,6 +115,7 @@ public class ReceiverSubAdapterTest {
 
 	private Receiver<String> createReceiver(TestConfiguration configuration, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
+		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
 		receiver.setName(name);
 		adapter.setName(name);

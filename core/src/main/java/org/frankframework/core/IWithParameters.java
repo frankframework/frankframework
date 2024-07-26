@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import jakarta.annotation.Nullable;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 
@@ -27,6 +28,7 @@ import org.frankframework.parameters.ParameterList;
 public interface IWithParameters {
 
 	void addParameter(IParameter p);
+	@Nullable
 	ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
 
 }
