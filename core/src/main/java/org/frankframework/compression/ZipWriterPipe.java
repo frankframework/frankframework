@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 */
 package org.frankframework.compression;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +32,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 
 /**
  * Pipe that creates a ZIP archive (on action close).
@@ -104,17 +105,17 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 				throw new PipeRunException(this, "filename may not be empty");
 			}
 
-			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
-			File file = File.createTempFile("msg", ".zip", collectorsTempFolder);
+			Path collectorsTempFolder = TemporaryDirectoryUtils.getTempDirectory("collectors");
+			Path file = Files.createTempFile(collectorsTempFolder, "msg", ".zip");
 
 			// Unfortunately we cannot call doAction(Action.WRITE, PathMessage, session);
 			// directly because the ParameterList is resolved against the input message.
 			// We have to change the input here, but want to keep the original PVL.
-			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file.toPath());
+			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file);
 			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
 
 			//We must return a file location, not the reference or file it self
-			return new PipeRunResult(getSuccessForward(), new Message(file.getAbsolutePath()));
+			return new PipeRunResult(getSuccessForward(), new Message(file.toString()));
 		} catch (CollectionException e) {
 			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
 		}

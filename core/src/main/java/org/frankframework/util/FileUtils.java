@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -197,30 +195,6 @@ public class FileUtils {
 			log.warn("Could not copy file [{}] to [{}]", orgFile.getPath(), destFile.getPath(), e);
 			return false;
 		}
-	}
-
-	/**
-	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
-	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
-	 * @deprecated use TemporaryDirectoryUtils.getTempDirectory instead.
-	 */
-	@Deprecated
-	public static @Nonnull String getTempDirectory() {
-		Path tempDir = TemporaryDirectoryUtils.getTempDirectory();
-		return tempDir.toString();
-	}
-
-	/**
-	 * @return the ${ibis.tmpdir}/folder or IOException if it cannot be resolved.
-	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
-	 */
-	public static File getTempDirectory(String folder) throws IOException {
-		String tempDir = getTempDirectory();
-		File newDir = new File(tempDir, folder);
-		if (!newDir.exists() && !newDir.mkdirs()) {
-			throw new IOException("unable to create temp directory [" + newDir.getPath() + "]");
-		}
-		return newDir;
 	}
 
 	protected static void makeBackups(File targetFile, int numBackups)  {

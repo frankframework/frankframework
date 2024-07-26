@@ -81,9 +81,9 @@ public class S3FileRef {
 		String normalized = FilenameUtils.normalize(rawKey, true);
 		this.name = FilenameUtils.getName(normalized); //may be an empty string
 
-		String folder = FilenameUtils.getFullPathNoEndSeparator(normalized);
+		String folderWithoutEndSeparator = FilenameUtils.getFullPathNoEndSeparator(normalized);
 		//crazy hack to always ensure there is a slash at the end
-		this.folder = StringUtils.isNotEmpty(folder) ? folder + FILE_DELIMITER : null;
+		this.folder = StringUtils.isNotEmpty(folderWithoutEndSeparator) ? folderWithoutEndSeparator + FILE_DELIMITER : null;
 	}
 
 	public S3FileRef(S3Object s3Object, String bucketName) {
