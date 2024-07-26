@@ -78,7 +78,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * <ul>
  *   <li>Define a {@link SenderPipe} with a FrankSender</li>
  *   <li>Set the attribute {@code target} to <i>targetAdapterName</i></li>
- *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName}</li>
+ *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).</li>
  * </ul>
  * In the Adapter to be called:
  * <ul>
@@ -103,6 +103,15 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * </ul>
  * See also the repository of the IbisServiceDispatcher:
  *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
+ *
+ * <h4>Using FrankSender to call an adapter from Larva tests</h4>
+ * You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
+ * <ul>
+ *     <li>If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character</li>
+ *     <li>When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}</li>
+ *     <li>If you do need a transaction and the adapter has a JavaListener that has {@link org.frankframework.receivers.JavaListener#setServiceName(String)} defined, you can use the FrankSender with scope {@code JVM}
+ *     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.</li>
+ * </ul>
  *
  * @ff.parameter {@code scope} Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
  * @ff.parameter {@code target} Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
@@ -391,7 +400,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	/**
 	 * Target: service-name of service in other application that should be called, or name of adapter to be called.
-	 * If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a "/".
+	 * If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("{@code /}").
 	 * <br/>
 	 * It is possible to set a target at runtime via a parameter.
 	 * <br/>

@@ -3847,7 +3847,7 @@
  &lt;ul&gt;
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
    &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName}&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
@@ -3871,7 +3871,16 @@
      &lt;li&gt;See the implementation code of the {@code JavaListener} in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  See also the repository of the IbisServiceDispatcher:
-  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;</xs:documentation>
+  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;
+
+ &lt;h4&gt;Using FrankSender to call an adapter from Larva tests&lt;/h4&gt;
+ You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
+ &lt;ul&gt;
+     &lt;li&gt;If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character&lt;/li&gt;
+     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}&lt;/li&gt;
+     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope {@code JVM}
+     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -5867,7 +5876,7 @@
     <xs:attribute name="target" type="xs:string">
       <xs:annotation>
         <xs:documentation>Target: service-name of service in other application that should be called, or name of adapter to be called.
- If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a "/".
+ If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("{@code /}").
  &lt;br/&gt;
  It is possible to set a target at runtime via a parameter.
  &lt;br/&gt;
@@ -8773,7 +8782,7 @@
  &lt;ul&gt;
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
    &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName}&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
@@ -8797,7 +8806,16 @@
      &lt;li&gt;See the implementation code of the {@code JavaListener} in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  See also the repository of the IbisServiceDispatcher:
-  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;</xs:documentation>
+  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;
+
+ &lt;h4&gt;Using FrankSender to call an adapter from Larva tests&lt;/h4&gt;
+ You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
+ &lt;ul&gt;
+     &lt;li&gt;If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character&lt;/li&gt;
+     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}&lt;/li&gt;
+     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope {@code JVM}
+     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>

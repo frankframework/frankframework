@@ -3107,7 +3107,7 @@
     <xs:attribute name="target" type="xs:string">
       <xs:annotation>
         <xs:documentation>Target: service-name of service in other application that should be called, or name of adapter to be called.
- If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a "/".
+ If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("{@code /}").
  &lt;br/&gt;
  It is possible to set a target at runtime via a parameter.
  &lt;br/&gt;
