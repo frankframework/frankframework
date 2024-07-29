@@ -4,6 +4,10 @@ import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
@@ -16,8 +20,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 
@@ -27,7 +29,7 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 		result.setSender(new EchoSender() {
 
 			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					return new SenderResult("{ \"input\": \""+message.asString()+"\"}");
 				} catch (IOException e) {

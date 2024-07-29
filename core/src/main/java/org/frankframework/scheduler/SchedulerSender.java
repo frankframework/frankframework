@@ -17,11 +17,8 @@ package org.frankframework.scheduler;
 
 import static org.quartz.JobBuilder.newJob;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -31,6 +28,9 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -85,7 +85,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		try {
 			String correlationID = session==null ? "" : session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);

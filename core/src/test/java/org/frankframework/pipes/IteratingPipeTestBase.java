@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -72,7 +73,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	protected class ElementRenderer extends EchoSender {
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			return resultCollector(message);
 		}
 	}
@@ -81,7 +82,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	protected class SlowRenderer extends EchoSender {
 		@Override
 		@SuppressWarnings("java:S2925")
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			int random = (int) (Math.random() * 20);
 			try {
 				Thread.sleep(random);

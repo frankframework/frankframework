@@ -52,6 +52,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
@@ -278,11 +279,9 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof DelaySender delaySender) {
-			SenderResult senderResult = delaySender.sendMessage(new Message(fileContent), null);
-			try {
-				senderResult.getResult().close();
-			} catch (IOException e) {
-				log.warn("Could not close senderResult for queue {}", get(), e);
+			try (PipeLineSession session = new PipeLineSession()) {
+				SenderResult senderResult = delaySender.sendMessage(new Message(fileContent), session);
+				CloseUtils.closeSilently(senderResult.getResult());
 			}
 			return LarvaTool.RESULT_OK;
 		}

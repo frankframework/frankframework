@@ -11,6 +11,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -140,7 +141,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	private static class ExceptionThrowingSender extends SenderBase {
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			throw new SenderException("fakeException");
 		}
 	}

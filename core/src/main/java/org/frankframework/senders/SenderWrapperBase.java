@@ -15,6 +15,9 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
@@ -28,9 +31,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.processors.SenderWrapperProcessor;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
@@ -90,7 +90,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	public abstract SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}

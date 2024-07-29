@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
@@ -336,7 +337,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl;
 		if (paramList != null) {
 			try {
@@ -378,13 +379,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
-			if(session != null) {
-				if (appendMessageidHeader && StringUtils.isNotEmpty(session.getMessageId())) {
-					httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
-				}
-				if (appendCorrelationidHeader && StringUtils.isNotEmpty(session.getCorrelationId())) {
-					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
-				}
+			if (appendMessageidHeader && StringUtils.isNotEmpty(session.getMessageId())) {
+				httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
+			}
+			if (appendCorrelationidHeader && StringUtils.isNotEmpty(session.getCorrelationId())) {
+				httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
 			}
 			for (Map.Entry<String, String> param: headersParamsMap.entrySet()) {
 				httpRequestBase.setHeader(param.getKey(), param.getValue());

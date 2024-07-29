@@ -274,8 +274,11 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), null).close();
-						deleteQuerySender.close();
+						try (PipeLineSession session = new PipeLineSession()){
+							deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), session).close();
+						} finally {
+							deleteQuerySender.close();
+						}
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;

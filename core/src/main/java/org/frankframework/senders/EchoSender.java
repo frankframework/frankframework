@@ -15,6 +15,7 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -34,7 +35,7 @@ public class EchoSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(message);
 	}
 
