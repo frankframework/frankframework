@@ -30,7 +30,7 @@ public class InlineMessageStoreOverview extends FrankApiBase {
 	@Description("view available messagebrowsers")
 	@GetMapping(value = "inlinestores/overview", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getMessageBrowsers() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.INLINESTORAGE_SUMMARY));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.INLINESTORAGE_SUMMARY));
 	}
 
 }

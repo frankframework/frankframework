@@ -53,11 +53,11 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<?> getConfigurationXML(@RequestParam(value = "loadedConfiguration", required = false) boolean loaded, @RequestParam(value = "flow", required = false) String flow) throws ApiException {
 		if (StringUtils.isNotEmpty(flow)) {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 			return callSyncGateway(builder);
 		}
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		if (loaded) builder.addHeader("loaded", true);
 		return callSyncGateway(builder);
 	}
@@ -69,7 +69,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	public ResponseEntity<?> fullReload(@RequestBody Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if ("reload".equals(value)) {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.FULLRELOAD.name());
 			callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
@@ -83,7 +83,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("view individual loaded/original configuration")
 	@GetMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<?> getConfigurationByName(@PathVariable("configuration") String configurationName, @RequestParam(value = "loadedConfiguration", required = false) boolean loaded) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		if (loaded) builder.addHeader("loaded", true);
 		return callSyncGateway(builder);
@@ -94,7 +94,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("view configuration health")
 	@GetMapping(value = "/configurations/{configuration}/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getConfigurationHealth(@PathVariable("configuration") String configurationName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		return callSyncGateway(builder);
 	}
@@ -104,7 +104,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("view configuration flow diagram")
 	@GetMapping(value = "/configurations/{configuration}/flow")
 	public ResponseEntity<?> getConfigurationFlow(@PathVariable("configuration") String configurationName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		return callSyncGateway(builder);
 	}
@@ -116,7 +116,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	public ResponseEntity<?> reloadConfiguration(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if ("reload".equals(value)) {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.RELOAD.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 			callAsyncGateway(builder);
@@ -131,7 +131,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("view a list of all known configuration versions")
 	@GetMapping(value = "/configurations/{configuration}/versions", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getConfigurationDetailsByName(@PathVariable("configuration") String configurationName, @RequestParam(value = "datasourceName", required = false) String datasourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.FIND);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
 		return callSyncGateway(builder);
@@ -147,7 +147,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 			@RequestParam(value = "datasourceName", required = false) String datasourceName,
 			@RequestBody Map<String, Object> json) throws ApiException {
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));
 		if (json.containsKey("activate")) {
@@ -194,7 +194,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		String fileNameOrPath = filePart.getOriginalFilename();
 		String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.UPLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.UPLOAD);
 		builder.setPayload(file);
 		builder.addHeader("filename", fileName);
 		builder.addHeader("multiple_configs", multipleConfigs);
@@ -212,7 +212,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("download a specific configuration version")
 	@GetMapping(value = "/configurations/{configuration}/versions/{version}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadConfiguration(@PathVariable("configuration") String configurationName, @PathVariable("version") String version, @RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("version", version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
@@ -224,7 +224,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("delete a specific configuration")
 	@DeleteMapping(value = "/configurations/{configuration}/versions/{version}")
 	public ResponseEntity<?> deleteConfiguration(@PathVariable("configuration") String configurationName, @PathVariable("version") String version, @RequestParam(value = "datasourceName", required = false) String datasourceName) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DELETE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("version", version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);

@@ -38,7 +38,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Description("view the application log configuration")
 	@GetMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getLogConfiguration() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.GET));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -51,7 +51,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		Integer maxMessageLength = RequestUtils.getIntegerValue(json, "maxMessageLength");
 		Boolean enableDebugger = RequestUtils.getBooleanValue(json, "enableDebugger");
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("logLevel", loglevel == null ? null : loglevel.name());
 		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
 		builder.addHeader("maxMessageLength", maxMessageLength);
@@ -64,7 +64,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Description("view the log definitions, default loggers and their corresponding levels")
 	@GetMapping(value = "/server/logging/settings", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getLogDefinitions(@RequestParam(value = "filter", required = false) String filter) {
-		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.GET);
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.GET);
 		request.addHeader("filter", filter);
 		return callSyncGateway(request);
 	}
@@ -74,7 +74,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Description("update the loglevel of a specific logger")
 	@PutMapping(value = "/server/logging/settings", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateLogDefinition(@RequestBody Map<String, Object> json) {
-		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
 		for (Map.Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
