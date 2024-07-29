@@ -1,6 +1,7 @@
 package org.frankframework.management.web;
 
 import org.frankframework.management.web.configuration.WebConfiguration;
+import org.frankframework.management.web.socket.MessageCacheStore;
 import org.mockito.Mockito;
 
 import org.springframework.context.annotation.Bean;

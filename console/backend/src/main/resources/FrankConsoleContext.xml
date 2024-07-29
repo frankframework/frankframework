@@ -11,7 +11,7 @@
 
 	<context:property-placeholder />
 
-	<context:component-scan base-package="org.frankframework.management.web,org.frankframework.web, org.frankframework.management.web.socket">
+	<context:component-scan base-package="org.frankframework.management.web,org.frankframework.web">
 		<!-- make sure only load the Spring MVC controllers ;) -->
 	</context:component-scan>
 

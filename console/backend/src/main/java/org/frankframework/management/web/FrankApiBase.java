@@ -21,6 +21,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
+import org.frankframework.management.web.socket.MessageCacheStore;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
