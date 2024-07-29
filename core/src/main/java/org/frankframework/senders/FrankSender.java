@@ -192,7 +192,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = getParameterValueList(message, session);
 		Scope actualScope = determineActualScope(pvl);
 		String actualTarget = determineActualTarget(pvl);

@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -33,7 +34,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		sender = configuration.createBean(SenderSeries.class);
 		sender.registerSender(new SenderBase() {
 			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					return new SenderResult("Sender 1: [" + message.asString() + "]");
 				} catch (IOException e) {
@@ -43,7 +44,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		});
 		sender.registerSender(new SenderBase() {
 			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					secondSenderOutput = "Sender 2: [" + message.asString() + "]";
 					return new SenderResult(secondSenderOutput);
@@ -185,4 +186,3 @@ public class InputOutputSenderWrapperProcessorTest {
 	}
 
 }
-

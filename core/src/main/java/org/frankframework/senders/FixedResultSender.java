@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -37,8 +39,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * FixedResultSender, same behaviour as {@link FixedResultPipe}, but now as a ISender.
@@ -83,7 +83,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;
 		if (paramList!=null) {
 			ParameterValueList pvl;

@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ISender;
@@ -122,7 +123,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		JavascriptEngine<?> jsInstance = engine.create();
 		try {
 			jsInstance.startRuntime();

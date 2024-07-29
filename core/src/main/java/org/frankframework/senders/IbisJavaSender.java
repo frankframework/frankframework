@@ -17,6 +17,7 @@ package org.frankframework.senders;
 
 import java.lang.reflect.Method;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -94,7 +95,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));

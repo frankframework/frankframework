@@ -28,6 +28,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.parsers.ParserConfigurationException;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import net.bankid.merchant.library.AssuranceLevel;
@@ -238,7 +239,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
 		Element queryElement = null;
 		try {

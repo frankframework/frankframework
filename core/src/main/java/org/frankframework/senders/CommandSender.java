@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -29,8 +31,6 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ProcessUtil;
-
-import lombok.Getter;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
@@ -48,7 +48,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private final boolean synchronous = true;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());

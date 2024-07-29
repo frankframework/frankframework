@@ -25,6 +25,7 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
@@ -146,11 +147,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(sendMessage(message, session, null));
 	}
 
-	public Message sendMessage(Message message, PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
+	public @Nonnull Message sendMessage(@Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
 		Session jmsSession = null;
 		MessageProducer messageProducer = null;
 
@@ -165,7 +166,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 
 		try {
-			String correlationID = pipeLineSession == null ? null : pipeLineSession.getCorrelationId();
+			String correlationID = pipeLineSession.getCorrelationId();
 			if (isSoap()) {
 				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());

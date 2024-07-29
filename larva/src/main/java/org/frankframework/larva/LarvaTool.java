@@ -1230,9 +1230,12 @@ public class LarvaTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), null)) {
-				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
-				result = RESULT_OK;
+			try (PipeLineSession session = new PipeLineSession()) {
+				session.put(PipeLineSession.CORRELATION_ID_KEY, providedCorrelationId);
+				try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), session)) {
+					debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
+					result = RESULT_OK;
+				}
 			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e);

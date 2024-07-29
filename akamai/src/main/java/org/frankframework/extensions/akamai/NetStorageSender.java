@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -160,7 +161,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;

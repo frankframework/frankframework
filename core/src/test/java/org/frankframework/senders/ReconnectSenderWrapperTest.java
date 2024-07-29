@@ -6,14 +6,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> {
 
@@ -90,7 +92,7 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		}
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			if (opened.getAcquire()) {
 				if (!configured.getAcquire()) {
 					throw new IllegalStateException("not configured");

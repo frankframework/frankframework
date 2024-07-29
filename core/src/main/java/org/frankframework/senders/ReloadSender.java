@@ -15,6 +15,7 @@
  */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
@@ -43,7 +44,7 @@ public class ReloadSender extends SenderWithParametersBase {
 	private @Setter IbisManager ibisManager;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 
 		String configName = null;
 		String newVersion = null;

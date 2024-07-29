@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -109,7 +110,7 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message input, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message input, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));

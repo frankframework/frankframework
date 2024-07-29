@@ -1,5 +1,8 @@
 package org.frankframework.receivers;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -8,9 +11,6 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class DummySender implements ISender {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -39,7 +39,7 @@ public class DummySender implements ISender {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(message);
 	}
 }

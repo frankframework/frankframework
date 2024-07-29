@@ -15,6 +15,9 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -25,9 +28,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.XercesXmlValidator;
 
-import lombok.Getter;
-import lombok.Setter;
-
 
 /**
  * Sender that validates the input message against a XML Schema.
@@ -35,7 +35,6 @@ import lombok.Setter;
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  *
  * @author  Gerrit van Brakel
- * @since
  */
 @Category("Advanced")
 public class XmlValidatorSender extends XercesXmlValidator implements ISender {
@@ -55,7 +54,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String fullReasons="";
 		try {
 			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
