@@ -44,7 +44,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Description("view a list of all adapters, prefixed with the configuration name")
 	@GetMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapters(@RequestParam(value = "expanded", required = false) String expanded, @RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
 		builder.addHeader("expanded", expanded);
 		return callSyncGateway(builder);
@@ -55,7 +55,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Description("view an adapter receivers/pipes/messages")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapter(@PathVariable("configuration") String configuration, @PathVariable("name") String name, @RequestParam(value = "expanded", required = false) String expanded, @RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.FIND);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
 
@@ -69,7 +69,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Description("view an adapter health")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapterHealth(@PathVariable("configuration") String configuration, @PathVariable("name") String name) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
 
@@ -105,7 +105,7 @@ public class ConfigurationStatus extends FrankApiBase {
 			}
 		}
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
 		if (adapters.isEmpty()) {
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*ALL*");
@@ -144,7 +144,7 @@ public class ConfigurationStatus extends FrankApiBase {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 			}
 
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", action.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
@@ -174,7 +174,7 @@ public class ConfigurationStatus extends FrankApiBase {
 				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 			}
 
-			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", action.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
@@ -191,7 +191,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Description("view an adapter flow")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/flow")
 	public ResponseEntity<?> getAdapterFlow(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		return callSyncGateway(builder);

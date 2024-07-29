@@ -41,14 +41,14 @@ public class Scheduler extends FrankApiBase {
 	@Relation("schedules")
 	@GetMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedules() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.GET));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@GetMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedule(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.FIND);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.FIND);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 		return callSyncGateway(builder);
@@ -58,7 +58,7 @@ public class Scheduler extends FrankApiBase {
 	@Relation("schedules")
 	@PutMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateScheduler(@RequestBody Map<String, Object> json) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		return callSyncGateway(builder);
 	}
@@ -67,7 +67,7 @@ public class Scheduler extends FrankApiBase {
 	@Relation("schedules")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> trigger(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName, @RequestBody Map<String, Object> json) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
@@ -91,7 +91,7 @@ public class Scheduler extends FrankApiBase {
 			@PathVariable("jobName") String jobName,
 			ScheduleMultipartBody multipartBody
 	) {
-		return createSchedule(this, groupName, jobName, multipartBody, true);
+		return createSchedule(groupName, jobName, multipartBody, true);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -103,17 +103,11 @@ public class Scheduler extends FrankApiBase {
 
 	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartBody input) {
 		String jobName = RequestUtils.resolveRequiredProperty("name", input.getName(), null);
-		return createSchedule(this, groupName, jobName, input, false);
+		return createSchedule(groupName, jobName, input, false);
 	}
 
-	protected static ResponseEntity<?> createSchedule(
-			FrankApiBase base,
-			String groupName,
-			String jobName,
-			ScheduleMultipartBody multipartBody,
-			boolean overwrite
-	) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(base, BusTopic.SCHEDULER, BusAction.UPLOAD);
+	protected ResponseEntity<?> createSchedule(String groupName, String jobName, ScheduleMultipartBody multipartBody, boolean overwrite) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.UPLOAD);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 
@@ -136,14 +130,14 @@ public class Scheduler extends FrankApiBase {
 			builder.addHeader("overwrite", overwrite);
 		}
 
-		return base.callSyncGateway(builder);
+		return callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@DeleteMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> deleteSchedules(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.DELETE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.DELETE);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 		return callSyncGateway(builder);

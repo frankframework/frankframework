@@ -28,26 +28,23 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.JacksonUtils;
-import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
-	private final FrankApiBase base;
 	private final @Getter BusTopic topic;
 	private final @Getter BusAction action;
 	private Object payload = "NONE";
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
-	public RequestMessageBuilder(FrankApiBase base, BusTopic topic) {
-		this(base, topic, null);
+	public RequestMessageBuilder(BusTopic topic) {
+		this( topic, null);
 	}
 
-	public RequestMessageBuilder(FrankApiBase base, BusTopic topic, BusAction action) {
-		this.base = base;
+	public RequestMessageBuilder(BusTopic topic, BusAction action) {
 		this.topic = topic;
 		this.action = action;
 	}
@@ -89,37 +86,34 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic) {
-		return new RequestMessageBuilder(base, topic);
+	public static RequestMessageBuilder create(BusTopic topic) {
+		return new RequestMessageBuilder(topic);
 	}
 
-	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic, BusAction action) {
-		return new RequestMessageBuilder(base, topic, action);
+	public static RequestMessageBuilder create(BusTopic topic, BusAction action) {
+		return new RequestMessageBuilder(topic, action);
 	}
 
 	public Message<?> build() {
+//		base.getServletRequest().getParameter("target")
+		return build(null);
+	}
+
+	public Message<?> build(String targetHost) {
 		if (SEC_LOG.isInfoEnabled()) {
-			String method = base.getServletRequest().getMethod();
-			String request = base.getServletRequest().getRequestURI();
-			if ("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
-				SEC_LOG.debug("created bus request from URI [{}:{}]", method, request);
-			} else {
-				String headers = customHeaders.entrySet().stream()
-						.map(this::mapHeaderForLog)
-						.collect(Collectors.joining(", "));
-				SEC_LOG.info("created bus request from URI [{}:{}] with headers [{}] payload [{}]", method, request, headers, payload);
-			}
+			String headers = customHeaders.entrySet().stream()
+					.map(this::mapHeaderForLog)
+					.collect(Collectors.joining(", "));
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
 		}
 
-		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
-		MessageBuilder<?> builder = factory.withPayload(payload);
+		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
 		if (action != null) {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 
-		// Optional target query param, to target a specific backend node.
-		String targetHost = base.getServletRequest().getParameter("target");
+		// Optional target parameter, to target a specific backend node.
 		if(StringUtils.isNotEmpty(targetHost)) {
 			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
 		}

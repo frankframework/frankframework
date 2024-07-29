@@ -48,7 +48,7 @@ public class IbisstoreSummary extends FrankApiBase {
 			}
 		}
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISSTORE_SUMMARY);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISSTORE_SUMMARY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("query", query);
 		return callSyncGateway(builder);

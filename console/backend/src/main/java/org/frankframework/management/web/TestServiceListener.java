@@ -41,7 +41,7 @@ public class TestServiceListener extends FrankApiBase {
 	@Description("view a list of all available service-listeners")
 	@GetMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServiceListeners() throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SERVICE_LISTENER, BusAction.GET);
 		return callSyncGateway(builder);
 	}
 
@@ -52,7 +52,7 @@ public class TestServiceListener extends FrankApiBase {
 	public ResponseEntity<?> postServiceListener(TestServiceListenerModel model) throws ApiException {
 		String message;
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.UPLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SERVICE_LISTENER, BusAction.UPLOAD);
 		builder.addHeader("service", RequestUtils.resolveRequiredProperty("service", model.service(), null));
 		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", model.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		MultipartFile filePart = model.file();

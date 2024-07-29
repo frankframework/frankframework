@@ -33,7 +33,7 @@ public class ClassInfo extends FrankApiBase {
 	@Relation("debug")
 	@Description("view a specific class introspection")
 	public ResponseEntity<?> getClassInfo(@PathVariable("className") String className, @RequestParam(value = "base", required = false) String baseClassName) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.DEBUG, BusAction.GET);
 		builder.addHeader("className", className);
 		builder.addHeader("baseClassName", baseClassName);
 		return callSyncGateway(builder);

@@ -30,7 +30,7 @@ public class SecurityItems extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SECURITY_ITEMS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SECURITY_ITEMS);
 		return callSyncGateway(builder);
 	}
 
