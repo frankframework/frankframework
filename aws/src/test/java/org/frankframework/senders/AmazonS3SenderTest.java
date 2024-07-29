@@ -12,18 +12,20 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.amazonaws.services.s3.model.S3Object;
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.S3FileRef;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
-
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * AmazonS3Sender tests.
@@ -31,7 +33,11 @@ import org.frankframework.util.StreamUtil;
  * @author alisihab
  *
  */
-public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
+@Testcontainers(disabledWithoutDocker = true)
+public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3FileRef, AmazonS3FileSystem> {
+
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
 	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
@@ -42,10 +48,9 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	@TempDir
 	private Path tempdir;
 
-
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		AmazonS3Sender sender = new AmazonS3Sender();
 		sender.setFileSystem(s3);
-		sender.setBucketName(awsHelper.getBucketName());
+		sender.setBucketName(awsHelper.getDefaultBucketName());
 		return sender;
 	}
 
@@ -72,7 +77,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		assertEquals("456", fileSystemSender.getFileSystem().getSecretKey());
 
 		fileSystemSender.setClientRegion("dummy-region");
-		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion());
+		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion().toString());
 
 		fileSystemSender.setChunkedEncodingDisabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isChunkedEncodingDisabled());

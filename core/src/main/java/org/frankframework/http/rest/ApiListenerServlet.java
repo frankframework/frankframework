@@ -509,10 +509,10 @@ public class ApiListenerServlet extends HttpServletBase {
 							}
 							attachments.addSubElement(attachment);
 						}
-						pipelineSession.put("multipartAttachments", attachments.toXML());
+						pipelineSession.put("multipartAttachments", attachments.asXmlString());
 					} catch(MessagingException e) {
 						response.sendError(400, "Could not read mime multipart request");
-						LOG.warn("{} Could not read mime multipart request", () -> createAbortMessage(remoteUser, 400));
+						LOG.warn("{} Could not read mime multipart request", createAbortMessage(remoteUser, 400), e);
 						return;
 					}
 				} else {
@@ -687,7 +687,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				LOG.info("unable to convert header to xml name[{}] value[{}], exception message: {}", headerParam, headerValue, e.getMessage());
 			}
 		}
-		return headersXml.toXML();
+		return headersXml.asXmlString();
 	}
 
 	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {

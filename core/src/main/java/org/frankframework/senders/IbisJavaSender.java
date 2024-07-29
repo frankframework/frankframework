@@ -17,6 +17,7 @@ package org.frankframework.senders;
 
 import java.lang.reflect.Method;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -30,18 +31,21 @@ import org.frankframework.doc.Category;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 
-import lombok.Getter;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 /**
- * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
- *
+ * Posts a message to another Frank!Framework-adapter or an application in the same JVM using IbisServiceDispatcher.
+ * <p>
  * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
- *
+ * </p>
+ * The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
+ * adapter is by using the {@link FrankSender}.
+ * </p>
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
- *   <li>Define a SenderPipe with an IbisJavaSender</li>
+ *   <li><em>NB:</em> Using IbisJavaSender to call another adapter is inefficient and therefore not recommended. It is much more efficient to use for this a {@link FrankSender} or {@link IbisLocalSender}.</li>
+ *   <li>Define a {@link org.frankframework.pipes.SenderPipe} with an IbisJavaSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
  * In the Adapter to be called:
@@ -49,7 +53,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *   <li>Define a Receiver with a JavaListener</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
- * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.
+ * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+ *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default

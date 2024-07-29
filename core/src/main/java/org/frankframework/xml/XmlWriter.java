@@ -51,7 +51,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private @Setter boolean newlineAfterXmlDeclaration=false;
 	private @Setter boolean includeComments=true;
 	private @Setter boolean textMode=false;
-	private @Setter boolean closeWriterOnEndDocument=false;
+	private boolean closeWriterOnEndDocument=false;
 
 	private boolean outputEscaping=true;
 	private int elementLevel=0;

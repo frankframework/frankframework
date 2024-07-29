@@ -132,8 +132,6 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	}
 
 	@Override
-	// implements ISender.sendMessage()
-	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
 	public final SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		H blockHandle = openBlock(session);
 		try {

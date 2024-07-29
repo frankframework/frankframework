@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,17 +19,16 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.frankframework.stream.JsonEventHandler;
-import org.frankframework.stream.MessageOutputStream;
-import org.frankframework.stream.StreamingException;
+import org.frankframework.stream.MessageBuilder;
 
 public class DocumentBuilderFactory {
 
-	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
+	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
 		switch (format) {
 		case XML:
-			return new XmlDocumentBuilder(rootElement, outputStream.asContentHandler(), prettyPrint);
+			return new XmlDocumentBuilder(rootElement, messageBuilder.asXmlWriter(), prettyPrint);
 		case JSON:
-			return new JsonDocumentBuilder(outputStream.asJsonEventHandler());
+			return new JsonDocumentBuilder(messageBuilder.asJsonWriter());
 		default:
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
@@ -54,7 +53,7 @@ public class DocumentBuilderFactory {
 		return new JsonDocumentBuilder(handler);
 	}
 
-	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
+	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageBuilder outputStream, boolean prettyPrint) throws SAXException {
 		return startDocument(format, rootElement, outputStream, prettyPrint).asObjectBuilder();
 	}
 
@@ -62,7 +61,7 @@ public class DocumentBuilderFactory {
 		return startDocument(format, rootElement).asObjectBuilder();
 	}
 
-	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
+	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageBuilder outputStream, boolean prettyPrint) throws SAXException {
 		return startDocument(format, rootElement, outputStream, prettyPrint).asArrayBuilder(elementName);
 	}
 

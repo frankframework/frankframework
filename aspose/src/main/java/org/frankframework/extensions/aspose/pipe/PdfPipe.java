@@ -18,8 +18,7 @@ package org.frankframework.extensions.aspose.pipe;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 
 import lombok.Getter;
@@ -43,7 +42,7 @@ import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlBuilder;
 
 
@@ -93,13 +92,9 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		} else {
 			try {
-				String ibisTempDir = FileUtils.getTempDirectory();
-				if(StringUtils.isNotEmpty(ibisTempDir)) {
-					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
-				} else {
-					setPdfOutputLocation(Files.createTempDirectory("Pdf").toString());
-				}
-				log.info("Temporary directory path : [{}]", getPdfOutputLocation());
+				Path ibisTempDir = TemporaryDirectoryUtils.getTempDirectory("Pdf");
+				setPdfOutputLocation(ibisTempDir.toString());
+				log.info("temporary directory path [{}]", ibisTempDir);
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
@@ -119,8 +114,9 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		}
 
-		AsposeFontManager fontManager = new AsposeFontManager(getFontsDirectory());
+		AsposeFontManager fontManager;
 		try {
+			fontManager = new AsposeFontManager(getFontsDirectory());
 			fontManager.load(isUnpackDefaultFonts());
 		} catch (IOException e) {
 			throw new ConfigurationException("an error occurred while loading fonts", e);
@@ -158,7 +154,8 @@ public class PdfPipe extends FixedForwardPipe {
 
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
-					Message message = new Message(main.toXML());
+
+					Message message = main.asMessage();
 					session.put(getConversionResultDocumentSessionKey(), message);
 
 					return new PipeRunResult(getSuccessForward(), message);

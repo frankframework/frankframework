@@ -96,7 +96,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+		if (getParameterList() != null && getParameterList().hasParameter("userName")) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
 		}
 
@@ -349,7 +349,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		}
 		qInfoXml.addSubElement(consumerXml);
 
-		return qMessageXml.toXML();
+		return qMessageXml.asXmlString();
 	}
 
 	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName) throws TibjmsAdminException {
@@ -413,7 +413,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return qInfosXml.toXML();
+		return qInfosXml.asXmlString();
 	}
 
 	private XmlBuilder qInfoToXml(QueueInfo qInfo) {

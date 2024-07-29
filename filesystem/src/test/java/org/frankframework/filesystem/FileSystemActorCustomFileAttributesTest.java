@@ -116,9 +116,9 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.open();
 
 		actor.doAction(input, pvl, session);
-		actor.setAction(FileSystemActor.FileSystemAction.INFO);
 
 		// Act
+		actor.setAction(FileSystemActor.FileSystemAction.INFO);
 		result = actor.doAction(input, pvl, session);
 
 		// Assert

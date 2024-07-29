@@ -317,7 +317,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					if (StringUtils.isNotEmpty(getOutputNamespace())) {
 						outputElement.addAttribute("xmlns", getOutputNamespace());
 					}
-					payload = prepareReply(outputElement.toXML(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
+					payload = prepareReply(outputElement.asXmlString(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				}
 
 				result = wrapMessage(new Message(payload), isBisMessageHeaderInSoapBody() ? null : messageHeader, session);
@@ -389,7 +389,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
-		return messageHeaderElement.toXML();
+		return messageHeaderElement.asXmlString();
 	}
 
 	private String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) {
@@ -439,7 +439,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			errorListElement.addSubElement(errorElement);
 			resultElement.addSubElement(errorListElement);
 		}
-		return resultElement.toXML();
+		return resultElement.asXmlString();
 	}
 
 	private String errorCodeToText(String errorCode) {

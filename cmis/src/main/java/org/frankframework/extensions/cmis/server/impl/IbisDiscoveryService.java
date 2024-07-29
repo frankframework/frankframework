@@ -80,7 +80,7 @@ public class IbisDiscoveryService implements DiscoveryService {
 
 			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.QUERY, cmisXml.toXML(), context);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.QUERY, cmisXml.asXmlString(), context);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectList");
 
 			return CmisUtils.xml2ObjectList(typesXml, context);

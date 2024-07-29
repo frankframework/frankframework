@@ -42,7 +42,7 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 	@Override
 	public void endDocument() throws SAXException {
 		try {
-			writer.flush();
+			writer.close();
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}

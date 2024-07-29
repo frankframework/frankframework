@@ -415,10 +415,17 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public String getName(SmbFileRef file) {
-		if(file == null) {
-			return null;
+		String name = file.getFilename();
+		if(StringUtils.isNotEmpty(name)) {
+			return name;
 		}
-		return file.getFilename();
+		String folder = file.getFolder();
+		if (folder != null) { // Folder: only take part before last slash
+			int lastSlashPos = folder.lastIndexOf('\\', folder.length() - 2);
+			return folder.substring(lastSlashPos + 1);
+		}
+
+		return null;
 	}
 
 	@Override

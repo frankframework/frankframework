@@ -17,6 +17,7 @@ package org.frankframework.configuration;
 
 import java.util.List;
 
+import jakarta.annotation.Nullable;
 import org.frankframework.core.Adapter;
 import org.frankframework.management.Action;
 import org.springframework.context.ApplicationContext;
@@ -46,6 +47,7 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 
 	List<Configuration> getConfigurations();
 
+	@Nullable
 	Configuration getConfiguration(String configurationName);
 
 	/**

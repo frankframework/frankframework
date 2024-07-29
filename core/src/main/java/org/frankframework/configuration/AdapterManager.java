@@ -23,20 +23,17 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.Nonnull;
-
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.Lifecycle;
-import org.springframework.context.LifecycleProcessor;
-
 import lombok.Getter;
 import lombok.Setter;
-
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -188,7 +185,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		for (Adapter adapter : adapters) {
 			stopAdapter(adapter);
 		}
-
+		Thread.yield(); // Give chance to the stop-adapter threads to activate
 		updateState(RunState.STOPPED);
 	}
 
@@ -223,13 +220,16 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 * - unregister all adapters from this manager
 	 */
 	private void doClose() {
+		long sleepDelay = 50L;
 		while (!startAdapterThreads.isEmpty()) {
 			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(startAdapterThreads));
 
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(sleepDelay);
+				if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
 			} catch (InterruptedException e) {
 				log.warn("Interrupted thread while waiting for start threads to end", e);
+				Thread.currentThread().interrupt();
 			}
 		}
 
@@ -237,17 +237,20 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 			stop(); //Call this just in case...
 		}
 
+		sleepDelay = 50L;
 		while (!stopAdapterThreads.isEmpty()) {
 			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(stopAdapterThreads));
 
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(sleepDelay);
+				if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
 			} catch (InterruptedException e) {
 				log.warn("Interrupted thread while waiting for stop threads to end", e);
+				Thread.currentThread().interrupt();
 			}
 		}
 
-		getAdapterList().stream().forEach(this::removeAdapter);
+		getAdapterList().forEach(this::removeAdapter);
 	}
 
 	@Override

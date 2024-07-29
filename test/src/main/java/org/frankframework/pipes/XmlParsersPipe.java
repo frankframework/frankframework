@@ -40,7 +40,6 @@ public class XmlParsersPipe extends FixedForwardPipe {
 			builder.addSubElement(el);
 		}
 
-		return new PipeRunResult(getSuccessForward(), builder.toXML());
+		return new PipeRunResult(getSuccessForward(), builder.asMessage());
 	}
-
 }

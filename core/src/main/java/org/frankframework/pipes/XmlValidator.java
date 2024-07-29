@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,6 +25,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
 import lombok.Getter;
@@ -271,16 +271,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	private Message getMessageToValidate(Message message) throws PipeRunException {
-		String input;
-		try {
-			input = message.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot open stream", e);
-		}
-		if (XmlUtils.isWellFormed(input, "Envelope")) {
+		if (XmlUtils.isWellFormed(message, "Envelope")) {
 			String inputRootNs;
 			try {
-				inputRootNs = transformerPoolGetRootNamespace.transform(input, null);
+				inputRootNs = transformerPoolGetRootNamespace.transform(message);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
@@ -297,8 +291,11 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				}
 				if (extractSoapBody) {
 					log.debug("extract SOAP body for validation");
+					String input;
+
 					try {
-						input = transformerPoolExtractSoapBody.transform(input, null, true);
+						SAXSource source = XmlUtils.inputSourceToSAXSource(message.asInputSource(), true, null);
+						input = transformerPoolExtractSoapBody.transform(source);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract SOAP body", e);
 					}
@@ -315,10 +312,11 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 							throw new PipeRunException(this, "cannot remove namespaces", e);
 						}
 					}
+					return new Message(input);
 				}
 			}
 		}
-		return new Message(input);
+		return message;
 	}
 
 	@Override

@@ -103,15 +103,15 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(contentStreamXml);
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
-				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			for (PropertyData<?> propertyData : properties.getPropertyList()) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(propertyData));
 			}
 			cmisXml.addSubElement(propertiesXml);
 
 			PipeLineSession context = new PipeLineSession();
 			context.put("ContentStream", contentStream.getStream());
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element result = eventDispatcher.trigger(CmisEvent.CREATE_DOCUMENT, cmisXml.toXML(), context);
+			Element result = eventDispatcher.trigger(CmisEvent.CREATE_DOCUMENT, cmisXml.asXmlString(), context);
 			return XmlUtils.getChildTagAsString(result, "id");
 		}
 	}
@@ -135,12 +135,12 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("policies", policies));
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
-				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			for (PropertyData<?> propertyData : properties.getPropertyList()) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(propertyData));
 			}
 			cmisXml.addSubElement(propertiesXml);
 
-			Element result = eventDispatcher.trigger(CmisEvent.CREATE_FOLDER, cmisXml.toXML(), callContext);
+			Element result = eventDispatcher.trigger(CmisEvent.CREATE_FOLDER, cmisXml.asXmlString(), callContext);
 			return XmlUtils.getChildTagAsString(result, "id");
 		}
 	}
@@ -176,7 +176,7 @@ public class IbisObjectService implements ObjectService {
 			}
 			cmisXml.addSubElement(propertiesXml);
 
-			Element result = eventDispatcher.trigger(CmisEvent.CREATE_ITEM, cmisXml.toXML(), callContext);
+			Element result = eventDispatcher.trigger(CmisEvent.CREATE_ITEM, cmisXml.asXmlString(), callContext);
 			return XmlUtils.getChildTagAsString(result, "id");
 		}
 	}
@@ -193,7 +193,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			AllowableActionsImpl allowableActions = new AllowableActionsImpl();
 
-			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_ALLOWABLE_ACTIONS, cmisXml.toXML(), callContext);
+			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_ALLOWABLE_ACTIONS, cmisXml.asXmlString(), callContext);
 			Element allowableActionsElem = XmlUtils.getFirstChildTag(cmisElement, "allowableActions");
 			if(allowableActionsElem != null) {
 				Set<Action> actions = EnumSet.noneOf(Action.class);
@@ -228,7 +228,7 @@ public class IbisObjectService implements ObjectService {
 
 			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT, cmisXml.toXML(), context);
+			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT, cmisXml.asXmlString(), context);
 
 			return CmisUtils.xml2ObjectData(cmisElement, context);
 		}
@@ -247,7 +247,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("filter", filter));
 			try {
 
-				Element result = eventDispatcher.trigger(CmisEvent.GET_PROPERTIES, cmisXml.toXML(), callContext);
+				Element result = eventDispatcher.trigger(CmisEvent.GET_PROPERTIES, cmisXml.asXmlString(), callContext);
 
 				return CmisUtils.processProperties(result);
 			}
@@ -287,7 +287,7 @@ public class IbisObjectService implements ObjectService {
 
 			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT_BY_PATH, cmisXml.toXML(), context);
+			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT_BY_PATH, cmisXml.asXmlString(), context);
 
 			return CmisUtils.xml2ObjectData(cmisElement, context);
 		}
@@ -313,7 +313,7 @@ public class IbisObjectService implements ObjectService {
 			}
 			cmisXml.addSubElement(propertiesXml);
 
-			eventDispatcher.trigger(CmisEvent.UPDATE_PROPERTIES, cmisXml.toXML(), callContext);
+			eventDispatcher.trigger(CmisEvent.UPDATE_PROPERTIES, cmisXml.asXmlString(), callContext);
 		}
 	}
 
@@ -337,7 +337,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("targetFolderId", targetFolderId));
 			cmisXml.addSubElement(buildXml("sourceFolderId", sourceFolderId));
 
-			eventDispatcher.trigger(CmisEvent.MOVE_OBJECT, cmisXml.toXML(), callContext);
+			eventDispatcher.trigger(CmisEvent.MOVE_OBJECT, cmisXml.asXmlString(), callContext);
 		}
 	}
 
@@ -353,7 +353,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			cmisXml.addSubElement(buildXml("allVersions", allVersions));
 
-			eventDispatcher.trigger(CmisEvent.DELETE_OBJECT, cmisXml.toXML(), callContext);
+			eventDispatcher.trigger(CmisEvent.DELETE_OBJECT, cmisXml.asXmlString(), callContext);
 		}
 	}
 
@@ -380,7 +380,7 @@ public class IbisObjectService implements ObjectService {
 
 			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CONTENTSTREAM, cmisXml.toXML(), context);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CONTENTSTREAM, cmisXml.asXmlString(), context);
 
 			Element contentStreamXml = XmlUtils.getFirstChildTag(cmisResult, "contentStream");
 			InputStream stream = (InputStream) context.get("ContentStream");

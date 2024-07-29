@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -35,9 +37,6 @@ import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
-
-import lombok.Getter;
-import lombok.SneakyThrows;
 
 
 /**
@@ -94,6 +93,15 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
+	}
+
+	public void setExitState(PipeLine.ExitState state, int code) {
+		put(EXIT_STATE_CONTEXT_KEY, state);
+		put(EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
+	}
+
+	public void setExitState(PipeLineResult pipeLineResult) {
+		setExitState(pipeLineResult.getState(), pipeLineResult.getExitCode());
 	}
 
 	/**

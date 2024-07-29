@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.2.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.0-SNAPSHOT">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -41,7 +41,12 @@
   </xs:complexType>
   <xs:complexType name="AdapterType">
     <xs:annotation>
-      <xs:documentation>An Adapter receives a specific type of messages and processes them. It has Receivers
+      <xs:documentation>The Adapter is the central manager in the framework. It has knowledge of both
+ Receivers as well as the PipeLine and statistics.
+ The Adapter is the class that is responsible for configuring, initializing and
+ accessing/activating Receivers, Pipelines, statistics etc.
+ &lt;br/&gt;
+ An Adapter receives a specific type of messages and processes them. It has Receivers
  that receive the messages and a PipeLine that transforms the incoming messages. Each adapter is part of a Configuration.
  &lt;br/&gt;
  If an adapter can receive its messages through multiple channels (e.g. RESTful HTTP requests, incoming files, etc),
@@ -294,7 +299,7 @@
     <xs:attribute name="removeCompactMsgNamespaces" type="frankBoolean" />
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore and logfiles. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideMethod">
@@ -329,7 +334,10 @@
   </xs:complexType>
   <xs:complexType name="ParamType">
     <xs:annotation>
-      <xs:documentation>Placeholder class to allow old-school &lt;code&gt;&amp;lt;param type='number' /&amp;gt;&lt;/code&gt; in the new Frank!Config XSD.</xs:documentation>
+      <xs:documentation>Placeholder class to allow legacy configuration notations &lt;code&gt;&amp;lt;param type='number' /&amp;gt;&lt;/code&gt; in the new Frank!Config XSD.
+ &lt;p&gt;
+ The attribute &lt;code&gt;type&lt;/code&gt; has been removed in favor of explicit ParameterTypes such as: &lt;code&gt;NumberParameter&lt;/code&gt;, &lt;code&gt;DateParameter&lt;/code&gt; and &lt;code&gt;BooleanParameter&lt;/code&gt;.
+ Using the new elements enables the use of auto-completion for the specified type.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
@@ -1676,7 +1684,7 @@
     </xs:attribute>
     <xs:attribute name="consumes">
       <xs:annotation>
-        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415 Unsupported Media Type&lt;/code&gt; is replied Default: ANY</xs:documentation>
+        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415 Unsupported Media Type&lt;/code&gt; is replied. Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -1684,7 +1692,8 @@
     </xs:attribute>
     <xs:attribute name="produces">
       <xs:annotation>
-        <xs:documentation>The specified contentType on response. When &lt;code&gt;ANY&lt;/code&gt; the response will determine the content type based on the return data. Default: ANY</xs:documentation>
+        <xs:documentation>The specified contentType on response. When &lt;code&gt;ANY&lt;/code&gt; the response will determine the content-type when it's known and will never calculate it. If no match is found &lt;code&gt;*&amp;#47;*&lt;/code&gt; will be used.
+ When &lt;code&gt;DETECT&lt;/code&gt; the framework attempts to detect the MimeType (as well as charset) when not known. Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -1703,7 +1712,7 @@
     </xs:attribute>
     <xs:attribute name="authenticationMethod">
       <xs:annotation>
-        <xs:documentation>Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property Default: &lt;code&gt;NONE&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Enables security for this listener. If you wish to use the application servers authorization roles [AUTHROLE], you need to enable them globally for all ApiListeners with the &lt;code&gt;servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService&lt;/code&gt; property Default: &lt;code&gt;NONE&lt;/code&gt;</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="AuthenticationMethodsAttributeValuesType variableRef" />
@@ -1711,7 +1720,7 @@
     </xs:attribute>
     <xs:attribute name="authenticationRoles" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})</xs:documentation>
+        <xs:documentation>Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. &lt;code&gt;IbisTester,IbisObserver&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartBodyName" type="xs:string">
@@ -3571,7 +3580,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom user-metadata on S3 files by prefixing parameter names with
-     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     FileAttribute..
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -3811,6 +3820,76 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="FrankSender">
+        <xs:annotation>
+          <xs:documentation>Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
+ &lt;p&gt;
+ Sends a message to another Frank!Framework-adapter in the same Frank!Framework instance, or an external program running in
+ the same JVM as the Frank!Framework. If the callee exits with an {@code &lt;Exit/&gt;} that has state PipeLine.ExitState#ERROR,
+ an error is considered to happen in the caller which means that the {@code exception} forward is followed if it is present.
+ &lt;/p&gt;
+ &lt;p&gt;
+ Returns {@code exit.code} as forward name to the SenderPipe, provided that {@code exit.code} can be parsed as integer.
+ For example, if the called adapter has an exit state with code
+ {@code 2}, then the SenderPipe supports a forward with name {@code 2}
+ that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example {@code c2}.
+ &lt;/p&gt;
+ &lt;p&gt;
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is {@code ADAPTER}.
+ &lt;/p&gt;
+
+
+ &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
+ A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
+ of a FrankSender configured with the name of the adapter.
+
+ &lt;h4&gt;Configuring FrankSender and Adapter&lt;/h4&gt;
+ &lt;ul&gt;
+   &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
+   &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
+ &lt;/ul&gt;
+ In the Adapter to be called:
+ &lt;ul&gt;
+   &lt;li&gt;The adapter does not need to have a receiver configured to be called from a FrankSender,&lt;/li&gt;
+   &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
+   &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
+   or on the SenderPipe that contains this {@code FrankSender}.&lt;/li&gt;
+ &lt;/ul&gt;
+
+ &lt;h4&gt;Configuring FrankSender and Remote Application&lt;/h4&gt;
+ &lt;em&gt;NB:&lt;/em&gt; Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+ &lt;ul&gt;
+     &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
+     &lt;li&gt;Set the attribute {@code scope} to either {@code JVM} for a Java application, or to {@code DLL} for code loaded from a DLL&lt;/li&gt;
+     &lt;li&gt;Set the attribute {@code target} to the service-name the other application used to register itself&lt;/li&gt;
+ &lt;/ul&gt;
+ In the other application:
+ &lt;ul&gt;
+     &lt;li&gt;Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library&lt;/li&gt;
+     &lt;li&gt;Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the {@code JavaListener} in the Frank!Framework for an example&lt;/li&gt;
+ &lt;/ul&gt;
+ See also the repository of the IbisServiceDispatcher:
+  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;
+
+ &lt;h4&gt;Using FrankSender to call an adapter from Larva tests&lt;/h4&gt;
+ You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
+ &lt;ul&gt;
+     &lt;li&gt;If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character&lt;/li&gt;
+     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}&lt;/li&gt;
+     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope {@code JVM}
+     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FrankSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FtpFileSystemSender">
         <xs:complexType>
           <xs:complexContent>
@@ -3867,14 +3946,18 @@
       </xs:element>
       <xs:element name="IbisJavaSender">
         <xs:annotation>
-          <xs:documentation>Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
-
+          <xs:documentation>Posts a message to another Frank!Framework-adapter or an application in the same JVM using IbisServiceDispatcher.
+ &lt;p&gt;
  An IbisJavaSender makes a call to a Receiver with a JavaListener
  or any other application in the same JVM that has registered a &lt;code&gt;RequestProcessor&lt;/code&gt; with the IbisServiceDispatcher.
-
+ &lt;/p&gt;
+ The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
+ adapter is by using the FrankSender.
+ &lt;/p&gt;
  &lt;h4&gt;configuring IbisJavaSender and JavaListener&lt;/h4&gt;
  &lt;ul&gt;
-   &lt;li&gt;Define a SenderPipe with an IbisJavaSender&lt;/li&gt;
+   &lt;li&gt;&lt;em&gt;NB:&lt;/em&gt; Using IbisJavaSender to call another adapter is inefficient and therefore not recommended. It is much more efficient to use for this a FrankSender or IbisLocalSender.&lt;/li&gt;
+   &lt;li&gt;Define a org.frankframework.pipes.SenderPipe with an IbisJavaSender&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourExternalServiceName&lt;/i&gt;&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
@@ -3882,7 +3965,8 @@
    &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourExternalServiceName&lt;/i&gt;&lt;/li&gt;
  &lt;/ul&gt;
- N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.</xs:documentation>
+ N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3894,24 +3978,27 @@
       </xs:element>
       <xs:element name="IbisLocalSender">
         <xs:annotation>
-          <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
+          <xs:documentation>Posts a message to another Frank!Framework-adapter in the same Frank!Framework instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
  that has state PipeLine.ExitState#ERROR, an error is considered to happen
  in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
- &lt;p/&gt;
- &lt;p/&gt;
+ &lt;p&gt;
+ The IbisLocalSender is now considered to be legacy. The new way to call another adapter from your own
+ adapter is by using the FrankSender.
+ &lt;/p&gt;
+ &lt;p&gt;
  Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
  For example, if the called adapter has an exit state with code
  &lt;code&gt;2&lt;/code&gt;, then the SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
- &lt;p/&gt;
- &lt;p/&gt;
- An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
+ &lt;/p&gt;
+ &lt;p&gt;
+ An IbisLocalSender makes a call to a org.frankframework.receivers.Receiver with either a WebServiceListener
  or a JavaListener.
-
+ &lt;/p&gt;
 
 
  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
- A call to another Adapter in the same IBIS instance is preferably made using the combination
+ A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
  of an IbisLocalSender and a JavaListener. If,
  however, a Receiver with a WebServiceListener is already present, that can be used in some cases, too.
 
@@ -3926,7 +4013,7 @@
    &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
    &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;, except if the service is to be called also
-       from applications other than this IBIS-instance&lt;/li&gt;
+       from applications other than this Frank!Framework-instance&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;configuring IbisLocalSender and WebServiceListener&lt;/h4&gt;
@@ -3952,8 +4039,7 @@
       </xs:element>
       <xs:element name="IdinSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
- Compile with Java 1.8+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4132,7 +4218,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     FileAttribute..
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -4848,12 +4934,12 @@
     </xs:attribute>
     <xs:attribute name="forceGlobalBucketAccessEnabled" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Set whether the client should be configured with global bucket access enabled. Default: false</xs:documentation>
+        <xs:documentation>Option to enable or disable the usage of multi-region access point ARNs. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clientRegion" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Name of the region that the client will be created from Default: eu-west-1</xs:documentation>
+        <xs:documentation>Name of the AWS region that the client is using. Default: eu-west-1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="bucketName" type="xs:string">
@@ -4878,7 +4964,7 @@
     </xs:attribute>
     <xs:attribute name="maxConnections" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Maximum concurrent connections towards S3</xs:documentation>
+        <xs:documentation>Maximum concurrent connections towards S3 Default: 50</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4985,6 +5071,14 @@
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="typeFilter">
+      <xs:annotation>
+        <xs:documentation>Filter for action &lt;code&gt;list&lt;/code&gt;. Specify &lt;code&gt;FILES_ONLY&lt;/code&gt;, &lt;code&gt;FOLDERS_ONLY&lt;/code&gt; or &lt;code&gt;FILES_AND_FOLDERS&lt;/code&gt;. Default: FILES_ONLY</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TypeFilterAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
@@ -5753,6 +5847,54 @@
     <xs:attributeGroup ref="FixedResultSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="FrankSenderType">
+    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+    <xs:attributeGroup ref="FrankSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.FrankSender" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="FrankSenderDeclaredAttributeGroup">
+    <xs:attribute name="synchronous" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Synchronous or Asynchronous execution of the call to other adapter or system.
+ &lt;br/&gt;
+ Set to &lt;code&gt;false&lt;/code&gt; to make the call asynchronously. This means that the current adapter
+ continues with the next pipeline and the result of the sub-adapter that was called, or other system that was called,
+ is ignored. Instead, the input message will be returned as the result message. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="scope">
+      <xs:annotation>
+        <xs:documentation>Scope decides if the FrankSender calls another adapter, or another Java program running in the same JVM.
+ &lt;br/&gt;
+ It is possible to set this via a parameter. If the parameter is defined but the value at runtime
+ is empty, then the value set via this attribute will be used as default. Default: ADAPTER</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ScopeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="target" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Target: service-name of service in other application that should be called, or name of adapter to be called.
+ If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("{@code /}").
+ &lt;br/&gt;
+ It is possible to set a target at runtime via a parameter.
+ &lt;br/&gt;
+ If a parameter with name target exists but has no value, then the target configured
+ via the attribute will be used as a default.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="returnedSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+ The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FrankSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FrankSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="FtpFileSystemSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FtpFileSystemSenderCumulativeAttributeGroup" />
@@ -6168,11 +6310,6 @@
  The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="multipartResponse" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="dispatchType" type="xs:string">
       <xs:annotation>
         <xs:documentation>Set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath</xs:documentation>
@@ -6243,7 +6380,7 @@
   <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="merchantID" type="xs:string">
@@ -6320,7 +6457,7 @@
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="sAMLCertificateAlias" type="xs:string">
+    <xs:attribute name="samlCertificateAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
  The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
@@ -7052,7 +7189,14 @@
     </xs:attribute>
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore.
+ Every character between to the strings in this expression will be replaced by a '*'.
+ &lt;br/&gt;
+ For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every
+ character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;
+ &lt;br/&gt;
+ When no hideRegex is configured on the errorStore / logStore but is configured on the org.frankframework.receivers.Receiver#setHideRegex(String),
+ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideMethod">
@@ -7159,7 +7303,7 @@
         <xs:documentation>NetStorage action to be used</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="actionVersion" type="frankInt">
@@ -8371,7 +8515,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom user-metadata on S3 files by prefixing parameter names with
-     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     FileAttribute..
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -8611,6 +8755,76 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="FrankErrorSender">
+        <xs:annotation>
+          <xs:documentation>Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
+ &lt;p&gt;
+ Sends a message to another Frank!Framework-adapter in the same Frank!Framework instance, or an external program running in
+ the same JVM as the Frank!Framework. If the callee exits with an {@code &lt;Exit/&gt;} that has state PipeLine.ExitState#ERROR,
+ an error is considered to happen in the caller which means that the {@code exception} forward is followed if it is present.
+ &lt;/p&gt;
+ &lt;p&gt;
+ Returns {@code exit.code} as forward name to the SenderPipe, provided that {@code exit.code} can be parsed as integer.
+ For example, if the called adapter has an exit state with code
+ {@code 2}, then the SenderPipe supports a forward with name {@code 2}
+ that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example {@code c2}.
+ &lt;/p&gt;
+ &lt;p&gt;
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is {@code ADAPTER}.
+ &lt;/p&gt;
+
+
+ &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
+ A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
+ of a FrankSender configured with the name of the adapter.
+
+ &lt;h4&gt;Configuring FrankSender and Adapter&lt;/h4&gt;
+ &lt;ul&gt;
+   &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
+   &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
+ &lt;/ul&gt;
+ In the Adapter to be called:
+ &lt;ul&gt;
+   &lt;li&gt;The adapter does not need to have a receiver configured to be called from a FrankSender,&lt;/li&gt;
+   &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
+   &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
+   or on the SenderPipe that contains this {@code FrankSender}.&lt;/li&gt;
+ &lt;/ul&gt;
+
+ &lt;h4&gt;Configuring FrankSender and Remote Application&lt;/h4&gt;
+ &lt;em&gt;NB:&lt;/em&gt; Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+ &lt;ul&gt;
+     &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
+     &lt;li&gt;Set the attribute {@code scope} to either {@code JVM} for a Java application, or to {@code DLL} for code loaded from a DLL&lt;/li&gt;
+     &lt;li&gt;Set the attribute {@code target} to the service-name the other application used to register itself&lt;/li&gt;
+ &lt;/ul&gt;
+ In the other application:
+ &lt;ul&gt;
+     &lt;li&gt;Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library&lt;/li&gt;
+     &lt;li&gt;Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the {@code JavaListener} in the Frank!Framework for an example&lt;/li&gt;
+ &lt;/ul&gt;
+ See also the repository of the IbisServiceDispatcher:
+  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;
+
+ &lt;h4&gt;Using FrankSender to call an adapter from Larva tests&lt;/h4&gt;
+ You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
+ &lt;ul&gt;
+     &lt;li&gt;If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character&lt;/li&gt;
+     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}&lt;/li&gt;
+     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope {@code JVM}
+     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FrankSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FtpFileSystemErrorSender">
         <xs:complexType>
           <xs:complexContent>
@@ -8667,14 +8881,18 @@
       </xs:element>
       <xs:element name="IbisJavaErrorSender">
         <xs:annotation>
-          <xs:documentation>Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
-
+          <xs:documentation>Posts a message to another Frank!Framework-adapter or an application in the same JVM using IbisServiceDispatcher.
+ &lt;p&gt;
  An IbisJavaSender makes a call to a Receiver with a JavaListener
  or any other application in the same JVM that has registered a &lt;code&gt;RequestProcessor&lt;/code&gt; with the IbisServiceDispatcher.
-
+ &lt;/p&gt;
+ The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
+ adapter is by using the FrankSender.
+ &lt;/p&gt;
  &lt;h4&gt;configuring IbisJavaSender and JavaListener&lt;/h4&gt;
  &lt;ul&gt;
-   &lt;li&gt;Define a SenderPipe with an IbisJavaSender&lt;/li&gt;
+   &lt;li&gt;&lt;em&gt;NB:&lt;/em&gt; Using IbisJavaSender to call another adapter is inefficient and therefore not recommended. It is much more efficient to use for this a FrankSender or IbisLocalSender.&lt;/li&gt;
+   &lt;li&gt;Define a org.frankframework.pipes.SenderPipe with an IbisJavaSender&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourExternalServiceName&lt;/i&gt;&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
@@ -8682,7 +8900,8 @@
    &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourExternalServiceName&lt;/i&gt;&lt;/li&gt;
  &lt;/ul&gt;
- N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.</xs:documentation>
+ N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+  &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8694,24 +8913,27 @@
       </xs:element>
       <xs:element name="IbisLocalErrorSender">
         <xs:annotation>
-          <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
+          <xs:documentation>Posts a message to another Frank!Framework-adapter in the same Frank!Framework instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
  that has state PipeLine.ExitState#ERROR, an error is considered to happen
  in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
- &lt;p/&gt;
- &lt;p/&gt;
+ &lt;p&gt;
+ The IbisLocalSender is now considered to be legacy. The new way to call another adapter from your own
+ adapter is by using the FrankSender.
+ &lt;/p&gt;
+ &lt;p&gt;
  Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
  For example, if the called adapter has an exit state with code
  &lt;code&gt;2&lt;/code&gt;, then the SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
- &lt;p/&gt;
- &lt;p/&gt;
- An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
+ &lt;/p&gt;
+ &lt;p&gt;
+ An IbisLocalSender makes a call to a org.frankframework.receivers.Receiver with either a WebServiceListener
  or a JavaListener.
-
+ &lt;/p&gt;
 
 
  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
- A call to another Adapter in the same IBIS instance is preferably made using the combination
+ A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
  of an IbisLocalSender and a JavaListener. If,
  however, a Receiver with a WebServiceListener is already present, that can be used in some cases, too.
 
@@ -8726,7 +8948,7 @@
    &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
    &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;, except if the service is to be called also
-       from applications other than this IBIS-instance&lt;/li&gt;
+       from applications other than this Frank!Framework-instance&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;configuring IbisLocalSender and WebServiceListener&lt;/h4&gt;
@@ -8752,8 +8974,7 @@
       </xs:element>
       <xs:element name="IdinErrorSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
- Compile with Java 1.8+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8932,7 +9153,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     FileAttribute..
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -9759,7 +9980,14 @@
     </xs:attribute>
     <xs:attribute name="hideRegex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore.
+ Every character between to the strings in this expression will be replaced by a '*'.
+ &lt;br/&gt;
+ For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every
+ character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;
+ &lt;br/&gt;
+ When no hideRegex is configured on the errorStore / logStore but is configured on the org.frankframework.receivers.Receiver#setHideRegex(String),
+ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hideMethod">
@@ -12533,8 +12761,149 @@
       </xs:element>
       <xs:element name="FixedResultPipe">
         <xs:annotation>
-          <xs:documentation>Produces a fixed result that does not depend on the input message. It may return the contents of a file
- when &lt;code&gt;filename&lt;/code&gt; or &lt;code&gt;filenameSessionKey&lt;/code&gt; is specified. Otherwise the
+          <xs:documentation>This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
+ provide this by using the &lt;code&gt;filename&lt;/code&gt; attribute or with a &lt;code&gt;param&lt;/code&gt; element to be able to
+ use a sessionKey for instance.
+
+ &lt;h2&gt;Migrating from deprecated features&lt;/h2&gt;
+ The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
+ a 'resultString' to find / replace values in. The following migrations are available:
+
+ &lt;h3&gt;For using a 'resultString'&lt;/h3&gt;
+ You can use the EchoPipe for a static value. This looked like this before:
+
+ &lt;pre&gt;
+ {@code
+ &lt;pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World"&gt;
+     &lt;forward name="success" path="EXIT"/&gt;
+ &lt;/pipe&gt;
+ }
+ &lt;/pre&gt;
+ Becomes:
+ &lt;pre&gt;
+ {@code
+ &lt;pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World"&gt;
+     &lt;forward name="success" path="EXIT"/&gt;
+ &lt;/pipe&gt;
+ }
+ &lt;/pre&gt;
+
+ &lt;h3&gt;For replacing a value&lt;/h3&gt;
+ You can use the ReplacerPipe to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
+ This looked like:
+ &lt;pre&gt;
+ {@code
+ &lt;pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
+     returnString="&amp;lt;msg mid=&amp;quot;MID&amp;quot; action=&amp;quot;ACTION&amp;quot; /&amp;gt;" replaceFixedParams="true"&gt;
+     &lt;param name="MID" sessionKey="mid" /&gt;
+ 	   &lt;param name="ACTION" xpathExpression="request/@action" /&gt;
+ &lt;/pipe&gt;
+ }
+ &lt;/pre&gt;
+
+ And can now be written like this (note the ?{..} syntax):
+ &lt;pre&gt;
+ {@code
+ &lt;pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
+     getInputFromFixedValue="&amp;lt;msg mid=&amp;quot;?{MID}&amp;quot; action=&amp;quot;?{ACTION}&amp;quot; /&amp;gt;"&gt;
+ 	   &lt;param name="MID" sessionKey="mid" /&gt;
+ 	   &lt;param name="ACTION" xpathExpression="request/@action" /&gt;
+ &lt;/pipe&gt;
+ }
+ &lt;/pre&gt;
+
+ When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
+ &lt;pre&gt;
+ {@code
+ &lt;FixedResultPipe name="InputValidateError"
+     filename="ManageFileSystem/xml/ErrorMessage.xml"
+     replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML"&gt;
+     &lt;forward name="success" path="EXIT" /&gt;
+ &lt;/FixedResultPipe&gt;
+ }
+ &lt;/pre&gt;
+
+ And now should be solved like this:
+ &lt;pre&gt;
+ {@code
+ &lt;FixedResultPipe name="InputValidateError"
+     filename="ManageFileSystem/xml/ErrorMessage.xml"&gt;
+     &lt;forward name="success" path="replaceReasonCode" /&gt;
+ &lt;/FixedResultPipe&gt;
+ &lt;ReplacerPipe name="replaceReasonCode"
+     find="%reasonCode"
+     replace="NOT_WELL_FORMED_XML"&gt;
+     &lt;forward name="success" path="EXIT" /&gt;
+ &lt;/ReplacerPipe&gt;
+ }
+ &lt;/pre&gt;
+ This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
+
+ &lt;h2&gt;More complex configurations&lt;/h2&gt;
+ In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
+ was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
+ &lt;pre&gt;
+ {@code
+ 	&lt;CompareStringPipe name="compareIdAndCid" &gt;
+ 		&lt;param name="operand1" sessionKey="id"/&gt;
+ 		&lt;param name="operand2" sessionKey="cid"/&gt;
+ 		&lt;forward name="equals" path="IdAndCidSame" /&gt;
+ 		&lt;forward name="lessthan" path="IdAndCidDifferent" /&gt;
+ 		&lt;forward name="greaterthan" path="IdAndCidDifferent" /&gt;
+ 	&lt;/CompareStringPipe&gt;
+ 	&lt;FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame"&gt;
+ 		&lt;forward name="success" path="displayKeys" /&gt;
+ 	&lt;/FixedResultPipe&gt;
+ 	&lt;FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame"&gt;
+ 		&lt;forward name="success" path="displayKeys" /&gt;
+ 	&lt;/FixedResultPipe&gt;
+
+  &lt;pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
+ 		returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true"&gt;
+ 		&lt;param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&amp;#47;@branch" /&gt;
+ 		&lt;param name="MID" sessionKey="id" /&gt;
+ 		&lt;param name="CID" sessionKey="cid" /&gt;
+ 		&lt;param name="SAME" sessionKey="IdAndCidSame" /&gt;
+ 		&lt;forward name="success" path="EXIT" /&gt;
+ 	&lt;/pipe&gt;
+ }
+ &lt;/pre&gt;
+
+ Was rewritten to the following:
+ &lt;pre&gt;
+ {@code
+ 	&lt;CompareStringPipe name="compareIdAndCid" &gt;
+ 		&lt;param name="operand1" sessionKey="id"/&gt;
+ 		&lt;param name="operand2" sessionKey="cid"/&gt;
+ 		&lt;forward name="equals" path="IdAndCidSame" /&gt;
+ 		&lt;forward name="lessthan" path="IdAndCidDifferent" /&gt;
+ 		&lt;forward name="greaterthan" path="IdAndCidDifferent" /&gt;
+ 	&lt;/CompareStringPipe&gt;
+
+ 	&lt;PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame"&gt;
+ 		&lt;forward name="success" path="putOriginalMessageInSession" /&gt;
+ 	&lt;/PutInSessionPipe&gt;
+ 	&lt;PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame"&gt;
+ 		&lt;forward name="success" path="putOriginalMessageInSession" /&gt;
+ 	&lt;/PutInSessionPipe&gt;
+
+ 	&lt;PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/&gt;
+
+ 	&lt;pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
+ 		getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]"&gt;
+ 		&lt;param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&amp;#47;@branch" /&gt;
+ 		&lt;param name="MID" sessionKey="id" /&gt;
+ 		&lt;param name="CID" sessionKey="cid" /&gt;
+ 		&lt;param name="SAME" sessionKey="IdAndCidSame" /&gt;
+ 		&lt;forward name="success" path="EXIT" /&gt;
+ 	&lt;/pipe&gt;
+ }
+ &lt;/pre&gt;
+ &lt;p&gt;
+
+ &lt;h2&gt;The features/documentation of the deprecated features&lt;/h2&gt;
+ Produces a fixed result that does not depend on the input message. It may return the contents of a file
+ when &lt;code&gt;filename&lt;/code&gt; or &lt;code&gt;filenameSessionKey&lt;/code&gt; is specified. Otherwise, the
  value of attribute &lt;code&gt;returnString&lt;/code&gt; is returned.
  &lt;br/&gt;&lt;br/&gt;
  Using parameters and the attributes of this pipe, it is possible to substitute values. This pipe
@@ -12543,12 +12912,12 @@
  &lt;li&gt;During execution, this pipe first obtains a string based on attributes &lt;code&gt;returnString&lt;/code&gt;, &lt;code&gt;filename&lt;/code&gt; or &lt;code&gt;filenameSessionKey&lt;/code&gt;.&lt;/li&gt;
  &lt;li&gt;The resulting string is transformed according to attributes &lt;code&gt;replaceFrom&lt;/code&gt; and &lt;code&gt;replaceTo&lt;/code&gt; if set.
  Please note that the plain value of attribute &lt;code&gt;replaceFrom&lt;/code&gt; is matched, no &lt;code&gt;?{...}&lt;/code&gt; here.&lt;/li&gt;
- 
+
  &lt;li&gt;The resulting string is substituted based on the parameters of this pipe. This step depends on attribute &lt;code&gt;replaceFixedParams&lt;/code&gt;.
  Assume that there is a parameter with name &lt;code&gt;xyz&lt;/code&gt;. If &lt;code&gt;replaceFixedParams&lt;/code&gt; is &lt;code&gt;false&lt;/code&gt;, then
  each occurrence of &lt;code&gt;?{xyz}&lt;/code&gt; is replaced by the parameter's value. Otherwise, the text &lt;code&gt;xyz&lt;/code&gt;
  is substituted. See Parameter to see how parameter values are determined.&lt;/li&gt;
- 
+
  &lt;li&gt;If attribute &lt;code&gt;substituteVars&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;, then expressions &lt;code&gt;${...}&lt;/code&gt; are substituted using
  system properties, pipelinesession variables and application properties. Please note that
  no &lt;code&gt;${...}&lt;/code&gt; patterns are left if the initial string came from attribute &lt;code&gt;returnString&lt;/code&gt;, because
@@ -12925,11 +13294,14 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     {@code "FileAttribute."} (see: org.frankframework.filesystem.ISupportsCustomFileAttributes#FILE_ATTRIBUTE_PARAM_PREFIX).
+     FileAttribute..
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
      The string value of these parameters will be used as value of the custom metadata attribute.
+ &lt;/p&gt;
+ &lt;p&gt;
+     If extended attributes actually can be written depends on the underlying OS / filesystem.
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -13019,7 +13391,7 @@
       </xs:element>
       <xs:element name="PasswordGeneratorPipe">
         <xs:annotation>
-          <xs:documentation>Returns random password.</xs:documentation>
+          <xs:documentation>Generates a random password.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13136,8 +13508,18 @@
       </xs:element>
       <xs:element name="ReplacerPipe">
         <xs:annotation>
-          <xs:documentation>Replaces all occurrences of one string with another.
- Optionally strips or replaces XML non-printable characters.</xs:documentation>
+          <xs:documentation>This Pipe is used to replace values in a few ways. The following steps are performed:
+ &lt;ol&gt;
+ &lt;li&gt;If &lt;code&gt;find&lt;/code&gt; is provided, it will be replaced by &lt;code&gt;replace&lt;/code&gt;&lt;/li&gt;
+ &lt;li&gt;The resulting string is substituted based on the parameters of this pipe. It will replace values in the input enclosed
+ with ?{}, for instance: ?{parameterOne}, with parameters of this pipe. If a parameter for the given value is not found, it
+ will not be replaced and the '?{parameterOne}' value will remain in the output.
+ &lt;p&gt;
+ See Parameter to see how parameter values are determined.&lt;/li&gt;
+ &lt;p&gt;
+ &lt;li&gt;If attribute &lt;code&gt;substituteVars&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;, then expressions &lt;code&gt;${...}&lt;/code&gt; are substituted using
+ system properties, session variables and application properties. Please note that no &lt;code&gt;${...}&lt;/code&gt; patterns are left in the input. &lt;/li&gt;
+ &lt;/ol&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13274,7 +13656,7 @@
       </xs:element>
       <xs:element name="SkipPipe">
         <xs:annotation>
-          <xs:documentation>Skip a number of bytes or characters from the input.</xs:documentation>
+          <xs:documentation>Skip a number of bytes or characters from the input message.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14373,45 +14755,9 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.FixedResultPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FixedResultPipeDeclaredAttributeGroup">
-    <xs:attribute name="substituteVars" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Should values between ${ and } be resolved. If true, the search order of replacement values is:
- system properties (1), PipelineSession variables (2), application properties (3). Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the file containing the result message.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filenameSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the session key containing the file name of the file containing the result message.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="returnString" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Returned message.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="replaceFrom" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If set, every occurrence of this attribute's value is replaced by the value of &lt;code&gt;replaceTo&lt;/code&gt;.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="replaceTo" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>See &lt;code&gt;replaceFrom&lt;/code&gt;.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>File name of XSLT stylesheet to apply.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="replaceFixedParams" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;?{name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14984,10 +15330,13 @@
         <xs:documentation>The scenario sub directory to execute</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="logLevel" type="xs:string">
+    <xs:attribute name="logLevel">
       <xs:annotation>
         <xs:documentation>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error] Default: wrong pipeline messages</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="LarvaLogLevelAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="waitBeforeCleanup" type="xs:string">
       <xs:annotation>
@@ -15218,6 +15567,14 @@
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="typeFilter">
+      <xs:annotation>
+        <xs:documentation>Filter for action &lt;code&gt;list&lt;/code&gt;. Specify &lt;code&gt;FILES_ONLY&lt;/code&gt;, &lt;code&gt;FOLDERS_ONLY&lt;/code&gt; or &lt;code&gt;FILES_AND_FOLDERS&lt;/code&gt;. Default: FILES_ONLY</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TypeFilterAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FileSystemPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FileSystemPipeDeclaredAttributeGroup" />
@@ -15279,7 +15636,7 @@
         <xs:documentation>Action to be taken when pipe is executed.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="recipients" type="xs:string">
@@ -15321,49 +15678,44 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PasswordGeneratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PasswordGeneratorPipeDeclaredAttributeGroup">
-    <xs:attribute name="useSecureRandom" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>whether the securerandom algorithm is to be used (slower) Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="lCharacters" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the lowercase characters to use Default: ('a'..'z')</xs:documentation>
+        <xs:documentation>The lowercase characters to use. Default: ('a'..'z')</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="uCharacters" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the uppercase characters to use Default: ('A'..'Z')</xs:documentation>
+        <xs:documentation>The uppercase characters to use. Default: ('A'..'Z')</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numbers" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the numbers to use Default: ('0'..'9')</xs:documentation>
+        <xs:documentation>The numbers to use. Default: ('0'..'9')</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="signs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the signs to use Default: (;:_%$#@!&amp;gt;&amp;lt;)</xs:documentation>
+        <xs:documentation>The signs to use. Default: (;:_%$#@!&amp;gt;&amp;lt;)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfLCharacters" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of lowercase characters in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of lowercase characters in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfDigits" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of digits in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of digits in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfSigns" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of sign characters in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of sign characters in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numOfUCharacters" type="frankInt">
       <xs:annotation>
-        <xs:documentation>the number of uppercase characters in the generated password Default: 2</xs:documentation>
+        <xs:documentation>The number of uppercase characters in the generated password. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15715,6 +16067,11 @@
         <xs:documentation>Whether to allow Unicode supplementary characters (like a smiley) during replaceNonValidXmlCharacters Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="substituteVars" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Should properties (values between &lt;code&gt;${&lt;/code&gt; and &lt;code&gt;}&lt;/code&gt;) be resolved. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ReplacerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ReplacerPipeDeclaredAttributeGroup" />
@@ -15972,7 +16329,7 @@
         <xs:documentation>Action to be taken when pipe is executed. Default: SIGN</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_6 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="algorithm" type="xs:string">
@@ -16051,7 +16408,7 @@
   <xs:attributeGroup name="SkipPipeDeclaredAttributeGroup">
     <xs:attribute name="skip" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger then the length of the input Default: 0</xs:documentation>
+        <xs:documentation>Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger than the length of the input. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="length" type="frankInt">
@@ -16329,7 +16686,8 @@
     </xs:attribute>
     <xs:attribute name="regex" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Regular expression to be applied to the input-message (ignored if &lt;code&gt;xpathExpression&lt;/code&gt; is specified). The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
+        <xs:documentation>Regular expression to be applied to the input-message (ignored if &lt;code&gt;xpathExpression&lt;/code&gt; is specified).
+ The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -16434,11 +16792,6 @@
         <xs:documentation>Charset used when reading the contents of the entry (only used if streamingContents=false) Default: utf-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="skipBOM" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ZipIteratorPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ZipIteratorPipeDeclaredAttributeGroup" />
@@ -16466,7 +16819,7 @@
         <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="collectionName" type="xs:string">
@@ -16500,6 +16853,15 @@
   </xs:group>
   <xs:group name="JobElementGroupBase">
     <xs:choice>
+      <xs:element name="ActionJob">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ActionJobType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="CheckReloadJob">
         <xs:complexType>
           <xs:complexContent>
@@ -16531,15 +16893,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ExecuteQueryJobType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="IbisActionJob">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="IbisActionJobType">
               <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -16583,11 +16936,37 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="CheckReloadJobType">
+  <xs:complexType name="ActionJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
-    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CheckReloadJob" use="prohibited" />
+    <xs:attributeGroup ref="ActionJobCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.ActionJob" use="prohibited" />
   </xs:complexType>
+  <xs:attributeGroup name="ActionJobDeclaredAttributeGroup">
+    <xs:attribute name="action" use="required">
+      <xs:simpleType>
+        <xs:union memberTypes="AvailableActionAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="configurationName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Configuration on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="adapterName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Adapter on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="receiverName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Receiver on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ActionJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ActionJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:group name="JobDefDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
@@ -16633,6 +17012,11 @@
     <xs:attributeGroup ref="JobDefDeclaredAttributeGroup" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="CheckReloadJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CheckReloadJob" use="prohibited" />
+  </xs:complexType>
   <xs:complexType name="CleanupDatabaseJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="CleanupDatabaseJobCumulativeAttributeGroup" />
@@ -16689,37 +17073,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ExecuteQueryJobCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExecuteQueryJobDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="IbisActionJobType">
-    <xs:group ref="JobDefDeclaredChildGroup" />
-    <xs:attributeGroup ref="IbisActionJobCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.IbisActionJob" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="IbisActionJobDeclaredAttributeGroup">
-    <xs:attribute name="action" use="required">
-      <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="configurationName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Configuration on which job operates</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="adapterName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>Adapter on which job operates</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="receiverName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Receiver on which job operates</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="IbisActionJobCumulativeAttributeGroup">
-    <xs:attributeGroup ref="IbisActionJobDeclaredAttributeGroup" />
     <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LoadDatabaseSchedulesJobType">
@@ -17067,11 +17420,7 @@
   <xs:simpleType name="MediaTypesAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ANY" />
-      <xs:enumeration value="DETECT">
-        <xs:annotation>
-          <xs:documentation>(Only for produces) Attempts to detect the MimeType as well as charset when not known</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
+      <xs:enumeration value="DETECT" />
       <xs:enumeration value="TEXT" />
       <xs:enumeration value="XML" />
       <xs:enumeration value="JSON" />
@@ -17080,6 +17429,48 @@
       <xs:enumeration value="MULTIPART_RELATED" />
       <xs:enumeration value="MULTIPART_FORMDATA" />
       <xs:enumeration value="MULTIPART" />
+      <xs:enumeration value="TXT" />
+      <xs:enumeration value="CSS" />
+      <xs:enumeration value="CSV" />
+      <xs:enumeration value="MJS" />
+      <xs:enumeration value="HTML" />
+      <xs:enumeration value="JAR" />
+      <xs:enumeration value="DOC" />
+      <xs:enumeration value="EPUB" />
+      <xs:enumeration value="VSD" />
+      <xs:enumeration value="AZW" />
+      <xs:enumeration value="PPT" />
+      <xs:enumeration value="XLS" />
+      <xs:enumeration value="RAR" />
+      <xs:enumeration value="RTF" />
+      <xs:enumeration value="ICO" />
+      <xs:enumeration value="ICS" />
+      <xs:enumeration value="BMP" />
+      <xs:enumeration value="GIF" />
+      <xs:enumeration value="PNG" />
+      <xs:enumeration value="SVG" />
+      <xs:enumeration value="TIFF" />
+      <xs:enumeration value="JPG" />
+      <xs:enumeration value="OTF" />
+      <xs:enumeration value="TTF" />
+      <xs:enumeration value="WOFF" />
+      <xs:enumeration value="WOFF2" />
+      <xs:enumeration value="MPEG" />
+      <xs:enumeration value="MP3" />
+      <xs:enumeration value="MP4" />
+      <xs:enumeration value="MIDI" />
+      <xs:enumeration value="AAC" />
+      <xs:enumeration value="AVI" />
+      <xs:enumeration value="TS" />
+      <xs:enumeration value="WAV" />
+      <xs:enumeration value="WEBA" />
+      <xs:enumeration value="WEBM" />
+      <xs:enumeration value="WEBP" />
+      <xs:enumeration value="GZ" />
+      <xs:enumeration value="TAR" />
+      <xs:enumeration value="BZ" />
+      <xs:enumeration value="BZ2" />
+      <xs:enumeration value="ZIP" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="AuthenticationMethodsAttributeValuesType">
@@ -17352,6 +17743,13 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="TypeFilterAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FILES_ONLY" />
+      <xs:enumeration value="FOLDERS_ONLY" />
+      <xs:enumeration value="FILES_AND_FOLDERS" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="CmisActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="CREATE">
@@ -17466,6 +17864,13 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ScopeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="JVM" />
+      <xs:enumeration value="DLL" />
+      <xs:enumeration value="ADAPTER" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="PostTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="RAW">
@@ -17506,7 +17911,7 @@
       <xs:enumeration value="REPORT" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:enumeration value="DIRECTORY" />
       <xs:enumeration value="RESPONSE" />
@@ -17663,7 +18068,7 @@
       <xs:enumeration value="SHA256" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_2">
+  <xs:simpleType name="ActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="DU" />
       <xs:enumeration value="DIR" />
@@ -18018,13 +18423,27 @@
       <xs:enumeration value="XML2JSON" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="LarvaLogLevelAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DEBUG" />
+      <xs:enumeration value="PIPELINE_MESSAGES_PREPARED_FOR_DIFF" />
+      <xs:enumeration value="PIPELINE_MESSAGES" />
+      <xs:enumeration value="WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF" />
+      <xs:enumeration value="WRONG_PIPELINE_MESSAGES" />
+      <xs:enumeration value="STEP_PASSED_FAILED" />
+      <xs:enumeration value="SCENARIO_PASSED_FAILED" />
+      <xs:enumeration value="SCENARIO_FAILED" />
+      <xs:enumeration value="TOTALS" />
+      <xs:enumeration value="ERROR" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:enumeration value="OBFUSCATE" />
       <xs:enumeration value="DEOBFUSCATE" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_5">
+  <xs:simpleType name="ActionAttributeValuesType_4">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ENCRYPT">
         <xs:annotation>
@@ -18068,7 +18487,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_6">
+  <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:enumeration value="SIGN">
         <xs:annotation>
@@ -18096,7 +18515,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_4">
+  <xs:simpleType name="ActionAttributeValuesType_3">
     <xs:restriction base="xs:string">
       <xs:enumeration value="OPEN">
         <xs:annotation>
@@ -18139,7 +18558,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType">
+  <xs:simpleType name="AvailableActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="STOPADAPTER" />
       <xs:enumeration value="STARTADAPTER" />
@@ -18594,7 +19013,7 @@
   </xs:attribute>
   <xs:attribute name="packageContent" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Controls wheter the returned package content is db2 format or xml format.
+      <xs:documentation>Controls if the returned package content is db2 format or xml format.
  Possible values:
  &lt;ul&gt;
  &lt;li&gt;select:&lt;/li&gt; xml content s expected
@@ -19218,7 +19637,9 @@
     <xs:annotation>
       <xs:documentation>Regular expression to mask strings in the log. For example, the regular expression &lt;code&gt;(?&amp;lt;=&amp;lt;password&amp;gt;).*?(?=&amp;lt;/password&amp;gt;)&lt;/code&gt;
  will replace every character between keys '&amp;lt;password&amp;gt;' and '&amp;lt;/password&amp;gt;'. &lt;b&gt;note:&lt;/b&gt; this feature is used at adapter level,
- so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</xs:documentation>
+ so a {@code hideRegex} set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
+ The regular expressions are matched against part of the log lines. See int)
+ with {@code mode = 0} for how regular expressions are matched and replaced.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="outputSoapBody" type="xs:string">

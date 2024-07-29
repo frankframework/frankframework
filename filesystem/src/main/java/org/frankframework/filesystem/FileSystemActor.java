@@ -43,6 +43,7 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
@@ -123,6 +124,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private INamedObject owner;
 	private S fileSystem;
 	private ParameterList parameterList;
+	private boolean hasCustomFileAttributes = false;
 
 	private byte[] eolArray=null;
 
@@ -179,7 +181,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			actions.addAll(Arrays.asList(ACTIONS_MAIL_FS));
 		}
 
-		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
+		if (parameterList!=null && parameterList.hasParameter(PARAMETER_CONTENTS2) && !parameterList.hasParameter(PARAMETER_CONTENTS1)) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
 		}
@@ -193,11 +195,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				action=FileSystemAction.WRITE;
 			}
 			checkConfiguration(getAction());
-		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
+		} else if (parameterList == null || !parameterList.hasParameter(PARAMETER_ACTION)) {
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+": either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
-		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.hasParameter(PARAMETER_INPUTFOLDER)) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
 
@@ -219,6 +221,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				ConfigurationWarnings.add(owner, log, "Filesystem [" + ClassUtils.nameOf(fileSystem) + "] does not support setting custom file attribute meta-data: [" + parametersWithAttributePrefix + "]");
 			}
 		}
+
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?> scfa) {
+			hasCustomFileAttributes = scfa.hasCustomFileAttributes(parameterList);
+		}
+
 		eolArray = LINE_SEPARATOR.getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
@@ -236,8 +243,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction == action) {
-			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
-			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
+			boolean parameter1Set = parameterList != null && parameterList.hasParameter(parameter1);
+			boolean parameter2Set = parameterList != null && parameterList.hasParameter(parameter2);
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
 				throw new ConfigurationException(ClassUtils.nameOf(owner)+": the ["+action+"] action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
@@ -364,7 +371,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return createFile(input, pvl, null);
 				}
 				case DELETE: {
-					return new Message(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
+					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
@@ -433,11 +440,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
-					return new Message(processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
 				case COPY: {
 					String destinationFolder = determineDestination(pvl);
-					return new Message(processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
 				case FORWARD: {
 					F file=getFile(input, pvl);
@@ -454,10 +461,12 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
-	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, SAXException {
+	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, IOException, SAXException {
 		String folder = arrangeFolder(determineInputFolderName(input, pvl));
 		typeFilter = determineTypeFilter(pvl);
-		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
+
+		MessageBuilder messageBuilder = new MessageBuilder();
+		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file", messageBuilder, true);
 		try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), typeFilter)) {
 			Iterator<F> it = stream.iterator();
 			while (it.hasNext()) {
@@ -467,24 +476,26 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 			}
 		}
-		return new Message(directoryBuilder.toString());
+		return messageBuilder.build();
 	}
 
+	@SuppressWarnings("unchecked") //Casts to the required FileSystem type
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
 			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
-			file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+			file = getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 		}
 
-		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
-			((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
+		// Creates a file with custom file attributes if the fileSystem supports it and there are customFileAttributes to set
+		if (hasCustomFileAttributes && fileSystem instanceof ISupportsCustomFileAttributes<?> cfa) {
+			((ISupportsCustomFileAttributes<F>)fileSystem).createFile(file, contents, cfa.getCustomFileAttributes(pvl));
+		} else {
+			((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		}
 
-		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
-
 
 	private interface FileAction<F> {
 		F execute(F f) throws FileSystemException;
@@ -495,27 +506,29 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	 * @throws FileSystemException
 	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, SAXException {
+	private Message processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFolderName(input, pvl));
-			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");
-			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
-				Iterator<F> it = stream.iterator();
-				while(it.hasNext()) {
-					F file = it.next();
-					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
-						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
-						action.execute(file);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file", messageBuilder, true)) {
+				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
+					Iterator<F> it = stream.iterator();
+					while(it.hasNext()) {
+						F file = it.next();
+						try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
+							FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+							action.execute(file);
+						}
 					}
 				}
 			}
 			deleteEmptyFolder(folder);
-			return directoryBuilder.toString();
+			return messageBuilder.build();
 		}
 		F file=getFile(input, pvl);
 		F resultFile = action.execute(file);
 		deleteEmptyFolder(file);
-		return resultFile!=null ? fileSystem.getName(resultFile) : null;
+		return resultFile!=null ? new Message(fileSystem.getName(resultFile)) : Message.nullMessage();
 	}
 
 	private String arrangeFolder(String determinedFolderName) throws FileSystemException {

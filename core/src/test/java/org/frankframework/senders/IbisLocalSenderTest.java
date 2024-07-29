@@ -14,6 +14,13 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -37,13 +44,9 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
-import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
 @Log4j2
 class IbisLocalSenderTest {
@@ -53,7 +56,13 @@ class IbisLocalSenderTest {
 
 	@AfterEach
 	void tearDown() {
+		// In case JavaListener didn't close after end of test, deregister the service.
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
+		try {
+			DispatcherManagerFactory.getDispatcherManager().unregister(SERVICE_NAME);
+		} catch (DispatcherException e) {
+			// Ignore
+		}
 	}
 
 	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener<?> listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
