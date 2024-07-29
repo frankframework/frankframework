@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -92,7 +93,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) {
 			promiseResult = message;
 			return new SenderResult(Message.nullMessage());
 		}

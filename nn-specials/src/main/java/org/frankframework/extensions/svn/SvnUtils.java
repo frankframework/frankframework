@@ -19,8 +19,8 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.HttpSender;
@@ -64,7 +64,8 @@ public class SvnUtils {
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
 			httpSender.open();
-			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+			try (PipeLineSession session = new PipeLineSession();
+				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session)) {
 				return result.asString();
 			}
 		} finally {
@@ -90,7 +91,8 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
-			try (Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), null)) {
+			try (PipeLineSession session = new PipeLineSession();
+				Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), session)) {
 				return result.asString();
 			}
 		} finally {

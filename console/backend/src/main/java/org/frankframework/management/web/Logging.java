@@ -32,7 +32,7 @@ public class Logging extends FrankApiBase {
 	@Description("view files/folders inside the log directory")
 	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getLogDirectory(@RequestParam(value = "directory", required = false) String directory, @RequestParam(value = "wildcard", required = false) String wildcard) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
 		builder.addHeader("wildcard", wildcard);
 		return callSyncGateway(builder);

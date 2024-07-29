@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
@@ -289,10 +290,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-		if (message == null) {
-			throw new SenderException(getLogPrefix() + "got null input");
-		}
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
 		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);

@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import jakarta.annotation.Nonnull;
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.frankframework.configuration.ConfigurationException;
@@ -47,7 +48,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		if (getAction() != FileSystemActor.FileSystemAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session);
 		} else {

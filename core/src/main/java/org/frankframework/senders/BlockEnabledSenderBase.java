@@ -15,6 +15,7 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -25,7 +26,7 @@ import org.frankframework.stream.Message;
 public abstract class BlockEnabledSenderBase<H> extends SenderWithParametersBase implements IBlockEnabledSender<H> {
 
 	@Override
-	public final SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public final @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		H blockHandle = openBlock(session);
 		try {
 			return sendMessage(blockHandle, message, session);

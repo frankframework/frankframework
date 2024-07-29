@@ -35,7 +35,7 @@ public class Webservices extends FrankApiBase {
 	@Description("view a list of all available webservices")
 	@GetMapping(value = "/webservices", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getWebServices() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.GET));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -43,7 +43,7 @@ public class Webservices extends FrankApiBase {
 	@Description("view OpenAPI specificiation")
 	@GetMapping(value = "/webservices/openapi.json", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getOpenApiSpec(@RequestParam(value = "uri", required = false) String uri) {
-		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("type", "openapi");
 		if (StringUtils.isNotBlank(uri)) {
 			request.addHeader("uri", uri);
@@ -61,7 +61,7 @@ public class Webservices extends FrankApiBase {
 			@RequestParam(value = "indent", defaultValue = "true") boolean indent,
 			@RequestParam(value = "useIncludes", defaultValue = "false") boolean useIncludes) {
 
-		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("indent", indent);
 		request.addHeader("useIncludes", useIncludes);
 		request.addHeader("type", "wsdl");

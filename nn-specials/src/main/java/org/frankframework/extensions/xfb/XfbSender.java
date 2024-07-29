@@ -18,8 +18,8 @@ package org.frankframework.extensions.xfb;
 import java.io.File;
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -91,7 +91,7 @@ public class XfbSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			File file = new File(message.asString());
 			if (getCopy()) {

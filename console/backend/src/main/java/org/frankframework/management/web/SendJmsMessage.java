@@ -73,7 +73,7 @@ public class SendJmsMessage extends FrankApiBase {
 		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", model.lookupDestination(), false);
 		String messageProperty = RequestUtils.resolveRequiredProperty("property", model.property(), "");
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destinationName);
 		builder.addHeader("type", destinationType);

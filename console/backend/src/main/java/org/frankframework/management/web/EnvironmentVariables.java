@@ -30,7 +30,7 @@ public class EnvironmentVariables extends FrankApiBase {
 	@Description("view all system/environment/application properties")
 	@GetMapping(value = "/environmentvariables", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getEnvironmentVariables() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.ENVIRONMENT));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.ENVIRONMENT));
 	}
 
 }

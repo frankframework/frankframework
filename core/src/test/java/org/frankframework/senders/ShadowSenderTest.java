@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
@@ -67,7 +68,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		private @Getter @Setter Message result;
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 			result = message;
 			return super.sendMessage(message, session);
 		}
@@ -76,7 +77,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private ISender createOriginalSender() {
 		EchoSender originalSender = new EchoSender() {
 			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				return new SenderResult(ORIGINAL_SENDER_RESULT);
 			}
 		};

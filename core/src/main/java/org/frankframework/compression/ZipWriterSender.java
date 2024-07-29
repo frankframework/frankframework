@@ -17,6 +17,7 @@ package org.frankframework.compression;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.collection.CollectorPipeBase.Action;
 import org.frankframework.collection.CollectorSenderBase;
 import org.frankframework.configuration.ConfigurationException;
@@ -53,7 +54,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		if(backwardsCompatibility) {
 			try {
 				message.preserve();

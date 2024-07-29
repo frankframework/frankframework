@@ -16,10 +16,9 @@
 package org.frankframework.collection;
 
 import jakarta.annotation.Nonnull;
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -62,7 +61,7 @@ public abstract class CollectorSenderBase<C extends ICollector<P>, P> extends Se
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			Collection<C, P> collection = getCollection(session);
 			collection.add(message, session, getParameterValueList(message, session));

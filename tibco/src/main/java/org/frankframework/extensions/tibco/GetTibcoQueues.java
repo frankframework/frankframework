@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -342,8 +341,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 		if (consumersMap.containsKey(qInfo.getName())) {
 			LinkedList<String> consumers = consumersMap.get(qInfo.getName());
-			String consumersString = listToString(consumers);
-			if (consumersString != null) {
+			if (consumers != null) {
+				String consumersString = String.join("; ", consumers);
 				consumerXml.setCdataValue(consumersString);
 			}
 		}
@@ -389,8 +388,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 				if (consumersMap.containsKey(qInfo.getName())) {
 					LinkedList<String> consumers = consumersMap.get(qInfo.getName());
-					String consumersString = listToString(consumers);
-					if (consumersString != null) {
+					if (consumers != null) {
+						String consumersString = String.join("; ", consumers);
 						consumerXml.setCdataValue(consumersString);
 					}
 				}
@@ -477,20 +476,6 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qInfoXml;
 	}
 
-	private String listToString(LinkedList<String> list) {
-		String string = null;
-		if (list != null) {
-			for (Iterator<String> it = list.iterator(); it.hasNext();) {
-				if (string == null) {
-					string = it.next();
-				} else {
-					string = string + "; " + it.next();
-				}
-			}
-		}
-		return string;
-	}
-
 	private Map<String, String> getAclMap(TibjmsAdmin admin, LdapSender ldapSender) throws TibjmsAdminException {
 		Map<String, String> userMap = new HashMap<>();
 		Map<String, String> aclMap = new HashMap<>();
@@ -541,11 +526,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
 		Message ldapRequest = new Message("<req>" + principal + "</req>");
-		try (Message message = ldapSender.sendMessageOrThrow(ldapRequest, null)) {
+		try (PipeLineSession session = new PipeLineSession();
+			Message message = ldapSender.sendMessageOrThrow(ldapRequest, session)) {
 			String ldapResult = message.asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
-				if (c != null && c.size() > 0) {
+				if (c != null && !c.isEmpty()) {
 					principalDescription = c.iterator().next();
 				}
 			}
@@ -557,14 +543,14 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	}
 
 	private String getResolvedUrl(String url) {
-		URI uri = null;
+		URI uri;
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
 			log.debug("Caught URISyntaxException while resolving url [{}]", url, e);
 			return null;
 		}
-		InetAddress inetAddress = null;
+		InetAddress inetAddress;
 		try {
 			inetAddress = InetAddress.getByName(uri.getHost());
 		} catch (UnknownHostException e) {

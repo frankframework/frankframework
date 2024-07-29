@@ -28,7 +28,7 @@ public class ConnectionOverview extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/connections", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getConnections() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.CONNECTION_OVERVIEW));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.CONNECTION_OVERVIEW));
 	}
 
 }

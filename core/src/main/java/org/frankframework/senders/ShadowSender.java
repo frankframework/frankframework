@@ -23,10 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
 
-import lombok.Getter;
-
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
@@ -128,7 +126,7 @@ public class ShadowSender extends ParallelSenders {
 	 * Override this from the parallel sender as it should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public SenderResult sendMessage(@Nonnull Message message, @Nullable PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			if (!message.isRepeatable()) {
 				message.preserve();
@@ -159,7 +157,7 @@ public class ShadowSender extends ParallelSenders {
 		} catch (IOException e) {
 			throw new SenderException("Cannot copy input message", e);
 		}
-		String correlationId = session == null ? null : session.getCorrelationId();
+		String correlationId = session.getCorrelationId();
 		Runnable collectResults = () -> {
 			// Wait till every sender has replied.
 			log.debug("waiting for shadow senders to finish. Left: {}", shadowGuard.getUnarrivedParties() - 1);

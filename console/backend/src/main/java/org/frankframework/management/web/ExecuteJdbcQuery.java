@@ -38,7 +38,7 @@ public class ExecuteJdbcQuery extends FrankApiBase {
 	@Relation("jdbc")
 	@Description("view a list of all JDBC DataSources")
 	public ResponseEntity<?> getJdbcDataSources() throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.GET);
 		return callSyncGateway(builder);
 	}
 
@@ -47,7 +47,7 @@ public class ExecuteJdbcQuery extends FrankApiBase {
 	@Relation("jdbc")
 	@Description("execute a JDBC query on a datasource")
 	public ResponseEntity<?> executeJdbcQuery(@RequestBody Map<String, Object> json) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.MANAGE);
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String query = RequestUtils.getValue(json, "query");
 		String resultType = RequestUtils.getValue(json, "resultType");

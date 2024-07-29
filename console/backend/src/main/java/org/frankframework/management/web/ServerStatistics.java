@@ -34,26 +34,26 @@ public class ServerStatistics extends FrankApiBase {
 	@PermitAll
 	@GetMapping(value = "/server/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerInformation() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.GET));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET));
 	}
 
 	@PermitAll
 	@GetMapping(value = "/server/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAllConfigurations() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.FIND));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND));
 	}
 
 	@PermitAll
 	@GetMapping(value = "/server/warnings", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerConfiguration() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.WARNINGS));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
 	}
 
 	@PermitAll
 	@GetMapping(value = "/server/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFrankHealth() {
 		try {
-			return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
+			return callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
 		} catch (ApiException e) {
 			Map<String, Object> response = new HashMap<>();
 			response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
