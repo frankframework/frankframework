@@ -15,17 +15,11 @@
 */
 package org.frankframework.management.web;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
-import org.frankframework.management.web.socket.MessageCacheStore;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
@@ -33,29 +27,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 
 import jakarta.annotation.Nonnull;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
-	@Autowired
-	protected @Getter MessageCacheStore messageCacheStore;
+	private @Getter ApplicationContext applicationContext;
+	private @Getter Environment environment;
 
-	@Autowired
-	protected @Getter HttpServletRequest servletRequest;
-	protected Logger log = LogManager.getLogger(this);
 	protected final OutboundGateway getGateway() {
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
 	}
-
-	private @Getter ApplicationContext applicationContext;
-	private @Getter Environment environment;
 
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
 		Message<?> message = getGateway().sendSyncMessage(input.build());
 		if (message == null) {
-			throw createErrorMessage(input.getTopic(), input.getAction());
+			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
+			if (input.getAction() != null) {
+				errorMessage.append(" with action [");
+				errorMessage.append(input.getAction());
+				errorMessage.append("]");
+			}
+			throw new ApiException(errorMessage.toString());
 		}
 		return message;
 	}
@@ -83,21 +76,12 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	/** Get a property from the Spring Environment. */
+	@SuppressWarnings("unchecked")
 	protected <T> T getProperty(String key, T defaultValue) {
 		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
 	}
 
 	protected final boolean allowDeprecatedEndpoints() {
 		return getProperty(DeprecationInterceptor.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
-	}
-
-	protected ApiException createErrorMessage(BusTopic topic, BusAction action) {
-		StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + topic + "]");
-		if (action != null) {
-			errorMessage.append(" with action [");
-			errorMessage.append(action);
-			errorMessage.append("]");
-		}
-		return new ApiException(errorMessage.toString());
 	}
 }

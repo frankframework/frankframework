@@ -15,43 +15,69 @@
 */
 package org.frankframework.management.web.socket;
 
-import jakarta.annotation.Nonnull;
-import org.frankframework.management.bus.message.StringMessage;
-import org.frankframework.management.web.FrankApiBase;
+import java.io.StringReader;
+
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.web.RequestMessageBuilder;
-import org.frankframework.util.JacksonUtils;
+import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-public class FrankApiWebSocketBase extends FrankApiBase {
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.json.Json;
+import jakarta.json.JsonMergePatch;
+import jakarta.json.JsonValue;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
+public class FrankApiWebSocketBase {
+
+	@Autowired
+	@Qualifier("outboundGateway")
+	private OutboundGateway gateway;
 
 	@Autowired
 	protected SimpMessagingTemplate messagingTemplate;
 
-	@Nonnull
-	protected Message<?> sendSyncMessageWithoutHttp(RequestMessageBuilder input) {
+	@Autowired
+	private MessageCacheStore messageCacheStore;
+
+	@Nullable
+	protected String compareAndUpdateResponse(RequestMessageBuilder builder) {
+		final Message<?> response;
 		try {
-			Message<?> message = getGateway().sendSyncMessage(input.buildWithoutHttp());
-			if (message == null) {
-				throw createErrorMessage(input.getTopic(), input.getAction());
-			}
-			return message;
-		} catch (Exception e) {
-			return new StringMessage("{\"error\":\"" + e.getMessage() + "\"}");
+			response = gateway.sendSyncMessage(builder.build());
+		} catch (Exception e) { //BusException
+			log.error("exception while sending synchronous bus request", e);
+			return null;
 		}
+
+		String stringResponse = ResponseUtils.parseAsString(response);
+		return convertMessageToDiff(builder.getTopic(), stringResponse);
 	}
 
-	protected Message<?> convertMessageToDiff(String busMessageName, Message<?> latestMessage) {
-		Message<?> cachedMessage = messageCacheStore.getCachedMessage(busMessageName);
+	/** we can assume that all messages stored in the cache are JSON messages */
+	@Nullable
+	private String convertMessageToDiff(BusTopic topic, @Nonnull String latestJsonMessage) {
+		String cachedJsonMessage = messageCacheStore.getAndUpdate(topic, latestJsonMessage);
+		return findJsonDiff(cachedJsonMessage, latestJsonMessage);
+	}
 
-		if (cachedMessage != null) {
-			messageCacheStore.putMessage(busMessageName, latestMessage);
-			String diffPayload = JacksonUtils.difference((String) cachedMessage.getPayload(), (String) latestMessage.getPayload());
-			return new StringMessage(diffPayload);
+	@Nullable
+	private String findJsonDiff(@Nonnull String cachedJsonMessage, @Nonnull String latestJsonMessage) {
+		try {
+			JsonValue source = Json.createReader(new StringReader(cachedJsonMessage)).readValue();
+			JsonValue target = Json.createReader(new StringReader(latestJsonMessage)).readValue();
+			JsonMergePatch mergeDiff = Json.createMergeDiff(source, target);
+			return mergeDiff.toJsonValue().toString();
+		} catch (Exception e) {
+			log.error("exception while performing json compare", e);
+			return null;
 		}
-		messageCacheStore.putMessage(busMessageName, latestMessage);
-		return latestMessage;
 	}
 
 }

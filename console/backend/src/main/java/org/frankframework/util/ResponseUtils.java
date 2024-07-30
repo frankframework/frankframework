@@ -15,10 +15,12 @@
 */
 package org.frankframework.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.web.ApiException;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -70,5 +72,32 @@ public class ResponseUtils {
 		}
 
 		return responseEntity.build();
+	}
+
+	public static String parseAsString(Message<?> message) {
+		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
+		if(mimeType != null) {
+			MediaType mime = MediaType.valueOf(mimeType);
+			if(MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mime) || MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mime)) {
+				return (String) message.getPayload();
+			}
+		}
+		return convertPayload(message.getPayload());
+	}
+
+	public static String convertPayload(Object payload) {
+		if (payload instanceof String string) {
+			return string;
+		} else if (payload instanceof byte[] bytes) {
+			return new String(bytes);
+		} else if (payload instanceof InputStream stream) {
+			try {
+				// Convert line endings to \n to show them in the browser as real line feeds
+				return StreamUtil.streamToString(stream, "\n", false);
+			} catch (IOException e) {
+				throw new ApiException("unable to read response payload", e);
+			}
+		}
+		throw new ApiException("unexpected response payload type [" + payload.getClass().getCanonicalName() + "]");
 	}
 }

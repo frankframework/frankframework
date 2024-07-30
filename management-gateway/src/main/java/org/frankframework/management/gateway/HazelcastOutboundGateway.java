@@ -55,6 +55,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private ITopic<Message<?>> requestTopic;
 
 	@Override
+	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		String tempReplyChannelName = "__tmp."+ RandomStringUtils.randomAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);

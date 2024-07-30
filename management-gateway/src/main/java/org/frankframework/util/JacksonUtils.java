@@ -16,7 +16,8 @@
 package org.frankframework.util;
 
 import java.io.IOException;
-import java.io.StringReader;
+
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -24,10 +25,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import jakarta.json.Json;
-import jakarta.json.JsonMergePatch;
-import jakarta.json.JsonValue;
-import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.management.bus.BusException;
 
 public class JacksonUtils {
@@ -41,11 +38,6 @@ public class JacksonUtils {
 	}
 
 	public static String convertToJson(Object payload) {
-		if (payload instanceof String payloadString) {
-			// dont convert because MAPPER will mess up the existing (JSON) string
-			return payloadString;
-		}
-
 		try {
 			return MAPPER.writeValueAsString(payload);
 		} catch (JacksonException e) {
@@ -66,20 +58,6 @@ public class JacksonUtils {
 			throw new BusException("unable to convert payload", e);
 		} catch (IOException e) {
 			throw new BusException("unable to parse payload", e);
-		}
-	}
-
-	public static <T> String difference(T oldPayload, T newPayload) {
-		String oldJson = convertToJson(oldPayload);
-		String newJson = convertToJson(newPayload);
-
-		try {
-			JsonValue source = Json.createReader(new StringReader(oldJson)).readValue();
-			JsonValue target = Json.createReader(new StringReader(newJson)).readValue();
-			JsonMergePatch mergeDiff = Json.createMergeDiff(source, target);
-			return mergeDiff.toJsonValue().toString();
-		} catch (Exception e) {
-			return "{}";
 		}
 	}
 }

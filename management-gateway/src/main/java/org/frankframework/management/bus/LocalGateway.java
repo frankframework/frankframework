@@ -16,14 +16,20 @@
 package org.frankframework.management.bus;
 
 import org.springframework.integration.gateway.MessagingGatewaySupport;
+import org.springframework.lang.Nullable;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.core.GenericMessagingTemplate;
+
+import jakarta.annotation.Nonnull;
 
 /**
  * A Spring Integration Gateway in it's most simplistic form.
  * Put's messages on their respective Channels.
  */
 public class LocalGateway extends MessagingGatewaySupport implements OutboundGateway {
+
+	private static long DEFAULT_REQUEST_TIMEOUT = 1000L;
 
 	@Override
 	protected void onInit() {
@@ -32,13 +38,46 @@ public class LocalGateway extends MessagingGatewaySupport implements OutboundGat
 			setRequestChannel(requestChannel);
 		}
 
+		setRequestTimeout(DEFAULT_REQUEST_TIMEOUT);
+		setReplyTimeout(DEFAULT_REQUEST_TIMEOUT);
+
 		super.onInit();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
-		return (Message<O>) super.sendAndReceiveMessage(in);
+	@Nonnull
+	public <I, O> Message<O> sendSyncMessage(Message<I> requestMessage) {
+		Message<O> replyMessage = (Message<O>) super.sendAndReceiveMessage(requestMessage);
+		if (replyMessage != null) {
+			return replyMessage;
+		}
+
+		long timeout = getSendTimeout(requestMessage) + getReceiveTimeout(requestMessage);
+		throw new BusException("no reponse found on reply-queue within receiveTimeout ["+timeout+"]");
+	}
+
+	private long getSendTimeout(Message<?> requestMessage) {
+		Long sendTimeout = headerToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_SEND_TIMEOUT_HEADER));
+		return (sendTimeout != null ? sendTimeout : DEFAULT_REQUEST_TIMEOUT);
+	}
+
+	private long getReceiveTimeout(Message<?> requestMessage) {
+		Long sendTimeout = headerToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_RECEIVE_TIMEOUT_HEADER));
+		return (sendTimeout != null ? sendTimeout : DEFAULT_REQUEST_TIMEOUT);
+	}
+
+	@Nullable
+	private Long headerToLong(@Nullable Object headerValue) {
+		if (headerValue instanceof Number) {
+			return ((Number) headerValue).longValue();
+		}
+		else if (headerValue instanceof String) {
+			return Long.parseLong((String) headerValue);
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Override

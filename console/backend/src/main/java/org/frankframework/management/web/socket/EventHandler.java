@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.web.RequestMessageBuilder;
-import org.springframework.messaging.Message;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -29,26 +28,22 @@ public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
 	public void serverWarnings() {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.APPLICATION, BusAction.UPDATES);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.UPDATES);
 
-		Message<?> message = sendSyncMessageWithoutHttp(builder);
-		Message<?> response = convertMessageToDiff(builder.getBusMessageName(), message);
-
-		if (!response.getPayload().equals("{}")) {
-			this.messagingTemplate.convertAndSend("/event/server-warnings", response.getPayload());
+		String jsonResponse = compareAndUpdateResponse(builder);
+		if (jsonResponse != null) {
+			this.messagingTemplate.convertAndSend("/event/server-warnings", jsonResponse);
 		}
 	}
 
 	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
 	public void adapters() {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.UPDATES);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.UPDATES);
 		builder.addHeader("expanded", "all");
 
-		Message<?> message = sendSyncMessageWithoutHttp(builder);
-		Message<?> response = convertMessageToDiff(builder.getBusMessageName(), message);
-
-		if (!response.getPayload().equals("{}")) {
-			this.messagingTemplate.convertAndSend("/event/adapters", response.getPayload());
+		String jsonResponse = compareAndUpdateResponse(builder);
+		if (jsonResponse != null) {
+			this.messagingTemplate.convertAndSend("/event/adapters", jsonResponse);
 		}
 	}
 

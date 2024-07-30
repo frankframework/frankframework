@@ -15,33 +15,37 @@
 */
 package org.frankframework.management.web.socket;
 
+import java.util.EnumMap;
+
+import org.frankframework.management.bus.BusTopic;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class MessageCacheStore {
 
-	private final Map<String, MessageCache> messages = new HashMap<>();
+	private final EnumMap<BusTopic, String> topicCache = new EnumMap<>(BusTopic.class);
 
-	public Message<?> getCachedMessage(String name) {
-		MessageCache cache = messages.get(name);
-		if (cache != null) {
-			return cache.message();
+	public void put(BusTopic topic, String message) {
+		topicCache.put(topic, message);
+	}
+
+	@Nullable
+	public String get(BusTopic topic) {
+		return topicCache.get(topic);
+	}
+
+	@Nonnull
+	public String getAndUpdate(BusTopic topic, @Nonnull String latestJsonMessage) {
+		String cachedMessage = topicCache.put(topic, latestJsonMessage);
+		if(cachedMessage == null) {
+			return "{}";
 		}
-
-		return null;
+		return cachedMessage;
 	}
-
-	public void putMessage(String name, Message<?> message) {
-		this.messages.put(name, new MessageCache(name, message));
-	}
-
-	protected record MessageCache(String name, Message<?> message) {}
-
 }

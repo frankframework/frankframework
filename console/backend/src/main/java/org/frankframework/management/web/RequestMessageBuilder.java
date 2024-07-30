@@ -31,6 +31,8 @@ import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import jakarta.annotation.Nullable;
+
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
@@ -94,28 +96,11 @@ public class RequestMessageBuilder {
 		return new RequestMessageBuilder(topic, action);
 	}
 
-	public Message<?> buildWithoutHttp(){
-		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
-		MessageBuilder<?> builder = factory.withPayload(payload);
-		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		if (action != null) {
-			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
-		}
-
-		for (Map.Entry<String, Object> customHeader : customHeaders.entrySet()) {
-			String key = BusMessageUtils.HEADER_PREFIX + customHeader.getKey();
-			builder.setHeader(key, customHeader.getValue());
-		}
-
-		return builder.build();
-	}
-
 	public Message<?> build() {
-//		base.getServletRequest().getParameter("target")
 		return build(null);
 	}
 
-	public Message<?> build(String targetHost) {
+	public Message<?> build(@Nullable String targetHost) {
 		if (SEC_LOG.isInfoEnabled()) {
 			String headers = customHeaders.entrySet().stream()
 					.map(this::mapHeaderForLog)
@@ -130,6 +115,7 @@ public class RequestMessageBuilder {
 		}
 
 		// Optional target parameter, to target a specific backend node.
+		// TODO use session scoped value to set the host
 		if(StringUtils.isNotEmpty(targetHost)) {
 			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
 		}
@@ -140,10 +126,6 @@ public class RequestMessageBuilder {
 		}
 
 		return builder.build();
-	}
-
-	public String getBusMessageName(){
-		return topic.name() + "." + action.name();
 	}
 
 	private String mapHeaderForLog(Map.Entry<String, Object> entry) {

@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
 
+import jakarta.annotation.Nonnull;
 import lombok.Setter;
 
 import org.frankframework.management.bus.OutboundGateway;
@@ -49,6 +50,7 @@ public class HttpOutboundGateway implements InitializingBean, ApplicationContext
 	// I in, O out
 	@Override
 	@SuppressWarnings("unchecked")
+	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		return (Message<O>) handler.handleRequestMessage(in);
 	}
