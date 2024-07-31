@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.ListenerException;
@@ -122,11 +121,6 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	@Override
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
-		processRawMessage(origin, rawMessage, threadContext, -1, duplicatesAlreadyChecked);
-	}
-
-	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 		Message message = origin.extractMessage(rawMessage, threadContext);
 		processRequest(origin, rawMessage, message, threadContext);
 	}
