@@ -15,6 +15,10 @@
 */
 package org.frankframework.threading;
 
+/**
+ * Classes that create sub-threads during the processing of messages in adapters should implement this interface, to set the callback
+ * for thread lifecycle events. This is for the LadyBug pipeline debugger.
+ */
 public interface IThreadCreator {
 
 	void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);

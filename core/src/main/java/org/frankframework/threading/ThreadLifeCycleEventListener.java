@@ -15,6 +15,12 @@
 */
 package org.frankframework.threading;
 
+/**
+ * Interface for classes that need to be aware of when child-threads are created and terminated. This is primarily for LadyBug, via the
+ * {@code IbisDebuggerAdvice} class which implements this interface.
+ *
+ * @param <T>
+ */
 public interface ThreadLifeCycleEventListener<T> {
 
 	T announceChildThread(Object owner, String correlationId);
