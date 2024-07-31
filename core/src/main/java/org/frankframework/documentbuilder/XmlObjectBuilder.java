@@ -13,12 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 public class XmlObjectBuilder extends ObjectBuilder {
 

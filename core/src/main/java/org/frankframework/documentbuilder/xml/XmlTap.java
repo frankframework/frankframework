@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,13 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder.xml;
 
-import org.xml.sax.SAXException;
+import org.frankframework.xml.XmlWriter;
+import org.xml.sax.ContentHandler;
 
-public interface IDocumentBuilder extends INodeBuilder {
+public class XmlTap extends XmlTee {
 
-	public ObjectBuilder asObjectBuilder() throws SAXException;
-	public ArrayBuilder asArrayBuilder(String elementName) throws SAXException;
+	public XmlTap() {
+		super();
+		setSecondContentHandler(new XmlWriter());
+	}
 
+	public XmlTap(ContentHandler handler) {
+		super(handler, new XmlWriter());
+	}
+
+	public XmlWriter getWriter() {
+		return (XmlWriter)getSecondContentHandler();
+	}
 }

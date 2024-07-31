@@ -13,9 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document.json;
+package org.frankframework.documentbuilder.json;
 
-import org.frankframework.stream.document.JsonEventHandler;
+import org.frankframework.documentbuilder.JsonEventHandler;
 import org.xml.sax.SAXException;
 
 public class JsonTee implements JsonEventHandler {

@@ -13,18 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import java.util.Map.Entry;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.xml.sax.SAXException;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+import org.apache.commons.lang3.NotImplementedException;
+import org.xml.sax.SAXException;
 
 public class DocumentUtils {
 

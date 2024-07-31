@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document.xml;
+package org.frankframework.documentbuilder.xml;
 
 import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;

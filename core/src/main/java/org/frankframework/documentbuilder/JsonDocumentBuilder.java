@@ -13,12 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.frankframework.stream.document.json.JsonWriter;
+import org.frankframework.documentbuilder.json.JsonWriter;
 import org.xml.sax.SAXException;
 
 public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBuilder {

@@ -174,7 +174,7 @@
 	  at
 	  org.frankframework.pipes.ForEachChildElementPipe$ItemCallbackCallingHandler.endElement(ForEachChildElementPipe.java:233)&#xD;
 	  at org.xml.sax.helpers.XMLFilterImpl.endElement(XMLFilterImpl.java:570)&#xD;
-	  at org.frankframework.stream.document.xml.XmlTee.endElement(XmlTee.java:64)&#xD;
+	  at org.frankframework.documentbuilder.xml.XmlTee.endElement(XmlTee.java:64)&#xD;
 	  at org.xml.sax.helpers.XMLFilterImpl.endElement(XMLFilterImpl.java:570)&#xD;
 	  at org.frankframework.xml.NamespaceRemovingFilter.endElement(NamespaceRemovingFilter.java:38)&#xD;
 	  at org.xml.sax.helpers.XMLFilterImpl.endElement(XMLFilterImpl.java:570)&#xD;

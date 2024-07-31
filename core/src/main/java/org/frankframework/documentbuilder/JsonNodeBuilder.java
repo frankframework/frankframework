@@ -13,58 +13,50 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import org.xml.sax.SAXException;
 
-import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.SaxElementBuilder;
+public class JsonNodeBuilder implements INodeBuilder {
 
-public class XmlNodeBuilder implements INodeBuilder {
+	private final JsonEventHandler handler;
 
-	private final SaxElementBuilder current;
-
-	public XmlNodeBuilder(SaxElementBuilder current, String elementName) throws SAXException {
-		this.current = current.startElement(XmlUtils.cleanseElementName(elementName));
+	public JsonNodeBuilder(JsonEventHandler handler) {
+		this.handler = handler;
 	}
 
 	@Override
 	public void close() throws SAXException {
-		current.close();
 	}
 
 	@Override
-	public XmlArrayBuilder startArray(String elementName) {
-		return new XmlArrayBuilder(current, elementName);
+	public JsonArrayBuilder startArray(String elementName) throws SAXException {
+		return new JsonArrayBuilder(handler);
 	}
 
 	@Override
-	public XmlObjectBuilder startObject() throws SAXException {
-		return new XmlObjectBuilder(current, null);
+	public JsonObjectBuilder startObject() throws SAXException {
+		return new JsonObjectBuilder(handler);
 	}
 
 	@Override
 	public void setValue(String value) throws SAXException {
-		if (value!=null) {
-			current.addValue(value).close();
-		} else {
-			current.addAttribute("nil", "true").close();
-		}
+		handler.primitive(value);
 	}
 
 	@Override
 	public void setValue(Number value) throws SAXException {
-		current.addValue(value.toString()).close();
+		handler.primitive(value);
 	}
 
 	@Override
 	public void setValue(boolean value) throws SAXException {
-		current.addValue(Boolean.toString(value)).close();
+		handler.primitive(value);
 	}
 
 	@Override
 	public void setNumberValue(String value) throws SAXException {
-		setValue(value);
+		handler.number(value);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,30 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import org.xml.sax.SAXException;
 
-public class JsonArrayBuilder extends ArrayBuilder {
+public interface INodeBuilder extends AutoCloseable {
 
-	private final JsonEventHandler handler;
-
-	public JsonArrayBuilder(JsonEventHandler handler) throws SAXException {
-		this.handler = handler;
-		handler.startArray();
-	}
-
-	@Override
-	public INodeBuilder addElement() {
-		return new JsonNodeBuilder(handler);
-	}
+	public ArrayBuilder startArray(String elementName) throws SAXException;
+	public ObjectBuilder startObject() throws SAXException;
+	public void setValue(String value) throws SAXException;
+	public void setValue(Number value) throws SAXException;
+	public void setValue(boolean value) throws SAXException;
+	public void setNumberValue(String value) throws SAXException;
 
 	@Override
-	public void close() throws SAXException {
-		try {
-			handler.endArray();
-		} finally {
-			super.close();
-		}
-	}
+	public void close() throws SAXException;
+
 }

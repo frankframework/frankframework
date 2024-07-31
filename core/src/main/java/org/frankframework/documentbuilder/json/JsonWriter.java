@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document.json;
+package org.frankframework.documentbuilder.json;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,7 +24,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.frankframework.stream.document.JsonEventHandler;
+import org.frankframework.documentbuilder.JsonEventHandler;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.xml.SaxException;
 import org.xml.sax.SAXException;

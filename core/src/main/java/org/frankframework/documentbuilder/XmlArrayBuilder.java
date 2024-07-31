@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,15 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
+import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
 
-public interface IArrayBuilder extends AutoCloseable {
+public class XmlArrayBuilder extends ArrayBuilder {
 
-	public INodeBuilder addElement() throws SAXException;
+	private final SaxElementBuilder current;
+	private final String elementName;
+
+
+	public XmlArrayBuilder(SaxElementBuilder current, String elementName) {
+		this.elementName = elementName;
+		this.current = current;
+	}
+
+
 
 	@Override
-	public void close() throws SAXException;
-
+	public INodeBuilder addElement() throws SAXException {
+		return new XmlNodeBuilder(current, elementName);
+	}
 }

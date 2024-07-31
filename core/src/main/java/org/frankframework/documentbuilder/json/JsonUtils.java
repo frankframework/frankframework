@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document.json;
+package org.frankframework.documentbuilder.json;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,7 +24,7 @@ import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import jakarta.json.stream.JsonParserFactory;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.stream.document.JsonEventHandler;
+import org.frankframework.documentbuilder.JsonEventHandler;
 import org.frankframework.util.LogUtil;
 import org.xml.sax.SAXException;
 

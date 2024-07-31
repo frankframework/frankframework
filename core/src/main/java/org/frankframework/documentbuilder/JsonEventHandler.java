@@ -13,27 +13,29 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import org.xml.sax.SAXException;
 
-import org.frankframework.xml.SaxElementBuilder;
+public interface JsonEventHandler {
 
-public class XmlArrayBuilder extends ArrayBuilder {
+	void startDocument() throws SAXException;
 
-	private final SaxElementBuilder current;
-	private final String elementName;
+	void endDocument() throws SAXException;
 
+	void startObject() throws SAXException;
 
-	public XmlArrayBuilder(SaxElementBuilder current, String elementName) {
-		this.elementName = elementName;
-		this.current = current;
-	}
+	void startObjectEntry(String key) throws SAXException;
 
+	void endObject() throws SAXException;
 
+	void startArray() throws SAXException;
 
-	@Override
-	public INodeBuilder addElement() throws SAXException {
-		return new XmlNodeBuilder(current, elementName);
-	}
+	void endArray() throws SAXException;
+
+	// Must be able to handle String, long, BigDecimal, boolean, Date and null
+	void primitive(Object value) throws SAXException;
+
+	// handles a string value as numeric (i.e without quotes in JSON)
+	void number(String value) throws SAXException;
 }

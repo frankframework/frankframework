@@ -13,15 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.documentbuilder;
 
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.frankframework.xml.SaxDocumentBuilder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import org.frankframework.xml.SaxDocumentBuilder;
 
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 

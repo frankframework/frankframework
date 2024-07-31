@@ -9,7 +9,7 @@ import java.io.Writer;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.stream.document.json.JsonWriter;
+import org.frankframework.documentbuilder.json.JsonWriter;
 import org.frankframework.xml.XmlWriter;
 import org.springframework.http.MediaType;
 import org.xml.sax.Attributes;
