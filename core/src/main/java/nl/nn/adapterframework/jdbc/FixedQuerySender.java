@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.ParameterException;
@@ -74,7 +74,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			Connection connection = getConnectionForSendMessage();
+			Connection connection = getConnectionForSendMessage(session);
 			QueryExecutionContext result;
 			try {
 				QueryExecutionContext result1 = getQueryExecutionContext(connection, null);

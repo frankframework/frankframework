@@ -22,10 +22,10 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -78,6 +78,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
 	private DataSource datasource = null;
+	protected boolean hasRuntimeDatasource = false;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -86,15 +87,17 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
-		}
-		try {
-			if (getDatasource() == null) {
-				throw new ConfigurationException(getLogPrefix() + "has no datasource");
+		if (!hasRuntimeDatasource) {
+			if (StringUtils.isEmpty(getDatasourceName())) {
+				setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
+			try {
+				if (getDatasource() == null) {
+					throw new ConfigurationException(getLogPrefix() + "has no datasource");
+				}
+			} catch (JdbcException e) {
+				throw new ConfigurationException(e);
+			}
 		}
 		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
 			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
@@ -103,8 +106,15 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
+		return getDatasource(null);
+	}
+
+	protected DataSource getDatasource(String datasourceName) throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDatasourceName();
+			if (datasourceName != null) {
+				dsName = datasourceName;
+			}
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
 			} catch (NamingException e) {
@@ -149,16 +159,20 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
+		return getConnection(null);
+	}
+
+	protected Connection getConnection(String datasourceName) throws JdbcException {
 		long t0 = System.currentTimeMillis();
 		try {
-			DataSource ds = getDatasource();
+			DataSource ds = getDatasource(datasourceName);
 			try {
 				if (cf!=null) {
 					return ds.getConnection(cf.getUsername(), cf.getPassword());
 				}
 				return ds.getConnection();
 			} catch (SQLException e) {
-				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
+				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName(datasourceName)+"]", e);
 			}
 		} finally {
 			if (connectionStatistics!=null) {
@@ -168,14 +182,14 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		}
 	}
 
-	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
+	public Connection getConnectionWithTimeout(String datasourceName, int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
-			return getConnection();
+			return getConnection(datasourceName);
 		}
 		TimeoutGuard tg = new TimeoutGuard("Connection ");
 		try {
 			tg.activateGuard(timeout);
-			return getConnection();
+			return getConnection(datasourceName);
 		} finally {
 			if (tg.cancel()) {
 				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
@@ -241,6 +255,13 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 	public String getDatasourceName() {
 		return datasourceName;
+	}
+	public String getDatasourceName(String datasourceName) {
+		if (datasourceName == null) {
+			return this.datasourceName;
+		} else {
+			return datasourceName;
+		}
 	}
 
 	/** Authentication alias used to authenticate when connecting to database */

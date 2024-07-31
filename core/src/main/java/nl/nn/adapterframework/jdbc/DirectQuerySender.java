@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	@Override
 	public Connection openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			return getConnectionForSendMessage();
+			return getConnectionForSendMessage(session);
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get Connection",e);
 		}

@@ -40,11 +40,11 @@ import javax.annotation.Nullable;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -252,7 +252,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
-		String query = getQuery(message);
+		newParameterList.remove(datasourceNameParameter);
+		String query=getQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
@@ -270,9 +271,19 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	protected Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
+	protected Connection getConnectionForSendMessage(PipeLineSession session) throws JdbcException, TimeoutException, SenderException {
 		if (isConnectionsArePooled()) {
-			return getConnectionWithTimeout(getTimeout());
+			String datasourceName = null;
+			if (datasourceNameParameter != null) {
+				ParameterValueList parameterValueList;
+				try {
+					parameterValueList = getParameterList().getValues(Message.nullMessage(), session);
+				} catch (ParameterException e) {
+					throw new SenderException(getLogPrefix() + "caught exception determining parametervalues",e);
+				}
+				datasourceName = parameterValueList.get(datasourceNameParameter.getName()).asStringValue(null);
+			}
+			return getConnectionWithTimeout(datasourceName, getTimeout());
 		}
 		return connection;
 	}
@@ -641,7 +652,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			final Connection connection;
 			QueryExecutionContext queryExecutionContext;
 			try {
-				connection = getConnectionWithTimeout(getTimeout());
+				connection = getConnectionForSendMessage(session);
 				queryExecutionContext = getQueryExecutionContext(connection, null);
 			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeoutException e) {
 				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);

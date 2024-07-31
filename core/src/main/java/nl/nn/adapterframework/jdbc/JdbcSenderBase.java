@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -45,6 +45,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
+	protected Parameter datasourceNameParameter = null;
 
 	public JdbcSenderBase() {
 		super();
@@ -65,27 +66,33 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
 		if (paramList!=null) {
 			paramList.configure();
+			datasourceNameParameter = paramList.findParameter("datasourceName");
+			if (datasourceNameParameter != null) {
+				hasRuntimeDatasource = true;
+			}
 		}
+		super.configure();
 	}
 
 	@Override
 	public void open() throws SenderException {
-		try {
-			connection = getConnection();
-			connection.getMetaData(); //We have to perform some DB action, it could be stale or not present (yet)
-		} catch (Throwable t) {
-			JdbcUtil.close(connection);
-			connection = null;
+		if (!hasRuntimeDatasource) {
+			try {
+				connection = getConnection();
+				connection.getMetaData(); //We have to perform some DB action, it could be stale or not present (yet)
+			} catch (Throwable t) {
+				JdbcUtil.close(connection);
+				connection = null;
 
-			throw new SenderException(t);
-		}
+				throw new SenderException(t);
+			}
 
-		//When we use pooling connections we need to ask for a new connection every time we want to use it
-		if (isConnectionsArePooled()) {
-			close();
+			//When we use pooling connections we need to ask for a new connection every time we want to use it
+			if (isConnectionsArePooled()) {
+				close();
+			}
 		}
 	}
 
