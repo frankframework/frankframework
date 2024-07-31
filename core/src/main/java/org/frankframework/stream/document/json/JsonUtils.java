@@ -13,21 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.json;
+package org.frankframework.stream.document.json;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
-import org.xml.sax.SAXException;
-
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import jakarta.json.stream.JsonParserFactory;
-import org.frankframework.stream.JsonEventHandler;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.stream.document.JsonEventHandler;
+import org.frankframework.util.LogUtil;
+import org.xml.sax.SAXException;
 
 public class JsonUtils {
 	private static final Logger log = LogUtil.getLogger(JsonUtils.class);

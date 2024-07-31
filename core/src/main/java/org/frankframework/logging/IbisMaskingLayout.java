@@ -36,6 +36,7 @@ import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -205,7 +206,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * This method should be used to initialize the stack of hideregexes at the start of a new thread
 	 * when there might be hideregexes to be carried over from a calling thread.
 	 *
-	 * @see org.frankframework.stream.ThreadConnector
+	 * @see ThreadConnector
 	 *
 	 * @param hideRegexCollection Collection of new hideRegexes. Can be null or empty.
 	 */

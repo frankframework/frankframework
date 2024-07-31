@@ -7,9 +7,10 @@ import static org.mockito.Mockito.mock;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import org.frankframework.stream.json.JsonWriter;
-import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.stream.document.json.JsonWriter;
+import org.frankframework.xml.XmlWriter;
 import org.springframework.http.MediaType;
 import org.xml.sax.Attributes;
 

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.json;
+package org.frankframework.stream.document.json;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,11 +24,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.xml.sax.SAXException;
-
-import org.frankframework.stream.JsonEventHandler;
+import org.frankframework.stream.document.JsonEventHandler;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.xml.SaxException;
+import org.xml.sax.SAXException;
 
 public class JsonWriter implements JsonEventHandler {
 

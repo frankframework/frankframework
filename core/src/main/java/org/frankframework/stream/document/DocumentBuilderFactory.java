@@ -15,11 +15,9 @@
 */
 package org.frankframework.stream.document;
 
+import org.frankframework.stream.MessageBuilder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.JsonEventHandler;
-import org.frankframework.stream.MessageBuilder;
 
 public class DocumentBuilderFactory {
 

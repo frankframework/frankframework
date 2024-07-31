@@ -3,16 +3,16 @@ package org.frankframework.stream.document;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.frankframework.stream.json.JsonUtils;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+import org.frankframework.stream.document.json.JsonUtils;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.xml.XmlWriter;
+import org.xml.sax.SAXException;
 
 public class DocumentUtilsTest {
 

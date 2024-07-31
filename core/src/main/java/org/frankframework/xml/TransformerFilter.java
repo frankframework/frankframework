@@ -22,7 +22,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
 import lombok.Getter;
-import org.frankframework.stream.ThreadConnector;
+import org.frankframework.threading.ThreadConnector;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 

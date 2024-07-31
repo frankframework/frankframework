@@ -18,10 +18,8 @@ package org.frankframework.stream.document;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.frankframework.stream.json.JsonWriter;
+import org.frankframework.stream.document.json.JsonWriter;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.JsonEventHandler;
 
 public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBuilder {
 

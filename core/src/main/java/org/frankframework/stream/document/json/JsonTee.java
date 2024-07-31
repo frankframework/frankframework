@@ -13,11 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.json;
+package org.frankframework.stream.document.json;
 
+import org.frankframework.stream.document.JsonEventHandler;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.JsonEventHandler;
 
 public class JsonTee implements JsonEventHandler {
 

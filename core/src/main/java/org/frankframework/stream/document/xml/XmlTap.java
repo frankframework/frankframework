@@ -13,11 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.xml;
-
-import org.xml.sax.ContentHandler;
+package org.frankframework.stream.document.xml;
 
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.ContentHandler;
 
 public class XmlTap extends XmlTee {
 

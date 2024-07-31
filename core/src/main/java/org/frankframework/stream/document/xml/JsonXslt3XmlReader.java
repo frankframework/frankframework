@@ -13,9 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.xml;
+package org.frankframework.stream.document.xml;
 
-import static org.frankframework.stream.xml.JsonXslt3XmlHandler.TARGET_NAMESPACE;
+import static org.frankframework.stream.document.xml.JsonXslt3XmlHandler.TARGET_NAMESPACE;
 
 import java.io.IOException;
 import java.io.InputStream;

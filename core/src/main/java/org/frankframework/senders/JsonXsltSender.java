@@ -17,21 +17,20 @@ package org.frankframework.senders;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.stream.xml.JsonXslt3XmlReader;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.document.xml.JsonXslt3XmlReader;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlJsonWriter;
 import org.frankframework.xml.IXmlDebugger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.ThreadConnector;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, yielding JSON, XML or text.

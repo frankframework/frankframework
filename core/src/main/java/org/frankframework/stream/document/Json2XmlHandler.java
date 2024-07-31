@@ -17,11 +17,9 @@ package org.frankframework.stream.document;
 
 import java.util.Stack;
 
+import org.frankframework.xml.SaxException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.JsonEventHandler;
-import org.frankframework.xml.SaxException;
 
 public class Json2XmlHandler implements JsonEventHandler {
 

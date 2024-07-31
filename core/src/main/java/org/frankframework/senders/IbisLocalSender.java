@@ -41,9 +41,9 @@ import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
-import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 
 /**
  * Posts a message to another Frank!Framework-adapter in the same Frank!Framework instance. If the callee exits with an &lt;<code>exit</code>&gt;

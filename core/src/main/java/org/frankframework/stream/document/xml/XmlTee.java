@@ -13,14 +13,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.xml;
+package org.frankframework.stream.document.xml;
 
+import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
-
-import org.frankframework.xml.FullXmlFilter;
 
 public class XmlTee extends FullXmlFilter {
 

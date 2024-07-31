@@ -5,16 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.frankframework.stream.json.JsonTee;
-import org.frankframework.stream.json.JsonWriter;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+import org.frankframework.stream.document.json.JsonTee;
+import org.frankframework.stream.document.json.JsonWriter;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.xml.XmlWriter;
+import org.xml.sax.SAXException;
 
 public class DocumentBuilderTest {
 

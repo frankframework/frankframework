@@ -32,6 +32,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
@@ -48,16 +51,12 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.stream.ThreadConnector;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.TransformerFilter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to

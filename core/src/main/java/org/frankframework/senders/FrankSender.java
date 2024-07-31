@@ -45,9 +45,9 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.ServiceClient;
-import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.dispatcher.DispatcherManager;

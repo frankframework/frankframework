@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,25 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream;
+package org.frankframework.threading;
 
-import org.frankframework.xml.SaxException;
+public interface IThreadCreator {
 
-/**
- * SAXException thrown to signal that a timeout occurred in consuming the stream.
- */
-public class SaxTimeoutException extends SaxException {
+	void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);
 
-	public SaxTimeoutException() {
-		super();
-	}
-	public SaxTimeoutException(String message) {
-		super(message);
-	}
-	public SaxTimeoutException(String message, Exception cause) {
-		super(message, cause);
-	}
-	public SaxTimeoutException(Exception cause) {
-		super(cause);
-	}
 }

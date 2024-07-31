@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.frankframework.configuration.IbisManager;
@@ -41,16 +43,16 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.CacheSenderWrapperProcessor;
-import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
+import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
 import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
-import org.frankframework.stream.xml.XmlTee;
+import org.frankframework.stream.document.xml.XmlTee;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.xml.IXmlDebugger;
@@ -59,9 +61,6 @@ import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
-
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)

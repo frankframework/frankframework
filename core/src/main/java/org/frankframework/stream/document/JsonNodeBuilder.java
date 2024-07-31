@@ -17,8 +17,6 @@ package org.frankframework.stream.document;
 
 import org.xml.sax.SAXException;
 
-import org.frankframework.stream.JsonEventHandler;
-
 public class JsonNodeBuilder implements INodeBuilder {
 
 	private final JsonEventHandler handler;
