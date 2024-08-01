@@ -33,9 +33,9 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.documentbuilder.DocumentUtils;
+import org.frankframework.documentbuilder.XmlDocumentBuilder;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentUtils;
-import org.frankframework.stream.document.XmlDocumentBuilder;
 import org.frankframework.util.TransformerPool;
 
 /**

@@ -28,10 +28,10 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.SpringUtils;
 
 /**

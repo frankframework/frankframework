@@ -13,11 +13,11 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 

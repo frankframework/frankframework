@@ -22,9 +22,9 @@ import org.bson.BSONException;
 import org.bson.BsonInvalidOperationException;
 import org.bson.json.StrictCharacterStreamJsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
-import org.frankframework.stream.document.IArrayBuilder;
-import org.frankframework.stream.document.INodeBuilder;
-import org.frankframework.stream.document.IObjectBuilder;
+import org.frankframework.documentbuilder.IArrayBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.IObjectBuilder;
 import org.xml.sax.SAXException;
 
 /**

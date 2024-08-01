@@ -25,8 +25,8 @@ import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.core.SenderResult;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.LogUtil;
 
 public class IsolatedServiceExecutor extends RequestReplyExecutor {

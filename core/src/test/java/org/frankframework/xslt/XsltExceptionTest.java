@@ -2,8 +2,10 @@ package org.frankframework.xslt;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.ThreadConnector;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
@@ -12,7 +14,6 @@ import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 

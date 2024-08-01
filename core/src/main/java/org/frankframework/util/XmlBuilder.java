@@ -20,10 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.IDocumentBuilder;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.XmlWriter;

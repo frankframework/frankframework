@@ -2,10 +2,12 @@ package org.frankframework.stream.xml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.documentbuilder.xml.XmlTap;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
 
 public class XmlTapTest {
 
