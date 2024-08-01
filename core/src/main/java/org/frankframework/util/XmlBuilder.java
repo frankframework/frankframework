@@ -147,31 +147,37 @@ public class XmlBuilder {
 	private void handleElement(ContentHandler handler) throws SAXException, IOException {
 		handler.startElement("", root, root, attributes);
 		try {
+			//Write sub-element
 			if (subElements != null) {
 				for (XmlBuilder subElement : subElements) {
 					subElement.handleElement(handler);
 				}
 			}
-			if (text != null) {
-				if (parseText) {
-					XmlUtils.parseNodeSet(text, handler);
-				} else {
-					handler.characters(text.toCharArray(), 0, text.length());
-				}
-			}
-			if (cdata != null) {
-				for (String part : cdata) {
-					if (handler instanceof LexicalHandler lexicalHandler) {
-						lexicalHandler.startCDATA();
-					}
-					handler.characters(part.toCharArray(), 0, part.length());
-					if (handler instanceof LexicalHandler lexicalHandler) {
-						lexicalHandler.endCDATA();
-					}
-				}
-			}
+
+			writeContent(handler);
 		} finally {
 			handler.endElement(root, text, root);
+		}
+	}
+
+	private void writeContent(ContentHandler handler) throws IOException, SAXException {
+		if (text != null) {
+			if (parseText) {
+				XmlUtils.parseNodeSet(text, handler);
+			} else {
+				handler.characters(text.toCharArray(), 0, text.length());
+			}
+		}
+		if (cdata != null) {
+			for (String part : cdata) {
+				if (handler instanceof LexicalHandler lexicalHandler) {
+					lexicalHandler.startCDATA();
+				}
+				handler.characters(part.toCharArray(), 0, part.length());
+				if (handler instanceof LexicalHandler lexicalHandler) {
+					lexicalHandler.endCDATA();
+				}
+			}
 		}
 	}
 }
