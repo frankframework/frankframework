@@ -123,7 +123,7 @@ public class XmlBuilder {
 		parseText = !encode && XmlUtils.isWellFormed(value);
 	}
 
-	public Message asMessage() throws IOException {
+	public Message asMessage() {
 		return new Message(asXmlString(), new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 	}
 
