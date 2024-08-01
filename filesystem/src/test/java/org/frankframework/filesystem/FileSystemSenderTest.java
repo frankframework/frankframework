@@ -518,20 +518,20 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderCreateFile() throws Exception {
-		SenderResult result = fileSystemSenderCreateFile(FOLDER_NAME, false, false);
-		assertFalse(result.isSuccess());
-		assertEquals("folderNotFound", result.getForwardName());
-		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("folder] does not exist"));
+		senderResult = fileSystemSenderCreateFile(FOLDER_NAME, false, false);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("folderNotFound", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("folder] does not exist"));
 	}
 
 	@Test
 	public void fileSystemSenderCreateFileAlreadyExists() throws Exception {
-		SenderResult result = fileSystemSenderCreateFile(FOLDER_NAME, true, false);
-		assertFalse(result.isSuccess());
-		assertEquals("fileAlreadyExists", result.getForwardName());
-		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("createfile1.txt] already exists"));
+		senderResult = fileSystemSenderCreateFile(FOLDER_NAME, true, false);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("fileAlreadyExists", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("createfile1.txt] already exists"));
 	}
 
 	@Test

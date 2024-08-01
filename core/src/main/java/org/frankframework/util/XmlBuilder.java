@@ -123,15 +123,20 @@ public class XmlBuilder {
 		parseText = !encode && XmlUtils.isWellFormed(value);
 	}
 
-	public Message asMessage() {
+	public Message asMessage() throws IOException {
 		return new Message(asXmlString(), new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 	}
 
 	public String asXmlString() {
 		XmlWriter writer = new XmlWriter();
-		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);
+		PrettyPrintFilter handler = new PrettyPrintFilter(writer);
 		try {
-			asXmlString(ppf, true);
+			handler.startDocument();
+			try {
+				handleElement(handler);
+			} finally {
+				handler.endDocument();
+			}
 		} catch (SAXException | IOException e) {
 			log.warn("cannot write XML", e);
 			return e.getMessage();
@@ -139,43 +144,34 @@ public class XmlBuilder {
 		return writer.toString();
 	}
 
-	private void asXmlString(ContentHandler handler, boolean asDocument) throws SAXException, IOException {
-		if (asDocument) {
-			handler.startDocument();
-		}
+	private void handleElement(ContentHandler handler) throws SAXException, IOException {
+		handler.startElement("", root, root, attributes);
 		try {
-			handler.startElement("", root, root, attributes);
-			try {
-				if (subElements != null) {
-					for (XmlBuilder subElement : subElements) {
-						subElement.asXmlString(handler, false);
+			if (subElements != null) {
+				for (XmlBuilder subElement : subElements) {
+					subElement.handleElement(handler);
+				}
+			}
+			if (text != null) {
+				if (parseText) {
+					XmlUtils.parseNodeSet(text, handler);
+				} else {
+					handler.characters(text.toCharArray(), 0, text.length());
+				}
+			}
+			if (cdata != null) {
+				for (String part : cdata) {
+					if (handler instanceof LexicalHandler lexicalHandler) {
+						lexicalHandler.startCDATA();
+					}
+					handler.characters(part.toCharArray(), 0, part.length());
+					if (handler instanceof LexicalHandler lexicalHandler) {
+						lexicalHandler.endCDATA();
 					}
 				}
-				if (text != null) {
-					if (parseText) {
-						XmlUtils.parseNodeSet(text, handler);
-					} else {
-						handler.characters(text.toCharArray(), 0, text.length());
-					}
-				}
-				if (cdata != null) {
-					for (String part : cdata) {
-						if (handler instanceof LexicalHandler lexicalHandler) {
-							lexicalHandler.startCDATA();
-						}
-						handler.characters(part.toCharArray(), 0, part.length());
-						if (handler instanceof LexicalHandler lexicalHandler) {
-							lexicalHandler.endCDATA();
-						}
-					}
-				}
-			} finally {
-				handler.endElement(root, text, root);
 			}
 		} finally {
-			if (asDocument) {
-				handler.endDocument();
-			}
+			handler.endElement(root, text, root);
 		}
 	}
 }
