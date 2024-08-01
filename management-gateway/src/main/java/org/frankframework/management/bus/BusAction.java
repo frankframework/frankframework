@@ -17,7 +17,7 @@ package org.frankframework.management.bus;
 
 public enum BusAction {
 
-	GET, FIND, UPLOAD, DOWNLOAD, DELETE, MANAGE, STATUS, WARNINGS, UPDATES;
+	GET, FIND, UPLOAD, DOWNLOAD, DELETE, MANAGE, STATUS, WARNINGS;
 
 	public static final String ACTION_HEADER_NAME = "action";
 }

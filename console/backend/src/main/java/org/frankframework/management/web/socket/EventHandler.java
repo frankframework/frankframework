@@ -15,20 +15,41 @@
 */
 package org.frankframework.management.web.socket;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.web.RequestMessageBuilder;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EventHandler extends FrankApiWebSocketBase {
 
+	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
+	private static final List<GrantedAuthority> READ_ONLY_AUTHORITY = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + "IbisObserver"));
+	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+
+	private void propagateAuthenticationContext(String name) {
+		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+		Authentication wsAuthentication = new AnonymousAuthenticationToken(name, name, READ_ONLY_AUTHORITY);
+		context.setAuthentication(wsAuthentication);
+		this.securityContextHolderStrategy.setContext(context);
+	}
+
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
 	public void serverWarnings() {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.UPDATES);
+		propagateAuthenticationContext("server-warnings");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET);
 
 		String jsonResponse = compareAndUpdateResponse(builder);
 		if (jsonResponse != null) {
@@ -38,7 +59,8 @@ public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
 	public void adapters() {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.UPDATES);
+		propagateAuthenticationContext("adapter-info");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("expanded", "all");
 
 		String jsonResponse = compareAndUpdateResponse(builder);
