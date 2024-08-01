@@ -128,9 +128,16 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
-	 * {@code DLL} is a special way of invoking the other application, loading the service via a DLL. See the
-	 * documentation of the <a href="https://github.com/frankframework/servicedispatcher">IbisServiceDispatcher</a> library for further details on how implement a Java program or DLL running
-	 * alongside the Frank!Framework that can be called from the Frank!Framework.
+	 * <ul>
+	 * <li>{@code ADAPTER} is the most efficient, low-overhead method to call another adapter directly</li>
+	 * <li>{@code LISTENER} calls another adapter via a configured {@link FrankListener}. Use this when you need all message logging and error handling that is
+	 * in the {@link org.frankframework.receivers.Receiver}.</li>
+	 * <li>{@code JVM} is the regular way of invoking another Java application in the same JVM.</li>
+	 * <li>{@code DLL} is a special way of invoking the other application, calling code loaded from a DLL that has been registered as service.</li>
+	 * </ul>
+	 *
+	 * For {@code JVM} and {@code DLL}, see the documentation of the <a href="https://github.com/frankframework/servicedispatcher">IbisServiceDispatcher</a> library
+	 * for further details on how implement a Java program or DLL running alongside the Frank!Framework that can be called from the Frank!Framework.
 	 *
 	 * <h4>See</h4>
 	 *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>

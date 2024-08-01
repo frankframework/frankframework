@@ -47,6 +47,7 @@ import org.frankframework.pipes.GetFromSession;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.PipeProcessor;
+import org.frankframework.receivers.FrankListener;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -313,10 +314,12 @@ class FrankSenderTest {
 
 	@ParameterizedTest
 	@CsvSource({ // Cannot test with DLL Scope
-			"ADAPTER, cid1, reply",
-			"JVM, cid1, reply",
-			"ADAPTER, , reply",
-			"JVM, , reply",
+			"ADAPTER, cid1",
+			"LISTENER, cid1",
+			"JVM, cid1",
+			"ADAPTER,",
+			"LISTENER,",
+			"JVM,",
 	})
 	void sendSyncMessage(FrankSender.Scope scope, String correlationId) throws Exception {
 		// Arrange
@@ -354,7 +357,7 @@ class FrankSenderTest {
 	}
 
 	@ParameterizedTest
-	@EnumSource(names = {"ADAPTER", "JVM"}) // Cannot test with DLL Scope
+	@EnumSource(names = {"ADAPTER", "LISTENER", "JVM"}) // Cannot test with DLL Scope
 	void sendAsyncMessage(FrankSender.Scope scope) throws Exception {
 		// Arrange
 		log.debug("Creating Configuration");
@@ -392,8 +395,10 @@ class FrankSenderTest {
 	@ParameterizedTest
 	@CsvSource({ // Cannot test with DLL Scope
 			"ADAPTER, cid1",
+			"LISTENER, cid1",
 			"JVM, cid1",
 			"ADAPTER,",
+			"LISTENER,",
 			"JVM,",
 	})
 	void sendMessageHandleException(FrankSender.Scope scope, String correlationId) throws Exception {
@@ -435,8 +440,10 @@ class FrankSenderTest {
 		}
 
 		Adapter targetAdapter = createAdapter(configuration, pipe);
-		if (scope != FrankSender.Scope.ADAPTER) {
+		if (scope == FrankSender.Scope.JVM) {
 			createJavaListener(configuration, targetAdapter);
+		} else if (scope == FrankSender.Scope.LISTENER) {
+			createFrankListener(configuration, targetAdapter);
 		}
 		if (!callSync) {
 			IsolatedServiceCaller isc = configuration.createBean(IsolatedServiceCaller.class);
@@ -449,6 +456,25 @@ class FrankSenderTest {
 
 		sender.configure();
 		return sender;
+	}
+
+	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException, ConfigurationException {
+		@SuppressWarnings("unchecked")
+		Receiver<Message> receiver = configuration.createBean(Receiver.class);
+		configuration.autowireByName(receiver);
+		receiver.setName("TargetAdapter-receiver");
+
+		FrankListener listener = configuration.createBean(FrankListener.class);
+		listener.setHandler(receiver);
+
+		receiver.setListener(listener);
+		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
+
+		targetAdapter.registerReceiver(receiver);
+		receiver.setAdapter(targetAdapter);
+
+		listener.configure();
+		listener.open();
 	}
 
 	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
@@ -467,6 +493,7 @@ class FrankSenderTest {
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
 		targetAdapter.registerReceiver(receiver);
+		receiver.setAdapter(targetAdapter);
 
 		listener.open();
 	}
