@@ -1,0 +1,128 @@
+package org.frankframework.receivers;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPushingListener;
+import org.frankframework.core.IbisExceptionListener;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Category;
+import org.frankframework.stream.Message;
+import org.springframework.context.ApplicationContext;
+
+
+/**
+ *
+ */
+@Category("Basic")
+@Log4j2
+public class FrankListener implements IPushingListener<Message>, HasPhysicalDestination, ServiceClient {
+
+	private static final ConcurrentMap<String, FrankListener> listeners = new ConcurrentHashMap<>();
+
+	private final @Getter String domain = "JVM";
+	private @Getter @Setter ApplicationContext applicationContext;
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
+	private @Getter String name;
+
+	private @Getter boolean open=false;
+	private @Getter @Setter IMessageHandler<Message> handler;
+
+	public static @Nullable FrankListener getListener(String name) {
+		return listeners.get(name);
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return getConfiguration().getName() + "/" + getName();
+	}
+
+	@Override
+	public void setExceptionListener(IbisExceptionListener listener) {
+		// Do nothing, does not throw exceptions for receiver
+	}
+
+	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) throws ListenerException {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		Adapter adapter = getAdapter();
+		if (StringUtils.isBlank(getName())) {
+			setName(adapter.getName());
+			log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
+		}
+	}
+
+	private Adapter getAdapter() {
+		return ((Receiver<?>) getHandler()).getAdapter();
+	}
+
+	private Configuration getConfiguration() {
+		return (Configuration) applicationContext;
+	}
+
+	@Override
+	public void open() throws ListenerException {
+		String fullName = getPhysicalDestinationName();
+		FrankListener putResult = listeners.putIfAbsent(fullName, this);
+		if (putResult != null && putResult != this) {
+			throw new ListenerException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
+		}
+		open = true;
+	}
+
+	@Override
+	public void close() throws ListenerException {
+		String fullName = getPhysicalDestinationName();
+		listeners.remove(fullName);
+		open = false;
+	}
+
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		// Do nothing
+	}
+
+	@Override
+	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return rawMessage.getRawMessage();
+	}
+
+	/**
+	 * Name of the listener by which it can be found by the {@link org.frankframework.senders.FrankSender}. If this
+	 * is not configured, the name will default to the name of the {@link org.frankframework.core.Adapter}.
+	 * The name of the {@code FrankListener} must be unique across the configuration.
+	 *
+	 * @param name Name of the listener. If not set, will default to {@link org.frankframework.core.Adapter} name.
+	 */
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
+		if (!isOpen()) {
+			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
+		}
+		return getHandler().processRequest(this, wrapRawMessage(message, session), message, session);
+	}
+}

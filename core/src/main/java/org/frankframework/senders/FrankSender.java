@@ -44,6 +44,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.SenderPipe;
+import org.frankframework.receivers.FrankListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
@@ -134,7 +135,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	 * <h4>See</h4>
 	 *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
 	 */
-	public enum Scope { JVM, DLL, ADAPTER }
+	public enum Scope { JVM, DLL, ADAPTER, LISTENER }
 
 	private @Getter Scope scope = Scope.ADAPTER;
 	private @Getter String target;
@@ -199,6 +200,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		log.info("{}Sending message to {} [{}]", this::getLogPrefix, ()->actualScope, ()->actualTarget);
 		ServiceClient serviceClient = switch (actualScope) {
 			case ADAPTER -> getAdapterServiceClient(actualTarget);
+			case LISTENER -> getFrankListener(actualTarget);
 			case JVM, DLL -> getJvmDispatcherServiceClient(actualScope, actualTarget);
 		};
 		return invokeService(serviceClient, actualScope, actualTarget, message, session, pvl);
@@ -329,6 +331,23 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		};
 	}
 
+	private ServiceClient getFrankListener(String target) throws SenderException {
+		String fullFrankListenerName;
+		int configNameSeparator = target.indexOf('/');
+		if (configNameSeparator > 0) {
+			fullFrankListenerName = target;
+		} else if (configNameSeparator == 0) {
+			fullFrankListenerName = getConfiguration().getName() + target;
+		} else {
+			fullFrankListenerName = getConfiguration().getName() + "/" + target;
+		}
+		ServiceClient result = FrankListener.getListener(fullFrankListenerName);
+		if (result == null) {
+			throw new SenderException(getLogPrefix() + "Listener [" + target + "] not found");
+		}
+		return result;
+	}
+
 	@Nonnull
 	Adapter findAdapter(String target) throws SenderException {
 		AdapterManager actualAdapterManager;
@@ -370,6 +389,10 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			return targetParam.asStringValue(getTarget());
 		}
 		return getTarget();
+	}
+
+	private Configuration getConfiguration() {
+		return (Configuration) getApplicationContext();
 	}
 
 	/**

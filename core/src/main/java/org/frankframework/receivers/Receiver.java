@@ -1000,7 +1000,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Message message) {
 		final Serializable sobj;
 
-		if (rawMessageWrapper instanceof MessageWrapper wrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper<?> wrapper) {
 			sobj = wrapper;
 		} else {
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
