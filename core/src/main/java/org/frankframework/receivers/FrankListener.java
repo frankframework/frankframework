@@ -26,7 +26,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
@@ -77,12 +76,12 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) throws ListenerException {
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		if (StringUtils.isBlank(getName())) {
 			Adapter adapter = getAdapter();
 			setName(adapter.getName());
@@ -116,12 +115,12 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) {
 		// Do nothing
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
 		return rawMessage.getRawMessage();
 	}
 

@@ -31,6 +31,10 @@
 				<FrankSender scope="JVM" target="iaf_test_FrankSenderCallViaJvmTest" returnedSessionKeys="resultKey"/>
 				<Forward name="success" path="Get Result From Session"/>
 			</SenderPipe>
+			<SenderPipe name="CallViaFrankListener">
+				<FrankSender scope="LISTENER" target="TestFrankListenerWithException" returnedSessionKeys="resultKey" synchronous="false"/>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
 
 			<GetFromSessionPipe name="Get Result From Session" sessionKey="resultKey"/>
 		</Pipeline>
@@ -62,6 +66,16 @@
 		</Receiver>
 		<Pipeline>
 			<PutInSessionPipe name="value to return" value="sub4" sessionKey="resultKey"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter5">
+		<Receiver>
+			<FrankListener name="TestFrankListenerWithException"/>
+			<JdbcErrorStorage slotId="FrankSenderListenerTest5" />
+		</Receiver>
+		<Pipeline>
+			<ExceptionPipe name="Forced Error" />
 		</Pipeline>
 	</Adapter>
 </Module>
