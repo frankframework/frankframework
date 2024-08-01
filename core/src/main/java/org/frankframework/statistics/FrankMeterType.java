@@ -20,10 +20,6 @@ import io.micrometer.core.instrument.Meter.Type;
 import lombok.Getter;
 
 public enum FrankMeterType {
-	TOTAL_MESSAGES_IN_ERROR("frank.messagesInError", Meter.Type.COUNTER),
-	TOTAL_MESSAGES_PROCESSED("frank.messagesProcessed", Meter.Type.COUNTER),
-	TOTAL_MESSAGES_REJECTED("frank.messagesRejected", Meter.Type.COUNTER),
-
 	JOB_DURATION("frank.job.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 
 	PIPE_DURATION("frank.pipe.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
