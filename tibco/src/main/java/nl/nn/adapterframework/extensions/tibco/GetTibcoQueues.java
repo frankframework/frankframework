@@ -182,7 +182,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
