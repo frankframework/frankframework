@@ -39,8 +39,6 @@
             "messagesRejected": 0.0,
             "messagesRetried": 0.0,
             "processing": [
-            ],
-            "idle": [
             ]
         }
     ],

@@ -209,7 +209,6 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			receiverMap.add("messagesRetried", receiver.getMessagesRetried());
 
 			receiverMap.add("processing", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_DURATION));
-			receiverMap.add("idle", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_IDLE));
 
 			receivers.add(receiverMap);
 		}

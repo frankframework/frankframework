@@ -862,11 +862,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 
-	protected void startProcessingMessage(long waitingDuration) {
-		int threadCount = threadsProcessing.getAndIncrement();
-		if (waitingDuration >= 0) {
-			getIdleStatistics(threadCount).record(waitingDuration);
-		}
+	protected void startProcessingMessage() {
+		threadsProcessing.getAndIncrement();
 		log.debug("{} starts processing message", this::getLogPrefix);
 	}
 
@@ -1037,7 +1034,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 			final Message result;
 			try {
-				result = processMessageInAdapter(messageWrapper, session, -1, manualRetry, manualRetry); // If manual retry, history is checked by original caller
+				result = processMessageInAdapter(messageWrapper, session, manualRetry, manualRetry); // If manual retry, history is checked by original caller
 			} catch (ListenerException e) {
 				exceptionThrown("exception processing message", e);
 				throw e;
@@ -1052,22 +1049,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
-		processRawMessage(origin, rawMessage, session, -1, duplicatesAlreadyChecked);
-	}
-
-	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		processRawMessage(rawMessage, session, waitingDuration, false, duplicatesAlreadyChecked);
+		processRawMessage(rawMessage, session, false, duplicatesAlreadyChecked);
 	}
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually calls the {@link Adapter} to process the message.<br/>
 	 * Assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
 			return;
@@ -1098,7 +1090,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 
-			Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, duplicatesAlreadyChecked);
 			try { //Only catch IOExceptions on Message#close, processMessageInAdapter throws Exceptions, which should not be caught!!
 				output.close();
 				log.debug("Closing result message [{}]", output);
@@ -1131,7 +1123,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
 				//noinspection unchecked
-				processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
+				processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 				return;
 			}
 			PlatformTransactionManager txManager = getTxManager();
@@ -1142,7 +1134,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					msg = errorStorage.getMessage(storageKey);
 					//noinspection ReassignedVariable
-					processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
+					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
 					throw new ListenerException(t);
@@ -1175,7 +1167,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
@@ -1201,7 +1193,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 			// update processing statistics
 			// count in processing statistics includes messages that are rolled back to input
-			startProcessingMessage(waitingDuration);
+			startProcessingMessage();
 
 			String errorMessage = "";
 			boolean messageInError = false;
@@ -1824,41 +1816,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 		return processStatistics.get(threadsProcessing);
 	}
-
-	protected synchronized DistributionSummary getIdleStatistics(int threadsProcessing) {
-		DistributionSummary result;
-		try {
-			result = idleStatistics.get(threadsProcessing);
-		} catch (IndexOutOfBoundsException e) {
-			result = null;
-		}
-
-		if (result==null) {
-			while (idleStatistics.size()<threadsProcessing+1) {
-				int threadNumber = idleStatistics.size()+1;
-				result = configurationMetrics.createThreadBasedDistributionSummary(this, FrankMeterType.RECEIVER_IDLE, threadNumber);
-				idleStatistics.add(idleStatistics.size(), result);
-			}
-		}
-		return idleStatistics.get(threadsProcessing);
-	}
-
-	/**
-	 * Returns an iterator over the process-statistics
-	 * @return iterator
-	 */
-	public Iterable<DistributionSummary> getProcessStatistics() {
-		return processStatistics;
-	}
-
-	/**
-	 * Returns an iterator over the idle-statistics
-	 * @return iterator
-	 */
-	public Iterable<DistributionSummary> getIdleStatistics() {
-		return idleStatistics;
-	}
-
 
 	public boolean isOnErrorContinue() {
 		return OnError.CONTINUE == getOnError();
