@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,10 +62,13 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 
 		schedulerSender.configure();
-		schedulerSender.sendMessage(new Message("message"), null);
+		try (PipeLineSession session = new PipeLineSession()) {
+			PipeLineSession.updateListenerParameters(session, null, "correlationID");
+			schedulerSender.sendMessage(new Message("message"), session);
+		}
 		assertNull(schedulerSender.getParameterList().findParameter("_jobname"));
 
-		assertTrue(schedulerHelper.contains(JOB_NAME));
+		assertTrue(schedulerHelper.contains(JOB_NAME + "correlationID"));
 	}
 
 	@Test
@@ -77,11 +81,14 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		Message name = schedulerSender.sendMessage(new Message("message"), null).getResult();
-		assertEquals(JOB_NAME, name.asString());
+		try (PipeLineSession session = new PipeLineSession()) {
+			PipeLineSession.updateListenerParameters(session, null, "correlationID");
+			Message name = schedulerSender.sendMessage(new Message("message"), session).getResult();
+			assertEquals(JOB_NAME+"correlationID", name.asString());
+		}
 
-		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));
-		assertFalse(schedulerHelper.contains(JOB_NAME));
+		assertTrue(schedulerHelper.contains(JOB_NAME + "correlationID", "test"));
+		assertFalse(schedulerHelper.contains(JOB_NAME + "correlationID"));
 	}
 
 	@Test
