@@ -87,7 +87,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	public abstract SenderResult doSendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {

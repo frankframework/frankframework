@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getCorrelationId();
+			String correlationID = session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
 			String cronExpression = values.get("_cronexpression").asStringValue();
@@ -116,9 +116,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 				.build();
 
 		schedulerHelper.scheduleJob(jobDetail, cronExpression);
-		if (log.isDebugEnabled()) {
-			log.debug("SchedulerSender [{}] has send job [{}] to the scheduler", getName(), jobName);
-		}
+		log.debug("SchedulerSender [{}] has send job [{}] to the scheduler", getName(), jobName);
 	}
 
 	/** expression that generates the cron trigger */
