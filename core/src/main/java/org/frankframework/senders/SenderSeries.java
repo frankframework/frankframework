@@ -80,7 +80,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getCorrelationId();
+		String correlationID = session.getCorrelationId();
 		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {

@@ -1,0 +1,4 @@
+jdbc:
+  - name: "frank2example"
+    type: "org.h2.jdbcx.JdbcDataSource"
+    url: "jdbc:h2:mem:frank2example;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"

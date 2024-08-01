@@ -15,10 +15,9 @@
 */
 package org.frankframework.xml;
 
+import org.frankframework.threading.ThreadConnector;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.ThreadConnector;
 
 public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 

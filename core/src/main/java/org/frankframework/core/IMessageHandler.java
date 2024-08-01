@@ -34,11 +34,6 @@ public interface IMessageHandler<M> {
 	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,RawMessageWrapper,PipeLineSession, boolean)}, but now updates IdleStatistics too
-	 */
-	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
-
-	/**
 	 * Alternative to functions above, will NOT use {@link IListener#extractMessage}. Used by PushingListeners.
 	 */
 	Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;

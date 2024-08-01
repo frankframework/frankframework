@@ -23,6 +23,8 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -36,12 +38,10 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.parameters.IParameter;
-import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.SaxAbortException;
-import org.frankframework.stream.SaxTimeoutException;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerErrorListener;
@@ -60,9 +60,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -472,4 +469,24 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		removeNamespaces = b;
 	}
 
+	/**
+	 * SAXException thrown to signal that the consumer of a stream does not want to receive more of it.
+	 */
+	public static class SaxAbortException extends SaxException {
+		public SaxAbortException(String message) {
+			super(message);
+		}
+		public SaxAbortException(Exception cause) {
+			super(cause);
+		}
+	}
+
+	/**
+	 * SAXException thrown to signal that a timeout occurred in consuming the stream.
+	 */
+	public static class SaxTimeoutException extends SaxException {
+		public SaxTimeoutException(Exception cause) {
+			super(cause);
+		}
+	}
 }

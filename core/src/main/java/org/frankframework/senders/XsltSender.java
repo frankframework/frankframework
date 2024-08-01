@@ -32,17 +32,17 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.documentbuilder.xml.XmlTap;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
-import org.frankframework.stream.xml.XmlTap;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.TransformerPool;
@@ -200,7 +200,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(Message input, ThreadConnector<Object> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList!=null) {
@@ -292,7 +292,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
-		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<Object> threadConnector = streamingXslt ? new ThreadConnector<>(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
 			MessageBuilder messageBuilder = new MessageBuilder();
 			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, messageBuilder);

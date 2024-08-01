@@ -1621,9 +1621,9 @@ public class LarvaTool {
 			tempFileMessage = content;
 		}
 
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(tempFile, StandardOpenOption.APPEND), encoding);
-		outputStreamWriter.write(tempFileMessage);
-		outputStreamWriter.close();
+		try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(tempFile, StandardOpenOption.APPEND), encoding)) {
+			outputStreamWriter.write(tempFileMessage);
+		}
 
 		return tempFile.toFile();
 	}

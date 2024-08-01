@@ -24,12 +24,12 @@ import java.sql.Statement;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.DocumentFormat;
-import org.frankframework.stream.document.INodeBuilder;
-import org.frankframework.stream.document.ObjectBuilder;
 import org.xml.sax.SAXException;
 
 public class DB2DocumentWriter {

@@ -18,7 +18,6 @@ package org.frankframework.extensions.bis;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
-
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -128,40 +127,47 @@ public class BisJmsSender extends JmsSender {
 			throw new SenderException(e);
 		}
 		if (isSynchronous()) {
-			String bisError;
-			String bisErrorList;
-			try {
-				bisError = bisErrorTp.transform(replyMessage, null, true);
-				bisErrorList = bisErrorListTp.transform(replyMessage, null, true);
-			} catch (Exception e) {
-				throw new SenderException(e);
-			}
-			if (Boolean.valueOf(bisError).booleanValue()) {
-				log.debug("put in session [{}] [{}]", getErrorListSessionKey(), bisErrorList);
-				session.put(getErrorListSessionKey(), bisErrorList);
-				throw new SenderException("bisErrorXPath [" + (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()) + "] returns true");
-			}
-			try {
-				replyMessage = responseTp.transform(replyMessage, null, true);
-				if (isRemoveResponseNamespaces()) {
-					replyMessage = XmlUtils.removeNamespaces(replyMessage);
-				}
-				if (isResultInPayload()) {
-					Element soapBodyElement = XmlUtils.buildElement(replyMessage, true);
-					Element resultElement = XmlUtils.getFirstChildTag(soapBodyElement, "Result");
-					if (resultElement != null) {
-						soapBodyElement.removeChild(resultElement);
-					}
-					replyMessage = XmlUtils.nodeToString(soapBodyElement);
-				}
-				return new SenderResult(replyMessage);
+			checkForBisError(replyMessage, session);
 
-			} catch (Exception e) {
-				throw new SenderException(e);
-			}
-
+			return transform(replyMessage);
 		} else {
 			return new SenderResult(replyMessage);
+		}
+	}
+
+	private SenderResult transform(String input) throws SenderException {
+		try {
+			String replyMessage = responseTp.transform(input, null, true);
+			if (isRemoveResponseNamespaces()) {
+				replyMessage = XmlUtils.removeNamespaces(replyMessage);
+			}
+			if (isResultInPayload()) {
+				Element soapBodyElement = XmlUtils.buildElement(replyMessage, true);
+				Element resultElement = XmlUtils.getFirstChildTag(soapBodyElement, "Result");
+				if (resultElement != null) {
+					soapBodyElement.removeChild(resultElement);
+				}
+				replyMessage = XmlUtils.nodeToString(soapBodyElement);
+			}
+			return new SenderResult(replyMessage);
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+	}
+
+	private void checkForBisError(String replyMessage, PipeLineSession session) throws SenderException {
+		String bisError;
+		String bisErrorList;
+		try {
+			bisError = bisErrorTp.transform(replyMessage, null, true);
+			bisErrorList = bisErrorListTp.transform(replyMessage, null, true);
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+		if (Boolean.valueOf(bisError).booleanValue()) {
+			log.debug("put in session [{}] [{}]", getErrorListSessionKey(), bisErrorList);
+			session.put(getErrorListSessionKey(), bisErrorList);
+			throw new SenderException("bisErrorXPath [" + (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()) + "] returns true");
 		}
 	}
 

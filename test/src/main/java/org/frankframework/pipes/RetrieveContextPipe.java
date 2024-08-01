@@ -23,10 +23,10 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.DocumentFormat;
-import org.frankframework.stream.document.ObjectBuilder;
 import org.xml.sax.SAXException;
 
 public class RetrieveContextPipe extends FixedForwardPipe {

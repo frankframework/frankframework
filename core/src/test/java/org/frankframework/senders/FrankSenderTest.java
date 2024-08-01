@@ -24,6 +24,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.Configuration;
@@ -57,7 +58,6 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
-import org.jetbrains.annotations.NotNull;
 
 import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
@@ -481,7 +481,7 @@ class FrankSenderTest {
 		}
 	}
 
-	private @NotNull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException, ListenerException {
+	private @Nonnull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException, ListenerException {
 		FrankSender sender = configuration.createBean(FrankSender.class);
 		sender.setTarget(TARGET_SERVICE_NAME);
 		sender.setScope(scope);
