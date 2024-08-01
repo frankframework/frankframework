@@ -216,13 +216,13 @@ class FrankSenderTest {
 		Adapter adapter = mock();
 		AdapterManager adapterManager = mock();
 		IbisManager ibisManager = mock();
-		Configuration configuration = mock();
+		Configuration mockConfiguration = mock();
 
 		sender.setIbisManager(ibisManager);
 		sender.setAdapterManager(adapterManager);
 
-		when(ibisManager.getConfiguration("configurationName")).thenReturn(configuration);
-		when(configuration.getAdapterManager()).thenReturn(adapterManager);
+		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
+		when(mockConfiguration.getAdapterManager()).thenReturn(adapterManager);
 		when(adapterManager.getAdapter("adapterName")).thenReturn(adapter);
 
 		// Act
@@ -247,13 +247,13 @@ class FrankSenderTest {
 		Adapter adapter = mock();
 		AdapterManager adapterManager = mock();
 		IbisManager ibisManager = mock();
-		Configuration configuration = mock();
+		Configuration mockConfiguration = mock();
 
 		sender.setIbisManager(ibisManager);
 		sender.setAdapterManager(adapterManager);
 
-		when(ibisManager.getConfiguration("configurationName")).thenReturn(configuration);
-		when(configuration.getAdapterManager()).thenReturn(adapterManager);
+		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
+		when(mockConfiguration.getAdapterManager()).thenReturn(adapterManager);
 		when(adapterManager.getAdapter("adapterName")).thenReturn(adapter);
 
 		// Act / Assert
@@ -269,21 +269,21 @@ class FrankSenderTest {
 	void getFrankListenerSuccess(String target) throws Exception {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
-		when(configuration.getName()).thenReturn("ConfigName");
-		sender.setApplicationContext(configuration);
+		Configuration mockConfiguration = mock();
+		when(mockConfiguration.getName()).thenReturn("ConfigName");
+		sender.setApplicationContext(mockConfiguration);
 
 		frankListener = new FrankListener();
 		frankListener.setName("ListenerName");
-		frankListener.setApplicationContext(configuration);
+		frankListener.setApplicationContext(mockConfiguration);
 
 		frankListener.open();
 
 		// Act
-		ServiceClient result = sender.getFrankListener(target);
+		ServiceClient actual = sender.getFrankListener(target);
 
 		// Assert
-		assertNotNull(result, "Expected to have found a FrankListener for target [" + target + "]");
+		assertNotNull(actual, "Expected to have found a FrankListener for target [" + target + "]");
 	}
 
 	@ParameterizedTest

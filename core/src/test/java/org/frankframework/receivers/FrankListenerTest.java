@@ -29,8 +29,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class FrankListenerTest {
-	private final static String ADAPTER_NAME = "The Adapter";
-	private final static String LISTENER_NAME = "The Listener";
+	private static final String ADAPTER_NAME = "The Adapter";
+	private static final String LISTENER_NAME = "The Listener";
 
 	TestConfiguration configuration;
 	Adapter adapter;
