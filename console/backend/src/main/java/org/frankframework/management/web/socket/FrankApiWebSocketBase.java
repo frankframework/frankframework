@@ -16,6 +16,8 @@
 package org.frankframework.management.web.socket;
 
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.List;
 
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
@@ -25,6 +27,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -36,6 +45,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class FrankApiWebSocketBase {
 
+	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
+	private static final List<GrantedAuthority> READ_ONLY_AUTHORITY = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + "IbisObserver"));
+	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+
 	@Autowired
 	@Qualifier("outboundGateway")
 	private OutboundGateway gateway;
@@ -45,6 +58,13 @@ public class FrankApiWebSocketBase {
 
 	@Autowired
 	private MessageCacheStore messageCacheStore;
+
+	protected final void propagateAuthenticationContext(String name) {
+		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+		Authentication wsAuthentication = new AnonymousAuthenticationToken(name, name, READ_ONLY_AUTHORITY);
+		context.setAuthentication(wsAuthentication);
+		this.securityContextHolderStrategy.setContext(context);
+	}
 
 	@Nullable
 	protected String compareAndUpdateResponse(RequestMessageBuilder builder) {
