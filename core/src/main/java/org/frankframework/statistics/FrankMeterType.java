@@ -40,7 +40,6 @@ public enum FrankMeterType {
 
 
 	RECEIVER_DURATION("frank.receiver.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
-	RECEIVER_IDLE("frank.receiver.idle", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	RECEIVER_RECEIVED("frank.receiver.messagesReceived", Meter.Type.COUNTER),
 	RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
 	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER);
