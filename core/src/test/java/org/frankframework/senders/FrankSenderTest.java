@@ -50,6 +50,7 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.FrankListener;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -69,6 +70,7 @@ class FrankSenderTest {
 	private Message input;
 	private SenderResult result;
 	private TestConfiguration configuration;
+	private FrankListener frankListener;
 
 	@AfterEach
 	void tearDown() {
@@ -83,6 +85,9 @@ class FrankSenderTest {
 			DispatcherManagerFactory.getDispatcherManager().unregister(TARGET_SERVICE_NAME);
 		} catch (DispatcherException e) {
 			// Ignore
+		}
+		if (frankListener != null) {
+			frankListener.close();
 		}
 		log.debug("FrankSenderTest: Teardown done");
 	}
@@ -253,6 +258,55 @@ class FrankSenderTest {
 
 		// Act / Assert
 		assertThrows(SenderException.class, () -> sender.findAdapter(target));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"ListenerName",
+			"ConfigName/ListenerName",
+			"/ListenerName"
+	})
+	void getFrankListenerSuccess(String target) throws Exception {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		Configuration configuration = mock();
+		when(configuration.getName()).thenReturn("ConfigName");
+		sender.setApplicationContext(configuration);
+
+		frankListener = new FrankListener();
+		frankListener.setName("ListenerName");
+		frankListener.setApplicationContext(configuration);
+
+		frankListener.open();
+
+		// Act
+		ServiceClient result = sender.getFrankListener(target);
+
+		// Assert
+		assertNotNull(result, "Expected to have found a FrankListener for target [" + target + "]");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"NoSuchListener",
+			"NoSuchConfig/ListenerName",
+			"/NoSuchListener"
+	})
+	void getFrankListenerNotFound(String target) throws Exception {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		Configuration configuration = mock();
+		when(configuration.getName()).thenReturn("ConfigName");
+		sender.setApplicationContext(configuration);
+
+		frankListener = new FrankListener();
+		frankListener.setName("ListenerName");
+		frankListener.setApplicationContext(configuration);
+
+		frankListener.open();
+
+		// Act
+		assertThrows(SenderException.class, ()-> sender.getFrankListener(target));
 	}
 
 	@ParameterizedTest

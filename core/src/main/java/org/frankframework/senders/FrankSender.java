@@ -79,7 +79,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * <ul>
  *   <li>Define a {@link SenderPipe} with a FrankSender</li>
  *   <li>Set the attribute {@code target} to <i>targetAdapterName</i></li>
- *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).</li>
+ *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (note the slash-separator between Configuration name and Adapter name).</li>
  * </ul>
  * In the Adapter to be called:
  * <ul>
@@ -87,6 +87,15 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *   <li>The adapter will run in the same transaction as the calling adapter,</li>
  *   <li>If the called adapter does not to run in its own transaction, set the transaction attributes on the {@link PipeLine} attribute of this adapter
  *   or on the {@link SenderPipe} that contains this {@code FrankSender}.</li>
+ * </ul>
+ *
+ * <h4>Configuring FrankSender with FrankListener</h4>
+ * <ul>
+ *   <li>Define a {@link SenderPipe} with a FrankSender</li>
+ *   <li>In the target adapter, define a {@link org.frankframework.receivers.Receiver} with a {@link FrankListener}</li>
+ *   <li>Give a unique name to the listener: {@link FrankListener#setName(String)}. If the name is not set, the name of the {@link Adapter} will be used.</li>
+ *   <li>Set the {@link #setScope(Scope)} to {@code LISTENER} and the {@link #setTarget(String)} to the listener name as per previous point</li>
+ *   <li>If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name</li>
  * </ul>
  *
  * <h4>Configuring FrankSender and Remote Application</h4>
@@ -338,7 +347,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		};
 	}
 
-	private ServiceClient getFrankListener(String target) throws SenderException {
+	ServiceClient getFrankListener(String target) throws SenderException {
 		String fullFrankListenerName;
 		int configNameSeparator = target.indexOf('/');
 		if (configNameSeparator > 0) {

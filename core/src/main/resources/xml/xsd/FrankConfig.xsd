@@ -1260,6 +1260,22 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="FrankListener">
+        <xs:annotation>
+          <xs:documentation>Listener to accompany the org.frankframework.senders.FrankSender, for situations where
+ calling an Adapter directly is not desired. This could be because message / error logging is required for messages
+ sent to the subadapter.
+ &lt;br/&gt;
+ See the org.frankframework.senders.FrankSender documentation for more information.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FrankListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FtpFileSystemListener">
         <xs:complexType>
           <xs:complexContent>
@@ -2351,6 +2367,21 @@
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="FrankListenerType">
+    <xs:attributeGroup ref="FrankListenerDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FrankListener" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="FrankListenerDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the listener by which it can be found by the org.frankframework.senders.FrankSender. If this
+ is not configured, the name will default to the name of the org.frankframework.core.Adapter.
+ The name of the {@code FrankListener} must be unique across the configuration.</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -3847,7 +3878,7 @@
  &lt;ul&gt;
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
    &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (note the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
@@ -3855,6 +3886,15 @@
    &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
    &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
    or on the SenderPipe that contains this {@code FrankSender}.&lt;/li&gt;
+ &lt;/ul&gt;
+
+ &lt;h4&gt;Configuring FrankSender with FrankListener&lt;/h4&gt;
+ &lt;ul&gt;
+   &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
+   &lt;li&gt;In the target adapter, define a org.frankframework.receivers.Receiver with a FrankListener&lt;/li&gt;
+   &lt;li&gt;Give a unique name to the listener: FrankListener#setName(String). If the name is not set, the name of the Adapter will be used.&lt;/li&gt;
+   &lt;li&gt;Set the #setScope(Scope) to {@code LISTENER} and the #setTarget(String) to the listener name as per previous point&lt;/li&gt;
+   &lt;li&gt;If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;Configuring FrankSender and Remote Application&lt;/h4&gt;
@@ -8782,7 +8822,7 @@
  &lt;ul&gt;
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
    &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (note the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
@@ -8790,6 +8830,15 @@
    &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
    &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
    or on the SenderPipe that contains this {@code FrankSender}.&lt;/li&gt;
+ &lt;/ul&gt;
+
+ &lt;h4&gt;Configuring FrankSender with FrankListener&lt;/h4&gt;
+ &lt;ul&gt;
+   &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
+   &lt;li&gt;In the target adapter, define a org.frankframework.receivers.Receiver with a FrankListener&lt;/li&gt;
+   &lt;li&gt;Give a unique name to the listener: FrankListener#setName(String). If the name is not set, the name of the Adapter will be used.&lt;/li&gt;
+   &lt;li&gt;Set the #setScope(Scope) to {@code LISTENER} and the #setTarget(String) to the listener name as per previous point&lt;/li&gt;
+   &lt;li&gt;If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;Configuring FrankSender and Remote Application&lt;/h4&gt;
@@ -17869,6 +17918,7 @@
       <xs:enumeration value="JVM" />
       <xs:enumeration value="DLL" />
       <xs:enumeration value="ADAPTER" />
+      <xs:enumeration value="LISTENER" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="PostTypeAttributeValuesType">

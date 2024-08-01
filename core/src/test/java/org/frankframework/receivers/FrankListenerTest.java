@@ -61,11 +61,6 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void getListener() {
-		// TODO
-	}
-
-	@Test
 	void getPhysicalDestinationName() {
 		// Arrange
 		listener.setName(LISTENER_NAME);
@@ -179,6 +174,8 @@ class FrankListenerTest {
 
 	@Test
 	void processRequest() throws ListenerException {
+		// Testing with real objects instead of mocks is done in the FrankSenderTest
+
 		// Arrange
 		listener.open();
 		when(receiver.processRequest(any(), any(), any(), any())).thenReturn(message);

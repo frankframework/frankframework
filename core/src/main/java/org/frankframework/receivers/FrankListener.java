@@ -42,8 +42,10 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Listener to accompany the {@link org.frankframework.senders.FrankSender}, for situations where
- * calling an {@link Adapter} directly is not desired and message / error logging is required for messages
+ * calling an {@link Adapter} directly is not desired. This could be because message / error logging is required for messages
  * sent to the subadapter.
+ * <br/>
+ * See the {@link org.frankframework.senders.FrankSender} documentation for more information.
  */
 @Category("Basic")
 @Log4j2
