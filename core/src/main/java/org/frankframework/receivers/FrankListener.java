@@ -81,8 +81,8 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 
 	@Override
 	public void configure() throws ConfigurationException {
-		Adapter adapter = getAdapter();
 		if (StringUtils.isBlank(getName())) {
+			Adapter adapter = getAdapter();
 			setName(adapter.getName());
 			log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
 		}
@@ -107,7 +107,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public void close() throws ListenerException {
+	public void close() {
 		String fullName = getPhysicalDestinationName();
 		listeners.remove(fullName);
 		open = false;
