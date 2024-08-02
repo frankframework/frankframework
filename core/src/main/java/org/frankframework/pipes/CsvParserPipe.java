@@ -54,7 +54,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 	private @Getter boolean prettyPrint=false;
 	private boolean useControlCodes;
 
-	private CSVFormat format = CSVFormat.DEFAULT;
+	private CSVFormat format;
 
 	public enum HeaderCase {
 		LOWERCASE,
@@ -64,34 +64,37 @@ public class CsvParserPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(useControlCodes) {
-			CSVFormat.Builder builder = CSVFormat.Builder.create();
-			builder.setRecordSeparator((char) 30);
-			builder.setDelimiter((char) 31);
-			format = builder.build();
-		}
+
+		CSVFormat.Builder builder = CSVFormat.Builder.create(CSVFormat.DEFAULT);
+
 		if (StringUtils.isNotEmpty(getFieldNames())) {
-			format = format.withHeader(getFieldNames().split(","))
-						.withSkipHeaderRecord(getFileContainsHeader()!=null && getFileContainsHeader());
+			builder.setHeader(getFieldNames().split(","));
+			builder.setSkipHeaderRecord(getFileContainsHeader()!=null && getFileContainsHeader());
 		} else {
 			if (getFileContainsHeader()==null || getFileContainsHeader()) {
-				format = format.withFirstRecordAsHeader();
+				builder.setHeader();
+				builder.setSkipHeaderRecord(true);
 			} else {
 				throw new ConfigurationException("No fieldNames specified, and fileContainsHeader=false");
 			}
 		}
 
-		if (StringUtils.isNotEmpty(getFieldSeparator())) {
-			if(useControlCodes) {
-				throw new ConfigurationException("cannot use fieldSeparator in combination with useControlCodes");
-			}
+		if(StringUtils.isNotEmpty(getFieldSeparator()) && useControlCodes) {
+			throw new ConfigurationException("cannot use fieldSeparator in combination with useControlCodes");
+		}
 
+		if(useControlCodes) {
+			builder.setRecordSeparator((char) 30);
+			builder.setDelimiter((char) 31);
+		} else if (StringUtils.isNotEmpty(getFieldSeparator())) {
 			String separator = getFieldSeparator();
 			if (separator.length()>1) {
 				throw new ConfigurationException("Illegal value for fieldSeparator ["+separator+"], can only be a single character");
 			}
-			format = format.withDelimiter(getFieldSeparator().charAt(0));
+			builder.setDelimiter(getFieldSeparator().charAt(0));
 		}
+
+		format = builder.build();
 	}
 
 	@Override
@@ -159,7 +162,8 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	/**
 	 * Enables the ASCII {@code (RS) Record Separator} and {@code (US) Unit Separator} Control Code field delimiters.
-	 * See {@linkplain https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators}
+	 * May not be used in combination with attribute {@code fieldSeparator}.
+	 * See {@linkplain https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators}.
 	 */
 	public void setUseControlCodes(boolean useControlCodes) {
 		this.useControlCodes = useControlCodes;

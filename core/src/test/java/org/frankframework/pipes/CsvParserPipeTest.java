@@ -47,6 +47,23 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	}
 
 	@Test
+	public void test2CharFieldSeparator() {
+		pipe.setFieldSeparator("; ");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("], can only be a single character"));
+	}
+
+	@Test
+	public void testFieldSeparatorAndControlCodes() {
+		pipe.setFieldSeparator(";");
+		pipe.setUseControlCodes(true);
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("cannot use fieldSeparator in combination with useControlCodes"));
+	}
+
+	@Test
 	public void testFieldNames() throws Exception {
 		pipe.setFieldNames("p,q,r");
 		configureAndStartPipe();
