@@ -36,7 +36,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -419,7 +418,9 @@ class FrankSenderTest {
 		Semaphore semaphore = new Semaphore(0);
 		IPipe pipe = new AbstractPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+				// Assert this to make sure input message is not prematurely closed; normally this is asserted by a PipeLineProcessor but that is not created in the Test SpringContext
+				message.assertNotClosed();
 				semaphore.release();
 				return new PipeRunResult();
 			}
@@ -429,6 +430,8 @@ class FrankSenderTest {
 		FrankSender sender = createFrankSender(scope, false, pipe);
 
 		session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "mid1");
+		session.put(PipeLineSession.CORRELATION_ID_KEY, "cid2");
 		input = new Message("request");
 
 		// Act
@@ -512,7 +515,7 @@ class FrankSenderTest {
 		return sender;
 	}
 
-	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException, ConfigurationException {
+	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
 		@SuppressWarnings("unchecked")
 		Receiver<Message> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(receiver);

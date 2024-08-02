@@ -70,9 +70,9 @@
 	</Adapter>
 
 	<Adapter name="SubAdapter5">
-		<Receiver>
+		<Receiver maxRetries="0" transactionAttribute="NotSupported">
 			<FrankListener name="TestFrankListenerWithException"/>
-			<JdbcErrorStorage slotId="FrankSenderListenerTest5" />
+			<JdbcErrorStorage slotId="FrankSenderListenerTestErrors" />
 		</Receiver>
 		<Pipeline>
 			<ExceptionPipe name="Forced Error" />

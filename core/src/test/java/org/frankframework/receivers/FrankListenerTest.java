@@ -13,20 +13,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.frankframework.configuration.ConfigurationException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
-
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 class FrankListenerTest {
 	private static final String ADAPTER_NAME = "The Adapter";
@@ -73,7 +71,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void wrapRawMessage() throws ListenerException {
+	void wrapRawMessage() {
 		// Act
 		RawMessageWrapper<Message> result = listener.wrapRawMessage(message, session);
 
@@ -85,7 +83,7 @@ class FrankListenerTest {
 
 	@ParameterizedTest
 	@CsvSource({"," + ADAPTER_NAME, LISTENER_NAME + "," + LISTENER_NAME})
-	void configure(String listenerName, String expected) throws ConfigurationException {
+	void configure(String listenerName, String expected) {
 		// Arrange
 		listener.setName(listenerName);
 
@@ -161,7 +159,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void extractMessage() throws ListenerException {
+	void extractMessage() {
 		// Arrange
 		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(message);
 

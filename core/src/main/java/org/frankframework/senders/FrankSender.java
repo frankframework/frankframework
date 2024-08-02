@@ -255,7 +255,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			if (isSynchronous()) {
 				return serviceClient.processRequest(message, childSession);
 			} else {
-				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, parentSession, threadLifeCycleEventListener);
+				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, childSession, threadLifeCycleEventListener);
 				return Message.nullMessage();
 			}
 		} catch (ListenerException | IOException e) {
