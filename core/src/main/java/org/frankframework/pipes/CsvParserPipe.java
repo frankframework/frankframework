@@ -23,9 +23,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -37,6 +34,9 @@ import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Reads a message in CSV format, and turns it into XML.
@@ -52,6 +52,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 	private @Getter String fieldSeparator;
 	private @Getter HeaderCase headerCase=null;
 	private @Getter boolean prettyPrint=false;
+	private boolean useControlCodes;
 
 	private CSVFormat format = CSVFormat.DEFAULT;
 
@@ -63,6 +64,12 @@ public class CsvParserPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if(useControlCodes) {
+			CSVFormat.Builder builder = CSVFormat.Builder.create();
+			builder.setRecordSeparator((char) 30);
+			builder.setDelimiter((char) 31);
+			format = builder.build();
+		}
 		if (StringUtils.isNotEmpty(getFieldNames())) {
 			format = format.withHeader(getFieldNames().split(","))
 						.withSkipHeaderRecord(getFileContainsHeader()!=null && getFileContainsHeader());
@@ -75,6 +82,10 @@ public class CsvParserPipe extends FixedForwardPipe {
 		}
 
 		if (StringUtils.isNotEmpty(getFieldSeparator())) {
+			if(useControlCodes) {
+				throw new ConfigurationException("cannot use fieldSeparator in combination with useControlCodes");
+			}
+
 			String separator = getFieldSeparator();
 			if (separator.length()>1) {
 				throw new ConfigurationException("Illegal value for fieldSeparator ["+separator+"], can only be a single character");
@@ -144,6 +155,14 @@ public class CsvParserPipe extends FixedForwardPipe {
 	/** Format the XML output in easy legible way */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
+	}
+
+	/**
+	 * Enables the ASCII {@code (RS) Record Separator} and {@code (US) Unit Separator} Control Code field delimiters.
+	 * See {@linkplain https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators}
+	 */
+	public void setUseControlCodes(boolean useControlCodes) {
+		this.useControlCodes = useControlCodes;
 	}
 
 }

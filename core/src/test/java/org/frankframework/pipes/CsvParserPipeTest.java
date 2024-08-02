@@ -166,4 +166,18 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		String expected = TestFileUtils.getTestFile("/CsvParser/codes.xml");
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
+
+	@Test
+	public void test0x1fCsvFile() throws Exception {
+		pipe.setUseControlCodes(true);
+		pipe.setPrettyPrint(true);
+		configureAndStartPipe();
+
+		URL input = TestFileUtils.getTestFileURL("/CsvParser/0x1f_example.csv");
+		assertNotNull(input, "cannot find test file");
+
+		PipeRunResult prr = doPipe(new UrlMessage(input));
+		String expected = TestFileUtils.getTestFile("/CsvParser/0x1f_example.xml");
+		assertXmlEquals(expected, prr.getResult().asString());
+	}
 }
