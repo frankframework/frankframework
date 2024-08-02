@@ -15,12 +15,15 @@
  */
 package org.frankframework.extensions.tibco;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Collection;
+
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -97,11 +100,23 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private boolean skipTemporaryQueues = false;
 	private boolean hideMessage = false;
 	private String queueRegex;
+	private String emsPropertiesFile;
+	private Map<String, Object> emsProperties;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		if(StringUtils.isNotEmpty(emsPropertiesFile)) {
+			try {
+				emsProperties = new TibcoEmsProperties(this, emsPropertiesFile);
+			} catch (IOException e) {
+				throw new ConfigurationException("unable to find/load the EMS properties file", e);
+			}
+		} else {
+			emsProperties = Collections.emptyMap();
 		}
 
 		super.configure();
@@ -148,7 +163,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		Session jSession = null;
 		TibjmsAdmin admin = null;
 		try {
-			admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+			admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
 			if (admin == null) {
 				throw new PipeRunException(this, "could not find an active server");
 			}
@@ -168,7 +183,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -679,5 +694,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	public void setQueueRegex(String string) {
 		queueRegex = string;
+	}
+
+	/** Location to a <code>jndi.properties</code> file for additional EMS (SSL) properties */
+	public void setEmsPropertiesFile(String propertyFile) {
+		emsPropertiesFile = propertyFile;
 	}
 }
