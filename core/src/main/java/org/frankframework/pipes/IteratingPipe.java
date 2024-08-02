@@ -271,28 +271,23 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			String itemResult=null;
 			totalItems++;
-			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
-				session.put(getItemNoSessionKey(),""+totalItems);
-			}
-			Message message=itemToMessage(item);
-			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
-			if (msgTransformerPool!=null) {
-				try {
-					long preprocessingStartTime = System.currentTimeMillis();
 
-					ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
-					Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
-					log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMsg);
-					message = transformedMsg;
-					long preprocessingEndTime = System.currentTimeMillis();
-					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
-					getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
-				} catch (Exception e) {
-					throw new SenderException("cannot transform item",e);
-				}
+			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
+				session.put(getItemNoSessionKey(), ""+totalItems);
+			}
+
+			Message message = itemToMessage(item);
+			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
+			if (msgTransformerPool != null) {
+				Message transformedMessage = transformMessage(message);
+				log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMessage);
+				message.close();
+				message = transformedMessage;
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
+			message.closeOnCloseOf(session, "iteratingPipeItem"+totalItems);
+
 			if (childLimiter != null) {
 				try {
 					childLimiter.acquire();
@@ -391,6 +386,20 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			}
 		}
+
+		private Message transformMessage(Message message) throws SenderException {
+			try {
+				long preprocessingStartTime = System.currentTimeMillis();
+				ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
+				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
+				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
+				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
+				return transformedMsg;
+			} catch (Exception e) {
+				throw new SenderException("cannot transform item", e);
+			}
+		}
+
 		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
 				log.debug("removing XML declaration from [{}]", itemResult);
