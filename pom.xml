@@ -39,7 +39,7 @@
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.230</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
-		<oracle.driver.version>23.4.0.24.05</oracle.driver.version>
+		<oracle.driver.version>23.5.0.24.07</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.8.0.jre11</mssql.driver.version>
 		<mysql.driver.version>8.4.0</mysql.driver.version>
