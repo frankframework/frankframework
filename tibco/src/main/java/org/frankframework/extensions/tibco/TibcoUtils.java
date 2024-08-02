@@ -16,6 +16,7 @@
 package org.frankframework.extensions.tibco;
 
 import java.util.Enumeration;
+import java.util.Map;
 
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
@@ -212,8 +213,7 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static TibjmsAdmin getActiveServerAdmin(String url,
-			CredentialFactory cf) throws TibjmsAdminException {
+	protected static TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) throws TibjmsAdminException {
 		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");
@@ -227,7 +227,7 @@ public class TibcoUtils {
 				// following exception:
 				//   com.tibco.tibjms.admin.TibjmsAdminException: Unable to connect to server. Root cause:
 				//   jakarta.jms.ResourceAllocationException: too many open connections
-				admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword());
+				admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword(), connectionProperties);
 				// The next line of code has been reported to throw the
 				// following exception:
 				//   com.tibco.tibjms.admin.TibjmsAdminSecurityException: Command unavailable on a server not in active state and using a JSON configuration file
