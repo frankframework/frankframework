@@ -57,6 +57,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
+	private String fullName;
 
 	private @Getter boolean open=false;
 	private @Getter @Setter IMessageHandler<Message> handler;
@@ -67,7 +68,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return getConfiguration().getName() + "/" + getName();
+		return fullName;
 	}
 
 	@Override
@@ -87,6 +88,8 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 			setName(adapter.getName());
 			log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
 		}
+		fullName = getConfiguration().getName() + "/" + getName();
+		log.debug("FrankListener instance will be registered under full name [{}]", fullName);
 	}
 
 	private Adapter getAdapter() {
@@ -99,7 +102,6 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 
 	@Override
 	public void open() throws ListenerException {
-		String fullName = getPhysicalDestinationName();
 		FrankListener putResult = listeners.putIfAbsent(fullName, this);
 		if (putResult != null && putResult != this) {
 			throw new ListenerException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
@@ -109,7 +111,6 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 
 	@Override
 	public void close() {
-		String fullName = getPhysicalDestinationName();
 		listeners.remove(fullName);
 		open = false;
 	}
