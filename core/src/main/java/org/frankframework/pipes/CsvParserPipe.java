@@ -34,6 +34,7 @@ import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 
@@ -103,7 +104,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 	private void processCsvRecord(final CSVRecord csvRecord, final SaxDocumentBuilder document) throws PipeRunException {
 		try (SaxElementBuilder element = document.startElement("record")) {
 			for(Entry<String,String> entry: csvRecord.toMap().entrySet()) {
-				String key = entry.getKey();
+				String key = XmlEncodingUtils.stripNonValidXmlCharacters(entry.getKey().replace(' ', '_'), false);
 				if(getHeaderCase() != null) {
 					key = getHeaderCase()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
 				}
