@@ -205,7 +205,7 @@ public class PropertyLoader extends Properties {
 			List<URL> resources = Collections.list(classLoader.getResources(filename));
 			if(resources.isEmpty()) {
 				if(rootPropertyFile.equals(filename)) { //The file cannot be found, abort!
-					String msg = rootPropertyFile+ " file not found, unable to initalize AppConstants";
+					String msg = rootPropertyFile+ " file not found, unable to initialize PropertyLoader";
 					LOG.error(msg);
 					throw new MissingResourceException(msg, this.getClass().getSimpleName(), rootPropertyFile);
 				}
