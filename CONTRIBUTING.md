@@ -224,7 +224,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ### Setup IntelliJ
 
-This guide assumes that you are using Intellij Ultimate, because application servers and WAR exploded are not included in the community edition.
+This guide assumes that you are using IntelliJ Ultimate, because application servers and WAR exploded are not included in the community edition.
 
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
@@ -244,7 +244,7 @@ This guide assumes that you are using Intellij Ultimate, because application ser
       - In the tab "Deployments", choose the module "frankframework-example:war exploded". Make sure that it is a war exploded and not a war.
       - Set the context to `/iaf-example`.
       - Set the following VM options: `-Ddtap.stage=LOC`.
-      - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
       - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
         1. Build console-frontend
         2. Build the war exploded artifact.
@@ -257,7 +257,7 @@ This guide assumes that you are using Intellij Ultimate, because application ser
 		__NB__: This is very important, otherwise a lot of tests will fail!
       - Set the following VM options:
         `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/frankframework/test/src/main/secrets`
-      - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
       - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
           1. Build console-frontend
           2. Build the war exploded artifact.
