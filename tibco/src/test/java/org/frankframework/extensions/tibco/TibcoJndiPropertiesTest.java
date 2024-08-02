@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.extensions.tibco;
+package org.frankframework.extensions.tibco;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
