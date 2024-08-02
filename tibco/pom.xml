@@ -7,8 +7,8 @@
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-tibco</artifactId>
-	<name>Ibis AdapterFramework support for TIBCO</name>
+	<artifactId>frankframework-tibco</artifactId>
+	<name>Frank!Framework support for TIBCO</name>
 
 	<dependencies>
 		<dependency>
