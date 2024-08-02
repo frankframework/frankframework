@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.extensions.tibco;
+package org.frankframework.extensions.tibco;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import lombok.extern.log4j.Log4j2;
-import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.util.ClassLoaderUtils;
-import nl.nn.adapterframework.util.StreamUtil;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.StreamUtil;
 
 /**
  * TibcoProperties are read as a property file, and must be converted (not cast) to the appropriate type.
