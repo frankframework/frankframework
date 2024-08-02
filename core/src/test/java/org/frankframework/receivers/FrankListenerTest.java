@@ -62,6 +62,7 @@ class FrankListenerTest {
 	void getPhysicalDestinationName() {
 		// Arrange
 		listener.setName(LISTENER_NAME);
+		listener.configure();
 
 		// Act
 		String result = listener.getPhysicalDestinationName();
@@ -72,6 +73,9 @@ class FrankListenerTest {
 
 	@Test
 	void wrapRawMessage() {
+		// Arrange
+		listener.configure();
+
 		// Act
 		RawMessageWrapper<Message> result = listener.wrapRawMessage(message, session);
 
@@ -97,6 +101,8 @@ class FrankListenerTest {
 	@Test
 	void openSuccess() throws ListenerException {
 		// Arrange
+		listener.configure();
+
 		// Verify that listener is not open and cannot be found before opening
 		assertFalse(listener.isOpen(), "Listener not supposed to be open before test");
 		assertNull(FrankListener.getListener(listener.getPhysicalDestinationName()));
@@ -113,6 +119,8 @@ class FrankListenerTest {
 	@Test
 	void openAlreadyOpen() throws ListenerException {
 		// Arrange
+		listener.configure();
+
 		assertFalse(listener.isOpen(), "Listener not supposed to be open before test");
 		listener.open();
 		assertTrue(listener.isOpen(), "Listener is supposed to be open after test");
@@ -131,7 +139,10 @@ class FrankListenerTest {
 		FrankListener otherListener = configuration.createBean(FrankListener.class);
 		otherListener.setHandler(receiver);
 		otherListener.setName(LISTENER_NAME);
+		otherListener.configure();
 		listener.setName(LISTENER_NAME);
+		listener.configure();
+
 		assertDoesNotThrow(listener::open);
 
 		// Act
@@ -144,6 +155,7 @@ class FrankListenerTest {
 	@Test
 	void close() throws ListenerException {
 		// Arrange
+		listener.configure();
 		listener.open();
 		// Verify that listener is now open before closing it, and can be found.
 		assertTrue(listener.isOpen(), "Listener is supposed to be open after test");
@@ -162,6 +174,7 @@ class FrankListenerTest {
 	void extractMessage() {
 		// Arrange
 		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(message);
+		listener.configure();
 
 		// Act
 		Message result = listener.extractMessage(rawMessageWrapper, session);
@@ -175,6 +188,7 @@ class FrankListenerTest {
 		// Testing with real objects instead of mocks is done in the FrankSenderTest
 
 		// Arrange
+		listener.configure();
 		listener.open();
 		when(receiver.processRequest(any(), any(), any(), any())).thenReturn(message);
 
@@ -188,6 +202,9 @@ class FrankListenerTest {
 
 	@Test
 	void processRequestWhenNotOpen() {
+		// Arrange
+		listener.configure();
+
 		// Act
 		assertThrows(ListenerException.class, () -> listener.processRequest(message, session));
 	}
