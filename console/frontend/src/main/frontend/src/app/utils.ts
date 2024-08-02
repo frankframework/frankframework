@@ -1,3 +1,9 @@
+// @ts-expect-error _.merge does not have correct types
+import * as _merge from 'lodash.merge';
+import type { merge } from 'lodash';
+
+export const deepMerge: typeof merge = _merge;
+
 export function computeServerPath(): string {
   let path = window.location.pathname;
 
@@ -75,3 +81,14 @@ export const compare = (
 /** This is pretty bad, non primitive types won't be covered correctly (null, undefined, object, etc) */
 export const anyCompare = <T>(v1: T, v2: T): 1 | -1 | 0 =>
   v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+
+export function findIndexOfAll<T>(
+  array: T[],
+  condition: (item: T) => boolean,
+): number[] {
+  const indices: number[] = [];
+  for (const [index, element] of array.entries()) {
+    if (condition(element)) indices.push(index);
+  }
+  return indices;
+}

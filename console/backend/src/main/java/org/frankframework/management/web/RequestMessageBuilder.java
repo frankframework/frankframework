@@ -31,6 +31,8 @@ import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import jakarta.annotation.Nullable;
+
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
@@ -95,11 +97,10 @@ public class RequestMessageBuilder {
 	}
 
 	public Message<?> build() {
-//		base.getServletRequest().getParameter("target")
 		return build(null);
 	}
 
-	public Message<?> build(String targetHost) {
+	public Message<?> build(@Nullable String targetHost) {
 		if (SEC_LOG.isInfoEnabled()) {
 			String headers = customHeaders.entrySet().stream()
 					.map(this::mapHeaderForLog)
@@ -114,6 +115,7 @@ public class RequestMessageBuilder {
 		}
 
 		// Optional target parameter, to target a specific backend node.
+		// TODO use session scoped value to set the host
 		if(StringUtils.isNotEmpty(targetHost)) {
 			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
 		}

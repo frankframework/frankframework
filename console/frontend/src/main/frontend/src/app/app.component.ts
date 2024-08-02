@@ -28,7 +28,7 @@ import {
   Router,
 } from '@angular/router';
 import { formatDate } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
@@ -43,6 +43,8 @@ import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
+import { WebsocketService } from './services/websocket.service';
+import { deepMerge } from './utils';
 
 @Component({
   selector: 'app-root',
@@ -72,7 +74,10 @@ export class AppComponent implements OnInit, OnDestroy {
     windowClass: 'animated fadeIn',
   };
 
+  private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
+
   constructor(
+    private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
     private renderer: Renderer2,
@@ -89,6 +94,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private idle: Idle,
     private modalService: NgbModal,
     private serverInfoService: ServerInfoService,
+    private websocketService: WebsocketService,
     @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
@@ -218,23 +224,19 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.consoleState.init === appInitState.UN_INIT) {
-      this.consoleState.init = appInitState.PRE_INIT;
-      this.debugService.log('Initializing Frank!Console');
-    } else if (this.consoleState.init === appInitState.PRE_INIT) {
+    if (this.consoleState.init !== appInitState.UN_INIT) {
       this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
-    } else {
-      this.debugService.info('Loading Frank!Console', this.consoleState.init);
     }
+    this.consoleState.init = appInitState.PRE_INIT;
+    this.debugService.log('Initializing Frank!Console');
 
-    if (this.consoleState.init === appInitState.PRE_INIT) {
-      this.consoleState.init = appInitState.INIT;
-      this.serverInfoService.refresh();
-      this.serverInfoService.serverInfo$.pipe(first()).subscribe({
-        next: (data) => {
-          this.serverInfo = data;
+    this.consoleState.init = appInitState.INIT;
+    this.serverInfoService.refresh();
+    this.serverInfoService.serverInfo$.pipe(first()).subscribe({
+      next: (data) => {
+        this.serverInfo = data;
 
           this.appService.dtapStage = data['dtap.stage'];
           this.dtapStage = data['dtap.stage'];
@@ -243,101 +245,101 @@ export class AppComponent implements OnInit, OnDestroy {
           this.userName = data['userName'];
           this.authService.setLoggedIn(this.userName);
 
-          this.consoleState.init = appInitState.POST_INIT;
-          if (!this.router.url.includes('login')) {
-            this.idle.watch();
-            this.renderer.removeClass(document.body, 'gray-bg');
-          }
+        this.consoleState.init = appInitState.POST_INIT;
+        if (!this.router.url.includes('login')) {
+          this.idle.watch();
+          this.renderer.removeClass(document.body, 'gray-bg');
+        }
 
-          const serverTime = Date.parse(
-            new Date(data.serverTime).toUTCString(),
+        this.appService.dtapStage = data['dtap.stage'];
+        this.dtapStage = data['dtap.stage'];
+        this.dtapSide = data['dtap.side'];
+        // appService.userName = data["userName"];
+        this.userName = data['userName'];
+
+        const serverTime = Date.parse(new Date(data.serverTime).toUTCString());
+        const localTime = Date.parse(new Date().toUTCString());
+        this.consoleState.timeOffset = serverTime - localTime;
+        // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
+        this.appConstants['timezoneOffset'] = 0;
+        //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
+
+        const updateTime = (): void => {
+          const serverDate = new Date();
+          serverDate.setTime(
+            serverDate.getTime() - this.consoleState.timeOffset,
           );
-          const localTime = Date.parse(new Date().toUTCString());
-          this.consoleState.timeOffset = serverTime - localTime;
-          // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
-          this.appConstants['timezoneOffset'] = 0;
-          //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
+          this.serverTime = formatDate(
+            serverDate,
+            this.appConstants['console.dateFormat'] as string,
+            this.locale,
+          );
+        };
+        window.setInterval(updateTime, 1000);
+        updateTime();
 
-          const updateTime = (): void => {
-            const serverDate = new Date();
-            serverDate.setTime(
-              serverDate.getTime() - this.consoleState.timeOffset,
-            );
-            this.serverTime = formatDate(
-              serverDate,
-              this.appConstants['console.dateFormat'] as string,
-              this.locale,
-            );
-          };
-          window.setInterval(updateTime, 1000);
-          updateTime();
+        this.appService.updateInstanceName(data.instance.name);
 
-          this.appService.updateInstanceName(data.instance.name);
+        const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
+        if (iafInfoElement)
+          iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
 
-          const iafInfoElement =
-            document.querySelector<HTMLElement>('.iaf-info');
-          if (iafInfoElement)
-            iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
+        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
-          this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
-
-          if (this.appService.dtapStage == 'LOC') {
-            this.debugService.setLevel(3);
-          }
+        if (this.appService.dtapStage == 'LOC') {
+          this.debugService.setLevel(3);
+        }
 
           //Was it able to retrieve the serverinfo without logging in?
           if (!this.authService.isLoggedIn()) {
             this.idle.setTimeout(0);
           }
 
-          this.appService.getConfigurations().subscribe((data) => {
-            this.appService.updateConfigurations(data);
-          });
-          this.checkIafVersions();
-          this.initializeWarnings();
-        },
-        error: (error: HttpErrorResponse) => {
-          // HTTP 5xx error
-          if (error.status.toString().startsWith('5')) {
-            this.router.navigate(['error']);
-          }
-        },
-      });
-      this.appService.getEnvironmentVariables().subscribe((data) => {
-        if (data['Application Constants']) {
-          this.appConstants = Object.assign(
-            this.appConstants,
-            data['Application Constants']['All'],
-          ); //make FF!Application Constants default
+        this.appService.getConfigurations().subscribe((data) => {
+          this.appService.updateConfigurations(data);
+        });
 
-          const idleTime =
-            Number.parseInt(this.appConstants['console.idle.time'] as string) >
-            0
+        this.initializeWarnings();
+        this.checkIafVersions();
+      },
+      error: (error: HttpErrorResponse) => {
+        // HTTP 5xx error
+        if (error.status.toString().startsWith('5')) {
+          this.router.navigate(['error']);
+        }
+      },
+    });
+    this.appService.getEnvironmentVariables().subscribe((data) => {
+      if (data['Application Constants']) {
+        this.appConstants = Object.assign(
+          this.appConstants,
+          data['Application Constants']['All'],
+        ); //make FF!Application Constants default
+
+        const idleTime =
+          Number.parseInt(this.appConstants['console.idle.time'] as string) > 0
+            ? Number.parseInt(this.appConstants['console.idle.time'] as string)
+            : 0;
+        if (idleTime > 0) {
+          const idleTimeout =
+            Number.parseInt(
+              this.appConstants['console.idle.timeout'] as string,
+            ) > 0
               ? Number.parseInt(
-                  this.appConstants['console.idle.time'] as string,
+                  this.appConstants['console.idle.timeout'] as string,
                 )
               : 0;
-          if (idleTime > 0) {
-            const idleTimeout =
-              Number.parseInt(
-                this.appConstants['console.idle.timeout'] as string,
-              ) > 0
-                ? Number.parseInt(
-                    this.appConstants['console.idle.timeout'] as string,
-                  )
-                : 0;
-            this.idle.setIdle(idleTime);
-            this.idle.setTimeout(idleTimeout);
-          } else {
-            this.idle.stop();
-          }
-          this.appService.updateDatabaseSchedulesEnabled(
-            this.appConstants['loadDatabaseSchedules.active'] === 'true',
-          );
-          this.appService.triggerAppConstants();
+          this.idle.setIdle(idleTime);
+          this.idle.setTimeout(idleTimeout);
+        } else {
+          this.idle.stop();
         }
-      });
-    }
+        this.appService.updateDatabaseSchedulesEnabled(
+          this.appConstants['loadDatabaseSchedules.active'] === 'true',
+        );
+        this.appService.triggerAppConstants();
+      }
+    });
   }
 
   checkIafVersions(): void {
@@ -379,6 +381,28 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
+  initializeWebsocket(): void {
+    this.websocketService.onConnected$.subscribe(() => {
+      this.appService.updateLoading(false);
+      this.loading = false;
+
+      this.websocketService.subscribe<Record<string, MessageLog>>(
+        '/event/server-warnings',
+        (configurations) => this.processWarnings(configurations),
+      );
+
+      this.websocketService.subscribe<Record<string, Partial<Adapter>>>(
+        '/event/adapters',
+        (data) => this.pollerCallback(data),
+      );
+    });
+
+    this.appService.getAdapters('all').subscribe((data) => {
+      this.processAdapters(data);
+      this.websocketService.activate();
+    });
+  }
+
   initializeWarnings(): void {
     const startupErrorSubscription = this.appService.startupError$.subscribe(
       () => {
@@ -387,53 +411,11 @@ export class AppComponent implements OnInit, OnDestroy {
     );
     this._subscriptions.add(startupErrorSubscription);
 
-    this.pollerService.add(
-      'server/warnings',
-      (data) => {
-        const configurations = data as Record<string, MessageLog>;
-        this.appService.updateAlerts([]); //Clear all old alerts
-
-        configurations['All'] = {
-          messages: configurations['messages'] as unknown as AdapterMessage[],
-          errorStoreCount: configurations[
-            'totalErrorStoreCount'
-          ] as unknown as number,
-          messageLevel: 'ERROR',
-        };
-        delete configurations['messages'];
-        delete configurations['totalErrorStoreCount'];
-
-        if (configurations['warnings']) {
-          for (const warning of configurations[
-            'warnings'
-          ] as unknown as string[]) {
-            this.appService.addWarning('', warning);
-          }
-        }
-
-        for (const index in configurations) {
-          const configuration = configurations[index];
-          if (configuration.exception)
-            this.appService.addException(index, configuration.exception);
-          if (configuration.warnings) {
-            for (const warning of configuration.warnings) {
-              this.appService.addWarning(index, warning);
-            }
-          }
-
-          configuration.messageLevel = 'INFO';
-          for (const x in configuration.messages) {
-            const level = configuration.messages[x].level;
-            if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-              configuration.messageLevel = 'WARN';
-            if (level == 'ERROR') configuration.messageLevel = 'ERROR';
-          }
-        }
-
-        this.appService.updateMessageLog(configurations);
-      },
-      60_000,
-    );
+    this.http
+      .get<
+        Record<string, MessageLog>
+      >(`${this.appService.absoluteApiPath}server/warnings`)
+      .subscribe((data) => this.processWarnings(data));
 
     this.initializeAdapters();
   }
@@ -442,105 +424,125 @@ export class AppComponent implements OnInit, OnDestroy {
     //Get base information first, then update it with more details
     this.appService
       .getAdapters()
-      .pipe(first())
-      .subscribe((data: Record<string, Adapter>) => {
-        this.finalizeStartup(data);
-      });
+      .subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
-  pollerCallback(allAdapters: Record<string, Adapter>): void {
+  processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
+    configurations['All'] = {
+      messages: configurations['messages'] as unknown as AdapterMessage[],
+      errorStoreCount: configurations[
+        'totalErrorStoreCount'
+      ] as unknown as number,
+      messageLevel: 'ERROR',
+    };
+    delete configurations['messages'];
+    delete configurations['totalErrorStoreCount'];
+
+    if (configurations['warnings']) {
+      for (const warning of configurations['warnings'] as unknown as string[]) {
+        this.appService.addWarning('', warning);
+      }
+    }
+
+    for (const index in configurations) {
+      const existingConfiguration = this.appService.messageLog[index] as
+        | MessageLog
+        | undefined;
+      const configuration = configurations[index];
+      if (configuration === null) {
+        this.appService.removeAlerts(configuration);
+        continue;
+      }
+
+      if (configuration.exception)
+        this.appService.addException(index, configuration.exception);
+      if (configuration.warnings) {
+        for (const warning of configuration.warnings) {
+          this.appService.addWarning(index, warning);
+        }
+      }
+
+      if (existingConfiguration && configuration.messages) {
+        configuration.messages = [
+          ...existingConfiguration.messages,
+          ...configuration.messages,
+        ].slice(-this.messageKeeperSize);
+      }
+
+      configuration.messageLevel =
+        existingConfiguration?.messageLevel ?? 'INFO';
+      if (configuration.messages) {
+        for (const x in configuration.messages) {
+          const level = configuration.messages[x].level;
+          if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+            configuration.messageLevel = 'WARN';
+          if (level == 'ERROR') configuration.messageLevel = 'ERROR';
+        }
+      }
+    }
+
+    this.appService.updateMessageLog(configurations);
+  }
+
+  processAdapters(adapters: Record<string, Partial<Adapter>>): void {
     let reloadedAdapters = false;
-    const updatedAdapters: typeof this.appService.adapters = {};
+    const updatedAdapters: Record<string, Partial<Adapter>> = {};
     const deletedAdapters: string[] = [];
 
-    for (const index in this.serializedRawAdapterData) {
-      //Check if any old adapters should be removed
-      if (!allAdapters[index]) {
-        deletedAdapters.push(index);
-        delete this.serializedRawAdapterData[index];
-        this.debugService.log(`removing adapter [${index}]`);
+    for (const adapterIndex in adapters) {
+      const adapter = adapters[adapterIndex];
+      const existingAdapter = this.appService.adapters[adapterIndex];
+
+      if (adapter === null) {
+        deletedAdapters.push(adapterIndex);
+        continue;
       }
-    }
 
-    for (const adapterName in allAdapters) {
-      //Add new adapter information
-      const adapter = allAdapters[adapterName];
+      adapter.status = 'started';
+      adapter.hasSender = false;
+      adapter.sendersMessageLogCount = 0;
+      adapter.senderTransactionalStorageMessageCount = 0;
 
-      const serializedAdapter = JSON.stringify(adapter);
-      if (this.serializedRawAdapterData[adapterName] != serializedAdapter) {
-        this.serializedRawAdapterData[adapterName] = serializedAdapter;
+      this.processAdapterReceivers(adapter, existingAdapter);
+      this.processAdapterPipes(adapter, existingAdapter);
+      this.processAdapterMessages(adapter, existingAdapter);
 
-        adapter.status = 'started';
-
-        for (const x in adapter.receivers) {
-          const adapterReceiver = adapter.receivers[+x];
-          if (adapterReceiver.state != 'started') adapter.status = 'warning';
-
-          if (adapterReceiver.transactionalStores) {
-            const store = adapterReceiver.transactionalStores['ERROR'];
-            if (store && store.numberOfMessages > 0) {
-              adapter.status = 'warning';
-            }
-          }
-        }
-        if (adapter.receiverReachedMaxExceptions) {
-          adapter.status = 'warning';
-        }
-        adapter.hasSender = false;
-        adapter.sendersMessageLogCount = 0;
-        adapter.senderTransactionalStorageMessageCount = 0;
-        for (const x in adapter.pipes) {
-          const pipe = adapter.pipes[+x];
-          if (pipe.sender) {
-            adapter.hasSender = true;
-            if (pipe.hasMessageLog) {
-              const count = Number.parseInt(pipe.messageLogCount ?? '');
-              if (!Number.isNaN(count)) {
-                if (pipe.isSenderTransactionalStorage) {
-                  adapter.senderTransactionalStorageMessageCount += count;
-                } else {
-                  adapter.sendersMessageLogCount += count;
+      if (adapter.receiverReachedMaxExceptions) {
+        adapter.status = 'warning';
+      }
+      /*					//If last message is WARN or ERROR change adapter status to warning.
+                if(adapter.messages.length > 0 && adapter.status != 'stopped') {
+                  let message = adapter.messages[adapter.messages.length -1];
+                  if(message.level != "INFO")
+                    adapter.status = 'warning';
                 }
-              }
-            }
-          }
-        }
-        /*					//If last message is WARN or ERROR change adapter status to warning.
-                  if(adapter.messages.length > 0 && adapter.status != 'stopped') {
-                    let message = adapter.messages[adapter.messages.length -1];
-                    if(message.level != "INFO")
-                      adapter.status = 'warning';
-                  }
-        */
-        if (adapter.state != 'started') {
-          adapter.status = 'stopped';
-        }
-
-        if (!reloadedAdapters)
-          reloadedAdapters = this.hasAdapterReloaded(adapter);
-
-        if (adapterName.includes('/')) {
-          updatedAdapters[adapterName] = adapter;
-        } else {
-          updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
-        }
-
-        const selectedConfiguration =
-          this.routeQueryParams.get('configuration');
-        this.appService.updateAdapterSummary(
-          selectedConfiguration ?? 'All',
-          false,
-        );
-        this.updateAdapterNotifications(adapter);
+      */
+      if (adapter.state != 'started') {
+        adapter.status = 'stopped';
       }
+
+      if (!reloadedAdapters)
+        reloadedAdapters = this.hasAdapterReloaded(adapter);
+
+      updatedAdapters[adapterIndex] = adapter;
+
+      const selectedConfiguration = this.routeQueryParams.get('configuration');
+      this.appService.updateAdapterSummary(
+        selectedConfiguration ?? 'All',
+        false,
+      );
+      this.updateAdapterNotifications(
+        adapter.name ?? existingAdapter.name,
+        adapter,
+      );
     }
 
-    const oldAdapters = { ...this.appService.adapters };
-    for (const index of deletedAdapters) {
-      delete oldAdapters[index];
+    for (const deletedAdapter of deletedAdapters) {
+      this.appService.removeAdapter(deletedAdapter);
+      this.appService.removeAlerts(deletedAdapter);
     }
 
-    this.appService.updateAdapters({ ...oldAdapters, ...updatedAdapters });
+    this.appService.updateAdapters(updatedAdapters);
 
     if (reloadedAdapters)
       this.toastService.success(
@@ -550,31 +552,93 @@ export class AppComponent implements OnInit, OnDestroy {
       );
   }
 
-  finalizeStartup(data: Record<string, Adapter>): void {
-    this.pollerCallback(data);
-
-    setTimeout(() => {
-      this.appService.updateLoading(false);
-      this.loading = false;
-
-      this.pollerService.add(
-        'adapters?expanded=all',
-        (data: unknown) => {
-          this.pollerCallback(data as Record<string, Adapter>);
-        },
-        undefined,
-      );
-    });
+  pollerCallback(adapters: Record<string, Partial<Adapter>>): void {
+    this.processAdapters(adapters);
   }
 
-  updateAdapterNotifications(adapter: Adapter): void {
-    let name = adapter.name;
+  finalizeStartup(data: Record<string, Adapter>): void {
+    this.processAdapters(data);
+    this.initializeWebsocket();
+  }
+
+  processAdapterReceivers(
+    adapter: Partial<Adapter>,
+    existingAdapter?: Adapter,
+  ): void {
+    if (adapter.receivers) {
+      if (existingAdapter?.receivers) {
+        adapter.receivers = deepMerge(
+          [],
+          existingAdapter.receivers,
+          adapter.receivers,
+        );
+      }
+
+      for (const index in adapter.receivers) {
+        const adapterReceiver = adapter.receivers[+index];
+        if (adapterReceiver.state != 'started') adapter.status = 'warning';
+
+        if (adapterReceiver.transactionalStores) {
+          const store = adapterReceiver.transactionalStores['ERROR'];
+          if (store && store.numberOfMessages > 0) {
+            adapter.status = 'warning';
+          }
+        }
+      }
+    }
+  }
+
+  processAdapterPipes(
+    adapter: Partial<Adapter>,
+    existingAdapter?: Adapter,
+  ): void {
+    if (adapter.pipes) {
+      if (existingAdapter?.pipes) {
+        adapter.pipes = deepMerge([], existingAdapter.pipes, adapter.pipes);
+      }
+
+      for (const index in adapter.pipes) {
+        const pipe = adapter.pipes[+index];
+
+        if (!pipe.sender) continue;
+        adapter.hasSender = true;
+
+        if (!pipe.hasMessageLog) continue;
+        const count = Number.parseInt(pipe.messageLogCount ?? '');
+
+        if (Number.isNaN(count)) continue;
+        if (pipe.isSenderTransactionalStorage) {
+          adapter.senderTransactionalStorageMessageCount! += count;
+        } else {
+          adapter.sendersMessageLogCount! += count;
+        }
+      }
+    }
+  }
+
+  processAdapterMessages(
+    adapter: Partial<Adapter>,
+    existingAdapter?: Adapter,
+  ): void {
+    if (existingAdapter?.messages && adapter.messages) {
+      adapter.messages = [
+        ...existingAdapter.messages!,
+        ...adapter.messages,
+      ].slice(-this.messageKeeperSize);
+    }
+  }
+
+  updateAdapterNotifications(
+    adapterName: string,
+    adapter: Partial<Adapter>,
+  ): void {
+    let name = adapterName;
     if (name.length > 20) name = `${name.slice(0, 17)}...`;
-    if (adapter.started == true) {
+    if (adapter.started === true) {
       for (const x in adapter.receivers) {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
         // @ts-expect-error Receiver.started does not exist
-        if (adapter.receivers[+x].started == false) {
+        if (adapter.receivers[+x].started === false) {
           this.notificationService.add(
             'fa-exclamation-circle',
             `Receiver '${name}' stopped!`,
@@ -585,7 +649,7 @@ export class AppComponent implements OnInit, OnDestroy {
           );
         }
       }
-    } else {
+    } else if (adapter.started === false) {
       this.notificationService.add(
         'fa-exclamation-circle',
         `Adapter '${name}' stopped!`,
@@ -597,10 +661,13 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasAdapterReloaded(adapter: Adapter): boolean {
-    const oldAdapter =
-      this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
-    return adapter.upSince > oldAdapter?.upSince;
+  hasAdapterReloaded(adapter: Partial<Adapter>): boolean {
+    if (adapter.upSince) {
+      const oldAdapter =
+        this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
+      return adapter.upSince > oldAdapter?.upSince;
+    }
+    return false;
   }
 
   openInfoModel(): void {

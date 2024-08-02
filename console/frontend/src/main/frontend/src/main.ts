@@ -2,11 +2,12 @@
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
+import type * as SockJS from 'sockjs-client';
 
 declare global {
-  let ff_version: string;
   interface Window {
     server: string;
+    SockJS: typeof SockJS; // use premad bundle because sockjs developers don't understand using global might be a bad idea in non-node environments
   }
   // var jQuery: jQuery; already defined in @types/jquery (type import solves this for us?)
   // var $: jQuery;

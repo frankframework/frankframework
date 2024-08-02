@@ -1,6 +1,7 @@
 package org.frankframework.management.web;
 
 import org.frankframework.management.web.configuration.WebConfiguration;
+import org.frankframework.management.web.socket.MessageCacheStore;
 import org.mockito.Mockito;
 
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,11 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 @Configuration
 @Import(WebConfiguration.class)
 public class WebTestConfiguration {
+	@Bean
+	MessageCacheStore messageCacheStore() {
+		return new MessageCacheStore();
+	}
+
 	@Bean
 	SpringUnitTestLocalGateway outboundGateway() {
 		return Mockito.spy(SpringUnitTestLocalGateway.class);

@@ -48,10 +48,11 @@ public interface OutboundGateway extends IntegrationPattern {
 	}
 
 	/**
-	 * I in O out.
+	 * I in O out. May not be null.
 	 * @param in Message to send
 	 * @return Response message
 	 */
+	@Nonnull
 	<I, O> Message<O> sendSyncMessage(Message<I> in);
 
 	/**
