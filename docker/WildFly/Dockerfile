@@ -1,4 +1,4 @@
-ARG WILDFLY_VERSION=32.0.0.Final-1-jdk21
+ARG WILDFLY_VERSION=33.0.0.Final-jdk21
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION}
 
 COPY target/dependencies/secrets/ /opt/frank/secrets/
