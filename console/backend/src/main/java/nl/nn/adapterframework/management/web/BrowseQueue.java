@@ -65,9 +65,9 @@ public final class BrowseQueue extends FrankApiBase {
 		Boolean lookupDestination = RequestUtils.getBooleanValue(json, "lookupDestination");
 		String type = RequestUtils.getValue(json, "type");
 
-		if(StringUtils.isNotEmpty(destination))
+		if (StringUtils.isEmpty(destination))
 			throw new ApiException("No destination provided");
-		if(StringUtils.isNotEmpty(type))
+		if (StringUtils.isEmpty(type))
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
