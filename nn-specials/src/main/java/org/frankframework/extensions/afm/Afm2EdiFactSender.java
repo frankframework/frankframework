@@ -17,6 +17,7 @@ package org.frankframework.extensions.afm;
 
 import java.text.DecimalFormat;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.Logger;
@@ -78,7 +79,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		try {
 			return new SenderResult(execute(message.asString()));
 		} catch (Exception e) {

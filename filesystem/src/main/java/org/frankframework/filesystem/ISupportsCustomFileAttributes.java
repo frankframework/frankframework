@@ -15,15 +15,25 @@
 */
 package org.frankframework.filesystem;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 
 /**
  * An interface indicating that a filesystem supports adding custom (user-defined) file attributes. Attributes
  * are always set as key-value pairs. The values are always strings.
  *<p>
- *     A filesystem that implements this interface should return any user-defined metadata attributes
- *     in the method {@link IBasicFileSystem#getAdditionalFileProperties(F)}.
+ *     A {@link IBasicFileSystem} that implements this interface should return any user-defined metadata attributes
+ *     in the method {@link IBasicFileSystem#getAdditionalFileProperties(Object)}.
  *</p>
  *
  * @param <F> The type of the file used by the implementation. See also {@link IBasicFileSystem}.
@@ -38,49 +48,47 @@ public interface ISupportsCustomFileAttributes<F> {
 	String FILE_ATTRIBUTE_PARAM_PREFIX = "FileAttribute.";
 
 	/**
-	 * Set a custom attributes on the given file.
-	 * <p>
-	 *     <em>NOTE 1:</em>
-	 *     At the time this method is called, the file is not yet guaranteed to actually exist
-	 *     in the underlying filesystem.
-	 * </p>
-	 * <p>
-	 *     <em>NOTE 2:</em>
-	 *     As a side-effect of calling this method, the file may be created in the underlying filesystem if it
-	 *     didn't yet exist. This depends on the implementation details of the filesystem in the Frank!Framework
-	 *     and the API against which the filesystem is developed.
-	 * </p>
-	 *
-	 * @param file File on which to set the attribute
-	 * @param key Name of the attribute
-	 * @param value Value of the attribute
+	 * Method to be used in configure.
+	 * @param pvl the ParameterValueList, may be {@code null}.
+	 * @return true when at least one {@link IParameter Parameter} name starts with {@value #FILE_ATTRIBUTE_PARAM_PREFIX}.
 	 */
-	void setCustomFileAttribute(@Nonnull F file, @Nonnull String key, @Nonnull String value);
+	default boolean hasCustomFileAttributes(@Nullable ParameterList pvl) {
+		if (pvl == null) {
+			return false;
+		}
+
+		return pvl.stream()
+				.filter(pv -> pv.getName().startsWith(FILE_ATTRIBUTE_PARAM_PREFIX))
+				.count() > 0;
+	}
 
 	/**
-	 * Set custom attributes from the {@link ParameterValueList}. The parameter value list
-	 * is filtered on parameter names with the prefix {@link #FILE_ATTRIBUTE_PARAM_PREFIX} ({@code "FileAttribute."}).
+	 * Gets the custom attributes from the {@link ParameterValueList}. The parameter value list
+	 * is filtered on parameter names with the prefix {@link #FILE_ATTRIBUTE_PARAM_PREFIX} ({@value #FILE_ATTRIBUTE_PARAM_PREFIX}).
 	 * <p>
-	 *     For each parameter-value, if the parameter-name starts with the prefix {@code "FileAttribute."} the
+	 *     For each parameter-value, if the parameter-name starts with the prefix {@value #FILE_ATTRIBUTE_PARAM_PREFIX} the
 	 *     prefix is stripped from the name to get the attribute-name and the string-value of the parameter is
 	 *     used to get the attribute-value.
 	 * </p>
 	 * <p>
 	 *     This is an interface default method that most implementations should not need to override.
 	 * </p>
-	 * <p>
-	 *     <em>NOTE 2:</em>
-	 *     As a side-effect of calling this method, the file may be created in the underlying filesystem if it
-	 *     didn't yet exist. This depends on the implementation details of the filesystem in the Frank!Framework
-	 *     and the API against which the filesystem is developed.
-	 * </p>
 	 *
-	 * @param file File on which to set the custom attributes
 	 * @param pvl {@link ParameterValueList} containing inputs to apply as user-defined file metadata
+	 * @return a Map with the custom file attributes
 	 */
-	default void setCustomFileAttributes(@Nonnull F file, @Nonnull ParameterValueList pvl) {
-		pvl.stream()
+	default Map<String, String> getCustomFileAttributes(@Nonnull ParameterValueList pvl) {
+		return pvl.stream()
 				.filter(pv -> pv.getName().startsWith(FILE_ATTRIBUTE_PARAM_PREFIX))
-				.forEach(pv -> setCustomFileAttribute(file, pv.getName().substring(FILE_ATTRIBUTE_PARAM_PREFIX.length()), pv.asStringValue()));
+				.collect(Collectors.toMap(parameterValue -> parameterValue.getName().substring(FILE_ATTRIBUTE_PARAM_PREFIX.length()), ParameterValue::asStringValue));
 	}
+
+	/**
+	 * Creates a file with the given custom file attributes.
+	 *
+	 * @param file
+	 * @param contents
+	 * @param customFileAttributes
+	 */
+	void createFile(F file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException;
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.stream;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -35,8 +34,8 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TemporaryDirectoryUtils;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -48,6 +47,8 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class SerializableFileReference implements Serializable, AutoCloseable {
+	public static final String TEMP_MESSAGE_DIRECTORY = "temp-messages";
+
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
 
 	private static final long serialVersionUID = 1L;
@@ -214,7 +215,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		if (cleanupFileAction != null) {
 			cleanupFileAction.calledByClose = true;
 			cleanable.clean();
@@ -261,8 +262,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException Thrown if there was any exception reading or writing the data.
 	 */
 	private static Path copyToTempFile(InputStream in, long maxBytes) throws IOException {
-		File tmpMessagesFolder = FileUtils.getTempDirectory("temp-messages");
-		Path destination = File.createTempFile("msg", ".dat", tmpMessagesFolder).toPath();
+		Path tmpMessagesFolder = TemporaryDirectoryUtils.getTempDirectory(TEMP_MESSAGE_DIRECTORY);
+		Path destination = Files.createTempFile(tmpMessagesFolder, "msg", ".dat");
 		try (OutputStream fileOutputStream = Files.newOutputStream(destination)) {
 			StreamUtil.copyPartialStream(in, fileOutputStream, maxBytes, 16384);
 		}

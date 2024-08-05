@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -97,6 +98,7 @@ import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
@@ -111,13 +113,13 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.XmlWriter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.SAXException;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -860,11 +862,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 
-	protected void startProcessingMessage(long waitingDuration) {
-		int threadCount = threadsProcessing.getAndIncrement();
-		if (waitingDuration >= 0) {
-			getIdleStatistics(threadCount).record(waitingDuration);
-		}
+	protected void startProcessingMessage() {
+		threadsProcessing.getAndIncrement();
 		log.debug("{} starts processing message", this::getLogPrefix);
 	}
 
@@ -1035,7 +1034,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 			final Message result;
 			try {
-				result = processMessageInAdapter(messageWrapper, session, -1, manualRetry, manualRetry); // If manual retry, history is checked by original caller
+				result = processMessageInAdapter(messageWrapper, session, manualRetry, manualRetry); // If manual retry, history is checked by original caller
 			} catch (ListenerException e) {
 				exceptionThrown("exception processing message", e);
 				throw e;
@@ -1050,22 +1049,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
-		processRawMessage(origin, rawMessage, session, -1, duplicatesAlreadyChecked);
-	}
-
-	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		processRawMessage(rawMessage, session, waitingDuration, false, duplicatesAlreadyChecked);
+		processRawMessage(rawMessage, session, false, duplicatesAlreadyChecked);
 	}
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually calls the {@link Adapter} to process the message.<br/>
 	 * Assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
 			return;
@@ -1096,7 +1090,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 
-			Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, duplicatesAlreadyChecked);
 			try { //Only catch IOExceptions on Message#close, processMessageInAdapter throws Exceptions, which should not be caught!!
 				output.close();
 				log.debug("Closing result message [{}]", output);
@@ -1129,7 +1123,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
 				//noinspection unchecked
-				processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
+				processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 				return;
 			}
 			PlatformTransactionManager txManager = getTxManager();
@@ -1140,7 +1134,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					msg = errorStorage.getMessage(storageKey);
 					//noinspection ReassignedVariable
-					processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
+					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
 					throw new ListenerException(t);
@@ -1173,7 +1167,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
@@ -1199,7 +1193,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 			// update processing statistics
 			// count in processing statistics includes messages that are rolled back to input
-			startProcessingMessage(waitingDuration);
+			startProcessingMessage();
 
 			String errorMessage = "";
 			boolean messageInError = false;
@@ -1224,8 +1218,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
 
-						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
-						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
+						session.setExitState(pipeLineResult);
 						result=pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
@@ -1282,7 +1275,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				ProcessResultCacheItem prci = cacheProcessResult(messageId, errorMessage, Instant.ofEpochMilli(startProcessingTimestamp));
 				try {
 					if (!isTransacted() && messageInError && !manualRetry
-							&& !(getListener() instanceof IRedeliveringListener<?> && ((IRedeliveringListener)getListener()).messageWillBeRedeliveredOnExitStateError(session))) {
+							&& !(getListener() instanceof IRedeliveringListener<?> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError())) {
 						moveInProcessToError(messageWrapper, session, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, TXNEW_CTRL);
 					}
 					try {
@@ -1321,7 +1314,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && !duplicatesAlreadyChecked) {
+						if (messageInError && !duplicatesAlreadyChecked && retryCountNotReached(messageWrapper, prci)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
@@ -1332,6 +1325,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
 			return result;
 		}
+	}
+
+	private boolean retryCountNotReached(@Nonnull final MessageWrapper<M> messageWrapper, @Nullable final ProcessResultCacheItem prci) {
+		final IListener<M> origin = getListener();
+		final int receiveCount;
+		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+			receiveCount = knowsDeliveryCount.getDeliveryCount(messageWrapper);
+		} else if (prci != null) {
+			receiveCount = prci.receiveCount;
+		} else {
+			receiveCount = 1;
+		}
+		if (origin instanceof IRedeliveringListener<M> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError()) {
+			return receiveCount < maxDeliveries;
+		}
+		return receiveCount < maxRetries;
 	}
 
 	private String ensureMessageIdNotEmpty(String messageId) {
@@ -1349,8 +1358,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			try {
 				message.preserve();
 				message = compactMessage(message, session);
-			} catch (Exception e) {
-				String msg="error during compacting received message to more compact format";
+			} catch (IOException | SAXException e) {
+				String msg = "error during compacting received message to more compact format";
 				error(msg, e);
 				throw new ListenerException(msg, e);
 			}
@@ -1386,12 +1395,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					moveInProcessToErrorAndDoPostProcessing(origin, messageWrapper, session, prci, "too many redeliveries or retries");
 				}
 				numRejected.increment();
-				setExitState(session, ExitState.REJECTED, 500);
+				session.setExitState(ExitState.REJECTED, 500);
 				return true;
 			}
 			resetRetryInterval();
 			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId)) {
-				setExitState(session, ExitState.SUCCESS, 304);
+				session.setExitState(ExitState.SUCCESS, 304);
 				return true;
 			}
 			if (cachedProcessResult.isPresent()) {
@@ -1448,9 +1457,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return businessCorrelationId;
 	}
 
-	private Message compactMessage(Message message, PipeLineSession session) {
-		XmlWriter xmlWriter = new XmlWriter();
-		CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
+	private Message compactMessage(Message message, PipeLineSession session) throws IOException, SAXException {
+		MessageBuilder msgBuilder = new MessageBuilder();
+		CompactSaxHandler handler = new CompactSaxHandler(msgBuilder.asXmlWriter());
 		handler.setChompCharSize(getChompCharSize());
 		handler.setElementToMove(getElementToMove());
 		handler.setElementToMoveChain(getElementToMoveChain());
@@ -1458,20 +1467,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		handler.setRemoveCompactMsgNamespaces(isRemoveCompactMsgNamespaces());
 		handler.setContext(session);
 
-		try {
-			XmlUtils.parseXml(message.asInputSource(), handler);
-			return new Message(xmlWriter.toString());
-		} catch (Exception e) {
-			warn("received message could not be compacted: " + e.getMessage());
-			return message;
-		}
-	}
-
-	private void setExitState(Map<String,Object> threadContext, ExitState state, int code) {
-		if (threadContext!=null) {
-			threadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
-			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
-		}
+		XmlUtils.parseXml(message.asInputSource(), handler);
+		return msgBuilder.build();
 	}
 
 	@SuppressWarnings("synthetic-access")
@@ -1503,9 +1500,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public int getDeliveryCount(RawMessageWrapper<M> rawMessage) {
 		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		log.debug("{} checking delivery count for messageId [{}]", this::getLogPrefix, rawMessage::getId);
-		if (origin instanceof IKnowsDeliveryCount) {
-			//noinspection unchecked
-			return ((IKnowsDeliveryCount<M>)origin).getDeliveryCount(rawMessage)-1;
+		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+			return knowsDeliveryCount.getDeliveryCount(rawMessage)-1;
 		}
 		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(rawMessage.getId());
 		return oprci.map(prci -> prci.receiveCount + 1).orElse(1);
@@ -1733,11 +1729,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			stopRunning();
 		}
 
-		log.trace("{} Setting run-state to {}, synchronize (lock) on run state {}", this::getLogPrefix, state::name, runState::toString);
 		synchronized (runState) {
 			runState.setRunState(state);
 		}
-		log.trace("{} Setting run-state, lock on run state {} released", this::getLogPrefix, runState::toString);
 	}
 
 	/**
@@ -1745,9 +1739,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	@Override
 	public RunState getRunState() {
-		RunState currentRunState = runState.getRunState();
-		log.trace("Receiver [{}] runstate: [{}]", name, currentRunState);
-		return currentRunState;
+		return runState.getRunState();
 	}
 
 	public boolean isInRunState(RunState someRunState) {
@@ -1760,7 +1752,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
 			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
-			getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
+			getSender().sendMessageOrThrow(result, session); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
 			error(msg, e);
@@ -1824,41 +1816,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 		return processStatistics.get(threadsProcessing);
 	}
-
-	protected synchronized DistributionSummary getIdleStatistics(int threadsProcessing) {
-		DistributionSummary result;
-		try {
-			result = idleStatistics.get(threadsProcessing);
-		} catch (IndexOutOfBoundsException e) {
-			result = null;
-		}
-
-		if (result==null) {
-			while (idleStatistics.size()<threadsProcessing+1) {
-				int threadNumber = idleStatistics.size()+1;
-				result = configurationMetrics.createThreadBasedDistributionSummary(this, FrankMeterType.RECEIVER_IDLE, threadNumber);
-				idleStatistics.add(idleStatistics.size(), result);
-			}
-		}
-		return idleStatistics.get(threadsProcessing);
-	}
-
-	/**
-	 * Returns an iterator over the process-statistics
-	 * @return iterator
-	 */
-	public Iterable<DistributionSummary> getProcessStatistics() {
-		return processStatistics;
-	}
-
-	/**
-	 * Returns an iterator over the idle-statistics
-	 * @return iterator
-	 */
-	public Iterable<DistributionSummary> getIdleStatistics() {
-		return idleStatistics;
-	}
-
 
 	public boolean isOnErrorContinue() {
 		return OnError.CONTINUE == getOnError();

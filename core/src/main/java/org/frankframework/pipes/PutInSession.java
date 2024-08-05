@@ -72,13 +72,11 @@ public class PutInSession extends FixedForwardPipe {
 		if (!parameterList.isEmpty()) {
 			try {
 				ParameterValueList pvl = parameterList.getValues(message, session);
-				if (pvl != null) {
-					for (ParameterValue pv : pvl) {
-						String name = pv.getName();
-						Object value = pv.getValue();
-						session.put(name, value);
-						log.debug("stored [{}] in pipeLineSession under key [{}]", value, name);
-					}
+				for (ParameterValue pv : pvl) {
+					String name = pv.getName();
+					Object paramValue = pv.getValue();
+					session.put(name, paramValue);
+					log.debug("stored [{}] in pipeLineSession under key [{}]", paramValue, name);
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);

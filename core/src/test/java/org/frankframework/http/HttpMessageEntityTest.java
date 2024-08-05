@@ -77,10 +77,10 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
-		assertFalse(repeatableMessage.requiresStream());
+		assertTrue(repeatableMessage.requiresStream());
 		assertFalse(bae.isStreaming());
 		assertTrue(ise.isStreaming());
-		assertFalse(hmeRepeatable.isStreaming());
+		assertTrue(hmeRepeatable.isStreaming());
 		assertTrue(hmeNonRepeatable.isStreaming());
 		assertTrue(hmeUrlRepeatable.isStreaming());
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -43,23 +43,18 @@ public class ReloadSender extends SenderWithParametersBase {
 	private @Setter IbisManager ibisManager;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 
 		String configName = null;
 		String newVersion = null;
 		boolean forceReload = getForceReload();
 
-		ParameterValueList pvl = null;
-		try {
-			if (paramList != null) {
-				pvl = paramList.getValues(message, session);
-				if(pvl.get("name") != null)
-					configName = pvl.get("name").asStringValue();
-				if(pvl.get("forceReload") != null)
-					forceReload = pvl.get("forceReload").asBooleanValue(false);
-			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+		ParameterValueList pvl = getParameterValueList(message, session);
+		if(pvl != null) {
+			if(pvl.contains("name"))
+				configName = pvl.get("name").asStringValue();
+			if(pvl.contains("forceReload"))
+				forceReload = pvl.get("forceReload").asBooleanValue(false);
 		}
 
 		try {

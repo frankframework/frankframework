@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject, catchError, of } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
-import { computeServerPath } from './utils';
+import { computeServerPath, deepMerge, findIndexOfAll } from './utils';
 
 export type RunState =
   | 'ERROR'
@@ -141,7 +141,7 @@ export type MessageLog = {
   messages: AdapterMessage[];
   messageLevel: MessageLevel;
   exception?: string;
-  warnings?: string;
+  warnings?: string[];
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
@@ -324,9 +324,13 @@ export class AppService {
     this.appConstantsSubject.next();
   }
 
-  updateAdapters(adapters: Record<string, Adapter>): void {
-    this.adapters = adapters;
-    this.adaptersSubject.next(adapters);
+  updateAdapters(adapters: Record<string, Partial<Adapter>>): void {
+    this.adapters = deepMerge({}, this.adapters, adapters);
+    this.adaptersSubject.next({ ...this.adapters });
+  }
+
+  removeAdapter(adapter: string): void {
+    delete this.adapters[adapter];
   }
 
   updateAlerts(alerts: Alert[]): void {
@@ -353,9 +357,9 @@ export class AppService {
   }
 
   messageLog: Record<string, MessageLog> = {};
-  updateMessageLog(messageLog: Record<string, MessageLog>): void {
-    this.messageLog = messageLog;
-    this.messageLogSubject.next(messageLog);
+  updateMessageLog(messageLog: Record<string, Partial<MessageLog>>): void {
+    this.messageLog = deepMerge({}, this.messageLog, messageLog);
+    this.messageLogSubject.next({ ...this.messageLog });
   }
 
   instanceName = '';
@@ -406,6 +410,19 @@ export class AppService {
     this.addAlert('danger', configuration, message);
   }
 
+  removeAlerts(configuration: string): void {
+    const indicesToRemove = findIndexOfAll(
+      this.alerts,
+      (alert) => alert.configuration === configuration,
+    );
+    const updatedAlerts = { ...this.alerts };
+
+    for (const index of indicesToRemove) {
+      updatedAlerts.splice(index, 1);
+    }
+    this.updateAlerts(updatedAlerts);
+  }
+
   getServerPath(): string {
     let absolutePath = this.CONSOLE_STATE.server;
     if (absolutePath && absolutePath.slice(-1) != '/') absolutePath += '/';
@@ -432,9 +449,9 @@ export class AppService {
     );
   }
 
-  getAdapters(): Observable<Record<string, Adapter>> {
+  getAdapters(expanded?: string): Observable<Record<string, Adapter>> {
     return this.http.get<Record<string, Adapter>>(
-      `${this.absoluteApiPath}adapters`,
+      `${this.absoluteApiPath}adapters${expanded ? `?expanded=${expanded}` : ''}`,
     );
   }
 

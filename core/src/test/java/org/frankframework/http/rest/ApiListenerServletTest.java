@@ -1923,12 +1923,6 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) {
-			fail("method should not be called");
-		}
-
-
-		@Override
 		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			handlerInvoked = true;
 			if(session != null) {

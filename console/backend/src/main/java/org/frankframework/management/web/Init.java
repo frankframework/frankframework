@@ -23,6 +23,9 @@ import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +40,9 @@ import org.springframework.web.util.pattern.PathPattern;
 
 @RestController
 public class Init extends FrankApiBase {
+
+	@Autowired
+	protected @Getter HttpServletRequest servletRequest;
 
 	@Autowired
 	private RequestMappingHandlerMapping handlerMapping;

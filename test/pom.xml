@@ -178,8 +178,7 @@
 						</goals>
 						<configuration>
 							<classifier>full-configuration</classifier>
-							<packagingExcludes>.gitignore</packagingExcludes>
-							<attachClasses>true</attachClasses>
+							<addDefaultExcludes>true</addDefaultExcludes>
 							<classesDirectory>${project.build.directory}/full-configuration</classesDirectory>
 							<archive>
 								<manifestEntries>
@@ -249,9 +248,8 @@
 		<profile>
 			<id>spring-boot</id>
 			<activation>
-				<property><!-- IntelliJ could use ${idea.version} but Maven limitations don't allow us to check multiple properties -->
-					<name>m2e.version</name><!-- automatically enables it on Eclipse -->
-				</property>
+				<!-- since this totally optional profile only forces all maven modules to be on the classpath it may alway be enabled -->
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<dependencies>
 				<dependency>
@@ -303,26 +301,19 @@
 					<artifactId>frankframework-batch</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-				<dependency>
-					<groupId>jakarta.transaction</groupId>
-					<artifactId>jakarta.transaction-api</artifactId>
-					<scope>runtime</scope>
-				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
 			<id>database-drivers</id>
 			<activation>
 				<property>
+					<!-- IntelliJ could use ${idea.version} -->
+					<!-- Eclipse could use ${m2e.version} -->
+					<!-- but Maven limitations don't allow us to check multiple properties -->
 					<name>m2e.version</name>
 				</property>
 			</activation>
 			<dependencies>
-				<dependency><!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
-					<groupId>jakarta.jms</groupId>
-					<artifactId>jakarta.jms-api</artifactId>
-					<scope>compile</scope>
-				</dependency>
 				<dependency>
 					<groupId>org.apache.tomcat</groupId>
 					<artifactId>tomcat-dbcp</artifactId>
@@ -372,10 +363,31 @@
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
-					<groupId>jakarta.management.j2ee</groupId>
-					<artifactId>jakarta.management.j2ee-api</artifactId>
-					<version>1.1.4</version>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>artemis-jakarta-client</artifactId>
+					<version>${artemis.driver.version}</version>
 					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-client</artifactId>
+					<version>${activemq.driver.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>im-too-lazy-to-configure-my-classpath</id>
+			<activation>
+				<property>
+					<name>idea.version</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>jakarta.jms</groupId>
+					<artifactId>jakarta.jms-api</artifactId>
+					<scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>jakarta.transaction</groupId>
@@ -383,16 +395,9 @@
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-jakarta-client</artifactId>
-					<version>${artemis.driver.version}</version>
-					<scope>runtime</scope>
-				</dependency>
-				<!-- required for ActiveMQ classic-->
-				<dependency>
-					<groupId>org.apache.activemq</groupId>
-					<artifactId>activemq-client</artifactId>
-					<version>${activemq.driver.version}</version>
+					<groupId>jakarta.management.j2ee</groupId>
+					<artifactId>jakarta.management.j2ee-api</artifactId>
+					<version>1.1.4</version>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

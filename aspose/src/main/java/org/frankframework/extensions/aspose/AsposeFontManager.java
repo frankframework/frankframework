@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,23 +43,19 @@ import com.aspose.words.FontSourceBase;
 
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 
 @Log4j2
 public class AsposeFontManager {
 
 	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; //lots of commonly used fonts
-	private static final String FONTS_RESOURCE_DIR = "/fonts/";
+	private static final String FONTS_RESOURCE_DIR = "fonts";
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
 
 	private File fontDirectory = null;
 	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-	public AsposeFontManager() {
-		this(null);
-	}
-
-	public AsposeFontManager(String fontsDirectory) {
+	public AsposeFontManager(String fontsDirectory) throws IOException {
 		File rootDirectory = null;
 		if (StringUtils.isNotEmpty(fontsDirectory)) {
 			rootDirectory = new File(fontsDirectory);
@@ -73,8 +69,7 @@ public class AsposeFontManager {
 
 		// If an invalid directory was provided, fall back to the ibis default temp directory
 		if (fontDirectory == null) {
-			String tmpdir = FileUtils.getTempDirectory();
-			fontDirectory = new File(tmpdir, FONTS_RESOURCE_DIR);
+			fontDirectory = TemporaryDirectoryUtils.getTempDirectory(FONTS_RESOURCE_DIR).toFile();
 		}
 
 		// If this font (sub-)directory does not exist, try to create it

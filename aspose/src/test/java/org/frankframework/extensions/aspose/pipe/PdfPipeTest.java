@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,12 +50,13 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.util.MimeType;
 
 import com.testautomationguru.utility.CompareMode;
@@ -75,6 +76,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
 
+	@TempDir
 	private Path pdfOutputLocation;
 
 	@Override
@@ -85,7 +87,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		pdfOutputLocation = Files.createTempDirectory("Pdf");
 		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
 		pipe.setUnpackCommonFontsArchive(true);
 	}
@@ -94,25 +95,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void tearDown() {
 		synchronized(pdfOutputLocation) {
 			try {
-				Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
-				Files.deleteIfExists(pdfOutputLocation); //Remove root folder
+				FileSystemUtils.deleteRecursively(pdfOutputLocation);
 			} catch (IOException e) {
 				log.warn("Error deleting temporary file", e);
 			}
 		}
 
 		super.tearDown();
-	}
-
-	private static void removeFile(Path file) {
-		if(Files.isRegularFile(file)) {
-			try {
-				Files.delete(file);
-			} catch (IOException e) {
-				LogUtil.getLogger(PdfPipeTest.class).error("unable to delete file", e);
-				fail("unable to delete: "+ e.getMessage());
-			}
-		}
 	}
 
 	public void expectSuccessfulConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {

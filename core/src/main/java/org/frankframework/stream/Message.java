@@ -79,7 +79,7 @@ public class Message implements Serializable, Closeable {
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
-	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
+	public static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
@@ -701,7 +701,7 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof String string) {
 			return string.getBytes(charset);
 		}
-		if (request instanceof ThrowingSupplier) { // asInputStream handles the exception and cast for us.
+		if (request instanceof ThrowingSupplier || request instanceof SerializableFileReference) {
 			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
 			return StreamUtil.streamToByteArray(asInputStream(), false, (int) size() + 32);
 		}

@@ -38,9 +38,10 @@ import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
-import org.frankframework.stream.Message;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestConfig;
+import org.frankframework.senders.FrankSender;
+import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 
 public class QueueCreator {
@@ -102,6 +103,9 @@ public class QueueCreator {
 							}
 
 							IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
+							if (configurable instanceof FrankSender frankSender) {
+								frankSender.setIbisManager(ibisContext.getIbisManager());
+							}
 							Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
 
 							queue.configure();
@@ -270,8 +274,11 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), null).close();
-						deleteQuerySender.close();
+						try (PipeLineSession session = new PipeLineSession()){
+							deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), session).close();
+						} finally {
+							deleteQuerySender.close();
+						}
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;

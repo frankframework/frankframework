@@ -224,6 +224,8 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ### Setup IntelliJ
 
+This guide assumes that you are using IntelliJ Ultimate, because application servers and WAR exploded are not included in the community edition.
+
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
@@ -235,26 +237,31 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Download Tomcat 10 from https://tomcat.apache.org/download-10.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
-- Open Settings | Application Servers, add the Tomcat installation you just did.
-- Create a run configuration for a Tomcat server for the Example project.
-	- In the tab "Deployments", choose the module "frankframework-example:war exploded"
-	  (or frankframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
-	- Set the context to `/iaf-example` (or `/iaf-test`, for running tests from the project frankframework-test).
-	- Add `-Ddtap.stage=LOC` to VM Options.
-    - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
-    - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend".
-      __NB__: It is important that you run this step before the final Build step, which is to build the (Exploded) War Artifact! Otherwise, front-end resources will not be deployed.
-    - Name your configuration and save it.
-- Create a run configuration for a Tomcat server for the Test project (See also [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md)).  
-  Unfortunately it is not possible to provide a run configuration for IAF-Test in the repository, since the configuration contains system-dependenty paths. 
-	- In the tab "Deployments", choose the module "frankframework-test:war exploded"
-	- Set the context to `/iaf-test` for the Test module.  
-      __NB__: This is very important, otherwise a lot of tests will fail!
-	- Set the following VM options:
-      `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/iaf/test/src/main/secrets`
-	- In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project
-	  build (providing this is supported by your JDK)
-    - Name your configuration and save it
+- Open Settings | Build, Execution, Deployment | Application Servers, add the Tomcat installation you just did.
+- A run configuration can be created for each individual project. Provided are examples for the example project and test project, but these can be adapted to work for other projects as well.
+	- **Example project:**
+      - Create a run configuration for a Tomcat server.
+      - In the tab "Deployments", choose the module "frankframework-example:war exploded". Make sure that it is a war exploded and not a war.
+      - Set the context to `/iaf-example`.
+      - Set the following VM options: `-Ddtap.stage=LOC`.
+      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+      - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
+        1. Build console-frontend
+        2. Build the war exploded artifact.
+      - Name your configuration and save it.
+    - **Test project:**
+      - [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md) contains detailed information on how to use this project.
+      - Create a run configuration for a Tomcat server.
+      - In the tab "Deployments", choose the module "frankframework-test:war exploded". Make sure that it is a war exploded and not a war.
+      - Set the context to `/iaf-test`.
+		__NB__: This is very important, otherwise a lot of tests will fail!
+      - Set the following VM options:
+        `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/frankframework/test/src/main/secrets`
+      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+      - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
+          1. Build console-frontend
+          2. Build the war exploded artifact.
+      - Name your configuration and save it.
 - Run your configuration and you are ready to go. The IAF-Test configuration has all scenarios built-in for testing the Frank!Framework from the Larva test-tool.
 
 # Frank!Doc - Documentation for Frank developers

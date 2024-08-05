@@ -3,6 +3,7 @@ package org.frankframework.filesystem.mock;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
@@ -87,7 +88,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public boolean isOpen() {
 		return opened;
 	}
-
 
 	private void checkOpenAndExists(MockFile f) throws FileSystemException {
 		checkOpen();
@@ -384,7 +384,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void setCustomFileAttribute(@Nonnull M file, @Nonnull String key, @Nonnull String value) {
-		file.getCustomAttributes().put(key, value);
+	public void createFile(M file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+		file.getCustomAttributes().putAll(customFileAttributes);
+
+		createFile(file, contents);
 	}
 }

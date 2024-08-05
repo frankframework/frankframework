@@ -15,38 +15,36 @@
 */
 package org.frankframework.senders;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.documentbuilder.xml.XmlTap;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
-import org.frankframework.stream.xml.XmlTap;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.PrettyPrintFilter;
@@ -106,7 +104,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		super.configure();
 
 		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
-		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
+		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap<>(transformerPoolMapSize));
 
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
 			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
@@ -202,13 +200,17 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, File tempFile) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector<Object> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+		ParameterValueList pvl = null;
 		try {
-			ParameterValueList pvl=null;
 			if (paramList!=null) {
 				pvl = paramList.getValues(input, session);
 			}
+		} catch (ParameterException e) {
+			throw new TransformerException("unable to resolve input parameters for transformerHandler");
+		}
 
+		try {
 			TransformerPool.OutputType outputType = getOutputType();
 			if (log.isTraceEnabled()) log.trace("Configured outputmethod [{}]", outputType);
 			if (outputType == null) {
@@ -237,8 +239,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			}
 
 			if (handler == null || disableOutputEscaping) {
-				XmlWriter xmlWriter = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
-				xmlWriter.setCloseWriterOnEndDocument(true);
+				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
 				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [{}]", omitXmlDeclaration);
 				if (outputType == TransformerPool.OutputType.XML) {
@@ -274,8 +275,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			handler=filterInput(mainFilter, session);
 
 			return handler;
-		} catch (Exception e) {
-			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
+		} catch (IOException e) {
+			throw new TransformerException("exception on creating transformerHandler chain", e);
 		}
 	}
 
@@ -289,15 +290,12 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-		if (message == null) {
-			throw new SenderException(getLogPrefix() + "got null input");
-		}
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
-		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<Object> threadConnector = streamingXslt ? new ThreadConnector<>(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
-			File tempFile = FileUtils.createTempFile();
-			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, tempFile);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, messageBuilder);
 			if (isDebugInput() && log.isDebugEnabled()) {
 				handler = new XmlTap(handler) {
 					@Override
@@ -310,7 +308,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			XMLReader reader = getXmlReader(session, handler);
 			InputSource source = message.asInputSource();
 			reader.parse(source);
-			return new SenderResult(PathMessage.asTemporaryMessage(tempFile.toPath()));
+			return new SenderResult(messageBuilder.build());
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "Cannot transform input", e);
 		}

@@ -30,6 +30,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -94,6 +96,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
@@ -1227,9 +1230,12 @@ public class LarvaTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), null)) {
-				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
-				result = RESULT_OK;
+			try (PipeLineSession session = new PipeLineSession()) {
+				session.put(PipeLineSession.CORRELATION_ID_KEY, providedCorrelationId);
+				try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), session)) {
+					debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
+					result = RESULT_OK;
+				}
 			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e);
@@ -1607,7 +1613,7 @@ public class LarvaTool {
 
 		String extension = FileUtils.getFileNameExtension(originalFileName);
 
-		File tempFile = FileUtils.createTempFile("." + extension);
+		Path tempFile = createTempFile("." + extension);
 		String tempFileMessage;
 		if ("XML".equalsIgnoreCase(extension)) {
 			tempFileMessage = XmlUtils.canonicalize(content);
@@ -1615,11 +1621,22 @@ public class LarvaTool {
 			tempFileMessage = content;
 		}
 
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(tempFile, true), encoding);
-		outputStreamWriter.write(tempFileMessage);
-		outputStreamWriter.close();
+		try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(tempFile, StandardOpenOption.APPEND), encoding)) {
+			outputStreamWriter.write(tempFileMessage);
+		}
 
-		return tempFile;
+		return tempFile.toFile();
+	}
+
+	/**
+	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
+	 */
+	private static Path createTempFile(final String extension) throws IOException {
+		final Path tempDir = TemporaryDirectoryUtils.getTempDirectory();
+		final String suffix = StringUtils.isNotEmpty(extension) ? extension : ".tmp";
+		final String prefix = "frank";
+		LogUtil.getLogger(LarvaTool.class).debug("creating tempfile prefix [{}] suffix [{}] directory [{}]", prefix, suffix, tempDir);
+		return Files.createTempFile(tempDir, prefix, suffix);
 	}
 
 	// Used by saveResultToFile.jsp

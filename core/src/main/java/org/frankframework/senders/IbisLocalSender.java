@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.frankframework.configuration.Configuration;
@@ -39,32 +41,32 @@ import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
-import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
-
-import lombok.Getter;
-import lombok.Setter;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 
 /**
- * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
+ * Posts a message to another Frank!Framework-adapter in the same Frank!Framework instance. If the callee exits with an &lt;<code>exit</code>&gt;
  * that has state {@link PipeLine.ExitState#ERROR}, an error is considered to happen
  * in the caller which means that the <code>exception</code> forward is followed if it is present.
- * <p/>
- * <p/>
- * Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
+ * <p>
+ * The IbisLocalSender is now considered to be legacy. The new way to call another adapter from your own
+ * adapter is by using the {@link FrankSender}.
+ * </p>
+ * <p>
+ * Returns exit.code as forward name to {@link SenderPipe} provided that exit.code can be parsed as integer.
  * For example, if the called adapter has an exit state with code
  * <code>2</code>, then the {@link SenderPipe} supports a forward with name <code>2</code>
  * that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example <code>c2</code>.
- * <p/>
- * <p/>
- * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
+ * </p>
+ * <p>
+ * An IbisLocalSender makes a call to a {@link org.frankframework.receivers.Receiver} with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
- *
+ * </p>
  *
  *
  * <h3>Configuration of the Adapter to be called</h3>
- * A call to another Adapter in the same IBIS instance is preferably made using the combination
+ * A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
  * however, a Receiver with a {@link WebServiceListener} is already present, that can be used in some cases, too.
  *
@@ -79,7 +81,7 @@ import lombok.Setter;
  *   <li>Define a Receiver with a JavaListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourServiceName</i></li>
  *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
- *       from applications other than this IBIS-instance</li>
+ *       from applications other than this Frank!Framework-instance</li>
  * </ul>
  *
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
@@ -102,7 +104,7 @@ import lombok.Setter;
  * @since  4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator{
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 
 	private final @Getter String domain = "Local";
 
@@ -148,26 +150,26 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		super.open();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
 			boolean listenerOpened=false;
-			int loops = getDependencyTimeOut();
+			long sleepDelay = 25L;
+			long timeoutAt = getDependencyTimeOut() == -1 ? -1L : System.currentTimeMillis() + 1000L * getDependencyTimeOut();
 			while (!listenerOpened
 					&& !configuration.isUnloadInProgressOrDone()
-					&& (loops == -1 || loops > 0)) {
+					&& (timeoutAt == -1L || System.currentTimeMillis() < timeoutAt)) {
 				JavaListener<?> listener = JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
 				if (!listenerOpened && !configuration.isUnloadInProgressOrDone()) {
-					if (loops != -1) {
-						loops--;
-					}
 					try {
 						log.debug("waiting for JavaListener [{}] to open", getJavaListener());
-						Thread.sleep(1000);
+						Thread.sleep(sleepDelay);
+						if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
 					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
 						throw new SenderException(e);
 					}
 				}
-				if(loops == 0 && (listener==null || !listener.isOpen())) {
+				if(System.currentTimeMillis() >= timeoutAt && (listener==null || !listener.isOpen())) {
 					log.warn("Unable to open JavaListener [{}] in {} seconds. Make sure that the listener [{}] exists or increase the timeout so that the sub-adapter may start before timeout limit.", getJavaListener(), getDependencyTimeOut(), getJavaListener());
 				}
 			}
@@ -232,7 +234,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));

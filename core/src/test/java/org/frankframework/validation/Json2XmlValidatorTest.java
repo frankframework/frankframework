@@ -8,26 +8,27 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.pipes.JsonPipe;
 import org.frankframework.pipes.JsonPipe.Direction;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Gerrit van Brakel

@@ -61,4 +61,5 @@
 	<Include ref="ConfigurationStreaming.xml"/>
 	<Include ref="ConfigurationApiWsdlGenerator.xml"/>
 	<Include ref="ConfigurationUnzip.xml"/>
+	<Include ref="ConfigurationFrankSender.xml"/>
 </Configuration>

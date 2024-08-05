@@ -34,6 +34,7 @@ import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.connection.ServerDescription;
 
+import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -54,18 +55,17 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.IDocumentBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageOutputStream;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.DocumentFormat;
-import org.frankframework.stream.document.IDocumentBuilder;
-import org.frankframework.stream.document.INodeBuilder;
-import org.frankframework.stream.document.ObjectBuilder;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
 import org.xml.sax.SAXException;
@@ -167,49 +167,50 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		message.closeOnCloseOf(session, this);
 		MongoAction mongoAction = getAction();
-		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this)) {
+		try {
+			MessageBuilder messageBuilder = new MessageBuilder();
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
 			switch (mongoAction) {
 			case INSERTONE:
-				renderResult(mongoCollection.insertOne(getDocument(message)), target);
+				renderResult(mongoCollection.insertOne(getDocument(message)), messageBuilder);
 				break;
 			case INSERTMANY:
-				renderResult(mongoCollection.insertMany(getDocuments(message)), target);
+				renderResult(mongoCollection.insertMany(getDocuments(message)), messageBuilder);
 				break;
 			case FINDONE:
-				renderResult(mongoCollection.find(getFilter(pvl, message)).first(), target);
+				renderResult(mongoCollection.find(getFilter(pvl, message)).first(), messageBuilder);
 				break;
 			case FINDMANY:
-				renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), target);
+				renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), messageBuilder);
 				break;
 			case UPDATEONE:
-				renderResult(mongoCollection.updateOne(getFilter(pvl, null), getDocument(message)), target);
+				renderResult(mongoCollection.updateOne(getFilter(pvl, null), getDocument(message)), messageBuilder);
 				break;
 			case UPDATEMANY:
-				renderResult(mongoCollection.updateMany(getFilter(pvl, null), getDocument(message)), target);
+				renderResult(mongoCollection.updateMany(getFilter(pvl, null), getDocument(message)), messageBuilder);
 				break;
 			case DELETEONE:
-				renderResult(mongoCollection.deleteOne(getFilter(pvl, message)), target);
+				renderResult(mongoCollection.deleteOne(getFilter(pvl, message)), messageBuilder);
 				break;
 			case DELETEMANY:
-				renderResult(mongoCollection.deleteMany(getFilter(pvl, message)), target);
+				renderResult(mongoCollection.deleteMany(getFilter(pvl, message)), messageBuilder);
 				break;
 			default:
 				throw new SenderException("Unknown action ["+getAction()+"]");
 			}
-			return new SenderResult(target.getResponse());
+			return new SenderResult(messageBuilder.build());
 		} catch (Exception e) {
 			throw new SenderException("Cannot execute action ["+getAction()+"]", e);
 		}
 	}
 
-	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", target, isPrettyPrint())) {
+	protected void renderResult(InsertOneResult insertOneResult, MessageBuilder messageBuilder) throws SAXException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
 				builder.add("insertedId", renderField(insertOneResult.getInsertedId()));
@@ -217,8 +218,8 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(InsertManyResult insertManyResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertManyResult", target, isPrettyPrint())) {
+	protected void renderResult(InsertManyResult insertManyResult, MessageBuilder messageBuilder) throws SAXException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertManyResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", insertManyResult.wasAcknowledged());
 			if (insertManyResult.wasAcknowledged()) {
 				try (ObjectBuilder objectBuilder = builder.addObjectField("insertedIds")) {
@@ -236,46 +237,40 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(Document findResult, MessageOutputStream target) throws StreamingException {
-		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", target, isPrettyPrint())) {
+	protected void renderResult(Document findResult, MessageBuilder messageBuilder) throws SAXException {
+		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", messageBuilder, isPrettyPrint())) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
 			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
 			encoder.encode(jsonWriter, findResult, EncoderContext.builder().build());
-		} catch (Exception e) {
-			throw new StreamingException("Could not render collection", e);
 		}
 	}
 
-	protected void renderResult(FindIterable<Document> findResults, MessageOutputStream target) throws StreamingException {
-		try {
-			if (isCountOnly()) {
-				try (Writer writer = target.asWriter()) {
-					int count=0;
-					for (Document doc : findResults) {
-						count++;
-					}
-					writer.write(Integer.toString(count));
-				}
-				return;
-			}
-			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", target, isPrettyPrint())) {
-				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
-				Encoder<Document> encoder = new DocumentCodec();
+	protected void renderResult(FindIterable<Document> findResults, MessageBuilder messageBuilder) throws IOException, SAXException {
+		if (isCountOnly()) {
+			try (Writer writer = messageBuilder.asWriter()) {
+				int count=0;
 				for (Document doc : findResults) {
-					try (INodeBuilder element = builder.addElement()) {
-						JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings);
-						encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
-					}
+					count++;
+				}
+				writer.write(Integer.toString(count));
+			}
+			return;
+		}
+		try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", messageBuilder, isPrettyPrint())) {
+			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+			Encoder<Document> encoder = new DocumentCodec();
+			for (Document doc : findResults) {
+				try (INodeBuilder element = builder.addElement()) {
+					JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings);
+					encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
 				}
 			}
-		} catch (Exception e) {
-			throw new StreamingException("Could not render collection", e);
 		}
 	}
 
-	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", target, isPrettyPrint())) {
+	protected void renderResult(UpdateResult updateResult, MessageBuilder messageBuilder) throws SAXException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", updateResult.wasAcknowledged());
 			if (updateResult.wasAcknowledged()) {
 				builder.add("matchedCount", updateResult.getMatchedCount());
@@ -285,8 +280,8 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		}
 	}
 
-	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", target, isPrettyPrint())) {
+	protected void renderResult(DeleteResult deleteResult, MessageBuilder messageBuilder) throws SAXException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", messageBuilder, isPrettyPrint())) {
 			builder.add("acknowledged", deleteResult.wasAcknowledged());
 			if (deleteResult.wasAcknowledged()) {
 				builder.add("deleteCount", deleteResult.getDeletedCount());

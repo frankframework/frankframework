@@ -41,7 +41,7 @@ import org.frankframework.configuration.filters.InitialCapsFilter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
 import org.frankframework.configuration.filters.SkipContainersFilter;
 import org.frankframework.core.Resource;
-import org.frankframework.stream.xml.XmlTee;
+import org.frankframework.documentbuilder.xml.XmlTee;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;

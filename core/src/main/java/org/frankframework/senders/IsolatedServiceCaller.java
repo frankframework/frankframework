@@ -26,7 +26,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.springframework.core.task.TaskExecutor;

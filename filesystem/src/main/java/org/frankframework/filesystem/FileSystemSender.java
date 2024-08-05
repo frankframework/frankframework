@@ -17,6 +17,7 @@ package org.frankframework.filesystem;
 
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
@@ -27,10 +28,10 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -92,7 +93,7 @@ public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 
 		try {

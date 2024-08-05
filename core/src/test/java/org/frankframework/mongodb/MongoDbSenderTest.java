@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -30,11 +29,11 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.mongodb.MongoDbSender.MongoAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentFormat;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -47,7 +46,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private static final String MONGO_DOCKER_TAG = "mongo:7.0.9";
 
 	@Container
-	private final static MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_DOCKER_TAG);
+	private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_DOCKER_TAG);
 
 	private final String host = "localhost";
 	private final String database = "testdb";
@@ -55,14 +54,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private Message result;
 
 	private JndiMongoClientFactory mongoClientFactory;
-
-	@BeforeAll
-	public static void beforeAll() {
-		mongoDBContainer.start();
-		int mappedPort = mongoDBContainer.getMappedPort(27017);
-		System.setProperty("mongodb.container.port", String.valueOf(mappedPort));
-		log.debug("MongoDB container started on port: {}", mappedPort);
-	}
 
 	@AfterEach
 	@Override

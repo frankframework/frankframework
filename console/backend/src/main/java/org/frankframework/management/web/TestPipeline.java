@@ -30,6 +30,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.RequestUtils;
+import org.frankframework.util.ResponseUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 import org.springframework.http.MediaType;
@@ -60,7 +61,7 @@ public class TestPipeline extends FrankApiBase {
 	@Description("send a message to an Adapters pipeline, bypassing the receiver")
 	@PostMapping(value = "/test-pipeline", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<TestPipeLineResponse> testPipeLine(@ModelAttribute TestPipeLineModel model) throws ApiException {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, model.configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, model.adapter);
@@ -101,24 +102,7 @@ public class TestPipeline extends FrankApiBase {
 		builder.setPayload(message);
 		Message<?> response = sendSyncMessage(builder);
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
-		return testPipelineResponse(getPayload(response), state, message);
-	}
-
-	private String getPayload(Message<?> response) {
-		Object payload = response.getPayload();
-		if (payload instanceof String string) {
-			return string;
-		} else if (payload instanceof byte[] bytes) {
-			return new String(bytes);
-		} else if (payload instanceof InputStream stream) {
-			try {
-				// Convert line endings to \n to show them in the browser as real line feeds
-				return StreamUtil.streamToString(stream, "\n", false);
-			} catch (IOException e) {
-				throw new ApiException("unable to read response payload", e);
-			}
-		}
-		throw new ApiException("unexpected response payload type [" + payload.getClass().getCanonicalName() + "]");
+		return testPipelineResponse(ResponseUtils.convertPayload(response.getPayload()), state, message);
 	}
 
 	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {

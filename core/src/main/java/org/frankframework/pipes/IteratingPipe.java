@@ -15,10 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +50,7 @@ import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
@@ -274,28 +271,23 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			String itemResult=null;
 			totalItems++;
-			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
-				session.put(getItemNoSessionKey(),""+totalItems);
-			}
-			Message message=itemToMessage(item);
-			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
-			if (msgTransformerPool!=null) {
-				try {
-					long preprocessingStartTime = System.currentTimeMillis();
 
-					ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
-					Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
-					log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMsg);
-					message = transformedMsg;
-					long preprocessingEndTime = System.currentTimeMillis();
-					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
-					getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
-				} catch (Exception e) {
-					throw new SenderException("cannot transform item",e);
-				}
+			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
+				session.put(getItemNoSessionKey(), ""+totalItems);
+			}
+
+			Message message = itemToMessage(item);
+			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
+			if (msgTransformerPool != null) {
+				Message transformedMessage = transformMessage(message);
+				log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMessage);
+				message.close();
+				message = transformedMessage;
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
+			message.closeOnCloseOf(session, "iteratingPipeItem"+totalItems);
+
 			if (childLimiter != null) {
 				try {
 					childLimiter.acquire();
@@ -394,6 +386,20 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			}
 		}
+
+		private Message transformMessage(Message message) throws SenderException {
+			try {
+				long preprocessingStartTime = System.currentTimeMillis();
+				ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
+				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
+				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
+				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
+				return transformedMsg;
+			} catch (Exception e) {
+				throw new SenderException("cannot transform item", e);
+			}
+		}
+
 		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
 				log.debug("removing XML declaration from [{}]", itemResult);
@@ -451,13 +457,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		StopReason stopReason;
-		File tempFile = FileUtils.createTempFile();
+		MessageBuilder messageBuilder = new MessageBuilder();
 		try {
-			try (Writer resultWriter = Files.newBufferedWriter(tempFile.toPath())) {
-				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
+			try (Writer resultWriter = messageBuilder.asWriter()) {
+				ItemCallback callback = createItemCallBack(session, sender, resultWriter);
 				stopReason = iterateOverInput(input,session,threadContext, callback);
 			}
-			PipeRunResult prr = new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+
+			PipeRunResult prr = new PipeRunResult(getSuccessForward(), messageBuilder.build());
 			if(stopReason != null) {
 				PipeForward forward = getForwards().get(stopReason.getForwardName());
 				if(forward != null) {

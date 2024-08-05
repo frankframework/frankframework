@@ -15,14 +15,11 @@
 */
 package org.frankframework.management.web;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
@@ -30,18 +27,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 
 import jakarta.annotation.Nonnull;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
-	@Autowired
-	protected @Getter HttpServletRequest servletRequest;
-
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Environment environment;
-
-	protected Logger log = LogManager.getLogger(this);
 
 	protected final OutboundGateway getGateway() {
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
@@ -85,6 +76,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	/** Get a property from the Spring Environment. */
+	@SuppressWarnings("unchecked")
 	protected <T> T getProperty(String key, T defaultValue) {
 		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
 	}

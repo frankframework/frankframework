@@ -110,7 +110,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		combinedExpected.append("</results>");
 
 		/* Parallel sender uses toXml method which escapes the new line char. In the comparison we need unescaped char.*/
-		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE");
+		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE").replace("byte[]", "IGNORE");
 		if (stripAllWhitespace) {
 			super.assertResultsAreCorrect(combinedExpected.toString().replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
 		} else {

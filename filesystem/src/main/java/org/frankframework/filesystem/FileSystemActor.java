@@ -39,14 +39,15 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.DocumentFormat;
-import org.frankframework.stream.document.INodeBuilder;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
@@ -123,6 +124,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private INamedObject owner;
 	private S fileSystem;
 	private ParameterList parameterList;
+	private boolean hasCustomFileAttributes = false;
 
 	private byte[] eolArray=null;
 
@@ -219,6 +221,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				ConfigurationWarnings.add(owner, log, "Filesystem [" + ClassUtils.nameOf(fileSystem) + "] does not support setting custom file attribute meta-data: [" + parametersWithAttributePrefix + "]");
 			}
 		}
+
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?> scfa) {
+			hasCustomFileAttributes = scfa.hasCustomFileAttributes(parameterList);
+		}
+
 		eolArray = LINE_SEPARATOR.getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
@@ -364,7 +371,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return createFile(input, pvl, null);
 				}
 				case DELETE: {
-					return new Message(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
+					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
@@ -433,11 +440,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
-					return new Message(processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
 				case COPY: {
 					String destinationFolder = determineDestination(pvl);
-					return new Message(processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
+					return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
 				case FORWARD: {
 					F file=getFile(input, pvl);
@@ -454,10 +461,12 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
-	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, SAXException {
+	private Message processListAction(Message input, ParameterValueList pvl) throws FileSystemException, IOException, SAXException {
 		String folder = arrangeFolder(determineInputFolderName(input, pvl));
 		typeFilter = determineTypeFilter(pvl);
-		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
+
+		MessageBuilder messageBuilder = new MessageBuilder();
+		ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file", messageBuilder, true);
 		try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), typeFilter)) {
 			Iterator<F> it = stream.iterator();
 			while (it.hasNext()) {
@@ -467,24 +476,26 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				}
 			}
 		}
-		return new Message(directoryBuilder.toString());
+		return messageBuilder.build();
 	}
 
+	@SuppressWarnings("unchecked") //Casts to the required FileSystem type
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
 			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
-			file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+			file = getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 		}
 
-		if (fileSystem instanceof ISupportsCustomFileAttributes<?> && pvl != null) {
-			((ISupportsCustomFileAttributes<F>)fileSystem).setCustomFileAttributes(file, pvl);
+		// Creates a file with custom file attributes if the fileSystem supports it and there are customFileAttributes to set
+		if (hasCustomFileAttributes && fileSystem instanceof ISupportsCustomFileAttributes<?> cfa) {
+			((ISupportsCustomFileAttributes<F>)fileSystem).createFile(file, contents, cfa.getCustomFileAttributes(pvl));
+		} else {
+			((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		}
 
-		((IWritableFileSystem<F>)fileSystem).createFile(file, contents);
 		return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 	}
-
 
 	private interface FileAction<F> {
 		F execute(F f) throws FileSystemException;
@@ -495,27 +506,29 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	 * @throws FileSystemException
 	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, SAXException {
+	private Message processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFolderName(input, pvl));
-			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");
-			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
-				Iterator<F> it = stream.iterator();
-				while(it.hasNext()) {
-					F file = it.next();
-					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
-						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
-						action.execute(file);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file", messageBuilder, true)) {
+				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
+					Iterator<F> it = stream.iterator();
+					while(it.hasNext()) {
+						F file = it.next();
+						try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
+							FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+							action.execute(file);
+						}
 					}
 				}
 			}
 			deleteEmptyFolder(folder);
-			return directoryBuilder.toString();
+			return messageBuilder.build();
 		}
 		F file=getFile(input, pvl);
 		F resultFile = action.execute(file);
 		deleteEmptyFolder(file);
-		return resultFile!=null ? fileSystem.getName(resultFile) : null;
+		return resultFile!=null ? new Message(fileSystem.getName(resultFile)) : Message.nullMessage();
 	}
 
 	private String arrangeFolder(String determinedFolderName) throws FileSystemException {

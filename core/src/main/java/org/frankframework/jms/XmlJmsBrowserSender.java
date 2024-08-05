@@ -15,8 +15,7 @@
  */
 package org.frankframework.jms;
 
-import org.w3c.dom.Element;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -29,6 +28,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
 
 /**
  * Sender for browsing and removing queue messages (with input and output in a XML message).
@@ -98,7 +98,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;

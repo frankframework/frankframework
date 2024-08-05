@@ -15,15 +15,17 @@
  */
 package org.frankframework.extensions.tibco;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Collection;
+
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -93,11 +95,23 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private boolean skipTemporaryQueues = false;
 	private boolean hideMessage = false;
 	private String queueRegex;
+	private String emsPropertiesFile;
+	private Map<String, Object> emsProperties;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getParameterList() != null && getParameterList().hasParameter("userName")) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		if(StringUtils.isNotEmpty(emsPropertiesFile)) {
+			try {
+				emsProperties = new TibcoEmsProperties(this, emsPropertiesFile);
+			} catch (IOException e) {
+				throw new ConfigurationException("unable to find/load the EMS properties file", e);
+			}
+		} else {
+			emsProperties = Collections.emptyMap();
 		}
 
 		super.configure();
@@ -144,7 +158,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		Session jSession;
 		TibjmsAdmin admin = null;
 		try {
-			admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+			admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
 			if (admin == null) {
 				throw new PipeRunException(this, "could not find an active server");
 			}
@@ -164,7 +178,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -342,8 +356,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 		if (consumersMap.containsKey(qInfo.getName())) {
 			LinkedList<String> consumers = consumersMap.get(qInfo.getName());
-			String consumersString = listToString(consumers);
-			if (consumersString != null) {
+			if (consumers != null) {
+				String consumersString = String.join("; ", consumers);
 				consumerXml.setCdataValue(consumersString);
 			}
 		}
@@ -389,8 +403,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 				if (consumersMap.containsKey(qInfo.getName())) {
 					LinkedList<String> consumers = consumersMap.get(qInfo.getName());
-					String consumersString = listToString(consumers);
-					if (consumersString != null) {
+					if (consumers != null) {
+						String consumersString = String.join("; ", consumers);
 						consumerXml.setCdataValue(consumersString);
 					}
 				}
@@ -477,20 +491,6 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qInfoXml;
 	}
 
-	private String listToString(LinkedList<String> list) {
-		String string = null;
-		if (list != null) {
-			for (Iterator<String> it = list.iterator(); it.hasNext();) {
-				if (string == null) {
-					string = it.next();
-				} else {
-					string = string + "; " + it.next();
-				}
-			}
-		}
-		return string;
-	}
-
 	private Map<String, String> getAclMap(TibjmsAdmin admin, LdapSender ldapSender) throws TibjmsAdminException {
 		Map<String, String> userMap = new HashMap<>();
 		Map<String, String> aclMap = new HashMap<>();
@@ -541,11 +541,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
 		Message ldapRequest = new Message("<req>" + principal + "</req>");
-		try (Message message = ldapSender.sendMessageOrThrow(ldapRequest, null)) {
+		try (PipeLineSession session = new PipeLineSession();
+			Message message = ldapSender.sendMessageOrThrow(ldapRequest, session)) {
 			String ldapResult = message.asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
-				if (c != null && c.size() > 0) {
+				if (c != null && !c.isEmpty()) {
 					principalDescription = c.iterator().next();
 				}
 			}
@@ -557,14 +558,14 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	}
 
 	private String getResolvedUrl(String url) {
-		URI uri = null;
+		URI uri;
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
 			log.debug("Caught URISyntaxException while resolving url [{}]", url, e);
 			return null;
 		}
-		InetAddress inetAddress = null;
+		InetAddress inetAddress;
 		try {
 			inetAddress = InetAddress.getByName(uri.getHost());
 		} catch (UnknownHostException e) {
@@ -674,5 +675,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	public void setQueueRegex(String string) {
 		queueRegex = string;
+	}
+
+	/** Location to a <code>jndi.properties</code> file for additional EMS (SSL) properties */
+	public void setEmsPropertiesFile(String propertyFile) {
+		emsPropertiesFile = propertyFile;
 	}
 }

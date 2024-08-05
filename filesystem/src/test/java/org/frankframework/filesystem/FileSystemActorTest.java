@@ -476,8 +476,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	public void fileSystemActorReadActionTest(FileSystemAction action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
+		fileSystemActorReadActionTest(action, fileViaAttribute, fileShouldStillExistAfterwards, "Tekst om te lezen");
+	}
+
+	public void fileSystemActorReadActionTest(FileSystemAction action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards, String contents) throws Exception {
 		String filename = "sender" + FILE1;
-		String contents = "Tekst om te lezen";
 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
@@ -494,8 +497,19 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		result = Message.asMessage(actor.doAction(message, pvl, session));
 
-		assertEquals(contents, result.asString());
+		if(contents == null) {
+			assertTrue(Message.isEmpty(result));
+		} else {
+			assertEquals(contents, result.asString());
+		}
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
+	}
+
+	@Test
+	public void testReadEmptyFile() throws Exception {
+		// Test to prove that we work around the bug in AWS v2 api that handles empty files incorrectly
+		// in org.frankframework.filesystem.AmazonS3FileSystem.readFile
+		fileSystemActorReadActionTest(FileSystemAction.READ, false, true, null);
 	}
 
 	@Test

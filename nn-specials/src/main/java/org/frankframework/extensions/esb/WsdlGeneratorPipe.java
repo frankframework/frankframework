@@ -52,6 +52,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
@@ -72,8 +73,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		File tempDirectoryBase;
 		String fileName;
 
-		try (InputStream inputStream = fileInSession.asInputStream()){
-			tempDirectoryBase = FileUtils.getTempDirectory("WsdlGeneratorPipe");
+		try (InputStream inputStream = fileInSession.asInputStream()) {
+			tempDirectoryBase = TemporaryDirectoryUtils.getTempDirectory("WsdlGeneratorPipe").toFile();
 			fileName = session.getString(getFilenameSessionKey());
 			if (extensionEqualsIgnoreCase(fileName)) {
 				unzipStream(inputStream, tempDirectoryBase);

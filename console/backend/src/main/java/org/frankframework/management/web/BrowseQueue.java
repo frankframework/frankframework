@@ -38,7 +38,7 @@ public class BrowseQueue extends FrankApiBase {
 	@Relation("queuebrowser")
 	@Description("view a list of all JMS QueueConnectionFactories")
 	public ResponseEntity<?> getQueueConnectionFactories() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.GET));
+		return callSyncGateway(RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -58,7 +58,7 @@ public class BrowseQueue extends FrankApiBase {
 		if (StringUtils.isEmpty(type))
 			throw new ApiException("No type provided");
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destination);
 		builder.addHeader("type", type);

@@ -33,7 +33,7 @@ public class AdapterStatistics extends FrankApiBase {
 	@Description("view adapter processing statistics")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapterStatistics(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.STATUS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		return callSyncGateway(builder);

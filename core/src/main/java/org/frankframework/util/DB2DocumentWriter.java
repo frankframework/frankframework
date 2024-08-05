@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,13 +24,12 @@ import java.sql.Statement;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.stream.MessageOutputStream;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.DocumentFormat;
-import org.frankframework.stream.document.INodeBuilder;
-import org.frankframework.stream.document.ObjectBuilder;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
+import org.frankframework.stream.MessageBuilder;
 import org.xml.sax.SAXException;
 
 public class DB2DocumentWriter {
@@ -49,8 +48,8 @@ public class DB2DocumentWriter {
 		return JDBCType.valueOf(type).getName();
 	}
 
-	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target, boolean prettyPrint) throws StreamingException, SAXException {
-		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target, prettyPrint)) {
+	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
+		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, messageBuilder, prettyPrint)) {
 			writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 		}
 	}

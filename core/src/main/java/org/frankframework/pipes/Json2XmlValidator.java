@@ -24,17 +24,11 @@ import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.xerces.xs.XSModel;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.helpers.XMLFilterImpl;
-
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.xerces.xs.XSModel;
 import org.frankframework.align.Json2Xml;
 import org.frankframework.align.Xml2Json;
 import org.frankframework.align.XmlAligner;
@@ -46,10 +40,11 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
@@ -61,6 +56,11 @@ import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.xml.NamespaceRemovingFilter;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
 import org.frankframework.xml.XmlWriter;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  *<code>Pipe</code> that validates the XML or JSON input message against a XML Schema and returns either XML or JSON.
@@ -320,7 +320,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.startParse(jsonStructure);
 				resultMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
 			} else {
-				XmlWriter xmlWriter = new XmlWriter();
+				MessageBuilder messageBuilder = new MessageBuilder();
+				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
 				ContentHandler handler = xmlWriter;
 				if (isProduceNamespacelessXml()) {
@@ -328,7 +329,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				sourceFilter.setContentHandler(handler);
 				aligner.startParse(jsonStructure);
-				resultMessage = createResultMessage(xmlWriter.toString(), MediaType.APPLICATION_XML);
+				resultMessage = messageBuilder.build();
 			}
 			validationResult = validator.finalizeValidation(context, session, null);
 		} catch (Exception e) {

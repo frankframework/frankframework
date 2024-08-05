@@ -50,7 +50,7 @@ public class BrowseJdbcTable extends FrankApiBase {
 			throw new ApiException("tableName not defined.", 400);
 		}
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.FIND);
 		if (StringUtils.isNotEmpty(datasource)) {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
