@@ -126,8 +126,18 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           });
           this.searching = false;
           this.clearSearchLadda = false;
-          for (const message of response.messages){
-            this.storageService.selectedMessages[message.id] = false;
+          for (const message of response.messages) {
+            if (!(message.id in this.storageService.selectedMessages)) {
+              this.storageService.selectedMessages[message.id] = false;
+            }
+          }
+          for (const messageId in this.storageService.selectedMessages) {
+            const messageExists = response.messages.some(
+                    (message) => message.id === messageId,
+            );
+            if (!messageExists) {
+              delete this.storageService.selectedMessages[messageId];
+            }
           }
         }, error: (error) => {
           this.searching = false;
