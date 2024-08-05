@@ -275,7 +275,7 @@ class FrankSenderTest {
 		frankListener = new FrankListener();
 		frankListener.setName("ListenerName");
 		frankListener.setApplicationContext(mockConfiguration);
-
+		frankListener.configure();
 		frankListener.open();
 
 		// Act
@@ -301,7 +301,7 @@ class FrankSenderTest {
 		frankListener = new FrankListener();
 		frankListener.setName("ListenerName");
 		frankListener.setApplicationContext(configuration);
-
+		frankListener.configure();
 		frankListener.open();
 
 		// Act
