@@ -40,7 +40,7 @@ import org.springframework.context.ApplicationContext;
 
 
 /**
- * Listener to accompany the {@link org.frankframework.senders.FrankSender}, for situations where
+ * Listener to receive messages sent by the {@link org.frankframework.senders.FrankSender}, for situations where
  * calling an {@link Adapter} directly is not desired. This could be because message / error logging is required for messages
  * sent to the subadapter.
  * <br/>
