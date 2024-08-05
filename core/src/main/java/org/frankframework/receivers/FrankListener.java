@@ -66,8 +66,22 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 		return listeners.get(name);
 	}
 
+
 	@Override
 	public String getPhysicalDestinationName() {
+		return getFullName();
+	}
+
+	private String getFullName() {
+		if (StringUtils.isBlank(fullName)) {
+			// Ensure that full name is not set to an incorrect value
+			if (StringUtils.isBlank(getName())) {
+				Adapter adapter = getAdapter();
+				setName(adapter.getName());
+				log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
+			}
+			fullName = getConfiguration().getName() + "/" + getName();
+		}
 		return fullName;
 	}
 
@@ -83,13 +97,8 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 
 	@Override
 	public void configure() {
-		if (StringUtils.isBlank(getName())) {
-			Adapter adapter = getAdapter();
-			setName(adapter.getName());
-			log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
-		}
-		fullName = getConfiguration().getName() + "/" + getName();
-		log.debug("FrankListener instance will be registered under full name [{}]", fullName);
+		// Nothing to configure really but seems like a nice place to log this
+		log.info("FrankListener instance will be registered under full name [{}]", getFullName());
 	}
 
 	private Adapter getAdapter() {
@@ -102,16 +111,16 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 
 	@Override
 	public void open() throws ListenerException {
-		FrankListener putResult = listeners.putIfAbsent(fullName, this);
+		FrankListener putResult = listeners.putIfAbsent(getFullName(), this);
 		if (putResult != null && putResult != this) {
-			throw new ListenerException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
+			throw new ListenerException("Duplicate registration [" + getFullName() + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
 		}
 		open = true;
 	}
 
 	@Override
 	public void close() {
-		listeners.remove(fullName);
+		listeners.remove(getFullName());
 		open = false;
 	}
 
