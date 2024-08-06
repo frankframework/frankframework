@@ -58,6 +58,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
@@ -285,6 +286,16 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			}
 		}
 		return parametersAppended;
+	}
+
+	/**
+	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
+	 * {@link ClassUtils#nameOf(Object)} makes sure the original class will be used.
+	 *
+	 * @return className + name of the ISender
+	 */
+	protected String getLogPrefix() {
+		return ClassUtils.nameOf(this) + " ";
 	}
 
 	/**
