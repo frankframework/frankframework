@@ -68,7 +68,6 @@ public class WebServiceSender extends HttpSender {
 		setContentType("text/xml");
 	}
 
-	@Override
 	public String getLogPrefix() {
 		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
 	}

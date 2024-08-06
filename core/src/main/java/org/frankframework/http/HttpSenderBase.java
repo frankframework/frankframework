@@ -192,7 +192,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		try {
 			if (urlParameter == null) {
 				if (StringUtils.isEmpty(getUrl())) {
-					throw new ConfigurationException(getLogPrefix()+"url must be specified, either as attribute, or as parameter");
+					throw new ConfigurationException("url must be specified, either as attribute, or as parameter");
 				}
 				staticUri = getURI(getUrl());
 			}
@@ -220,14 +220,14 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		try {
 			start();
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"unable to create HttpClient", e);
+			throw new SenderException("unable to create HttpClient", e);
 		}
 
 		if (transformerPool!=null) {
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
+				throw new SenderException("cannot start TransformerPool", e);
 			}
 		}
 	}
@@ -279,24 +279,13 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 							log.debug("appending parameter [{}]", parameterToAppend);
 							path.append(parameterToAppend);
 						} catch (UnsupportedEncodingException e) {
-							throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+							throw new SenderException("["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
 						}
 					}
 				}
 			}
 		}
 		return parametersAppended;
-	}
-
-
-	/**
-	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
-	 * {@link ClassUtils#nameOf(Object)} makes sure the original class will be used.
-	 *
-	 * @return className + name of the ISender
-	 */
-	protected String getLogPrefix() {
-		return ClassUtils.nameOf(this) + " ";
 	}
 
 	/**
@@ -343,7 +332,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			try {
 				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+				throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
 		} else {
 			pvl = null;
@@ -451,7 +440,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			// This will cause the connection to become stale.
 
 			if (tg.cancel()) {
-				throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
+				throw new TimeoutException("timeout of ["+getTimeout()+"] ms exceeded");
 			}
 		}
 

@@ -74,7 +74,7 @@ public class ParallelSenders extends SenderSeries {
 				message.preserve();
 			}
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
+			throw new SenderException(" could not preserve input message", e);
 		}
 
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();

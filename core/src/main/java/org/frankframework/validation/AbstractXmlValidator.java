@@ -193,7 +193,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @return ValidationResult
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Object input, PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, validatorHandler, null, context);

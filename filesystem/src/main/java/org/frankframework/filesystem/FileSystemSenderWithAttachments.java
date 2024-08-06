@@ -59,7 +59,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 			try {
 				file = ifs.toFile(message.asString());
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "unable to get file", e);
+				throw new SenderException("unable to get file", e);
 			}
 
 			XmlBuilder attachments = new XmlBuilder("attachments");

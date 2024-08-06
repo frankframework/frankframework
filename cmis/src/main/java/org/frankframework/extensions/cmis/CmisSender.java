@@ -264,7 +264,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 
 		if (runtimeSession) {
-			log.info("{} using runtime session", getLogPrefix());
+			log.info("using runtime session");
 		}
 	}
 
@@ -311,7 +311,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	@Override
 	public void close() {
 		if (globalSession != null) {
-			log.debug("{} Closing global CMIS session", getLogPrefix());
+			log.debug("Closing global CMIS session");
 			globalSession.close();
 			globalSession = null;
 		}
@@ -326,7 +326,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				try {
 					pvl = getParameterList().getValues(message, session);
 				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+					throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 				}
 			}
 
@@ -353,11 +353,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					return sendMessageForDynamicActions(cmisSession, message, session);
 
 				default:
-					throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
+					throw new SenderException("unknown action [" + getAction() + "]");
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
-				log.debug("{} Closing CMIS runtime session", getLogPrefix());
+				log.debug("Closing CMIS runtime session");
 				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
 				cmisSession = null;
 			}
@@ -366,7 +366,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private SenderResult sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		if (Message.isEmpty(message)) {
-			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
+			throw new SenderException("input string cannot be empty but must contain a documentId");
 		}
 
 		CmisObject object;
@@ -375,7 +375,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage= "document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}{}", getLogPrefix(), errorMessage, e);
+				log.info("{}{}", errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -464,7 +464,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				processProperties(propertiesElement, props);
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "exception parsing [" + message + "]", e);
+			throw new SenderException("exception parsing [" + message + "]", e);
 		}
 
 		if (StringUtils.isEmpty(mediaType)) {
@@ -484,11 +484,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (isUseRootFolder()) {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
-			log.debug("{}created new document [{}]", getLogPrefix(), document.getId());
+			log.debug("created new document [{}]", document.getId());
 			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-		log.debug("{}created new document [{}]", getLogPrefix(), objectId.getId());
+		log.debug("created new document [{}]", objectId.getId());
 		return new SenderResult(objectId.getId());
 	}
 
@@ -532,25 +532,25 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 						Date date = df.parse(property);
 						calendar.setTime(date);
 					} catch (ParseException e) {
-						throw new SenderException(getLogPrefix() + "exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
+						throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
 					}
 					props.put(nameAttr, calendar);
 				} else {
-					log.warn("{}unknown type [{}], assuming 'string'", getLogPrefix(), typeAttr);
+					log.warn("unknown type [{}], assuming 'string'", typeAttr);
 					props.put(nameAttr, property);
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("{}set property name [{}] value [{}]", getLogPrefix(), nameAttr, property);
+					log.debug("set property name [{}] value [{}]", nameAttr, property);
 				}
 			} else {
-				log.debug("{}empty property found, ignoring", getLogPrefix());
+				log.debug("empty property found, ignoring");
 			}
 		}
 	}
 
 	private SenderResult sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
 		if (Message.isEmpty(message)) {
-			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
+			throw new SenderException("input string cannot be empty but must contain a documentId");
 		}
 		CmisObject object = null;
 		try {
@@ -558,7 +558,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}{}", getLogPrefix(), errorMessage, e);
+				log.info("{}{}", errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -571,7 +571,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		}
 		//// You can't delete
-		throw new SenderException(getLogPrefix() + "Document cannot be deleted");
+		throw new SenderException("Document cannot be deleted");
 	}
 
 	private SenderResult sendMessageForActionFind(Session cmisSession, Message message) throws SenderException {
@@ -884,7 +884,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				processProperties(propertiesElement, props);
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "exception parsing [" + message + "]", e);
+			throw new SenderException("exception parsing [" + message + "]", e);
 		}
 
 		CmisObject object = null;
@@ -893,7 +893,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}{}", getLogPrefix(), errorMessage, e);
+				log.info("{}{}", errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
