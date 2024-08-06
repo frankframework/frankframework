@@ -26,7 +26,7 @@
     "@stomp/stompjs": "^7.0.0",
     "angular-datatables": "^15.0.0",
     "angular2-ladda": "^5.0.0",
-    "bootstrap": "3.3.6",
+    "bootstrap": "5.0.0",
     "chart.js": "^3.4.0",
     "datatables.net": "^1.13.6",
     "datatables.net-dt": "^1.13.6",
