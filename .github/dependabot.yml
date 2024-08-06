@@ -56,3 +56,12 @@ updates:
       - dependency-name: "org.apache.activemq:artemis-*"
         versions: ["[2.20.0,)"]
       # End of versions not available for JDK 8
+      
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule: 
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "Dependencies"
+      - "Docker"
