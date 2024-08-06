@@ -25,7 +25,6 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -138,7 +137,7 @@ public class Init extends FrankApiBase {
 		else
 			resources.put("links", JSONresources);
 
-		return ResponseEntity.status(HttpStatus.CREATED).body(resources);
+		return ResponseEntity.status(HttpStatus.OK).body(resources);
 	}
 
 }

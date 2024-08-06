@@ -20,6 +20,7 @@ import java.util.Map;
 import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.RequestUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,19 +35,8 @@ public class IbisstoreSummary extends FrankApiBase {
 	@Description("view database dump of the IbisStore table")
 	@PostMapping(value = "/jdbc/summary", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getIbisstoreSummary(@RequestBody Map<String, Object> json) {
-
-		String query = null;
-		String datasource = null;
-
-		for (Map.Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if ("datasource".equalsIgnoreCase(key)) {
-				datasource = entry.getValue().toString();
-			}
-			if ("query".equalsIgnoreCase(key)) {
-				query = entry.getValue().toString();
-			}
-		}
+		String query = RequestUtils.getValue(json, "query");
+		String datasource = RequestUtils.getValue(json, "datasource");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISSTORE_SUMMARY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
