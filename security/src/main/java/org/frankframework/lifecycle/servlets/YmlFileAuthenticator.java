@@ -42,10 +42,10 @@ import lombok.Setter;
  * <pre><code>
  * users:
  *   - username: Tester
- *      password: ChangeMe!
- *      roles:
- *        - IbisTester
- *        - IbisObserver
+ *     password: ChangeMe!
+ *     roles:
+ *       - IbisTester
+ *       - IbisObserver
  * </code></pre>
  */
 public class YmlFileAuthenticator extends ServletAuthenticatorBase {
@@ -55,7 +55,7 @@ public class YmlFileAuthenticator extends ServletAuthenticatorBase {
 
 	private void configure() throws FileNotFoundException {
 		ymlFileURL = ClassUtils.getResourceURL(file);
-		if(ymlFileURL == null) {
+		if (ymlFileURL == null) {
 			throw new FileNotFoundException("unable to find yml file ["+file+"]");
 		}
 		log.info("found rolemapping file [{}]", ymlFileURL);
@@ -99,7 +99,7 @@ public class YmlFileAuthenticator extends ServletAuthenticatorBase {
 		http.httpBasic(basic -> basic.realmName("Frank")); //BasicAuthenticationEntryPoint
 
 		LocalUsers localUsers;
-		try(InputStream is = ymlFileURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+		try (InputStream is = ymlFileURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			Yaml yaml = new Yaml();
 
 			localUsers = yaml.loadAs(reader, LocalUsers.class);
