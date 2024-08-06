@@ -74,10 +74,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	private DataSource datasource = null;
 
-	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -86,7 +82,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		}
 		try {
 			if (getDatasource() == null) {
-				throw new ConfigurationException(getLogPrefix() + "has no datasource");
+				throw new ConfigurationException("has no datasource");
 			}
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
@@ -109,7 +105,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			}
 
 			String dsinfo = datasource.toString();
-			log.info("{}looked up Datasource [{}]: [{}]", getLogPrefix(), dsName, dsinfo);
+			log.info("looked up Datasource [{}]: [{}]", dsName, dsinfo);
 		}
 		return datasource;
 	}
@@ -156,7 +152,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			}
 			return ds.getConnection();
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
+			throw new JdbcException("cannot open connection on datasource ["+getDatasourceName()+"]", e);
 		}
 	}
 
@@ -170,7 +166,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return getConnection();
 		} finally {
 			if (tg.cancel()) {
-				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
+				throw new TimeoutException("thread has been interrupted");
 			}
 		}
 	}

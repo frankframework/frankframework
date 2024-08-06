@@ -106,7 +106,7 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		try {
 			client.disconnect();
 		} catch (MqttException e) {
-			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
+			log.warn("caught exception stopping listener", e);
 		}
 	}
 
@@ -129,10 +129,6 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	@Override
 	public void setName(String newName) {
 		name = newName;
-	}
-
-	protected String getLogPrefix() {
-		return "["+getName()+"] ";
 	}
 
 	public void setTimeout(int timeout) {

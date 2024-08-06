@@ -54,7 +54,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT_COUNT)) {
-			throw new ConfigurationException(getLogPrefix() + "query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT_COUNT + "]");
+			throw new ConfigurationException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT_COUNT + "]");
 		}
 	}
 
@@ -76,7 +76,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 				connection.close();
 			}
 		} catch (SQLException e) {
-			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
+			log.warn("caught exception stopping listener", e);
 		} finally {
 			connection = null;
 			super.close();
@@ -124,7 +124,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 				return new RawMessageWrapper<>("<count>" + count + "</count>");
 			}
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query [" + query + "]", e);
+			throw new ListenerException("caught exception retrieving message using query [" + query + "]", e);
 		}
 	}
 
@@ -135,13 +135,13 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	protected ResultSet executeQuery(Connection conn, String query) throws ListenerException {
 		if (StringUtils.isEmpty(query)) {
-			throw new ListenerException(getLogPrefix() + "cannot execute empty query");
+			throw new ListenerException("cannot execute empty query");
 		}
 		if (trace && log.isDebugEnabled()) log.debug("executing query [{}]", query);
 		try (Statement stmt = conn.createStatement()) {
 			return stmt.executeQuery(query);
 		} catch (SQLException e) {
-			throw new ListenerException(getLogPrefix() + "exception executing statement [" + query + "]", e);
+			throw new ListenerException("exception executing statement [" + query + "]", e);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 				stmt.execute();
 
 			} catch (SQLException e) {
-				throw new ListenerException(getLogPrefix() + "exception executing statement [" + query + "]", e);
+				throw new ListenerException("exception executing statement [" + query + "]", e);
 			}
 		}
 	}

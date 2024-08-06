@@ -17,7 +17,6 @@ package org.frankframework.unmanaged;
 
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
@@ -127,19 +126,19 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
 
 		if (getReceiver().isTransacted()) {
-			log.debug("{} setting transaction manager to [{}]", this::getLogPrefix, ()->txManager);
+			log.debug("setting transaction manager to [{}]", ()->txManager);
 			jmsContainer.setTransactionManager(txManager);
 			if (getReceiver().getTransactionTimeout()>0) {
 				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
 			}
 			txDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 			if (receiveTimeout > txDefinition.getTimeout() && txDefinition.getTimeout() != -1) {
-				throw new ConfigurationException(getLogPrefix() + "receive timeout [" + receiveTimeout
+				throw new ConfigurationException("receive timeout [" + receiveTimeout
 						+ "] should be smaller than transaction timeout [" + txDefinition.getTimeout()
 						+ "] as the receive time is part of the total transaction time");
 			}
 		} else {
-			log.debug("{} setting no transaction manager", this::getLogPrefix);
+			log.debug("setting no transaction manager");
 		}
 		jmsContainer.setSessionTransacted(sessionTransacted);
 		if (StringUtils.isNotEmpty(messageSelector)) {
@@ -178,7 +177,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		try {
 			((AutowireCapableBeanFactory) this.beanFactory).configureBean(this.jmsContainer, "proto-jmsContainer");
 		} catch (BeansException e) {
-			throw new ConfigurationException(getLogPrefix()+"Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener ["+ (getListener().getName()+"]"), e);
+			throw new ConfigurationException("Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener ["+ (getListener().getName()+"]"), e);
 		}
 
 		// Finally, set bean name to something we can make sense of
@@ -191,7 +190,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	@Override
 	public void start() throws ListenerException {
-		log.debug("{} starting", this::getLogPrefix);
+		log.debug("starting");
 		if (jmsContainer == null) {
 			try {
 				configureEndpointConnection();
@@ -203,23 +202,23 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			try {
 				jmsContainer.start();
 				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
-					log.trace("{} Creating poll-guard timer with interval [{}ms] while starting SpringJmsConnector", this::getLogPrefix, () -> pollGuardInterval);
+					log.trace("Creating poll-guard timer with interval [{}ms] while starting SpringJmsConnector", () -> pollGuardInterval);
 					PollGuard pollGuard = new PollGuard();
 					pollGuard.setSpringJmsConnector(this);
 					pollGuardTimer = new Timer(true);
 					pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
 				}
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"cannot start", e);
+				throw new ListenerException("cannot start", e);
 			}
 		} else {
-			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
+			throw new ListenerException("no jmsContainer defined");
 		}
 	}
 
 	@Override
 	public void stop() throws ListenerException {
-		log.debug("{} stopping", this::getLogPrefix);
+		log.debug("stopping");
 		if (pollGuardTimer != null) {
 			log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
 			pollGuardTimer.cancel();
@@ -230,12 +229,12 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				jmsContainer.stop();
 				jmsContainer.destroy();
 				jmsContainer = null;
-				log.debug("{} jmsContainer is destroyed", this::getLogPrefix);
+				log.debug("jmsContainer is destroyed");
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
+				throw new ListenerException("Exception while trying to stop", e);
 			}
 		} else {
-			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
+			throw new ListenerException("no jmsContainer defined");
 		}
 	}
 
@@ -248,7 +247,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		final long jmsTimestamp= message.getJMSTimestamp();
 		Thread.currentThread().setName(getReceiver().getName() + "[" + threadsProcessing.incrementAndGet() + "]");
 
-		final String logPrefix = getLogPrefix();
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 			if (txDefinition != null) {
 				txStatus = txManager.getTransaction(txDefinition);
@@ -268,17 +266,17 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				}
 			} finally {
 				if (txStatus == null && jmsContainer.isSessionTransacted()) {
-					log.debug("{} committing JMS session", logPrefix);
+					log.debug("committing JMS session");
 					session.commit();
 				}
 			}
 		} finally {
 			if (txStatus!=null && !txStatus.isCompleted()) {
 				if (!txStatus.isRollbackOnly()) {
-					log.debug("{} committing transaction {}", logPrefix, txStatus);
+					log.debug("committing transaction {}", txStatus);
 					txManager.commit(txStatus);
 				} else {
-					log.debug("{} rolling back transaction {}", logPrefix, txStatus);
+					log.debug("rolling back transaction {}", txStatus);
 					txManager.rollback(txStatus);
 				}
 			}
@@ -286,9 +284,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			if (log.isInfoEnabled()) {
 				long onMessageEnd= System.currentTimeMillis();
 
-				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateFormatUtils.format(jmsTimestamp));
-				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateFormatUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
-				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateFormatUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
+				log.info("A) JMSMessageTime [{}]", DateFormatUtils.format(jmsTimestamp));
+				log.info("B) onMessageStart [{}] diff (~'queing' time) [{}]", DateFormatUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
+				log.info("C) onMessageEnd   [{}] diff (process time) [{}]", DateFormatUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
 			}
 		}
 	}
@@ -299,7 +297,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (ibisExceptionListener!= null) {
 			ibisExceptionListener.exceptionThrown(getListener(), e);
 		} else {
-			log.error("{} Cannot report the error to an IBIS Exception Listener", (Supplier<?>) this::getLogPrefix, e);
+			log.error("Cannot report the error to an IBIS Exception Listener", e);
 		}
 	}
 
@@ -346,11 +344,4 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 	}
 
-	public String getLogPrefix() {
-		String result="SpringJmsConnector ";
-		if (getListener()!=null && getListener().getReceiver()!=null) {
-			result += "of Receiver ["+getListener().getReceiver().getName()+"] ";
-		}
-		return result;
-	}
 }

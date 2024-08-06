@@ -301,7 +301,7 @@ public class HttpSender extends HttpSenderBase {
 
 					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
 						requestFormElements.add(new BasicNameValuePair(name,value));
-						if (log.isDebugEnabled()) log.debug("appended parameter [{}] with value [{}]", name, value);
+						log.debug("appended parameter [{}] with value [{}]", name, value);
 					}
 				}
 			}

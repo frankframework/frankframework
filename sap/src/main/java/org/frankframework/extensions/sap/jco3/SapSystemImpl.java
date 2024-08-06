@@ -96,7 +96,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 				JCo.setTrace(getTraceLevel(), logPath);
 			}
 		} catch (Throwable t) {
-			throw new SapException(getLogPrefix()+"exception initializing", t);
+			throw new SapException("exception initializing", t);
 		}
 	}
 
@@ -111,21 +111,21 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	public synchronized void openSystem() throws SapException {
 		if (referenceCount++<=0) {
 			referenceCount=1;
-			log.debug("{}opening system", getLogPrefix());
+			log.debug("opening system");
 			initSystem();
-			log.debug("{}opened system", getLogPrefix());
+			log.debug("opened system");
 		}
 	}
 
 	public synchronized void closeSystem() {
 		clearCache();
 		if (--referenceCount<=0) {
-			log.debug("{}reference count [{}], closing system", getLogPrefix(), referenceCount);
+			log.debug("reference count [{}], closing system", referenceCount);
 			referenceCount=0;
 			clearSystem();
-			log.debug("{}closed system", getLogPrefix());
+			log.debug("closed system");
 		} else {
-			log.debug("{}reference count [{}], waiting for other references to close", getLogPrefix(), referenceCount);
+			log.debug("reference count [{}], waiting for other references to close", referenceCount);
 		}
 	}
 
@@ -173,10 +173,6 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	public synchronized IDocRepository getIDocRepository() throws JCoException {
 		return JCoIDoc.getIDocRepository(getDestination());
-	}
-
-	public String getLogPrefix() {
-		return "SapSystem ["+getName()+"] ";
 	}
 
 	@Override

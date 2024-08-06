@@ -68,17 +68,13 @@ public class WebServiceSender extends HttpSender {
 		setContentType("text/xml");
 	}
 
-	public String getLogPrefix() {
-		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		if (isSoap()) {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			//String msg = "the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			//configWarnings.add(log, msg);
 		}
 		soapWrapper = SoapWrapper.getInstance();
@@ -98,7 +94,7 @@ public class WebServiceSender extends HttpSender {
 
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug("{}created CredentialFactory for username=[{}]", getLogPrefix(), wsscf.getUsername());
+			log.debug("created CredentialFactory for username=[{}]", wsscf::getUsername);
 		}
 	}
 
@@ -127,16 +123,16 @@ public class WebServiceSender extends HttpSender {
 				soapmsg = message;
 			}
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix()+"error reading message", e);
+			throw new SenderException("error reading message", e);
 		}
 
 		if (wsscf!=null) {
 			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
-		if (log.isDebugEnabled()) log.debug("{}SOAPMSG [{}]", getLogPrefix(), soapmsg);
+		log.debug("SOAPMSG [{}]", soapmsg);
 
 		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
-		log.debug("{}setting SOAPAction header [{}]", getLogPrefix(), soapActionURI);
+		log.debug("setting SOAPAction header [{}]", soapActionURI);
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
 	}

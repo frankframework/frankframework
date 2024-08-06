@@ -107,13 +107,13 @@ public class Monitor implements IConfigurable, DisposableBean {
 		if (clear) {
 			Severity clearSeverity=getAlarmSeverity()!=null?getAlarmSeverity():severity;
 			String originalEventCode = eventCode!=null ? eventCode : event.getEventCode();
-			log.info("{}clearing event [{}] state with severity [{}] from source [{}]", getLogPrefix(), originalEventCode, clearSeverity, event.getEventSourceName());
+			log.info("clearing event [{}] state with severity [{}] from source [{}]", originalEventCode, clearSeverity, event.getEventSourceName());
 
 			changeMonitorState(EventType.CLEARING, clearSeverity, originalEventCode, event);
 			clearRaisedBy();
 		}
 		if (up) {
-			log.debug("{}state [{}] will be raised to [{}]", this::getLogPrefix, this::getAlarmSeverity, ()->severity);
+			log.debug("state [{}] will be raised to [{}]", this::getAlarmSeverity, ()->severity);
 			changeMonitorState(getType(), severity, event.getEventCode(), event);
 			storeRaisedBy(event);
 			setAlarmSeverity(severity);
@@ -145,7 +145,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 		for(String destination : destinations) {
 			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
-			if (log.isDebugEnabled()) log.debug("{}firing event on destination [{}]", getLogPrefix(), destination);
+			log.debug("firing event on destination [{}]", destination);
 
 			if (monitorAdapter != null) {
 				monitorAdapter.fireEvent(name, eventType, severity, eventCode, event);
@@ -205,10 +205,10 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
-			if (log.isDebugEnabled()) log.debug("{}clearing destinations", getLogPrefix());
+			log.debug("clearing destinations");
 			destinations.clear();
 		} else {
-			if (log.isDebugEnabled()) log.debug("{}setting destinations to [{}]", getLogPrefix(), newDestinations);
+			log.debug("setting destinations to [{}]", newDestinations);
 			for(String destination : newDestinations) {
 				if(getManager().getDestination(destination) == null) {
 					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
@@ -218,7 +218,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			//Only proceed if all destinations exist
 			destinations.clear();
 			for(String destination : newDestinations) {
-				if (log.isDebugEnabled()) log.debug("{}adding destination [{}]", getLogPrefix(), destination);
+				log.debug("{}adding destination [{}]", destination);
 				destinations.add(destination);
 			}
 		}
@@ -236,10 +236,6 @@ public class Monitor implements IConfigurable, DisposableBean {
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
 		}
-	}
-
-	public String getLogPrefix() {
-		return "Monitor ["+getName()+"] ";
 	}
 
 	public void setManager(MonitorManager manager) {

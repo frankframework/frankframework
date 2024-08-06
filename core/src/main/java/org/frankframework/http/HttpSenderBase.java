@@ -342,7 +342,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			try {
 				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
-				throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
+				throw new SenderException("caught exception evaluating parameters", e);
 			}
 		} else {
 			pvl = null;

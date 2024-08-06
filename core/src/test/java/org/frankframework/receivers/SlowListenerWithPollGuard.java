@@ -38,7 +38,6 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
 		when(mockConnector.getReceiver()).thenReturn(receiver);
 		when(mockConnector.getListener()).thenReturn(this);
 		when(mockConnector.getJmsContainer()).thenReturn(mockContainer);
-		when(mockConnector.getLogPrefix()).thenReturn("MockJmsConnector ");
 	}
 
 	@Override

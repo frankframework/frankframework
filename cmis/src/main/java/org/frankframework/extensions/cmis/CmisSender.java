@@ -375,7 +375,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage= "document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}{}", errorMessage, e);
+				log.info("{}", errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -558,7 +558,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}{}", errorMessage, e);
+				log.info(errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -893,7 +893,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}{}", errorMessage, e);
+				log.info(errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);

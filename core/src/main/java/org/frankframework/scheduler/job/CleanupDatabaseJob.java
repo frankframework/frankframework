@@ -130,7 +130,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error("{}{}", getLogPrefix(), msg, e);
+				log.error(msg, e);
 			} finally {
 				if (qs != null) {
 					qs.close();
@@ -190,7 +190,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table [" + mlo.getTableName() + "] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error("{} {}", getLogPrefix(), msg);
+				log.error(msg);
 			} finally {
 				if (qs != null) {
 					qs.close();

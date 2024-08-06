@@ -129,7 +129,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						sessionKey.setValue("attachment" + i);
 						attachment.addSubElement(sessionKey);
 						pipelineSession.put("attachment" + i, MessageUtils.parse(attachmentPart));
-						log.debug("{}adding attachment [attachment{}] to session", getLogPrefix(messageId), i);
+						log.debug("adding attachment [attachment{}] to session", i);
 
 						@SuppressWarnings("unchecked")
 						Iterator<MimeHeader> attachmentMimeHeaders = attachmentPart.getAllMimeHeaders();
@@ -152,7 +152,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					log.error("unable to determine SOAP URI NS type, falling back to SOAP 1.1", e);
 				}
 
-				log.debug("{}transforming from SOAP message", getLogPrefix(messageId));
+				log.debug("transforming from SOAP message");
 				pipelineSession.put("soapProtocol", soapProtocol);
 				if(soapProtocol.equals(SOAPConstants.SOAP_1_1_PROTOCOL)) {
 					String soapAction = (String) webServiceContext.getMessageContext().get(SoapBindingConstants.SOAP_ACTION);
@@ -163,7 +163,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						if(StringUtils.isNotEmpty(action)) {
 							pipelineSession.put(SoapBindingConstants.SOAP_ACTION, action);
 						} else {
-							log.warn("{}no SOAPAction found!", getLogPrefix(messageId));
+							log.warn("no SOAPAction found!");
 						}
 					}
 				}
@@ -174,7 +174,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_RESPONSE));
 
 				try {
-					log.debug("{}processing message", getLogPrefix(messageId));
+					log.debug("processing message");
 					response = processRequest(soapMessage, pipelineSession);
 				} catch (ListenerException e) {
 					String m = "Could not process SOAP message: " + e.getMessage();
@@ -184,12 +184,12 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			}
 
 			// Transform result string to SOAP message
-			log.debug("{}transforming to SOAP message", getLogPrefix(messageId));
+			log.debug("transforming to SOAP message");
 			SOAPMessage soapMessage = createSOAPMessage(response, soapProtocol);
 
 			try {
 				String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
-				log.debug("{}building multipart message with MultipartXmlSessionKey [{}]", getLogPrefix(messageId), multipartXml);
+				log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
 				if (StringUtils.isNotEmpty(multipartXml)) {
 					Element partsElement;
 					try {
@@ -202,7 +202,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					}
 					Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 					if (parts.isEmpty()) {
-						log.warn("{}no part(s) in multipart xml [{}]", getLogPrefix(messageId), multipartXml);
+						log.warn("no part(s) in multipart xml [{}]", multipartXml);
 					}
 					else {
 						for (final Node part : parts) {
@@ -255,13 +255,6 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 		log.debug("using cached MessageFactory for soapProtocol [{}]", soapProtocol);
 		return factory.get(soapProtocol);
-	}
-
-	/**
-	 * Add log prefix to make it easier to debug
-	 */
-	protected String getLogPrefix(String messageId) {
-		return "mid ["+messageId+"] ";
 	}
 
 	/**
