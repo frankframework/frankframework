@@ -29,6 +29,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -53,8 +55,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -120,7 +120,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	@Override
 	public void parse(InputSource input) throws SAXException, IOException {
 		C container=null;
-		if (input!=null && (input instanceof ToXml.XmlAlignerInputSource)) {
+		if (input instanceof ToXml.XmlAlignerInputSource) {
 			container= ((XmlAlignerInputSource)input).container;
 		}
 		if (log.isTraceEnabled()) log.trace("parse(InputSource) container ["+container+"]");

@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.core.IValidator;
@@ -710,8 +712,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"none", "all", "partial"})
+	@ValueSource(strings = {"none", "all", "partial1", "partial2", "partial3", "partial4"})
+//	@ValueSource(strings = { "partial2"})
 	public void issue7146AttributesOnMultipleLevels(String input) throws Exception {
+		// Arrange
 		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
 		pipe.setRoot("Root");
 		pipe.setDeepSearch(true);
@@ -725,6 +729,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		URL json = TestFileUtils.getTestFileURL("/Validation/AttributesOnDifferentLevels/input-"+input+".json");
 		UrlMessage message = new UrlMessage(json);
 		PipeLineSession session = new PipeLineSession();
-		pipe.validate(message, session, "Case");
+
+		// Act / Assert
+		PipeRunResult result = assertDoesNotThrow(() -> pipe.validate(message, session, "Case"));
+
+		System.err.println(result.getResult().asString());
 	}
 }

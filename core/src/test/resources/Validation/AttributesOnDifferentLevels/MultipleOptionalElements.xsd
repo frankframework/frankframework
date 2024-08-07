@@ -11,23 +11,7 @@
 						</xs:all>
 					</xs:complexType>
 				</xs:element>
-				<xs:element name="Id" type="xs:string" minOccurs="0"/>
-				<xs:element name="CaseNumber" type="xs:string" minOccurs="0"/>
-				<xs:element name="Status" type="xs:string" minOccurs="0"/>
-				<xs:element name="Type" type="xs:string" minOccurs="0"/>
-				<xs:element name="Priority" type="xs:string" minOccurs="0"/>
-				<xs:element name="ExternNummer__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="ExtCasID__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="CategorieEen__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="CategorieTwee__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="CategorieDrie__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="CategorieVier__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="Indexering__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="CreatedDate" type="xs:string" minOccurs="0"/>
-				<xs:element name="ClosedDate" type="xs:string" minOccurs="0"/>
-				<xs:element name="LastModifiedDate" type="xs:string" minOccurs="0"/>
 				<xs:element name="Origin" type="xs:string" minOccurs="0"/>
-				<xs:element name="RecordTypeId" type="xs:string" minOccurs="0"/>
 				<xs:element name="Portefeuillenummer_LK__r" minOccurs="0">
 					<xs:complexType>
 						<xs:all>
@@ -45,9 +29,6 @@
 					</xs:complexType>
 				</xs:element>
 				<xs:element name="Polissen__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="Portefeuillenummer_LK__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="Account_BPid__c" type="xs:string" minOccurs="0"/>
-				<xs:element name="GerelateerdeOpportunity__c" type="xs:string" minOccurs="0"/>
 				<xs:element name="RecordType" minOccurs="0">
 					<xs:complexType>
 						<xs:all>
@@ -68,17 +49,4 @@
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="errors" type="errors"/>
-	<xs:element name="result">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="id" minOccurs="1">
-					<xs:simpleType>
-						<xs:restriction base="xs:string">
-							<xs:maxLength value="255"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:element>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
 </xs:schema>
