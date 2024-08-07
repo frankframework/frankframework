@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.springframework.http.MediaType;
 
@@ -712,13 +712,28 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"none", "all", "partial1", "partial2", "partial3", "partial4", "partial5"})
+	@CsvSource({
+			"false, none",
+			"false, all",
+			"false, partial1",
+			"false, partial2",
+			"false, partial3",
+			"false, partial4",
+			"false, partial5",
+			"true, none",
+			"true, all",
+			"true, partial1",
+			"true, partial2",
+			"true, partial3",
+			"true, partial4",
+			"true, partial5",
+	})
 //	@ValueSource(strings = { "partial2"})
-	public void issue7146AttributesOnMultipleLevels(String input) throws Exception {
+	public void issue7146AttributesOnMultipleLevels(boolean deepSearch, String input) throws Exception {
 		// Arrange
 		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
 		pipe.setRoot("Root");
-		pipe.setDeepSearch(true);
+		pipe.setDeepSearch(deepSearch);
 		pipe.setProduceNamespacelessXml(true);
 
 		pipe.setThrowException(true);
@@ -734,5 +749,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult result = assertDoesNotThrow(() -> pipe.validate(message, session, "Case"));
 
 		System.err.println(result.getResult().asString());
+		String expected = TestFileUtils.getTestFile("/Validation/AttributesOnDifferentLevels/output-" + input + ".xml");
+		assertXmlEquals(expected, result.getResult().asString());
 	}
 }
