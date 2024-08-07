@@ -6,21 +6,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -702,5 +707,24 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Ignore("Cannot ignore XML validation failure")
 	public void testValidWithWarningsXml2Json() throws Exception {
 		testRecoverableError(DocumentFormat.JSON, true, "warnings", "No typeDefinition found for element [d]");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"none", "all", "partial"})
+	public void issue7146AttributesOnMultipleLevels(String input) throws Exception {
+		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
+		pipe.setRoot("Root");
+		pipe.setDeepSearch(true);
+		pipe.setProduceNamespacelessXml(true);
+
+		pipe.setThrowException(true);
+
+		pipe.registerForward(new PipeForward("success", null));
+		configureAndStartPipe();
+
+		URL json = TestFileUtils.getTestFileURL("/Validation/AttributesOnDifferentLevels/input-"+input+".json");
+		UrlMessage message = new UrlMessage(json);
+		PipeLineSession session = new PipeLineSession();
+		pipe.validate(message, session, "Case");
 	}
 }

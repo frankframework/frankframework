@@ -1,0 +1,37 @@
+{
+  "attributes": {
+    "type": "Case",
+    "url": "/tralalalal"
+  },
+  "CaseNumber": "number",
+  "CategorieDrie__c": "process",
+  "CategorieEen__c": "division",
+  "CategorieVier__c": "detail",
+  "CreatedDate": "2024-02-27T18:27:56.000+0000",
+  "ExtCasID__c": "ExtCasId",
+  "Id": "5001X00000MsLuPQAV",
+  "LastModifiedDate": "2024-07-11T17:28:48.000+0000",
+  "Polissen__c": "4067330",
+  "Portefeuillenummer_LK__c": "a0c20000001yrCCAAY",
+  "Priority": "priority",
+  "RecordTypeId": "0125I000000cKwSQAU",
+  "Status": "status",
+  "Type": "caseType",
+  "Portefeuillenummer_LK__r": {
+    "attributes": {
+      "type": "Portefeuillenummer__c",
+      "url": "/tralalalal"
+    },
+    "Id": "a0c20000001yrCCAAY",
+    "Portefeuillenummer__c": "123456"
+  },
+  "Account_BPid__c": "0123678123",
+  "RecordType": {
+    "attributes": {
+      "type": "RecordType",
+      "url": "/tralalalal"
+    },
+    "Id": "0125I000000cKwSQAU",
+    "Name": "Super Comp One"
+  }
+}

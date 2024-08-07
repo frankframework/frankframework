@@ -1,0 +1,27 @@
+{
+  "Id": "caseId",
+  "CaseNumber": "number",
+  "Status": "status",
+  "Type": "caseType",
+  "Priority": "priority",
+  "ExternNummer__c": "externalNumber",
+  "ExtCasID__c": "ExtCasId",
+  "CategorieEen__c": "division",
+  "CategorieTwee__c": "product",
+  "CategorieDrie__c": "process",
+  "CategorieVier__c": "detail",
+  "Indexering__c": "doctype",
+  "CreatedDate": "2001-12-17T09:30:47",
+  "ClosedDate": "2001-12-17T09:30:47",
+  "LastModifiedDate": "2001-12-17T09:30:47",
+  "Origin": "origin",
+  "Portefeuillenummer_LK__r": {
+    "Portefeuillenummer__c": "313131"
+  },
+  "Polissen__c": "800008,800009",
+  "Account_BPid__c": "0212345678",
+  "GerelateerdeOpportunity__c": "opptyId",
+  "RecordType": {
+    "Name": "recordType"
+  }
+}

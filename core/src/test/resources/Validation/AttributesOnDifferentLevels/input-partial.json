@@ -1,0 +1,29 @@
+{
+  "attributes": {
+    "type": "Case",
+    "url": "/tralalalal"
+  },
+  "CaseNumber": "number",
+  "CategorieDrie__c": "process",
+  "CategorieVier__c": "detail",
+  "CategorieEen__c": "division",
+  "CategorieTwee__c": "product",
+  "Status": "status",
+  "Type": "caseType",
+  "Priority": "priority",
+  "ExtCasID__c": "ExtCasId",
+  "Id": "5009V00000DEenhQAD",
+  "CreatedDate": "2024-04-21T14:41:57.000+0000",
+  "LastModifiedDate": "2024-07-10T12:42:38.000+0000",
+  "Origin": "origin",
+  "RecordTypeId": "0125I000000cKwSQAU",
+  "Polissen__c": "6014405",
+  "RecordType": {
+    "attributes": {
+      "type": "RecordType",
+      "url": "/tralalalal"
+    },
+    "Name": "Super Comp One",
+    "Id": "0125I000000cKwSQAU"
+  }
+}
