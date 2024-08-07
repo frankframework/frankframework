@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,7 +78,7 @@ public class Webservices extends FrankApiBase {
 		}
 
 		if (StringUtils.isEmpty(adapterName)) {
-			throw new ApiException("no adapter specified");
+			throw new ApiException("no adapter specified", HttpStatus.BAD_REQUEST);
 		}
 
 		request.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
