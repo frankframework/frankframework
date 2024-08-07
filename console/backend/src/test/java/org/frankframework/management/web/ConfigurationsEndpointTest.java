@@ -1,10 +1,17 @@
 package org.frankframework.management.web;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationsEndpoint.class})
@@ -68,40 +75,53 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 		testActionAndTopicHeaders("/configurations/name/versions", "CONFIGURATION", "FIND");
 	}
 
-	@Test
-	public void manageConfigurationWithActivate() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name/versions/1.0.0")
-						.content("{\"activate\": true}")
+	@ParameterizedTest
+	@ValueSource(strings = {"{\"activate\":true}", "{\"autoreload\":true}"})
+	void testManageConfigurations(String jsonInput) throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders
+						.put("/configurations/{configuration}/versions/{version}", "configName", "versionName")
+						.content(jsonInput)
+						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"CONFIGURATION\",\"action\":\"MANAGE\"}"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"{\"activate\":\"notABoolean\"}", "{\"autoreload\":\"notABoolean\"}"})
+	void testManageConfigurationsError(String jsonInput) throws Exception {
+		MvcResult mockResult = mockMvc.perform(MockMvcRequestBuilders
+						.put("/configurations/{configuration}/versions/{version}", "configName", "versionName")
+						.content(jsonInput)
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().is5xxServerError())
+				.andReturn();
+
+		assertInstanceOf(ApiException.class, mockResult.getResolvedException());
 	}
 
 	@Test
-	public void manageConfigurationWithInvalidActivate() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name/versions/1.0.0")
-						.content("{\"activate\": \"false\"}")
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
-	}
-
-	@Test
-	public void manageConfigurationWithAutoreload() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name/versions/1.0.0")
-						.content("{\"autoreload\": true}")
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-	}
-
-	@Test
-	public void manageConfigurationWithInvalidAutoreload() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name/versions/1.0.0")
-						.content("{\"autoreload\": \"false\"}")
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isInternalServerError());
-	}
-
-	public void uploadConfiguration() {
-		// TODO
+	void testUploadConfigurations() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders
+						.multipart("/configurations")
+						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes()))
+						.part(
+								new MockPart[] {
+										new MockPart("datasource", "test".getBytes()),
+										new MockPart("user", "username".getBytes()),
+										new MockPart("multiple_configs", "true".getBytes()),
+										new MockPart("activate_config", "false".getBytes()),
+										new MockPart("automatic_reload", "true".getBytes())
+								}
+						)
+						.characterEncoding("UTF-8")
+						.accept(MediaType.APPLICATION_JSON))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"CONFIGURATION\",\"action\":\"UPLOAD\"}"));
 	}
 
 	@Test
@@ -114,5 +134,4 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/name/versions/1.0.0"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
-
 }
