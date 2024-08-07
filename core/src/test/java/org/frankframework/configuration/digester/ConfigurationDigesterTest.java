@@ -12,15 +12,10 @@ import java.net.URL;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.configuration.classloaders.DirectoryClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
