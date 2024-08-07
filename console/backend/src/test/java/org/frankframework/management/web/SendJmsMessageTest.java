@@ -48,7 +48,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 	@Test
 	public void testWithMessage() throws Exception {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
-				.thenAnswer(this::getMockMesage);
+				.thenAnswer(this::getMockMessage);
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
 						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
@@ -57,7 +57,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().string("inputMessage"));
 	}
 
-	private Message<String> getMockMesage(InvocationOnMock i) {
+	private Message<String> getMockMessage(InvocationOnMock i) {
 		Message<String> in = i.getArgument(0);
 		assertEquals("QUEUE", in.getHeaders().get("topic"));
 		return mockResponseMessage(in, in::getPayload, 200, MediaType.TEXT_PLAIN);
@@ -66,7 +66,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 	@Test
 	public void testWithFile() throws Exception {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
-				.thenAnswer(this::getMockMesage);
+				.thenAnswer(this::getMockMessage);
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
 						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes())))
@@ -78,7 +78,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 	@Test
 	public void testWithZipFile() throws Exception {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
-				.thenAnswer(this::getMockMesage);
+				.thenAnswer(this::getMockMessage);
 
 		URL zip = TestPipelineTest.class.getResource("/management/web/TestPipeline/stored.zip");
 
