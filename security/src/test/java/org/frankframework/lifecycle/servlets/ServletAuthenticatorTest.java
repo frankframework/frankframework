@@ -8,6 +8,7 @@ import static org.mockito.Mockito.spy;
 import java.util.Map;
 
 import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -20,16 +21,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.DefaultSecurityFilterChain;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-class ServletAuthenticatorTest {
+abstract class ServletAuthenticatorTest {
 
 	@Autowired
 	public ApplicationContext applicationContext;
+
+	protected ServletAuthenticatorBase authenticator;
+	protected HttpSecurity httpSecurity;
 
 	public static class SpringRootInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -53,17 +56,15 @@ class ServletAuthenticatorTest {
 		}
 	}
 
-	@Test
-	void testMultilineUrl() throws Exception {
-		// Arrange
-		DummyAuthenticator authenticator = new DummyAuthenticator();
+	@BeforeEach
+	public void setup() {
+		authenticator = createAuthenticator();
+		httpSecurity = createHttpSecurity();
+	}
 
-		ServletConfiguration config = new ServletConfiguration();
-		config.afterPropertiesSet();
-		config.setUrlMapping("/iaf/api/*, !/iaf/api/server/health");
-		config.setSecurityRoles(new String[] {"IbisTester"});
-		authenticator.registerServlet(config);
+	protected abstract ServletAuthenticatorBase createAuthenticator();
 
+	private HttpSecurity createHttpSecurity() {
 		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<>() {
 			@Override
 			public <O> O postProcess(O object) {
@@ -73,7 +74,17 @@ class ServletAuthenticatorTest {
 		AuthenticationManagerBuilder authMgrBuilder = new AuthenticationManagerBuilder(objectPostProcessor);
 		authMgrBuilder.authenticationProvider(new AllAuthenticatedProvider());
 		Map<Class<?>, Object> sharedObjects = Map.of(ApplicationContext.class, applicationContext);
-		HttpSecurity httpSecurity = spy(new HttpSecurity(objectPostProcessor, authMgrBuilder, sharedObjects));
+		return spy(new HttpSecurity(objectPostProcessor, authMgrBuilder, sharedObjects));
+	}
+
+	@Test
+	void testRequestMatchersMultilineUrl() throws Exception {
+		// Arrange
+		ServletConfiguration config = new ServletConfiguration();
+		config.afterPropertiesSet();
+		config.setUrlMapping("/iaf/api/*, !/iaf/api/server/health");
+		config.setSecurityRoles(new String[] {"IbisTester"});
+		authenticator.registerServlet(config);
 
 		// Act
 		DefaultSecurityFilterChain filterChain = (DefaultSecurityFilterChain) authenticator.configureHttpSecurity(httpSecurity);
@@ -83,12 +94,5 @@ class ServletAuthenticatorTest {
 		RequestMatcher requestMatcher = filterChain.getRequestMatcher();
 		assertInstanceOf(URLRequestMatcher.class, requestMatcher);
 		assertTrue(requestMatcher.toString().contains("[/iaf/api/]")); // dirty check (for now)
-	}
-
-	private static class DummyAuthenticator extends ServletAuthenticatorBase {
-		@Override
-		protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-			return http.build();
-		}
 	}
 }

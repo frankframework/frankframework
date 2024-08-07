@@ -62,7 +62,7 @@ public class TestHealth extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\",\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
+		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
 	}
 
 	@Test

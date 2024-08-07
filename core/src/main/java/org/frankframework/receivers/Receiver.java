@@ -997,7 +997,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Message message) {
 		final Serializable sobj;
 
-		if (rawMessageWrapper instanceof MessageWrapper wrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper<?> wrapper) {
 			sobj = wrapper;
 		} else {
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
@@ -1276,13 +1276,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					if (!isTransacted() && messageInError && !manualRetry
 							&& !(getListener() instanceof IRedeliveringListener<?> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError())) {
-						moveInProcessToError(messageWrapper, session, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, TXNEW_CTRL);
+						moveInProcessToError(messageWithMessageIdAndCorrelationId, session, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, TXNEW_CTRL);
 					}
 					try {
-						RawMessageWrapper<M> messageForAfterMessageProcessed = messageWrapper;
+						RawMessageWrapper<M> messageForAfterMessageProcessed = messageWithMessageIdAndCorrelationId;
 						if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
 							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
-							RawMessageWrapper<M> movedMessage = changeProcessState(messageWrapper, targetState, messageInError ? errorMessage : null);
+							RawMessageWrapper<M> movedMessage = changeProcessState(messageWithMessageIdAndCorrelationId, targetState, messageInError ? errorMessage : null);
 							if (movedMessage!=null) {
 								messageForAfterMessageProcessed = movedMessage;
 							}
