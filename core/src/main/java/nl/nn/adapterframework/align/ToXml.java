@@ -324,7 +324,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
 			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<String>(unProcessedChildren);
-			log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
+			log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements in type ["+name+"]"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
 			// this loop is required to handle for mixed content element containing globally defined elements
 			for (String childName:unProcessedChildrenWorkingCopy) {
 				log.warn("processing unprocessed child element ["+childName+"]");
@@ -336,7 +336,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 						elementDeclarationStub.fName=childName;
 						childElementDeclaration = elementDeclarationStub;
 					} else {
-						handleRecoverableError(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"]", isIgnoreUndeclaredElements());
+						handleRecoverableError(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"] in the definition of type [" + name + "]", isIgnoreUndeclaredElements());
 						continue;
 					}
 				}

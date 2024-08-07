@@ -712,7 +712,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"none", "all", "partial1", "partial2", "partial3", "partial4"})
+	@ValueSource(strings = {"none", "all", "partial1", "partial2", "partial3", "partial4", "partial5"})
 //	@ValueSource(strings = { "partial2"})
 	public void issue7146AttributesOnMultipleLevels(String input) throws Exception {
 		// Arrange
