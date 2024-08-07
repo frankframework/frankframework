@@ -21,6 +21,25 @@ import org.frankframework.doc.Category;
 import org.frankframework.filesystem.FileSystemListener;
 import org.frankframework.filesystem.LocalFileSystem;
 
+/**
+ * Listener that looks in a FileSystem for files. <code>messageType</code> dictates what information of the file is passed in the message.
+ *
+ * <p>
+ * Example usage:<br>
+ * <pre><code>
+ * &lt;DirectoryListener
+ * 	name="directoryListener"
+ * 	messageType="info"
+ * 	root="${rootdirectory}"
+ * 	inputFolder="in"
+ * 	inProcessFolder="inProcess"
+ * 	errorFolder="error"
+ * 	createFolders="true"
+ * /&gt;
+ * </code></pre>
+ *
+ * </p>
+ */
 @Category("Basic")
 public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
 
