@@ -233,7 +233,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 
 	@Getter
 	@Setter
-	public static class ConfigurationMultipartBody {
+	public class ConfigurationMultipartBody {
 		private String datasource;
 		private String user;
 		private boolean multiple_configs;

@@ -26,7 +26,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 	private static final String TEST_PIPELINE_ENDPOINT = "/test-pipeline";
 
 	private static MockPart[] getMultiPartParts() {
-		return new MockPart[]{
+		return new MockPart[] {
 				new MockPart("configuration", "TestConfiguration".getBytes()),
 				new MockPart("adapter", "HelloWorld".getBytes())
 		};
