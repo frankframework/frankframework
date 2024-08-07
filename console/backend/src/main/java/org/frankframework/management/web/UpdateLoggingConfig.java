@@ -93,8 +93,6 @@ public class UpdateLoggingConfig extends FrankApiBase {
 			}
 		}
 
-
 		return callSyncGateway(request);
 	}
-
 }

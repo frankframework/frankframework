@@ -118,7 +118,6 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 						)
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"CONFIGURATION\",\"action\":\"UPLOAD\"}"));

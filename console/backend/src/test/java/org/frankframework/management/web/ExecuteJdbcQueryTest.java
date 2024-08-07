@@ -40,4 +40,20 @@ public class ExecuteJdbcQueryTest extends FrankApiTestBase {
 			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
 
+	@Test
+	public void executeJdbcQueryWithQueryTypeAuto() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.post("/jdbc/query")
+						.content("""
+						{
+							\"datasource\": \"test\",
+							\"query\": \"DELETE * WHERE 1\",
+							\"queryType\": \"AUTO\",
+							\"resultType\": \"XML\"
+						}
+						""")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+	}
+
 }

@@ -27,7 +27,7 @@ public class ApiExceptionHandlerTest extends FrankApiTestBase {
 				Arguments.of("/test/apiexceptionasdfasdf", NoHandlerFoundException.class, HttpStatus.NOT_FOUND.value()),
 				Arguments.of("/test/servletexception", ServletException.class, HttpStatus.BAD_REQUEST.value()),
 				Arguments.of("/test/methodnotsupportedexception", HttpRequestMethodNotSupportedException.class, HttpStatus.METHOD_NOT_ALLOWED.value())
-				);
+		);
 	}
 
 	@ParameterizedTest

@@ -168,6 +168,4 @@ public class Monitors extends FrankApiBase {
 		builder.addHeader(TRIGGER_HEADER, id);
 		return callSyncGateway(builder);
 	}
-
-
 }

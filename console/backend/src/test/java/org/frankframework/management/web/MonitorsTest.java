@@ -36,7 +36,34 @@ public class MonitorsTest extends FrankApiTestBase {
 
 	@Test
 	public void testGetMonitors() throws Exception {
-		this.testActionAndTopicHeaders("/configurations/{configuration}/monitors/", "MONITORING", "GET", "TestConfiguration");
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testGetMonitor() throws Exception {
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/monitorName", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testGetTriggers() throws Exception {
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/monitorName/triggers", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testGetTrigger() throws Exception {
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/monitorName/triggers/1", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testDeleteMonitor() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName"))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	void testDeleteTrigger() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName/triggers/1"))
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
@@ -122,7 +149,7 @@ public class MonitorsTest extends FrankApiTestBase {
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
 
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-						.put("/configurations/{configuration}/monitors/{monitorName}", "TestConfiguration", "monitorName")
+						.put("/configurations/{configuration}/monitors/{monitorName}/triggers/1", "TestConfiguration", "monitorName")
 						.content(jsonInput)
 						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
