@@ -7,7 +7,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-// Added ConfigurationStatus to make sure we hit some more branches in Init (because @Relation is used there).
+// Added ConfigurationStatus to make sure we hit some more branches in Init (because @Relation is used in ConfigurationStatus).
 @ContextConfiguration(classes = {WebTestConfiguration.class, Init.class, ConfigurationStatus.class})
 public class InitTest extends FrankApiTestBase {
 

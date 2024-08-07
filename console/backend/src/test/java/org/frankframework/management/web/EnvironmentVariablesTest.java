@@ -11,5 +11,4 @@ public class EnvironmentVariablesTest extends FrankApiTestBase {
 	public void getEnvironmentVariables() throws Exception {
 		testActionAndTopicHeaders("/environmentvariables", "ENVIRONMENT", null);
 	}
-
 }

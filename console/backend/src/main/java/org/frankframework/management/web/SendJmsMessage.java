@@ -120,7 +120,6 @@ public class SendJmsMessage extends FrankApiBase {
 		return synchronous ? callSyncGateway(builder) : callAsyncGateway(builder);
 	}
 
-
 	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
