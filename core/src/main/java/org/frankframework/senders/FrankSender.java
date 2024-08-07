@@ -44,6 +44,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.SenderPipe;
+import org.frankframework.receivers.FrankListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.threading.IThreadCreator;
@@ -68,17 +69,18 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * <p>
  * A FrankSender makes a call to either an {@link Adapter} or an external program by setting the {@link #scope}. By default the scope is {@code ADAPTER}.
  * </p>
- *
+ * <p/>
  *
  * <h3>Configuration of the Adapter to be called</h3>
+ * <p>
  * A call to another Adapter in the same Frank!Framework instance is preferably made using the combination
  * of a FrankSender configured with the name of the adapter.
- *
+ * </p>
  * <h4>Configuring FrankSender and Adapter</h4>
  * <ul>
  *   <li>Define a {@link SenderPipe} with a FrankSender</li>
  *   <li>Set the attribute {@code target} to <i>targetAdapterName</i></li>
- *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (not the slash-separator between Configuration name and Adapter name).</li>
+ *   <li>If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (note the slash-separator between Configuration name and Adapter name).</li>
  * </ul>
  * In the Adapter to be called:
  * <ul>
@@ -88,23 +90,39 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *   or on the {@link SenderPipe} that contains this {@code FrankSender}.</li>
  * </ul>
  *
+ * <h4>Configuring FrankSender with FrankListener</h4>
+ * <ul>
+ *   <li>Define a {@link SenderPipe} with a FrankSender</li>
+ *   <li>In the target adapter, define a {@link org.frankframework.receivers.Receiver} with a {@link FrankListener}</li>
+ *   <li>Give a unique name to the listener: {@link FrankListener#setName(String)}. If the name is not set, the name of the {@link Adapter} will be used.</li>
+ *   <li>Set the {@link #setScope(Scope)} to {@code LISTENER} and the {@link #setTarget(String)} to the listener name as per previous point</li>
+ *   <li>If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name</li>
+ * </ul>
+ *
  * <h4>Configuring FrankSender and Remote Application</h4>
+ * <p>
  * <em>NB:</em> Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+ * </p>
  * <ul>
  *     <li>Define a {@link SenderPipe} with a FrankSender</li>
  *     <li>Set the attribute {@code scope} to either {@code JVM} for a Java application, or to {@code DLL} for code loaded from a DLL</li>
  *     <li>Set the attribute {@code target} to the service-name the other application used to register itself</li>
  * </ul>
+ * <p>
  * In the other application:
  * <ul>
  *     <li>Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library</li>
  *     <li>Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}</li>
  *     <li>See the implementation code of the {@code JavaListener} in the Frank!Framework for an example</li>
  * </ul>
+ * </p>
+ * <p>
  * See also the repository of the IbisServiceDispatcher:
  *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
- *
+ * </p>
+ * 
  * <h4>Using FrankSender to call an adapter from Larva tests</h4>
+ * <p>
  * You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
  * <ul>
  *     <li>If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character</li>
@@ -112,6 +130,139 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *     <li>If you do need a transaction and the adapter has a JavaListener that has {@link org.frankframework.receivers.JavaListener#setServiceName(String)} defined, you can use the FrankSender with scope {@code JVM}
  *     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.</li>
  * </ul>
+ * </p>
+ *
+ * <h3>Migrating Existing Configurations</h3>
+ * <p>
+ * When one adapter (named A) needs to call another adapter (named B) like a subroutine, you will usually have an {@link IbisLocalSender} or an {@link IbisJavaSender}
+ * in adapter A, and a {@link org.frankframework.receivers.JavaListener} in adapter B.
+ * </p>
+ * <p>
+ *     <em>NB:</em> For the example it is assumed that all adapters are defined in the same configuration.
+ * </p>
+ *
+ * <h4>Example of Existing Configuration</h4>
+ * The existing configuration might look like this in the calling adapter:
+ * <pre><code>
+ * &lt;module&gt;
+ * 	&lt;adapter name="Adapter A"&gt;
+ *   &lt;receiver name="Adapter A Receiver" &gt;
+ *    &lt;listener name="Adapter A Listener"
+ *        className="org.frankframework..." etc/&gt;
+ *   &lt;/receiver&gt;
+ * 	 &lt;pipeline firstPipe="..."&gt;
+ * 	  &lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&gt;
+ * 	   &lt;sender className="org.frankframework.senders.IbisJavaSender"
+ * 	       serviceName="service-Adapter-B" /&gt;
+ *     &lt;forward name="success" path="..." /&gt;
+ * 	  &lt;/pipe&gt;
+ *   &lt;/pipeline&gt;
+ * 	&lt;/adapter&gt;
+ * &lt;/module&gt;
+ * </code></pre>
+ *
+ * Or like using the modern XML XSD and an IbisLocalSender instead:
+ * <pre><code>
+ *  &lt;Module&gt;
+ *   &lt;Adapter name="Adapter A"&gt;
+ *    &lt;Receiver name="Adapter A Receiver"&gt;
+ *        ... Listener setup and other configuration
+ *    &lt;/Receiver&gt;
+ *    &lt;Pipeline&gt;
+ *     &lt;SenderPipe name="send"&gt;
+ *      &lt;IbisLocalSender name="call Adapter B"
+ *          javaListener="Adapter B Listener"/&gt;
+ *      &lt;Forward name="success" path="EXIT" /&gt;
+ *     &lt;/SenderPipe&gt;
+ *    &lt;/Pipeline&gt;
+ *   &lt;/Adapter&gt;
+ *  &lt;/Module&gt;
+ * </code></pre>
+ *
+ * In the receiving adapter B the listener would have been configured like this:
+ * <pre><code>
+ * &lt;Module&gt;
+ *  &lt;Adapter name="adapter B"&gt;
+ *   &lt;Receiver name="Receiver B"&gt;
+ *    &lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&gt;
+ *   &lt;/Receiver&gt;
+ *   &lt;Pipeline&gt;
+ *       ...
+ *   &lt;/Pipeline&gt;
+ *  &lt;/Adapter&gt;
+ * &lt;/Module&gt;
+ * </code></pre>
+ * <p/>
+ *
+ * <h4>Rewritten Example Configuration With FrankSender</h4>
+ * This example shows the most simple way of using the FrankSender to call another adapter with least amount of overhead.
+ *
+ * <pre><code>
+ *  &lt;Module&gt;
+ *   &lt;Adapter name="Adapter A"&gt;
+ *    &lt;Receiver name="Adapter A Receiver"&gt;
+ *        ... Listener setup and other configuration
+ *    &lt;/Receiver&gt;
+ *    &lt;Pipeline&gt;
+ *     &lt;SenderPipe name="send"&gt;
+ *      &lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&gt;
+ *      &lt;FrankSender name="call Adapter C"
+ *          scope="ADAPTER"
+ *          target="adapter B"
+ *      /&gt;
+ *      &lt;Forward name="success" path="EXIT" /&gt;
+ *     &lt;/SenderPipe&gt;
+ *    &lt;/Pipeline&gt;
+ *   &lt;/Adapter&gt;
+ *
+ *   &lt;Adapter name="adapter B"&gt;
+ *    &lt;!-- No receiver needed for FrankSender in this scenario --&gt;
+ *    &lt;Pipeline&gt;
+ *       ... Exits, Pipes etc
+ *    &lt;/Pipeline&gt;
+ *   &lt;/Adapter&gt;
+ *  &lt;/Module&gt;
+ * </code></pre>
+ *
+ * <h4>Rewritten Example Configuration With FrankSender and FrankListener</h4>
+ * This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
+ * of the sub-adapter for the extra error-handling done by the target receiver.
+ *
+ * <pre><code>
+ *  &lt;Module&gt;
+ *   &lt;Adapter name="Adapter A"&gt;
+ *    &lt;Receiver name="Adapter A Receiver"&gt;
+ *        ... Listener setup and other configuration
+ *    &lt;/Receiver&gt;
+ *    &lt;Pipeline&gt;
+ *     &lt;SenderPipe name="send"&gt;
+ *      &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
+ *      &lt;FrankSender
+ *           scope="LISTENER"
+ *           target="Adapter B Listener"/&gt;
+ *       &lt;Forward name="success" path="EXIT" /&gt;
+ *     &lt;/SenderPipe&gt;
+ *    &lt;/Pipeline&gt;
+ *   &lt;/Adapter&gt;
+ *  &lt;Adapter name="adapter B"&gt;
+ *   &lt;!-- Messages will only be sent to the error storage if:
+ *        - The target receiver is not transactional, and has maxTries="0", or
+ *        - The target receiver is transaction, and the Sender is set up to retry sending on error
+ *        For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
+ *   --&gt;
+ *   &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
+ *    &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
+ *    &lt;FrankListener name="Adapter B Listener"/&gt;
+ *    &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
+ *    &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
+ *   &lt;/Receiver&gt;
+ *   &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
+ *   &lt;Pipeline transactionAttribute="RequiresNew"&gt;
+ *       ... Exits, Pipes etc
+ *   &lt;/Pipeline&gt;
+ *  &lt;/Adapter&gt;
+ *  &lt;/Module&gt;
+ * </code></pre>
  *
  * @ff.parameter {@code scope} Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
  * @ff.parameter {@code target} Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
@@ -127,14 +278,21 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
-	 * {@code DLL} is a special way of invoking the other application, loading the service via a DLL. See the
-	 * documentation of the <a href="https://github.com/frankframework/servicedispatcher">IbisServiceDispatcher</a> library for further details on how implement a Java program or DLL running
-	 * alongside the Frank!Framework that can be called from the Frank!Framework.
+	 * <ul>
+	 * <li>{@code ADAPTER} is the most efficient, low-overhead method to call another adapter directly</li>
+	 * <li>{@code LISTENER} calls another adapter via a configured {@link FrankListener}. Use this when you need all message logging and error handling that is
+	 * in the {@link org.frankframework.receivers.Receiver}.</li>
+	 * <li>{@code JVM} is the regular way of invoking another Java application in the same JVM.</li>
+	 * <li>{@code DLL} is a special way of invoking the other application, calling code loaded from a DLL that has been registered as service.</li>
+	 * </ul>
+	 *
+	 * For {@code JVM} and {@code DLL}, see the documentation of the <a href="https://github.com/frankframework/servicedispatcher">IbisServiceDispatcher</a> library
+	 * for further details on how implement a Java program or DLL running alongside the Frank!Framework that can be called from the Frank!Framework.
 	 *
 	 * <h4>See</h4>
 	 *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
 	 */
-	public enum Scope { JVM, DLL, ADAPTER }
+	public enum Scope { JVM, DLL, ADAPTER, LISTENER }
 
 	private @Getter Scope scope = Scope.ADAPTER;
 	private @Getter String target;
@@ -199,6 +357,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		log.info("{}Sending message to {} [{}]", this::getLogPrefix, ()->actualScope, ()->actualTarget);
 		ServiceClient serviceClient = switch (actualScope) {
 			case ADAPTER -> getAdapterServiceClient(actualTarget);
+			case LISTENER -> getFrankListener(actualTarget);
 			case JVM, DLL -> getJvmDispatcherServiceClient(actualScope, actualTarget);
 		};
 		return invokeService(serviceClient, actualScope, actualTarget, message, session, pvl);
@@ -237,7 +396,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			if (isSynchronous()) {
 				return serviceClient.processRequest(message, childSession);
 			} else {
-				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, parentSession, threadLifeCycleEventListener);
+				isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, childSession, threadLifeCycleEventListener);
 				return Message.nullMessage();
 			}
 		} catch (ListenerException | IOException e) {
@@ -329,6 +488,23 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		};
 	}
 
+	ServiceClient getFrankListener(String target) throws SenderException {
+		String fullFrankListenerName;
+		int configNameSeparator = target.indexOf('/');
+		if (configNameSeparator > 0) {
+			fullFrankListenerName = target;
+		} else if (configNameSeparator == 0) {
+			fullFrankListenerName = getConfiguration().getName() + target;
+		} else {
+			fullFrankListenerName = getConfiguration().getName() + "/" + target;
+		}
+		ServiceClient result = FrankListener.getListener(fullFrankListenerName);
+		if (result == null) {
+			throw new SenderException(getLogPrefix() + "Listener [" + target + "] not found");
+		}
+		return result;
+	}
+
 	@Nonnull
 	Adapter findAdapter(String target) throws SenderException {
 		AdapterManager actualAdapterManager;
@@ -370,6 +546,10 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			return targetParam.asStringValue(getTarget());
 		}
 		return getTarget();
+	}
+
+	private Configuration getConfiguration() {
+		return (Configuration) getApplicationContext();
 	}
 
 	/**
