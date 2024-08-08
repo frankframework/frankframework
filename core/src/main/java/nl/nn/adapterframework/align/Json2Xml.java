@@ -28,12 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.xerces.xs.XSElementDeclaration;
-import org.apache.xerces.xs.XSModel;
-import org.xml.sax.SAXException;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -45,6 +39,11 @@ import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.xml.sax.SAXException;
 
 /**
  * XML Schema guided JSON to XML converter;
@@ -200,7 +199,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			if (isParentOfSingleMultipleOccurringChildElement()) {
 				if ((insertElementContainerElements || !strictSyntax) && node instanceof JsonArray) {
 					if (log.isTraceEnabled()) log.trace("parentOfSingleMultipleOccurringChildElement,JsonArray,(insertElementContainerElements || !strictSyntax)");
-					Set<String> result = new LinkedHashSet<String>();
+					Set<String> result = new LinkedHashSet<>();
 					result.addAll(getMultipleOccurringChildElements());
 					if (log.isTraceEnabled()) log.trace("isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");
 					return result;
@@ -217,9 +216,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			JsonObject o = (JsonObject)node;
 			if (o.isEmpty()) {
 				if (log.isTraceEnabled()) log.trace("no children");
-				return new LinkedHashSet<String>();
+				return new LinkedHashSet<>();
 			}
-			Set<String> result = new LinkedHashSet<String>();
+			Set<String> result = new LinkedHashSet<>();
 			for (String key:o.keySet()) {
 				if (!readAttributes || !key.startsWith(ATTRIBUTE_PREFIX)) {
 					result.add(key);
@@ -286,7 +285,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 		if (substs instanceof List) {
 			JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-			for (Object item:(List)substs) {
+			for (Object item:(List<?>)substs) {
 				arrayBuilder.add(item.toString());
 			}
 			return arrayBuilder.build();
@@ -334,6 +333,42 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			}
 		}
 		super.processChildElement(node, parentName, childElementDeclaration, mandatory, processedChildren);
+	}
+
+	@Override
+	protected boolean isEmptyNode(JsonValue node) {
+		if (node instanceof JsonArray) {
+			return ((JsonArray)node).isEmpty();
+		} else if (node instanceof JsonObject) {
+			return ((JsonObject)node).isEmpty();
+		} else {
+			return true;
+		}
+	}
+
+	@Override
+	protected JsonValue filterNodeChildren(JsonValue node, Set<String> allowedNames) {
+		if (node instanceof JsonArray) {
+			return copyJsonArray((JsonArray)node, allowedNames);
+		} else if (node instanceof JsonObject) {
+			return copyJsonObject((JsonObject)node, allowedNames);
+		} else return node;
+	}
+
+	private JsonValue copyJsonObject(JsonObject node, Set<String> allowedNames) {
+		JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+		node.forEach((key, value) -> {
+			if (allowedNames.contains(key)) objectBuilder.add(key, value);
+		});
+		return objectBuilder.build();
+	}
+
+	private JsonValue copyJsonArray(JsonArray node, Set<String> allowedNames) {
+		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+		node.forEach(value -> {
+			arrayBuilder.add(filterNodeChildren(value, allowedNames));
+		});
+		return arrayBuilder.build();
 	}
 
 	public static String translate(String json, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException {

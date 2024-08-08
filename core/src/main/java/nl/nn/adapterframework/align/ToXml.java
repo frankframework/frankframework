@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -41,6 +42,7 @@ import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -188,7 +190,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		XSObjectList attributeUses=getAttributeUses(typeDefinition);
 		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition)typeDefinition).getAttributeWildcard():null;
 		if ((attributeUses==null || attributeUses.getLength()==0) && wildcard==null) {
-			if (nodeAttributes!=null && nodeAttributes.size()>0) {
+			if (nodeAttributes!=null && !nodeAttributes.isEmpty()) {
 				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses or wildcard");
 			} else {
 				if (log.isTraceEnabled()) log.trace("node ["+name+"] no attributeUses or wildcard, no attributes");
@@ -281,24 +283,23 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	protected void handleComplexTypedElement(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		String name = elementDeclaration.getName();
-		//List<XSParticle> childParticles = getChildElementDeclarations(typeDefinition);
 		if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element ["+name+"]");
 		List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
 		if (log.isTraceEnabled()) {
 			if (childParticles==null) {
 				log.trace("Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] path found is null");
 			} else {
-				String msg="Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] found path length ["+childParticles.size()+"]: ";
+				StringBuilder msg= new StringBuilder("Examined node [" + name + "] deepSearch [" + isDeepSearch() + "] found path length [" + childParticles.size() + "]: ");
 				boolean tail=false;
 				for(XSParticle particle:childParticles) {
 					if (tail) {
-						msg+=", ";
+						msg.append(", ");
 					} else {
 						tail=true;
 					}
-					msg+=particle.getTerm().getName();
+					msg.append(particle.getTerm().getName());
 				}
-				log.trace(msg);
+				log.trace(msg.toString());
 			}
 		}
 		Set<String> processedChildren = new HashSet<String>();
@@ -324,7 +325,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
 			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<String>(unProcessedChildren);
-			log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements in type ["+name+"]"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
+			log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements in type ["+name+"]"+(!unProcessedChildren.isEmpty() ?", first ["+unProcessedChildren.iterator().next()+"]":""));
 			// this loop is required to handle for mixed content element containing globally defined elements
 			for (String childName:unProcessedChildrenWorkingCopy) {
 				log.warn("processing unprocessed child element ["+childName+"]");
@@ -350,9 +351,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 
 	}
-
-
-
 
 	protected void handleSimpleTypedElement(XSElementDeclaration elementDeclaration, @SuppressWarnings("unused") XSSimpleTypeDefinition simpleTypeDefinition, N node) throws SAXException {
 		String text = getText(elementDeclaration, node);
@@ -384,8 +382,9 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			if (log.isTraceEnabled()) log.trace("no children found by name ["+childElementName+"] in ["+parentName+"]");
 			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
 				if (log.isTraceEnabled()) log.trace("no children found, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
-				handleElement(childElementDeclaration,node);
-				childSeen=true;
+				if (tryDeepSearchForChildElement(childElementDeclaration, node, processedChildren)) {
+					childSeen = true;
+				}
 			}
 		}
 		if (childSeen) {
@@ -398,6 +397,39 @@ public abstract class ToXml<C,N> extends XmlAligner {
 //			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
 //			handleElement(childElementDeclaration,node); // insert node when minOccurs > 0, and no node is present
 //		}
+	}
+
+	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, N node, Set<String> processedChildren) throws SAXException {
+		// TODO:
+		//  - Get names of all declared child elements from XSD type
+		//  - Remove names of processed children
+		//  - Create copy of node N that has only these elements (or iterates only them)
+		//  - If not empty, then handleElement for copy of the node and return true
+		//  - else return false
+		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
+		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
+			return false;
+		}
+		List<XSParticle> childParticles = getBestChildElementPath(childElementDeclaration, node, false);
+		XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
+		Set<String> allowedNames = childParticles.stream().map(XSObject::getName).collect(Collectors.toSet());
+		allowedNames.removeAll(processedChildren);
+
+		N copy = filterNodeChildren(node, allowedNames);
+
+		if (isEmptyNode(copy)) {
+			return false;
+		}
+		handleElement(childElementDeclaration, copy);
+		return true;
+	}
+
+	protected boolean isEmptyNode(N copy) {
+		return false;
+	}
+
+	protected N filterNodeChildren(N node, Set<String> allowedNames) {
+		return node;
 	}
 
 	public List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, N node, boolean silent) throws SAXException {
@@ -428,17 +460,13 @@ public abstract class ToXml<C,N> extends XmlAligner {
 //					return null;
 				}
 				if (log.isTraceEnabled()) log.trace("typeDefinition particle ["+ToStringBuilder.reflectionToString(particle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				List<XSParticle> result=new LinkedList<XSParticle>();
-				List<String> failureReasons=new LinkedList<String>();
+				List<XSParticle> result=new LinkedList<>();
+				List<String> failureReasons=new LinkedList<>();
 				if (getBestMatchingElementPath(elementDeclaration, node, particle, result, failureReasons)) {
 					return result;
 				}
-				String msg="Cannot find path:";
-				for (String reason:failureReasons) {
-					msg+='\n'+reason;
-				}
 				if (!silent) {
-					handleError(msg);
+					handleError("Cannot find path:" + String.join("\n", failureReasons));
 				}
 				return null;
 			default:
@@ -463,122 +491,131 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			throw new NullPointerException("getBestMatchingElementPath particle is null");
 		}
 		XSTerm term = particle.getTerm();
-		if (term==null) {
+		if (term == null) {
 			throw new NullPointerException("getBestMatchingElementPath particle.term is null");
 		}
 		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
-			short compositor = modelGroup.getCompositor();
-			XSObjectList particles = modelGroup.getParticles();
-			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath() modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
-			switch (compositor) {
-			case XSModelGroup.COMPOSITOR_SEQUENCE:
-			case XSModelGroup.COMPOSITOR_ALL:
-				for (int i=0;i<particles.getLength();i++) {
-					XSParticle childParticle = (XSParticle)particles.item(i);
-					if (!getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle,path,failureReasons)) {
-						return false;
-					}
-				}
-				return true;
-			case XSModelGroup.COMPOSITOR_CHOICE:
-				List<XSParticle> bestPath=null;
-
-				List<String> choiceFailureReasons = new LinkedList<String>();
-				for (int i=0;i<particles.getLength();i++) {
-					XSParticle childParticle = (XSParticle)particles.item(i);
-					List<XSParticle> optionPath=new LinkedList<XSParticle>(path);
-
-					if (getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, optionPath, choiceFailureReasons)) {
-						if (bestPath==null || bestPath.size()<optionPath.size()) {
-							bestPath=optionPath;
-						}
-					}
-				}
-				if (bestPath==null) {
-					failureReasons.addAll(choiceFailureReasons);
-					return false;
-				}
-				if (log.isTraceEnabled()) log.trace("Replace path with best path of Choice Compositor, size ["+bestPath.size()+"]");
-				path.clear();
-				path.addAll(bestPath);
-				return true;
-			default:
-				throw new IllegalStateException("getBestMatchingElementPath modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
-			}
+			return handleModelGroupTerm(baseElementDeclaration, baseNode, path, failureReasons, (XSModelGroup) term);
 		}
 		if (term instanceof XSElementDeclaration) {
-			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
-			String elementName=elementDeclaration.getName();
-			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration name ["+elementName+"]");
-			if (!hasChild(baseElementDeclaration, baseNode, elementName)) {
-				if (isDeepSearch()) {
-					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, perform deep search");
-					try {
-						List<XSParticle> subList=getBestChildElementPath(elementDeclaration,baseNode, true);
-						if (subList!=null && !subList.isEmpty()) {
-							path.add(particle);
-							if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
-							return true;
-						}
-						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search");
-					} catch (Exception e) {
-						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search: "+e.getMessage());
-						return false;
+			return handleElementDeclarationTerm(baseElementDeclaration, baseNode, particle, path, failureReasons, (XSElementDeclaration) term);
+		}
+		if (term instanceof XSWildcard) {
+			return handleWildcardTerm(baseElementDeclaration, (XSWildcard) term);
+		}
+		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
+	}
+
+	private boolean handleElementDeclarationTerm(XSElementDeclaration baseElementDeclaration, N baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons, XSElementDeclaration elementDeclaration) throws SAXException {
+		String elementName=elementDeclaration.getName();
+		if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration name ["+elementName+"]");
+		if (!hasChild(baseElementDeclaration, baseNode, elementName)) {
+			if (isDeepSearch()) {
+				if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, perform deep search");
+				try {
+					List<XSParticle> subList=getBestChildElementPath(elementDeclaration, baseNode, true);
+					if (subList!=null && !subList.isEmpty()) {
+						path.add(particle);
+						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
+						return true;
 					}
+					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search");
+				} catch (Exception e) {
+					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search: "+e.getMessage());
+					return false;
 				}
-				if (particle.getMinOccurs()>0) {
+			}
+			if (particle.getMinOccurs()>0) {
 //					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
 //					if (isAutoInsertMandatory()) {
 //						path.add(particle);
 //						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
 //						return true;
 //					}
-					failureReasons.add(MSG_EXPECTED_ELEMENT+" ["+elementName+"]");
-					return false;
-				}
-				if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration optional element ["+elementName+"] not found, path continues");
-				return true;
+				failureReasons.add(MSG_EXPECTED_ELEMENT+" ["+elementName+"]");
+				return false;
 			}
-			for (XSParticle resultParticle:path) {
-				if (elementName.equals(resultParticle.getTerm().getName())) {
-					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but required multiple times");
-					failureReasons.add("element ["+elementName+"] required multiple times");
-					return false;
-				}
-			}
-			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found");
-			path.add(particle);
+			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration optional element ["+elementName+"] not found, path continues");
 			return true;
 		}
-		if (term instanceof XSWildcard) {
-			XSWildcard wildcard=(XSWildcard)term;
-			String processContents;
-			switch (wildcard.getProcessContents()) {
+		for (XSParticle resultParticle: path) {
+			if (elementName.equals(resultParticle.getTerm().getName())) {
+				if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but required multiple times");
+				failureReasons.add("element ["+elementName+"] required multiple times");
+				return false;
+			}
+		}
+		if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found");
+		path.add(particle);
+		return true;
+	}
+
+	private boolean handleModelGroupTerm(XSElementDeclaration baseElementDeclaration, N baseNode, List<XSParticle> path, List<String> failureReasons, XSModelGroup modelGroup) throws SAXException {
+		short compositor = modelGroup.getCompositor();
+		XSObjectList particles = modelGroup.getParticles();
+		if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath() modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		switch (compositor) {
+		case XSModelGroup.COMPOSITOR_SEQUENCE:
+		case XSModelGroup.COMPOSITOR_ALL:
+			for (int i=0;i<particles.getLength();i++) {
+				XSParticle childParticle = (XSParticle)particles.item(i);
+				if (!getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, path, failureReasons)) {
+					return false;
+				}
+			}
+			return true;
+		case XSModelGroup.COMPOSITOR_CHOICE:
+			List<XSParticle> bestPath=null;
+
+			List<String> choiceFailureReasons = new LinkedList<String>();
+			for (int i=0;i<particles.getLength();i++) {
+				XSParticle childParticle = (XSParticle)particles.item(i);
+				List<XSParticle> optionPath=new LinkedList<XSParticle>(path);
+
+				if (getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, optionPath, choiceFailureReasons)) {
+					if (bestPath==null || bestPath.size()<optionPath.size()) {
+						bestPath=optionPath;
+					}
+				}
+			}
+			if (bestPath==null) {
+				failureReasons.addAll(choiceFailureReasons);
+				return false;
+			}
+			if (log.isTraceEnabled()) log.trace("Replace path with best path of Choice Compositor, size ["+bestPath.size()+"]");
+			path.clear();
+			path.addAll(bestPath);
+			return true;
+		default:
+			throw new IllegalStateException("getBestMatchingElementPath modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
+		}
+	}
+
+	private boolean handleWildcardTerm(XSElementDeclaration baseElementDeclaration, XSWildcard wildcard) {
+		String processContents;
+		switch (wildcard.getProcessContents()) {
 			case XSWildcard.PC_LAX: processContents="LAX"; break;
 			case XSWildcard.PC_SKIP: processContents="SKIP"; break;
 			case XSWildcard.PC_STRICT: processContents="STRICT"; break;
 			default:
-					throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
-			}
-			String namespaceConstraint;
-			switch (wildcard.getConstraintType()) {
+				throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
+		}
+		String namespaceConstraint;
+		switch (wildcard.getConstraintType()) {
 			case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
 			case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
 			case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
 			default:
-					throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
-			}
-			String msg="term for element ["+baseElementDeclaration.getName()+"] is WILDCARD; namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema";
-			if (isFailOnWildcards()) {
-				throw new IllegalStateException(msg+", or set failOnWildcards=\"false\"");
-			}
-			log.warn(msg);
-			return true;
+				throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
 		}
-		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
+		String msg="term for element ["+ baseElementDeclaration.getName()+"] is WILDCARD; namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema";
+		if (isFailOnWildcards()) {
+			throw new IllegalStateException(msg+", or set failOnWildcards=\"false\"");
+		} else {
+			log.warn(msg);
+		}
+		return true;
 	}
-
 
 	protected void sendString(String string) throws SAXException {
 		validatorHandler.characters(string.toCharArray(), 0, string.length());
@@ -620,9 +657,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		return prefix;
 	}
 
-
-
-
 	public String findNamespaceForName(String name) throws SAXException {
 		XSElementDeclaration elementDeclaration=findElementDeclarationForName(null,name);
 		if (elementDeclaration==null) {
@@ -641,5 +675,4 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		translate(data, xmlWriter);
 		return xmlWriter.toString();
 	}
-
 }
