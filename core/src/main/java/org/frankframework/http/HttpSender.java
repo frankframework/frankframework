@@ -214,7 +214,7 @@ public class HttpSender extends HttpSenderBase {
 
 				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
-				if (log.isDebugEnabled()) log.debug("HttpSender constructed GET-method [{}]", getMethod.getURI().getQuery());
+				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
