@@ -154,14 +154,15 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	private void checkUnsafe(Method setterMethod) {
+	private void checkIfMethodIsMarkedAsUnsafe(Method setterMethod, String attributeName) {
 		Unsafe unsafe = AnnotationUtils.findAnnotation(setterMethod, Unsafe.class);
 
 		if (unsafe == null) {
 			return;
 		}
 
-		addSuppressibleWarning(unsafe.description(), SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
+		String warning = "[" + attributeName + "] is unsafe and should not be used in a production environment.";
+		addSuppressibleWarning(warning, SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 	}
 
 	private void addConfigWarning(Class<?> clazz) {
