@@ -73,7 +73,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 
 		checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
-		checkUnsafe(m);
+		checkIfMethodIsMarkedAsUnsafe(m, name);
 
 		if (value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
 			value = resolveValue(value);
