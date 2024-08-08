@@ -192,7 +192,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml(INPUT_FILE_BASIC_A_OK + ".xml");
@@ -253,7 +253,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml(INPUT_FILE_BASIC_A_OK + ".xml");
@@ -281,7 +281,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 2);
+		assertWarnings(configuration, 3);
 
 		// Arrange 2
 		String testXml = getTestXml(INPUT_FILE_BASIC_A_OK + ".xml");
@@ -337,7 +337,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Circular/AB/A.xml");
@@ -363,7 +363,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Circular/zds/ontvangAsynchroon_CreeerZaak_input_example.xml");
@@ -390,7 +390,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		// There should not be the message: "sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'urn:frank/leaf01,leaf01'."
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/MultipleImport/root-ok.xml");
@@ -416,7 +416,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportInclude/root-ok.xml");
@@ -442,7 +442,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportNestedInclude/root-ok.xml");
@@ -495,7 +495,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Include/in-ok.xml");
