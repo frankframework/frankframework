@@ -61,6 +61,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
@@ -1143,6 +1144,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.getTrustManagerAlgorithm();
 	}
 
+	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
 	@Override
 	public void setVerifyHostname(boolean verifyHostname) {
 		sessionBuilder.setVerifyHostname(verifyHostname);
@@ -1152,6 +1154,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isVerifyHostname();
 	}
 
+	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
 	@Override
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
@@ -1161,6 +1164,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isAllowSelfSignedCertificates();
 	}
 
+	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
 	@Override
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);

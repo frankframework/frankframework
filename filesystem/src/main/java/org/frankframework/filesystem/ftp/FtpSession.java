@@ -33,6 +33,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
@@ -406,6 +407,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	}
 
 	/** (ftps) If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
+	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
 	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
@@ -414,6 +416,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	/** (ftps) If <code>true</code>, self signed certificates are accepted
 	 * @ff.default false
 	 */
+	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
 	@Override
 	public void setAllowSelfSignedCertificates(boolean b) {
 		allowSelfSignedCertificates = b;
@@ -423,6 +426,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	 * (ftps) If <code>true</code>, CertificateExpiredExceptions are ignored
 	 * @ff.default false
 	 */
+	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
 	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;

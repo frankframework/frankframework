@@ -71,6 +71,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
@@ -739,16 +740,19 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	@Override
+	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
 
+	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
 	@Override
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
 
 	@Override
+	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}
