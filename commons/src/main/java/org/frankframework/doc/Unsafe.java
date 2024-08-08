@@ -28,5 +28,5 @@ import static java.lang.annotation.ElementType.METHOD;
 @Target({METHOD})
 @Inherited
 public @interface Unsafe {
-	String description();
+
 }

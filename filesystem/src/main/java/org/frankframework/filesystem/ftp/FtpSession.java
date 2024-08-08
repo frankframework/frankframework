@@ -407,7 +407,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	}
 
 	/** (ftps) If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
-	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
@@ -416,7 +416,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	/** (ftps) If <code>true</code>, self signed certificates are accepted
 	 * @ff.default false
 	 */
-	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setAllowSelfSignedCertificates(boolean b) {
 		allowSelfSignedCertificates = b;
@@ -426,7 +426,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	 * (ftps) If <code>true</code>, CertificateExpiredExceptions are ignored
 	 * @ff.default false
 	 */
-	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;

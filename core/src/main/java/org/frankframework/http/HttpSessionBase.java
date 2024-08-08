@@ -740,19 +740,19 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	@Override
-	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
+	@Unsafe
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
 
-	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
 
 	@Override
-	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
+	@Unsafe
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}

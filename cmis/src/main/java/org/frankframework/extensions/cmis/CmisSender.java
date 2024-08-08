@@ -1144,7 +1144,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.getTrustManagerAlgorithm();
 	}
 
-	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setVerifyHostname(boolean verifyHostname) {
 		sessionBuilder.setVerifyHostname(verifyHostname);
@@ -1154,7 +1154,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isVerifyHostname();
 	}
 
-	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
@@ -1164,7 +1164,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isAllowSelfSignedCertificates();
 	}
 
-	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
+	@Unsafe
 	@Override
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);

@@ -44,17 +44,17 @@ public interface HasTruststore extends IScopeProvider {
 	void setTrustManagerAlgorithm(String trustManagerAlgorithm);
 
 	/** If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
-	@Unsafe(description = "verifyHostname is unsafe and should not be used in a production environment.")
+	@Unsafe
 	void setVerifyHostname(boolean verifyHostname);
 	/** If <code>true</code>, self signed certificates are accepted
 	 * @ff.default false
 	 */
-	@Unsafe(description = "allowSelfSignedCertificates is unsafe and should not be used in a production environment.")
+	@Unsafe
 	void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates);
 	/**
 	 * If <code>true</code>, CertificateExpiredExceptions are ignored
 	 * @ff.default false
 	 */
-	@Unsafe(description = "ignoreCertificateExpiredException is unsafe and should not be used in a production environment.")
+	@Unsafe
 	void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException);
 }
