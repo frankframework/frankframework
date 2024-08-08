@@ -7,6 +7,8 @@ import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
+import { ClusterMember } from 'src/app/app.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-pages-topnavbar',
@@ -15,6 +17,7 @@ import { AuthService } from 'src/app/services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     HamburgerComponent,
     RouterModule,
     TimeSinceDirective,
@@ -28,9 +31,12 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
   @Input() dtapSide: string = '';
   @Input() dtapStage: string = '';
   @Input() serverTime: string = '';
+  @Input() clusterMembers: ClusterMember[] = [];
   @Input() userName?: string;
 
   loggedIn: boolean = false;
+
+  protected selectedClusterMember: ClusterMember | null = null;
 
   private _subscriptions = new Subscription();
 

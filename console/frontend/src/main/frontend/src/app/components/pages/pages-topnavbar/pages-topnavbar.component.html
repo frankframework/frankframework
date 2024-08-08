@@ -61,6 +61,29 @@
           </li>
         </ul>
       </li>
+      <!-- <li class="m-r-sm" ngbDropdown>
+              <a class="count-info" ngbDropdownToggle>CURRENT NODE</a>
+              <ul class="dropdown-alerts" ngbDropdownMenu>
+                <li ngbDropdownItem>NODE 1</li>
+                <li ngbDropdownItem>NODE 2</li>
+                <li ngbDropdownItem>NODE 3</li>
+              </ul>
+            </li> -->
+      <li>
+        <select
+          class="m-r-sm"
+          name="selectedClusterMember"
+          [(ngModel)]="selectedClusterMember"
+        >
+          <option
+            *ngFor="let member of clusterMembers"
+            [value]="member"
+            [title]="member.id"
+          >
+            {{ member.name }}
+          </option>
+        </select>
+      </li>
       <li *ngIf="userName">{{ userName }}</li>
       <li *ngIf="loggedIn">
         <a routerLink="/logout">
