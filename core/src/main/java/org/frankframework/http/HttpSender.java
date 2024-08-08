@@ -209,7 +209,7 @@ public class HttpSender extends HttpSenderBase {
 			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
-					if (log.isDebugEnabled()) log.debug("path after appending of parameters [{}]", relativePath);
+					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 
 				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
