@@ -70,7 +70,6 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		XmlValidator validator = configuration.createBean(XmlValidator.class);
 		validator.setName("validator");
 		validator.registerForward(createSuccessForward());
-		validator.registerForward(createFailureForward());
 		validator.setRoot(root);
 		validator.setSchemaLocation(schemaLocation);
 		validator.setThrowException(true);
@@ -157,6 +156,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, null, NO_NAMESPACE_SOAP_MSGROOT);
 		validator.setFullSchemaChecking(true);
+		validator.registerForward(createFailureForward());
 		try {
 			validator.setImplementation(implementation);
 		} catch (Exception e) {
@@ -192,7 +192,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml(INPUT_FILE_BASIC_A_OK + ".xml");
@@ -215,6 +215,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK,  "anotherElement");
 		validator.setFullSchemaChecking(true);
 		validator.setReasonSessionKey("reason");
+		validator.registerForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -253,7 +254,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml(INPUT_FILE_BASIC_A_OK + ".xml");
@@ -281,7 +282,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 3);
+		assertWarnings(configuration, 2);
 
 		// Arrange 2
 		String testXml = getTestXml(INPUT_FILE_BASIC_A_OK + ".xml");
@@ -303,6 +304,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		String root = "A";
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK, root);
 		validator.setReasonSessionKey("reason");
+		validator.registerForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -337,7 +339,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Circular/AB/A.xml");
@@ -363,7 +365,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Circular/zds/ontvangAsynchroon_CreeerZaak_input_example.xml");
@@ -390,7 +392,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		// There should not be the message: "sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'urn:frank/leaf01,leaf01'."
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/MultipleImport/root-ok.xml");
@@ -416,7 +418,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportInclude/root-ok.xml");
@@ -442,7 +444,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportNestedInclude/root-ok.xml");
@@ -462,6 +464,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd", "root");
 		// Override throwing exception
+		validator.registerForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -495,7 +498,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertWarnings(configuration, 1);
+		assertNoWarnings(configuration);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Include/in-ok.xml");
@@ -516,6 +519,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
 		validator.setThrowException(false);
+		validator.registerForward(createFailureForward());
 
 		// Act
 		validator.configure();
@@ -534,6 +538,25 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		// Assert 2
 		assertEquals("failure", forward.getName());
+	}
+
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testThrowExceptionAndFailureForward(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
+		// Arrange
+		// throwException=true and a failure forward both exist.
+		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportNestedInclude/xsd/root.xsd", "root");
+
+		validator.setThrowException(true);
+		validator.registerForward(createFailureForward());
+
+		// Act
+		validator.configure();
+		validator.start();
+
+		// Assert
+		assertWarnings(configuration, 1);
 	}
 
 	@MethodSource("data")
