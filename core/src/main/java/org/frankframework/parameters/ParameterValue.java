@@ -17,7 +17,6 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
