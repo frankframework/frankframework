@@ -16,8 +16,12 @@
 package org.frankframework.parameters;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -157,6 +161,12 @@ public class ParameterValue {
 				throw new IllegalStateException("cannot open stream", e);
 			}
 		}
+
+		if (getDefinition() instanceof DateParameter dateParameter && value instanceof Date date) {
+			final DateFormat df = new SimpleDateFormat(dateParameter.getFormatString());
+			return df.format(date);
+		}
+
 		return value.toString();
 	}
 
