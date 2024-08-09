@@ -155,6 +155,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
 			}
 
+			if (isThrowException () && findForward("failure") != null) {
+				ConfigurationWarnings.add(this, log, "throwException=true, so the failure forward will be ignored");
+			}
+
 			// Different default value for ignoreUnknownNamespaces when using
 			// noNamespaceSchemaLocation.
 			if (validator.getIgnoreUnknownNamespaces() == null) {
