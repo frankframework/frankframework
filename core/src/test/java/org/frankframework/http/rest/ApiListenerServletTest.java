@@ -15,7 +15,6 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
-import static org.frankframework.http.rest.ApiListener.HttpMethod;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,36 +47,6 @@ import java.util.Map;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.mockito.Mockito;
-
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.KeyOperation;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-
-import jakarta.annotation.Nonnull;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -93,6 +63,7 @@ import org.frankframework.encryption.PkiUtil;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
+import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -102,12 +73,39 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockServletConfig;
+
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.KeyOperation;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class ApiListenerServletTest extends Mockito {
+public class ApiListenerServletTest {
 	private final List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
 
@@ -124,12 +122,10 @@ public class ApiListenerServletTest extends Mockito {
 
 	@BeforeEach
 	public void setUp() throws ServletException {
-		servlet = spy(ApiListenerServlet.class);
-		ServletConfig servletConfig = new MockServletConfig();
-		when(servlet.getServletConfig()).thenReturn(servletConfig);
+		servlet = new ApiListenerServlet();
 		servlet.init();
 
-		session = null;
+		session = new PipeLineSession();
 		handlerInvoked = false;
 	}
 
@@ -707,13 +703,13 @@ public class ApiListenerServletTest extends Mockito {
 		assertTrue(result.getContentType().contains("charset=UTF-8"), "Content-Type header does not contain correct [charset]");
 		assertNull(result.getErrorMessage());
 
-		String multipartXml = (String) session.get("multipartAttachments");
+		String multipartXml = ((Message) session.get("multipartAttachments")).asString();
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("""
 				<parts>
-				  <part name="string1" type="text" value="&lt;hallo&gt;? ?&lt;/hallo&gt;" />
-				  <part name="string2" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
-				  <part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
+					<part name="string1" type="text" value="&lt;hallo&gt;? ?&lt;/hallo&gt;" />
+					<part name="string2" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
+					<part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
 				</parts>\
 				""", multipartXml);
 		Message file = (Message) session.get("file1");
@@ -741,12 +737,12 @@ public class ApiListenerServletTest extends Mockito {
 		assertTrue(result.getContentType().contains("charset=UTF-8"), "Content-Type header does not contain correct [charset]");
 		assertNull(result.getErrorMessage());
 
-		String multipartXml = (String) session.get("multipartAttachments");
+		String multipartXml = ((Message) session.get("multipartAttachments")).asString();
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("""
 				<parts>
-				  <part name="string1" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
-				  <part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
+					<part name="string1" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
+					<part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
 				</parts>\
 				""", multipartXml);
 		Message file = (Message) session.get("file1");
@@ -1673,21 +1669,21 @@ public class ApiListenerServletTest extends Mockito {
 
 		@Override
 		public void flushBuffer() {
-			log.warn("Flushing buffer. Committing response.");
+			log.info("Flushing buffer. Committing response.");
 			responseCommitted = true;
 			super.flushBuffer();
 		}
 
 		@Override
 		public void setCommitted(boolean committed) {
-			log.warn("Set Committed = {}", committed);
+			log.trace("Set Committed = {}", committed);
 			responseCommitted = committed;
 			super.setCommitted(committed);
 		}
 
 		@Override
 		public void sendError(int status, String errorMessage) throws IOException {
-			log.warn("Send Error. Committing response.");
+			log.info("Send Error. Committing response.");
 			assertResponseNotCommitted();
 			responseCommitted = true;
 			super.sendError(status, errorMessage);
@@ -1695,7 +1691,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		@Override
 		public void sendError(int status) throws IOException {
-			log.warn("Send Error. Committing response.");
+			log.info("Send Error. Committing response.");
 			assertResponseNotCommitted();
 			responseCommitted = true;
 			super.sendError(status);
@@ -1925,10 +1921,7 @@ public class ApiListenerServletTest extends Mockito {
 		@Override
 		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			handlerInvoked = true;
-			if(session != null) {
-				context.putAll(session);
-			}
-			session = context;
+			context.mergeToParentSession("*", session);
 			requestMessage = message;
 			if (shouldThrow) {
 				throw new ListenerException("Hard Throw");
@@ -1936,6 +1929,7 @@ public class ApiListenerServletTest extends Mockito {
 			if (exitCode > 0) {
 				context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, exitCode);
 			}
+			context.unscheduleCloseOnSessionExit(message);
 			if (responseContent != null) {
 				return Message.asMessage(responseContent);
 			}

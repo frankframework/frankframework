@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -33,7 +34,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
@@ -63,7 +63,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
 	public static final String HTTP_REQUEST_KEY    = "servletRequest";
 	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
-	public static final String SERVLET_CONTEXT_KEY = "servletContext";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";

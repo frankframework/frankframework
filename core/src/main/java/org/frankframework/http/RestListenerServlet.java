@@ -117,7 +117,7 @@ public class RestListenerServlet extends HttpServletBase {
 			}
 			try {
 				log.trace("RestListenerServlet calling service [{}]", path);
-				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
+				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response);
 
 				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
 					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
