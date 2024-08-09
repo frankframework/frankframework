@@ -214,7 +214,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public RawMessageWrapper<Message> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
 		RawMessageWrapper<Message> msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
-			throw new TimeoutException(" timed out waiting for message with correlationId ["+correlationId+"]");
+			throw new TimeoutException("timed out waiting for message with correlationId ["+correlationId+"]");
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("JmsListener [{}] received for correlationId [{}] replymessage [{}]", getName(), correlationId, msg);

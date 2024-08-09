@@ -61,17 +61,21 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		log.debug("configuring destinations");
+		if (log.isDebugEnabled()) log.debug("{}configuring destinations", getLogPrefix());
 		for(String name : destinations.keySet()) {
 			IMonitorDestination destination = getDestination(name);
 			destination.configure();
 		}
 
 		//Only configure Monitors if all destinations were able to configure successfully
-		log.debug("configuring monitors");
+		if (log.isDebugEnabled()) log.debug("{}configuring monitors", getLogPrefix());
 		for(Monitor monitor : monitors) {
 			monitor.configure();
 		}
+	}
+
+	private String getLogPrefix() {
+		return "Manager@"+this.hashCode();
 	}
 
 	public void registerDestination(IMonitorDestination monitorAdapter) {
@@ -90,7 +94,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug("registerEvent [{}] for adapter [{}] object [{}]", eventCode, thrower.getAdapter() == null ? null : thrower.getAdapter()
+			log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", getLogPrefix(), eventCode, thrower.getAdapter() == null ? null : thrower.getAdapter()
 					.getName(), thrower.getEventSourceName());
 		}
 
