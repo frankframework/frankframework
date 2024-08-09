@@ -199,6 +199,14 @@ export type ServerEnvironmentVariables = {
   'System Properties': Record<string, string>;
 };
 
+export type ClusterMember = {
+  id: string;
+  address: string;
+  name: string;
+  localMember: boolean;
+  selectedMember: boolean;
+};
+
 export type AppConstants = Record<string, string | number | boolean | object>;
 
 export const appInitState = {
@@ -441,6 +449,18 @@ export class AppService {
           return of([]);
         }),
       );
+  }
+
+  getClusterMembers(): Observable<ClusterMember[]> {
+    return this.http.get<ClusterMember[]>(
+      `${this.absoluteApiPath}cluster/members`,
+    );
+  }
+
+  updateSelectedClusterMember(id: string): Observable<object> {
+    return this.http.post(`${this.absoluteApiPath}cluster/members`, {
+      id,
+    });
   }
 
   getConfigurations(): Observable<Configuration[]> {

@@ -16,10 +16,17 @@
 package org.frankframework.runner;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.tomcat.websocket.server.WsContextListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletException;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
@@ -28,6 +35,15 @@ import org.springframework.boot.WebApplicationType;
  */
 public class ConsoleStandaloneInitializer {
 
+	public static class WsSciWrapper implements ServletContextInitializer {
+
+		@Override
+		public void onStartup(ServletContext servletContext) throws ServletException {
+			WsContextListener sc = new WsContextListener();
+			sc.contextInitialized(new ServletContextEvent(servletContext));
+		}
+	}
+
 	// Should start a XmlServletWebServerApplicationContext.
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication();
@@ -35,6 +51,7 @@ public class ConsoleStandaloneInitializer {
 		Set<String> set = new HashSet<>();
 		set.add("SpringBootContext.xml");
 		app.setSources(set);
+		app.addPrimarySources(List.of(WsSciWrapper.class));
 		app.run(args);
 	}
 

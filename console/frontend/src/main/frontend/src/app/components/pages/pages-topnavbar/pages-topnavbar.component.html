@@ -61,6 +61,22 @@
           </li>
         </ul>
       </li>
+      <li>
+        <select
+          class="m-r-sm cluster-member-selector"
+          name="selectedClusterMember"
+          [(ngModel)]="selectedClusterMember"
+          (ngModelChange)="selectClusterMember()"
+        >
+          <option
+            *ngFor="let member of clusterMembers"
+            [ngValue]="member"
+            title="{{ member.name }}&#013;{{ member.id }}"
+          >
+            {{ member.address }}
+          </option>
+        </select>
+      </li>
       <li *ngIf="userName">{{ userName }}</li>
       <li *ngIf="loggedIn">
         <a routerLink="/logout">
