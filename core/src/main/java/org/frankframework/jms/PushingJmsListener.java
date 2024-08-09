@@ -100,7 +100,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (jmsConnector==null) {
-			throw new ConfigurationException(" has no jmsConnector. It should be configured via springContext.xml");
+			throw new ConfigurationException("no jmsConnector found. It should be wired/configured via Spring");
 		}
 		Destination destination;
 		try {
