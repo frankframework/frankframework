@@ -361,6 +361,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		});
 		// Add in substitutions for allowed names not already in the object. This is so objects do not appear empty when
 		// substitutions could fill in for absent names.
+		// This is perhaps not the cleanest way to make sure the substitutions are performed but this requires least
+		// amount of code changes in other parts.
 		if (sp != null) {
 			allowedNames.forEach(name -> {
 				if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
@@ -407,5 +409,4 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 		return j2x;
 	}
-
 }

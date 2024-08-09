@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.align;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -37,7 +37,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -401,12 +400,20 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	}
 
 	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, boolean mandatory, N node, Set<String> processedChildren) throws SAXException {
+		// Steps for deep search:
+		//  - Get names of all declared child elements from XSD type
+		//  - Remove names of processed children
+		//  - Create copy of node N that has only these elements, so that when we handle this child-element we do not get errors
+		//  - To be able to handle substitutions from parameters or session variables being inserted, we should add to the copy node
+		//    also any substitutions with same name as any of the names that are also in the XSD for this type
+		//  - If the node is not empty, then handleElement for copy of the node and return true
+		//  - else return false
 		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
 		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
 			return false;
 		}
 		XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
-		Set<String> allowedNames = Arrays.stream(((XSModelGroupImpl)complexTypeDefinition.getParticle().getTerm()).fParticles).map(p->p.getTerm().getName()).collect(Collectors.toSet());
+		Set<String> allowedNames = getNamesOfXsdChildElements(complexTypeDefinition);
 		allowedNames.removeAll(processedChildren);
 
 		N copy = filterNodeChildren(node, allowedNames);
@@ -416,6 +423,19 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 		handleElement(childElementDeclaration, copy);
 		return true;
+	}
+
+	private static Set<String> getNamesOfXsdChildElements(XSComplexTypeDefinition complexTypeDefinition) {
+		XSTerm term = complexTypeDefinition.getParticle().getTerm();
+		if (!(term instanceof XSModelGroup)) {
+			return Collections.emptySet();
+		}
+		XSModelGroup modelGroup = (XSModelGroup) term;
+		@SuppressWarnings("unchecked")
+		List<XSParticle> particles = modelGroup.getParticles();
+		return particles.stream()
+				.map(p -> p.getTerm().getName())
+				.collect(Collectors.toSet());
 	}
 
 	protected boolean isEmptyNode(N copy) {
