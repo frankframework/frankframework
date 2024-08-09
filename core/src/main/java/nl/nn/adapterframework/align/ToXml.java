@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.align;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -36,13 +37,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
-import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -362,7 +363,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	protected void processChildElement(N node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren) throws SAXException {
 		String childElementName = childElementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("To2Xml.processChildElement() parent name ["+parentName+"] childElementName ["+childElementName+"]");
+		if (log.isTraceEnabled()) log.trace("ToXml.processChildElement() parent name ["+parentName+"] childElementName ["+childElementName+"]");
 		Iterable<N> childNodes = getChildrenByName(node,childElementDeclaration);
 		boolean childSeen=false;
 		if (childNodes!=null) {
@@ -410,9 +411,8 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
 			return false;
 		}
-		List<XSParticle> childParticles = getBestChildElementPath(childElementDeclaration, node, false);
 		XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
-		Set<String> allowedNames = childParticles.stream().map(XSObject::getName).collect(Collectors.toSet());
+		Set<String> allowedNames = Arrays.stream(((XSModelGroupImpl)complexTypeDefinition.getParticle().getTerm()).fParticles).map(p->p.getTerm().getName()).collect(Collectors.toSet());
 		allowedNames.removeAll(processedChildren);
 
 		N copy = filterNodeChildren(node, allowedNames);

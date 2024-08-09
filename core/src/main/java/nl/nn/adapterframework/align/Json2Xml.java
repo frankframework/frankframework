@@ -199,8 +199,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			if (isParentOfSingleMultipleOccurringChildElement()) {
 				if ((insertElementContainerElements || !strictSyntax) && node instanceof JsonArray) {
 					if (log.isTraceEnabled()) log.trace("parentOfSingleMultipleOccurringChildElement,JsonArray,(insertElementContainerElements || !strictSyntax)");
-					Set<String> result = new LinkedHashSet<>();
-					result.addAll(getMultipleOccurringChildElements());
+					Set<String> result = new LinkedHashSet<>(getMultipleOccurringChildElements());
 					if (log.isTraceEnabled()) log.trace("isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");
 					return result;
 				}
@@ -247,7 +246,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 				return null;
 			}
 			JsonValue child = o.get(name);
-			List<JsonValue> result = new LinkedList<JsonValue>();
+			List<JsonValue> result = new LinkedList<>();
 			if (child instanceof JsonArray) {
 				if (log.isTraceEnabled()) log.trace("child named ["+name+"] is a JsonArray, current node insertElementContainerElements ["+insertElementContainerElements+"]");
 				// if it could be necessary to insert elementContainers, we cannot return them as a list of individual elements now, because then the containing element would be duplicated
@@ -360,6 +359,15 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		node.forEach((key, value) -> {
 			if (allowedNames.contains(key)) objectBuilder.add(key, value);
 		});
+		// Add in substitutions for allowed names not already in the object. This is so objects do not appear empty when
+		// substitutions could fill in for absent names.
+		if (sp != null) {
+			allowedNames.forEach(name -> {
+				if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
+					objectBuilder.add(name, getSubstitutedChild(node, name));
+				}
+			});
+		}
 		return objectBuilder.build();
 	}
 
