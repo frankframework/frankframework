@@ -221,7 +221,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			if (log.isDebugEnabled()) log.debug("determined delivery count [{}]", value);
 			return value;
 		} catch (NumberFormatException nfe) {
-			if (log.isDebugEnabled()) log.debug("NumberFormatException in determination of DeliveryCount");
+			log.debug("NumberFormatException in determination of DeliveryCount");
 			return -1;
 		} catch (Exception e) {
 			log.error("exception in determination of DeliveryCount", e);
