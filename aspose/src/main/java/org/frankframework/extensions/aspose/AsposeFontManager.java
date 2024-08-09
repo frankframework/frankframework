@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -120,7 +119,7 @@ public class AsposeFontManager {
 
 							// Check for ZipSlip vulnerability
 							if (canonicalDestinationPath.startsWith(fontsDirPath.toString())) {
-								Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS);
+								Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING);
 							}
 						}
 					}
