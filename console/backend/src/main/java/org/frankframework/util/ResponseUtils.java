@@ -30,7 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 public class ResponseUtils {
 
-	public ResponseUtils() {
+	private ResponseUtils() {
 		// don't construct utility class
 	}
 
