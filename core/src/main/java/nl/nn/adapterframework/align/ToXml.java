@@ -383,7 +383,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			if (log.isTraceEnabled()) log.trace("no children found by name ["+childElementName+"] in ["+parentName+"]");
 			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
 				if (log.isTraceEnabled()) log.trace("no children found, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
-				if (tryDeepSearchForChildElement(childElementDeclaration, node, processedChildren)) {
+				if (tryDeepSearchForChildElement(childElementDeclaration, mandatory, node, processedChildren)) {
 					childSeen = true;
 				}
 			}
@@ -400,13 +400,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 //		}
 	}
 
-	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, N node, Set<String> processedChildren) throws SAXException {
-		// TODO:
-		//  - Get names of all declared child elements from XSD type
-		//  - Remove names of processed children
-		//  - Create copy of node N that has only these elements (or iterates only them)
-		//  - If not empty, then handleElement for copy of the node and return true
-		//  - else return false
+	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, boolean mandatory, N node, Set<String> processedChildren) throws SAXException {
 		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
 		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
 			return false;
@@ -417,7 +411,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 		N copy = filterNodeChildren(node, allowedNames);
 
-		if (isEmptyNode(copy)) {
+		if (isEmptyNode(copy) && !mandatory) {
 			return false;
 		}
 		handleElement(childElementDeclaration, copy);
