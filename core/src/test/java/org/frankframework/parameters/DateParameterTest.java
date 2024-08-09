@@ -1,10 +1,17 @@
 package org.frankframework.parameters;
 
+import static org.frankframework.parameters.AbstractParameter.TYPE_DATETIME_PATTERN;
+import static org.frankframework.parameters.AbstractParameter.TYPE_DATE_PATTERN;
+import static org.frankframework.parameters.AbstractParameter.TYPE_TIMESTAMP_PATTERN;
+import static org.frankframework.parameters.AbstractParameter.TYPE_TIME_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -152,7 +159,7 @@ public class DateParameterTest {
 			assertTrue(result instanceof Date);
 
 			Date resultDate = (Date) result;
-			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
 			assertEquals("2001-12-17", formattedDate);
 
@@ -179,7 +186,7 @@ public class DateParameterTest {
 		assertTrue(result instanceof Date);
 
 		Date resultDate = (Date) result;
-		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		String formattedDate = sdf.format(resultDate);
 		assertEquals("1995-01-23", formattedDate);
 
@@ -204,7 +211,7 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertTrue(result instanceof Date);
 			Date resultDate = (Date) result;
-			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
 			assertEquals("1996-02-24", formattedDate);
 		} finally {
@@ -231,7 +238,7 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertTrue(result instanceof Date);
 			Date resultDate = (Date) result;
-			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
 			String formattedExpected = sdf.format(date);
 			assertEquals(formattedExpected, formattedDate);
@@ -248,7 +255,7 @@ public class DateParameterTest {
 		p.setType(ParameterType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
-		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		session.put("fixedDate", sdf.parse("1995-01-23"));
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -280,7 +287,7 @@ public class DateParameterTest {
 			assertTrue(result instanceof Date);
 
 			Date resultDate = (Date) result;
-			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate, formattedDate);
@@ -417,4 +424,51 @@ public class DateParameterTest {
 		assertInstanceOf(Date.class, result);
 		assertEquals(date, result);
 	}
+
+	private void testDateParameterToString(DateFormatType type, String pattern, String input, String expectedOutput) throws ParseException, ConfigurationException {
+		DateFormat df = new SimpleDateFormat(pattern);
+		Date date = df.parse(input);
+
+		DateParameter parameter = new DateParameter();
+		parameter.setName("InputMessage");
+		parameter.setFormatType(type);
+		parameter.configure();
+
+		ParameterValue pv = new ParameterValue(parameter, date);
+
+		assertInstanceOf(Date.class, pv.getValue());
+		assertEquals(pv.asStringValue(), expectedOutput);
+	}
+
+	@Test
+	public void testDateToString() throws ConfigurationException, ParseException {
+		testDateParameterToString(DateFormatType.DATE, TYPE_DATE_PATTERN, "2024-08-09 15:00:00", "2024-08-09");
+		testDateParameterToString(DateFormatType.DATE, TYPE_DATE_PATTERN, "2024-10-15", "2024-10-15");
+		testDateParameterToString(DateFormatType.DATE, TYPE_DATE_PATTERN, "1980-05-20 14:15:16.100", "1980-05-20");
+
+		assertThrows(ParseException.class, () -> testDateParameterToString(DateFormatType.DATE, TYPE_DATE_PATTERN, "20:00", ""));
+	}
+
+	@Test
+	public void testDateTimeToString() throws ConfigurationException, ParseException {
+		testDateParameterToString(DateFormatType.DATETIME, TYPE_DATETIME_PATTERN, "2024-08-09 18:15:25", "2024-08-09 18:15:25");
+		testDateParameterToString(DateFormatType.DATETIME, TYPE_DATETIME_PATTERN, "2024-08-09 00:00:00", "2024-08-09 00:00:00");
+
+		assertThrows(ParseException.class, () -> testDateParameterToString(DateFormatType.DATETIME, TYPE_DATETIME_PATTERN, "20:00", ""));
+	}
+
+	@Test
+	public void testTimeToString() throws ConfigurationException, ParseException {
+		testDateParameterToString(DateFormatType.TIME, TYPE_TIME_PATTERN, "19:25:45", "19:25:45");
+
+		assertThrows(ParseException.class, () -> testDateParameterToString(DateFormatType.TIME, TYPE_TIME_PATTERN, "2024-08-09 15:00", ""));
+	}
+
+	@Test
+	public void testTimestampToString() throws ConfigurationException, ParseException {
+		testDateParameterToString(DateFormatType.TIMESTAMP, TYPE_TIMESTAMP_PATTERN, "2024-08-09 18:15:25.500", "2024-08-09 18:15:25.500");
+
+		assertThrows(ParseException.class, () -> testDateParameterToString(DateFormatType.TIMESTAMP, TYPE_TIMESTAMP_PATTERN, "2024-08-09 15:00", ""));
+	}
+
 }
