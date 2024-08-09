@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 public class IbisstoreSummaryTest extends FrankApiTestBase {
 
 	@Test
-	public void getIbisstoreSummary() throws Exception {
+	public void getIbisStoreSummary() throws Exception {
 		String query = "SELECT name FROM ibisstore";
 		String datasource = "jdbc/test";
 

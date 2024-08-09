@@ -15,9 +15,9 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.web.AllRolesAllowed;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,11 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Logging extends FrankApiBase {
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("logging")
 	@Description("view files/folders inside the log directory")
 	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getLogDirectory(@RequestParam(value = "directory", required = false) String directory, @RequestParam(value = "wildcard", required = false) String wildcard) {
+	public ResponseEntity<?> getLogDirectory(@RequestParam(value = "directory", required = false) String directory,
+											 @RequestParam(value = "wildcard", required = false) String wildcard) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
 		builder.addHeader("wildcard", wildcard);

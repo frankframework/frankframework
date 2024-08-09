@@ -17,10 +17,10 @@ package org.frankframework.management.web;
 
 import java.util.Map;
 
-import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.web.AllRolesAllowed;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,18 +39,24 @@ public class Monitors extends FrankApiBase {
 	private static final String MONITOR_HEADER = "monitor";
 	private static final String TRIGGER_HEADER = "trigger";
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	private static void addDefaultHeaders(String configName, String monitorName, RequestMessageBuilder builder) {
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+	}
+
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("view all available monitors")
 	@GetMapping(value = {"", "/"})
-	public ResponseEntity<?> getMonitors(@PathVariable("configuration") String configurationName, @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
+	public ResponseEntity<?> getMonitors(@PathVariable("configuration") String configurationName,
+										 @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("xml", showConfigXml);
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -66,26 +72,26 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("get a specific monitor")
 	@GetMapping(value = "/{monitorName}")
-	public ResponseEntity<?> getMonitor(@PathVariable("configuration") String configurationName, @PathVariable("monitorName") String monitorName, @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
+	public ResponseEntity<?> getMonitor(@PathVariable("configuration") String configurationName, @PathVariable("monitorName") String monitorName,
+										@RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader("xml", showConfigXml);
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateMonitor(@PathVariable("configuration") String configName, @PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> updateMonitor(@PathVariable("configuration") String configName,
+										   @PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configName, monitorName, builder);
 
 		Object state = json.remove("action");
 		if (state != null) {
@@ -96,75 +102,77 @@ public class Monitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("delete a specific monitor")
 	@DeleteMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteMonitor(@PathVariable("configuration") String configurationName, @PathVariable(value = "monitorName", required = false) String monitorName) {
+	public ResponseEntity<?> deleteMonitor(@PathVariable("configuration") String configurationName,
+										   @PathVariable(value = "monitorName", required = false) String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configurationName, monitorName, builder);
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("view specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getTriggers(@PathVariable("configuration") String configurationName, @PathVariable(value = "monitorName", required = false) String monitorName) {
+	public ResponseEntity<?> getTriggers(@PathVariable("configuration") String configurationName,
+										 @PathVariable(value = "monitorName", required = false) String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configurationName, monitorName, builder);
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addTrigger(@PathVariable("configuration") String configName, @PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> addTrigger(@PathVariable("configuration") String configName,
+										@PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configName, monitorName, builder);
 		builder.setJsonPayload(json);
 
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("view all triggers for a specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getTrigger(@PathVariable("configuration") String configurationName, @PathVariable(value = "monitorName", required = false) String monitorName, @PathVariable(value = "trigger", required = false) Integer id) {
+	public ResponseEntity<?> getTrigger(@PathVariable("configuration") String configurationName,
+										@PathVariable(value = "monitorName", required = false) String monitorName,
+										@PathVariable(value = "trigger", required = false) Integer id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, id);
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateTrigger(@PathVariable("configuration") String configName, @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int index, @RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> updateTrigger(@PathVariable("configuration") String configName,
+										   @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int index,
+										   @RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, index);
 		builder.setJsonPayload(json);
 
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("monitoring")
 	@Description("delete a specific monitor trigger")
 	@DeleteMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteTrigger(@PathVariable("configuration") String configurationName, @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int id) {
+	public ResponseEntity<?> deleteTrigger(@PathVariable("configuration") String configurationName,
+										   @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(MONITOR_HEADER, monitorName);
+		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, id);
 		return callSyncGateway(builder);
 	}

@@ -125,19 +125,20 @@ public class Init extends FrankApiBase {
 							HALresources.put(relation, resource);
 					}
 				} else {
-					if (hasRelation)
+					if (hasRelation) {
 						resource.put("rel", rel);
+					}
 					JSONresources.add(resource);
 				}
 			}
 		}
 
-		if (hateoasSupport)
+		if (hateoasSupport) {
 			resources.put("_links", HALresources);
-		else
+		} else {
 			resources.put("links", JSONresources);
+		}
 
 		return ResponseEntity.status(HttpStatus.OK).body(resources);
 	}
-
 }
