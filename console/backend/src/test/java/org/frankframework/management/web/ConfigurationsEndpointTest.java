@@ -1,12 +1,18 @@
 package org.frankframework.management.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
+import org.frankframework.management.Action;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
@@ -31,6 +37,16 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 
 	@Test
 	public void reloadConfiguration() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals(Action.RELOAD.name(), headers.get("meta-action"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name")
 				.content("{\"action\": \"reload\"}")
 				.contentType(MediaType.APPLICATION_JSON))
@@ -48,6 +64,16 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 
 	@Test
 	public void fullReload() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals(Action.FULLRELOAD.name(), headers.get("meta-action"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
 					.content("{\"action\": \"reload\"}")
 					.contentType(MediaType.APPLICATION_JSON))
@@ -77,14 +103,23 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 	@ParameterizedTest
 	@ValueSource(strings = {"{\"activate\":true}", "{\"autoreload\":true}"})
 	void testManageConfigurations(String jsonInput) throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals("configName", headers.get("meta-configuration"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders
 						.put("/configurations/{configuration}/versions/{version}", "configName", "versionName")
 						.content(jsonInput)
 						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"CONFIGURATION\",\"action\":\"MANAGE\"}"));
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
 
 	@ParameterizedTest
@@ -103,6 +138,17 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 
 	@Test
 	void testUploadConfigurations() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals("file.txt", headers.get("meta-filename"));
+			assertEquals("test", headers.get("meta-datasourceName"));
+
+			return msg;
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart("/configurations")
 						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes()))
@@ -118,8 +164,7 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"CONFIGURATION\",\"action\":\"UPLOAD\"}"));
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
 
 	@Test

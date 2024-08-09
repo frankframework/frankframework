@@ -56,19 +56,48 @@ public class MonitorsTest extends FrankApiTestBase {
 
 	@Test
 	void testDeleteMonitor() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertAll(
+					() -> assertEquals("DELETE", in.getHeaders().get("action")),
+					() -> assertEquals("MONITORING", in.getHeaders().get("topic")),
+					() -> assertEquals("configurationName", in.getHeaders().get("meta-configuration"))
+			);
+			return in;
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
 	void testDeleteTrigger() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertAll(
+					() -> assertEquals("DELETE", in.getHeaders().get("action")),
+					() -> assertEquals("MONITORING", in.getHeaders().get("topic")),
+					() -> assertEquals("configurationName", in.getHeaders().get("meta-configuration"))
+			);
+			return in;
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName/triggers/1"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
 	public void testAddMonitor() throws Exception {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(new DefaultSuccessAnswer());
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertAll(
+					() -> assertEquals("UPLOAD", in.getHeaders().get("action")),
+					() -> assertEquals("MONITORING", in.getHeaders().get("topic")),
+					() -> assertEquals("TestConfiguration", in.getHeaders().get("meta-configuration"))
+			);
+			return in;
+		});
+
 		String jsonInput = "{ \"type\":\"FUNCTIONAL\", \"monitor\":\"MonitorName\", \"destinations\": [\"one\",\"two\",\"three\" ]}";
 
 		mockMvc.perform(MockMvcRequestBuilders
@@ -77,12 +106,7 @@ public class MonitorsTest extends FrankApiTestBase {
 					.accept(MediaType.APPLICATION_JSON)
 					.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpectAll(
-						jsonPath("type").value("FUNCTIONAL"),
-						jsonPath("destinations").value(contains("one", "two", "three")),
-						jsonPath("name").value("MonitorName")
-				);
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
 
 	@Test

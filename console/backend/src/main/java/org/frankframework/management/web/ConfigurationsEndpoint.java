@@ -72,6 +72,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> fullReload(@RequestBody Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
+
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.FULLRELOAD.name());

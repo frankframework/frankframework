@@ -11,5 +11,4 @@ public class InlineMessageStoreOverviewTest extends FrankApiTestBase {
 	public void getMessageBrowsers() throws Exception {
 		testActionAndTopicHeaders("/inlinestores/overview", "INLINESTORAGE_SUMMARY", null);
 	}
-
 }

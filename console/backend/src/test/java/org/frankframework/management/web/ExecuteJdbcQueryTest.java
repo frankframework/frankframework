@@ -1,7 +1,13 @@
 package org.frankframework.management.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -27,6 +33,18 @@ public class ExecuteJdbcQueryTest extends FrankApiTestBase {
 
 	@Test
 	public void executeJdbcQuery() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals("DELETE * WHERE 1", headers.get("meta-query"));
+			assertEquals("test", headers.get("meta-datasourceName"));
+			assertEquals("XML", headers.get("meta-resultType"));
+
+			return msg;
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders.post("/jdbc/query")
 				.content("""
 						{
@@ -42,6 +60,19 @@ public class ExecuteJdbcQueryTest extends FrankApiTestBase {
 
 	@Test
 	public void executeJdbcQueryWithQueryTypeAuto() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals("DELETE * WHERE 1", headers.get("meta-query"));
+			assertEquals("test", headers.get("meta-datasourceName"));
+			assertEquals("XML", headers.get("meta-resultType"));
+			assertEquals("other", headers.get("meta-queryType"));
+
+			return msg;
+		});
+
 		mockMvc.perform(MockMvcRequestBuilders.post("/jdbc/query")
 						.content("""
 						{
@@ -55,5 +86,4 @@ public class ExecuteJdbcQueryTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
-
 }
