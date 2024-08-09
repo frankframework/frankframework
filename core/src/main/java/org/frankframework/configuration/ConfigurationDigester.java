@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +37,7 @@ import org.frankframework.configuration.filters.ElementRoleFilter;
 import org.frankframework.configuration.filters.InitialCapsFilter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
 import org.frankframework.configuration.filters.SkipContainersFilter;
+import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.documentbuilder.xml.XmlTee;
 import org.frankframework.util.AppConstants;
@@ -65,6 +63,10 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -231,7 +233,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new AttributePropertyResolver(handler, properties, getPropsToHide(properties));
 		handler = new XmlTee(digester, handler);
 
-		handler = getStub4TesttoolContentHandler(handler, properties);
+		handler = getStub4TesttoolContentHandler(handler, configuration, properties);
 		handler = getConfigurationCanonicalizer(handler);
 		handler = new OnlyActiveFilter(handler, properties);
 		handler = new ElementPropertyResolver(handler, properties);
@@ -285,9 +287,10 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
-	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, PropertyLoader properties) throws IOException, TransformerConfigurationException {
+	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, IScopeProvider scope, PropertyLoader properties) throws IOException, TransformerConfigurationException {
 		if (properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false)) {
-			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
+			String stubFile = properties.getString(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
+			Resource xslt = Resource.getResource(scope, stubFile);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
 			TransformerFilter filter = tp.getTransformerFilter(null, handler);
