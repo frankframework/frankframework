@@ -87,23 +87,15 @@ public class ParameterValue {
 	 * @return convert the value to a boolean
 	 */
 	public boolean asBooleanValue(boolean defaultValue) {
-		return value != null ? Boolean.parseBoolean(valueAsString()) : defaultValue;
-	}
+		if (value == null) {
+			return defaultValue;
+		}
 
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a byte
-	 */
-	public byte asByteValue(byte defaultValue) {
-		return value != null ? Byte.parseByte(valueAsString()) : defaultValue;
-	}
+		if (value instanceof Boolean b) {
+			return b;
+		}
 
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a double
-	 */
-	public double asDoubleValue(double defaultValue) {
-		return value != null ? Double.parseDouble(valueAsString()) : defaultValue;
+		return Boolean.parseBoolean(valueAsString());
 	}
 
 	/**
@@ -111,7 +103,15 @@ public class ParameterValue {
 	 * @return convert the value to an int
 	 */
 	public int asIntegerValue(int defaultValue) {
-		return value != null ? Integer.parseInt(valueAsString()) : defaultValue;
+		if (value == null) {
+			return defaultValue;
+		}
+
+		if (value instanceof Integer i) {
+			return i;
+		}
+
+		return Integer.parseInt(valueAsString());
 	}
 
 	/**
@@ -120,22 +120,6 @@ public class ParameterValue {
 	 */
 	public long asLongValue(long defaultValue) {
 		return value != null ? Long.parseLong(valueAsString()) : defaultValue;
-	}
-
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a float
-	 */
-	public float asFloatValue(float defaultValue) {
-		return value != null ? Float.parseFloat(valueAsString()) : defaultValue;
-	}
-
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a short
-	 */
-	public short asShortValue(short defaultValue) {
-		return value != null ? Short.parseShort(valueAsString()) : defaultValue;
 	}
 
 	/**
