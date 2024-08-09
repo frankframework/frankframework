@@ -22,7 +22,9 @@ import org.frankframework.filesystem.FileSystemListener;
 import org.frankframework.filesystem.LocalFileSystem;
 
 /**
- * Listener that looks in a FileSystem for files. <code>messageType</code> dictates what information of the file is passed in the message.
+ * Listener that looks for files in a LocalFileSystem. The DirectoryListener keeps track of the file process by storing it in different folders. The application may create the folders if you (a) set the <code>root</code> attribute and (b) set the attribute <code>createFolders</code> to true.
+ 
+ The attribute <code>messageType</code> dictates what information of the file is passed to the pipeline. This may be the name, canonical path, the entire file, or the file's metadata.
  *
  * <p>
  * Example usage:<br>
