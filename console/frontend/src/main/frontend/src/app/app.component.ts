@@ -46,6 +46,7 @@ import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import {
   ClusterMemberEvent,
+  ClusterMemberEventType,
   WebsocketService,
 } from './services/websocket.service';
 import { deepMerge } from './utils';
@@ -406,9 +407,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
       this.websocketService.subscribe<ClusterMemberEvent>(
         '/event/cluster',
-        (clusterMemeberEvent) => {
-          console.log(clusterMemeberEvent);
-        },
+        (clusterMemeberEvent) =>
+          this.updateClusterMembers(
+            clusterMemeberEvent.member,
+            clusterMemeberEvent.type,
+          ),
       );
     });
 
@@ -690,5 +693,17 @@ export class AppComponent implements OnInit, OnDestroy {
       InformationModalComponent,
       this.MODAL_OPTIONS_CLASSES,
     );
+  }
+
+  private updateClusterMembers(
+    member: ClusterMember,
+    action: ClusterMemberEventType,
+  ): void {
+    // TODO If the server keeps sending events twice, check if id still/already exists
+    // On add only if id doesnt exist, on remove only if id exists
+    this.clusterMembers =
+      action === 'ADD_MEMBER'
+        ? [...this.clusterMembers, member]
+        : this.clusterMembers.filter((member) => member.id !== member.id);
   }
 }

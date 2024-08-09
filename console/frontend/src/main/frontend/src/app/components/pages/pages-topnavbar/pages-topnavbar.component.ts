@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
@@ -7,7 +14,7 @@ import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
-import { ClusterMember } from 'src/app/app.service';
+import { AppService, ClusterMember } from 'src/app/app.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -41,6 +48,7 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
   private _subscriptions = new Subscription();
 
   constructor(
+    private appService: AppService,
     private Notification: NotificationService,
     private authService: AuthService,
   ) {}
@@ -53,8 +61,13 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
     this._subscriptions.add(notifCountSub);
   }
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
     this.loggedIn = this.authService.isLoggedIn();
+
+    if (changes['clusterMembers']) {
+      this.selectedClusterMember =
+        this.clusterMembers.find((member) => member.selectedMember) ?? null;
+    }
   }
 
   ngOnDestroy(): void {
@@ -63,5 +76,13 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
 
   resetNotificationCount(): void {
     this.Notification.resetCount();
+  }
+
+  selectClusterMember(): void {
+    if (this.selectedClusterMember) {
+      this.appService
+        .updateSelectedClusterMember(this.selectedClusterMember.id)
+        .subscribe();
+    }
   }
 }

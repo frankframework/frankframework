@@ -61,26 +61,19 @@
           </li>
         </ul>
       </li>
-      <!-- <li class="m-r-sm" ngbDropdown>
-              <a class="count-info" ngbDropdownToggle>CURRENT NODE</a>
-              <ul class="dropdown-alerts" ngbDropdownMenu>
-                <li ngbDropdownItem>NODE 1</li>
-                <li ngbDropdownItem>NODE 2</li>
-                <li ngbDropdownItem>NODE 3</li>
-              </ul>
-            </li> -->
       <li>
         <select
-          class="m-r-sm"
+          class="m-r-sm cluster-member-selector"
           name="selectedClusterMember"
           [(ngModel)]="selectedClusterMember"
+          (ngModelChange)="selectClusterMember()"
         >
           <option
             *ngFor="let member of clusterMembers"
-            [value]="member"
-            [title]="member.id"
+            [ngValue]="member"
+            title="{{ member.name }}&#013;{{ member.id }}"
           >
-            {{ member.name }}
+            {{ member.address }}
           </option>
         </select>
       </li>

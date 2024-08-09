@@ -457,6 +457,12 @@ export class AppService {
     );
   }
 
+  updateSelectedClusterMember(id: string): Observable<object> {
+    return this.http.post(`${this.absoluteApiPath}cluster/members`, {
+      id,
+    });
+  }
+
   getConfigurations(): Observable<Configuration[]> {
     return this.http.get<Configuration[]>(
       `${this.absoluteApiPath}server/configurations`,
