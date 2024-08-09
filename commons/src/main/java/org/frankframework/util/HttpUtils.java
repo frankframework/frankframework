@@ -21,10 +21,9 @@ import java.util.Enumeration;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * Some utilities for working with HTTP.
@@ -67,7 +66,7 @@ public class HttpUtils {
 		String result = "";
 		Enumeration<String> paramnames = request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
-			String paramname = paramnames.nextElement();
+			String paramname = StringEscapeUtils.escapeJava(paramnames.nextElement());
 			if (secLogParamNames == null || secLogParamNames.contains(paramname)) {
 				String paramvalue = request.getParameter(paramname);
 				if (StringUtils.isNotEmpty(paramvalue)) {

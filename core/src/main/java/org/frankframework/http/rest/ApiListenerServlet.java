@@ -26,12 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import com.nimbusds.jose.util.JSONObjectUtils;
+
 import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -41,6 +37,10 @@ import jakarta.json.stream.JsonGenerator;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
@@ -144,7 +144,8 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		String uri = request.getPathInfo();
-		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
+		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}",
+				uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+ StringEscapeUtils.escapeJava(remoteUser) +"]" : ""));
 
 		if (uri == null) {
 			response.setStatus(400);
@@ -656,7 +657,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					List<String> logValueList = valueList.stream()
 							.map(StringEscapeUtils::escapeJava)
 							.collect(Collectors.toList());
-					LOG.trace("setting queryParameter [{}] to {}", paramName, logValueList);
+					LOG.trace("setting queryParameter [{}] to {}", StringEscapeUtils.escapeJava(paramName), logValueList);
 				}
 				params.put(paramName, valueList);
 			}
