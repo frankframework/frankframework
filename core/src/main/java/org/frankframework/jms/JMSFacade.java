@@ -331,7 +331,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					log.trace("Closing messaging source - will synchronize (lock) on {}", messagingSource::toString);
 					messagingSource.close();
 				} catch (IbisException e) {
-					log.warn("{} caught exception closing messaging source", e);
+					log.warn("caught exception closing messaging source", e);
 				} finally {
 					log.trace("Messaging source closed - lock on {} released", messagingSource::toString);
 				}
