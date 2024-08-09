@@ -79,6 +79,18 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(FILEPATH_KEY);
 	}
 
+	public interface IMessageType {
+		String name();
+	}
+
+	public enum MessageType implements IMessageType {
+		NAME,
+		PATH,
+		CONTENTS,
+		INFO,
+		ATTRIBUTE;
+	}
+
 	private @Getter String name;
 	private @Getter String inputFolder;
 	private @Getter String inProcessFolder;
@@ -92,7 +104,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter boolean overwrite = false;
 	private @Getter int numberOfBackups=0;
 	private @Getter boolean fileTimeSensitive=false;
-	private @Getter String messageType="path";
+	private @Getter @Setter IMessageType messageType = MessageType.PATH;
 	private @Getter String messageIdPropertyKey = null;
 	private @Getter String storeMetadataInSessionKey;
 
@@ -100,6 +112,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter String wildcard;
 	private @Getter String excludeWildcard;
 	private @Getter String charset;
+	private @Getter String searchKey;
 
 	private @Getter long minStableTime = 1000;
 	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
@@ -304,28 +317,25 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		log.debug("Extract message from raw message");
 		try {
 			F file = rawMessage.getRawMessage();
-			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
-				return new Message(getFileSystem().getName(file));
-			}
-			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("path")) {
-				return new Message(getFileSystem().getCanonicalName(file));
-			}
-			if (getMessageType().equalsIgnoreCase("contents")) {
-				return getFileSystem().readFile(file, getCharset());
-			}
-			if (getMessageType().equalsIgnoreCase("info")) {
-				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), file, getOutputFormat()));
-			}
 
-			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(file);
-			if (attributes != null) {
-				Object result = attributes.get(getMessageType());
-				if (result != null) {
-					return Message.asMessage(result);
+			return switch (getMessageType().name()) {
+				case "NAME" -> new Message(getFileSystem().getName(file));
+				case "PATH" -> new Message(getFileSystem().getCanonicalName(file));
+				case "CONTENTS" -> getFileSystem().readFile(file, getCharset());
+				case "INFO" -> new Message(FileSystemUtils.getFileInfo(getFileSystem(), file, getOutputFormat()));
+				case "ATTRIBUTE", "HEADER" -> {
+					Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(file);
+					if (attributes != null) {
+						Object result = attributes.get(getSearchKey());
+						if (result != null) {
+							yield Message.asMessage(result);
+						}
+					}
+					log.warn("no attribute [{}] found for file [{}]", getMessageType(), getFileSystem().getName(file));
+					yield null;
 				}
-			}
-			log.warn("no attribute [{}] found for file [{}]", getMessageType(), getFileSystem().getName(file));
-			return null;
+				default -> throw new ListenerException("Unknown messageType [" + getMessageType().name() + "]");
+			};
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -530,14 +540,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	/**
-	 * Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used
-	 * @ff.default path
-	 */
-	public void setMessageType(String messageType) {
-		this.messageType = messageType;
-	}
-
-	/**
 	 * If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before
 	 * @ff.default false
 	 */
@@ -596,4 +598,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}
+
+	/** Searches for the searchKey in the attributes or headers when the messageType is <code>ATTRIBUTE</code> or <code>HEADER</code> */
+	public void setSearchKey(String searchKey) {
+		this.searchKey = searchKey;
+	}
+
 }

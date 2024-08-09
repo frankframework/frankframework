@@ -27,4 +27,12 @@ public class Samba2Listener extends FileSystemListener<SmbFileRef, Samba2FileSys
 		return new Samba2FileSystem();
 	}
 
+	/**
+	 * Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using <code>ATTRIBUTE</code>
+	 * @ff.default PATH
+	 */
+	public void setMessageType(MessageType messageType) {
+		super.setMessageType(messageType);
+	}
+
 }
