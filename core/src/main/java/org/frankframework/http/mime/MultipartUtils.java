@@ -18,15 +18,9 @@ package org.frankframework.http.mime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.http.InputStreamDataSource;
-import org.frankframework.http.PartMessage;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
-import org.frankframework.util.XmlBuilder;
 
 import jakarta.annotation.Nullable;
 import jakarta.mail.BodyPart;
@@ -35,6 +29,17 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Part;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.soap.AttachmentPart;
+import jakarta.xml.soap.SOAPException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.http.InputStreamDataSource;
+import org.frankframework.http.PartMessage;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.util.MessageUtils;
+import org.frankframework.util.XmlBuilder;
+
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -76,16 +81,27 @@ public abstract class MultipartUtils {
 		return null;
 	}
 
+	@Nullable
+	public static String getFileName(Part part) throws MessagingException {
+		String[] cd = part.getHeader("Content-Disposition");
+		return getFileName(cd);
+	}
+
+	@Nullable
+	public static String getFileName(AttachmentPart attachmentPart) {
+		String[] cd = attachmentPart.getMimeHeader("Content-Disposition");
+		return getFileName(cd);
+	}
+
 	/**
 	 * Check for the filename in the <code>Content-Disposition</code> header.
 	 * Eg. Content-Disposition form-data; name="file"; filename="dummy.jpg"
 	 * Eg. Content-Disposition attachment; filename="dummy.jpg"
 	 */
 	@Nullable
-	public static String getFileName(Part part) throws MessagingException {
-		String[] cd = part.getHeader("Content-Disposition");
-		if(cd != null) {
-			String cdFields = cd[0];
+	private static String getFileName(String[] contentDispositionHeader) {
+		if(contentDispositionHeader != null) {
+			String cdFields = contentDispositionHeader[0];
 			if (cdFields.startsWith(FORM_DATA) || cdFields.startsWith(ATTACHMENT)) {
 				String filename = parseParameterField(cdFields, "filename");
 				if(StringUtils.isNotEmpty(filename)) {
@@ -134,6 +150,24 @@ public abstract class MultipartUtils {
 			}
 		} catch (MessagingException e) {
 			log.warn("unable to determine if part [{}] is binary", part, e);
+		}
+		return false;
+	}
+
+	private static boolean isBinary(AttachmentPart part) {
+		//Check if a filename is present (indicating it's a file and not a field)
+		String filename = getFileName(part);
+		if(filename != null) {
+			return true;
+		}
+
+		//Check if the transfer encoding has been set when MTOM
+		String[] cte = part.getMimeHeader("Content-Transfer-Encoding");
+		if(cte != null) {
+			String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
+			if("binary".equalsIgnoreCase(cteFields)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -203,5 +237,41 @@ public abstract class MultipartUtils {
 		} else {
 			return contentType;
 		}
+	}
+
+	public static MultipartMessages parseMultipart(Iterator<AttachmentPart> attachmentParts) {
+		final XmlBuilder attachments = new XmlBuilder("parts");
+		final Map<String, Message> parts = new LinkedHashMap<>();
+		while (attachmentParts.hasNext()) {
+			try {
+				AttachmentPart attachmentPart = attachmentParts.next();
+				final String fieldName = attachmentPart.getContentId();
+				if(StringUtils.isEmpty(fieldName)) {
+					log.info("unable to determine fieldname skipping part");
+					continue;
+				}
+
+				Message message = new Message(attachmentPart.getRawContentBytes(), MessageUtils.getContext(attachmentPart.getAllMimeHeaders()));
+
+				XmlBuilder attachment = new XmlBuilder("attachment");
+				attachment.addAttribute("name", fieldName);
+				parts.put(fieldName, message);
+
+				final String fileName = getFileName(attachmentPart);
+				log.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
+
+				attachment.addAttribute("type", isBinary(attachmentPart) ? "file" : "text");
+				attachment.addAttribute("filename", fileName);
+				attachment.addAttribute("size", message.size());
+				attachment.addAttribute("sessionKey", fieldName);
+				attachment.addAttribute("mimeType", extractMimeType(attachmentPart.getContentType()));
+				attachments.addSubElement(attachment);
+
+			} catch (SOAPException e) {
+				log.warn("Could not store attachment in session key", e);
+			}
+		}
+
+		return new MultipartMessages(attachments.asMessage(), parts);
 	}
 }
