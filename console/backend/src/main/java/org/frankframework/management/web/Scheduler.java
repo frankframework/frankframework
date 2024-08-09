@@ -18,12 +18,11 @@ package org.frankframework.management.web;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
+import org.frankframework.web.AllRolesAllowed;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,14 +36,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Scheduler extends FrankApiBase {
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("schedules")
 	@GetMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedules() {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.GET));
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("schedules")
 	@GetMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedule(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName) {
@@ -80,17 +79,14 @@ public class Scheduler extends FrankApiBase {
 	@Relation("schedules")
 	@PostMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createSchedule(ScheduleMultipartBody multipartBody) {
-		String jobGroupName = RequestUtils.resolveRequiredProperty("group", multipartBody.getGroup(), null);
+		String jobGroupName = RequestUtils.resolveRequiredProperty("group", multipartBody.group(), null);
 		return createSchedule(jobGroupName, multipartBody);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateSchedule(
-			@PathVariable("groupName") String groupName,
-			@PathVariable("jobName") String jobName,
-			ScheduleMultipartBody multipartBody
-	) {
+	public ResponseEntity<?> updateSchedule(@PathVariable("groupName") String groupName, @PathVariable("jobName") String jobName,
+											ScheduleMultipartBody multipartBody) {
 		return createSchedule(groupName, jobName, multipartBody, true);
 	}
 
@@ -102,7 +98,7 @@ public class Scheduler extends FrankApiBase {
 	}
 
 	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartBody input) {
-		String jobName = RequestUtils.resolveRequiredProperty("name", input.getName(), null);
+		String jobName = RequestUtils.resolveRequiredProperty("name", input.name(), null);
 		return createSchedule(groupName, jobName, input, false);
 	}
 
@@ -111,21 +107,21 @@ public class Scheduler extends FrankApiBase {
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 
-		builder.addHeader("cron", RequestUtils.resolveRequiredProperty("cron", multipartBody.getCron(), ""));
-		builder.addHeader("interval", RequestUtils.resolveRequiredProperty("interval", multipartBody.getInterval(), -1));
+		builder.addHeader("cron", RequestUtils.resolveRequiredProperty("cron", multipartBody.cron(), ""));
+		builder.addHeader("interval", RequestUtils.resolveRequiredProperty("interval", multipartBody.interval(), -1));
 
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, RequestUtils.resolveRequiredProperty("adapter", multipartBody.getAdapter(), null));
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, RequestUtils.resolveRequiredProperty("receiver", multipartBody.getReceiver(), ""));
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.getConfiguration(), ""));
-		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", multipartBody.getListener(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, RequestUtils.resolveRequiredProperty("adapter", multipartBody.adapter(), null));
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, RequestUtils.resolveRequiredProperty("receiver", multipartBody.receiver(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.configuration(), ""));
+		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", multipartBody.listener(), ""));
 
-		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.isPersistent(), false));
-		builder.addHeader("locker", RequestUtils.resolveRequiredProperty("locker", multipartBody.isLocker(), false));
-		builder.addHeader("lockkey", RequestUtils.resolveRequiredProperty("lockkey", multipartBody.getLockkey(), "lock4[" + jobName + "]"));
+		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.persistent(), false));
+		builder.addHeader("locker", RequestUtils.resolveRequiredProperty("locker", multipartBody.locker(), false));
+		builder.addHeader("lockkey", RequestUtils.resolveRequiredProperty("lockkey", multipartBody.lockkey(), "lock4[" + jobName + "]"));
 
-		builder.addHeader("message", RequestUtils.resolveRequiredProperty("message", multipartBody.getMessage(), null));
+		builder.addHeader("message", RequestUtils.resolveRequiredProperty("message", multipartBody.message(), null));
+		builder.addHeader("description", RequestUtils.resolveRequiredProperty("description", multipartBody.description(), null));
 
-		builder.addHeader("description", RequestUtils.resolveRequiredProperty("description", multipartBody.getDescription(), null));
 		if (overwrite) {
 			builder.addHeader("overwrite", overwrite);
 		}
@@ -143,23 +139,19 @@ public class Scheduler extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@Getter
-	@Setter
-	public static class ScheduleMultipartBody {
-		private String name;
-		private String group;
-
-		private String cron;
-		private Integer interval;
-		private String adapter;
-		private String receiver;
-		private String configuration;
-		private String listener;
-		private String lockkey;
-		private String message;
-		private String description;
-		private boolean persistent;
-		private boolean locker;
+	public record ScheduleMultipartBody(
+			String name,
+			String group,
+			String cron,
+			Integer interval,
+			String adapter,
+			String receiver,
+			String configuration,
+			String listener,
+			String lockkey,
+			String message,
+			String description,
+			Boolean persistent,
+			Boolean locker) {
 	}
-
 }

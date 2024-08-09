@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.web;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.web.configuration.DeprecationInterceptor;
 import org.frankframework.util.ResponseUtils;
@@ -25,9 +27,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
-
-import jakarta.annotation.Nonnull;
-import lombok.Getter;
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 

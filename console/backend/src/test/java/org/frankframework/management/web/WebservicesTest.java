@@ -33,4 +33,24 @@ public class WebservicesTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string(jsonString));
 	}
+
+	@Test
+	public void getOpenApiSpec() throws Exception {
+		testActionAndTopicHeaders("/webservices/openapi.json", "WEBSERVICES", "DOWNLOAD");
+	}
+
+	@Test
+	public void getWsdl() throws Exception {
+		testActionAndTopicHeaders("/webservices/configuration/resourceName", "WEBSERVICES", "DOWNLOAD");
+	}
+
+	@Test
+	public void getWsdlWithEmptyResourceName() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/webservices/configuration/.wsdl"))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("error").value("no adapter specified"));
+	}
+
+
 }

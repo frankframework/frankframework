@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -30,8 +31,6 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-
-import jakarta.annotation.Nullable;
 
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();

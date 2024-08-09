@@ -40,20 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class SendJmsMessage extends FrankApiBase {
 
-	public record JmsMessageModel(
-			boolean persistent,
-			boolean synchronous,
-			boolean lookupDestination,
-			String destination,
-			String replyTo,
-			String property,
-			String type,
-			String connectionFactory,
-			String encoding,
-			MultipartFile message,
-			MultipartFile file) {
-	}
-
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Relation("jms")
@@ -120,7 +106,6 @@ public class SendJmsMessage extends FrankApiBase {
 		return synchronous ? callSyncGateway(builder) : callAsyncGateway(builder);
 	}
 
-
 	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
@@ -146,4 +131,17 @@ public class SendJmsMessage extends FrankApiBase {
 		archive.close();
 	}
 
+	public record JmsMessageModel(
+			boolean persistent,
+			boolean synchronous,
+			boolean lookupDestination,
+			String destination,
+			String replyTo,
+			String property,
+			String type,
+			String connectionFactory,
+			String encoding,
+			MultipartFile message,
+			MultipartFile file) {
+	}
 }

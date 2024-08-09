@@ -30,6 +30,10 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 public class ResponseUtils {
 
+	private ResponseUtils() {
+		// don't construct utility class
+	}
+
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message) {
 		return convertToSpringResponse(message, null);
 	}
@@ -53,7 +57,7 @@ public class ResponseUtils {
 		ResponseEntity.BodyBuilder responseEntity = ResponseEntity.status(status);
 		HttpHeaders httpHeaders = new HttpHeaders();
 
-		if(mimeType != null) {
+		if (mimeType != null) {
 			httpHeaders.setContentType(MediaType.valueOf(mimeType));
 		}
 
@@ -65,7 +69,7 @@ public class ResponseUtils {
 		responseEntity.headers(httpHeaders);
 
 		if (status == 200 || status > 204) {
-			if(response != null) {
+			if (response != null) {
 				return responseEntity.body(response);
 			}
 			return responseEntity.body(message.getPayload());
@@ -76,9 +80,9 @@ public class ResponseUtils {
 
 	public static String parseAsString(Message<?> message) {
 		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
-		if(mimeType != null) {
+		if (mimeType != null) {
 			MediaType mime = MediaType.valueOf(mimeType);
-			if(MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mime) || MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mime)) {
+			if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mime) || MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mime)) {
 				return (String) message.getPayload();
 			}
 		}

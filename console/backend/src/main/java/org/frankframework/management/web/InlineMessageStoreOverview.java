@@ -15,8 +15,8 @@
 */
 package org.frankframework.management.web;
 
-import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.web.AllRolesAllowed;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class InlineMessageStoreOverview extends FrankApiBase {
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllRolesAllowed
 	@Relation("messagebrowser")
 	@Description("view available messagebrowsers")
 	@GetMapping(value = "inlinestores/overview", produces = MediaType.APPLICATION_JSON_VALUE)

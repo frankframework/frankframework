@@ -44,18 +44,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class TestPipeline extends FrankApiBase {
 
-	public record TestPipeLineModel(
-			String configuration,
-			String adapter,
-			String sessionKeys,
-			String encoding,
-			MultipartFile message,
-			MultipartFile file) {
-	}
-
-	public record TestPipeLineResponse(String result, String state, String message) {
-	}
-
 	@RolesAllowed("IbisTester")
 	@Relation("testing")
 	@Description("send a message to an Adapters pipeline, bypassing the receiver")
@@ -136,4 +124,18 @@ public class TestPipeline extends FrankApiBase {
 		return result.toString();
 	}
 
+	public record TestPipeLineModel(
+			String configuration,
+			String adapter,
+			String sessionKeys,
+			String encoding,
+			MultipartFile message,
+			MultipartFile file) {
+	}
+
+	public record TestPipeLineResponse(
+			String result,
+			String state,
+			String message) {
+	}
 }

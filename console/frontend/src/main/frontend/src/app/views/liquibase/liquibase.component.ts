@@ -45,7 +45,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   }
 
   download(): void {
-    window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase/`);
+    window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase`);
   }
 
   submit(formData: Form): void {

@@ -2,13 +2,9 @@ package org.frankframework.management.web;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -62,17 +58,8 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 
 	@Test
 	public void testResendReceiverMessage() throws Exception {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
-			Message<String> msg = i.getArgument(0);
-			Map<String, Object> headers = new HashMap<>(msg.getHeaders());
-			return new JsonMessage(headers);
-		});
-
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/configuration/adapters/adapterName/receivers/receiverName/stores/Error/messages/1"))
 				.andExpect(MockMvcResultMatchers.status().isOk());
-//				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-//				.andExpect(MockMvcResultMatchers.jsonPath("topic").value("MESSAGE_BROWSER"))
-//				.andExpect(MockMvcResultMatchers.jsonPath("action").value("STATUS"));
 	}
 
 	@Test
@@ -82,6 +69,19 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 								new MockPart("messageIds", "1,2,3".getBytes())
 						))
 				.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	public void testResendReceiverMessagesWithErrors() throws Exception {
+		Mockito.doThrow(new RuntimeException("Test Exception")).when(outputGateway).sendAsyncMessage(Mockito.any(Message.class));
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
+						.part(
+								new MockPart("messageIds", "1,2,3".getBytes())
+						))
+				.andExpect(MockMvcResultMatchers.status().isAccepted())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.content().string("[ \"Test Exception\", \"Test Exception\", \"Test Exception\" ]"));
 	}
 
 	@Test
@@ -106,6 +106,18 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 								new MockPart("messageIds", "1,2,3".getBytes())
 						))
 				.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	public void testDeleteReceiverMessagesWithErrors() throws Exception {
+		Mockito.doThrow(new RuntimeException("Test Exception")).when(outputGateway).sendAsyncMessage(Mockito.any(Message.class));
+		mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.DELETE, "/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
+						.part(
+								new MockPart("messageIds", "1,2,3".getBytes())
+						))
+				.andExpect(MockMvcResultMatchers.status().isAccepted())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.content().string("[ \"Test Exception\", \"Test Exception\", \"Test Exception\" ]"));
 	}
 
 }

@@ -36,12 +36,68 @@ public class MonitorsTest extends FrankApiTestBase {
 
 	@Test
 	public void testGetMonitors() throws Exception {
-		this.testActionAndTopicHeaders("/configurations/{configuration}/monitors/", "MONITORING", "GET", "TestConfiguration");
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testGetMonitor() throws Exception {
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/monitorName", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testGetTriggers() throws Exception {
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/monitorName/triggers", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testGetTrigger() throws Exception {
+		this.testActionAndTopicHeaders("/configurations/configurationName/monitors/monitorName/triggers/1", "MONITORING", "GET", "TestConfiguration");
+	}
+
+	@Test
+	void testDeleteMonitor() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertAll(
+					() -> assertEquals("DELETE", in.getHeaders().get("action")),
+					() -> assertEquals("MONITORING", in.getHeaders().get("topic")),
+					() -> assertEquals("configurationName", in.getHeaders().get("meta-configuration"))
+			);
+			return in;
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName"))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+	}
+
+	@Test
+	void testDeleteTrigger() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertAll(
+					() -> assertEquals("DELETE", in.getHeaders().get("action")),
+					() -> assertEquals("MONITORING", in.getHeaders().get("topic")),
+					() -> assertEquals("configurationName", in.getHeaders().get("meta-configuration"))
+			);
+			return in;
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName/triggers/1"))
+				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
 	public void testAddMonitor() throws Exception {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(new DefaultSuccessAnswer());
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+			assertAll(
+					() -> assertEquals("UPLOAD", in.getHeaders().get("action")),
+					() -> assertEquals("MONITORING", in.getHeaders().get("topic")),
+					() -> assertEquals("TestConfiguration", in.getHeaders().get("meta-configuration"))
+			);
+			return in;
+		});
+
 		String jsonInput = "{ \"type\":\"FUNCTIONAL\", \"monitor\":\"MonitorName\", \"destinations\": [\"one\",\"two\",\"three\" ]}";
 
 		mockMvc.perform(MockMvcRequestBuilders
@@ -50,12 +106,7 @@ public class MonitorsTest extends FrankApiTestBase {
 					.accept(MediaType.APPLICATION_JSON)
 					.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpectAll(
-						jsonPath("type").value("FUNCTIONAL"),
-						jsonPath("destinations").value(contains("one", "two", "three")),
-						jsonPath("name").value("MonitorName")
-				);
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
 
 	@Test
@@ -122,7 +173,7 @@ public class MonitorsTest extends FrankApiTestBase {
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
 
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-						.put("/configurations/{configuration}/monitors/{monitorName}", "TestConfiguration", "monitorName")
+						.put("/configurations/{configuration}/monitors/{monitorName}/triggers/1", "TestConfiguration", "monitorName")
 						.content(jsonInput)
 						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
