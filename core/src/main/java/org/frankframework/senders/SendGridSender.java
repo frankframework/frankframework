@@ -108,7 +108,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 				Response response = sendGrid.api(request);
 				log.debug("SendGrid mail result: [{}]", response::getBody);
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+				throw new SenderException("exception sending mail with subject [" + mail.getSubject() + "]", e);
 			}
 		} else {
 			log.debug("no recipients left after whitelisting, mail is not send");

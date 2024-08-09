@@ -359,7 +359,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		if (!incrementCountThreads()) {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error("{}{}", getLogPrefix(), msg);
+			log.error(msg);
 			return;
 		}
 		try {
@@ -370,7 +370,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
 						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-						log.error("{}{}", getLogPrefix(), e.getMessage());
+						log.error(e.getMessage());
 					}
 					if (objectId!=null) {
 						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
@@ -379,7 +379,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 							runJob();
 						} finally {
 							if (tg.cancel()) {
-								log.error("{}thread has been interrupted", getLogPrefix());
+								log.error("thread has been interrupted");
 							}
 						}
 						try {
@@ -387,7 +387,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						} catch (Exception e) {
 							String msg = "error while removing lock: " + e.getMessage();
 							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-							log.warn("{}{}", getLogPrefix(), msg);
+							log.warn(msg);
 						}
 					} else {
 						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
@@ -413,7 +413,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		} catch (Exception e) {
 			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error("{}{}", getLogPrefix(), msg, e);
+			log.error(msg, e);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -424,10 +424,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	protected IbisManager getIbisManager() {
 		return getApplicationContext().getBean(IbisManager.class);
-	}
-
-	protected String getLogPrefix() {
-		return "Job ["+getName()+"] ";
 	}
 
 	@Override

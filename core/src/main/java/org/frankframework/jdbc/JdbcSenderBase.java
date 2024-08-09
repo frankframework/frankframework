@@ -111,7 +111,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 				connection.close();
 			}
 		} catch (SQLException e) {
-			log.warn("{}caught exception stopping sender", getLogPrefix(), e);
+			log.warn("caught exception stopping sender", e);
 		} finally {
 			connection = null;
 			super.close();

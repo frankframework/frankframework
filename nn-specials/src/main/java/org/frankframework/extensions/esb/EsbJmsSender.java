@@ -45,7 +45,7 @@ public class EsbJmsSender extends JmsSender {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
-			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
+			throw new ConfigurationException("messageProtocol must be set");
 		}
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -54,7 +54,7 @@ public class EsbJmsSender extends JmsSender {
 			setSynchronous(true);
 		} else {
 			if (getReplyToName() != null) {
-				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
+				throw new ConfigurationException("replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
 		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || !paramList.hasParameter("SoapAction"))) {

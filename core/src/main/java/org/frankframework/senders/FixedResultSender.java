@@ -109,9 +109,9 @@ public class FixedResultSender extends SenderWithParametersBase {
 			try{
 				result = transformerPool.transform(result);
 			} catch (IOException | TransformerException e) {
-				throw new SenderException(getLogPrefix()+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new SenderException("got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			} catch (SAXException se) {
-				throw new SenderException(getLogPrefix()+"got error converting string [" + result + "] to source", se);
+				throw new SenderException("got error converting string [" + result + "] to source", se);
 			}
 		}
 		log.debug("returning fixed result [{}]", result);

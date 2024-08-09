@@ -101,26 +101,26 @@ public class NetStorageSender extends HttpSenderBase {
 
 		//Safety checks
 		if(getAction() == null)
-			throw new ConfigurationException(getLogPrefix()+"action must be specified");
+			throw new ConfigurationException("action must be specified");
 
 		if(getCpCode() == null)
-			throw new ConfigurationException(getLogPrefix()+"cpCode must be specified");
+			throw new ConfigurationException("cpCode must be specified");
 		if(!getUrl().startsWith("http"))
-			throw new ConfigurationException(getLogPrefix()+"url must be start with http(s)");
+			throw new ConfigurationException("url must be start with http(s)");
 
 		if(getSignVersion() < 3 || getSignVersion() > 5)
-			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
+			throw new ConfigurationException("signVersion must be either 3, 4 or 5");
 
 
 		ParameterList parameterList = getParameterList();
 		if(getAction() == Action.UPLOAD && !parameterList.hasParameter(FILE_PARAM_KEY)) {
-			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
+			throw new ConfigurationException("the upload action requires a file parameter to be present");
 		}
 		if(getAction() == Action.RENAME && !parameterList.hasParameter(DESTINATION_PARAM_KEY)) {
-			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
+			throw new ConfigurationException("the rename action requires a destination parameter to be present");
 		}
 		if(getAction() == Action.MTIME && !parameterList.hasParameter(MTIME_PARAM_KEY)) {
-			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
+			throw new ConfigurationException("the mtime action requires a mtime parameter to be present");
 		}
 
 		//check if md5/sha1/sha256 -> geef deprecated warning + parse hashAlgorithme
@@ -217,7 +217,7 @@ public class NetStorageSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
-			throw new SenderException(getLogPrefix() + "httpstatus "
+			throw new SenderException("httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
 					+ " body: " + getResponseBodyAsString(responseHandler, false));
 		}

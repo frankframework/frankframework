@@ -79,24 +79,24 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		try {
 			Resource exceptionLogResource = Resource.getResource(this, exceptionLogString);
 			if (exceptionLogResource == null) {
-				throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet [" + exceptionLogString + "]");
+				throw new ConfigurationException("cannot find stylesheet [" + exceptionLogString + "]");
 			}
 			exceptionLogTp = TransformerPool.getInstance(exceptionLogResource, 2);
 		} catch (IOException e) {
-			throw new ConfigurationException(getLogPrefix() + "cannot retrieve [" + exceptionLogString + "]", e);
+			throw new ConfigurationException("cannot retrieve [" + exceptionLogString + "]", e);
 		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + exceptionLogString + "]", te);
+			throw new ConfigurationException("got error creating transformer from file [" + exceptionLogString + "]", te);
 		}
 		try {
 			Resource auditLogResource =Resource.getResource(this, auditLogString);
 			if (auditLogResource == null) {
-				throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet [" + auditLogString + "]");
+				throw new ConfigurationException("cannot find stylesheet [" + auditLogString + "]");
 			}
 			auditLogTp = TransformerPool.getInstance(auditLogResource, 2);
 		} catch (IOException e) {
-			throw new ConfigurationException(getLogPrefix() + "cannot retrieve [" + auditLogString + "]", e);
+			throw new ConfigurationException("cannot retrieve [" + auditLogString + "]", e);
 		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + auditLogString + "]", te);
+			throw new ConfigurationException("got error creating transformer from file [" + auditLogString + "]", te);
 		}
 	}
 
@@ -111,14 +111,14 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			try {
 				exceptionLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for exceptionLog", e);
+				throw new ListenerException("cannot start TransformerPool for exceptionLog", e);
 			}
 		}
 		if (auditLogTp != null) {
 			try {
 				auditLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for auditLog", e);
+				throw new ListenerException("cannot start TransformerPool for auditLog", e);
 			}
 		}
 	}
@@ -141,16 +141,16 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
 			String logRequest;
 			if ("E".equalsIgnoreCase(getType())) {
-				log.debug("{}creating exceptionLog request", getLogPrefix());
+				log.debug("creating exceptionLog request");
 				logRequest = exceptionLogTp.transform("<dummy/>", parameterValues, true);
 			} else {
-				log.debug("{}creating auditLog request", getLogPrefix());
+				log.debug("creating auditLog request");
 				logRequest = auditLogTp.transform("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
 			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));
 			String returnMessage = send(session, getDestination(), msg);
-			log.debug("{}sent message [{}] to [{}] msgID [{}] correlationID [{}]", getLogPrefix(), logRequest, getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID());
+			log.debug("sent message [{}] to [{}] msgID [{}] correlationID [{}]", logRequest, getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID());
 			return returnMessage;
 		} catch (Exception e) {
 			throw new SenderException(e);

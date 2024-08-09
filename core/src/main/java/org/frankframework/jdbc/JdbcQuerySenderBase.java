@@ -173,7 +173,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			columnsReturnedList = getColumnsReturned().trim().split("\\s*,+\\s*");
 		}
 		if (getBatchSize()>0 && getQueryType() != QueryType.OTHER) {
-			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");
+			throw new ConfigurationException("batchSize>0 only valid for queryType 'other'");
 		}
 	}
 
@@ -202,7 +202,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			return query;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("{}converting query [{}] from [{}] to [{}]", this::getLogPrefix, query::trim, this::getSqlDialect, () -> getDbmsSupport().getDbmsName());
+			log.debug("converting query [{}] from [{}] to [{}]", query::trim, this::getSqlDialect, () -> getDbmsSupport().getDbmsName());
 		}
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
@@ -222,7 +222,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			adaptedQuery = getDbmsSupport().prepareQueryTextForNonLockingRead(adaptedQuery);
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("{}preparing statement for query [{}]", getLogPrefix(), adaptedQuery);
+			log.debug("preparing statement for query [{}]", adaptedQuery);
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned != null) {
@@ -243,7 +243,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
-		log.debug("{}preparing statement for query [{}]", this::getLogPrefix, () -> callQuery);
+		log.debug("preparing statement for query [{}]", () -> callQuery);
 		CallableStatement callableStatement = con.prepareCall(callQuery);
 		callableStatement.setQueryTimeout(getTimeout());
 		return callableStatement;
@@ -259,9 +259,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		log.debug("{}obtaining prepared statement to execute", getLogPrefix());
+		log.debug("obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, query, getQueryType());
-		log.debug("{}obtained prepared statement to execute", getLogPrefix());
+		log.debug("obtained prepared statement to execute");
 		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
 			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
@@ -285,7 +285,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			try {
 				connection.close();
 			} catch (SQLException e) {
-				log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
+				log.warn(new SenderException("caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 			}
 		}
 	}
@@ -296,13 +296,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				statement.executeBatch();
 			}
 		} catch (SQLException e) {
-			log.warn("{}got exception closing SQL statement", getLogPrefix(), e);
+			log.warn("got exception closing SQL statement", e);
 		}
 		//noinspection EmptyTryBlock
 		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {
-			log.warn("{}got exception closing result SQL statement", getLogPrefix(), e);
+			log.warn("got exception closing result SQL statement", e);
 		}
 	}
 
@@ -361,7 +361,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			throw new SenderException(e);
 		} catch (Throwable t) {
-			throw new SenderException(getLogPrefix() + "got exception sending message", t);
+			throw new SenderException("got exception sending message", t);
 		} finally {
 			closeStatementSet(queryExecutionContext);
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
@@ -375,22 +375,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	private void closeParameterInputStream(IParameter param, Message message, PipeLineSession session) {
-		log.debug("{}Closing inputstream for parameter [{}]", this::getLogPrefix, param::getName);
+		log.debug("Closing inputstream for parameter [{}]", param::getName);
 		try {
 			Object object = param.getValue(null, message, session, true);
 			if (object instanceof AutoCloseable closeable) {
 				closeable.close();
 			} else {
-				log.error("{}unable to auto-close parameter [{}]", this::getLogPrefix, param::getName);
+				log.error("unable to auto-close parameter [{}]", param::getName);
 			}
 		} catch (Exception e) {
-			log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
+			log.warn(new SenderException("got exception closing inputstream", e));
 		}
 	}
 
 	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) {
 		if (log.isDebugEnabled()) {
-			log.debug("{}Adjusting list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
+			log.debug("Adjusting list of parameters [{}]", ()->parameterListToString(parameterList));
 		}
 
 		StringBuilder buffer = new StringBuilder();
@@ -410,7 +410,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			int endPos = query.indexOf(UNP_END, startPos + UNP_START.length());
 
 			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn("{}Found a start delimiter without an end delimiter at position [{}] in [{}]", getLogPrefix(), startPos, query);
+				log.warn("Found a start delimiter without an end delimiter at position [{}] in [{}]", startPos, query);
 				buffer.append(messageChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {
@@ -421,7 +421,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					buffer.append("?");
 					copyFrom = endPos + UNP_END.length();
 				} else {
-					log.warn("{}Parameter [{}] is not found", getLogPrefix(), namedParam);
+					log.warn("Parameter [{}] is not found", namedParam);
 					buffer.append(messageChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				}
@@ -431,7 +431,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
 
 		if (log.isDebugEnabled()) {
-			log.debug( "{}Adjusted list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
+			log.debug( "Adjusted list of parameters [{}]", ()->parameterListToString(parameterList));
 		}
 
 		return buffer.toString();
@@ -458,7 +458,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
 				if(numberOfColumns > 1) {
-					log.warn("{}has set scalar=true but the resultset contains [{}] columns. Consider optimizing the query.", getLogPrefix(), numberOfColumns);
+					log.warn("has set scalar=true but the resultset contains [{}] columns. Consider optimizing the query.", numberOfColumns);
 				}
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
 					if (response!=null) {
@@ -507,7 +507,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 				if (resultset.next()) {
-					log.warn("{}has set scalar=true but the query returned more than 1 row. Consider optimizing the query.", getLogPrefix());
+					log.warn("has set scalar=true but the query returned more than 1 row. Consider optimizing the query.");
 				}
 			} else if (isScalarExtended()) {
 					result="[absent]";
@@ -547,7 +547,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 
 	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException {
-		log.debug("{}executing an update BLOB command", getLogPrefix());
+		log.debug("executing an update BLOB command");
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
 		JdbcUtil.warningsToXml(statement.getWarnings(),result);
@@ -578,13 +578,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			}
 		} catch (SQLException|JdbcException|IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command", e);
+			throw new SenderException("got exception executing an update BLOB command", e);
 		}
 		return blobOutputStream.getWarnings().asMessage();
 	}
 
 	private ClobWriter getClobWriter(PreparedStatement statement, int clobColumn) throws SQLException, JdbcException {
-		log.debug("{}executing an update CLOB command", getLogPrefix());
+		log.debug("executing an update CLOB command");
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
 		JdbcUtil.warningsToXml(statement.getWarnings(),result);
@@ -612,7 +612,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			}
 		} catch (SQLException|JdbcException|IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command", e);
+			throw new SenderException("got exception executing an update CLOB command", e);
 		}
 		return clobWriter.getWarnings().asMessage();
 	}
@@ -627,16 +627,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
 
-			log.debug("{}executing a SELECT SQL command", getLogPrefix());
+			log.debug("executing a SELECT SQL command");
 			try (ResultSet resultset = statement.executeQuery()) {
 				if (getStartRow()>1) {
 					resultset.absolute(getStartRow()-1);
-					log.debug("{}Index set at position: {}", getLogPrefix(), resultset.getRow());
+					log.debug("Index set at position: {}", resultset.getRow());
 				}
 				return new SenderResult(getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition));
 			}
 		} catch (SQLException|JdbcException|IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e );
+			throw new SenderException("got exception executing a SELECT SQL command", e );
 		}
 	}
 
@@ -679,12 +679,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				pstmt.registerOutParameter(parameterIndex, Types.CLOB); // make sure enough space is available for result...
 			}
 			if ("xml".equalsIgnoreCase(getPackageContent())) {
-				log.debug("{}executing a package SQL command", getLogPrefix());
+				log.debug("executing a package SQL command");
 				pstmt.executeUpdate();
 				String pUitvoer = pstmt.getString(parameterIndex);
 				return new Message(pUitvoer);
 			}
-			log.debug("{}executing a package SQL command", getLogPrefix());
+			log.debug("executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
 			if (queryExecutionContext.getResultQueryStatement() != null) {
 				PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
@@ -700,7 +700,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return new Message("<result><rowsupdated>"+ numRowsAffected	+ "</rowsupdated></result>");
 		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a package SQL command", sqle);
+			throw new SenderException("got exception executing a package SQL command", sqle);
 		}
 	}
 
@@ -725,13 +725,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						ri = parameters.size() + 1;
 					}
 					cstmt.registerOutParameter(ri, Types.VARCHAR);
-					log.debug("{}executing a SQL command", getLogPrefix());
+					log.debug("executing a SQL command");
 					numRowsAffected = cstmt.executeUpdate();
 					String rowId = cstmt.getString(ri);
 					if (session!=null) session.put(getRowIdSessionKey(), rowId);
 				}
 			} else {
-				log.debug("{}executing a SQL command", getLogPrefix());
+				log.debug("executing a SQL command");
 				if (getBatchSize() > 0) {
 					statement.addBatch();
 				} else {
@@ -740,11 +740,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return getUpdateStatementResult(statement, resultQuery, resStmt, numRowsAffected);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing query ["+query+"]",e );
+			throw new SenderException("got exception executing query ["+query+"]",e );
 		} catch (JdbcException|IOException|JMSException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
+			throw new SenderException("got exception executing a SQL command",e );
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
+			throw new SenderException("got exception evaluating parameters", e);
 		}
 	}
 
@@ -840,7 +840,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return newMessage.toString();
 		} catch (ParseException e) {
-			throw new SenderException(getLogPrefix() + "got exception parsing a date string from element ["+element+"]", e);
+			throw new SenderException("got exception parsing a date string from element ["+element+"]", e);
 		}
 	}
 
@@ -1035,7 +1035,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 */
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
-			ConfigurationWarnings.add(this, log, getLogPrefix()+"setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
+			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
 		}
 		blobCharset = string;
 	}

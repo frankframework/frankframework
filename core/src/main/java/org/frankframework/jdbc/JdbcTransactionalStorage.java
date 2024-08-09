@@ -166,11 +166,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@Override
-	protected String getLogPrefix() {
-		return "JdbcTransactionalStorage ["+getName()+"] ";
-	}
-
-	@Override
 	protected void setOperationControls() {
 		super.setOperationControls();
 		AppConstants ac = AppConstants.getInstance();
@@ -316,7 +311,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				log.warn("could check database", e);
 			}
 		} else {
-			log.info("{}checking of table and indices is not enabled", getLogPrefix());
+			log.info("checking of table and indices is not enabled");
 		}
 	}
 
@@ -350,7 +345,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		} catch (JdbcException e) {
 			throw new SenderException(e);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
+			throw new SenderException("exception creating table ["+getTableName()+"]",e);
 		}
 	}
 
@@ -442,7 +437,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					}
 					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated?"NOT ":""));
 				} catch (JdbcException e) {
-					log.warn("{}exception determining existence of table [{}{}] for transactional storage, trying to create anyway.{}", getLogPrefix(), getPrefix(), getTableName(), e.getMessage());
+					log.warn("exception determining existence of table [{}{}] for transactional storage, trying to create anyway.{}", getPrefix(), getTableName(), e.getMessage());
 					tableMustBeCreated=true;
 				}
 			} else {
@@ -451,7 +446,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			}
 
 			if (isCreateTable() && tableMustBeCreated) {
-				log.info("{}creating table [{}{}] for transactional storage", getLogPrefix(), getPrefix(), getTableName());
+				log.info("creating table [{}{}] for transactional storage", getPrefix(), getTableName());
 				try (Statement stmt = conn.createStatement()) {
 					createStorage(conn, stmt, dbmsSupport);
 				}
@@ -480,21 +475,21 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXLABELLEN+"), ":"")+
 					")";
 
-			log.debug("{}creating table [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getTableName, logValue(query));
+			log.debug("creating table [{}{}] using query [{}]", this::getPrefix, this::getTableName, logValue(query));
 			stmt.execute(query);
 			if (StringUtils.isNotEmpty(getIndexName())) {
 				query = "CREATE INDEX "+getPrefix()+getIndexName()+" ON "+getPrefix()+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+","+getExpiryDateField()+")";
-				log.debug("{}creating index [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getIndexName, logValue(query));
+				log.debug("creating index [{}{}] using query [{}]", this::getPrefix, this::getIndexName, logValue(query));
 				stmt.execute(query);
 			}
 			if (dbmsSupport.autoIncrementUsesSequenceObject()) {
 				query="CREATE SEQUENCE "+getPrefix()+getSequenceName()+" START WITH 1 INCREMENT BY 1";
-				log.debug("{}creating sequence for table [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getTableName, logValue(query));
+				log.debug("creating sequence for table [{}{}] using query [{}]", this::getPrefix, this::getTableName, logValue(query));
 				stmt.execute(query);
 			}
 			conn.commit();
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
+			throw new JdbcException(" executing query ["+query+"]", e);
 		}
 	}
 
@@ -698,14 +693,14 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				try {
 					return retrieveObject(storageKey, rs,columnIndex,true);
 				} catch (ZipException e1) {
-					log.warn("{}could not extract compressed blob, trying non-compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
+					log.warn("could not extract compressed blob, trying non-compressed: ({}) {}", ClassUtils.nameOf(e1), e1.getMessage());
 					return retrieveObject(storageKey, rs,columnIndex,false);
 				}
 			}
 			try {
 				return retrieveObject(storageKey, rs,columnIndex,false);
 			} catch (Exception e1) {
-				log.warn("{}could not extract non-compressed blob, trying compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
+				log.warn("could not extract non-compressed blob, trying compressed: ({}) {}", ClassUtils.nameOf(e1), e1.getMessage());
 				return retrieveObject(storageKey, rs,columnIndex,true);
 			}
 		} catch (Exception e2) {

@@ -354,7 +354,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		ParameterValueList pvl = getParameterValueList(message, session);
 		Scope actualScope = determineActualScope(pvl);
 		String actualTarget = determineActualTarget(pvl);
-		log.info("{}Sending message to {} [{}]", this::getLogPrefix, ()->actualScope, ()->actualTarget);
+		log.info("Sending message to {} [{}]", ()->actualScope, ()->actualTarget);
 		ServiceClient serviceClient = switch (actualScope) {
 			case ADAPTER -> getAdapterServiceClient(actualTarget);
 			case LISTENER -> getFrankListener(actualTarget);
@@ -401,9 +401,9 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			}
 		} catch (ListenerException | IOException e) {
 			if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-				throw new TimeoutException(getLogPrefix()+"timeout calling " + scope + " [" + target + "]",e);
+				throw new TimeoutException("timeout calling " + scope + " [" + target + "]",e);
 			}
-			throw new SenderException(getLogPrefix()+"exception calling " + scope + " [" + target + "]",e);
+			throw new SenderException("exception calling " + scope + " [" + target + "]",e);
 		} finally {
 			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
@@ -436,7 +436,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			try {
 				return new Message(dm.processRequest(target, session.getCorrelationId(), message.asString(), session));
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "Exception sending message to [" + target + "]", e);
+				throw new ListenerException("Exception sending message to [" + target + "]", e);
 			}
 		};
 	}
@@ -478,10 +478,10 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 				try {
 					errorResult = plr.getResult().asString();
 				} catch (IOException e) {
-					throw new ListenerException(getLogPrefix() + "Call resulted in error, but cannot get error message:", e);
+					throw new ListenerException("Call resulted in error, but cannot get error message:", e);
 				}
 				if (errorResult != null && errorResult.contains("ListenerException")) {
-					throw new ListenerException(getLogPrefix() + errorResult);
+					throw new ListenerException(errorResult);
 				}
 			}
 			return plr.getResult();
@@ -515,7 +515,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 			String configurationName = target.substring(0, configNameSeparator);
 			Configuration configuration = ibisManager.getConfiguration(configurationName);
 			if (configuration == null) {
-				throw new SenderException(getLogPrefix()+"Configuration [" + configurationName + "] not found");
+				throw new SenderException("Configuration [" + configurationName + "] not found");
 			}
 			actualAdapterManager = configuration.getAdapterManager();
 		} else if (configNameSeparator == 0) {
@@ -527,7 +527,7 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		}
 		Adapter adapter = actualAdapterManager.getAdapter(adapterName);
 		if (adapter == null) {
-			throw new SenderException(getLogPrefix() + "Cannot find adapter specified by [" + target + "]");
+			throw new SenderException("Cannot find adapter specified by [" + target + "]");
 		}
 		return adapter;
 	}

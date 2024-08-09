@@ -132,7 +132,7 @@ public class ShadowSender extends ParallelSenders {
 				message.preserve();
 			}
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
+			throw new SenderException("could not preserve input message", e);
 		}
 
 		Phaser primaryGuard = new Phaser(2); // Itself and the added originalSender

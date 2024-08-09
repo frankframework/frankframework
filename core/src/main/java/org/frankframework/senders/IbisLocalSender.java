@@ -131,16 +131,16 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		if (StringUtils.isEmpty(getServiceName())
 				&& StringUtils.isEmpty(getJavaListener())
 				&& StringUtils.isEmpty(getJavaListenerSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"has no serviceName or javaListener specified");
+			throw new ConfigurationException("has no serviceName or javaListener specified");
 		}
 		if (StringUtils.isNotEmpty(getServiceName())
 				&& (StringUtils.isNotEmpty(getJavaListener())
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
-			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
+			throw new ConfigurationException("serviceName and javaListener cannot be specified both");
 		}
 
 		if(!(getApplicationContext() instanceof Configuration)) {
-			throw new ConfigurationException(getLogPrefix()+"unable to determine configuration");
+			throw new ConfigurationException("unable to determine configuration");
 		}
 		configuration = (Configuration) getApplicationContext();
 	}
@@ -247,7 +247,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
 					subAdapterSession.putAll(paramValues);
 				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
+					throw new SenderException("exception evaluating parameters", e);
 				}
 			}
 			final ServiceClient serviceClient;
@@ -257,7 +257,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isThrowJavaListenerNotFoundException()) {
 					throw e;
 				}
-				log.info("{} {}", getLogPrefix(), e.getMessage());
+				log.info(e.getMessage());
 				return new SenderResult(new Message("<error>" + e.getMessage() + "</error>"), e.getMessage());
 			}
 			final String serviceIndication = getServiceIndication(session);
@@ -265,25 +265,25 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			try {
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
+						log.debug("calling {} in separate Thread", () -> serviceIndication);
 						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 					} else {
 						// We return same message as we send, so it should be preserved in case it's not repeatable
 						message.preserve();
-						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
+						log.debug("calling {} in asynchronously", () -> serviceIndication);
 						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 						result = new SenderResult(message);
 					}
 				} else {
-					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
+					log.debug("calling {} in same Thread", () -> serviceIndication);
 					result = new SenderResult(serviceClient.processRequest(message, subAdapterSession));
 				}
 
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
+					throw new TimeoutException("timeout calling "+serviceIndication,e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
+				throw new SenderException("exception calling "+serviceIndication,e);
 			} finally {
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());

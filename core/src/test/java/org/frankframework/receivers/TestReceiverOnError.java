@@ -180,9 +180,9 @@ public class TestReceiverOnError {
 
 	@ParameterizedTest(name = "{index} - {0}")
 	@CsvSource({
-		"getRawMessageException, Receiver [receiver] caught Exception retrieving message, will continue retrieving messages",
-		"extractMessageException, Receiver [receiver] caught Exception processing message, will continue processing next message",
-		"processMessageException, Receiver [receiver] Exception in message processing"
+		"getRawMessageException, caught Exception retrieving message, will continue retrieving messages",
+		"extractMessageException, caught Exception processing message, will continue processing next message",
+		"processMessageException, Exception in message processing"
 	})
 	public void testPullingListenerWithExceptionAndOnErrorContinue(final String message, final String logMessage) throws Exception {
 		MockListenerBase listener = createListener(MockPullingListener.class);
@@ -206,9 +206,9 @@ public class TestReceiverOnError {
 
 	@ParameterizedTest
 	@CsvSource({
-		"getRawMessageException, Receiver [receiver] exception occurred while retrieving message, stopping receiver",
-		"extractMessageException, Receiver [receiver] caught Exception processing message",
-		"processMessageException, Receiver [receiver] exception occurred while processing message, stopping receiver",
+		"getRawMessageException, exception occurred while retrieving message, stopping receiver",
+		"extractMessageException, caught Exception processing message",
+		"processMessageException, exception occurred while processing message, stopping receiver",
 	})
 	public void testPullingListenerWithExceptionAndOnErrorClose(final String message, final String logMessage) throws Exception {
 		MockListenerBase listener = createListener(MockPullingListener.class);

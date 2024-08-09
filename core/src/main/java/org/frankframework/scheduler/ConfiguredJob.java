@@ -54,12 +54,12 @@ public class ConfiguredJob extends BaseJob {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
-			if (log.isTraceEnabled()) log.trace("{}executing", getLogPrefix(jobDef));
+			if (log.isTraceEnabled()) log.trace("executing {}", jobDef.getName());
 			jobDef.executeJob();
-			if (log.isTraceEnabled()) log.trace("{}completed", getLogPrefix(jobDef));
+			if (log.isTraceEnabled()) log.trace("completed {}", jobDef.getName());
 		}
 		catch (Exception e) {
-			log.error("JobExecutionException while running {}", getLogPrefix(context), e);
+			log.error("JobExecutionException while running {}", context.getJobDetail().getKey().getName(), e);
 			throw new JobExecutionException(e, false);
 		}
 		finally {

@@ -122,7 +122,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				getSender().close();
 			}
 		} catch (Exception e) {
-			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
+			log.warn("caught exception stopping listener", e);
 		}
 	}
 
@@ -181,7 +181,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"listener on ["+ getDestinationName()
+			log.debug("listener on ["+ getDestinationName()
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
@@ -247,7 +247,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 			replyCid = session.getMessageId();
 		}
 
-		log.debug("{} in JmsListener.afterMessageProcessed()", this::getLogPrefix);
+		log.debug("in JmsListener.afterMessageProcessed()");
 		// handle reply
 		try {
 			Destination replyTo = isUseReplyTo() ? (Destination) session.get("replyTo") : null;
@@ -257,7 +257,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 			if (replyTo != null) {
 
-				log.debug("{} sending reply message with correlationID [{}], replyTo [{}]", this::getLogPrefix, logValue(replyCid), logValue(replyTo));
+				log.debug("sending reply message with correlationID [{}], replyTo [{}]", logValue(replyCid), logValue(replyTo));
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
@@ -268,7 +268,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 						if (expiration != 0) {
 							timeToLive = expiration - new Date().getTime();
 							if (timeToLive <= 0) {
-								log.warn("{} message [{}] expired [{}]ms, sending response with 1 second time to live", this::getLogPrefix, logValue(replyCid), logValue(timeToLive));
+								log.warn("message [{}] expired [{}]ms, sending response with 1 second time to live", logValue(replyCid), logValue(timeToLive));
 								timeToLive = 1000;
 								// In case of a temporary queue it might already
 								// have disappeared.
@@ -276,7 +276,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 							}
 						}
 					} else {
-						log.warn(getLogPrefix() + "{} message with correlationID [{}] is not a JMS message, but [{}], cannot determine time to live [{}]ms, sending response with 20 second time to live", this::getLogPrefix, logValue(replyCid), ()->rawMessageWrapper.getRawMessage().getClass().getName(), logValue(timeToLive));
+						log.warn("message with correlationID [{}] is not a JMS message, but [{}], cannot determine time to live [{}]ms, sending response with 20 second time to live", logValue(replyCid), ()->rawMessageWrapper.getRawMessage().getClass().getName(), logValue(timeToLive));
 						timeToLive = 1000;
 						ignoreInvalidDestinationException = true;
 					}
@@ -306,10 +306,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				if (isJmsTransacted()) {
 					Session queueSession = (Session) session.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 					if (queueSession == null) {
-						log.error("{}session is null, cannot commit or roll back session", getLogPrefix());
+						log.error("session is null, cannot commit or roll back session");
 					} else {
 						if (plr.getState() != ExitState.SUCCESS) {
-							log.warn("{}got exit state [{}], rolling back session", getLogPrefix(), plr.getState());
+							log.warn("got exit state [{}], rolling back session", plr.getState());
 							queueSession.rollback();
 						} else {
 							queueSession.commit();
@@ -318,10 +318,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				} else {
 					if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
-							log.debug("{}acknowledging message", getLogPrefix());
+							log.debug("acknowledging message");
 							rawMessageWrapper.getRawMessage().acknowledge();
 						} else {
-							log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
+							log.warn("got exit state [{}], skipping acknowledge", plr.getState());
 						}
 					}
 				}

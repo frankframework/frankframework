@@ -16,9 +16,7 @@
 package org.frankframework.scheduler;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.scheduler.job.IJob;
 import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 
 import org.frankframework.util.LogUtil;
 /**
@@ -28,16 +26,5 @@ import org.frankframework.util.LogUtil;
  * @since   4.0
  */
 public abstract class BaseJob implements Job {
-	protected Logger log=LogUtil.getLogger(this);
-
-	public String getLogPrefix(JobExecutionContext context) {
-		String instName = context.getJobDetail().getKey().getName();
-		return "Job ["+instName+"] ";
-	}
-
-	public String getLogPrefix(IJob jobDef) {
-		String instName = jobDef.getName();
-		return "Job ["+instName+"] ";
-	}
+	protected Logger log = LogUtil.getLogger(this);
 }
-

@@ -91,7 +91,7 @@ public class BisJmsSender extends JmsSender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSoap()) {
-			throw new ConfigurationException(getLogPrefix() + "soap must be true");
+			throw new ConfigurationException("soap must be true");
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
@@ -99,7 +99,7 @@ public class BisJmsSender extends JmsSender {
 			responseTp = TransformerPool.getXPathTransformerPool(StringUtils.isNotEmpty(getResponseNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getResponseNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getResponseXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getResponseXPath() : bisUtils.getSoapBodyXPath() + "/*", OutputType.XML);
 			bisErrorListTp = TransformerPool.getXPathTransformerPool(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorListXPath() : bisUtils.getOldBisErrorListXPath()), OutputType.XML);
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
+			throw new ConfigurationException("cannot create transformer", e);
 		}
 	}
 

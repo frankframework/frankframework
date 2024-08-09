@@ -61,7 +61,7 @@ public class ReloadSender extends SenderWithParametersBase {
 			if(configName == null)
 				configName = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='NAME']");
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
+			throw new SenderException("error evaluating Xpath expression configName", e);
 		}
 
 		try {
@@ -69,7 +69,7 @@ public class ReloadSender extends SenderWithParametersBase {
 				newVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
+			throw new SenderException("error evaluating Xpath expression activeVersion", e);
 		}
 
 		Configuration configuration = ibisManager.getConfiguration(configName);

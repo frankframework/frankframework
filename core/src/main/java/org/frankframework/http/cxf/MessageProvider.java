@@ -47,8 +47,4 @@ public class MessageProvider extends SOAPProviderBase {
 		return listener.processRequest(message, pipelineSession);
 	}
 
-	@Override
-	protected String getLogPrefix(String correlationId) {
-		return "Listener ["+listener.getName()+"] correlationId["+correlationId+"] ";
-	}
 }

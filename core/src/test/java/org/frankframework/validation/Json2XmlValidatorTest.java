@@ -134,7 +134,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 					if (rootelement != null) {
 						rootvalidations = new RootValidations("Envelope", "Body", rootelement);
 					}
-					ValidationResult validationResult = validator.validate(result, session, "check result", rootvalidations, null);
+					ValidationResult validationResult = validator.validate(result, session, rootvalidations, null);
 					evaluateResult(validationResult, session, null, expectedFailureReasons);
 					return validationResult;
 				} catch (Exception e) {

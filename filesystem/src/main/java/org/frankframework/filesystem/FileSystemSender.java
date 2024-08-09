@@ -101,8 +101,7 @@ public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(
-					getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		try {

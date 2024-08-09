@@ -104,21 +104,21 @@ public class JavascriptSender extends SenderSeries {
 		if (StringUtils.isNotEmpty(getJsFileName())) {
 			URL resource = ClassLoaderUtils.getResourceURL(this, getJsFileName());
 			if (resource == null) {
-				throw new SenderException(getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
+				throw new SenderException("cannot find resource [" + getJsFileName() + "]");
 			}
 			try {
 				fileInput = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
+				throw new SenderException("got exception loading [" + getJsFileName() + "]", e);
 			}
 		}
 		if (StringUtils.isEmpty(fileInput)) {
 			// No input from file or input string. Only from session-keys?
-			throw new SenderException(getLogPrefix() + "has neither fileName nor inputString specified");
+			throw new SenderException("has neither fileName nor inputString specified");
 		}
 		if (StringUtils.isEmpty(jsFunctionName)) {
 			// Cannot run the code in factory without any function start point
-			throw new SenderException(getLogPrefix() + "JavaScript FunctionName not specified!");
+			throw new SenderException("JavaScript FunctionName not specified!");
 		}
 	}
 
@@ -138,7 +138,7 @@ public class JavascriptSender extends SenderSeries {
 				pvl = getParameterList().getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + " exception extracting parameters", e);
+			throw new SenderException(" exception extracting parameters", e);
 		}
 		int numberOfParameters = 0;
 		if (pvl != null) {

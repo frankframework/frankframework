@@ -49,11 +49,11 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 			}
 			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
 			if (log.isDebugEnabled())
-				log.debug("{}set contents of session variable [{}] as input [{}]", senderWrapperBase.getLogPrefix(), senderWrapperBase.getGetInputFromSessionKey(), senderInput);
+				log.debug("set contents of session variable [{}] as input [{}]", senderWrapperBase.getGetInputFromSessionKey(), senderInput);
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
 				senderInput=new Message(senderWrapperBase.getGetInputFromFixedValue());
-				if (log.isDebugEnabled()) log.debug("{}set input to fixed value [{}]", senderWrapperBase.getLogPrefix(), senderInput);
+				if (log.isDebugEnabled()) log.debug("set input to fixed value [{}]", senderInput);
 			}
 		}
 		if (senderWrapperBase.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
@@ -74,7 +74,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 					}
 				}
 				if (log.isDebugEnabled())
-					log.debug("{}storing results in session variable [{}]", senderWrapperBase.getLogPrefix(), senderWrapperBase.getStoreResultInSessionKey());
+					log.debug("storing results in session variable [{}]", senderWrapperBase.getStoreResultInSessionKey());
 				session.put(senderWrapperBase.getStoreResultInSessionKey(), result.getResult());
 			}
 			if (senderWrapperBase.isPreserveInput()) {

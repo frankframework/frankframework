@@ -71,8 +71,7 @@ public class MultipartHttpSender extends HttpSender {
 	}
 
 	private FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, ContentType contentType) {
-		if (log.isDebugEnabled())
-			log.debug("{}appending filepart [{}] with value [{}] fileName [{}] and contentType [{}]", getLogPrefix(), name, is, fileName, contentType);
+		log.debug("appending filepart [{}] with value [{}] fileName [{}] and contentType [{}]", name, is, fileName, contentType);
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
 			.setName(name)
 			.setBody(new InputStreamBody(is, contentType, fileName));
