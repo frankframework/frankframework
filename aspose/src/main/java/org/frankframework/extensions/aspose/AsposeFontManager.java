@@ -116,7 +116,7 @@ public class AsposeFontManager {
 						Path target = fontsDirPath.resolve(filename);
 
 						// check if file exists and for zipSlip vulnerability
-						if (Files.notExists(target) && target.toAbsolutePath().startsWith(fontsDirPath)) {
+						if (Files.notExists(target) && target.normalize().startsWith(fontsDirPath)) {
 							Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING);
 						}
 					}
