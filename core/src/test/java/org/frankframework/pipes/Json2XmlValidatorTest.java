@@ -3,27 +3,34 @@ package org.frankframework.pipes;
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.springframework.http.MediaType;
+
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
@@ -702,5 +709,47 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Disabled("Cannot ignore XML validation failure")
 	public void testValidWithWarningsXml2Json() throws Exception {
 		testRecoverableError(DocumentFormat.JSON, true, "warnings", "No typeDefinition found for element [d]");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"false, none",
+			"false, all",
+			"false, partial1",
+			"false, partial2",
+			"false, partial3",
+			"false, partial4",
+			"false, partial5",
+			"true, none",
+			"true, all",
+			"true, partial1",
+			"true, partial2",
+			"true, partial3",
+			"true, partial4",
+			"true, partial5",
+	})
+//	@ValueSource(strings = { "partial2"})
+	public void issue7146AttributesOnMultipleLevels(boolean deepSearch, String input) throws Exception {
+		// Arrange
+		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
+		pipe.setRoot("Root");
+		pipe.setDeepSearch(deepSearch);
+		pipe.setProduceNamespacelessXml(true);
+
+		pipe.setThrowException(true);
+
+		pipe.registerForward(new PipeForward("success", null));
+		configureAndStartPipe();
+
+		URL json = TestFileUtils.getTestFileURL("/Validation/AttributesOnDifferentLevels/input-"+input+".json");
+		UrlMessage message = new UrlMessage(json);
+		PipeLineSession session = new PipeLineSession();
+
+		// Act / Assert
+		PipeRunResult result = assertDoesNotThrow(() -> pipe.validate(message, session, "Case"));
+
+		System.err.println(result.getResult().asString());
+		String expected = TestFileUtils.getTestFile("/Validation/AttributesOnDifferentLevels/output-" + input + ".xml");
+		assertXmlEquals(expected, result.getResult().asString());
 	}
 }
