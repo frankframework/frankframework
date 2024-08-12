@@ -112,15 +112,12 @@ public class AsposeFontManager {
 					}
 
 					String filename = FilenameUtils.normalize(entry.getName(), true);
-					if(filename != null) {
+					if (filename != null) {
 						Path target = fontsDirPath.resolve(filename);
-						if (Files.notExists(target)) {
-							String canonicalDestinationPath = target.toFile().getCanonicalPath();
 
-							// Check for ZipSlip vulnerability
-							if (canonicalDestinationPath.startsWith(fontsDirPath.toString())) {
-								Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING);
-							}
+						// check if file exists and for zipSlip vulnerability
+						if (Files.notExists(target) && target.toAbsolutePath().startsWith(fontsDirPath)) {
+							Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING);
 						}
 					}
 					zipInputStream.closeEntry();
