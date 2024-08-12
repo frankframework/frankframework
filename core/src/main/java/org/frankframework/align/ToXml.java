@@ -437,6 +437,66 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 */
 	abstract N filterNodeChildren(N node, Set<String> allowedNames);
 
+	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, boolean mandatory, N node, Set<String> processedChildren) throws SAXException {
+		// Steps for deep search:
+		//  - Create copy of node N that only contains child node that are allowed in the XSD declaration for the childElement which we
+		//    are trying to instantiate from the "deep search", so that there are no errors from unprocessed elements.
+		//
+		//  - Do not copy any elements that are already processed.
+		//    This is so that elements that can be placed in multiple places in the XML are not inserted multiple times, when the
+		//    input contains them only a single time.
+		//
+		//  - To be able to handle substitutions from parameters or session variables being inserted, we should add to the copy node
+		//    also any substitutions with same name as any of the names that are also in the XSD for this type
+		//
+		//  - If the copy of the node is not empty, then call handleElement for the copy and return true
+		//  - else return false
+		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
+		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
+			return false;
+		}
+		XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
+		Set<String> allowedNames = getNamesOfXsdChildElements(complexTypeDefinition);
+		allowedNames.removeAll(processedChildren);
+
+		N copy = filterNodeChildren(node, allowedNames);
+
+		if (isEmptyNode(copy) && !mandatory) {
+			return false;
+		}
+		handleElement(childElementDeclaration, copy);
+		return true;
+	}
+
+	private static Set<String> getNamesOfXsdChildElements(XSComplexTypeDefinition complexTypeDefinition) {
+		XSTerm term = complexTypeDefinition.getParticle().getTerm();
+		if (!(term instanceof XSModelGroup modelGroup)) {
+			return Collections.emptySet();
+		}
+		@SuppressWarnings("unchecked")
+		List<XSParticle> particles = modelGroup.getParticles();
+		return particles.stream()
+				.map(XSParticle::getTerm)
+				.map(XSObject::getName)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Check if a node is empty, or has child-nodes with data.
+	 *
+	 * @return True if the node has no data or child-nodes, false if the node does have data.
+	 */
+	abstract boolean isEmptyNode(N node);
+
+	/**
+	 * Create a copy of the node, filtering out elements that are not in the set of "allowedNames".
+	 *
+	 * @param node Node to copy
+	 * @param allowedNames Names of child-nodes to keep in the copy
+	 * @return Copy of the node
+	 */
+	abstract N filterNodeChildren(N node, Set<String> allowedNames);
+
 	public List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, N node, boolean silent) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		if (typeDefinition==null) {
