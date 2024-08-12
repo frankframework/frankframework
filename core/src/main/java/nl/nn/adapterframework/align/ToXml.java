@@ -366,8 +366,8 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		Iterable<N> childNodes = getChildrenByName(node,childElementDeclaration);
 		boolean childSeen=false;
 		if (childNodes!=null) {
-			childSeen=true;
-			int i=0;
+			childSeen = true;
+			int i = 0;
 			for (N childNode:childNodes) {
 				i++;
 				handleElement(childElementDeclaration,childNode);
@@ -376,7 +376,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			if (i==0 && isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
 				if (log.isTraceEnabled()) log.trace("no children processed, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
 				handleElement(childElementDeclaration,node);
-				childSeen=true;
+				childSeen = true;
 			}
 		} else {
 			if (log.isTraceEnabled()) log.trace("no children found by name ["+childElementName+"] in ["+parentName+"]");
@@ -401,12 +401,17 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, boolean mandatory, N node, Set<String> processedChildren) throws SAXException {
 		// Steps for deep search:
-		//  - Get names of all declared child elements from XSD type
-		//  - Remove names of processed children
-		//  - Create copy of node N that has only these elements, so that when we handle this child-element we do not get errors
+		//  - Create copy of node N that only contains child node that are allowed in the XSD declaration for the childElement which we
+		//    are trying to instantiate from the "deep search", so that there are no errors from unprocessed elements.
+		//
+		//  - Do not copy any elements that are already processed.
+		//    This is so that elements that can be placed in multiple places in the XML are not inserted multiple times, when the
+		//    input contains them only a single time.
+		//
 		//  - To be able to handle substitutions from parameters or session variables being inserted, we should add to the copy node
 		//    also any substitutions with same name as any of the names that are also in the XSD for this type
-		//  - If the node is not empty, then handleElement for copy of the node and return true
+		//
+		//  - If the copy of the node is not empty, then call handleElement for the copy and return true
 		//  - else return false
 		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
 		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
@@ -438,13 +443,21 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				.collect(Collectors.toSet());
 	}
 
-	protected boolean isEmptyNode(N copy) {
-		return false;
-	}
+	/**
+	 * Check if a node is empty, or has child-nodes with data.
+	 *
+	 * @return True if the node has no data or child-nodes, false if the node does have data.
+	 */
+	abstract boolean isEmptyNode(N node);
 
-	protected N filterNodeChildren(N node, Set<String> allowedNames) {
-		return node;
-	}
+	/**
+	 * Create a copy of the node, filtering out elements that are not in the set of "allowedNames".
+	 *
+	 * @param node Node to copy
+	 * @param allowedNames Names of child-nodes to keep in the copy
+	 * @return Copy of the node
+	 */
+	abstract N filterNodeChildren(N node, Set<String> allowedNames);
 
 	public List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, N node, boolean silent) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();

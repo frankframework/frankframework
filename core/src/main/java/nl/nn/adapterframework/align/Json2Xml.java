@@ -215,7 +215,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			JsonObject o = (JsonObject)node;
 			if (o.isEmpty()) {
 				if (log.isTraceEnabled()) log.trace("no children");
-				return new LinkedHashSet<>();
+				return null;
 			}
 			Set<String> result = new LinkedHashSet<>();
 			for (String key:o.keySet()) {
@@ -345,6 +345,13 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 	}
 
+	/**
+	 * Create a copy of the JSON node that contains only keys from the allowedNames set in the top level.
+	 *
+	 * @param node Node to copy
+	 * @param allowedNames Names of child-nodes to keep in the copy
+	 * @return Copy of the JSON node.
+	 */
 	@Override
 	protected JsonValue filterNodeChildren(JsonValue node, Set<String> allowedNames) {
 		if (node instanceof JsonArray) {
@@ -361,7 +368,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		});
 		// Add in substitutions for allowed names not already in the object. This is so objects do not appear empty when
 		// substitutions could fill in for absent names.
-		// This is perhaps not the cleanest way to make sure the substitutions are performed but this requires least
+		// This is perhaps not the cleanest way to make sure the substitutions are performed but this requires the least
 		// amount of code changes in other parts.
 		if (sp != null) {
 			allowedNames.forEach(name -> {
