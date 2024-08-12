@@ -122,7 +122,6 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
-
 			@RequestParam(value = "type", required = false) String type,
 			@RequestParam(value = "host", required = false) String host,
 			@RequestParam(value = "id", required = false) String id,

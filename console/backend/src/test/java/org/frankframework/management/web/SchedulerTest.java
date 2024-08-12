@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, Scheduler.class})
@@ -128,7 +127,6 @@ public class SchedulerTest extends FrankApiTestBase {
 		});
 		mockMvc.perform(multipart("/schedules/groupName/jobs")
 						.part(getMultiPartParts()))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
