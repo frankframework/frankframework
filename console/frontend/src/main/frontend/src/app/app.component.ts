@@ -503,9 +503,10 @@ export class AppComponent implements OnInit, OnDestroy {
         ].slice(-this.messageKeeperSize);
       }
 
-      configuration.messageLevel =
-        existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
+        configuration.messageLevel =
+          existingConfiguration?.messageLevel ?? 'INFO';
+
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
           if (level == 'WARN' && configuration.messageLevel != 'ERROR')
