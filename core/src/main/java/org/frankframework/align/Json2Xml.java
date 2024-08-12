@@ -61,10 +61,6 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	private static final String ATTRIBUTE_PREFIX = "@";
 	private static final String MIXED_CONTENT_LABEL = "#text";
 
-	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements, String rootElement) {
-		this(validatorHandler, schemaInformation, insertElementContainerElements, rootElement, false);
-	}
-
 	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements, String rootElement, boolean strictSyntax) {
 		super(validatorHandler, schemaInformation);
 		this.insertElementContainerElements=insertElementContainerElements;
@@ -76,7 +72,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	public void startParse(JsonValue node) throws SAXException {
 		if (node instanceof JsonObject root) {
 			List<String> potentialRootElements = new ArrayList<>(root.keySet());
-			potentialRootElements.removeIf(e-> {return e.startsWith(ATTRIBUTE_PREFIX) || e.startsWith(MIXED_CONTENT_LABEL);});
+			potentialRootElements.removeIf(e-> e.startsWith(ATTRIBUTE_PREFIX) || e.startsWith(MIXED_CONTENT_LABEL));
 			if(StringUtils.isEmpty(getRootElement())) {
 				determineRootElement(potentialRootElements);
 			}
@@ -303,7 +299,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	protected String getOverride(XSElementDeclaration elementDeclaration, JsonValue node) {
 		Object text = sp.getOverride(getContext());
 		if (text instanceof List) {
-			// if the override is a List, than it has already be substituted via getSubstitutedChild.
+			// if the override is a List, then it has already been substituted via getSubstitutedChild.
 			// Therefore now get the node text, which is here an individual element already.
 			return getNodeText(elementDeclaration, node);
 		}

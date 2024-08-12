@@ -72,13 +72,11 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	public static final String XSI_PREFIX_MAPPING="xsi";
 
 	public static final String MSG_EXPECTED_ELEMENT="expected element";
-	public static final String MSG_INVALID_CONTENT="Invalid content";
 	public static final String MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION="Cannot find the declaration of element";
 
 	private @Getter @Setter String rootElement;
 	private @Getter @Setter String targetNamespace;
 
-//	private @Getter @Setter boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
 	private @Getter @Setter boolean deepSearch=false;
 	private @Getter @Setter boolean failOnWildcards=false;
 
@@ -171,8 +169,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		XSElementDeclaration elementDeclaration=findElementDeclarationForName(nodeNamespace,name);
 		if (elementDeclaration==null) {
 			throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" for ["+name+"] in namespace ["+nodeNamespace+"]");
-//			if (log.isTraceEnabled()) log.trace("node ["+name+"] did not find elementDeclaration, assigning targetNamespace ["+getTargetNamespace()+"]");
-//			nodeNamespace=getTargetNamespace();
 		}
 		handleElement(elementDeclaration,rootNode);
 	}
@@ -202,8 +198,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				for (int i=0;i<attributeUses.getLength(); i++) {
 					XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
 					XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-					//XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
-					//if (log.isTraceEnabled()) log.trace("node ["+name+"] attTypeDefinition ["+ToStringBuilder.reflectionToString(attTypeDefinition)+"]");
 					String attName=attributeDeclaration.getName();
 					if (nodeAttributes.containsKey(attName)) {
 						String value=nodeAttributes.remove(attName);
@@ -231,6 +225,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			validatorHandler.endPrefixMapping(XSI_PREFIX_MAPPING);
 		} else {
 			if (isMultipleOccurringChildElement(name) && node instanceof List<?>) {
+				//noinspection unchecked
 				for(N n:(List<N>)node) {
 					doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes);
 				}
@@ -381,10 +376,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			}
 			processedChildren.add(childElementName);
 		}
-//		if (!childSeen && mandatory && isAutoInsertMandatory()) {
-//			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
-//			handleElement(childElementDeclaration,node); // insert node when minOccurs > 0, and no node is present
-//		}
 	}
 
 	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, boolean mandatory, N node, Set<String> processedChildren) throws SAXException {
@@ -402,10 +393,9 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		//  - If the copy of the node is not empty, then call handleElement for the copy and return true
 		//  - else return false
 		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
-		if (!(typeDefinition instanceof XSComplexTypeDefinition)) {
+		if (!(typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition)) {
 			return false;
 		}
-		XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
 		Set<String> allowedNames = getNamesOfXsdChildElements(complexTypeDefinition);
 		allowedNames.removeAll(processedChildren);
 
@@ -544,12 +534,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				}
 			}
 			if (particle.getMinOccurs()>0) {
-//					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
-//					if (isAutoInsertMandatory()) {
-//						path.add(particle);
-//						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
-//						return true;
-//					}
 				failureReasons.add(MSG_EXPECTED_ELEMENT+" ["+elementName+"]");
 				return false;
 			}
@@ -589,10 +573,10 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		case XSModelGroup.COMPOSITOR_CHOICE:
 			List<XSParticle> bestPath=null;
 
-			List<String> choiceFailureReasons = new LinkedList<String>();
+			List<String> choiceFailureReasons = new LinkedList<>();
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
-				List<XSParticle> optionPath=new LinkedList<XSParticle>(path);
+				List<XSParticle> optionPath=new LinkedList<>(path);
 
 				if (getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, optionPath, choiceFailureReasons)) {
 					if (bestPath==null || bestPath.size()<optionPath.size()) {
@@ -614,22 +598,20 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	}
 
 	private boolean handleWildcardTerm(XSElementDeclaration baseElementDeclaration, XSWildcard wildcard) {
-		String processContents;
-		switch (wildcard.getProcessContents()) {
-			case XSWildcard.PC_LAX: processContents="LAX"; break;
-			case XSWildcard.PC_SKIP: processContents="SKIP"; break;
-			case XSWildcard.PC_STRICT: processContents="STRICT"; break;
-			default:
-				throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
-		}
-		String namespaceConstraint;
-		switch (wildcard.getConstraintType()) {
-			case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
-			case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
-			case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
-			default:
-				throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
-		}
+		String processContents = switch (wildcard.getProcessContents()) {
+			case XSWildcard.PC_LAX -> "LAX";
+			case XSWildcard.PC_SKIP -> "SKIP";
+			case XSWildcard.PC_STRICT -> "STRICT";
+			default ->
+					throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but [" + wildcard.getProcessContents() + "]");
+		};
+		String namespaceConstraint = switch (wildcard.getConstraintType()) {
+			case XSWildcard.NSCONSTRAINT_ANY -> "ANY";
+			case XSWildcard.NSCONSTRAINT_LIST -> "SKIP " + wildcard.getNsConstraintList();
+			case XSWildcard.NSCONSTRAINT_NOT -> "NOT " + wildcard.getNsConstraintList();
+			default ->
+					throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but [" + wildcard.getConstraintType() + "]");
+		};
 		String msg="term for element ["+ baseElementDeclaration.getName()+"] is WILDCARD; namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema";
 		if (isFailOnWildcards()) {
 			throw new IllegalStateException(msg+", or set failOnWildcards=\"false\"");
@@ -677,14 +659,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			validatorHandler.startPrefixMapping(prefix, uri);
 		}
 		return prefix;
-	}
-
-	public String findNamespaceForName(String name) throws SAXException {
-		XSElementDeclaration elementDeclaration=findElementDeclarationForName(null,name);
-		if (elementDeclaration==null) {
-			return null;
-		}
-		return elementDeclaration.getNamespace();
 	}
 
 	public void translate(C data, ContentHandler handler) throws SAXException {

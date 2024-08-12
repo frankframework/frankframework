@@ -100,9 +100,6 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		String result=getNodeText(elementDeclaration, node);
 		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
 			if (log.isTraceEnabled()) log.trace("node [{}] default found [{}]", nodeName, text);
-			if (text instanceof String string) {
-				result = string;
-			}
 			result = text.toString();
 		}
 		if (log.isTraceEnabled()) log.trace("node [{}] returning value [{}]", nodeName, result);
@@ -127,5 +124,4 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		overrides.registerSubstitutes(overrideValues);
 		setSubstitutionProvider(overrides);
 	}
-
 }
