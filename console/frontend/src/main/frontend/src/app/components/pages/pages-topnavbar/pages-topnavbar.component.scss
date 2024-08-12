@@ -1,5 +1,8 @@
 li > select {
   width: 180px;
-  border: none;
+  padding: 3px 5px;
+  border: 2px solid #fdc300;
   background-color: inherit;
+  border-radius: 12px;
+  outline: unset;
 }
