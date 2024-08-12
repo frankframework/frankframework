@@ -38,7 +38,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 			allParents.put(child, null);
 			return;
 		}
-		Set<String> parentSetOfChild=null;
+		Set<String> parentSetOfChild;
 		boolean created=false;
 		if (allParents.containsKey(child)) {
 			parentSetOfChild = allParents.get(child);

@@ -118,9 +118,6 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		return unProcessedChildren;
 	}
 
-	public SubstitutionProvider<?> getSubstitutionProvider() {
-		return sp;
-	}
 	public void setSubstitutionProvider(SubstitutionProvider<?> substitutions) {
 		this.sp = substitutions;
 	}
