@@ -74,7 +74,8 @@ public class ConfigurationUtils {
 	public static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	public static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	public static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
-	public static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	public static final String STUB4TESTTOOL_XSLT_KEY = "stub4testtool.xsl";
+	public static final String STUB4TESTTOOL_XSLT_DEFAULT = "/xml/xsl/stub4testtool.xsl";
 
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
