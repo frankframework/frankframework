@@ -22,7 +22,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BrowseJdbcTable extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a specific JDBC table")

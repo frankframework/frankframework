@@ -26,7 +26,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class TestServiceListener extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("testing")
 	@Description("view a list of all available service-listeners")
 	@GetMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE)

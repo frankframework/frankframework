@@ -16,10 +16,14 @@
 package org.frankframework.web;
 
 import jakarta.annotation.security.RolesAllowed;
+import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
  * To avoid repeating this list of roles over and over again, use a default annotation
+ * Since you can't reference a static list of values, it has to be hard coded like this.
+ *
+ * @see DynamicRegistration#ALL_IBIS_USER_ROLES
  */
 @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-public @interface AllRolesAllowed {
+public @interface AllowAllIbisUserRoles {
 }

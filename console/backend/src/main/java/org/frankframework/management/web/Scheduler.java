@@ -22,7 +22,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,14 +36,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Scheduler extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("schedules")
 	@GetMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedules() {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.GET));
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("schedules")
 	@GetMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedule(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName) {

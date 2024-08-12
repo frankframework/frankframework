@@ -26,7 +26,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ConfigurationStatus extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view a list of all adapters, prefixed with the configuration name")
 	@GetMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,7 +51,7 @@ public class ConfigurationStatus extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view an adapter receivers/pipes/messages")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -170,7 +170,7 @@ public class ConfigurationStatus extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view an adapter flow")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/flow")

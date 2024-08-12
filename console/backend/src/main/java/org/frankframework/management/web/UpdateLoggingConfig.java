@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Level;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UpdateLoggingConfig extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("logging")
 	@Description("view the application log configuration")
 	@GetMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,7 +60,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		return callAsyncGateway(builder);
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("logging")
 	@Description("view the log definitions, default loggers and their corresponding levels")
 	@GetMapping(value = "/server/logging/settings", produces = MediaType.APPLICATION_JSON_VALUE)

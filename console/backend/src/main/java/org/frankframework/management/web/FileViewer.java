@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.ResponseUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
@@ -35,7 +35,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 public class FileViewer extends FrankApiBase {
 
 	@GetMapping(value = "/file-viewer", produces = {"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("logging")
 	@Description("view or download a (log)file")
 	public ResponseEntity<StreamingResponseBody> getFileContent(@RequestParam("file") String file, @RequestParam(value = "accept", required = false) String acceptParam, @RequestHeader("Accept") String acceptHeader) {

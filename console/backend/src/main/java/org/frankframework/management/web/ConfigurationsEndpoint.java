@@ -29,7 +29,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.RequestUtils;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +48,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 
 	public static final String HEADER_VERSION = "version";
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("application")
 	@Description("view all the loaded/original configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
@@ -83,7 +83,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@Description("view individual loaded/original configuration")
 	@GetMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_XML_VALUE)
@@ -109,7 +109,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@Description("view configuration flow diagram")
 	@GetMapping(value = "/configurations/{configuration}/flow")
@@ -137,7 +137,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@Description("view a list of all known configuration versions")
 	@GetMapping(value = "/configurations/{configuration}/versions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -222,7 +222,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@Description("download a specific configuration version")
 	@GetMapping(value = "/configurations/{configuration}/versions/{version}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)

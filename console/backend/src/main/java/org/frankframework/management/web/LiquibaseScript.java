@@ -26,7 +26,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class LiquibaseScript extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadScript(@RequestParam(value = "configuration", required = false) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
@@ -48,7 +48,7 @@ public class LiquibaseScript extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> generateSQL(LiquibaseMultipartBody multipartBody) throws ApiException {
 		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.configuration(), null);

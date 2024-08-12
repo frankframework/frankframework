@@ -16,7 +16,7 @@
 package org.frankframework.management.web;
 
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.web.AllRolesAllowed;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ConnectionOverview extends FrankApiBase {
 
-	@AllRolesAllowed
+	@AllowAllIbisUserRoles
 	@GetMapping(value = "/connections", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getConnections() {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.CONNECTION_OVERVIEW));

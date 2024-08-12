@@ -51,6 +51,23 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 	}
 
 	@Test
+	public void updateConfigurationWithAdapters() throws Exception {
+		ArgumentCaptor<Message<Object>> requestCapture = ArgumentCaptor.forClass(Message.class);
+		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
+
+		mockMvc.perform(MockMvcRequestBuilders.put("/adapters")
+						.content("{ \"action\": \"start\", \"adapters\": [\"config1/adapter1\", \"config1/adapter2\"] }")
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+
+		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
+		assertEquals("config1", capturedRequest.getHeaders().get("meta-configuration"));
+		assertEquals("adapter2", capturedRequest.getHeaders().get("meta-adapter"));
+		assertEquals(Action.STARTADAPTER.name(), capturedRequest.getHeaders().get("meta-action"));
+	}
+
+	@Test
 	public void updateAdaptersWithNoAdapters() throws Exception {
 		ArgumentCaptor<Message<Object>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
