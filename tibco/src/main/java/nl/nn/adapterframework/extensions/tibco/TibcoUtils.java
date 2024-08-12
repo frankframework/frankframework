@@ -150,15 +150,13 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static String getQueueFirstMessageAgeAsString(Session jSession,
-			String queueName, long currentTime) {
+	protected static String getQueueFirstMessageAgeAsString(Session jSession, String queueName, long currentTime) {
 		try {
-			long age = getQueueFirstMessageAge(jSession, queueName, null,
-					currentTime, false);
-			if (age == -2) {
-				return "??";
-			} else if (age == -1) {
+			long age = getQueueFirstMessageAge(jSession, queueName, null, currentTime, false);
+			if (age == -1) {
 				return null;
+			} else if (age < -1) {
+				return "??";
 			} else {
 				return DurationFormatUtils.formatDuration(age, "ddd-HH:mm:ss");
 			}
