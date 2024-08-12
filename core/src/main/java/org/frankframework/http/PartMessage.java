@@ -27,7 +27,7 @@ import jakarta.mail.Part;
 
 public class PartMessage extends Message {
 
-	private static final long serialVersionUID = 4740404985426114493L;
+	private static final long serialVersionUID = 4740404985426114492L;
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
