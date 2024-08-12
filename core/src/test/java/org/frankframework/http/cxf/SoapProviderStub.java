@@ -9,12 +9,12 @@ import lombok.Getter;
 
 public class SoapProviderStub extends SOAPProviderBase {
 
+	@Getter PipeLineSession session;
+
 	public SoapProviderStub(WebServiceContext context) {
 		this.webServiceContext = context;
 		session = new PipeLineSession();
 	}
-
-	@Getter PipeLineSession session;
 
 	@Override
 	Message processRequest(Message message, PipeLineSession pipelineSession) {

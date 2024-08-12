@@ -52,6 +52,8 @@ import org.w3c.dom.Element;
 
 public class SoapProviderTest {
 
+	private static final String BASEDIR = "/Soap/";
+
 	private final WebServiceContext webServiceContext = new WebServiceContextStub();
 	private SoapProviderStub SOAPProvider;
 
@@ -70,8 +72,6 @@ public class SoapProviderTest {
 	public void setup() {
 		SOAPProvider = new SoapProviderStub(webServiceContext);
 	}
-
-	private static final String BASEDIR = "/Soap/";
 
 	private Message getFile(String file) throws IOException {
 		URL url = this.getClass().getResource(BASEDIR+file);
