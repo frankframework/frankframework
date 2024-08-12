@@ -82,6 +82,23 @@ public abstract class MultipartUtils {
 	}
 
 	@Nullable
+	public static String getFieldName(AttachmentPart part) {
+		String id = part.getContentId(); //MTOM requests
+		if(StringUtils.isNotBlank(id)) {
+			return id;
+		}
+
+		String[] cd = part.getMimeHeader("Content-Disposition"); //MTOM Attachments and FORM-DATA requests
+		if(cd != null) {
+			String cdFields = cd[0]; //form-data; name="file1"; filename="file1" || attachment; name="file1"; filename="file1"
+			if(cdFields != null) {
+				return parseParameterField(cdFields, "name");
+			}
+		}
+		return null;
+	}
+
+	@Nullable
 	public static String getFileName(Part part) throws MessagingException {
 		String[] cd = part.getHeader("Content-Disposition");
 		return getFileName(cd);
@@ -245,7 +262,7 @@ public abstract class MultipartUtils {
 		while (attachmentParts.hasNext()) {
 			try {
 				AttachmentPart attachmentPart = attachmentParts.next();
-				final String fieldName = attachmentPart.getContentId();
+				final String fieldName = getFieldName(attachmentPart);
 				if(StringUtils.isEmpty(fieldName)) {
 					log.info("unable to determine fieldname skipping part");
 					continue;
@@ -253,7 +270,7 @@ public abstract class MultipartUtils {
 
 				Message message = new Message(attachmentPart.getRawContentBytes(), MessageUtils.getContext(attachmentPart.getAllMimeHeaders()));
 
-				XmlBuilder attachment = new XmlBuilder("attachment");
+				XmlBuilder attachment = new XmlBuilder("part");
 				attachment.addAttribute("name", fieldName);
 				parts.put(fieldName, message);
 

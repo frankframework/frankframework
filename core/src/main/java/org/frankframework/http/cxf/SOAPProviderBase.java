@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import jakarta.annotation.Resource;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.MimeHeader;
@@ -37,15 +37,9 @@ import jakarta.xml.ws.WebServiceException;
 import jakarta.xml.ws.WebServiceProvider;
 import jakarta.xml.ws.handler.MessageContext;
 
-import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
-import org.springframework.util.MimeType;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.mime.MultipartUtils;
@@ -59,6 +53,10 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.springframework.util.MimeType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Base class for handling JAX-WS SOAP messages
@@ -76,7 +74,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	private String attachmentXmlSessionKey = null;
 	private Map<String, MessageFactory> factory = new HashMap<>();
 
-	private boolean multipartBackwardsCompatibilityMode = AppConstants.getInstance().getBoolean("WebServiceListener.multipart.backwardsCompatibility", false);
+	protected boolean multipartBackwardsCompatibilityMode = AppConstants.getInstance().getBoolean("WebServiceListener.backwardsCompatibleMultipartNotation", false);
 
 	// WebServiceProviders must have a default public constructor
 	public SOAPProviderBase() {
@@ -124,13 +122,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					handleIncomingAttachments(request.getAttachments(), pipelineSession);
 				} else {
 					MultipartMessages parts = MultipartUtils.parseMultipart(request.getAttachments());
-					int i = 0;
-					for (Entry<String, Message> entry : parts.messages().entrySet()) {
-						String fieldName = "attachment" + i;
-						pipelineSession.put(fieldName, entry.getValue());
-						i++;
-					}
-
+					parts.messages().forEach(pipelineSession::put);
 					pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
 				}
 
