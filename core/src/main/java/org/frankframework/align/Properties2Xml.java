@@ -21,14 +21,14 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.SAXException;
-
 import org.frankframework.align.Properties2Xml.PropertyNode;
+import org.xml.sax.SAXException;
 
 /**
  * XML Schema guided JSON to XML converter;
@@ -59,6 +59,17 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 		super.startParse(root);
 	}
 
+	@Override
+	PropertyNode filterNodeChildren(PropertyNode node, Set<String> allowedNames) {
+		// Dummy-implementation since this is basically unused code
+		return node;
+	}
+
+	@Override
+	boolean isEmptyNode(PropertyNode node) {
+		// Dummy implementation since this is basically unused code
+		return false;
+	}
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, PropertyNode node, String childName) {
