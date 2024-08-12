@@ -74,6 +74,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private appConstants: AppConstants;
   private consoleState: ConsoleState;
   private _subscriptions = new Subscription();
+  private _subscriptionsReloadable = new Subscription();
   private serializedRawAdapterData: Record<string, string> = {};
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
@@ -212,11 +213,26 @@ export class AppComponent implements OnInit, OnDestroy {
         .changeInterval(this.appConstants['console.pollerInterval'] as number);
     });
     this._subscriptions.add(idleEndSubscription);
+
+    const reloadSubscription = this.appService.reload$.subscribe(() =>
+      this.onAppReload(),
+    );
+    this._subscriptions.add(reloadSubscription);
+
     this.initializeFrankConsole();
   }
 
   ngOnDestroy(): void {
+    this.websocketService.deactivate();
     this._subscriptions.unsubscribe();
+    this._subscriptionsReloadable.unsubscribe();
+  }
+
+  onAppReload(): void {
+    this.websocketService.deactivate();
+    this._subscriptionsReloadable.unsubscribe();
+    this.consoleState.init = appInitState.UN_INIT;
+    this.initializeFrankConsole();
   }
 
   handleQueryParams(parameters: ParamMap): void {
@@ -427,7 +443,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.startupError = this.appService.startupError;
       },
     );
-    this._subscriptions.add(startupErrorSubscription);
+    this._subscriptionsReloadable.add(startupErrorSubscription);
 
     this.http
       .get<

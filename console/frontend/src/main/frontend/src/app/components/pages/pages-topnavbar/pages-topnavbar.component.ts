@@ -82,7 +82,9 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
     if (this.selectedClusterMember) {
       this.appService
         .updateSelectedClusterMember(this.selectedClusterMember.id)
-        .subscribe();
+        .subscribe(() => {
+          this.appService.triggerReload();
+        });
     }
   }
 }

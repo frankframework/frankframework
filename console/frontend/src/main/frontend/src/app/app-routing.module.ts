@@ -351,11 +351,6 @@ export const routes: Routes = [
       iframe: true,
     },
   },
-  /* {
-    path: 'empty_page',
-    templateUrl: "js/app/views/empty/empty_page.html",
-    title: 'Empty Page'
-  }, */
   {
     path: 'iaf-update',
     component: IafUpdateComponent,
@@ -382,7 +377,7 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'status',
+    redirectTo: '',
     data: {
       breadcrumbs: 'Loading',
     },

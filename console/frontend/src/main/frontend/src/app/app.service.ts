@@ -228,6 +228,7 @@ export type ConsoleState = {
 })
 export class AppService {
   private loadingSubject = new Subject<boolean>();
+  private reloadSubject = new Subject<void>();
   private customBreadcrumbsSubject = new Subject<string>();
   private appConstantsSubject = new Subject<void>();
   private adaptersSubject = new Subject<Record<string, Adapter>>();
@@ -242,6 +243,7 @@ export class AppService {
   private iframePopoutUrlSubject = new Subject<string>();
 
   loading$ = this.loadingSubject.asObservable();
+  reload$ = this.reloadSubject.asObservable();
   customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
   appConstants$ = this.appConstantsSubject.asObservable();
   adapters$ = this.adaptersSubject.asObservable();
@@ -319,6 +321,10 @@ export class AppService {
     private http: HttpClient,
     private debugService: DebugService,
   ) {}
+
+  triggerReload(): void {
+    this.reloadSubject.next();
+  }
 
   updateLoading(loading: boolean): void {
     this.loadingSubject.next(loading);
@@ -453,7 +459,7 @@ export class AppService {
 
   getClusterMembers(): Observable<ClusterMember[]> {
     return this.http.get<ClusterMember[]>(
-      `${this.absoluteApiPath}cluster/members`,
+      `${this.absoluteApiPath}cluster/members?type=worker`,
     );
   }
 

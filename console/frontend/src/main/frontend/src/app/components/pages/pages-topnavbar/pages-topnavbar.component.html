@@ -61,7 +61,7 @@
           </li>
         </ul>
       </li>
-      <li>
+      <li *ngIf="clusterMembers.length > 0">
         <select
           class="m-r-sm cluster-member-selector"
           name="selectedClusterMember"
