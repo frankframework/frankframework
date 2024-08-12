@@ -49,6 +49,16 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		return dom.getDocumentElement();
 	}
 
+	@Override
+	boolean isEmptyNode(Node node) {
+		return !node.hasChildNodes();
+	}
+
+	@Override
+	Node filterNodeChildren(Node node, Set<String> allowedNames) {
+		// Dummy implementation, since this is basically dead code / deep search is not relevant to this class.
+		return node;
+	}
 
 	@Override
 	public String getNodeNamespaceURI(Node node) {
