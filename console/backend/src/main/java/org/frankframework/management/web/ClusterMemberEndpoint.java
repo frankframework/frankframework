@@ -66,14 +66,18 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 	@Relation("cluster")
 	@Description("view all available cluster members")
 	@GetMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getClusterMembers(@RequestParam(value = "id", required = false) String id) {
+	public ResponseEntity<?> getClusterMembers(@RequestParam(value = "id", required = false) String id, @RequestParam(value = "type", required = false) String type) {
 		if(StringUtils.isNotEmpty(id)) {
 			setMemberTarget(id);
 		}
 
-		List<ClusterMember> members = outboundGateway.getMembers();
+		List<ClusterMember> members = type != null ?
+				outboundGateway.getMembers().stream().filter(m -> type.equals(m.getName())).toList() :
+				outboundGateway.getMembers();
+
 		if(members.isEmpty()) {
-			return ResponseEntity.noContent().build();
+			JsonMessage response = new JsonMessage(members);
+			return ResponseUtils.convertToSpringResponse(response);
 		}
 
 		if(session.getMemberTarget() == null) {
