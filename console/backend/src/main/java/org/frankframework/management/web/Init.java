@@ -24,9 +24,6 @@ import java.util.Map;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,11 +38,11 @@ import org.springframework.web.util.pattern.PathPattern;
 @RestController
 public class Init extends FrankApiBase {
 
-	@Autowired
-	protected @Getter HttpServletRequest servletRequest;
+	private final RequestMappingHandlerMapping handlerMapping;
 
-	@Autowired
-	private RequestMappingHandlerMapping handlerMapping;
+	public Init(RequestMappingHandlerMapping handlerMapping) {
+		this.handlerMapping = handlerMapping;
+	}
 
 	private boolean isMonitoringEnabled() {
 		return getProperty("monitoring.enabled", false);
@@ -53,13 +50,15 @@ public class Init extends FrankApiBase {
 
 	@GetMapping(value = {"", "/"}, produces = "application/json")
 	@PermitAll
-	public ResponseEntity<?> getAllResources(@RequestParam(value = "allowedRoles", required = false) boolean displayAllowedRoles, @RequestParam(value = "hateoas", defaultValue = "default") String hateoasImpl) {
+	public ResponseEntity<?> getAllResources(HttpServletRequest servletRequest,
+											 @RequestParam(value = "allowedRoles", required = false) boolean displayAllowedRoles,
+											 @RequestParam(value = "hateoas", defaultValue = "default") String hateoasImpl) {
 		List<Object> JSONresources = new ArrayList<>();
 		Map<String, Object> HALresources = new HashMap<>();
 		Map<String, Object> resources = new HashMap<>(1);
 		boolean hateoasSupport = "hal".equalsIgnoreCase(hateoasImpl);
 
-		String requestPath = getServletRequest().getRequestURL().toString();
+		String requestPath = servletRequest.getRequestURL().toString();
 		if (requestPath.endsWith("/")) {
 			requestPath = requestPath.substring(0, requestPath.length() - 1);
 		}
@@ -126,19 +125,20 @@ public class Init extends FrankApiBase {
 							HALresources.put(relation, resource);
 					}
 				} else {
-					if (hasRelation)
+					if (hasRelation) {
 						resource.put("rel", rel);
+					}
 					JSONresources.add(resource);
 				}
 			}
 		}
 
-		if (hateoasSupport)
+		if (hateoasSupport) {
 			resources.put("_links", HALresources);
-		else
+		} else {
 			resources.put("links", JSONresources);
+		}
 
-		return ResponseEntity.status(HttpStatus.CREATED).body(resources);
+		return ResponseEntity.status(HttpStatus.OK).body(resources);
 	}
-
 }

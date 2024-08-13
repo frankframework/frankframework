@@ -26,5 +26,4 @@ public class ServerStatisticsTest extends FrankApiTestBase {
 	public void testFrankHealth() throws Exception {
 		this.testActionAndTopicHeaders("/server/health", "HEALTH", null);
 	}
-
 }

@@ -26,6 +26,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,14 +37,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
-import lombok.Setter;
-
 @RestController
 public class LiquibaseScript extends FrankApiBase {
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadScript(@RequestParam(value = "configuration", required = false) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
@@ -51,15 +48,11 @@ public class LiquibaseScript extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> generateSQL(LiquibaseMultipartBody multipartBody) throws ApiException {
-		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.getConfiguration(), null);
-		MultipartFile filePart = multipartBody.getFile();
-
-		if (filePart == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
+		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.configuration(), null);
+		MultipartFile filePart = RequestUtils.resolveRequiredProperty("file", multipartBody.file(), null);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -91,11 +84,8 @@ public class LiquibaseScript extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.CREATED).body(resultMap);
 	}
 
-	@Getter
-	@Setter
-	public static class LiquibaseMultipartBody {
-		private String configuration;
-		private MultipartFile file;
+	public record LiquibaseMultipartBody(
+			String configuration,
+			MultipartFile file) {
 	}
-
 }
