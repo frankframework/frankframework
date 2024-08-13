@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +33,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -322,7 +322,7 @@ public class Json2Xml extends XmlAligner {
 				return null;
 			}
 			JsonValue child = o.get(name);
-			List<JsonValue> result = new LinkedList<>();
+			List<JsonValue> result = new ArrayList<>();
 			if (child instanceof JsonArray array) {
 				if (log.isTraceEnabled())
 					log.trace("child named [{}] is a JsonArray, current node insertElementContainerElements [{}]", name, insertElementContainerElements);
@@ -526,7 +526,7 @@ public class Json2Xml extends XmlAligner {
 		String childName=childElementDeclaration.getName();
 		Iterable<JsonValue> children = getNodeChildrenByName(node, childElementDeclaration);
 		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
-			List<JsonValue> result=new LinkedList<>();
+			List<JsonValue> result=new ArrayList<>();
 			result.add(getSubstitutedChild(childName));
 			return result;
 		}
@@ -582,9 +582,11 @@ public class Json2Xml extends XmlAligner {
 	 */
 	@Override
 	public void parse(InputSource input) throws SAXException, IOException {
-		JsonValue container=null;
-		if (input instanceof Json2Xml.XmlAlignerInputSource) {
-			container= ((XmlAlignerInputSource)input).container;
+		JsonValue container;
+		if (input instanceof XmlAlignerInputSource xmlAlignerInputSource) {
+			container = xmlAlignerInputSource.container;
+		} else {
+			container = null;
 		}
 		if (log.isTraceEnabled()) log.trace("parse(InputSource) container [{}]", container);
 		startParse(container);
@@ -628,8 +630,8 @@ public class Json2Xml extends XmlAligner {
 			}
 		} else {
 			if (nodeAttributes==null || nodeAttributes.isEmpty()) {
-				log.warn("node [{}] declared [{}] attributes, but no attributes found", name, attributeUses.getLength());
-			} else {
+				log.warn("node [{}] declared [{}] attributes, but no attributes found", name, attributeUses != null ? attributeUses.getLength() : 0);
+			} else if (attributeUses != null) {
 				for (int i=0;i<attributeUses.getLength(); i++) {
 					XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
 					XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
@@ -681,8 +683,8 @@ public class Json2Xml extends XmlAligner {
 		if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element [{}]", name);
 		List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
 		if (log.isTraceEnabled()) {
-			if (childParticles==null) {
-				log.trace("Examined node [{}] deepSearch [{}] path found is null", name, isDeepSearch());
+			if (childParticles.isEmpty()) {
+				log.trace("Examined node [{}] deepSearch [{}] path found is empty", name, isDeepSearch());
 			} else {
 				log.trace("Examined node [{}] deepSearch [{}] found path length [{}]: {}", ()->name, this::isDeepSearch, childParticles::size, () -> childParticles.stream()
 						.map(XSParticle::getTerm)
@@ -692,13 +694,11 @@ public class Json2Xml extends XmlAligner {
 		}
 		Set<String> processedChildren = new HashSet<>();
 
-		if (childParticles!=null) {
-			for (int i=0;i<childParticles.size();i++) {
-				XSParticle childParticle=childParticles.get(i);
-				XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
-				if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() processing child [{}], name [{}]", i, childElementDeclaration.getName());
-				processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs()>0, processedChildren);
-			}
+		for (int i = 0; i < childParticles.size(); i++) {
+			XSParticle childParticle = childParticles.get(i);
+			XSElementDeclaration childElementDeclaration = (XSElementDeclaration) childParticle.getTerm();
+			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() processing child [{}], name [{}]", i, childElementDeclaration.getName());
+			processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs() > 0, processedChildren);
 		}
 
 		Set<String> unProcessedChildren = getUnprocessedChildElementNames(node, processedChildren);
@@ -771,25 +771,25 @@ public class Json2Xml extends XmlAligner {
 		return true;
 	}
 
-	public List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, JsonValue node, boolean silent) throws SAXException {
+	public @Nonnull List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, JsonValue node, boolean silent) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		if (typeDefinition==null) {
 			log.warn("getBestChildElementPath typeDefinition is null");
-			return null;
+			return Collections.emptyList();
 		}
 		switch (typeDefinition.getTypeCategory()) {
 		case XSTypeDefinition.SIMPLE_TYPE:
 			if (log.isTraceEnabled()) log.trace("getBestChildElementPath typeDefinition.typeCategory is SimpleType, no child elements");
-			return null;
+			return Collections.emptyList();
 		case XSTypeDefinition.COMPLEX_TYPE:
 			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
 			switch (complexTypeDefinition.getContentType()) {
 			case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
 				if (log.isTraceEnabled()) log.trace("getBestChildElementPath complexTypeDefinition.contentType is Empty, no child elements");
-				return null;
+				return Collections.emptyList();
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
 				if (log.isTraceEnabled()) log.trace("getBestChildElementPath complexTypeDefinition.contentType is Simple, no child elements (only characters)");
-				return null;
+				return Collections.emptyList();
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
 				XSParticle particle = complexTypeDefinition.getParticle();
@@ -798,15 +798,15 @@ public class Json2Xml extends XmlAligner {
 				}
 				if (log.isTraceEnabled())
 					log.trace("typeDefinition particle [{}]", ToStringBuilder.reflectionToString(particle, ToStringStyle.MULTI_LINE_STYLE));
-				List<XSParticle> result=new LinkedList<>();
-				List<String> failureReasons=new LinkedList<>();
+				List<XSParticle> result=new ArrayList<>();
+				List<String> failureReasons=new ArrayList<>();
 				if (getBestMatchingElementPath(elementDeclaration, node, particle, result, failureReasons)) {
 					return result;
 				}
 				if (!silent) {
 					handleError("Cannot find path:" + String.join("\n", failureReasons));
 				}
-				return null;
+				return Collections.emptyList();
 			default:
 				throw new IllegalStateException("getBestChildElementPath complexTypeDefinition.contentType is not Empty,Simple,Element or Mixed, but ["+complexTypeDefinition.getContentType()+"]");
 			}
@@ -817,12 +817,13 @@ public class Json2Xml extends XmlAligner {
 
 	/**
 	 *
-	 * @param baseElementDeclaration TODO
-	 * @param particle
+	 * @param baseElementDeclaration XSD Type Declaration of the base element
+	 * @param baseNode Node from which to search for path   
+	 * @param particle XSD Particle for which to search for path
 	 * @param failureReasons returns the reasons why no match was found
 	 * @param path in this list the longest list of child elements, that matches the available, is maintained. Null if no matching.
 	 * @return true when a matching path is found. if false, failureReasons will contain reasons why.
-	 * @throws SAXException
+	 * @throws SAXException If there was any exception
  	 */
 	public boolean getBestMatchingElementPath(XSElementDeclaration baseElementDeclaration, JsonValue baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons) throws SAXException {
 		if (particle==null) {
@@ -832,14 +833,14 @@ public class Json2Xml extends XmlAligner {
 		if (term == null) {
 			throw new NullPointerException("getBestMatchingElementPath particle.term is null");
 		}
-		if (term instanceof XSModelGroup) {
-			return handleModelGroupTerm(baseElementDeclaration, baseNode, path, failureReasons, (XSModelGroup) term);
+		if (term instanceof XSModelGroup xsModelGroup) {
+			return handleModelGroupTerm(baseElementDeclaration, baseNode, path, failureReasons, xsModelGroup);
 		}
-		if (term instanceof XSElementDeclaration) {
-			return handleElementDeclarationTerm(baseNode, particle, path, failureReasons, (XSElementDeclaration) term);
+		if (term instanceof XSElementDeclaration xsElementDeclaration) {
+			return handleElementDeclarationTerm(baseNode, particle, path, failureReasons, xsElementDeclaration);
 		}
-		if (term instanceof XSWildcard) {
-			return handleWildcardTerm(baseElementDeclaration, (XSWildcard) term);
+		if (term instanceof XSWildcard xsWildcard) {
+			return handleWildcardTerm(baseElementDeclaration, xsWildcard);
 		}
 		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
 	}
@@ -853,7 +854,7 @@ public class Json2Xml extends XmlAligner {
 					log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, perform deep search", elementName);
 				try {
 					List<XSParticle> subList=getBestChildElementPath(elementDeclaration, baseNode, true);
-					if (subList!=null && !subList.isEmpty()) {
+					if (!subList.isEmpty()) {
 						path.add(particle);
 						if (log.isTraceEnabled())
 							log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, nested elements found in deep search", elementName);
@@ -907,15 +908,14 @@ public class Json2Xml extends XmlAligner {
 		case XSModelGroup.COMPOSITOR_CHOICE:
 			List<XSParticle> bestPath=null;
 
-			List<String> choiceFailureReasons = new LinkedList<>();
+			List<String> choiceFailureReasons = new ArrayList<>();
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
-				List<XSParticle> optionPath=new LinkedList<>(path);
+				List<XSParticle> optionPath=new ArrayList<>(path);
 
-				if (getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, optionPath, choiceFailureReasons)) {
-					if (bestPath==null || bestPath.size()<optionPath.size()) {
-						bestPath=optionPath;
-					}
+				if (getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, optionPath, choiceFailureReasons)
+						&& (bestPath == null || bestPath.size() < optionPath.size())) {
+					bestPath = optionPath;
 				}
 			}
 			if (bestPath==null) {
