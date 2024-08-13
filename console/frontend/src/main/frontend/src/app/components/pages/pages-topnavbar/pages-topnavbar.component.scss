@@ -1,8 +1,15 @@
-li > select {
+.cluster-member-selector {
   width: 180px;
-  padding: 3px 5px;
+  padding: 6px 24px 6px 10px;
   border: 2px solid #fdc300;
   background-color: inherit;
-  border-radius: 12px;
+  border-radius: 25px;
   outline: unset;
+  appearance: none;
+
+  + i.fa {
+    position: relative;
+    left: -22px;
+    pointer-events: none;
+  }
 }
