@@ -67,7 +67,6 @@ public class XmlAligner extends XMLFilterImpl {
 	public static final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
 	private @Setter PSVIProvider psviProvider;
-	private final boolean indent = true;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
 	protected ValidatorHandler validatorHandler;
 	private @Getter @Setter List<XSModel> schemaInformation;
@@ -116,10 +115,8 @@ public class XmlAligner extends XMLFilterImpl {
 		newLine(0);
 	}
 	public void newLine(int offset) throws SAXException {
-		if (indent) {
-			int level=indentLevel+offset;
-			ignorableWhitespace(INDENTOR, 0, (level<MAX_INDENT?level:MAX_INDENT)*2+1);
-		}
+		int level = indentLevel + offset;
+		ignorableWhitespace(INDENTOR, 0, (Math.min(level, MAX_INDENT))*2+1);
 	}
 
 	public boolean isNil(Attributes attributes) {
@@ -196,7 +193,7 @@ public class XmlAligner extends XMLFilterImpl {
 		return isPresentInSet(multipleOccurringChildElements,name);
 	}
 
-	protected ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
+	private ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
 		if (particle==null) {
 			log.warn("Particle is null, is this a problem? Appearantly not");
 			return ChildOccurrence.EMPTY;
@@ -384,8 +381,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (elementDeclaration==null) {
 			return null;
 		}
-		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
-		return typeDefinition;
+		return elementDeclaration.getTypeDefinition();
 	}
 
 
