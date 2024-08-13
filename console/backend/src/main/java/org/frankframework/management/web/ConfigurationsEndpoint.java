@@ -46,9 +46,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class ConfigurationsEndpoint extends FrankApiBase {
 
-	public static final String HEADER_VERSION = "version";
+	private static final String PATH_VARIABLE_VERSION = "version";
 
-	public static final String BUS_HEADER_VERSION = "version";
+	private static final String BUS_HEADER_VERSION = "version";
 
 	@AllowAllIbisUserRoles
 	@Relation("application")
@@ -156,7 +156,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Description("change the active configuration version, and optionally schedule or load it directly")
 	@PutMapping(value = "/configurations/{configuration}/versions/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> manageConfiguration(@PathVariable("configuration") String configurationName,
-												 @PathVariable(HEADER_VERSION) String encodedVersion,
+												 @PathVariable(PATH_VARIABLE_VERSION) String encodedVersion,
 												 @RequestParam(value = "datasourceName", required = false) String datasourceName,
 												 @RequestBody Map<String, Object> json) throws ApiException {
 
@@ -228,7 +228,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Relation("configuration")
 	@Description("download a specific configuration version")
 	@GetMapping(value = "/configurations/{configuration}/versions/{version}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<?> downloadConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(HEADER_VERSION) String version,
+	public ResponseEntity<?> downloadConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(PATH_VARIABLE_VERSION) String version,
 												   @RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -241,7 +241,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@Relation("configuration")
 	@Description("delete a specific configuration")
 	@DeleteMapping(value = "/configurations/{configuration}/versions/{version}")
-	public ResponseEntity<?> deleteConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(HEADER_VERSION) String version,
+	public ResponseEntity<?> deleteConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(PATH_VARIABLE_VERSION) String version,
 												 @RequestParam(value = "datasourceName", required = false) String datasourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
