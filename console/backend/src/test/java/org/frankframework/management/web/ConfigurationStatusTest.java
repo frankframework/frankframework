@@ -1,7 +1,10 @@
 package org.frankframework.management.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +62,8 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
+		verify(outputGateway, times(2)).sendAsyncMessage(any());
+
 		assertEquals(Action.STARTADAPTER.name(), capturedRequest.getHeaders().get("meta-action"));
 	}
 
@@ -74,6 +79,8 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
+		verify(outputGateway, times(2)).sendAsyncMessage(any());
+
 		assertEquals("config1", capturedRequest.getHeaders().get("meta-configuration"));
 		assertEquals("adapter2", capturedRequest.getHeaders().get("meta-adapter"));
 		assertEquals(Action.STARTADAPTER.name(), capturedRequest.getHeaders().get("meta-action"));
