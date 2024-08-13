@@ -38,7 +38,7 @@ export class MonacoEditorComponent
   @Input()
   value?: string;
   @Input()
-  options?: monaco.editor.IEditorOptions;
+  options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 
   @ViewChild('editor')
   protected editorContainer!: ElementRef;

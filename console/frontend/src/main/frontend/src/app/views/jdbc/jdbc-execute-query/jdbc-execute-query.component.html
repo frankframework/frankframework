@@ -94,15 +94,12 @@
               <label class="col-sm-3 control-label label-height-30"
                 >Query</label
               >
-              <div class="col-sm-9">
-                <textarea
+              <div class="col-sm-9" style="height: 200px">
+                <app-monaco-editor
                   class="form-control"
-                  name="query"
-                  rows="5"
-                  appQuickSubmitForm
-                  style="resize: none"
+                  [options]="{ language: 'sql' }"
                   [(ngModel)]="form['query']"
-                ></textarea>
+                ></app-monaco-editor>
               </div>
             </div>
             <div class="row form-group">
