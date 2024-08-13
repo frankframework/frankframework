@@ -142,7 +142,8 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		String uri = request.getPathInfo();
-		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
+		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}",
+				uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+ StringEscapeUtils.escapeJava(remoteUser) +"]" : ""));
 
 		if (uri == null) {
 			response.setStatus(400);
@@ -630,7 +631,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					List<String> logValueList = valueList.stream()
 							.map(StringEscapeUtils::escapeJava)
 							.collect(Collectors.toList());
-					LOG.trace("setting queryParameter [{}] to {}", paramName, logValueList);
+					LOG.trace("setting queryParameter [{}] to {}", StringEscapeUtils.escapeJava(paramName), logValueList);
 				}
 				params.put(paramName, valueList);
 			}
