@@ -117,7 +117,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
-			throw new ConfigurationException(" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
+			throw new ConfigurationException("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		}
 
 		if (getXsltVersion()>=2) {
