@@ -894,7 +894,9 @@ public class LarvaTool {
 		Path targetPath = directory.toPath().normalize();
 
 		if (!directory.toPath().normalize().startsWith(targetPath)) {
-			logger.warn("Scenarios directory is outside of the target directory");
+			String message = "Scenarios directory is outside of the target directory";
+			logger.warn(message);
+			writeLog(XmlEncodingUtils.encodeChars(message) + "<br/>", LarvaLogLevel.ERROR, false);
 			return scenarioFiles;
 		}
 
