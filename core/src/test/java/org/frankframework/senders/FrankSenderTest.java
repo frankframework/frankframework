@@ -36,7 +36,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -48,8 +47,10 @@ import org.frankframework.pipes.GetFromSession;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.PipeProcessor;
+import org.frankframework.receivers.FrankListener;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -68,6 +69,7 @@ class FrankSenderTest {
 	private Message input;
 	private SenderResult result;
 	private TestConfiguration configuration;
+	private FrankListener frankListener;
 
 	@AfterEach
 	void tearDown() {
@@ -82,6 +84,9 @@ class FrankSenderTest {
 			DispatcherManagerFactory.getDispatcherManager().unregister(TARGET_SERVICE_NAME);
 		} catch (DispatcherException e) {
 			// Ignore
+		}
+		if (frankListener != null) {
+			frankListener.close();
 		}
 		log.debug("FrankSenderTest: Teardown done");
 	}
@@ -210,13 +215,13 @@ class FrankSenderTest {
 		Adapter adapter = mock();
 		AdapterManager adapterManager = mock();
 		IbisManager ibisManager = mock();
-		Configuration configuration = mock();
+		Configuration mockConfiguration = mock();
 
 		sender.setIbisManager(ibisManager);
 		sender.setAdapterManager(adapterManager);
 
-		when(ibisManager.getConfiguration("configurationName")).thenReturn(configuration);
-		when(configuration.getAdapterManager()).thenReturn(adapterManager);
+		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
+		when(mockConfiguration.getAdapterManager()).thenReturn(adapterManager);
 		when(adapterManager.getAdapter("adapterName")).thenReturn(adapter);
 
 		// Act
@@ -241,17 +246,66 @@ class FrankSenderTest {
 		Adapter adapter = mock();
 		AdapterManager adapterManager = mock();
 		IbisManager ibisManager = mock();
-		Configuration configuration = mock();
+		Configuration mockConfiguration = mock();
 
 		sender.setIbisManager(ibisManager);
 		sender.setAdapterManager(adapterManager);
 
-		when(ibisManager.getConfiguration("configurationName")).thenReturn(configuration);
-		when(configuration.getAdapterManager()).thenReturn(adapterManager);
+		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
+		when(mockConfiguration.getAdapterManager()).thenReturn(adapterManager);
 		when(adapterManager.getAdapter("adapterName")).thenReturn(adapter);
 
 		// Act / Assert
 		assertThrows(SenderException.class, () -> sender.findAdapter(target));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"ListenerName",
+			"ConfigName/ListenerName",
+			"/ListenerName"
+	})
+	void getFrankListenerSuccess(String target) throws Exception {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		Configuration mockConfiguration = mock();
+		when(mockConfiguration.getName()).thenReturn("ConfigName");
+		sender.setApplicationContext(mockConfiguration);
+
+		frankListener = new FrankListener();
+		frankListener.setName("ListenerName");
+		frankListener.setApplicationContext(mockConfiguration);
+		frankListener.configure();
+		frankListener.open();
+
+		// Act
+		ServiceClient actual = sender.getFrankListener(target);
+
+		// Assert
+		assertNotNull(actual, "Expected to have found a FrankListener for target [" + target + "]");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"NoSuchListener",
+			"NoSuchConfig/ListenerName",
+			"/NoSuchListener"
+	})
+	void getFrankListenerNotFound(String target) throws Exception {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		Configuration configuration = mock();
+		when(configuration.getName()).thenReturn("ConfigName");
+		sender.setApplicationContext(configuration);
+
+		frankListener = new FrankListener();
+		frankListener.setName("ListenerName");
+		frankListener.setApplicationContext(configuration);
+		frankListener.configure();
+		frankListener.open();
+
+		// Act
+		assertThrows(SenderException.class, ()-> sender.getFrankListener(target));
 	}
 
 	@ParameterizedTest
@@ -313,10 +367,12 @@ class FrankSenderTest {
 
 	@ParameterizedTest
 	@CsvSource({ // Cannot test with DLL Scope
-			"ADAPTER, cid1, reply",
-			"JVM, cid1, reply",
-			"ADAPTER, , reply",
-			"JVM, , reply",
+			"ADAPTER, cid1",
+			"LISTENER, cid1",
+			"JVM, cid1",
+			"ADAPTER,",
+			"LISTENER,",
+			"JVM,",
 	})
 	void sendSyncMessage(FrankSender.Scope scope, String correlationId) throws Exception {
 		// Arrange
@@ -354,7 +410,7 @@ class FrankSenderTest {
 	}
 
 	@ParameterizedTest
-	@EnumSource(names = {"ADAPTER", "JVM"}) // Cannot test with DLL Scope
+	@EnumSource(names = {"ADAPTER", "LISTENER", "JVM"}) // Cannot test with DLL Scope
 	void sendAsyncMessage(FrankSender.Scope scope) throws Exception {
 		// Arrange
 		log.debug("Creating Configuration");
@@ -362,7 +418,9 @@ class FrankSenderTest {
 		Semaphore semaphore = new Semaphore(0);
 		IPipe pipe = new AbstractPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+				// Assert this to make sure input message is not prematurely closed; normally this is asserted by a PipeLineProcessor but that is not created in the Test SpringContext
+				message.assertNotClosed();
 				semaphore.release();
 				return new PipeRunResult();
 			}
@@ -372,6 +430,8 @@ class FrankSenderTest {
 		FrankSender sender = createFrankSender(scope, false, pipe);
 
 		session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "mid1");
+		session.put(PipeLineSession.CORRELATION_ID_KEY, "cid2");
 		input = new Message("request");
 
 		// Act
@@ -392,8 +452,10 @@ class FrankSenderTest {
 	@ParameterizedTest
 	@CsvSource({ // Cannot test with DLL Scope
 			"ADAPTER, cid1",
+			"LISTENER, cid1",
 			"JVM, cid1",
 			"ADAPTER,",
+			"LISTENER,",
 			"JVM,",
 	})
 	void sendMessageHandleException(FrankSender.Scope scope, String correlationId) throws Exception {
@@ -435,8 +497,10 @@ class FrankSenderTest {
 		}
 
 		Adapter targetAdapter = createAdapter(configuration, pipe);
-		if (scope != FrankSender.Scope.ADAPTER) {
+		if (scope == FrankSender.Scope.JVM) {
 			createJavaListener(configuration, targetAdapter);
+		} else if (scope == FrankSender.Scope.LISTENER) {
+			createFrankListener(configuration, targetAdapter);
 		}
 		if (!callSync) {
 			IsolatedServiceCaller isc = configuration.createBean(IsolatedServiceCaller.class);
@@ -449,6 +513,25 @@ class FrankSenderTest {
 
 		sender.configure();
 		return sender;
+	}
+
+	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
+		@SuppressWarnings("unchecked")
+		Receiver<Message> receiver = configuration.createBean(Receiver.class);
+		configuration.autowireByName(receiver);
+		receiver.setName("TargetAdapter-receiver");
+
+		FrankListener listener = configuration.createBean(FrankListener.class);
+		listener.setHandler(receiver);
+
+		receiver.setListener(listener);
+		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
+
+		targetAdapter.registerReceiver(receiver);
+		receiver.setAdapter(targetAdapter);
+
+		listener.configure();
+		listener.open();
 	}
 
 	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
@@ -467,6 +550,7 @@ class FrankSenderTest {
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
 		targetAdapter.registerReceiver(receiver);
+		receiver.setAdapter(targetAdapter);
 
 		listener.open();
 	}

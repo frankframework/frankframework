@@ -19,6 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
@@ -43,6 +44,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.VirtualInputStream;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 
 import nl.nn.adapterframework.dispatcher.DispatcherException;
@@ -54,8 +56,11 @@ class IbisLocalSenderTest {
 
 	public static final long EXPECTED_BYTE_COUNT = 1_000L;
 
+	private TestConfiguration configuration;
+
 	@AfterEach
 	void tearDown() {
+		CloseUtils.closeSilently(configuration);
 		// In case JavaListener didn't close after end of test, deregister the service.
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
 		try {
@@ -75,7 +80,7 @@ class IbisLocalSenderTest {
 		ibisLocalSender.setSynchronous(!callIsolated || callSynchronous);
 
 		if (callByServiceName) {
-			//noinspection deprecation
+			//noinspection removal
 			ibisLocalSender.setServiceName(listener.getServiceName());
 		} else {
 			ibisLocalSender.setJavaListener(listener.getName());
@@ -107,7 +112,7 @@ class IbisLocalSenderTest {
 	@DisplayName("Test IbisLocalSender.sendMessage()")
 	void sendMessage(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
-		TestConfiguration configuration = new TestConfiguration(false);
+		configuration = new TestConfiguration(false);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
@@ -148,14 +153,11 @@ class IbisLocalSenderTest {
 	}
 
 	@ParameterizedTest(name = "Call via Dispatcher: {0}")
-	@CsvSource({
-			"true",
-			"false",
-	})
-	@DisplayName("Test IbisLocalSender.sendMessage()")
+	@ValueSource(booleans = {true, false})
+	@DisplayName("Test IbisLocalSender.sendMessage() Async")
 	void sendMessageAsync(boolean callByServiceName) throws Exception {
 		// Arrange
-		TestConfiguration configuration = new TestConfiguration(false);
+		configuration = new TestConfiguration(false);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
@@ -195,10 +197,11 @@ class IbisLocalSenderTest {
 		);
 	}
 
-	@Test
-	public void testSendMessageWithParamValuesAndReturnSessionKeys() throws Exception {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testSendMessageWithParamValuesAndReturnSessionKeys(boolean isolated) throws Exception {
 		// Arrange
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(isolated);
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("my-parameter1", "parameter1-value");
@@ -216,6 +219,8 @@ class IbisLocalSenderTest {
 				() -> assertEquals("parameter1-value", session.getString("my-parameter1")),
 				() -> assertTrue(session.containsKey("my-parameter2"), "After request the pipeline-session should contain key [my-parameter2]"),
 				() -> assertEquals("parameter2-value", session.getString("my-parameter2")),
+				() -> assertTrue(session.containsKey("key-to-copy"), "After request the pipeline-session should contain key [key-to-copy]"),
+				() -> assertEquals("dummy-value", session.getString("key-to-copy"), "After request the value of [key-to-copy] in the pipelinesession should be [dummy-value]"),
 				() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
 				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]"),
 				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
@@ -227,7 +232,7 @@ class IbisLocalSenderTest {
 	@Test
 	public void testSendMessageReturnSessionKeysWhenNoneConfigured() throws Exception {
 		// Arrange
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setReturnedSessionKeys(null);
 
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -251,7 +256,7 @@ class IbisLocalSenderTest {
 	@Test
 	public void testSendMessageWithExitStateError() throws Exception {
 		// Arrange
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, PipeLine.ExitState.ERROR);
@@ -269,7 +274,7 @@ class IbisLocalSenderTest {
 	@Test
 	public void testSendMessageWithException() throws Exception {
 		// Arrange
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
 		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
 			throw new ListenerException("TEST");
@@ -286,10 +291,10 @@ class IbisLocalSenderTest {
 	@Test
 	public void testSendMessageIsolatedWithException() throws Exception {
 		// Arrange
-		TestConfiguration configuration = new TestConfiguration();
+		configuration = new TestConfiguration();
 		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
 
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setIsolatedServiceCaller(serviceCaller);
 		sender.setIsolated(true);
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
@@ -308,8 +313,9 @@ class IbisLocalSenderTest {
 	@Test
 	public void testSendMessageWithInvalidServiceName() throws Exception {
 		// Arrange
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setThrowJavaListenerNotFoundException(true);
+		//noinspection removal
 		sender.setServiceName("invalid");
 
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -323,8 +329,9 @@ class IbisLocalSenderTest {
 	@Test
 	public void testSendMessageWithInvalidServiceNameNoException() throws Exception {
 		// Arrange
-		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setThrowJavaListenerNotFoundException(false);
+		//noinspection removal
 		sender.setServiceName("invalid");
 
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -403,9 +410,10 @@ class IbisLocalSenderTest {
 		return counter;
 	}
 
-	private static IbisLocalSender createIbisLocalSenderWithDummyServiceClient() throws ListenerException, ConfigurationException {
+	private IbisLocalSender createIbisLocalSenderWithDummyServiceClient(boolean isolated) throws ListenerException, ConfigurationException {
 		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
 			session.put("key-not-configured-for-copy", "dummy-value");
+			session.put("key-to-copy", "dummy-value");
 			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")), "param1");
 			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")), "param2");
@@ -416,10 +424,16 @@ class IbisLocalSenderTest {
 			}
 		}));
 		IbisLocalSender sender = new IbisLocalSender();
+		//noinspection removal
 		sender.setServiceName(SERVICE_NAME);
 		sender.setSynchronous(true);
-		sender.setIsolated(false);
-		sender.setReturnedSessionKeys("my-parameter1,this-doesnt-exist");
+		sender.setIsolated(isolated);
+		sender.setReturnedSessionKeys("my-parameter1,key-to-copy,this-doesnt-exist");
+		if (isolated) {
+			configuration = new TestConfiguration(false);
+			IsolatedServiceCaller isolatedServiceCaller = configuration.createBean(IsolatedServiceCaller.class);
+			sender.setIsolatedServiceCaller(isolatedServiceCaller);
+		}
 
 		addParameter("my-parameter1", sender);
 		addParameter("my-parameter2", sender);
@@ -452,6 +466,8 @@ class IbisLocalSenderTest {
 		public PipeRunResult doPipe(Message message, PipeLineSession session) {
 			try {
 				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
+				// Often this assert is done in PipeLineProcessor but they're not part of the test-spring-configuration, and it is important to make this assertion
+				message.assertNotClosed();
 				recordedMessageId = session.getMessageId();
 				recordedCorrelationId = session.getCorrelationId();
 				long counter = countStreamSize(message);

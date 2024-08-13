@@ -1,5 +1,7 @@
 package org.frankframework.management.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -23,8 +25,8 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
 						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes()))
-						.part(getMockParts("service", "dummyService123"))
-						.part(getMockParts("encoding", "fakeEncoding"))
+						.part(getMockPart("service", "dummyService123"))
+						.part(getMockPart("encoding", "fakeEncoding"))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -36,8 +38,8 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
 						.file(createMockMultipartFile("file", "script.xml", INPUT_MESSAGE.getBytes()))
-						.part(getMockParts("service", "dummyService123"))
-						.part(getMockParts("encoding", "fakeEncoding"))
+						.part(getMockPart("service", "dummyService123"))
+						.part(getMockPart("encoding", "fakeEncoding"))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -46,13 +48,19 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 
 	@Test
 	public void testMessageServiceListeners() throws Exception {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
-				.thenAnswer(i -> new StringMessage(INPUT_MESSAGE));
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+
+			assertEquals(INPUT_MESSAGE, in.getPayload());
+			assertEquals("dummyService123", in.getHeaders().get("meta-service"));
+
+			return new StringMessage(INPUT_MESSAGE);
+		});
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
 						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes()))
-						.part(getMockParts("service", "dummyService123"))
+						.part(getMockPart("service", "dummyService123"))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string(INPUT_MESSAGE));
@@ -60,13 +68,19 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 
 	@Test
 	public void testFileServiceListeners() throws Exception {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class)))
-				.thenAnswer(i -> new StringMessage(INPUT_MESSAGE));
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> in = i.getArgument(0);
+
+			assertEquals(INPUT_MESSAGE, in.getPayload());
+			assertEquals("dummyService123", in.getHeaders().get("meta-service"));
+
+			return new StringMessage(INPUT_MESSAGE);
+		});
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
 						.file(createMockMultipartFile("file", null, INPUT_MESSAGE.getBytes()))
-						.part(getMockParts("service", "dummyService123"))
+						.part(getMockPart("service", "dummyService123"))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string(INPUT_MESSAGE));
@@ -79,7 +93,7 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().string("{\"topic\":\"SERVICE_LISTENER\",\"action\":\"GET\"}"));
 	}
 
-	private MockPart getMockParts(String name, String value) {
+	private MockPart getMockPart(String name, String value) {
 		return new MockPart(name, value.getBytes());
 	}
 }

@@ -16,6 +16,7 @@
 package org.frankframework.encryption;
 
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.doc.Unsafe;
 
 public interface HasTruststore extends IScopeProvider {
 
@@ -43,14 +44,17 @@ public interface HasTruststore extends IScopeProvider {
 	void setTrustManagerAlgorithm(String trustManagerAlgorithm);
 
 	/** If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
+	@Unsafe
 	void setVerifyHostname(boolean verifyHostname);
 	/** If <code>true</code>, self signed certificates are accepted
 	 * @ff.default false
 	 */
+	@Unsafe
 	void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates);
 	/**
 	 * If <code>true</code>, CertificateExpiredExceptions are ignored
 	 * @ff.default false
 	 */
+	@Unsafe
 	void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException);
 }

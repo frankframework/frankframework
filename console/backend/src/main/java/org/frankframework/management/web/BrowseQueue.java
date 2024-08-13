@@ -17,12 +17,12 @@ package org.frankframework.management.web;
 
 import java.util.Map;
 
-import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BrowseQueue extends FrankApiBase {
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jms", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of all JMS QueueConnectionFactories")
@@ -41,7 +41,7 @@ public class BrowseQueue extends FrankApiBase {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.GET));
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@PostMapping(value = "/jms/browse", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of messages on a specific JMS queue")
@@ -53,9 +53,9 @@ public class BrowseQueue extends FrankApiBase {
 		Boolean lookupDestination = RequestUtils.getBooleanValue(json, "lookupDestination");
 		String type = RequestUtils.getValue(json, "type");
 
-		if (StringUtils.isNotEmpty(destination))
+		if (StringUtils.isEmpty(destination))
 			throw new ApiException("No destination provided");
-		if (StringUtils.isNotEmpty(type))
+		if (StringUtils.isEmpty(type))
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.FIND);

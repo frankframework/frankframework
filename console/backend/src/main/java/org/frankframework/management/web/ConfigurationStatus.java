@@ -26,6 +26,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.RequestUtils;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ConfigurationStatus extends FrankApiBase {
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view a list of all adapters, prefixed with the configuration name")
 	@GetMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,14 +51,15 @@ public class ConfigurationStatus extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view an adapter receivers/pipes/messages")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getAdapter(@PathVariable("configuration") String configuration, @PathVariable("name") String name, @RequestParam(value = "expanded", required = false) String expanded, @RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
+	public ResponseEntity<?> getAdapter(@PathVariable("configuration") String configuration, @PathVariable("name") String name,
+										@RequestParam(value = "expanded", required = false) String expanded,
+										@RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.FIND);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
+		addConfigurationAndAdapterNameHeaders(configuration, name, builder);
 
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
 		builder.addHeader("expanded", expanded);
@@ -70,8 +72,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapterHealth(@PathVariable("configuration") String configuration, @PathVariable("name") String name) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
+		addConfigurationAndAdapterNameHeaders(configuration, name, builder);
 
 		return callSyncGateway(builder);
 	}
@@ -83,18 +84,10 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Description("start/stop multiple adapters")
 	@PutMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapters(@RequestBody Map<String, Object> json) {
-
-		Action action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
 		String value = RequestUtils.getValue(json, "action");
-		if (StringUtils.isNotEmpty(value)) {
-			if ("stop".equals(value)) {action = Action.STOPADAPTER;}
-			if ("start".equals(value)) {action = Action.STARTADAPTER;}
-		}
-		if (action == null) {
-			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
-		}
+		Action action = getActionOrThrow(value);
 
 		Object adapterList = json.get("adapters");
 		if (adapterList != null) {
@@ -108,8 +101,7 @@ public class ConfigurationStatus extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
 		if (adapters.isEmpty()) {
-			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*ALL*");
-			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, "*ALL*");
+			addConfigurationAndAdapterNameHeaders("*ALL*", "*ALL*", builder);
 			callAsyncGateway(builder);
 		} else {
 			for (String adapterNameWithPossibleConfigurationName : adapters) {
@@ -135,66 +127,82 @@ public class ConfigurationStatus extends FrankApiBase {
 	@Description("start/stop an adapter")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @RequestBody Map<String, Object> json) {
-		Object value = json.get("action");
-		if (value instanceof String) {
-			Action action = null;
-			if (value.equals("stop")) {action = Action.STOPADAPTER;}
-			if (value.equals("start")) {action = Action.STARTADAPTER;}
-			if (action == null) {
-				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
-			}
+		String value = RequestUtils.getValue(json, "action");
+		Action action = getActionOrThrow(value);
 
-			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
-			builder.addHeader("action", action.name());
-			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-			callAsyncGateway(builder);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
+		addHeaders(builder, configuration, adapter, action);
+		callAsyncGateway(builder);
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
 	@Description("start/stop an adapter receivers")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @PathVariable("receiver") String receiver, @RequestBody Map<String, Object> json) {
-		Object value = json.get("action");
-		if (value instanceof String) {
-			Action action = null;
-			if (value.equals("stop")) {action = Action.STOPRECEIVER;} else if (value.equals("start")) {
+	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter,
+											@PathVariable("receiver") String receiver, @RequestBody Map<String, Object> json) {
+
+		String value = RequestUtils.getValue(json, "action");
+		Action action = null;
+
+		if (StringUtils.isNotEmpty(value)) {
+			if (value.equals("stop")) {
+				action = Action.STOPRECEIVER;
+			} else if (value.equals("start")) {
 				action = Action.STARTRECEIVER;
 			} else if (value.equals("incthread")) {
 				action = Action.INCTHREADS;
 			} else if (value.equals("decthread")) {
 				action = Action.DECTHREADS;
 			}
-			if (action == null) {
-				throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
-			}
-
-			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
-			builder.addHeader("action", action.name());
-			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
-			callAsyncGateway(builder);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
+		}
+		if (action == null) {
+			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 		}
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
+		addHeaders(builder, configuration, adapter, action);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		callAsyncGateway(builder);
+
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
 
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view an adapter flow")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/flow")
 	public ResponseEntity<?> getAdapterFlow(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		addConfigurationAndAdapterNameHeaders(configuration, adapter, builder);
 		return callSyncGateway(builder);
 	}
 
+	private void addHeaders(RequestMessageBuilder builder, String configuration, String adapter, Action action) {
+		if (action == null) {
+			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
+		}
+		builder.addHeader("action", action.name());
+		addConfigurationAndAdapterNameHeaders(configuration, adapter, builder);
+	}
+
+	private Action getActionOrThrow(String value) {
+		if (StringUtils.isNotEmpty(value)) {
+			if ("stop".equals(value)) {
+				return Action.STOPADAPTER;
+			}
+			if ("start".equals(value)) {
+				return Action.STARTADAPTER;
+			}
+		}
+
+		throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
+	}
+
+	private void addConfigurationAndAdapterNameHeaders(String configuration, String name, RequestMessageBuilder builder) {
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
+	}
 }

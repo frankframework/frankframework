@@ -6164,6 +6164,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="FrankListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FrankListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FtpFileSystemListener">
         <xs:complexType>
           <xs:complexContent>
@@ -7049,6 +7058,21 @@
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="FrankListenerType">
+    <xs:attributeGroup ref="FrankListenerDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FrankListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="FrankListenerDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the listener by which it can be found by the org.frankframework.senders.FrankSender. If this
+ is not configured, the name will default to the name of the org.frankframework.core.Adapter.
+ The name of the {@code FrankListener} must be unique across the configuration.</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -16529,6 +16553,7 @@
       <xs:pattern value="[jJ][vV][mM]" />
       <xs:pattern value="[dD][lL][lL]" />
       <xs:pattern value="[aA][dD][aA][pP][tT][eE][rR]" />
+      <xs:pattern value="[lL][iI][sS][tT][eE][nN][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="FtpTypeAttributeValuesType">

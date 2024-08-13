@@ -107,7 +107,7 @@ public class ApiExceptionHandler {
 	}
 
 	@ExceptionHandler(ApiException.class)
-	protected ResponseEntity<?> handleApiException(ApiException exception) {
+	protected ResponseEntity<Object> handleApiException(ApiException exception) {
 		return exception.getResponse();
 	}
 
@@ -115,5 +115,4 @@ public class ApiExceptionHandler {
 		log.warn("Caught unhandled exception while executing FF!API call", exception);
 		return ApiException.formatExceptionResponse(exception.getMessage(), status, headers);
 	}
-
 }
