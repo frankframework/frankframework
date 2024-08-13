@@ -69,7 +69,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		MIME,
 		NAME,
 		PATH,
-		HEADER;
+		PATH;
 	}
 
 	{

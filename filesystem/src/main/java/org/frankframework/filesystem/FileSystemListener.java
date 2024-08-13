@@ -87,8 +87,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		NAME,
 		PATH,
 		CONTENTS,
-		INFO,
-		ATTRIBUTE;
+		INFO
 	}
 
 	private @Getter String name;
@@ -112,7 +111,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter String wildcard;
 	private @Getter String excludeWildcard;
 	private @Getter String charset;
-	private @Getter String searchKey;
 
 	private @Getter long minStableTime = 1000;
 	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
@@ -323,17 +321,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				case "PATH" -> new Message(getFileSystem().getCanonicalName(file));
 				case "CONTENTS" -> getFileSystem().readFile(file, getCharset());
 				case "INFO" -> new Message(FileSystemUtils.getFileInfo(getFileSystem(), file, getOutputFormat()));
-				case "ATTRIBUTE", "HEADER" -> {
-					Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(file);
-					if (attributes != null) {
-						Object result = attributes.get(getSearchKey());
-						if (result != null) {
-							yield Message.asMessage(result);
-						}
-					}
-					log.warn("no attribute [{}] found for file [{}]", getMessageType(), getFileSystem().getName(file));
-					yield null;
-				}
 				default -> throw new ListenerException("Unknown messageType [" + getMessageType().name() + "]");
 			};
 		} catch (Exception e) {
@@ -597,11 +584,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
-	}
-
-	/** Searches for the searchKey in the attributes or headers when the messageType is <code>ATTRIBUTE</code> or <code>HEADER</code> */
-	public void setSearchKey(String searchKey) {
-		this.searchKey = searchKey;
 	}
 
 }
