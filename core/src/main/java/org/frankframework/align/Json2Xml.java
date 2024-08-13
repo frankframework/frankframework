@@ -16,7 +16,6 @@
 package org.frankframework.align;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +58,6 @@ import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
@@ -162,10 +160,6 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	public JsonValue getRootNode(JsonValue container) {
-		return container;
-	}
-
 	public void handleElementContents(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		JsonValue nodeToHandle;
@@ -176,13 +170,13 @@ public class Json2Xml extends XmlAligner {
 		}
 		if (typeDefinition==null) {
 			log.warn("handleElementContents typeDefinition is null");
-			handleSimpleTypedElement(elementDeclaration, null, nodeToHandle);
+			handleSimpleTypedElement(elementDeclaration, nodeToHandle);
 			return;
 		}
 		switch (typeDefinition.getTypeCategory()) {
 		case XSTypeDefinition.SIMPLE_TYPE:
 			if (log.isTraceEnabled()) log.trace("handleElementContents typeDefinition.typeCategory is SimpleType, no child elements");
-			handleSimpleTypedElement(elementDeclaration, (XSSimpleTypeDefinition)typeDefinition, nodeToHandle);
+			handleSimpleTypedElement(elementDeclaration, nodeToHandle);
 			return;
 		case XSTypeDefinition.COMPLEX_TYPE:
 			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
@@ -192,7 +186,7 @@ public class Json2Xml extends XmlAligner {
 				return;
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
 				if (log.isTraceEnabled()) log.trace("handleElementContents complexTypeDefinition.contentType is Simple, no child elements (only characters)");
-				handleSimpleTypedElement(elementDeclaration, null, nodeToHandle);
+				handleSimpleTypedElement(elementDeclaration, nodeToHandle);
 				return;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
@@ -223,7 +217,7 @@ public class Json2Xml extends XmlAligner {
 		return result;
 	}
 
-	public boolean isNil(XSElementDeclaration elementDeclaration, JsonValue node) {
+	public boolean isNil(JsonValue node) {
 		boolean result=node==JsonValue.NULL;
 		if (log.isTraceEnabled()) log.trace("node [{}] = [{}]", node, result);
 		return result;
@@ -259,7 +253,7 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	public boolean hasChild(XSElementDeclaration elementDeclaration, JsonValue node, String childName) throws SAXException {
+	public boolean hasChild(JsonValue node, String childName) throws SAXException {
 		if (isParentOfSingleMultipleOccurringChildElement() && (insertElementContainerElements || !strictSyntax)) {
 			// The array element can always considered to be present; if it is not, it will be inserted
 			return true;
@@ -500,20 +494,17 @@ public class Json2Xml extends XmlAligner {
 		return arrayBuilder.build();
 	}
 
-	public static String translate(String json, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException {
-		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
-		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, targetNamespace);
-	}
-
+	/**
+	 * Helper method for tests
+	 */
 	public static String translate(JsonStructure jsonStructure, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException {
-		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null);
+		Json2Xml j2x = create(schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null);
+		return j2x.translate(jsonStructure);
 	}
 
-	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException {
-		Json2Xml j2x = create(schemaURL, compactJsonArrays, rootElement, strictSyntax, deepSearch, targetNamespace, overrideValues);
-		return j2x.translate(json);
-	}
-
+	/**
+	 * Helper method for tests
+	 */
 	public static Json2Xml create(URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
@@ -560,8 +551,7 @@ public class Json2Xml extends XmlAligner {
 		return result;
 	}
 
-	@SuppressWarnings("unused")
-	protected Set<String> getUnprocessedChildElementNames(XSElementDeclaration elementDeclaration, JsonValue node, Set<String> processedChildren) throws SAXException {
+	protected Set<String> getUnprocessedChildElementNames(JsonValue node, Set<String> processedChildren) throws SAXException {
 		Set<String> unProcessedChildren = getAllNodeChildNames(node);
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
 			unProcessedChildren.removeAll(processedChildren);
@@ -608,7 +598,6 @@ public class Json2Xml extends XmlAligner {
 	 */
 	public void handleRootNode(JsonValue container, String name, String nodeNamespace) throws SAXException {
 		if (log.isTraceEnabled()) log.trace("handleNode() name [{}] namespace [{}]", name, nodeNamespace);
-		JsonValue rootNode=getRootNode(container);
 		if (StringUtils.isEmpty(nodeNamespace)) {
 			nodeNamespace=null;
 		}
@@ -616,7 +605,7 @@ public class Json2Xml extends XmlAligner {
 		if (elementDeclaration==null) {
 			throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" for ["+name+"] in namespace ["+nodeNamespace+"]");
 		}
-		handleElement(elementDeclaration,rootNode);
+		handleElement(elementDeclaration, container);
 	}
 
 	public void handleElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
@@ -663,7 +652,7 @@ public class Json2Xml extends XmlAligner {
 				}
 			}
 		}
-		if (isNil(elementDeclaration, node)) {
+		if (isNil(node)) {
 			validatorHandler.startPrefixMapping(XSI_PREFIX_MAPPING, XML_SCHEMA_INSTANCE_NAMESPACE);
 			attributes.addAttribute(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE, XSI_PREFIX_MAPPING+":"+XML_SCHEMA_NIL_ATTRIBUTE, "xs:boolean", "true");
 			validatorHandler.startElement(elementNamespace, name, qname, attributes);
@@ -712,7 +701,7 @@ public class Json2Xml extends XmlAligner {
 			}
 		}
 
-		Set<String> unProcessedChildren = getUnprocessedChildElementNames(elementDeclaration, node, processedChildren);
+		Set<String> unProcessedChildren = getUnprocessedChildElementNames(node, processedChildren);
 
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
 			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<>(unProcessedChildren);
@@ -739,12 +728,12 @@ public class Json2Xml extends XmlAligner {
 		// the below is used for mixed content nodes containing text
 		if (processedChildren.isEmpty()) {
 			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() handle element [{}] as simple, because no children processed", name);
-			handleSimpleTypedElement(elementDeclaration, null, node);
+			handleSimpleTypedElement(elementDeclaration, node);
 		}
 
 	}
 
-	protected void handleSimpleTypedElement(XSElementDeclaration elementDeclaration, @SuppressWarnings("unused") XSSimpleTypeDefinition simpleTypeDefinition, JsonValue node) throws SAXException {
+	protected void handleSimpleTypedElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String text = getText(elementDeclaration, node);
 		if (log.isTraceEnabled()) log.trace("textnode name [{}] text [{}]", elementDeclaration.getName(), text);
 		if (StringUtils.isNotEmpty(text)) {
@@ -847,7 +836,7 @@ public class Json2Xml extends XmlAligner {
 			return handleModelGroupTerm(baseElementDeclaration, baseNode, path, failureReasons, (XSModelGroup) term);
 		}
 		if (term instanceof XSElementDeclaration) {
-			return handleElementDeclarationTerm(baseElementDeclaration, baseNode, particle, path, failureReasons, (XSElementDeclaration) term);
+			return handleElementDeclarationTerm(baseNode, particle, path, failureReasons, (XSElementDeclaration) term);
 		}
 		if (term instanceof XSWildcard) {
 			return handleWildcardTerm(baseElementDeclaration, (XSWildcard) term);
@@ -855,10 +844,10 @@ public class Json2Xml extends XmlAligner {
 		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
 	}
 
-	private boolean handleElementDeclarationTerm(XSElementDeclaration baseElementDeclaration, JsonValue baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons, XSElementDeclaration elementDeclaration) throws SAXException {
+	private boolean handleElementDeclarationTerm(JsonValue baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons, XSElementDeclaration elementDeclaration) throws SAXException {
 		String elementName=elementDeclaration.getName();
 		if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration name [{}]", elementName);
-		if (!hasChild(baseElementDeclaration, baseNode, elementName)) {
+		if (!hasChild(baseNode, elementName)) {
 			if (isDeepSearch()) {
 				if (log.isTraceEnabled())
 					log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, perform deep search", elementName);
