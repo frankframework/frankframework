@@ -138,7 +138,7 @@ public class JavascriptSender extends SenderSeries {
 				pvl = getParameterList().getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(" exception extracting parameters", e);
+			throw new SenderException("unable to extract parameters", e);
 		}
 		int numberOfParameters = 0;
 		if (pvl != null) {
