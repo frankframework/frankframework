@@ -50,13 +50,14 @@ import org.xml.sax.SAXException;
  *
  * @author Gerrit van Brakel
  */
-public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
+public class Json2Xml extends ToXml<JsonValue,JsonValue> {
 
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";
 	public static final String MSG_EXPECTED_SINGLE_ELEMENT="did not expect array, but single element";
 
 	private final boolean insertElementContainerElements;
 	private final boolean strictSyntax;
+	SubstitutionProvider<?> sp;
 	private @Getter @Setter boolean readAttributes=true;
 	private static final String ATTRIBUTE_PREFIX = "@";
 	private static final String MIXED_CONTENT_LABEL = "#text";
@@ -123,8 +124,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 
 
-	@Override
-	public String getNodeText(XSElementDeclaration elementDeclaration, JsonValue node) {
+	public String getNodeText(JsonValue node) {
 		String result;
 		if (node instanceof JsonString string) {
 			result=string.getString();
@@ -184,11 +184,17 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			// The array element can always considered to be present; if it is not, it will be inserted
 			return true;
 		}
-		return super.hasChild(elementDeclaration, node, childName);
+		// should check for complex or simple type.
+		// for complex, any path of a substitution is valid
+		// for simple, only when a valid substitution value is found, a hit should be present.
+		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			return true;
+		}
+		Set<String> allChildNames=getAllNodeChildNames(node);
+		return allChildNames!=null && allChildNames.contains(childName);
 	}
 
-	@Override
-	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
+	public Set<String> getAllNodeChildNames(JsonValue node) throws SAXException {
 		if (log.isTraceEnabled())
 			log.trace("node isParentOfSingleMultipleOccurringChildElement [{}] [{}][{}]", isParentOfSingleMultipleOccurringChildElement(), node.getClass()
 					.getName(), node);
@@ -228,8 +234,6 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 	}
 
-
-	@Override
 	public Iterable<JsonValue> getNodeChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
 		if (log.isTraceEnabled())
@@ -273,9 +277,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 	}
 
-
-	@Override
-	protected JsonValue getSubstitutedChild(JsonValue node, String childName) {
+	protected JsonValue getSubstitutedChild(String childName) {
 		if (!sp.hasSubstitutionsFor(getContext(), childName)) {
 			return null;
 		}
@@ -295,13 +297,12 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		return objectBuilder.build().getJsonString(childName);
 	}
 
-	@Override
-	protected String getOverride(XSElementDeclaration elementDeclaration, JsonValue node) {
+	protected String getOverride(JsonValue node) {
 		Object text = sp.getOverride(getContext());
 		if (text instanceof List) {
 			// if the override is a List, then it has already been substituted via getSubstitutedChild.
 			// Therefore now get the node text, which is here an individual element already.
-			return getNodeText(elementDeclaration, node);
+			return getNodeText(node);
 		}
 		if (text instanceof String string) {
 			return string;
@@ -374,7 +375,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		if (sp != null) {
 			allowedNames.forEach(name -> {
 				if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
-					objectBuilder.add(name, getSubstitutedChild(node, name));
+					objectBuilder.add(name, getSubstitutedChild(name));
 				}
 			});
 		}
@@ -393,6 +394,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, targetNamespace);
 	}
+
 	public static String translate(JsonStructure jsonStructure, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException {
 		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null);
 	}
@@ -401,11 +403,12 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		Json2Xml j2x = create(schemaURL, compactJsonArrays, rootElement, strictSyntax, deepSearch, targetNamespace, overrideValues);
 		return j2x.translate(json);
 	}
+
 	public static Json2Xml create(URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 
-		// create the validator, setup the chain
+		// create the validator, set up the chain
 		Json2Xml j2x = new Json2Xml(validatorHandler,schemaInformation,compactJsonArrays,rootElement,strictSyntax);
 		if (overrideValues!=null) {
 			j2x.setOverrideValues(overrideValues);
@@ -416,5 +419,55 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		j2x.setDeepSearch(deepSearch);
 
 		return j2x;
+	}
+
+	@Override
+	public final Iterable<JsonValue> getChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
+		String childName=childElementDeclaration.getName();
+		Iterable<JsonValue> children = getNodeChildrenByName(node, childElementDeclaration);
+		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			List<JsonValue> result=new LinkedList<>();
+			result.add(getSubstitutedChild(childName));
+			return result;
+		}
+		return children;
+	}
+
+	@Override
+	public final String getText(XSElementDeclaration elementDeclaration, JsonValue node) {
+		String nodeName=elementDeclaration.getName();
+		Object text;
+		if (log.isTraceEnabled()) log.trace("node [{}] currently parsed element [{}]", nodeName, getContext().getLocalName());
+		if (sp!=null && sp.hasOverride(getContext())) {
+			String result = getOverride(node);
+			if (log.isTraceEnabled()) log.trace("node [{}] override found [{}]", nodeName, result);
+			return result;
+		}
+		String result=getNodeText(node);
+		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
+			if (log.isTraceEnabled()) log.trace("node [{}] default found [{}]", nodeName, text);
+			result = text.toString();
+		}
+		if (log.isTraceEnabled()) log.trace("node [{}] returning value [{}]", nodeName, result);
+		return result;
+	}
+
+	@Override
+	protected Set<String> getUnprocessedChildElementNames(XSElementDeclaration elementDeclaration, JsonValue node, Set<String> processedChildren) throws SAXException {
+		Set<String> unProcessedChildren = getAllNodeChildNames(node);
+		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
+			unProcessedChildren.removeAll(processedChildren);
+		}
+		return unProcessedChildren;
+	}
+
+	public void setSubstitutionProvider(SubstitutionProvider<?> substitutions) {
+		this.sp = substitutions;
+	}
+
+	public void setOverrideValues(Map<String, Object> overrideValues) {
+		OverridesMap<Object> overrides=new OverridesMap<>();
+		overrides.registerSubstitutes(overrideValues);
+		setSubstitutionProvider(overrides);
 	}
 }
