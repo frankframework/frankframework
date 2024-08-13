@@ -29,7 +29,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.Nullable;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -310,14 +309,22 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			while ((ze = zis.getNextEntry()) != null) {
 				String filename = ze.getName();
 				File zipFile = new File(dir, filename);
-				if (ze.isDirectory()) {
-					createDirectoryIfNotExists(zipFile, ze);
-				} else {
-					File zipParentFile = zipFile.getParentFile();
-					createDirectoryIfNotExists(zipParentFile, ze);
-					try (FileOutputStream fos = new FileOutputStream(zipFile)) {
-						log.debug("writing ZipEntry [{}] to file [{}]", ze.getName(), zipFile.getPath());
-						StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
+
+				String canonicalDestinationPath = zipFile.getCanonicalPath();
+
+				// Check for ZipSlip vulnerability
+				if (canonicalDestinationPath.startsWith(dir.getCanonicalPath())) {
+					if (ze.isDirectory()) {
+						createDirectoryIfNotExists(zipFile, ze);
+					} else {
+
+						File zipParentFile = zipFile.getParentFile();
+						createDirectoryIfNotExists(zipParentFile, ze);
+
+						try (FileOutputStream fos = new FileOutputStream(zipFile)) {
+							log.debug("writing ZipEntry [{}] to file [{}]", ze.getName(), zipFile.getPath());
+							StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
+						}
 					}
 				}
 			}

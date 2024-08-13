@@ -25,15 +25,14 @@ import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
-
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
-import org.springframework.mock.web.DelegatingServletInputStream;
-
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.util.LogUtil;
+import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class MtomRequestWrapper extends HttpServletRequestWrapper {
 	protected Logger log = LogUtil.getLogger(this);
@@ -73,7 +72,10 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 						}
 
 						ContentType partType = ContentType.parse(bp.getContentType());
-						log.trace("FileName [{}] PartName [{}] ContentType [{}]", fileName, bodyPartName, partName);
+						log.trace("FileName [{}] PartName [{}] ContentType [{}]",
+								StringEscapeUtils.escapeJava(fileName),
+								StringEscapeUtils.escapeJava(bodyPartName),
+								StringEscapeUtils.escapeJava(partType.toString()));
 						multipart.addBinaryBody(bodyPartName, bp.getInputStream(), partType, fileName);
 
 					}
