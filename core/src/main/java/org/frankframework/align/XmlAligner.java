@@ -112,10 +112,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 
 	public void newLine() throws SAXException {
-		newLine(0);
-	}
-	public void newLine(int offset) throws SAXException {
-		int level = indentLevel + offset;
+		int level = indentLevel;
 		ignorableWhitespace(INDENTOR, 0, (Math.min(level, MAX_INDENT))*2+1);
 	}
 
