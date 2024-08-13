@@ -25,7 +25,6 @@ public class UpdateLoggingConfigTest extends FrankApiTestBase {
 				Arguments.of("{\"level\":\"WARN\"}", "meta-level", "WARN"),
 				Arguments.of("{\"logger\":\"package\"}", "meta-logPackage", "package"),
 				Arguments.of("{\"reconfigure\":\"true\"}", "meta-reconfigure", Boolean.TRUE));
-
 	}
 
 	public static Stream<Arguments> updateLogSource() {

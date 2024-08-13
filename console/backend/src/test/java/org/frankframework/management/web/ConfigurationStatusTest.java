@@ -5,9 +5,13 @@ import static org.mockito.Mockito.doCallRealMethod;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import org.frankframework.management.Action;
@@ -19,6 +23,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationStatus.class})
 public class ConfigurationStatusTest extends FrankApiTestBase {
+	public static Stream<Arguments> updateReceiverOptions() {
+		return Stream.of(
+				Arguments.of("{\"action\":\"stop\"}", Action.STOPRECEIVER),
+				Arguments.of("{\"action\":\"start\"}", Action.STARTRECEIVER),
+				Arguments.of("{\"action\":\"incthread\"}", Action.INCTHREADS),
+				Arguments.of("{\"action\":\"decthread\"}", Action.DECTHREADS)
+		);
+	}
 
 	@Test
 	public void getAdapters() throws Exception {
@@ -122,7 +134,6 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 		Message<Object> capturedRequest2 = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
 		assertEquals(Action.STOPADAPTER.name(), capturedRequest2.getHeaders().get("meta-action"));
 		assertEquals("adapter", capturedRequest2.getHeaders().get("meta-adapter"));
-
 	}
 
 	@Test
@@ -144,13 +155,14 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 	}
 
-	@Test
-	public void updateReceiver() throws Exception {
+	@ParameterizedTest
+	@MethodSource("updateReceiverOptions")
+	public void updateReceiver(String content, Action expectedBusAction) throws Exception {
 		ArgumentCaptor<Message<Object>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/configuration/adapters/adapter/receivers/receiver")
-						.content("{\"action\": \"stop\"}")
+						.content(content)
 						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
@@ -158,10 +170,9 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.jsonPath("status").value("ok"));
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
-		assertEquals(Action.STOPRECEIVER.name(), capturedRequest.getHeaders().get("meta-action"));
+		assertEquals(expectedBusAction.name(), capturedRequest.getHeaders().get("meta-action"));
 		assertEquals("adapter", capturedRequest.getHeaders().get("meta-adapter"));
 		assertEquals("receiver", capturedRequest.getHeaders().get("meta-receiver"));
-
 	}
 
 	@Test

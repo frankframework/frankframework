@@ -3,8 +3,13 @@ package org.frankframework.management.web;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
@@ -22,62 +27,38 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationsEndpoint.class})
 public class ConfigurationsEndpointTest extends FrankApiTestBase {
 
-	@Test
-	public void getConfigurationXML() throws Exception {
-		testActionAndTopicHeaders("/configurations/name", "CONFIGURATION", "GET");
+	public static Stream<Arguments> manageConfigSource() {
+		return Stream.of(
+				Arguments.of("{\"activate\":true}", "meta-activate", Boolean.TRUE),
+				Arguments.of("{\"autoreload\":true}", "meta-autoreload", Boolean.TRUE)
+		);
 	}
 
 	@Test
-	public void reloadConfigurationNoValidAction() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name")
-				.content("{\"action\": \"abc\"}")
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	public void getConfigurations() throws Exception {
+		testActionAndTopicHeaders("/configurations", "CONFIGURATION", "GET");
 	}
 
 	@Test
-	public void reloadConfiguration() throws Exception {
+	public void getConfigurationsWithLoaded() throws Exception {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
-			Message<String> msg = i.getArgument(0);
-			MessageHeaders headers = msg.getHeaders();
+			Message<String> in = i.getArgument(0);
 
-			// assert that the parameters actually get sent to the outputGateway
-			assertEquals(Action.RELOAD.name(), headers.get("meta-action"));
+			assertEquals(Boolean.TRUE, in.getHeaders().get("meta-loaded"));
+			Supplier<String> stringSupplier = () -> "{\"topic\":\"CONFIGURATION\",\"action\":\"GET\"}";
 
-			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+			return mockResponseMessage(in, stringSupplier, 200, MediaType.APPLICATION_JSON);
 		});
 
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name")
-				.content("{\"action\": \"reload\"}")
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(MockMvcResultMatchers.status().isAccepted())
-			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+		mockMvc.perform(MockMvcRequestBuilders.get("/configurations?loadedConfiguration=true"))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("topic").value("CONFIGURATION"))
+				.andExpect(MockMvcResultMatchers.jsonPath("action").value("GET"));
 	}
 
 	@Test
-	public void fullReloadNoValidAction() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
-					.content("{\"action\": \"abc\"}")
-					.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isBadRequest());
-	}
-
-	@Test
-	public void fullReload() throws Exception {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
-			Message<String> msg = i.getArgument(0);
-			MessageHeaders headers = msg.getHeaders();
-
-			// assert that the parameters actually get sent to the outputGateway
-			assertEquals(Action.FULLRELOAD.name(), headers.get("meta-action"));
-
-			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
-		});
-
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
-					.content("{\"action\": \"reload\"}")
-					.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	public void getConfigurationsWithFlow() throws Exception {
+		testActionAndTopicHeaders("/configurations?flow=flowName", "FLOW", null);
 	}
 
 	@Test
@@ -100,15 +81,69 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 		testActionAndTopicHeaders("/configurations/name/versions", "CONFIGURATION", "FIND");
 	}
 
+	@Test
+	public void reloadConfigurationNoValidAction() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name")
+						.content("{\"action\": \"abc\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
+
+	@Test
+	public void reloadConfiguration() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals(Action.RELOAD.name(), headers.get("meta-action"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name")
+						.content("{\"action\": \"reload\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isAccepted())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
+	public void fullReloadNoValidAction() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
+						.content("{\"action\": \"abc\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+	}
+
+	@Test
+	public void fullReload() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals(Action.FULLRELOAD.name(), headers.get("meta-action"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
+						.content("{\"action\": \"reload\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	}
+
 	@ParameterizedTest
-	@ValueSource(strings = {"{\"activate\":true}", "{\"autoreload\":true}"})
-	void testManageConfigurations(String jsonInput) throws Exception {
+	@MethodSource("manageConfigSource")
+	void testManageConfigurations(String jsonInput, String expectedHeader, Object expectedValue) throws Exception {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
 			Message<String> msg = i.getArgument(0);
 			MessageHeaders headers = msg.getHeaders();
 
 			// assert that the parameters actually get sent to the outputGateway
 			assertEquals("configName", headers.get("meta-configuration"));
+			assertEquals(expectedValue, headers.get(expectedHeader));
 
 			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
 		});
@@ -153,7 +188,7 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 						.multipart("/configurations")
 						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes()))
 						.part(
-								new MockPart[] {
+								new MockPart[]{
 										new MockPart("datasource", "test".getBytes()),
 										new MockPart("user", "username".getBytes()),
 										new MockPart("multiple_configs", "true".getBytes()),

@@ -52,12 +52,7 @@ public class WebservicesTest extends FrankApiTestBase {
 			Message<String> in = i.getArgument(0);
 
 			assertEquals("http://google.nl", in.getHeaders().get("meta-uri"));
-			Supplier<String> stringSupplier = new Supplier<String>() {
-				@Override
-				public String get() {
-					return "{\"topic\":\"WEBSERVICES\",\"action\":\"DOWNLOAD\"}";
-				}
-			};
+			Supplier<String> stringSupplier = () -> "{\"topic\":\"WEBSERVICES\",\"action\":\"DOWNLOAD\"}";
 
 			return mockResponseMessage(in, stringSupplier, 200, MediaType.APPLICATION_JSON);
 		});

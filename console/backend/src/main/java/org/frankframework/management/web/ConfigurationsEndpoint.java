@@ -48,6 +48,8 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 
 	public static final String HEADER_VERSION = "version";
 
+	public static final String BUS_HEADER_VERSION = "version";
+
 	@AllowAllIbisUserRoles
 	@Relation("application")
 	@Description("view all the loaded/original configurations")
@@ -160,7 +162,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(HEADER_VERSION, HttpUtils.urlDecode(encodedVersion));
+		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(encodedVersion));
 
 		if (json.containsKey("activate")) {
 			Object obj = json.get("activate");
@@ -230,7 +232,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 												   @RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(HEADER_VERSION, version);
+		builder.addHeader(BUS_HEADER_VERSION, version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
 		return callSyncGateway(builder);
 	}
@@ -243,7 +245,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 												 @RequestParam(value = "datasourceName", required = false) String datasourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(HEADER_VERSION, version);
+		builder.addHeader(BUS_HEADER_VERSION, version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
 		return callAsyncGateway(builder);
 	}
