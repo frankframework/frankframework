@@ -85,7 +85,7 @@ public abstract class MultipartUtils {
 	public static String getFieldName(AttachmentPart part) {
 		String id = part.getContentId(); //MTOM requests
 		if(StringUtils.isNotBlank(id)) {
-			return id;
+			return id.substring(1, id.length()-1); //strip off < and > chars
 		}
 
 		String[] cd = part.getMimeHeader("Content-Disposition"); //MTOM Attachments and FORM-DATA requests
@@ -259,6 +259,7 @@ public abstract class MultipartUtils {
 	public static MultipartMessages parseMultipart(Iterator<AttachmentPart> attachmentParts) {
 		final XmlBuilder attachments = new XmlBuilder("parts");
 		final Map<String, Message> parts = new LinkedHashMap<>();
+		int i = 1;
 		while (attachmentParts.hasNext()) {
 			try {
 				AttachmentPart attachmentPart = attachmentParts.next();
@@ -268,19 +269,18 @@ public abstract class MultipartUtils {
 					continue;
 				}
 
+				// may be duplicate so we cannot use the fieldname
+				String partName = "attachment" + (i++);
+
 				Message message = new Message(attachmentPart.getRawContentBytes(), MessageUtils.getContext(attachmentPart.getAllMimeHeaders()));
 
 				XmlBuilder attachment = new XmlBuilder("part");
+				parts.put(partName, message);
 				attachment.addAttribute("name", fieldName);
-				parts.put(fieldName, message);
-
-				final String fileName = getFileName(attachmentPart);
-				log.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
-
 				attachment.addAttribute("type", isBinary(attachmentPart) ? "file" : "text");
-				attachment.addAttribute("filename", fileName);
+				attachment.addAttribute("filename", getFileName(attachmentPart));
 				attachment.addAttribute("size", message.size());
-				attachment.addAttribute("sessionKey", fieldName);
+				attachment.addAttribute("sessionKey", partName);
 				attachment.addAttribute("mimeType", extractMimeType(attachmentPart.getContentType()));
 				attachments.addSubElement(attachment);
 
