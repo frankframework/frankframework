@@ -139,6 +139,33 @@ public class ConfigurationUtils {
 		return version;
 	}
 
+	public static List<Map<String, Object>> getActiveConfigsFromDatabase(ApplicationContext applicationContext, String dataSourceName) throws ConfigurationException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		}
+
+		if(log.isInfoEnabled()) log.info("trying to fetch all active configurations from database with dataSourceName [{}]", workdataSourceName);
+
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		qs.setDatasourceName(workdataSourceName);
+		qs.setQuery(DUMMY_SELECT_QUERY);
+		qs.configure();
+		try {
+			qs.open();
+			try(Connection conn = qs.getConnection()) {
+				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					return extractConfigurationsFromResultSet(stmt);
+				}
+			}
+		} catch (SenderException | JdbcException | SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+		}
+	}
+
 	public static Map<String, Object> getActiveConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
 		return getConfigFromDatabase(applicationContext, name, dataSourceName, null);
 	}
@@ -164,7 +191,7 @@ public class ConfigurationUtils {
 					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
-						return extractConfigurationFromResultSet(stmt, name, version);
+						return extractConfigurationFromResultSet(stmt, name, null);
 					}
 				}
 				else {
@@ -183,6 +210,34 @@ public class ConfigurationUtils {
 		}
 	}
 
+	private static Map<String, Object> extractConfigurationFromResultSetRow (ResultSet rs) throws SQLException {
+		Map<String, Object> configuration = new HashMap<>(5);
+		byte[] jarBytes = rs.getBytes(1);
+		if (jarBytes == null) return null;
+
+		configuration.put("CONFIG", jarBytes);
+		configuration.put("VERSION", rs.getString(2));
+		configuration.put("FILENAME", rs.getString(3));
+		configuration.put("CREATED", rs.getString(4));
+		configuration.put("USER", rs.getString(5));
+		return configuration;
+	}
+
+	private static List<Map<String, Object>> extractConfigurationsFromResultSet(PreparedStatement stmt) throws SQLException {
+		try(ResultSet rs = stmt.executeQuery()) {
+			List<Map<String, Object>> configs = new ArrayList<>();
+
+			while (rs.next()) {
+				Map<String, Object> rowConfig = extractConfigurationFromResultSetRow(rs);
+				if(rowConfig != null) {
+					configs.add(rowConfig);
+				}
+			}
+
+			return configs;
+		}
+	}
+
 	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
 		try(ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
@@ -190,16 +245,7 @@ public class ConfigurationUtils {
 				return null;
 			}
 
-			Map<String, Object> configuration = new HashMap<>(5);
-			byte[] jarBytes = rs.getBytes(1);
-			if (jarBytes == null) return null;
-
-			configuration.put("CONFIG", jarBytes);
-			configuration.put("VERSION", rs.getString(2));
-			configuration.put("FILENAME", rs.getString(3));
-			configuration.put("CREATED", rs.getString(4));
-			configuration.put("USER", rs.getString(5));
-			return configuration;
+			return extractConfigurationFromResultSetRow(rs);
 		}
 	}
 

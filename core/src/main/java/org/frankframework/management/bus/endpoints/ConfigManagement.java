@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,6 +185,25 @@ public class ConfigManagement extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public BinaryMessage downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		if ("*".equals(configurationName)) {
+			String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+			List<Map<String, Object>> activeConfigsFromDb;
+			try {
+				activeConfigsFromDb = ConfigurationUtils.getActiveConfigsFromDatabase(getApplicationContext(), datasourceName);
+			} catch (ConfigurationException e) {
+				throw new BusException("unable to download configurations from database", e);
+			}
+
+			Map<String, Object> configs = new HashMap<>();
+
+			for (Map<String, Object> activeConfig : activeConfigsFromDb) {
+				byte[] configBytes = (byte[]) activeConfig.get("CONFIG");
+				configs.put(""+activeConfig.get("FILENAME"), configBytes);
+			}
+
+			return new BinaryMessage(configs);
+		}
+
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);

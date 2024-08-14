@@ -227,6 +227,18 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@Description("download a specific configuration version")
+	@GetMapping(value = "/configurations/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	public ResponseEntity<?> downloadActiveConfigurations(@RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*");
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
+		// TODO zip it
+		return callSyncGateway(builder);
+	}
+
+	@AllowAllIbisUserRoles
+	@Relation("configuration")
+	@Description("download a specific configuration version")
 	@GetMapping(value = "/configurations/{configuration}/versions/{version}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(PATH_VARIABLE_VERSION) String version,
 												   @RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
