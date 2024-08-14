@@ -17,7 +17,7 @@ package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,9 +81,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
-		List<String> columns = new LinkedList<>();
-		columns.add(columnName);
-		return hasIndexOnColumns(conn, schemaName, tableName, columns);
+		return hasIndexOnColumns(conn, schemaName, tableName, Collections.singletonList(columnName));
 	}
 
 	@Override

@@ -16,7 +16,7 @@
 package org.frankframework.web.filters;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.servlet.Filter;
@@ -41,7 +41,7 @@ public class CspFilter implements Filter {
 	public void init(FilterConfig filterConfig) {
 		cspWriter = new ContentSecurityPolicyHeaderWriter();
 
-		List<String> policyDirectives = new LinkedList<>();
+		List<String> policyDirectives = new ArrayList<>();
 		policyDirectives.add("default-src 'self';");
 		policyDirectives.add("style-src 'self' https://fonts.googleapis.com/css 'unsafe-inline';");
 		policyDirectives.add("font-src 'self' https://fonts.gstatic.com;");

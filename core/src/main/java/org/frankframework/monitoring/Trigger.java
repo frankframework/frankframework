@@ -58,7 +58,7 @@ public class Trigger implements ITrigger {
 	private @Getter int threshold = 0;
 	private @Getter int period = 0;
 
-	private LinkedList<Instant> eventDates = null;
+	private LinkedList<Instant> eventDates = null; // TODO: Can perhaps be replaced with DeQueue interface / ArrayDeQueue impl
 	private boolean configured = false;
 
 	@Override

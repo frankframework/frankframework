@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -471,7 +470,7 @@ public class ConfigurationUtils {
 	}
 
 	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
-		List<String> sortedConfigurationNames = new LinkedList<>(allConfigNameItems.keySet());
+		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
 		sortedConfigurationNames.sort(new ParentConfigComparator());
 
 		Map<String, T> sortedConfigurations = new LinkedHashMap<>();

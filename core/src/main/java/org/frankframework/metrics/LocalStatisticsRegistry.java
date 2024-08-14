@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -242,7 +241,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	}
 
 	private List<String> getPotentialMeters(PipeLine pipeline) {
-		List<String> potentialMeterNames = new LinkedList<>();
+		List<String> potentialMeterNames = new ArrayList<>();
 		if(pipeline.getInputValidator() != null) {
 			potentialMeterNames.add(pipeline.getInputValidator().getName());
 		}
@@ -267,7 +266,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 	// MessageSendingPipe has 3 additional meters for validators/wrappers and a messagelog.
 	private List<String> getSendingPipeMeters(MessageSendingPipe messageSendingPipe) {
-		List<String> potentialMeterNames = new LinkedList<>();
+		List<String> potentialMeterNames = new ArrayList<>();
 		if (messageSendingPipe.getInputValidator() != null || messageSendingPipe.getInputWrapper() != null) {
 			potentialMeterNames.add(messageSendingPipe.getName() + " -> PreProcessing");
 		}

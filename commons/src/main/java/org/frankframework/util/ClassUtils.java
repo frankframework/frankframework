@@ -24,8 +24,8 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -296,7 +296,7 @@ public abstract class ClassUtils {
 
 	public static List<Object> getClassInfoList(Class<?> clazz) {
 		ClassLoader classLoader = clazz.getClassLoader();
-		List<Object> infoList = new LinkedList<>();
+		List<Object> infoList = new ArrayList<>();
 		String className = clazz.getName();
 		while (true) {
 			infoList.add(getClassInfo(clazz, classLoader));

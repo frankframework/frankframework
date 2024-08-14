@@ -17,8 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.stream.IntStream;
 
@@ -54,8 +54,8 @@ public class ReplacingInputStream extends InputStream {
 		this.nonXmlReplacementCharacter = StringUtils.isEmpty(nonXmlReplacementCharacter) ? 0 : nonXmlReplacementCharacter.charAt(0);
 		this.allowUnicodeSupplementaryCharacters = allowUnicodeSupplementaryCharacters;
 
-		this.inQueue = new LinkedList<>();
-		this.outQueue = new LinkedList<>();
+		this.inQueue = new ArrayDeque<>();
+		this.outQueue = new ArrayDeque<>();
 
 		this.search = (search == null) ? "".getBytes() : search.getBytes();
 		this.replacement = (replacement == null) ? "".getBytes() : replacement.getBytes();

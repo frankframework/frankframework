@@ -236,7 +236,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		if (recipientsNode != null && !recipientsNode.isEmpty()) {
 			Iterator<Node> iter = recipientsNode.iterator();
 			if (iter.hasNext()) {
-				recipients = new LinkedList<>();
+				recipients = new ArrayList<>();
 				while (iter.hasNext()) {
 					Element recipientElement = (Element) iter.next();
 					String value = XmlUtils.getStringValue(recipientElement);

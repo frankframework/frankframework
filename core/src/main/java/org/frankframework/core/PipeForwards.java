@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -26,7 +26,7 @@ import lombok.Getter;
  */
 public class PipeForwards {
 
-	private final @Getter List<PipeForward> forwards = new LinkedList<>();
+	private final @Getter List<PipeForward> forwards = new ArrayList<>();
 
 	/**
 	 * Defines what pipe or exit to execute next. When the execution of a pipe is done, the pipe looks up the next pipe or exit to execute.
