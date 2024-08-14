@@ -4,10 +4,12 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   NgZone,
   OnChanges,
   OnDestroy,
+  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -37,6 +39,8 @@ export class MonacoEditorComponent
 
   @Input()
   value?: string;
+  @Output()
+  valueChange = new EventEmitter<string>();
   @Input()
   options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 
@@ -95,6 +99,7 @@ export class MonacoEditorComponent
 
   private initializeMonaco(): void {
     this.initializeEditor();
+    this.initializeEvents();
     this.initializeMouseEvents();
     this.highlightTheLineNumberInRoute();
   }
@@ -111,6 +116,14 @@ export class MonacoEditorComponent
       ...this.options,
     });
     this.editorSubject.next(this.editor);
+  }
+
+  private initializeEvents(): void {
+    this.editor$.pipe(first()).subscribe((editor) => {
+      editor.onDidChangeModelContent(() => {
+        this.valueChange.emit(editor.getValue());
+      });
+    });
   }
 
   private initializeMouseEvents(): void {
