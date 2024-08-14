@@ -23,6 +23,7 @@ public enum AuthenticationType {
 	CONTAINER(JeeAuthenticator.class),
 	IN_MEMORY(InMemoryAuthenticator.class),
 	OAUTH2(OAuth2Authenticator.class),
+	YML(YmlFileAuthenticator.class),
 	NONE(NoOpAuthenticator.class);
 
 	/**
