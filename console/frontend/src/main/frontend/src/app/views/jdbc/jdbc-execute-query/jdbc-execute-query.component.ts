@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
@@ -25,6 +27,14 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     trimSpaces: false,
   };
   result: string = '';
+
+  protected readonly editorActions = {
+    ctrlEnter: {
+      id: 'submit',
+      label: 'Submit Form',
+      run: (): void => this.submit(this.form),
+    },
+  };
 
   private _subscriptions = new Subscription();
   private appConstants: AppConstants;

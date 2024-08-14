@@ -43,6 +43,10 @@ export class MonacoEditorComponent
   valueChange = new EventEmitter<string>();
   @Input()
   options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
+  @Input()
+  actions?: {
+    ctrlEnter?: monaco.editor.IActionDescriptor;
+  };
 
   @ViewChild('editor')
   protected editorContainer!: ElementRef;
@@ -100,6 +104,7 @@ export class MonacoEditorComponent
   private initializeMonaco(): void {
     this.initializeEditor();
     this.initializeEvents();
+    this.initializeActions();
     this.initializeMouseEvents();
     this.highlightTheLineNumberInRoute();
   }
@@ -123,6 +128,22 @@ export class MonacoEditorComponent
       editor.onDidChangeModelContent(() => {
         this.valueChange.emit(editor.getValue());
       });
+    });
+  }
+
+  private initializeActions(): void {
+    const actionKeyBindings: Record<string, number[]> = {
+      ctrlEnter: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+    };
+    this.editor$.pipe(first()).subscribe((editor) => {
+      for (const [action, descriptor] of Object.entries(this.actions || {})) {
+        editor.addAction({
+          id: descriptor.id,
+          label: descriptor.label,
+          keybindings: actionKeyBindings[action],
+          run: descriptor.run,
+        });
+      }
     });
   }
 

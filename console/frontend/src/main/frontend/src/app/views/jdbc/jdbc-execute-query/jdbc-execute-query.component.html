@@ -97,8 +97,9 @@
               <div class="col-sm-9" style="height: 200px">
                 <app-monaco-editor
                   class="form-control"
-                  [options]="{ language: 'sql' }"
                   [(value)]="form['query']"
+                  [options]="{ language: 'sql' }"
+                  [actions]="editorActions"
                 ></app-monaco-editor>
               </div>
             </div>
