@@ -26,14 +26,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.aspose.cells.FontConfigs;
 import com.aspose.slides.FontsLoader;
@@ -42,6 +40,8 @@ import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.TemporaryDirectoryUtils;
 
@@ -112,10 +112,12 @@ public class AsposeFontManager {
 					}
 
 					String filename = FilenameUtils.normalize(entry.getName(), true);
-					if(filename != null) {
+					if (filename != null) {
 						Path target = fontsDirPath.resolve(filename);
-						if (Files.notExists(target)) {
-							Files.copy(zipInputStream, target);
+
+						// check if file exists and for zipSlip vulnerability
+						if (Files.notExists(target) && target.normalize().startsWith(fontsDirPath)) {
+							Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING);
 						}
 					}
 					zipInputStream.closeEntry();

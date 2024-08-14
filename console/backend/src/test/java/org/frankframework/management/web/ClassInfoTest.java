@@ -11,5 +11,4 @@ class ClassInfoTest extends FrankApiTestBase {
 	public void getClassInfoCorrectResponse() throws Exception {
 		testActionAndTopicHeaders("/classinfo/className", "DEBUG", "GET");
 	}
-
 }
