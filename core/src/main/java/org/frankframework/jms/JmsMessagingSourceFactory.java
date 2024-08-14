@@ -97,7 +97,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			if (connectionFactoryInfo==null) {
 				connectionFactoryInfo = connectionFactory.toString();
 			}
-			log.info("looked up connection factory [{}]: [{}]", cfName, connectionFactoryInfo);
+			log.info("{}looked up connection factory [{}]: [{}]", jmsFacade.getLogPrefix(), cfName, connectionFactoryInfo);
 		}
 		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
 	}

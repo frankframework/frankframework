@@ -86,7 +86,7 @@ public class MessagingSource  {
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable<>();
 		}
-		log.debug("set id [{}] context [{}] connectionFactory [{}] authAlias [{}]", id, context, connectionFactory, authAlias);
+		log.debug("{}set id [{}] context [{}] connectionFactory [{}] authAlias [{}]", getLogPrefix(), id, context, connectionFactory, authAlias);
 	}
 
 	public synchronized boolean close() throws IbisException {

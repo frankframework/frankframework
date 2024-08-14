@@ -100,13 +100,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (jmsConnector==null) {
-			throw new ConfigurationException("no jmsConnector found. It should be wired/configured via Spring");
+			throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
 		}
 		Destination destination;
 		try {
 			destination = getDestination();
 		} catch (Exception e) {
-			throw new ConfigurationException("could not get Destination",e);
+			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		if (getPollGuardInterval() == Long.MIN_VALUE) {
 			setPollGuardInterval(getTimeout() * 10);
@@ -138,7 +138,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		try {
 			jmsConnector.stop();
 		} catch (Exception e) {
-			log.warn("caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			super.close();
 		}
@@ -221,10 +221,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			if (log.isDebugEnabled()) log.debug("determined delivery count [{}]", value);
 			return value;
 		} catch (NumberFormatException nfe) {
-			log.debug("NumberFormatException in determination of DeliveryCount");
+			if (log.isDebugEnabled()) log.debug("{}NumberFormatException in determination of DeliveryCount", getLogPrefix());
 			return -1;
 		} catch (Exception e) {
-			log.error("exception in determination of DeliveryCount", e);
+			log.error("{}exception in determination of DeliveryCount", getLogPrefix(), e);
 			return -1;
 		}
 	}

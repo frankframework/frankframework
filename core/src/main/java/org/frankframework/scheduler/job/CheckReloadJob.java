@@ -63,7 +63,7 @@ public class CheckReloadJob extends JobDef {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
 			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
-			log.info(msg);
+			log.info("{}{}", getLogPrefix(), msg);
 			return;
 		}
 
@@ -89,10 +89,10 @@ public class CheckReloadJob extends JobDef {
 								String ibisConfigVersion = rs.getString(1);
 								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
 								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-									log.warn("skipping autoreload for configuration [{}] unable to determine [configuration.version]", configName);
+									log.warn("{}skipping autoreload for configuration [{}] unable to determine [configuration.version]", getLogPrefix(), configName);
 								}
 								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-									log.info("configuration [{}] with version [{}] will be reloaded with new version [{}]", configName, configVersion, ibisConfigVersion);
+									log.info("{}configuration [{}] with version [{}] will be reloaded with new version [{}]", getLogPrefix(), configName, configVersion, ibisConfigVersion);
 									configsToReload.add(configName);
 								}
 							}

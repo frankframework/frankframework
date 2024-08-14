@@ -45,7 +45,7 @@ public class JdbcQueryListener extends JdbcListener {
 			throw new ConfigurationException("keyField must be specified");
 		}
 		if (!knownProcessStates().contains(ProcessState.ERROR)) {
-			log.info("has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
+			log.info("{}has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead", getLogPrefix());
 			setUpdateStatusQuery(ProcessState.ERROR,getUpdateStatusQuery(ProcessState.DONE));
 		}
 		super.configure();

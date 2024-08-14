@@ -94,6 +94,11 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		setTransacted(true);
 	}
 
+	@Override
+	protected String getLogPrefix() {
+		return "JdbcMessageBrowser ["+getName()+"] ";
+	}
+
 	protected void setOperationControls() {
 		AppConstants ac = AppConstants.getInstance();
 		useParameters = ac.getBoolean(PROPERTY_USE_PARAMETERS, true);
@@ -300,7 +305,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 				applyStandardParameters(stmt, false, false);
 				try (ResultSet rs =  stmt.executeQuery()) {
 					if (!rs.next()) {
-						log.warn("no message count found");
+						log.warn("{}no message count found", getLogPrefix());
 						return 0;
 					}
 					return rs.getInt(1);

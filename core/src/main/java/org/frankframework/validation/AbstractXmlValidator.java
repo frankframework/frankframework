@@ -170,17 +170,17 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 		String fullReasons = xmlValidatorErrorHandler.getReasons();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug("storing reasons under sessionKey [{}]", getReasonSessionKey());
+			log.debug("{}storing reasons under sessionKey [{}]", getLogPrefix(session), getReasonSessionKey());
 			session.put(getReasonSessionKey(), fullReasons);
 		}
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug("storing reasons (in xml format) under sessionKey [{}]", getXmlReasonSessionKey());
+			log.debug("{}storing reasons (in xml format) under sessionKey [{}]", getLogPrefix(session), getXmlReasonSessionKey());
 			session.put(getXmlReasonSessionKey(), xmlValidatorErrorHandler.getXmlReasons());
 		}
 		if (isThrowException()) {
 			throw new XmlValidatorException(fullReasons, t);
 		}
-		log.warn("validation failed: {}", fullReasons, t);
+		log.warn("{}validation failed: {}", getLogPrefix(session), fullReasons, t);
 		return result;
 	}
 
@@ -223,6 +223,15 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 			return finalizeValidation(context, session, e);
 		}
 		return finalizeValidation(context, session, null);
+	}
+
+	protected String getLogPrefix(PipeLineSession session) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(ClassUtils.nameOf(this)).append(' ');
+		if (session != null) {
+			sb.append("msgId [").append(session.getMessageId()).append("] ");
+		}
+		return sb.toString();
 	}
 
 	protected InputSource getInputSource(Message input) throws XmlValidatorException {

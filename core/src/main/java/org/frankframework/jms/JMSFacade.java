@@ -47,6 +47,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.HasPhysicalDestination;
@@ -214,6 +215,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		BYTES
 	}
 
+	protected String getLogPrefix() {
+		return "["+getName()+"] ";
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if(connectionFactoryFactory == null) {
@@ -234,7 +239,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public String getConnectionFactoryName() throws JmsException {
 		String result = useTopicFunctions ? getTopicConnectionFactoryName() : getQueueConnectionFactoryName();
 		if (StringUtils.isEmpty(result)) {
-			throw new JmsException("no "+(useTopicFunctions ?"topic":"queue")+"ConnectionFactoryName specified");
+			throw new JmsException(getLogPrefix()+"no "+(useTopicFunctions ?"topic":"queue")+"ConnectionFactoryName specified");
 		}
 		return result;
 	}
@@ -331,7 +336,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					log.trace("Closing messaging source - will synchronize (lock) on {}", messagingSource::toString);
 					messagingSource.close();
 				} catch (IbisException e) {
-					log.warn("caught exception closing messaging source", e);
+					log.warn("{} caught exception closing messaging source", (Supplier<?>) this::getLogPrefix, e);
 				} finally {
 					log.trace("Messaging source closed - lock on {} released", messagingSource::toString);
 				}
@@ -631,7 +636,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@SuppressWarnings("java:S3457") // Ignore {} usage inside logging
 	protected void logMessageDetails(jakarta.jms.Message message, MessageProducer messageProducer) throws JMSException {
 		if (log.isDebugEnabled()) {
-			log.debug("sender on [" + getDestinationName()
+			log.debug(getLogPrefix() + "sender on [" + getDestinationName()
 					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
 					+ "] JMSMessageID=[" + message.getJMSMessageID()
 					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()

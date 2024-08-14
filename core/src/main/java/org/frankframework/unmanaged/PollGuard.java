@@ -47,7 +47,7 @@ public class PollGuard extends TimerTask {
 	public void run() {
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
 		if (log.isTraceEnabled()) {
-			log.trace("check last poll finished time {}", ()-> simpleDateFormat.format(new Date(lastPollFinishedTime)));
+			log.trace("{} check last poll finished time {}", springJmsConnector::getLogPrefix, ()-> simpleDateFormat.format(new Date(lastPollFinishedTime)));
 		}
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago
@@ -95,15 +95,15 @@ public class PollGuard extends TimerTask {
 	}
 
 	private void warn(String message) {
-		log.warn(message);
+		log.warn("{}{}", springJmsConnector.getLogPrefix(), message);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeper.MessageKeeperLevel.WARN);
 	}
 	private void error(String message) {
-		log.error(message);
+		log.error("{}{}", springJmsConnector.getLogPrefix(), message);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeper.MessageKeeperLevel.ERROR);
 	}
 	private void error(String message, @Nonnull Throwable t) {
-		log.error(message, t);
+		log.error("{}{}", springJmsConnector.getLogPrefix(), message, t);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message + "; " + t.getMessage(), MessageKeeper.MessageKeeperLevel.ERROR);
 	}
 

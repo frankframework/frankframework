@@ -121,7 +121,7 @@ public class FileHandler implements IScopeProvider {
 		// translation action separated string to Transformers
 		transformers = new LinkedList<>();
 		if (StringUtils.isEmpty(getActions()))
-			throw new ConfigurationException("should at least define one action");
+			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 
 		StringTokenizer tok = new StringTokenizer(getActions(), " ,\t\n\r\f");
 		while (tok.hasMoreTokens()) {
@@ -148,16 +148,16 @@ public class FileHandler implements IScopeProvider {
 			else if ("info".equalsIgnoreCase(token))
 				transformers.add(new FileInfoProvider());
 			else
-				throw new ConfigurationException("Action [" + token + "] is not supported");
+				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
 
 		if (transformers.isEmpty())
-			throw new ConfigurationException("should at least define one action");
+			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 		if (!"string".equalsIgnoreCase(outputType)
 				&& !"bytes".equalsIgnoreCase(outputType)
 				&& !"base64".equalsIgnoreCase(outputType)
 				&& !"stream".equalsIgnoreCase(outputType)) {
-			throw new ConfigurationException("illegal value for outputType ["+outputType+"], must be 'string', 'bytes' or 'stream'");
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string', 'bytes' or 'stream'");
 		}
 
 		// configure the transformers
@@ -212,7 +212,7 @@ public class FileHandler implements IScopeProvider {
 				}
 				OutputStream outputStream = response.getOutputStream();
 				StreamUtil.streamToStream(inputStream, outputStream);
-				log.debug("copied response body input stream [{}] to output stream [{}]", inputStream, outputStream);
+				log.debug("{}copied response body input stream [{}] to output stream [{}]", getLogPrefix(session), inputStream, outputStream);
 				return "";
 			} else {
 				if ("base64".equals(outputType)) {
@@ -347,7 +347,7 @@ public class FileHandler implements IScopeProvider {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestCanWrite()) {
 				if (!canWrite(getDirectory())) {
-					throw new ConfigurationException("directory ["+ getDirectory() + "] is not a directory, or no write permission");
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ getDirectory() + "] is not a directory, or no write permission");
 				}
 			}
 		}
@@ -361,12 +361,12 @@ public class FileHandler implements IScopeProvider {
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
-						log.debug("created directory [{}]", tmpFile.getParent());
+						log.debug("{}created directory [{}]", getLogPrefix(session), tmpFile.getParent());
 					} else {
-						log.warn("directory [{}] could not be created", tmpFile.getParent());
+						log.warn("{}directory [{}] could not be created", getLogPrefix(session), tmpFile.getParent());
 					}
 				} else {
-					log.warn("directory [{}] does not exists", tmpFile.getParent());
+					log.warn("{}directory [{}] does not exists", getLogPrefix(session), tmpFile.getParent());
 				}
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
@@ -387,7 +387,7 @@ public class FileHandler implements IScopeProvider {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory()) && isTestCanWrite()) {
 				if (!canWrite(getDirectory())) {
-					throw new ConfigurationException("directory ["+ getDirectory() + "] is not a directory, or no write permission");
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ getDirectory() + "] is not a directory, or no write permission");
 				}
 			}
 		}
@@ -397,12 +397,12 @@ public class FileHandler implements IScopeProvider {
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
-						log.debug("created directory [{}]", tmpFile.getParent());
+						log.debug("{}created directory [{}]", getLogPrefix(session), tmpFile.getParent());
 					} else {
-						log.warn("directory [{}] could not be created", tmpFile.getParent());
+						log.warn("{}directory [{}] could not be created", getLogPrefix(session), tmpFile.getParent());
 					}
 				} else {
-					log.warn("directory [{}] does not exists", tmpFile.getParent());
+					log.warn("{}directory [{}] does not exists", getLogPrefix(session), tmpFile.getParent());
 				}
 			}
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), false);
@@ -440,10 +440,10 @@ public class FileHandler implements IScopeProvider {
 				}
 			}
 			if (!"filesystem".equalsIgnoreCase(fileSource) && !"classpath".equalsIgnoreCase(fileSource)) {
-				throw new ConfigurationException("illegal value for fileSource ["+outputType+"], must be 'filesystem' or 'classpath'");
+				throw new ConfigurationException(getLogPrefix(null)+"illegal value for fileSource ["+outputType+"], must be 'filesystem' or 'classpath'");
 			}
 			if (deleteAfterRead && "classpath".equalsIgnoreCase(fileSource)) {
-				throw new ConfigurationException("read_delete not allowed in combination with fileSource ["+outputType+"]");
+				throw new ConfigurationException(getLogPrefix(null)+"read_delete not allowed in combination with fileSource ["+outputType+"]");
 			}
 		}
 
@@ -497,7 +497,7 @@ public class FileHandler implements IScopeProvider {
 				}
 			}
 			if ("classpath".equalsIgnoreCase(fileSource)) {
-				throw new ConfigurationException("delete not allowed in combination with fileSource ["+outputType+"]");
+				throw new ConfigurationException(getLogPrefix(null)+"delete not allowed in combination with fileSource ["+outputType+"]");
 			}
 		}
 
@@ -510,14 +510,14 @@ public class FileHandler implements IScopeProvider {
 			if (file.exists()) {
 				boolean success = file.delete();
 				if (!success){
-					log.warn("could not delete file [{}]", file);
+					log.warn("{}could not delete file [{}]", getLogPrefix(session), file);
 				}
 				else {
-					log.debug("deleted file [{}]", file);
+					log.debug("{}deleted file [{}]", getLogPrefix(session), file);
 				}
 			}
 			else {
-				log.warn("file [{}] does not exist", file);
+				log.warn("{}file [{}] does not exist", getLogPrefix(session), file);
 			}
 			/* if parent directory is empty, delete the directory */
 			if (isDeleteEmptyDirectory()) {
@@ -525,13 +525,13 @@ public class FileHandler implements IScopeProvider {
 				if (directory.exists() && directory.list().length==0) {
 					boolean success = directory.delete();
 					if (!success){
-						log.warn("could not delete directory [{}]", directory);
+						log.warn("{}could not delete directory [{}]", getLogPrefix(session), directory);
 					}
 					else {
-						log.debug("deleted directory [{}]", directory);
+						log.debug("{}deleted directory [{}]", getLogPrefix(session), directory);
 					}
 				} else {
-					log.debug("directory [{}] doesn't exist or is not empty", directory);
+					log.debug("{}directory [{}] doesn't exist or is not empty", getLogPrefix(session), directory);
 				}
 			}
 			return in;
@@ -640,6 +640,15 @@ public class FileHandler implements IScopeProvider {
 			return fileXml.asXmlString().getBytes();
 		}
 
+	}
+
+	protected String getLogPrefix(PipeLineSession session){
+		StringBuilder sb = new StringBuilder();
+		sb.append(ClassUtils.nameOf(this)).append(' ');
+		if (session != null) {
+			sb.append("msgId [").append(session.getMessageId()).append("] ");
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -905,7 +914,7 @@ public class FileHandler implements IScopeProvider {
 					if (i == BOM_UTF_8[1]) {
 						i = (byte)super.read();
 						if (i == BOM_UTF_8[2]) {
-							log.debug("removed UTF-8 BOM");
+							log.debug("{} removed UTF-8 BOM", ()->getLogPrefix(session));
 							return;
 						}
 					}

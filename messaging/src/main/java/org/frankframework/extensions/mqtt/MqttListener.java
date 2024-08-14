@@ -95,7 +95,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void connectComplete(boolean reconnect, String brokerUrl) {
-		String message = "connection ";
+		String message = getLogPrefix() + "connection ";
 		if (reconnect) {
 			// Automatic reconnect by mqtt lib
 			receiver.setRunState(RunState.STARTED);
@@ -109,7 +109,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void connectionLost(Throwable throwable) {
-		String message = "connection lost";
+		String message = getLogPrefix() + "connection lost";
 		receiver.getAdapter().getMessageKeeper().add(message);
 		log.debug(message);
 		// Call receiver which will set status to error after which recover job

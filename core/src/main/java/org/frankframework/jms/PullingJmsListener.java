@@ -122,7 +122,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			}
 			return (MessageConsumer) threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
 		} catch (Exception e) {
-			throw new ListenerException("exception creating QueueReceiver for "+getPhysicalDestinationName(), e);
+			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver for "+getPhysicalDestinationName(), e);
 		}
 	}
 
@@ -132,7 +132,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				receiver.close();
 				// do not write to log, this occurs too often
 			} catch (Exception e) {
-				throw new ListenerException("exception closing QueueReceiver", e);
+				throw new ListenerException(getLogPrefix()+"exception closing QueueReceiver", e);
 			}
 		}
 	}
@@ -214,7 +214,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public RawMessageWrapper<Message> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
 		RawMessageWrapper<Message> msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
-			throw new TimeoutException("timed out waiting for message with correlationId ["+correlationId+"]");
+			throw new TimeoutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("JmsListener [{}] received for correlationId [{}] replymessage [{}]", getName(), correlationId, msg);
@@ -253,7 +253,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				messageId = msg.getJMSMessageID();
 				return new RawMessageWrapper<>(msg, messageId, correlationId == null ? msg.getJMSCorrelationID() : correlationId);
 			} catch (JMSException e) {
-				throw new ListenerException("exception retrieving message",e);
+				throw new ListenerException(getLogPrefix()+"exception retrieving message",e);
 			} finally {
 				releaseReceiver(mc,correlationId);
 			}
@@ -284,12 +284,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					try {
 						mc.close();
 					} catch(JMSException e) {
-						log.warn("exception closing messageConsumer", e);
+						log.warn("{}exception closing messageConsumer", getLogPrefix(), e);
 					}
 				}
 			}
 		} catch (Exception e) {
-			throw new ListenerException("exception preparing to retrieve message", e);
+			throw new ListenerException(getLogPrefix()+"exception preparing to retrieve message", e);
 		} finally {
 			releaseSession(session);
 		}

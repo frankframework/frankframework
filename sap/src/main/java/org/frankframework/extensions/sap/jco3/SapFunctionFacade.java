@@ -66,6 +66,10 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	private JCoFunctionTemplate ftemplate;
 	private SapSystemImpl sapSystem;
 
+	protected String getLogPrefix() {
+		return this.getClass().getName()+" ["+getName()+"] ";
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 //		if (StringUtils.isEmpty(getSapSystemName())) {
@@ -74,7 +78,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		if (StringUtils.isNotEmpty(getSapSystemName())) {
 			sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 			if (sapSystem==null) {
-				throw new ConfigurationException("cannot find SapSystem ["+getSapSystemName()+"]");
+				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
 			}
 		} else {
 			SapSystemImpl.configureAll();
@@ -95,7 +99,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 				try {
 					calculateStaticFieldIndices(ftemplate);
 				} catch (Exception e) {
-					throw new SapException("Exception calculation field-indices ["+getFunctionName()+"]", e);
+					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
 			}
 		} else {
@@ -334,10 +338,10 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		try {
 			functionTemplate = sapSystem.getJcoRepository().getFunctionTemplate(functionName);
 		} catch (Exception e) {
-			throw new SapException("exception obtaining template for function ["+functionName+"] from sapSystem ["+sapSystem.getName()+"]", e);
+			throw new SapException(getLogPrefix()+"exception obtaining template for function ["+functionName+"] from sapSystem ["+sapSystem.getName()+"]", e);
 		}
 		if (functionTemplate == null) {
-			throw new SapException("could not obtain template for function ["+functionName+"] from sapSystem ["+sapSystem.getName()+"]");
+			throw new SapException(getLogPrefix()+"could not obtain template for function ["+functionName+"] from sapSystem ["+sapSystem.getName()+"]");
 		}
 		return functionTemplate;
 	}

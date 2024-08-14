@@ -107,13 +107,13 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		super.configure();
 		txDef = TransactionAttributes.configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
 		if (StringUtils.isEmpty(getObjectId())) {
-			throw new ConfigurationException("an objectId must be specified");
+			throw new ConfigurationException(getLogPrefix()+ "an objectId must be specified");
 		}
 		if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
 			try {
 				formatter = new SimpleDateFormat(getDateFormatSuffix());
 			} catch (IllegalArgumentException ex){
-				throw new ConfigurationException("has an illegal value for dateFormat", ex);
+				throw new ConfigurationException(getLogPrefix()+"has an illegal value for dateFormat", ex);
 			}
 		}
 		if (retention<0) {
@@ -211,19 +211,19 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					}
 				} catch (Exception e) {
 					itx.setRollbackOnly();
-					log.debug("error executing insert query (as part of locker): ", e);
+					log.debug("{}error executing insert query (as part of locker): ", getLogPrefix(), e);
 					if (numRetries == -1 || r < numRetries) {
-						log.debug("will try again");
+						log.debug("{}will try again", getLogPrefix());
 						objectIdWithSuffix = null;
 					} else {
-						log.debug("will not try again");
+						log.debug("{}will not try again", getLogPrefix());
 
 						if (timeout || e instanceof SQLTimeoutException || e instanceof SQLException exception && getDbmsSupport().isConstraintViolation(exception)) {
 							String msg = "could not obtain lock "+getLockerInfo(objectIdWithSuffix)+" ("+e.getClass().getTypeName()+"): " + e.getMessage();
 							if(messageKeeper != null) {
 								messageKeeper.add(msg, MessageKeeperLevel.INFO);
 							}
-							log.info(msg);
+							log.info("{}{}", getLogPrefix(), msg);
 							return null;
 						} else {
 							throw e;
@@ -280,8 +280,13 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 
 	@Override
+	protected String getLogPrefix() {
+		return getName()+" ";
+	}
+
+	@Override
 	public String toString() {
-		return " type ["+getType()+"] objectId ["+getObjectId()+"] transactionAttribute ["+getTransactionAttribute()+"]";
+		return getLogPrefix()+" type ["+getType()+"] objectId ["+getObjectId()+"] transactionAttribute ["+getTransactionAttribute()+"]";
 	}
 
 

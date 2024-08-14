@@ -178,13 +178,13 @@ public class BisJmsListener extends JmsListener {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSoap()) {
-			throw new ConfigurationException("soap must be true");
+			throw new ConfigurationException(getLogPrefix() + "soap must be true");
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
 			requestTp = TransformerPool.getXPathTransformerPool(StringUtils.isNotEmpty(getRequestNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getRequestNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getRequestXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getRequestXPath() : bisUtils.getSoapBodyXPath() + "/*", OutputType.XML);
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException("cannot create transformer", e);
+			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}
 	}
 

@@ -133,7 +133,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				connection.close();
 			}
 		} catch (SQLException e) {
-			log.warn("caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			connection = null;
 			super.close();
@@ -172,7 +172,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		try {
 			return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
 		} catch (Exception e) {
-			throw new ListenerException("caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
 	}
 
@@ -204,14 +204,14 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				if (!getDbmsSupport().hasSkipLockedFunctionality()) {
 					String errorMessage = e.getMessage();
 					if (errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
-						log.debug("caught lock timeout exception, returning null: ({}){}", e.getClass().getName(), e.getMessage());
+						log.debug("{}caught lock timeout exception, returning null: ({}){}", getLogPrefix(), e.getClass().getName(), e.getMessage());
 						return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
 					}
 				}
 				throw e;
 			}
 		} catch (Exception e) {
-			throw new ListenerException("caught exception retrieving message using query ["+query+"]", e);
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+query+"]", e);
 		}
 	}
 
@@ -373,7 +373,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 				return stmt.executeUpdate() > 0;
 			} catch (SQLException e) {
-				throw new ListenerException("exception executing statement ["+query+"]",e);
+				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
 			}
 		}
 		return false;

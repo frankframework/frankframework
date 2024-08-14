@@ -189,7 +189,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		if (isSoap()) {
 			try {
-				log.debug("listening on [{}] received SOAPMSG [{}]", this::getPhysicalDestinationName, () -> message);
+				if (log.isDebugEnabled()) log.debug("{}received SOAPMSG [{}]", getLogPrefix(), message);
 				Message request = soapWrapper.getBody(message, false, session, null);
 				Message result = super.processRequest(request, session);
 
@@ -199,7 +199,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
 				}
 				Message reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false, false);
-				log.debug("listening on [{}] replied SOAPMSG [{}]", this::getPhysicalDestinationName, () -> reply);
+				if (log.isDebugEnabled()) log.debug("{}replied SOAPMSG [{}]", getLogPrefix(), reply);
 				return reply;
 			} catch (Exception e) {
 				throw new ListenerException(e);
@@ -207,6 +207,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		return super.processRequest(message, session);
+	}
+
+	public String getLogPrefix() {
+		return "WebServiceListener ["+getName()+"] listening on ["+getPhysicalDestinationName()+"] ";
 	}
 
 	@Override
