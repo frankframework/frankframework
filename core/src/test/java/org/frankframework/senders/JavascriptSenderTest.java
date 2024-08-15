@@ -182,9 +182,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
 
-		sender.configure();
-		SenderException e = assertThrows(SenderException.class, sender::open);
-		assertEquals("JavascriptSender cannot find resource [Nonexisting.js]", e.getMessage());
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertEquals("cannot find resource [Nonexisting.js]", e.getMessage());
 	}
 
 	//A ConfigurationException is given when an empty string is given as FileName
@@ -195,9 +194,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
 
-		sender.configure();
-		SenderException e = assertThrows(SenderException.class, sender::open);
-		assertEquals("JavascriptSender has neither fileName nor inputString specified", e.getMessage());
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertEquals("no jsFileName specified", e.getMessage());
 	}
 
 	//If the given FunctionName is not a function of the given javascript file a SenderException is thrown.
@@ -224,9 +222,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("");
 		sender.setEngineName(engine);
 
-		sender.configure();
-		SenderException e = assertThrows(SenderException.class, sender::open);
-		assertEquals("JavascriptSender JavaScript FunctionName not specified!", e.getMessage());
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertEquals("JavaScript FunctionName not specified!", e.getMessage());
 	}
 
 	//If there is a syntax error in the given Javascript file a SenderException is thrown.
