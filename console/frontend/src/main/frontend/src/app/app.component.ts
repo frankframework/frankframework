@@ -348,8 +348,8 @@ export class AppComponent implements OnInit, OnDestroy {
               this.appConstants['console.idle.timeout'] as string,
             ) > 0
               ? Number.parseInt(
-                  this.appConstants['console.idle.timeout'] as string,
-                )
+                this.appConstants['console.idle.timeout'] as string,
+              )
               : 0;
           this.idle.setIdle(idleTime);
           this.idle.setTimeout(idleTimeout);
