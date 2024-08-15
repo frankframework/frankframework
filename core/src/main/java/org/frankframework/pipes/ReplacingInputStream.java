@@ -46,6 +46,13 @@ public class ReplacingInputStream extends InputStream {
 	private final byte[] search;
 	private final InputStream in;
 
+	@Override
+	public void close() throws IOException {
+		if (this.in != null) {
+			this.in.close();
+		}
+	}
+
 	public ReplacingInputStream(InputStream in, String search, String replacement, boolean replaceNonXmlChars,
 								String nonXmlReplacementCharacter, boolean allowUnicodeSupplementaryCharacters) {
 
