@@ -888,7 +888,20 @@ public class LarvaTool {
 	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
 		List<File> scenarioFiles = new ArrayList<>();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'");
-		File[] files = new File(scenariosDirectory).listFiles();
+
+		File directory = new File(scenariosDirectory);
+		Path targetPath = directory.toPath().normalize();
+
+		if (!directory.toPath().normalize().startsWith(targetPath)) {
+			String message = "Scenarios directory is outside of the target directory";
+			logger.warn(message);
+			errorMessage(message);
+
+			return scenarioFiles;
+		}
+
+		File[] files = directory.listFiles();
+
 		if (files == null) {
 			debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
 			return scenarioFiles;
@@ -1542,12 +1555,15 @@ public class LarvaTool {
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
 			// Determine the encoding the XML way but don't use an XML parser to
 			// read the file and transform it to a string to prevent changes in
-			// formatting and prevent adding an xml declaration where this is
+			// formatting and prevent adding a xml declaration where this is
 			// not present in the file. For example, when using a
 			// WebServiceSender to send a message to a WebServiceListener the
-			// xml message must not contain an xml declaration.
+			// xml message must not contain a xml declaration.
 			try (InputStream in = new FileInputStream(fileName)) {
 				XMLInputFactory factory = XMLInputFactory.newInstance();
+				factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+				factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+
 				XMLStreamReader parser = factory.createXMLStreamReader(in);
 				encoding = parser.getEncoding();
 				parser.close();
