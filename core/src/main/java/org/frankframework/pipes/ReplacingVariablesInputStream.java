@@ -48,6 +48,13 @@ public class ReplacingVariablesInputStream extends InputStream {
 	private final Queue<Integer> outQueue;
 	private boolean lookingForSuffix = false;
 
+	@Override
+	public void close() throws IOException {
+		if (this.in != null) {
+			this.in.close();
+		}
+	}
+
 	protected ReplacingVariablesInputStream(InputStream in, String variablePrefix, Properties properties) {
 		this.in = in;
 		this.variablePrefix = (variablePrefix + "{").getBytes();
