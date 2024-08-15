@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -13324,6 +13324,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queueRegex" type="xs:string" />
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="GetTibcoQueuesCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
@@ -15068,6 +15073,11 @@
     <xs:attribute name="soapAction" type="xs:string">
       <xs:annotation>
         <xs:documentation>If empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
