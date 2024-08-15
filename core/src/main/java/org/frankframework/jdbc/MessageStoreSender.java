@@ -56,14 +56,13 @@ import org.frankframework.util.StringUtil;
  * to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  * <br/><br/>
  * Example configuration:
- * <code><pre>
-	&lt;SenderPipe name="Send"&gt;
-		&lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&gt;
-	&lt;/SenderPipe&gt;
-</pre></code>
+ * <pre>{@code
+ * <SenderPipe name="Send">
+ *     <MessageStoreSender
+ * 	     slotId="${instance. name}/ TestMessageStore"
+ * 		 onlyStoreWhenMessageIdUnique="false" />
+ * </SenderPipe>
+ * }</pre>
  *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  *

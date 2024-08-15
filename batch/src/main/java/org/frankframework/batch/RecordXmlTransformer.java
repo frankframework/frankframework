@@ -122,7 +122,6 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		outputFields.addAll(StringUtil.split(fieldLengths));
 	}
 
-
 	/**
 	 * Root tag for the generated xml document that will be send to the Sender
 	 * @ff.default record

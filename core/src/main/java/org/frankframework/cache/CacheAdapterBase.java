@@ -164,7 +164,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		this.keyXPathOutputType = keyXPathOutputType;
 	}
 
-	/** namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
+	/** namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code> definitions */
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		this.keyNamespaceDefs = keyNamespaceDefs;
 	}
@@ -195,7 +195,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		this.valueXPathOutputType = valueXPathOutputType;
 	}
 
-	/** namespace defintions for valuexpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
+	/** namespace defintions for valuexpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code> definitions */
 	public void setValueNamespaceDefs(String valueNamespaceDefs) {
 		this.valueNamespaceDefs = valueNamespaceDefs;
 	}

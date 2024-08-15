@@ -111,7 +111,7 @@ import org.springframework.util.Assert;
  * </p>
  * <p>
  * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown,
+ * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code> exceptions are thrown,
  * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
  * <ul>
  *   <li>open the URL you are trying to reach in InternetExplorer</li>
@@ -135,7 +135,7 @@ import org.springframework.util.Assert;
  * </ul>
  * <p>
  * Note 4:
- * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
+ * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code> exceptions are thrown,
  * please check password or authAlias configuration of the corresponding certificate.
  * </p>
  *
@@ -783,7 +783,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	/**
-	 * Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.
+	 * Used when <code>staleChecking</code>> is <code>true</code>. Timeout after which an idle connection will be validated before being used.
 	 * @ff.default 5000 ms
 	 */
 	public void setStaleTimeout(int timeout) {

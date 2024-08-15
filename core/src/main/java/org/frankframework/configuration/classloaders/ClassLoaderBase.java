@@ -189,7 +189,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	/**
 	 * @param name of the file to search for in the current local classpath
-	 * @return the URL of the file if found in the ClassLoader or <code>NULL</code> when the file cannot be found
+	 * @return the URL of the file if found in the ClassLoader or <code>null</code> when the file cannot be found
 	 */
 	public abstract URL getLocalResource(String name);
 
@@ -197,7 +197,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 * In case of the {@link #getResources(String)} we only want the local paths and not the parent path
 	 * @param name of the file to retrieve
 	 * @param useParent only use local classpath or also traverse down the classpath
-	 * @return the URL of the file if found in the ClassLoader or <code>NULL</code>
+	 * @return the URL of the file if found in the ClassLoader or <code>null</code>
 	 */
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
@@ -276,9 +276,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	/**
 	 * <p>
 	 * Fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
-	 * See https://github.com/spring-projects/spring-framework/issues/26403 for more background information.
+	 * See <a href="https://github.com/spring-projects/spring-framework/issues/26403">spring github</a> for more background information.
 	 * </p>
-	 * 
+	 *
 	 * {@inheritDoc}
 	 */
 	@Override

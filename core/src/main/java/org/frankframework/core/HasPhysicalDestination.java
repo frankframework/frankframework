@@ -16,7 +16,7 @@
 package org.frankframework.core;
 
 /**
- * The <code>HasPhysicalDestination</code> allows objects to declare that they have a physical destination.
+ * Allows objects to declare that they have a physical destination.
  * This is used for instance in ShowConfiguration, to show the physical destination of receivers
  * that have one.
  *

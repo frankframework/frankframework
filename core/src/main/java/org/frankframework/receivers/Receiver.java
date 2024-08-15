@@ -2051,7 +2051,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		chompCharSize = string;
 	}
 
-	/** If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: {sessionKey: + <code>elementToMoveSessionKey</code> + } */
+	/** If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: <code>{sessionKey: elementToMoveSessionKey}</code> */
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}

@@ -16,7 +16,7 @@
 package org.frankframework.core;
 
 /**
- * The <code>HasSender</code> is allows objects to declare that they have a Sender.
+ * Allows objects to declare that they have a Sender.
  * This is used for instance in ShowConfiguration, to show the Senders of receivers
  * that have one
  *

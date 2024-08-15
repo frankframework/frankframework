@@ -37,25 +37,21 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
 /**
- * Read messages from the IBISSTORE database table previously stored by a
- * {@link MessageStoreSender}.
- *
+ * Read messages from the IBISSTORE database table previously stored by a {@link MessageStoreSender}.
+ * <p>
  * Example configuration:
- * <code><pre>
-	&lt;Receiver
-		name="03 MessageStoreReceiver"
-		numThreads="4"
-		transactionAttribute="Required"
-		pollInterval="1"
-		&gt;
-		&lt;MessageStoreListener
-			name="03 MessageStoreListener"
-			slotId="${instance.name}/TestMessageStore"
-			statusValueInProcess="I"
-		/&gt;
-	&lt;/Receiver&gt;
-
- * </pre></code>
+ * <pre>{@code
+ * 	<Receiver
+ * 		name="03 MessageStoreReceiver"
+ * 		numThreads="4"
+ * 		transactionAttribute="Required"
+ * 		pollInterval="1">
+ * 		<MessageStoreListener
+ * 			name="03 MessageStoreListener"
+ * 			slotId="${instance. name}/ TestMessageStore"
+ * 			statusValueInProcess="I" />
+ * 	</Receiver>
+ * }</pre>
  *
  * If you have a <code>MessageStoreListener</code>, failed messages are automatically kept in database
  * table IBISSTORE. Messages are also kept after successful processing. The state of a message

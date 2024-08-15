@@ -42,34 +42,33 @@ import jakarta.annotation.Nullable;
 /**
  * Transforms a java.sql.Resultset to a XML stream.
  * Example of a result:
- * <code><pre>
- * &lt;result&gt;
-	&lt;fielddefinition&gt;
-		&lt;field name="FIELDNAME"
-		          type="columnType"
-		          columnDisplaySize=""
-		          precision=""
-		          scale=""
-		          isCurrency=""
-		          columnTypeName=""
-		          columnClassName=""/&gt;
-		 &lt;field ...../&gt;
-	&lt;/fielddefinition&gt;
-	&lt;rowset&gt;
-		&lt;row number="1"&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-			&lt;field name="FIELDNAME" null="true" &gt;&lt;/field&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-		&lt;/row&gt;
-	&lt;/rowset&gt;
-&lt;/result&gt;
-</pre></code>
+ * <pre>{@code
+ * <result>
+ *     <fielddefinition>
+ *         <field name="FIELDNAME"
+ *             type="columnType"
+ *             columnDisplaySize=""
+ *             precision=""
+ *             scale=""
+ *             isCurrency=""
+ *             columnTypeName=""
+ *             columnClassName=""/>
+ *         <field ...../>
+ *     </fielddefinition>
+ *     <rowset>
+ *         <row number="1">
+ *             <field name="FIELDNAME">value</field>
+ *             <field name="FIELDNAME" null="true" ></field>
+ *             <field name="FIELDNAME">value</field>
+ *             <field name="FIELDNAME">value</field>
+ *         </row>
+ *     </rowset>
+ * </result>
+ * }</pre>
  * Note: that the fieldname and columntype are always capital case!
  *
  * @author Johan Verrips
  **/
-
 public class DB2XMLWriter {
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 

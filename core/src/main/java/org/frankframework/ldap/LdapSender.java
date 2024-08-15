@@ -65,40 +65,36 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  * <h2>example</h2>
  * Consider the following configuration example:
- * <code>
- * <pre>
- *   &lt;sender
- *        className="org.frankframework.ldap.LdapSender"
- *        ldapProviderURL="ldap://servername:389/o=ing"
- *        operation="read"
- *        attributesToReturn="givenName,sn,telephoneNumber" &gt;
- *     &lt;param name="entryName" xpathExpression="entryName" /&gt;
- *   &lt;/sender&gt;
- * </pre>
- * </code>
+ * <pre>{@code
+ * <sender
+ *      className="org.frankframework.ldap.LdapSender"
+ *      ldapProviderURL="ldap://servername:389/o=ing"
+ *      operation="read"
+ *      attributesToReturn="givenName,sn,telephoneNumber" >
+ *     <param name="entryName" xpathExpression="entryName" />
+ * </sender>
+ * }</pre>
  * <br/>
  *
  * This may result in the following output:
- * <code><pre>
- * &lt;ldap&gt;
- *	&lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
- *
- *	&lt;attributes&gt;
- *		&lt;attribute attrID="givenName"&gt;
- *			&lt;value&gt;Jan&lt;/value&gt;
- *		&lt;/attribute&gt;
- *
- *		&lt;attribute attrID="telephoneNumber"&gt;
- *			&lt;value&gt;010 5131123&lt;/value&gt;
- *			&lt;value&gt;06 23456064&lt;/value&gt;
- *		&lt;/attribute&gt;
- *
- *		&lt;attribute attrID="sn"&gt;
- *			&lt;value&gt;Jansen&lt;/value&gt;
- *		&lt;/attribute&gt;
- *	&lt;/attributes&gt;
- * &lt;/ldap&gt;
- *  </pre></code> <br/>
+ * <pre>{@code
+ * <ldap>
+ * 	   <entryName>uid=srp,ou=people</entryName>
+ * 	   <attributes>
+ *         <attribute attrID="givenName">
+ *             <value>Jan</value>
+ *         </attribute>
+ *         <attribute attrID="telephoneNumber">
+ *             <value>010 5131123</value>
+ *             <value>06 23456064</value>
+ *         </attribute>
+ * 	       <attribute attrID="sn">
+ *             <value>Jansen</value>
+ * 	       </attribute>
+ * 	   </attributes>
+ * </ldap>
+ * }</pre>
+ * <br/>
  *
  * Search or Read?
  *
@@ -108,41 +104,44 @@ import org.frankframework.util.XmlEncodingUtils;
  * together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the
  * specified context are returned.
  *
- * Sample result of a <code>read</code> operation:<br/><code><pre>
- *	&lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="employeeType" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	&lt;/attributes&gt;
- *
- * </pre></code> <br/>
- * Sample result of a <code>search</code> operation:<br/><code><pre>
- *	&lt;entries&gt;
- *	 &lt;entry name="uid=srp"&gt;
- *	   &lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="employeeType" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	   &lt;/attributes&gt;
- *	  &lt;/entry&gt;
- *   &lt;entry&gt; .... &lt;/entry&gt;
- *   .....
- *	&lt;/entries&gt;
- * </pre></code> <br/>
+ * Sample result of a <code>read</code> operation:<br/>
+ * <pre>{@code
+ * <attributes>
+ * 	   <attribute>
+ * 	   <attribute name="employeeType" value="Extern"/>
+ * 	   <attribute name="roomNumber" value="DP 2.13.025"/>
+ * 	   <attribute name="departmentCode" value="358000"/>
+ * 	   <attribute name="organizationalHierarchy">
+ * 	       <item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	       <item value="ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	       <item value="ou=000001,ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	   </attribute>
+ * 	   <attribute name="givenName" value="Gerrit"/>
+ * </attributes>
+ * }</pre>
+ * <br/>
+ * Sample result of a <code>search</code> operation:<br/>
+ * <pre>{@code
+ * <entries>
+ * 	   <entry name="uid=srp">
+ * 	       <attributes>
+ * 	           <attribute>
+ * 	           <attribute name="employeeType" value="Extern"/>
+ * 	           <attribute name="roomNumber" value="DP 2.13.025"/>
+ * 	           <attribute name="departmentCode" value="358000"/>
+ * 	           <attribute name="organizationalHierarchy">
+ * 	               <item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	               <item value="ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	               <item value="ou=000001,ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	           </attribute>
+ * 	           <attribute name="givenName" value="Gerrit"/>
+ * 	       </attributes>
+ * 	   </entry>
+ *     <entry> .... </entry>
+ *    .....
+ * </entries>
+ * }</pre>
+ * <br/>
  *
  * @ff.parameter entryName Represents entryName (RDN) of interest.
  * @ff.parameter filterExpression Filter expression (handy with searching - see RFC2254).

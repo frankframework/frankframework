@@ -52,33 +52,33 @@ import lombok.Setter;
  * {@link ISender sender} that sends a mail specified by an XML message.
  * <p>
  * Sample email.xml:
- * <code><pre>
- *    &lt;email&gt;
- *       &lt;recipients&gt;
- *          &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
- *          &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
- *       &lt;/recipients&gt;
- *       &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
- *       &lt;subject&gt;This is the subject&lt;/subject&gt;
- *       &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
- *       &lt;message&gt;This is the message&lt;/message&gt;
- *       &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
- *       &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
- *       &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
- *       &lt;attachments&gt;
- *          &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
- *          &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
- *          &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
- *          &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
- *       &lt;/attachments&gt;&lt;!-- Optional --&gt;
- *   &lt;/email&gt;
- * </pre></code>
+ * <pre>{@code
+ * <email>
+ *     <recipients>
+ *         <recipient type="to">***@hotmail.com</recipient>
+ *         <recipient type="cc">***@gmail.com</recipient>
+ *     </recipients>
+ *     <from name="*** ***">***@yahoo.com</from>
+ *     <subject>This is the subject</subject>
+ *     <threadTopic>subject</threadTopic>
+ *     <message>This is the message</message>
+ *     <messageType>text/plain</messageType><!-- Optional -->
+ *     <messageBase64>false</messageBase64><!-- Optional -->
+ *     <charset>UTF-8</charset><!-- Optional -->
+ *     <attachments>
+ *         <attachment name="filename1.txt">This is the first attachment</attachment>
+ *         <attachment name="filename2.pdf" base64="true">JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==</attachment>
+ *         <attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/>
+ *         <attachment name="filename4.pdf" sessionKey="fileContent"/>
+ *     </attachments><!-- Optional -->
+ * </email>
+ * }</pre>
  * </p><p>
  * Notice: the XML message must be valid XML. Therefore, especially the message element
  * must be plain text or be wrapped as CDATA. Example:
- * <code><pre>
- *    &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
- * </pre></code>
+ * <pre>{@code
+ * <message><![CDATA[<h1>This is a HtmlMessage</h1>]]></message>
+ * }</pre>
  * </p><p>
  * The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
  * </p><p>
