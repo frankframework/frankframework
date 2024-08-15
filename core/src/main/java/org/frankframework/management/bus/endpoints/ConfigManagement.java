@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
@@ -182,8 +186,33 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public BinaryMessage downloadConfiguration(Message<?> message) {
+	public BinaryMessage downloadConfiguration(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		if (BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
+			String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+			List<Map<String, Object>> activeConfigsFromDb;
+			try {
+				activeConfigsFromDb = ConfigurationUtils.getActiveConfigsFromDatabase(getApplicationContext(), datasourceName);
+			} catch (ConfigurationException e) {
+				throw new BusException("unable to download configurations from database", e);
+			}
+
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			try (ZipOutputStream zos = new ZipOutputStream(out)) {
+				for (Map<String, Object> activeConfig : activeConfigsFromDb) {
+					byte[] configFile = (byte[]) activeConfig.get("CONFIG");
+					ZipEntry entry = new ZipEntry(""+activeConfig.get("FILENAME"));
+					zos.putNextEntry(entry);
+					zos.write(configFile);
+					zos.closeEntry();
+				}
+			}
+
+			BinaryMessage response = new BinaryMessage(out.toByteArray());
+			response.setFilename("active_configurations.zip");
+			return response;
+		}
+
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
