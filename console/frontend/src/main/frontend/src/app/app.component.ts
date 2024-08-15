@@ -716,11 +716,14 @@ export class AppComponent implements OnInit, OnDestroy {
     member: ClusterMember,
     action: ClusterMemberEventType,
   ): void {
-    // TODO If the server keeps sending events twice, check if id still/already exists
-    // On add only if id doesnt exist, on remove only if id exists
-    this.clusterMembers =
-      action === 'ADD_MEMBER'
-        ? [...this.clusterMembers, member]
-        : this.clusterMembers.filter((member) => member.id !== member.id);
+    const memberExists = this.clusterMembers.some((m) => m.id === member.id);
+    if (action === 'ADD_MEMBER' && !memberExists) {
+      this.clusterMembers = [...this.clusterMembers, member];
+      console.log('ADDED');
+    } else if (action === 'REMOVE_MEMBER' && memberExists) {
+      this.clusterMembers = this.clusterMembers.filter(
+        (m) => m.id !== member.id,
+      );
+    }
   }
 }

@@ -87,4 +87,10 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
         });
     }
   }
+
+  getClusterMemberTitle(member: ClusterMember): string {
+    return `Name: ${member.name}
+ID: ${member.id}
+Address: ${member.address}`;
+  }
 }
