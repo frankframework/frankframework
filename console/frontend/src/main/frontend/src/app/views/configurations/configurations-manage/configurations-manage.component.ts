@@ -40,7 +40,7 @@ export class ConfigurationsManageComponent implements OnInit, OnDestroy {
 
   downloadAll(): void {
     window.open(
-      `${this.appService.absoluteApiPath}configurations/download`,
+      `${this.appService.absoluteApiPath}/server/configurations/download`,
       '_blank',
     );
   }
