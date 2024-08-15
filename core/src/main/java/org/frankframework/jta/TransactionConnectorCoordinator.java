@@ -15,16 +15,15 @@
 */
 package org.frankframework.jta;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import org.frankframework.functional.ThrowingRunnable;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.util.LogUtil;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(TransactionConnectorCoordinator.class);
@@ -102,7 +101,7 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
 		if (coordinator!=null) {
 			if (coordinator.onEndChildThreadActions==null) {
-				coordinator.onEndChildThreadActions = new LinkedList<>();
+				coordinator.onEndChildThreadActions = new ArrayList<>();
 			}
 			coordinator.onEndChildThreadActions.add(action);
 			return true;
@@ -112,7 +111,6 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 
 
 	public void resumeTransactionInChildThread(TransactionConnector<T,R> requester) {
-		Thread thread = Thread.currentThread();
 		numBeginChildThreadsCalled++;
 		if (numBeginChildThreadsCalled==connectorCount) {
 			lastInThread = requester;

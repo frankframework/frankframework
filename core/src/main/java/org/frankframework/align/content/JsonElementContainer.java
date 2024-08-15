@@ -15,8 +15,8 @@
 */
 package org.frankframework.align.content;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +30,6 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
-
 import org.frankframework.align.ScalarType;
 import org.frankframework.util.LogUtil;
 
@@ -170,7 +169,7 @@ public class JsonElementContainer implements ElementContainer {
 		}
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
-				array=new LinkedList<>();
+				array=new ArrayList<>();
 				setType(content.getType());
 			}
 			array.add(content.getContent());
@@ -185,13 +184,14 @@ public class JsonElementContainer implements ElementContainer {
 		Object current=contentMap.get(childName);
 		if (content.isRepeatedElement()) {
 			if (current==null) {
-				current=new LinkedList<Object>();
+				current=new ArrayList<>();
 				contentMap.put(childName,current);
 			} else {
 				if (!(current instanceof List)) {
 					throw new IllegalArgumentException("element ["+childName+"] is not an array");
 				}
 			}
+			// noinspection unchecked
 			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {

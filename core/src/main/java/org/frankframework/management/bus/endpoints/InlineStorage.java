@@ -15,21 +15,16 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -39,7 +34,10 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class InlineStorage extends BusEndpointBase {
@@ -79,7 +77,7 @@ public class InlineStorage extends BusEndpointBase {
 	}
 
 	private static class InlineStoreStateItem {
-		private @Getter List<InlineStoreItem> items = new LinkedList<>();
+		private final @Getter List<InlineStoreItem> items = new ArrayList<>();
 		private @Getter @Setter int totalMessageCount;
 	}
 

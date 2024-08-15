@@ -19,8 +19,24 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.List;
+
+import com.nimbusds.oauth2.sdk.AccessTokenResponse;
+import com.nimbusds.oauth2.sdk.AuthorizationGrant;
+import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.TokenErrorResponse;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
+import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
+import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.http.HTTPRequest;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.id.ClientID;
+import com.nimbusds.oauth2.sdk.token.AccessToken;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -47,27 +63,10 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
-import com.nimbusds.oauth2.sdk.AccessTokenResponse;
-import com.nimbusds.oauth2.sdk.AuthorizationGrant;
-import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
-import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
-import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.TokenErrorResponse;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
-import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
-import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
-import com.nimbusds.oauth2.sdk.auth.Secret;
-import com.nimbusds.oauth2.sdk.http.HTTPRequest;
-import com.nimbusds.oauth2.sdk.http.HTTPResponse;
-import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.oauth2.sdk.token.AccessToken;
-
 public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private URI tokenEndpoint;
+	private final URI tokenEndpoint;
 	private final Scope scope;
 	private final CredentialFactory clientCredentialFactory;
 	private final boolean useClientCredentials;
@@ -177,9 +176,10 @@ public class OAuthAccessTokenManager {
 		String query = httpRequest.getQuery(); //This is the POST BODY, don't ask me why they called it QUERY...
 
 		if(authenticationType == AuthenticationType.REQUEST_PARAMETER) {
-			List<NameValuePair> clientInfo = new LinkedList<>();
-			clientInfo.add(new BasicNameValuePair("client_id", clientCredentialFactory.getUsername()));
-			clientInfo.add(new BasicNameValuePair("client_secret", clientCredentialFactory.getPassword()));
+			List<NameValuePair> clientInfo = List.of(
+					new BasicNameValuePair("client_id", clientCredentialFactory.getUsername()),
+					new BasicNameValuePair("client_secret", clientCredentialFactory.getPassword())
+			);
 			query = StringUtil.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
 		}
 		switch (httpRequest.getMethod()) {
