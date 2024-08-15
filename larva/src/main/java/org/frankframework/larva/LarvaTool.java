@@ -66,7 +66,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -149,7 +148,7 @@ public class LarvaTool {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramMultiThreaded = request.getParameter("multithreaded");
-		String paramExecute = StringEscapeUtils.escapeJava(request.getParameter("execute"));
+		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
 		String paramGlobalTimeout = request.getParameter("timeout");
 		int timeout = globalTimeoutMillis;
@@ -160,7 +159,7 @@ public class LarvaTool {
 				// Ignore error, use default
 			}
 		}
-		String paramScenariosRootDirectory = StringEscapeUtils.escapeJava(request.getParameter("scenariosrootdirectory"));
+		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		LarvaTool larvaTool = new LarvaTool();
 		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
