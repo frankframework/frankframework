@@ -119,7 +119,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 				// Make attachments in request (when present) available as session keys
 				if(multipartBackwardsCompatibilityMode) {
-					handleIncomingAttachments(request.getAttachments(), pipelineSession);
+					handleIncomingAttachmentsLegacy(request.getAttachments(), pipelineSession);
 				} else {
 					MultipartMessages parts = MultipartUtils.parseMultipart(request.getAttachments());
 					parts.messages().forEach(pipelineSession::put);
@@ -227,7 +227,10 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		}
 	}
 
-	private void handleIncomingAttachments(Iterator<AttachmentPart> attachmentParts, PipeLineSession pipelineSession) {
+	/**
+	 * This method uses a custom / different way to storing the multipart attachments in the PipeLineSession
+	 */
+	private void handleIncomingAttachmentsLegacy(Iterator<AttachmentPart> attachmentParts, PipeLineSession pipelineSession) {
 		int i = 1;
 		XmlBuilder attachments = new XmlBuilder("attachments");
 		while (attachmentParts.hasNext()) {

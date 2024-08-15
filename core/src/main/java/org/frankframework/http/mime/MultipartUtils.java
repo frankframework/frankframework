@@ -247,15 +247,6 @@ public abstract class MultipartUtils {
 		}
 	}
 
-	private static String extractMimeType(String contentType) {
-		final int semicolon = contentType.indexOf(";");
-		if(semicolon >= 0) {
-			return contentType.substring(0, semicolon);
-		} else {
-			return contentType;
-		}
-	}
-
 	public static MultipartMessages parseMultipart(Iterator<AttachmentPart> attachmentParts) {
 		final XmlBuilder attachments = new XmlBuilder("parts");
 		final Map<String, Message> parts = new LinkedHashMap<>();
@@ -290,5 +281,14 @@ public abstract class MultipartUtils {
 		}
 
 		return new MultipartMessages(attachments.asMessage(), parts);
+	}
+
+	private static String extractMimeType(String contentType) {
+		final int semicolon = contentType.indexOf(";");
+		if(semicolon >= 0) {
+			return contentType.substring(0, semicolon);
+		} else {
+			return contentType;
+		}
 	}
 }
