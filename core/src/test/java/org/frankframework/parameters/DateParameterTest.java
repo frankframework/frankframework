@@ -1,17 +1,11 @@
 package org.frankframework.parameters;
 
-import static org.frankframework.parameters.AbstractParameter.TYPE_DATETIME_PATTERN;
 import static org.frankframework.parameters.AbstractParameter.TYPE_DATE_PATTERN;
-import static org.frankframework.parameters.AbstractParameter.TYPE_TIMESTAMP_PATTERN;
-import static org.frankframework.parameters.AbstractParameter.TYPE_TIME_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -26,11 +20,11 @@ import org.junit.jupiter.api.Test;
 
 public class DateParameterTest {
 
-	protected void testFromStringToDateType(String input, String expected, ParameterType type) throws ConfigurationException, ParameterException {
+	protected void testFromStringToDateType(String input, String expected, DateFormatType type) throws ConfigurationException, ParameterException {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("InputMessage");
 		parameter.setValue(input);
-		parameter.setType(type);
+		parameter.setFormatType(type);
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -48,28 +42,28 @@ public class DateParameterTest {
 	public void testParameterFromStringToDate() throws Exception {
 		String input = "2022-01-23";
 		String expected = "2022-01-23 00:00:00.000";
-		testFromStringToDateType(input, expected, ParameterType.DATE);
+		testFromStringToDateType(input, expected, DateFormatType.DATE);
 	}
 
 	@Test
 	public void testParameterFromStringToDateTime() throws Exception {
 		String input = "2022-01-23 11:14:17";
 		String expected = "2022-01-23 11:14:17.000";
-		testFromStringToDateType(input, expected, ParameterType.DATETIME);
+		testFromStringToDateType(input, expected, DateFormatType.DATETIME);
 	}
 
 	@Test
 	public void testParameterFromStringToTimestamp() throws Exception {
 		String input = "2022-01-23 11:14:17.123";
 		String expected = "2022-01-23 11:14:17.123";
-		testFromStringToDateType(input, expected, ParameterType.TIMESTAMP);
+		testFromStringToDateType(input, expected, DateFormatType.TIMESTAMP);
 	}
 
 	@Test
 	public void testParameterFromStringToTime() throws Exception {
 		String input = "11:14:17";
 		String expected = "1970-01-01 11:14:17.000";
-		testFromStringToDateType(input, expected, ParameterType.TIME);
+		testFromStringToDateType(input, expected, DateFormatType.TIME);
 	}
 
 	@Test
@@ -102,7 +96,7 @@ public class DateParameterTest {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("InputMessage");
 		parameter.setValue(input);
-		parameter.setType(ParameterType.XMLDATETIME);
+		parameter.setFormatType(DateFormatType.XMLDATETIME);
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -126,7 +120,7 @@ public class DateParameterTest {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("InputMessage");
 		parameter.setSessionKey("originalMessage");
-		parameter.setType(ParameterType.XMLDATETIME);
+		parameter.setFormatType(DateFormatType.XMLDATETIME);
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -148,7 +142,7 @@ public class DateParameterTest {
 		try {
 			p.setName("date");
 			p.setPattern("{fixedDate}");
-			p.setType(ParameterType.DATE);
+			p.setFormatType(DateFormatType.DATE);
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
@@ -173,7 +167,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		p.setName("date");
 		p.setPattern("{fixedDate}");
-		p.setType(ParameterType.DATE);
+		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
 		session.put("fixedDate", "1995-01-23");
@@ -198,7 +192,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		p.setName("date");
 		p.setPattern("{fixedDate}");
-		p.setType(ParameterType.DATE);
+		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
 		session.put("stub4testtool.fixeddate", "1996-02-24");
@@ -224,7 +218,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		p.setName("date");
 		p.setPattern("{fixedDate}");
-		p.setType(ParameterType.DATE);
+		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
 		Date date = new Date();
@@ -252,7 +246,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		p.setName("date");
 		p.setPattern("{fixedDate}");
-		p.setType(ParameterType.DATE);
+		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
@@ -276,7 +270,7 @@ public class DateParameterTest {
 		try {
 			p.setName("date");
 			p.setPattern("{now}");
-			p.setType(ParameterType.DATE);
+			p.setFormatType(DateFormatType.DATE);
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
@@ -332,7 +326,7 @@ public class DateParameterTest {
 		try {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate}");
-			p.setType(ParameterType.DATETIME);
+			p.setFormatType(DateFormatType.DATETIME);
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
@@ -359,7 +353,7 @@ public class DateParameterTest {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate}");
 			p.setFormatString("yyyy-MM-dd HH:mm:ss");
-			p.setType(ParameterType.TIMESTAMP);
+			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
@@ -385,7 +379,7 @@ public class DateParameterTest {
 		try {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate,date,yyyy-MM-dd HH:mm:ss.SSS}");
-			p.setType(ParameterType.TIMESTAMP);
+			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
@@ -410,10 +404,9 @@ public class DateParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put("originalMessage", date);
 
-		Parameter parameter = new Parameter();
+		DateParameter parameter = new DateParameter();
 		parameter.setName("InputMessage");
 		parameter.setSessionKey("originalMessage");
-		parameter.setType(ParameterType.DATE);
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
