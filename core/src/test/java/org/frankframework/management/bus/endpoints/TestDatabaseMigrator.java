@@ -53,7 +53,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	@Test
 	public void downloadAllMigrationScripts() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		Message<?> response = callSyncGateway(request);
 		assertEquals("application/octet-stream", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
 		Object cdk = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY);

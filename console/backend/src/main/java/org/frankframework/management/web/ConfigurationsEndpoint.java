@@ -230,7 +230,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	@GetMapping(value = "/configurations/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadActiveConfigurations(@RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*");
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
 		return callSyncGateway(builder);
 	}

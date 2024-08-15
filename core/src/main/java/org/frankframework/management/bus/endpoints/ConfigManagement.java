@@ -188,7 +188,7 @@ public class ConfigManagement extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public BinaryMessage downloadConfiguration(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		if ("*".equals(configurationName)) {
+		if (BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
 			String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			List<Map<String, Object>> activeConfigsFromDb;
 			try {
