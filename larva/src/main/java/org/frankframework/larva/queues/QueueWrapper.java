@@ -17,7 +17,6 @@ package org.frankframework.larva.queues;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -176,9 +175,9 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
-					value = Arrays.asList(propertyValue.split("\\s*(,\\s*)+"));
+					value = StringUtil.split(propertyValue);
 				} else if ("map".equals(type)) {
-					List<String> parts = Arrays.asList(propertyValue.split("\\s*(,\\s*)+"));
+					List<String> parts = StringUtil.split(propertyValue);
 					Map<String, String> map = new LinkedHashMap<>();
 					for (String part : parts) {
 						String[] splitted = part.split("\\s*(=\\s*)+", 2);
