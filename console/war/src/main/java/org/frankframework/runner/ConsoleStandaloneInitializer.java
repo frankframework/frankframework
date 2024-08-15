@@ -35,6 +35,7 @@ import jakarta.servlet.ServletException;
  */
 public class ConsoleStandaloneInitializer {
 
+	/** Required to enable the use of WebSockets when starting as (Spring)Boot-able application. */
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
