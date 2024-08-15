@@ -241,7 +241,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public <T> T showValue(String correlationId, String label, T value) {
-		return testTool.inputpoint(correlationId, null, label, value);
+		return testTool.outputpoint(correlationId, null, label, value);
 	}
 
 
