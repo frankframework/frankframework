@@ -23,12 +23,14 @@ import java.util.regex.Pattern;
 import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Optional;
 import org.frankframework.javascript.GraalJS;
 import org.frankframework.javascript.J2V8;
@@ -70,7 +72,7 @@ public class JavascriptSender extends SenderSeries {
 	/** ES6's let/const declaration Pattern. */
 	private final Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
 
-	private String fileInput;
+	private String javascriptFileContents;
 
 
 	public enum JavaScriptEngines {
@@ -92,34 +94,32 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	protected boolean isSenderConfigured() {
-		return true;
-	}
-
-	//Open function used to load the JavascriptFile
-	@Override
-	public void open() throws SenderException {
-		super.open();
-
-		if (StringUtils.isNotEmpty(getJsFileName())) {
-			URL resource = ClassLoaderUtils.getResourceURL(this, getJsFileName());
-			if (resource == null) {
-				throw new SenderException(getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
-			}
-			try {
-				fileInput = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
-			} catch (IOException e) {
-				throw new SenderException(getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
-			}
-		}
-		if (StringUtils.isEmpty(fileInput)) {
-			// No input from file or input string. Only from session-keys?
-			throw new SenderException(getLogPrefix() + "has neither fileName nor inputString specified");
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(jsFileName)) {
+			throw new ConfigurationException("no jsFileName specified");
 		}
 		if (StringUtils.isEmpty(jsFunctionName)) {
 			// Cannot run the code in factory without any function start point
-			throw new SenderException(getLogPrefix() + "JavaScript FunctionName not specified!");
+			throw new ConfigurationException("JavaScript FunctionName not specified!");
 		}
+
+		super.configure();
+
+		URL resource = ClassLoaderUtils.getResourceURL(this, getJsFileName());
+		if (resource == null) {
+			throw new ConfigurationException("cannot find resource [" + getJsFileName() + "]");
+		}
+		try {
+			String fileInput = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
+			javascriptFileContents = adaptES6Literals(fileInput);
+		} catch (IOException e) {
+			throw new ConfigurationException("got exception reading [" + getJsFileName() + "]", e);
+		}
+	}
+
+	@Override
+	protected boolean isSenderConfigured() {
+		return true;
 	}
 
 	@Override
@@ -164,7 +164,7 @@ public class JavascriptSender extends SenderSeries {
 		String result;
 		try {
 			//Compile the given Javascript and execute the given Javascript function
-			jsInstance.executeScript(adaptES6Literals(fileInput));
+			jsInstance.executeScript(javascriptFileContents);
 			Object jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
 			result = String.valueOf(jsResult);
 		} catch (JavascriptException e) {
@@ -209,6 +209,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/** the name of the javascript file containing the functions to run */
+	@Mandatory
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}

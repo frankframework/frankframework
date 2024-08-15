@@ -67,6 +67,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -214,7 +215,7 @@ public class LarvaTool {
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
 
-		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'");
+		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
 		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory);
 		debugMessage("Initialize 'wait before cleanup' variable");
 		int waitBeforeCleanUp = 100;
