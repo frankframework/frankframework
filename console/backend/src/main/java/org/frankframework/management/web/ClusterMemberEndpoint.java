@@ -72,7 +72,7 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		}
 
 		List<ClusterMember> members = type != null ?
-				outboundGateway.getMembers().stream().filter(m -> type.equals(m.getName())).toList() :
+				outboundGateway.getMembers().stream().filter(m -> type.equals(m.getType())).toList() :
 				outboundGateway.getMembers();
 
 		if(members.isEmpty()) {
@@ -81,7 +81,7 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		}
 
 		if(session.getMemberTarget() == null) {
-			members.stream().filter(m -> "worker".equals(m.getName())).findFirst().ifPresent(m -> { m.setSelectedMember(true); session.setMemberTarget(m.getId()); });
+			members.stream().filter(m -> "worker".equals(m.getType())).findFirst().ifPresent(m -> { m.setSelectedMember(true); session.setMemberTarget(m.getId()); });
 		}
 
 		for(ClusterMember member : members) {
@@ -106,7 +106,7 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		List<ClusterMember> members = outboundGateway.getMembers();
 		UUID uuid = UUID.fromString(id);
 		members.stream()
-			.filter(m -> "worker".equals(m.getName()))
+			.filter(m -> "worker".equals(m.getType()))
 			.filter(m -> uuid.equals(m.getId()))
 			.findAny()
 			.orElseThrow(() -> new ApiException("member target with id ["+id+"] not found"));
