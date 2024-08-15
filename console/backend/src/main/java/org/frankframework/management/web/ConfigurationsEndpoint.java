@@ -232,7 +232,6 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*");
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
-		// TODO zip it
 		return callSyncGateway(builder);
 	}
 
