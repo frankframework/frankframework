@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
  * <pre>{@code
  * <browse>
  *    <jmsRealm>qcf</jmsRealm>
- *    <destinationName>jms/ GetPolicyDetailsRequest</destinationName>
+ *    <destinationName>jms/GetPolicyDetailsRequest</destinationName>
  *    <destinationType>QUEUE</destinationType>
  * </browse>
  * }</pre>

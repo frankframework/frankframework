@@ -58,7 +58,7 @@ import jakarta.annotation.Nullable;
  *     <rowset>
  *         <row number="1">
  *             <field name="FIELDNAME">value</field>
- *             <field name="FIELDNAME" null="true" ></field>
+ *             <field name="FIELDNAME" null="true"></field>
  *             <field name="FIELDNAME">value</field>
  *             <field name="FIELDNAME">value</field>
  *         </row>

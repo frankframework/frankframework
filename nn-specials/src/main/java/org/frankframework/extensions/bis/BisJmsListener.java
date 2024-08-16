@@ -39,9 +39,9 @@ import org.xml.sax.SAXException;
  * <br/>
  * Example request:<br/>
  * <pre>{@code
- * <soap:Envelope xmlns:soap="http:// schemas. xmlsoap. org/ soap/ envelope/">
+ * <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
  *  	<soap:Header>
- *  		<bis:MessageHeader xmlns:bis="http:// www. ing. com/ CSP/ XSD/ General/ Message_2">
+ *  		<bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2">
  *  			<bis:From>
  *  				<bis:Id>PolicyConversion_01_ServiceAgents_01</bis:Id>
  *  			</bis:From>
@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
  *  		</bis:MessageHeader>
  *  	</soap:Header>
  * 		<soap:Body>
- *  		<pcr:GetRequest xmlns:pcr="http:// www. ing. com/ nl/ pcretail/ ts/ migrationauditdata_01">
+ *  		<pcr:GetRequest xmlns:pcr="http://www.ing.com/nl/pcretail/ts/migrationauditdata_01">
  *  			<pcr:PolicyDetails>
  *  				<pcr:RVS_PARTY_ID>1790257</pcr:RVS_PARTY_ID>
  *  				<pcr:RVS_POLICY_NUMBER>10000050</pcr:RVS_POLICY_NUMBER>
@@ -68,9 +68,9 @@ import org.xml.sax.SAXException;
  * <br/>
  * Example reply:<br/>
  * <pre>{@code
- * <soap:Envelope xmlns:soap="http:// schemas. xmlsoap. org/ soap/ envelope/">
+ * <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
  *  	<soap:Header>
- *  		<bis:MessageHeader xmlns:bis="http:// www. ing. com/ CSP/ XSD/ General/ Message_2">
+ *  		<bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2">
  *  			<bis:From>
  *  				<bis:Id>IJA_DB4CONV</bis:Id>
  *  			</bis:From>
@@ -83,9 +83,9 @@ import org.xml.sax.SAXException;
  *  		</bis:MessageHeader>
  *  	</soap:Header>
  *  	<soap:Body>
- *  		<GetResponse xmlns="http:// www. ing. com/ nl/ pcretail/ ts/ migrationcasedata_01">
+ *  		<GetResponse xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01">
  *  			<CaseData>...</CaseData>
- *  			<bis:Result xmlns:bis="http:// www. ing. com/ CSP/ XSD/ General/ Message_2">
+ *  			<bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2">
  *  				<bis:Status>OK</bis:Status>
  *  			</bis:Result>
  *  		</GetResponse>
@@ -97,7 +97,7 @@ import org.xml.sax.SAXException;
  * <br/>
  * Example element Result in case of an error reply:<br/>
  * <pre>{@code
- * <bis:Result xmlns:bis="http:// www. ing. com/ CSP/ XSD/ General/ Message_2">
+ * <bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2">
  *  	<bis:Status>ERROR</bis:Status>
  *  	<bis:ErrorList>
  *  		<bis:Error>

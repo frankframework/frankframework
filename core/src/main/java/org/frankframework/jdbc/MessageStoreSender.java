@@ -59,7 +59,7 @@ import org.frankframework.util.StringUtil;
  * <pre>{@code
  * <SenderPipe name="Send">
  *     <MessageStoreSender
- * 	     slotId="${instance. name}/ TestMessageStore"
+ * 	     slotId="${instance.name}/TestMessageStore"
  * 		 onlyStoreWhenMessageIdUnique="false" />
  * </SenderPipe>
  * }</pre>

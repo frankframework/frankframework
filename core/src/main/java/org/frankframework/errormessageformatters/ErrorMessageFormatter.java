@@ -42,9 +42,9 @@ import org.frankframework.util.XmlEncodingUtils;
  * <pre>{@code
  * <errorMessage>
  *    <message timestamp="Mon Oct 13 12:01:57 CEST 2003"
- *             originator="NN IOS AdapterFramework(set from 'application. name' and 'application. version')"
+ *             originator="NN IOS AdapterFramework(set from 'application.name' and 'application.version')"
  *             message="message describing the error that occurred">
- *    <location class="org. frankframework. pipes. XmlSwitch" name="ServiceSwitch"/>
+ *    <location class="org.frankframework.pipes.XmlSwitch" name="ServiceSwitch"/>
  *    <details>detailed information of the error</details>
  *    <originalMessage messageId="..." receivedTime="Mon Oct 27 12:10:18 CET 2003" >
  *        <![CDATA[contents of message for which the error occurred]]>

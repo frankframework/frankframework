@@ -118,7 +118,7 @@ import org.w3c.dom.Node;
  *     <objectTypeId>NNB_Geldlening</objectTypeId>
  *     <mediaType>application/pdf</mediaType>
  *     <properties>
- *         <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss. SSSz">2014-11-27T16:43:01.268+0100</property>
+ *         <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz">2014-11-27T16:43:01.268+0100</property>
  *         <property name="ArrivedBy">HDN</property>
  *         <property name="DocumentType">Geldlening</property>
  *     </properties>

@@ -48,7 +48,7 @@ import org.frankframework.util.StringUtil;
  * 		pollInterval="1">
  * 		<MessageStoreListener
  * 			name="03 MessageStoreListener"
- * 			slotId="${instance. name}/ TestMessageStore"
+ * 			slotId="${instance.name}/TestMessageStore"
  * 			statusValueInProcess="I" />
  * 	</Receiver>
  * }</pre>

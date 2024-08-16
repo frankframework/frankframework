@@ -227,42 +227,41 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
  * of the sub-adapter for the extra error-handling done by the target receiver.
  *
- * <pre>{@code}</pre>
- * <pre><code>
- *  &lt;Module&gt;
- *   &lt;Adapter name="Adapter A"&gt;
- *    &lt;Receiver name="Adapter A Receiver"&gt;
- *        ... Listener setup and other configuration
- *    &lt;/Receiver&gt;
- *    &lt;Pipeline&gt;
- *     &lt;SenderPipe name="send"&gt;
- *      &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
- *      &lt;FrankSender
- *           scope="LISTENER"
- *           target="Adapter B Listener"/&gt;
- *       &lt;Forward name="success" path="EXIT" /&gt;
- *     &lt;/SenderPipe&gt;
- *    &lt;/Pipeline&gt;
- *   &lt;/Adapter&gt;
- *  &lt;Adapter name="adapter B"&gt;
- *   &lt;!-- Messages will only be sent to the error storage if:
- *        - The target receiver is not transactional, and has maxTries="0", or
- *        - The target receiver is transaction, and the Sender is set up to retry sending on error
- *        For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
- *   --&gt;
- *   &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
- *    &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
- *    &lt;FrankListener name="Adapter B Listener"/&gt;
- *    &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
- *    &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
- *   &lt;/Receiver&gt;
- *   &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
- *   &lt;Pipeline transactionAttribute="RequiresNew"&gt;
- *       ... Exits, Pipes etc
- *   &lt;/Pipeline&gt;
- *  &lt;/Adapter&gt;
- *  &lt;/Module&gt;
- * </code></pre>
+ * <pre>{@code
+ * <Module>
+ *    <Adapter name="Adapter A">
+ *        <Receiver name="Adapter A Receiver">
+ *         ... Listener setup and other configuration
+ * 		  </Receiver>
+ * 		  <Pipeline>
+ *            <SenderPipe name="send">
+ *                <!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call -->
+ *                <FrankSender
+ *                    scope="LISTENER"
+ *                    target="Adapter B Listener"/>
+ *                <Forward name="success" path="EXIT" />
+ *            </SenderPipe>
+ *        </Pipeline>
+ *     </Adapter>
+ *     <Adapter name="adapter B">
+ *         <!-- Messages will only be sent to the error storage if:
+ *             - The target receiver is not transactional, and has maxTries="0", or
+ *             - The target receiver is transaction, and the Sender is set up to retry sending on error
+ *             For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
+ *         -->
+ *         <Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported">
+ *             <!-- Listener name is optional, defaults to Adapter name -->
+ *             <FrankListener name="Adapter B Listener"/>
+ *                 <!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that -->
+ *             <JdbcErrorStorage slotId="Adapter B - Errors" />
+ *         </Receiver>
+ *         <!-- If transactions are required, set transaction-attribute on the Pipeline -->
+ *         <Pipeline transactionAttribute="RequiresNew">
+ *             ... Exits, Pipes etc
+ *         </Pipeline>
+ *    </Adapter>
+ * </Module>
+ * }</pre>
  *
  * @ff.parameter {@code scope} Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
  * @ff.parameter {@code target} Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.

@@ -783,7 +783,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	/**
-	 * Used when <code>staleChecking</code>> is <code>true</code>. Timeout after which an idle connection will be validated before being used.
+	 * Used when <code>staleChecking</code> is <code>true</code>. Timeout after which an idle connection will be validated before being used.
 	 * @ff.default 5000 ms
 	 */
 	public void setStaleTimeout(int timeout) {
