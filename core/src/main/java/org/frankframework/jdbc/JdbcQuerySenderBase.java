@@ -740,9 +740,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			return getUpdateStatementResult(statement, resultQuery, resStmt, numRowsAffected);
 		} catch (SQLException e) {
-			throw new SenderException("got exception executing query ["+query+"]",e );
+			throw new SenderException("got exception executing query ["+query+"]", e);
 		} catch (JdbcException|IOException|JMSException e) {
-			throw new SenderException("got exception executing a SQL command",e );
+			throw new SenderException("got exception executing a SQL command", e);
 		} catch (ParameterException e) {
 			throw new SenderException("got exception evaluating parameters", e);
 		}
