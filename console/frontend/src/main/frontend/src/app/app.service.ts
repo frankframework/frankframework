@@ -199,6 +199,14 @@ export type ServerEnvironmentVariables = {
   'System Properties': Record<string, string>;
 };
 
+export type ClusterMember = {
+  id: string;
+  address: string;
+  name: string;
+  localMember: boolean;
+  selectedMember: boolean;
+};
+
 export type AppConstants = Record<string, string | number | boolean | object>;
 
 export const appInitState = {
@@ -220,6 +228,7 @@ export type ConsoleState = {
 })
 export class AppService {
   private loadingSubject = new Subject<boolean>();
+  private reloadSubject = new Subject<void>();
   private customBreadcrumbsSubject = new Subject<string>();
   private appConstantsSubject = new Subject<void>();
   private adaptersSubject = new Subject<Record<string, Adapter>>();
@@ -234,6 +243,7 @@ export class AppService {
   private iframePopoutUrlSubject = new Subject<string>();
 
   loading$ = this.loadingSubject.asObservable();
+  reload$ = this.reloadSubject.asObservable();
   customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
   appConstants$ = this.appConstantsSubject.asObservable();
   adapters$ = this.adaptersSubject.asObservable();
@@ -311,6 +321,10 @@ export class AppService {
     private http: HttpClient,
     private debugService: DebugService,
   ) {}
+
+  triggerReload(): void {
+    this.reloadSubject.next();
+  }
 
   updateLoading(loading: boolean): void {
     this.loadingSubject.next(loading);
@@ -441,6 +455,18 @@ export class AppService {
           return of([]);
         }),
       );
+  }
+
+  getClusterMembers(): Observable<ClusterMember[]> {
+    return this.http.get<ClusterMember[]>(
+      `${this.absoluteApiPath}cluster/members?type=worker`,
+    );
+  }
+
+  updateSelectedClusterMember(id: string): Observable<object> {
+    return this.http.post(`${this.absoluteApiPath}cluster/members`, {
+      id,
+    });
   }
 
   getConfigurations(): Observable<Configuration[]> {

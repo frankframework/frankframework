@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventHandler extends FrankApiWebSocketBase {
 
-	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
+	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 30)
 	public void serverWarnings() {
 		propagateAuthenticationContext("server-warnings");
 
@@ -38,7 +38,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 		}
 	}
 
-	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
+	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS, initialDelay = 30)
 	public void adapters() {
 		propagateAuthenticationContext("adapter-info");
 

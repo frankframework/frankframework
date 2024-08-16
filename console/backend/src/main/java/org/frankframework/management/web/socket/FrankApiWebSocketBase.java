@@ -93,7 +93,12 @@ public class FrankApiWebSocketBase {
 			JsonValue source = Json.createReader(new StringReader(cachedJsonMessage)).readValue();
 			JsonValue target = Json.createReader(new StringReader(latestJsonMessage)).readValue();
 			JsonMergePatch mergeDiff = Json.createMergeDiff(source, target);
-			return mergeDiff.toJsonValue().toString();
+			String diff = mergeDiff.toJsonValue().toString();
+
+			if(diff.length() == 2 && "{}".equals(diff)) {
+				return null;
+			}
+			return diff;
 		} catch (Exception e) {
 			log.error("exception while performing json compare", e);
 			return null;

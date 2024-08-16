@@ -46,7 +46,7 @@ public class SerializableInputStreamTest {
 
 	@Test
 	public void testLargeStream() throws Exception {
-		URL testFile = SerializableInputStream.class.getResource("/frankframework-hazelcast.xml");
+		URL testFile = SerializableInputStream.class.getResource("/25k-file.txt");
 		Path fileThatLargerThen20Kb = Path.of(testFile.toURI());
 		assertTrue(Files.size(fileThatLargerThen20Kb) > 20_480, "the test file must be larger then the default buffer size");
 

@@ -14,6 +14,7 @@ import {
   AppConstants,
   appInitState,
   AppService,
+  ClusterMember,
   ConsoleState,
   MessageLog,
 } from './app.service';
@@ -43,7 +44,11 @@ import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
-import { WebsocketService } from './services/websocket.service';
+import {
+  ClusterMemberEvent,
+  ClusterMemberEventType,
+  WebsocketService,
+} from './services/websocket.service';
 import { deepMerge } from './utils';
 
 @Component({
@@ -64,10 +69,12 @@ export class AppComponent implements OnInit, OnDestroy {
   routeData: Data = {};
   routeQueryParams: ParamMap = convertToParamMap({});
   isLoginView: boolean = false;
+  clusterMembers: ClusterMember[] = [];
 
   private appConstants: AppConstants;
   private consoleState: ConsoleState;
   private _subscriptions = new Subscription();
+  private _subscriptionsReloadable = new Subscription();
   private serializedRawAdapterData: Record<string, string> = {};
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
@@ -206,11 +213,26 @@ export class AppComponent implements OnInit, OnDestroy {
         .changeInterval(this.appConstants['console.pollerInterval'] as number);
     });
     this._subscriptions.add(idleEndSubscription);
+
+    const reloadSubscription = this.appService.reload$.subscribe(() =>
+      this.onAppReload(),
+    );
+    this._subscriptions.add(reloadSubscription);
+
     this.initializeFrankConsole();
   }
 
   ngOnDestroy(): void {
+    this.websocketService.deactivate();
     this._subscriptions.unsubscribe();
+    this._subscriptionsReloadable.unsubscribe();
+  }
+
+  onAppReload(): void {
+    this.websocketService.deactivate();
+    this._subscriptionsReloadable.unsubscribe();
+    this.consoleState.init = appInitState.UN_INIT;
+    this.initializeFrankConsole();
   }
 
   handleQueryParams(parameters: ParamMap): void {
@@ -238,12 +260,12 @@ export class AppComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.serverInfo = data;
 
-          this.appService.dtapStage = data['dtap.stage'];
-          this.dtapStage = data['dtap.stage'];
-          this.dtapSide = data['dtap.side'];
-          // appService.userName = data["userName"];
-          this.userName = data['userName'];
-          this.authService.setLoggedIn(this.userName);
+        this.appService.dtapStage = data['dtap.stage'];
+        this.dtapStage = data['dtap.stage'];
+        this.dtapSide = data['dtap.side'];
+        // appService.userName = data["userName"];
+        this.userName = data['userName'];
+        this.authService.setLoggedIn(this.userName);
 
         this.consoleState.init = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
@@ -290,10 +312,10 @@ export class AppComponent implements OnInit, OnDestroy {
           this.debugService.setLevel(3);
         }
 
-          //Was it able to retrieve the serverinfo without logging in?
-          if (!this.authService.isLoggedIn()) {
-            this.idle.setTimeout(0);
-          }
+        //Was it able to retrieve the serverinfo without logging in?
+        if (!this.authService.isLoggedIn()) {
+          this.idle.setTimeout(0);
+        }
 
         this.appService.getConfigurations().subscribe((data) => {
           this.appService.updateConfigurations(data);
@@ -379,6 +401,9 @@ export class AppComponent implements OnInit, OnDestroy {
           );
         }
       });
+    this.appService.getClusterMembers().subscribe((data) => {
+      this.clusterMembers = data;
+    });
   }
 
   initializeWebsocket(): void {
@@ -395,6 +420,15 @@ export class AppComponent implements OnInit, OnDestroy {
         '/event/adapters',
         (data) => this.pollerCallback(data),
       );
+
+      this.websocketService.subscribe<ClusterMemberEvent>(
+        '/event/cluster',
+        (clusterMemeberEvent) =>
+          this.updateClusterMembers(
+            clusterMemeberEvent.member,
+            clusterMemeberEvent.type,
+          ),
+      );
     });
 
     this.appService.getAdapters('all').subscribe((data) => {
@@ -409,7 +443,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.startupError = this.appService.startupError;
       },
     );
-    this._subscriptions.add(startupErrorSubscription);
+    this._subscriptionsReloadable.add(startupErrorSubscription);
 
     this.http
       .get<
@@ -469,9 +503,10 @@ export class AppComponent implements OnInit, OnDestroy {
         ].slice(-this.messageKeeperSize);
       }
 
-      configuration.messageLevel =
-        existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
+        configuration.messageLevel =
+          existingConfiguration?.messageLevel ?? 'INFO';
+
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
           if (level == 'WARN' && configuration.messageLevel != 'ERROR')
@@ -675,5 +710,20 @@ export class AppComponent implements OnInit, OnDestroy {
       InformationModalComponent,
       this.MODAL_OPTIONS_CLASSES,
     );
+  }
+
+  private updateClusterMembers(
+    member: ClusterMember,
+    action: ClusterMemberEventType,
+  ): void {
+    const memberExists = this.clusterMembers.some((m) => m.id === member.id);
+    if (action === 'ADD_MEMBER' && !memberExists) {
+      this.clusterMembers = [...this.clusterMembers, member];
+      console.log('ADDED');
+    } else if (action === 'REMOVE_MEMBER' && memberExists) {
+      this.clusterMembers = this.clusterMembers.filter(
+        (m) => m.id !== member.id,
+      );
+    }
   }
 }

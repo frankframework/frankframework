@@ -6,12 +6,19 @@ import {
   IStompSocket,
   StompSubscription,
 } from '@stomp/stompjs';
-import { AppService } from '../app.service';
+import { AppService, ClusterMember } from '../app.service';
 import { Subject } from 'rxjs';
 
 type ChannelMessage = {
   channel: string;
   message: IMessage;
+};
+
+export type ClusterMemberEventType = 'ADD_MEMBER' | 'REMOVE_MEMBER';
+
+export type ClusterMemberEvent = {
+  type: ClusterMemberEventType;
+  member: ClusterMember;
 };
 
 @Injectable({
