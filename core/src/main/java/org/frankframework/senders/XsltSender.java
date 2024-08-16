@@ -117,7 +117,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
+			throw new ConfigurationException("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		}
 
 		if (getXsltVersion()>=2) {
@@ -126,7 +126,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 				for (int i=0; i<parameterList.size(); i++) {
 					IParameter parameter = parameterList.getParameter(i);
 					if (parameter.getType()==ParameterType.NODE) {
-						throw new ConfigurationException(getLogPrefix() + "type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
+						throw new ConfigurationException("type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
 					}
 				}
 			}
@@ -141,7 +141,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
+				throw new SenderException("cannot start TransformerPool", e);
 			}
 		}
 	}
@@ -301,7 +301,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 					@Override
 					public void endDocument() throws SAXException {
 						super.endDocument();
-						log.debug("{} xml input [{}]", getLogPrefix(), getWriter());
+						log.debug("xml input [{}]", getWriter());
 					}
 				};
 			}
@@ -310,7 +310,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			reader.parse(source);
 			return new SenderResult(messageBuilder.build());
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "Cannot transform input", e);
+			throw new SenderException("Cannot transform input", e);
 		}
 	}
 

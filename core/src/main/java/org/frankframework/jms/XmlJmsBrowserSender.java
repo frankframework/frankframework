@@ -113,7 +113,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
 			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
+			throw new SenderException("got exception parsing [" + message + "]", e);
 		}
 
 		JmsBrowser<jakarta.jms.Message> jmsBrowser = createJmsBrowser();
@@ -136,8 +136,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			if ("remove".equalsIgnoreCase(root)) {
 				remove = true;
 			} else {
-				throw new SenderException(getLogPrefix()
-						+ "unknown root element [" + root + "]");
+				throw new SenderException("unknown root element [" + root + "]");
 			}
 		}
 
@@ -187,15 +186,14 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			}
 			result.addSubElement(items);
 		} catch (ListenerException e) {
-			throw new SenderException(getLogPrefix()
-					+ "got exception browsing messages", e);
+			throw new SenderException("got exception browsing messages", e);
 		} finally {
 			try {
 				if (it != null) {
 					it.close();
 				}
 			} catch (ListenerException e) {
-				log.warn("{}exception on closing message browser iterator", getLogPrefix(), e);
+				log.warn("exception on closing message browser iterator", e);
 			}
 		}
 		return new SenderResult(result.asMessage());

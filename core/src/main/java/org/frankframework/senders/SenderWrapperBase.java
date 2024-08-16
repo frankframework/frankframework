@@ -56,10 +56,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSenderConfigured()) {
-			throw new ConfigurationException(getLogPrefix()+"must have at least a sender configured");
+			throw new ConfigurationException("must have at least a sender configured");
 		}
 		if (StringUtils.isNotEmpty(getGetInputFromSessionKey()) && StringUtils.isNotEmpty(getGetInputFromFixedValue())) {
-			throw new ConfigurationException(getLogPrefix()+"cannot have both attributes inputFromSessionKey and inputFromFixedValue configured");
+			throw new ConfigurationException("cannot have both attributes inputFromSessionKey and inputFromFixedValue configured");
 		}
 		if (cache!=null) {
 			cache.configure(getName());
@@ -96,12 +96,6 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		}
 		return doSendMessage(message, session);
 	}
-
-	@Override
-	public String getLogPrefix() {
-		return super.getLogPrefix();
-	}
-
 
 	/** If set, input is taken from this session key, instead of regular input */
 	public void setGetInputFromSessionKey(String string) {

@@ -69,11 +69,6 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected String getLogPrefix() {
-		return "JdbcTableMessageBrowser ["+getName()+"] ";
-	}
-
-	@Override
 	public void configure() throws ConfigurationException {
 		try {
 			copyFacadeSettings(parent);

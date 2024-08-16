@@ -161,7 +161,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			try {
 				pvl=paramList.getValues(message, pipeLineSession);
 			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
+				throw new SenderException("cannot extract parameters",e);
 			}
 		}
 
@@ -177,7 +177,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					}
 				}
 				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(), getServiceNamespaceURI(), soapHeader);
-				if (log.isDebugEnabled()) log.debug("{} correlationId [{}] soap message [{}]", getLogPrefix(), correlationID, message);
+				if (log.isDebugEnabled()) log.debug("correlationId [{}] soap message [{}]", correlationID, message);
 			}
 			jmsSession = createSession();
 			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
@@ -312,7 +312,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			String name = property.getDefinition().getName();
 
 			if (!isSoap() || !name.equals(getSoapHeaderParam()) && !name.equals(getDestinationParam())) {
-				log.debug("{} setting [{}] property from param [{}] to value [{}]", this::getLogPrefix, () -> type, () -> name, property::getValue);
+				log.debug("setting [{}] property from param [{}] to value [{}]", () -> type, () -> name, property::getValue);
 				switch(type) {
 					case BOOLEAN:
 						msg.setBooleanProperty(name, property.asBooleanValue(false));

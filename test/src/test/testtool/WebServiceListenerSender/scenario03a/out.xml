@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderTimeout]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderTimeout] caught exception: Pipe [send2ws_no_forwards] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
+  <message>exception processing message using request processor [ibis4test-WebServiceSenderTimeout]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderTimeout] caught exception: Pipe [send2ws_no_forwards] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

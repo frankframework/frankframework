@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderErrorServiceNamespaceURI]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderErrorServiceNamespaceURI] caught exception: Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error:serviceNamespaceURI&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
+  <message>exception processing message using request processor [ibis4test-WebServiceSenderErrorServiceNamespaceURI]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderErrorServiceNamespaceURI] caught exception: Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error:serviceNamespaceURI&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

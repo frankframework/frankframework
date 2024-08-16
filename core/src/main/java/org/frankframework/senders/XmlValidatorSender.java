@@ -57,7 +57,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String fullReasons="";
 		try {
-			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
+			ValidationResult validationResult = validate(message, session,null,null);
 
 			if (validationResult == ValidationResult.VALID || validationResult == ValidationResult.VALID_WITH_WARNINGS) {
 				return new SenderResult(message);
@@ -80,10 +80,6 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 	@Override
 	public boolean isSynchronous() {
 		return true;
-	}
-
-	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
 }

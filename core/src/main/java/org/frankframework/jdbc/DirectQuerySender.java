@@ -122,7 +122,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 			}
 			return result;
 		} catch (JdbcException | SQLException e) {
-			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+			throw new SenderException("cannot getQueryExecutionContext",e);
 		}
 	}
 }

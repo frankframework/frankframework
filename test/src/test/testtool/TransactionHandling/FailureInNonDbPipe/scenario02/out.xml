@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [INSTANCE_NAME-TransactionExceptionInDbPipe]: (RequestProcessorException) RequestProcessor [INSTANCE_NAME-TransactionExceptionInDbPipe] caught exception: Pipe [fixedInsert4] unable to execute SQL statement, transaction has been marked as failed by an earlier sender</message>
+  <message>exception processing message using request processor [INSTANCE_NAME-TransactionExceptionInDbPipe]: (RequestProcessorException) RequestProcessor [INSTANCE_NAME-TransactionExceptionInDbPipe] caught exception: Pipe [fixedInsert4] unable to execute SQL statement, transaction has been marked as failed by an earlier sender</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
