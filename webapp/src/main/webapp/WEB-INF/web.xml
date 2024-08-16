@@ -9,14 +9,4 @@
 		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
-	<servlet>
-		<servlet-name>jsp</servlet-name>
-		<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
-
-		<init-param>
-			<param-name>development</param-name>
-			<param-value>false</param-value>
-		</init-param>
-	</servlet>
-
 </web-app>
