@@ -93,7 +93,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>3.3.2</version>
 				<configuration>
-					<mainClass>org.frankframework.runner.ConsoleStandaloneInitializer</mainClass>
+					<mainClass>org.frankframework.console.runner.ConsoleStandaloneInitializer</mainClass>
 					<layout>WAR</layout>
 				</configuration>
 				<executions>
