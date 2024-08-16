@@ -2,6 +2,14 @@
   height: 100%;
 }
 
+:host.form-control {
+  padding: 0;
+}
+
+:host.form-control:focus-within {
+  border: 1px solid #1ab394;
+}
+
 .editor {
   height: 100%;
 }
