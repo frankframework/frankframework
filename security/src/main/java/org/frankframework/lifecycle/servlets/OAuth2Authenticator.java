@@ -49,9 +49,9 @@ import org.frankframework.util.StringUtil;
  *
  * <p>
  * Default redirect url is as follows:
- * <code><pre>
+ * <pre>{@code
  * {baseUrl}/-servlet-name-/oauth2/code/{registrationId}
- * </pre></code>
+ * }</pre>
  * <p>
  * The redirect url has been modified to match the servlet path and is deduced from the default
  * {@link OAuth2LoginAuthenticationFilter#DEFAULT_FILTER_PROCESSES_URI}.
