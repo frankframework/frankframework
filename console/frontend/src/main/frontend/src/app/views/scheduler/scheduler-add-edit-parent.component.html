@@ -25,11 +25,11 @@
         </div>
         <div class="ibox-content">
           <form role="form">
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Schedule Name</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="name"
                   type="text"
                   [(ngModel)]="form.name"
@@ -37,11 +37,11 @@
                 />
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Job Group</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="group"
                   type="text"
                   [(ngModel)]="form.group"
@@ -49,11 +49,11 @@
                 <!-- [disabled]="jobGroup" -->
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <select
-                  class="form-control m-b"
+                  class="form-control"
                   name="configuration"
                   [(ngModel)]="selectedConfiguration"
                 >
@@ -66,11 +66,11 @@
                 </select>
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Select an adapter</label>
               <div class="col-sm-9">
                 <select
-                  class="form-control m-b"
+                  class="form-control"
                   name="adapter"
                   [(ngModel)]="form.adapter"
                   [disabled]="selectedConfiguration === ''"
@@ -93,18 +93,18 @@
                 </select>
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Select a listener</label>
               <div class="col-sm-9" *ngIf="!form.adapter">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   value="Select an adapter first.."
                   disabled
                 />
               </div>
               <div class="col-sm-9" *ngIf="form.adapter">
                 <select
-                  class="form-control m-b"
+                  class="form-control"
                   name="receiver"
                   [(ngModel)]="form.listener"
                 >
@@ -124,13 +124,13 @@
               </div>
             </div>
             <div
-              class="form-group"
+              class="row form-group"
               title="Quartz CRON Expression to specify execution times. Overrides Interval"
             >
               <label class="col-sm-3 control-label">CRON Expression</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="cron"
                   type="text"
                   [disabled]="form.interval !== ''"
@@ -139,13 +139,13 @@
               </div>
             </div>
             <div
-              class="form-group"
+              class="row form-group"
               title="Interval between executions. Only used when NO cron expression specified"
             >
               <label class="col-sm-3 control-label">Interval</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="interval"
                   type="text"
                   [disabled]="form.cron !== ''"
@@ -153,35 +153,33 @@
                 />
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30"
                 >Message</label
               >
-              <div class="col-sm-9">
-                <textarea
-                  class="form-control m-b"
-                  name="message"
-                  rows="5"
-                  style="resize: none"
-                  [(ngModel)]="form.message"
-                ></textarea>
+              <div class="col-sm-9" style="height: 100px">
+                <app-monaco-editor
+                  class="form-control"
+                  [(value)]="form.message"
+                  [options]="{ language: 'text' }"
+                ></app-monaco-editor>
               </div>
             </div>
-            <div class="form-group" title="At most 255 chars (optional)">
+            <div class="row form-group" title="At most 255 chars (optional)">
               <label class="col-sm-3 control-label">Description</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="description"
                   type="text"
                   [(ngModel)]="form.description"
                 />
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Contains Locker</label>
               <div class="col-sm-1">
-                <span class="form-control m-b" style="border: none"
+                <span class="form-control" style="border: none"
                   ><input
                     icheck
                     type="checkbox"
@@ -191,7 +189,7 @@
               </div>
               <div class="col-sm-8">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="lockkey"
                   type="text"
                   [(ngModel)]="form.lockkey"

@@ -238,12 +238,12 @@ export class AppComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.serverInfo = data;
 
-          this.appService.dtapStage = data['dtap.stage'];
-          this.dtapStage = data['dtap.stage'];
-          this.dtapSide = data['dtap.side'];
-          // appService.userName = data["userName"];
-          this.userName = data['userName'];
-          this.authService.setLoggedIn(this.userName);
+        this.appService.dtapStage = data['dtap.stage'];
+        this.dtapStage = data['dtap.stage'];
+        this.dtapSide = data['dtap.side'];
+        // appService.userName = data["userName"];
+        this.userName = data['userName'];
+        this.authService.setLoggedIn(this.userName);
 
         this.consoleState.init = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
@@ -290,10 +290,10 @@ export class AppComponent implements OnInit, OnDestroy {
           this.debugService.setLevel(3);
         }
 
-          //Was it able to retrieve the serverinfo without logging in?
-          if (!this.authService.isLoggedIn()) {
-            this.idle.setTimeout(0);
-          }
+        //Was it able to retrieve the serverinfo without logging in?
+        if (!this.authService.isLoggedIn()) {
+          this.idle.setTimeout(0);
+        }
 
         this.appService.getConfigurations().subscribe((data) => {
           this.appService.updateConfigurations(data);
