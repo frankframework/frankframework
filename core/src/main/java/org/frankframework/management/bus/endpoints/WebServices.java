@@ -21,7 +21,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -181,7 +180,7 @@ public class WebServices extends BusEndpointBase {
 	}
 
 	private List<ListenerDAO> getApiListeners() {
-		List<ListenerDAO> apiListeners = new LinkedList<>();
+		List<ListenerDAO> apiListeners = new ArrayList<>();
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();

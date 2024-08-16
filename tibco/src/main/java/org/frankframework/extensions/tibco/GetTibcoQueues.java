@@ -21,12 +21,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
-
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.tibco.tibjms.admin.ACLEntry;
@@ -352,10 +352,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qInfoXml.addSubElement(aclXml);
 		qMessageXml.addSubElement(qInfoXml);
 
-		Map<String, LinkedList<String>> consumersMap = getConnectedConsumersMap(admin);
+		Map<String, List<String>> consumersMap = getConnectedConsumersMap(admin);
 		XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 		if (consumersMap.containsKey(qInfo.getName())) {
-			LinkedList<String> consumers = consumersMap.get(qInfo.getName());
+			List<String> consumers = consumersMap.get(qInfo.getName());
 			if (consumers != null) {
 				String consumersString = String.join("; ", consumers);
 				consumerXml.setCdataValue(consumersString);
@@ -388,7 +388,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qInfosXml.addAttribute("age", Misc.getAge(startTime));
 
 		Map<String, String> aclMap = getAclMap(admin, ldapSender);
-		Map<String, LinkedList<String>> consumersMap = getConnectedConsumersMap(admin);
+		Map<String, List<String>> consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
 		for (int i = 0; i < qInfos.length; i++) {
 			QueueInfo qInfo = qInfos[i];
@@ -402,7 +402,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				qInfoXml.addSubElement(aclXml);
 				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 				if (consumersMap.containsKey(qInfo.getName())) {
-					LinkedList<String> consumers = consumersMap.get(qInfo.getName());
+					List<String> consumers = consumersMap.get(qInfo.getName());
 					if (consumers != null) {
 						String consumersString = String.join("; ", consumers);
 						consumerXml.setCdataValue(consumersString);
@@ -575,7 +575,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return inetAddress.getCanonicalHostName();
 	}
 
-	private Map<String, LinkedList<String>> getConnectedConsumersMap(TibjmsAdmin admin) throws TibjmsAdminException {
+	private Map<String, List<String>> getConnectedConsumersMap(TibjmsAdmin admin) throws TibjmsAdminException {
 		Map<Long, String> connectionMap = new HashMap<>();
 		ConnectionInfo[] connectionInfos = admin.getConnections();
 		for (int i = 0; i < connectionInfos.length; i++) {
@@ -587,25 +587,15 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			}
 		}
 
-		Map<String, LinkedList<String>> consumerMap = new HashMap<>();
+		Map<String, List<String>> consumerMap = new HashMap<>();
 		ConsumerInfo[] consumerInfos = admin.getConsumers();
-		for (int i = 0; i < consumerInfos.length; i++) {
-			ConsumerInfo consumerInfo = consumerInfos[i];
+		for (ConsumerInfo consumerInfo : consumerInfos) {
 			String destinationName = consumerInfo.getDestinationName();
 			long connectionId = consumerInfo.getConnectionID();
 			if (connectionMap.containsKey(connectionId)) {
 				String ci = connectionMap.get(connectionId);
-				if (consumerMap.containsKey(destinationName)) {
-					LinkedList<String> consumers = consumerMap.get(destinationName);
-					if (!consumers.contains(ci)) {
-						consumers.add(ci);
-						consumerMap.put(destinationName, consumers);
-					}
-				} else {
-					LinkedList<String> consumers = new LinkedList<>();
-					consumers.add(ci);
-					consumerMap.put(destinationName, consumers);
-				}
+				List<String> consumers = consumerMap.computeIfAbsent(destinationName, k -> new ArrayList<>());
+				consumers.add(ci);
 			}
 		}
 		return consumerMap;

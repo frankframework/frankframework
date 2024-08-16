@@ -17,9 +17,9 @@ package org.frankframework.credentialprovider;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -160,7 +160,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 		try {
 			List<String> roles = user.getRoles();
 			Set<String> allRoles = new LinkedHashSet<>(roles);
-			Queue<String> rolesToCheck = new LinkedList<>(allRoles);
+			Queue<String> rolesToCheck = new ArrayDeque<>(allRoles);
 
 			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles in: "+allRoles);
 

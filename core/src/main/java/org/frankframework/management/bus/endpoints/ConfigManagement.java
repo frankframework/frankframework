@@ -22,9 +22,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -108,11 +108,11 @@ public class ConfigManagement extends BusEndpointBase {
 			return new JsonMessage(Collections.singletonList(new ConfigurationDTO(configuration)));
 		}
 
-		List<ConfigurationDTO> configs = new LinkedList<>();
-		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			configs.add(new ConfigurationDTO(configuration));
-		}
-		configs.sort(new ConfigurationDTO.NameComparator());
+		List<ConfigurationDTO> configs = getIbisManager().getConfigurations()
+				.stream()
+				.map(ConfigurationDTO::new)
+				.sorted(new ConfigurationDTO.NameComparator())
+				.toList();
 		return new JsonMessage(configs);
 	}
 
@@ -251,7 +251,7 @@ public class ConfigManagement extends BusEndpointBase {
 	}
 
 	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, @Nonnull final String dataSourceName) {
-		List<ConfigurationDTO> configurations = new LinkedList<>();
+		List<ConfigurationDTO> configurations = new ArrayList<>();
 
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		qs.setDatasourceName(dataSourceName);

@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -97,6 +96,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
@@ -2294,11 +2294,9 @@ public class LarvaTool {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
-					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
-
-					value = new LinkedList<>(parts);
+					value = StringUtil.split(propertyValue);
 				} else if ("map".equals(type)) {
-					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+					List<String> parts = StringUtil.split(propertyValue);
 					Map<String, String> map = new LinkedHashMap<>();
 
 					for (String part : parts) {
