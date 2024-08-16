@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -252,10 +253,10 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		try {
-			loadingConfigs.add(IbisManager.ALL_CONFIGS_KEY);
+			loadingConfigs.add(BusMessageUtils.ALL_CONFIGS_KEY);
 			load(null);
 		} finally {
-			loadingConfigs.remove(IbisManager.ALL_CONFIGS_KEY);
+			loadingConfigs.remove(BusMessageUtils.ALL_CONFIGS_KEY);
 		}
 	}
 
