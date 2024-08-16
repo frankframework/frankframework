@@ -74,10 +74,8 @@ export class ConfigurationsShowComponent implements OnInit {
 
   updateQueryParams(): void {
     const transitionObject: TransitionObject = {};
-    if (this.selectedConfiguration !== 'All')
-      transitionObject.name = this.selectedConfiguration;
-    if (!this.loadedConfiguration)
-      transitionObject.loaded = this.loadedConfiguration;
+    if (this.selectedConfiguration !== 'All') transitionObject.name = this.selectedConfiguration;
+    if (!this.loadedConfiguration) transitionObject.loaded = this.loadedConfiguration;
     transitionObject.adapter ??= this.selectedAdapter;
 
     this.router.navigate([], {
@@ -112,19 +110,12 @@ export class ConfigurationsShowComponent implements OnInit {
       `<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/[aA]dapter>`,
     )?.[0];
     if (match) {
-      this.editor.setLineNumberInRoute(
-        match.range.startLineNumber,
-        match.range.endLineNumber,
-      );
+      this.editor.setLineNumberInRoute(match.range.startLineNumber, match.range.endLineNumber);
     }
   }
 
   private removeAdapterAfterLineSelection(fragment: string | null): void {
-    if (
-      this.selectedAdapter &&
-      fragment?.includes('L') &&
-      !fragment?.includes('-')
-    ) {
+    if (this.selectedAdapter && fragment?.includes('L') && !fragment?.includes('-')) {
       this.selectedAdapter = undefined;
       this.skipParamsUpdate = true;
       this.updateQueryParams();

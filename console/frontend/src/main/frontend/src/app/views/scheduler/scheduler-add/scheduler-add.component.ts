@@ -9,10 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-add.component.scss'],
 })
-export class SchedulerAddComponent
-  extends SchedulerAddEditParent
-  implements OnInit
-{
+export class SchedulerAddComponent extends SchedulerAddEditParent implements OnInit {
   constructor(
     private appService: AppService,
     private schedulerService: SchedulerService,
@@ -67,9 +64,7 @@ export class SchedulerAddComponent
         };
       },
       error: (errorData: HttpErrorResponse) => {
-        const error = errorData.error
-          ? errorData.error.error
-          : errorData.message;
+        const error = errorData.error ? errorData.error.error : errorData.message;
         this.addLocalAlert('warning', error);
       },
     }); //TODO no intercept

@@ -48,18 +48,13 @@ export class FileViewerComponent implements OnInit {
         requestOptions,
       )
       .pipe(
-        filter(
-          (event) =>
-            event.type === HttpEventType.DownloadProgress ||
-            event.type === HttpEventType.Response,
-        ),
+        filter((event) => event.type === HttpEventType.DownloadProgress || event.type === HttpEventType.Response),
         debounceTime(1000),
       )
       .subscribe({
         next: (event) => {
           if (event.type == HttpEventType.DownloadProgress) {
-            const partialDownloadedText = (event as HttpDownloadProgressEvent)
-              .partialText;
+            const partialDownloadedText = (event as HttpDownloadProgressEvent).partialText;
             this.fileContents = partialDownloadedText ?? '';
           }
           if (event.type === HttpEventType.Response) {

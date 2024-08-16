@@ -19,11 +19,7 @@ export class ToastsContainerComponent {
 
   getClassByType(
     type: ToastType,
-  ):
-    | 'toast-error text-light'
-    | 'toast-success text-light'
-    | 'toast-warning'
-    | 'toast-info' {
+  ): 'toast-error text-light' | 'toast-success text-light' | 'toast-warning' | 'toast-info' {
     switch (type) {
       case 'error': {
         return 'toast-error text-light';

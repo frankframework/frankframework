@@ -1,9 +1,4 @@
-<a
-  *ngIf="flow.isImage === true"
-  [href]="flow.url"
-  target="_blank"
-  rel="noopener noreferrer"
->
+<a *ngIf="flow.isImage === true" [href]="flow.url" target="_blank" rel="noopener noreferrer">
   <img [src]="flow.url" alt="Flow Diagram" />
 </a>
 <div
@@ -18,8 +13,6 @@
     [nmRefreshInterval]="500"
   ></ng-mermaid>
   <ng-template #mermaidModalBtn>
-    <button class="btn btn-info">
-      <i class="fa fa-share-alt-square"></i> Flow Diagram
-    </button>
+    <button class="btn btn-info"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>
   </ng-template>
 </div>

@@ -59,44 +59,22 @@ export class JmsSendMessageComponent implements OnInit {
     if (formData.connectionFactory && formData.connectionFactory != '')
       fd.append('connectionFactory', formData.connectionFactory);
     else fd.append('connectionFactory', this.connectionFactories[0]);
-    if (formData.destination && formData.destination != '')
-      fd.append('destination', formData.destination);
+    if (formData.destination && formData.destination != '') fd.append('destination', formData.destination);
     if (formData.type && formData.type != '') fd.append('type', formData.type);
     else fd.append('type', this.destinationTypes[0]);
-    if (formData.replyTo && formData.replyTo != '')
-      fd.append('replyTo', formData.replyTo);
-    if (formData.persistent)
-      fd.append('persistent', formData.persistent.toString());
-    if (formData.synchronous)
-      fd.append('synchronous', formData.synchronous.toString());
-    if (formData.lookupDestination)
-      fd.append('lookupDestination', formData.lookupDestination.toString());
+    if (formData.replyTo && formData.replyTo != '') fd.append('replyTo', formData.replyTo);
+    if (formData.persistent) fd.append('persistent', formData.persistent.toString());
+    if (formData.synchronous) fd.append('synchronous', formData.synchronous.toString());
+    if (formData.lookupDestination) fd.append('lookupDestination', formData.lookupDestination.toString());
 
-    if (
-      formData.propertyKey &&
-      formData.propertyKey != '' &&
-      formData.propertyValue &&
-      formData.propertyValue != ''
-    )
-      fd.append(
-        'property',
-        `${formData.propertyKey},${formData.propertyValue}`,
-      );
+    if (formData.propertyKey && formData.propertyKey != '' && formData.propertyValue && formData.propertyValue != '')
+      fd.append('property', `${formData.propertyKey},${formData.propertyValue}`);
     if (formData.message && formData.message != '') {
-      const encoding =
-        formData.encoding && formData.encoding != ''
-          ? `;charset=${formData.encoding}`
-          : '';
-      fd.append(
-        'message',
-        new Blob([formData.message], { type: `text/plain${encoding}` }),
-        'message',
-      );
+      const encoding = formData.encoding && formData.encoding != '' ? `;charset=${formData.encoding}` : '';
+      fd.append('message', new Blob([formData.message], { type: `text/plain${encoding}` }), 'message');
     }
-    if (this.file)
-      fd.append('file', this.file as unknown as Blob, this.file['name']);
-    if (formData.encoding && formData.encoding != '')
-      fd.append('encoding', formData.encoding);
+    if (this.file) fd.append('file', this.file as unknown as Blob, this.file['name']);
+    if (formData.encoding && formData.encoding != '') fd.append('encoding', formData.encoding);
 
     if (!formData.message && !this.file) {
       this.error = 'Please specify a file or message!';

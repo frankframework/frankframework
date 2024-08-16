@@ -66,15 +66,8 @@ export class TestServiceListenerComponent implements OnInit {
     if (this.form.service !== '') fd.append('service', this.form.service);
     if (this.form.encoding !== '') fd.append('encoding', this.form.encoding);
     if (this.form.message !== '') {
-      const encoding =
-        this.form.encoding && this.form.encoding != ''
-          ? `;charset=${this.form.encoding}`
-          : '';
-      fd.append(
-        'message',
-        new Blob([this.form.message], { type: `text/plain${encoding}` }),
-        'message',
-      );
+      const encoding = this.form.encoding && this.form.encoding != '' ? `;charset=${this.form.encoding}` : '';
+      fd.append('message', new Blob([this.form.message], { type: `text/plain${encoding}` }), 'message');
     }
     if (this.file) fd.append('file', this.file, this.file.name);
 
@@ -84,23 +77,18 @@ export class TestServiceListenerComponent implements OnInit {
     }
 
     this.processingMessage = true;
-    this.http
-      .post<ServiceListenerResult>(
-        `${this.appService.absoluteApiPath}test-servicelistener`,
-        fd,
-      )
-      .subscribe({
-        next: (returnData) => {
-          let warnLevel = 'success';
-          if (returnData.state == 'ERROR') warnLevel = 'danger';
-          this.addNote(warnLevel, returnData.state);
-          this.result = returnData.result;
-          this.processingMessage = false;
-        },
-        error: (returnData) => {
-          this.result = returnData.result;
-          this.processingMessage = false;
-        },
-      });
+    this.http.post<ServiceListenerResult>(`${this.appService.absoluteApiPath}test-servicelistener`, fd).subscribe({
+      next: (returnData) => {
+        let warnLevel = 'success';
+        if (returnData.state == 'ERROR') warnLevel = 'danger';
+        this.addNote(warnLevel, returnData.state);
+        this.result = returnData.result;
+        this.processingMessage = false;
+      },
+      error: (returnData) => {
+        this.result = returnData.result;
+        this.processingMessage = false;
+      },
+    });
   }
 }

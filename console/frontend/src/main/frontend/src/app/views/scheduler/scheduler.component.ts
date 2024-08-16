@@ -20,13 +20,7 @@ type Scheduler = {
   jobStoreClass: string;
 };
 
-export type JobState =
-  | 'NONE'
-  | 'NORMAL'
-  | 'PAUSED'
-  | 'COMPLETE'
-  | 'ERROR'
-  | 'BLOCKED';
+export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
 
 export type Job = {
   name: string;
@@ -122,33 +116,23 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   }
 
   pause(jobGroup: string, jobName: string): void {
-    this.schedulerService
-      .putScheduleJobAction(jobGroup, jobName, 'pause')
-      .subscribe();
+    this.schedulerService.putScheduleJobAction(jobGroup, jobName, 'pause').subscribe();
   }
 
   resume(jobGroup: string, jobName: string): void {
-    this.schedulerService
-      .putScheduleJobAction(jobGroup, jobName, 'resume')
-      .subscribe();
+    this.schedulerService.putScheduleJobAction(jobGroup, jobName, 'resume').subscribe();
   }
 
   remove(jobGroup: string, jobName: string): void {
-    this.sweetAlertService
-      .Confirm({ title: `Please confirm the deletion of '${jobName}'` })
-      .then((result) => {
-        if (result.isConfirmed) {
-          this.schedulerService
-            .deleteScheduleJob(jobGroup, jobName)
-            .subscribe();
-        }
-      });
+    this.sweetAlertService.Confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
+      if (result.isConfirmed) {
+        this.schedulerService.deleteScheduleJob(jobGroup, jobName).subscribe();
+      }
+    });
   }
 
   trigger(jobGroup: string, jobName: string): void {
-    this.schedulerService
-      .putScheduleJobAction(jobGroup, jobName, 'trigger')
-      .subscribe();
+    this.schedulerService.putScheduleJobAction(jobGroup, jobName, 'trigger').subscribe();
   }
 
   edit(jobGroup: string, jobName: string): void {

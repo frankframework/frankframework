@@ -7,11 +7,7 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div *ngIf="databaseSchedulesEnabled" class="pull-right">
-            <button
-              routerLink="new"
-              class="btn btn-xs btn-info pull-right"
-              type="button"
-            >
+            <button routerLink="new" class="btn btn-xs btn-info pull-right" type="button">
               <i class="fa fa-plus-circle" aria-hidden="true"></i>
               <span> Add new schedule</span>
             </button>
@@ -33,13 +29,7 @@
                 <tr>
                   <td>Started</td>
                   <td>
-                    <i
-                      class="fa {{
-                        scheduler.started
-                          ? 'fa-check-square'
-                          : 'fa-times-circle'
-                      }}"
-                    ></i>
+                    <i class="fa {{ scheduler.started ? 'fa-check-square' : 'fa-times-circle' }}"></i>
                   </td>
                 </tr>
                 <tr>
@@ -105,13 +95,7 @@
                 <tr>
                   <td>Remote Scheduler</td>
                   <td>
-                    <i
-                      class="fa {{
-                        scheduler.isSchedulerRemote
-                          ? 'fa-check-square'
-                          : 'fa-times-circle'
-                      }}"
-                    ></i>
+                    <i class="fa {{ scheduler.isSchedulerRemote ? 'fa-check-square' : 'fa-times-circle' }}"></i>
                   </td>
                 </tr>
                 <tr>
@@ -122,11 +106,7 @@
                   <td>Supports Persistence</td>
                   <td>
                     <i
-                      class="fa {{
-                        scheduler.jobStoreSupportsPersistence
-                          ? 'fa-check-square'
-                          : 'fa-times-circle'
-                      }}"
+                      class="fa {{ scheduler.jobStoreSupportsPersistence ? 'fa-check-square' : 'fa-times-circle' }}"
                     ></i>
                   </td>
                 </tr>
@@ -169,30 +149,14 @@
       </div>
     </div>
     <div class="col-lg-12" *ngFor="let item of jobs | keyvalue; let i = index">
-      <div
-        class="ibox float-e-margins"
-        *ngIf="(jobs | searchFilter: searchFilter).length > 0"
-      >
-        <div
-          (click)="jobShowContent[item.key] = !showContent(item.key)"
-          class="ibox-title pointer"
-        >
+      <div class="ibox float-e-margins" *ngIf="(jobs | searchFilter: searchFilter).length > 0">
+        <div (click)="jobShowContent[item.key] = !showContent(item.key)" class="ibox-title pointer">
           <div class="ibox-tools pull-right">
-            <a>
-              <i
-                class="fa fa-chevron-{{
-                  showContent(item.key) ? 'up' : 'down'
-                }}"
-              ></i
-            ></a>
+            <a> <i class="fa fa-chevron-{{ showContent(item.key) ? 'up' : 'down' }}"></i></a>
           </div>
           <h4>Jobgroup: {{ item.key }}</h4>
         </div>
-        <ng-template
-          ngFor
-          let-job
-          [ngForOf]="item.value | searchFilter: searchFilter | orderby: 'name'"
-        >
+        <ng-template ngFor let-job [ngForOf]="item.value | searchFilter: searchFilter | orderby: 'name'">
           <div class="ibox-content" *ngIf="showContent(item.key)">
             <div class="col-md-12">
               <div class="pull-right">
@@ -243,15 +207,10 @@
               </div>
               <h4>
                 Job: {{ job.name }}
-                <small *ngIf="job.description !== '-'">{{
-                  job.description
-                }}</small>
+                <small *ngIf="job.description !== '-'">{{ job.description }}</small>
               </h4>
             </div>
-            <div
-              class="col-sm-12 col-md-8 pull-right maxWidth768"
-              style="min-height: 130px"
-            >
+            <div class="col-sm-12 col-md-8 pull-right maxWidth768" style="min-height: 130px">
               <table class="table table-striped">
                 <thead>
                   <tr>
@@ -261,27 +220,21 @@
                 <tbody>
                   <tr *ngFor="let message of job.messages">
                     <ng-container *ngIf="message.level === 'INFO'">
-                      <td style="width: 40px" class="text-center">
-                        &nbsp;<i class="fa fa-info"></i>
-                      </td>
+                      <td style="width: 40px" class="text-center">&nbsp;<i class="fa fa-info"></i></td>
                       <td style="width: 200px" class="text-left">
                         <span appToDate [time]="message.date"></span>
                       </td>
                       <td>{{ message.text }}</td>
                     </ng-container>
                     <ng-container *ngIf="message.level === 'WARN'">
-                      <td style="width: 40px" class="text-center">
-                        &nbsp;<i class="fa fa-warning"></i>
-                      </td>
+                      <td style="width: 40px" class="text-center">&nbsp;<i class="fa fa-warning"></i></td>
                       <td style="width: 200px" class="text-left">
                         <span appToDate [time]="message.date"></span>
                       </td>
                       <td style="color: #f7a54a">{{ message.text }}</td>
                     </ng-container>
                     <ng-container *ngIf="message.level === 'ERROR'">
-                      <td style="width: 40px" class="text-center">
-                        &nbsp;<i class="fa fa-times"></i>
-                      </td>
+                      <td style="width: 40px" class="text-center">&nbsp;<i class="fa fa-times"></i></td>
                       <td style="width: 200px" class="text-left">
                         <span appToDate [time]="message.date"></span>
                       </td>
@@ -297,31 +250,20 @@
                   <tr>
                     <td>Stateful</td>
                     <td>
-                      <i
-                        class="fa {{
-                          job.stateful ? 'fa-check-square' : 'fa-times-circle'
-                        }}"
-                      ></i>
+                      <i class="fa {{ job.stateful ? 'fa-check-square' : 'fa-times-circle' }}"></i>
                     </td>
                   </tr>
                   <tr>
                     <td>Durable</td>
                     <td>
-                      <i
-                        class="fa {{
-                          job.durable ? 'fa-check-square' : 'fa-times-circle'
-                        }}"
-                      ></i>
+                      <i class="fa {{ job.durable ? 'fa-check-square' : 'fa-times-circle' }}"></i>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div class="col-md-4">
-              <table
-                class="table"
-                *ngFor="let trigger of job.triggers | orderby: 'name'"
-              >
+              <table class="table" *ngFor="let trigger of job.triggers | orderby: 'name'">
                 <thead>
                   <tr>
                     <th colspan="2">Trigger: {{ trigger.name }}</th>

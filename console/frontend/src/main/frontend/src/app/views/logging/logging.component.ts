@@ -3,11 +3,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { LoggingService, LoggingFile } from './logging.service';
-import {
-  SortEvent,
-  ThSortableDirective,
-  basicTableSort,
-} from 'src/app/components/th-sortable.directive';
+import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/components/th-sortable.directive';
 import { copyToClipboard } from 'src/app/utils';
 
 @Component({

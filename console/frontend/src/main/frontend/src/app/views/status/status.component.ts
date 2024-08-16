@@ -17,10 +17,7 @@ import {
 } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
-import {
-  ServerInfo,
-  ServerInfoService,
-} from '../../services/server-info.service';
+import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -127,8 +124,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       }
 
       const configurationParameter = parameters.get('configuration');
-      if (configurationParameter && configurationParameter != 'All')
-        this.changeConfiguration(configurationParameter);
+      if (configurationParameter && configurationParameter != 'All') this.changeConfiguration(configurationParameter);
     });
 
     this.updateConfigurationFlowDiagram(this.selectedConfiguration);
@@ -145,10 +141,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.messageLog = this.appService.messageLog;
     this.adapters = this.appService.adapters;
 
-    const configurationsSubscription =
-      this.appService.configurations$.subscribe(() =>
-        this.check4StubbedConfigs(),
-      );
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => this.check4StubbedConfigs());
     this._subscriptions.add(configurationsSubscription);
 
     const summariesSubscription = this.appService.summaries$.subscribe(() => {
@@ -211,10 +204,8 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
     const transitionObject: Record<string, string> = {};
     if (filterCount < 3) transitionObject['filter'] = filterString.join('+');
-    if (this.selectedConfiguration != 'All')
-      transitionObject['configuration'] = this.selectedConfiguration;
-    if (this.searchText.length > 0)
-      transitionObject['search'] = this.searchText;
+    if (this.selectedConfiguration != 'All') transitionObject['configuration'] = this.selectedConfiguration;
+    if (this.searchText.length > 0) transitionObject['search'] = this.searchText;
 
     const fragment = this.adapterName === '' ? undefined : this.adapterName;
 
@@ -240,15 +231,11 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   stopAll(): void {
-    this.statusService
-      .updateAdapters('stop', this.getCompiledAdapterList())
-      .subscribe();
+    this.statusService.updateAdapters('stop', this.getCompiledAdapterList()).subscribe();
   }
 
   startAll(): void {
-    this.statusService
-      .updateAdapters('start', this.getCompiledAdapterList())
-      .subscribe();
+    this.statusService.updateAdapters('start', this.getCompiledAdapterList()).subscribe();
   }
 
   reloadConfiguration(): void {
@@ -257,13 +244,11 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.isConfigReloading[this.selectedConfiguration] = true;
 
     this.Poller.getAll().stop();
-    this.statusService
-      .updateSelectedConfiguration(this.selectedConfiguration, 'reload')
-      .subscribe(() => {
-        this.startPollingForConfigurationStateChanges(() => {
-          this.Poller.getAll().start();
-        });
+    this.statusService.updateSelectedConfiguration(this.selectedConfiguration, 'reload').subscribe(() => {
+      this.startPollingForConfigurationStateChanges(() => {
+        this.Poller.getAll().start();
       });
+    });
   }
 
   fullReload(): void {
@@ -286,10 +271,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       for (const index in configurations) {
         const config = configurations[index];
         //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
-        if (
-          config.state != 'STARTED' &&
-          !(config.state == 'STOPPED' && config.exception != null)
-        ) {
+        if (config.state != 'STARTED' && !(config.state == 'STOPPED' && config.exception != null)) {
           ready = false;
           break;
         }
@@ -309,10 +291,8 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   updateConfigurationFlowDiagram(configurationName: string): void {
-    const flowUrl =
-      configurationName == 'All' ? '?flow=true' : `/${configurationName}/flow`;
-    this.configurationFlowDiagram =
-      this.statusService.getConfigurationFlowDiagramUrl(flowUrl);
+    const flowUrl = configurationName == 'All' ? '?flow=true' : `/${configurationName}/flow`;
+    this.configurationFlowDiagram = this.statusService.getConfigurationFlowDiagramUrl(flowUrl);
   }
 
   check4StubbedConfigs(): void {
@@ -321,23 +301,16 @@ export class StatusComponent implements OnInit, OnDestroy {
       const config = this.appService.configurations[index];
       this.isConfigStubbed[config.name] = config.stubbed;
       this.isConfigAutoReloadable[config.name] = config.autoreload ?? false;
-      this.isConfigReloading[config.name] =
-        config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
+      this.isConfigReloading[config.name] = config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }
   }
 
   private getFreeDiskSpacePercentage(): void {
-    const serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe(
-      (serverInfo) => {
-        this.serverInfo = serverInfo;
-        this.freeDiskSpacePercentage =
-          Math.round(
-            (serverInfo.fileSystem.freeSpace /
-              serverInfo.fileSystem.totalSpace) *
-              1000,
-          ) / 10;
-      },
-    );
+    const serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe((serverInfo) => {
+      this.serverInfo = serverInfo;
+      this.freeDiskSpacePercentage =
+        Math.round((serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) * 1000) / 10;
+    });
     this._subscriptions.add(serverInfoSubscription);
   }
 
@@ -354,9 +327,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.updateConfigurationFlowDiagram(name);
   }
 
-  getTransactionalStores(
-    receiver: Receiver,
-  ): { name: string; numberOfMessages: number }[] {
+  getTransactionalStores(receiver: Receiver): { name: string; numberOfMessages: number }[] {
     return Object.values(receiver.transactionalStores);
   }
 
@@ -366,64 +337,32 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   startAdapter(adapter: Adapter): void {
     adapter.state = 'starting';
-    this.statusService
-      .updateAdapter(adapter.configuration, adapter.name, 'start')
-      .subscribe();
+    this.statusService.updateAdapter(adapter.configuration, adapter.name, 'start').subscribe();
   }
 
   stopAdapter(adapter: Adapter): void {
     adapter.state = 'stopping';
-    this.statusService
-      .updateAdapter(adapter.configuration, adapter.name, 'stop')
-      .subscribe();
+    this.statusService.updateAdapter(adapter.configuration, adapter.name, 'stop').subscribe();
   }
 
   startReceiver(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
-    this.statusService
-      .updateReceiver(
-        adapter.configuration,
-        adapter.name,
-        receiver.name,
-        'start',
-      )
-      .subscribe();
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'start').subscribe();
   }
 
   stopReceiver(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
-    this.statusService
-      .updateReceiver(
-        adapter.configuration,
-        adapter.name,
-        receiver.name,
-        'stop',
-      )
-      .subscribe();
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'stop').subscribe();
   }
 
   addThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
-    this.statusService
-      .updateReceiver(
-        adapter.configuration,
-        adapter.name,
-        receiver.name,
-        'incthread',
-      )
-      .subscribe();
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'incthread').subscribe();
   }
 
   removeThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
-    this.statusService
-      .updateReceiver(
-        adapter.configuration,
-        adapter.name,
-        receiver.name,
-        'decthread',
-      )
-      .subscribe();
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'decthread').subscribe();
   }
 
   navigateByAlert(alert: Alert): void {
@@ -436,11 +375,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private getCompiledAdapterList(): string[] {
     const compiledAdapterList: string[] = [];
-    const adapters = ConfigurationFilter(
-      this.adapters,
-      this.selectedConfiguration,
-      this.filter,
-    );
+    const adapters = ConfigurationFilter(this.adapters, this.selectedConfiguration, this.filter);
     for (const adapter of Object.values(adapters)) {
       const configuration = adapter.configuration;
       const adapterName = adapter.name;
@@ -450,18 +385,13 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   private determineShowContent(adapter: Adapter): boolean {
-    return (
-      adapter.status == 'stopped' ||
-      (this.adapterName != '' && adapter.name == this.adapterName)
-    );
+    return adapter.status == 'stopped' || (this.adapterName != '' && adapter.name == this.adapterName);
   }
 
   private updateAdapterShownContent(): void {
     for (const adapter in this.adapters) {
       if (!this.adapterShowContent.hasOwnProperty(adapter)) {
-        this.adapterShowContent[adapter] = this.determineShowContent(
-          this.adapters[adapter],
-        );
+        this.adapterShowContent[adapter] = this.determineShowContent(this.adapters[adapter]);
 
         if (this.adapterName === this.adapters[adapter].name) {
           setTimeout(() => {

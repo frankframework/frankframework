@@ -36,17 +36,11 @@ export class StorageComponent implements OnInit {
         return;
       }
       if (!storageSourceName) {
-        this.SweetAlert.Warning(
-          'Invalid URL',
-          'No receiver or pipe name provided!',
-        );
+        this.SweetAlert.Warning('Invalid URL', 'No receiver or pipe name provided!');
         return;
       }
       if (!storageSource) {
-        this.SweetAlert.Warning(
-          'Invalid URL',
-          'Component type [receivers] or [pipes] is not provided in url!',
-        );
+        this.SweetAlert.Warning('Invalid URL', 'Component type [receivers] or [pipes] is not provided in url!');
         return;
       }
       if (!processState) {
@@ -65,16 +59,9 @@ export class StorageComponent implements OnInit {
     });
 
     this.router.events
-      .pipe(
-        filter(
-          (event) =>
-            event instanceof ActivationEnd &&
-            event.snapshot.paramMap.has('processState'),
-        ),
-      )
+      .pipe(filter((event) => event instanceof ActivationEnd && event.snapshot.paramMap.has('processState')))
       .subscribe(() => {
-        const messageId =
-          this.route.firstChild?.snapshot.paramMap.get('messageId');
+        const messageId = this.route.firstChild?.snapshot.paramMap.get('messageId');
         this.storageService.updateStorageParams({ messageId });
       });
   }

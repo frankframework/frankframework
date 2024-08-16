@@ -184,11 +184,7 @@ const windowProvider: ValueProvider = {
     HumanFileSizePipe,
     MonacoEditorComponent,
   ],
-  providers: [
-    windowProvider,
-    { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    httpInterceptorProviders,
-  ],
+  providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

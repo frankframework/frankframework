@@ -1,11 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  ErrorLevels,
-  LogInformation,
-  LoggingService,
-  LoggingSettings,
-  errorLevelsConst,
-} from '../logging.service';
+import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -52,26 +46,19 @@ export class LoggingManageComponent implements OnInit {
   }
 
   //Individual level
-  changeLoglevel(
-    logger: string,
-    level: (typeof this.errorLevels)[number],
-  ): void {
-    this.loggingService
-      .putLoggingSettingsChange({ logger: logger, level: level })
-      .subscribe(() => {
-        this.toastService.success(`Updated logger [${logger}] to [${level}]`);
-        this.updateLogInformation();
-      });
+  changeLoglevel(logger: string, level: (typeof this.errorLevels)[number]): void {
+    this.loggingService.putLoggingSettingsChange({ logger: logger, level: level }).subscribe(() => {
+      this.toastService.success(`Updated logger [${logger}] to [${level}]`);
+      this.updateLogInformation();
+    });
   }
 
   //Reconfigure Log4j2
   reconfigure(): void {
-    this.loggingService
-      .putLoggingSettingsChange({ reconfigure: true })
-      .subscribe(() => {
-        this.toastService.success('Reconfigured log definitions!');
-        this.updateLogInformation();
-      });
+    this.loggingService.putLoggingSettingsChange({ reconfigure: true }).subscribe(() => {
+      this.toastService.success('Reconfigured log definitions!');
+      this.updateLogInformation();
+    });
   }
 
   submit(formData: typeof this.form): void {

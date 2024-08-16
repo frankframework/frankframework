@@ -1,12 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  Inject,
-  Input,
-  LOCALE_ID,
-  OnChanges,
-  OnDestroy,
-} from '@angular/core';
+import { Directive, ElementRef, Inject, Input, LOCALE_ID, OnChanges, OnDestroy } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { AppConstants, AppService, ConsoleState } from '../app.service';
 import { Subscription } from 'rxjs';
@@ -28,22 +20,17 @@ export class ToDateDirective implements OnChanges, OnDestroy {
     @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
     this._subscriptions.add(appConstantsSubscription);
     this.consoleState = this.appService.CONSOLE_STATE;
   }
 
   ngOnChanges(): void {
-    if (Number.isNaN(Number(this.time)))
-      this.time = new Date(this.time).getTime();
+    if (Number.isNaN(Number(this.time))) this.time = new Date(this.time).getTime();
 
-    const toDate = new Date(
-      (this.time as number) - this.consoleState.timeOffset,
-    );
+    const toDate = new Date((this.time as number) - this.consoleState.timeOffset);
     this.element.nativeElement.textContent = formatDate(
       toDate,
       this.appConstants['console.dateFormat'] as string,
