@@ -30,7 +30,7 @@ import org.frankframework.filesystem.MailFileSystemBase;
 import org.frankframework.filesystem.MailListener;
 
 /**
- * Microsoft Exchange Implementation of a {@link ImapListener}.
+ * Microsoft Exchange Implementation of a mail filesystem.
  *
  * @author Gerrit van Brakel
  */
