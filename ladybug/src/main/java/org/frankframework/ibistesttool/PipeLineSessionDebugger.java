@@ -63,7 +63,7 @@ public class PipeLineSessionDebugger implements MethodHandler {
 
 	private Object getMessage(String name) {
 		Object value = pipeLineSession.getMessage(name);
-		ibisDebugger.showValue(pipeLineSession.getCorrelationId(), "SessionKey "+name, value);
+		ibisDebugger.showInputValue(pipeLineSession.getCorrelationId(), "SessionKey "+name, value);
 		return value;
 	}
 

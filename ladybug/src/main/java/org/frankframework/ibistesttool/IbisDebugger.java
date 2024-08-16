@@ -65,7 +65,8 @@ public interface IbisDebugger {
 	public Message preserveInput(String correlationId, Message input);
 
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);
-	public <T> T showValue(String correlationId, String label, T value);
+	public <T> T showInputValue(String correlationId, String label, T value);
+	public <T> T showOutputValue(String correlationId, String label, T value);
 
 	public boolean stubSender(ISender sender, String correlationId);
 
