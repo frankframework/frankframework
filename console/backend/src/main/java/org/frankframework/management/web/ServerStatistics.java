@@ -17,11 +17,14 @@ package org.frankframework.management.web;
 
 import jakarta.annotation.security.PermitAll;
 import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.web.AllowAllIbisUserRoles;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,9 +38,21 @@ public class ServerStatistics extends FrankApiBase {
 	}
 
 	@PermitAll
+	@Relation("configuration")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAllConfigurations() {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND));
+	}
+
+	@AllowAllIbisUserRoles
+	@Relation("configuration")
+	@Description("download all active configurations")
+	@GetMapping(value = "/configurations/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	public ResponseEntity<?> downloadActiveConfigurations(@RequestParam(value = "dataSourceName", required = false) String dataSourceName) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
+		return callSyncGateway(builder);
 	}
 
 	@PermitAll

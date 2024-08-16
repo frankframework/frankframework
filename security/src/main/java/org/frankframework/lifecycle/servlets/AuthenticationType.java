@@ -24,6 +24,7 @@ public enum AuthenticationType {
 	IN_MEMORY(InMemoryAuthenticator.class),
 	OAUTH2(OAuth2Authenticator.class),
 	YML(YmlFileAuthenticator.class),
+	YAML(YmlFileAuthenticator.class),
 	NONE(NoOpAuthenticator.class);
 
 	/**

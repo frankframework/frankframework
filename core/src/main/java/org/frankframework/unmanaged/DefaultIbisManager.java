@@ -23,6 +23,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.springframework.context.ApplicationContext;
@@ -125,8 +126,8 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(ALL_CONFIGS_KEY)) {
-				if (configurationName.equals(ALL_CONFIGS_KEY)) {
+			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
 						stopAdapters(configuration);
@@ -150,8 +151,8 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(ALL_CONFIGS_KEY)) {
-				if (configurationName.equals(ALL_CONFIGS_KEY)) {
+			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
 						startAdapters(configuration);

@@ -18,10 +18,10 @@ package org.frankframework.lifecycle;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.context.ApplicationListener;
 
 import org.frankframework.configuration.ConfigurationMessageEvent;
-import org.frankframework.configuration.IbisManager;
 import org.frankframework.util.MessageKeeper;
 
 public class MessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
@@ -40,7 +40,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	 * @return MessageKeeper for the application
 	 */
 	public MessageKeeper getMessageKeeper() {
-		return getMessageKeeper(IbisManager.ALL_CONFIGS_KEY);
+		return getMessageKeeper(BusMessageUtils.ALL_CONFIGS_KEY);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	}
 
 	private MessageKeeper globalLog() {
-		return configLog(IbisManager.ALL_CONFIGS_KEY);
+		return configLog(BusMessageUtils.ALL_CONFIGS_KEY);
 	}
 
 	private MessageKeeper configLog(String key) {

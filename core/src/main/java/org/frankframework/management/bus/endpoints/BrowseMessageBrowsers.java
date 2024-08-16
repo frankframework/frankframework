@@ -24,7 +24,6 @@ import java.util.Set;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowser;
@@ -97,7 +96,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	@ActionSelector(BusAction.GET)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getMessageById(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -126,7 +125,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	@ActionSelector(BusAction.DOWNLOAD)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public StringMessage downloadMessageById(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -158,7 +157,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	@ActionSelector(BusAction.FIND)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> browseMessages(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
@@ -220,7 +219,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	@ActionSelector(BusAction.STATUS)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void resend(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -242,7 +241,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	@ActionSelector(BusAction.DELETE)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void delete(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -266,7 +265,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void changeProcessState(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);

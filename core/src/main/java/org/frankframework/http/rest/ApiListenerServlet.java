@@ -54,6 +54,8 @@ import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.jwt.AuthorizationException;
 import org.frankframework.jwt.JwtSecurityHandler;
 import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.lifecycle.servlets.URLRequestMatcher;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
@@ -132,7 +134,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		final String remoteUser = request.getRemoteUser();
+		final String remoteUser = BusMessageUtils.getUserPrincipalName();
 
 		final ApiListener.HttpMethod method;
 		try {
@@ -145,7 +147,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 		String uri = request.getPathInfo();
 		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}",
-				uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+ StringEscapeUtils.escapeJava(remoteUser) +"]" : ""));
+				uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+ remoteUser +"]" : ""));
 
 		if (uri == null) {
 			response.setStatus(400);
@@ -775,9 +777,14 @@ public class ApiListenerServlet extends HttpServletBase {
 		return methodsBuilder.toString();
 	}
 
+	/**
+	 * Tomcat matches /api to /api/*. Not every application server does this. In order to both fix 
+	 * {@link URLRequestMatcher Authentication request matching} and the different Application Servers
+	 * matching on different methods, explicitly add `/api`.
+	 */
 	@Override
 	public String getUrlMapping() {
-		return "/api/*";
+		return "/api,/api/*";
 	}
 
 	private String createAbortMessage(String remoteUser, int statusCode) {
