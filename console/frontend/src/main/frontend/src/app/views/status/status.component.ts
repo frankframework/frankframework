@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
-import { StatusService } from './status.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Subscription} from 'rxjs';
+import {ConfigurationFilter} from 'src/app/pipes/configuration-filter.pipe';
+import {StatusService} from './status.service';
 import {
   Adapter,
   AdapterMessage,
@@ -15,9 +15,9 @@ import {
   Receiver,
   Summary,
 } from 'src/app/app.service';
-import { PollerService } from 'src/app/services/poller.service';
-import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
-import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
+import {PollerService} from 'src/app/services/poller.service';
+import {getProcessStateIcon, getProcessStateIconColor} from 'src/app/utils';
+import {ServerInfo, ServerInfoService} from '../../services/server-info.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -75,8 +75,6 @@ export class StatusComponent implements OnInit, OnDestroy {
   // functions
   getProcessStateIconFn = getProcessStateIcon;
   getProcessStateIconColorFn = getProcessStateIconColor;
-
-  readonly FREE_DISK_SPACE_ALERT_THRESHOLD = 5;
 
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
@@ -363,14 +361,6 @@ export class StatusComponent implements OnInit, OnDestroy {
   removeThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'decthread').subscribe();
-  }
-
-  navigateByAlert(alert: Alert): void {
-    if (alert.link) {
-      this.router.navigate(['configuration', alert.link.name], {
-        fragment: alert.link['#'],
-      });
-    }
   }
 
   private getCompiledAdapterList(): string[] {
