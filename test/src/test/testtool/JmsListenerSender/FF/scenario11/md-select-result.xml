@@ -42,7 +42,7 @@
 						<field name="MESSAGEID">ID:LPZWNL000019314-61775-1594817770290-3:27:22:1:1</field>
 						<field name="CORRELATIONID">Test Tool correlation id</field>
 						<field name="MESSAGEDATE">2020-07-15 15:44:07</field>
-						<field name="COMMENTS">too many redeliveries or retries; Pipe [subcall_java_exception] caught exception: IbisJavaSender [subcall_java_exception-sender] exception processing message using request processor [ibis4test-JmsFFListener_subcall]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFListener_subcall] caught exception: Pipe [subcall_java_exception] ERROR</field>
+						<field name="COMMENTS">too many redeliveries or retries; Pipe [subcall_java_exception] caught exception: exception processing message using request processor [ibis4test-JmsFFListener_subcall]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFListener_subcall] caught exception: Pipe [subcall_java_exception] ERROR</field>
 						<field name="MESSAGE">&lt;request action="subcall_java_exception"&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>

@@ -1,6 +1,6 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {ServerWarningsComponent} from './server-warnings.component';
+import { ServerWarningsComponent } from './server-warnings.component';
 
 describe('ServerWarningsComponent', () => {
   let component: ServerWarningsComponent;
@@ -8,9 +8,8 @@ describe('ServerWarningsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ServerWarningsComponent]
-    })
-    .compileComponents();
+      imports: [ServerWarningsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ServerWarningsComponent);
     component = fixture.componentInstance;

@@ -139,10 +139,10 @@ public class HttpSender extends HttpSenderBase {
 
 		if (getHttpMethod() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
-				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
+				throw new ConfigurationException("paramsInUrl can only be set to false for methodType POST");
 			}
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-				throw new ConfigurationException(getLogPrefix()+"firstBodyPartName can only be set for methodType POST");
+				throw new ConfigurationException("firstBodyPartName can only be set for methodType POST");
 			}
 		}
 	}
@@ -153,7 +153,7 @@ public class HttpSender extends HttpSenderBase {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix()+"unable to encode message",e);
+				throw new SenderException("unable to encode message",e);
 			}
 		}
 
@@ -168,7 +168,7 @@ public class HttpSender extends HttpSenderBase {
 			try {
 				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix()+"unable to read message", e);
+				throw new SenderException("unable to read message", e);
 			}
 		}
 		// RAW + BINARY
@@ -209,12 +209,12 @@ public class HttpSender extends HttpSenderBase {
 			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
-					if (log.isDebugEnabled()) log.debug("{}path after appending of parameters [{}]", getLogPrefix(), relativePath);
+					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 
 				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
-				if (log.isDebugEnabled()) log.debug("{}HttpSender constructed GET-method [{}]", getLogPrefix(), getMethod.getURI().getQuery());
+				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
@@ -292,7 +292,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
-				log.debug("{}appended parameter [{}] with value [{}]", getLogPrefix(), getFirstBodyPartName(), message);
+				log.debug("appended parameter [{}] with value [{}]", getFirstBodyPartName(), message);
 			}
 			if (parameters!=null) {
 				for(ParameterValue pv : parameters) {
@@ -301,14 +301,14 @@ public class HttpSender extends HttpSenderBase {
 
 					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
 						requestFormElements.add(new BasicNameValuePair(name,value));
-						if (log.isDebugEnabled()) log.debug("{}appended parameter [{}] with value [{}]", getLogPrefix(), name, value);
+						log.debug("appended parameter [{}] with value [{}]", name, value);
 					}
 				}
 			}
 			try {
 				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more POST parameters", e);
+				throw new SenderException("unsupported encoding for one or more POST parameters", e);
 			}
 		}
 		else { //formdata and mtom
@@ -340,7 +340,7 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 			entity.addPart(createStringBodypart(message));
-			if (log.isDebugEnabled()) log.debug("{}appended stringpart [{}] with value [{}]", getLogPrefix(), getFirstBodyPartName(), message);
+			if (log.isDebugEnabled()) log.debug("appended stringpart [{}] with value [{}]", getFirstBodyPartName(), message);
 		}
 		if (parameters!=null) {
 			for(ParameterValue pv : parameters) {
@@ -359,7 +359,7 @@ public class HttpSender extends HttpSenderBase {
 						}
 
 						entity.addPart(name, new MessageContentBody(msg, null, fileName));
-						if (log.isDebugEnabled()) log.debug("{}appended bodypart [{}] with message [{}]", getLogPrefix(), name, msg);
+						if (log.isDebugEnabled()) log.debug("appended bodypart [{}] with message [{}]", name, msg);
 					}
 				}
 			}
@@ -367,19 +367,19 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
 			String multipartXml = session.getString(getMultipartXmlSessionKey());
-			log.debug("{}building multipart message with MultipartXmlSessionKey [{}]", getLogPrefix(), multipartXml);
+			log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
 			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn("{}sessionKey [{}] is empty", getLogPrefix(), getMultipartXmlSessionKey());
+				log.warn("sessionKey [{}] is empty", getMultipartXmlSessionKey());
 			} else {
 				Element partsElement;
 				try {
 					partsElement = XmlUtils.buildElement(multipartXml);
 				} catch (DomBuilderException e) {
-					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
+					throw new SenderException("error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 				if (parts.isEmpty()) {
-					log.warn("{}no part(s) in multipart xml [{}]", getLogPrefix(), multipartXml);
+					log.warn("no part(s) in multipart xml [{}]", multipartXml);
 				} else {
 					for (final Node part : parts) {
 						Element partElement = (Element) part;
@@ -430,7 +430,7 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			log.warn("{}httpstatus [{}] reason [{}]", getLogPrefix(), statusCode, responseHandler.getStatusLine().getReasonPhrase());
+			log.warn("httpstatus [{}] reason [{}]", statusCode, responseHandler.getStatusLine().getReasonPhrase());
 			return new Message(body);
 		}
 

@@ -47,7 +47,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getQuery())) {
-			throw new ConfigurationException(getLogPrefix()+"query must be specified");
+			throw new ConfigurationException("query must be specified");
 		}
 		if(getUseNamedParams() == null && getQuery().contains(UNP_START)) {
 			setUseNamedParams(true);
@@ -72,7 +72,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 				}
 				result = result1;
 			} catch (JdbcException | SQLException e) {
-				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+				throw new SenderException("cannot getQueryExecutionContext",e);
 			}
 			return result;
 		} catch (JdbcException e) {
@@ -85,7 +85,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		try {
 			super.closeStatementSet(blockHandle);
 		} catch (Exception e) {
-			log.warn("{} Unhandled exception closing statement-set", getLogPrefix(), e);
+			log.warn("Unhandled exception closing statement-set", e);
 		}
 		closeConnectionForSendMessage(blockHandle.getConnection(), session);
 	}

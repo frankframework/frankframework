@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
 import org.frankframework.management.bus.BusAction;

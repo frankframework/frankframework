@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022, 2024 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.http;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
@@ -30,19 +31,16 @@ public class PartMessage extends Message {
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
-	private final transient Part part;
-
 	public PartMessage(Part part) throws MessagingException {
-		this(part, new MessageContext());
+		this(part, MultipartUtils.getContext(part));
 	}
 
 	public PartMessage(Part part, String charset) throws MessagingException {
-		this(part, new MessageContext(charset));
+		this(part, MultipartUtils.getContext(part).withCharset(charset));
 	}
 
 	public PartMessage(Part part, MessageContext context) throws MessagingException {
-		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
-		this.part = part;
+		super(part::getInputStream, context, part.getClass());
 
 		String charset = (String)context.get(MessageContext.METADATA_CHARSET);
 		if (StringUtils.isEmpty(charset)) { //if not explicitly set
@@ -52,20 +50,6 @@ public class PartMessage extends Message {
 				LOG.warn("Could not determine charset", e);
 			}
 		}
-	}
-
-	@Override
-	public long size() {
-		if (part!=null) {
-			try {
-				return part.getSize();
-			} catch (MessagingException e) {
-				LOG.warn("Cannot get size", e);
-				return -1;
-			}
-		}
-
-		return super.size();
 	}
 
 }

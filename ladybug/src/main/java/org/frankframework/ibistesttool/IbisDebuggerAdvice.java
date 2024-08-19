@@ -118,12 +118,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
 		}
-		ibisDebugger.showValue(correlationId, "exitState", pipeLineResult.getState().name());
+		ibisDebugger.showOutputValue(correlationId, "exitState", pipeLineResult.getState().name());
 		if (pipeLineResult.getExitCode()!=0) {
-			ibisDebugger.showValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
+			ibisDebugger.showOutputValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
 		}
 		if (!pipeLineResult.isSuccessful()) {
-			ibisDebugger.showValue(correlationId, "result", pipeLineResult.getResult());
+			ibisDebugger.showOutputValue(correlationId, "result", pipeLineResult.getResult());
 			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
 		} else {
 			Message result = ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult());
@@ -187,7 +187,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		PipeRunResult pipeRunResult = null;
 
 		if(StringUtils.isNotEmpty(messageRoot)) {
-			ibisDebugger.showValue(correlationId, "MessageRoot to be asserted", messageRoot);
+			ibisDebugger.showInputValue(correlationId, "MessageRoot to be asserted", messageRoot);
 		}
 
 		try {
@@ -246,12 +246,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			senderResult = new SenderResult(true, Message.nullMessage(), null, "stub");
 		}
 
-		ibisDebugger.showValue(correlationId, "success", senderResult.isSuccess());
+		ibisDebugger.showOutputValue(correlationId, "success", senderResult.isSuccess());
 		if (senderResult.getForwardName()!=null) {
-			ibisDebugger.showValue(correlationId, "forwardName", senderResult.getForwardName());
+			ibisDebugger.showOutputValue(correlationId, "forwardName", senderResult.getForwardName());
 		}
 		if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
-			ibisDebugger.showValue(correlationId, "errorMessage", senderResult.getErrorMessage());
+			ibisDebugger.showOutputValue(correlationId, "errorMessage", senderResult.getErrorMessage());
 		}
 
 		Message capturedResult = ibisDebugger.senderOutput(sender, correlationId, senderResult.getResult());
@@ -292,7 +292,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return contentHandler;
 		}
 		String correlationId = getCorrelationId(session);
-		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
+		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showInputValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
 			session.scheduleCloseOnSessionExit(writer, REQUESTER);

@@ -30,6 +30,14 @@ export class TestServiceListenerComponent implements OnInit {
     message: '',
   };
 
+  protected readonly editorActions = {
+    ctrlEnter: {
+      id: 'submit',
+      label: 'Submit Form',
+      run: (): void => this.submit(),
+    },
+  };
+
   constructor(
     private http: HttpClient,
     private appService: AppService,
@@ -53,8 +61,8 @@ export class TestServiceListenerComponent implements OnInit {
     this.file = file;
   }
 
-  submit(event: SubmitEvent): void {
-    event.preventDefault();
+  submit(event?: SubmitEvent): void {
+    event?.preventDefault();
     this.result = '';
     this.state = [];
     if (this.form.service === '') {

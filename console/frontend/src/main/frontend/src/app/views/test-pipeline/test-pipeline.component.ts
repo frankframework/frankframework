@@ -41,6 +41,14 @@ export class TestPipelineComponent implements OnInit {
     message: '',
   };
 
+  protected readonly editorActions = {
+    ctrlEnter: {
+      id: 'submit',
+      label: 'Submit Form',
+      run: (): void => this.submit(),
+    },
+  };
+
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
 
   constructor(
@@ -86,8 +94,8 @@ export class TestPipelineComponent implements OnInit {
     this.file = file;
   }
 
-  submit(event: SubmitEvent): void {
-    event.preventDefault();
+  submit(event?: SubmitEvent): void {
+    event?.preventDefault();
     this.result = '';
     this.state = [];
     if (this.selectedConfiguration == '') {

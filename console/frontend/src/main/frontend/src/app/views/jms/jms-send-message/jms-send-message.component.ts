@@ -42,6 +42,14 @@ export class JmsSendMessageComponent implements OnInit {
     encoding: '',
   };
 
+  protected readonly editorActions = {
+    ctrlEnter: {
+      id: 'submit',
+      label: 'Submit Form',
+      run: (): void => this.submit(this.form),
+    },
+  };
+
   constructor(private jmsService: JmsService) {}
 
   ngOnInit(): void {

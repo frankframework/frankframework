@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderErrorAddress]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderErrorAddress] caught exception: Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
+  <message>exception processing message using request processor [ibis4test-WebServiceSenderErrorAddress]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderErrorAddress] caught exception: Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

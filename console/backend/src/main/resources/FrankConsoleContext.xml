@@ -11,7 +11,7 @@
 
 	<context:property-placeholder />
 
-	<context:component-scan base-package="org.frankframework.management.web,org.frankframework.web">
+	<context:component-scan base-package="org.frankframework.console">
 		<!-- make sure only load the Spring MVC controllers ;) -->
 	</context:component-scan>
 
@@ -31,7 +31,7 @@
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 
 	<mvc:interceptors>
-		<bean id="deprecationInterceptor" class="org.frankframework.management.web.configuration.DeprecationInterceptor" />
+		<bean id="deprecationInterceptor" class="org.frankframework.console.configuration.DeprecationInterceptor" />
 	</mvc:interceptors>
 
 	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />

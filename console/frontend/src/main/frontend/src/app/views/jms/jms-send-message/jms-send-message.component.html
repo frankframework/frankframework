@@ -94,15 +94,13 @@
             </div>
             <div class="row form-group">
               <label class="col-sm-5 col-md-3 control-label label-height-30">Message</label>
-              <div class="col-sm-7 col-md-9">
-                <textarea
+              <div class="col-sm-9" style="height: 200px">
+                <app-monaco-editor
                   class="form-control"
-                  name="message"
-                  rows="5"
-                  style="resize: none"
-                  appQuickSubmitForm
-                  [(ngModel)]="form['message']"
-                ></textarea>
+                  [(value)]="form['message']"
+                  [options]="{ language: 'text' }"
+                  [actions]="editorActions"
+                ></app-monaco-editor>
               </div>
             </div>
             <div class="row form-group">
