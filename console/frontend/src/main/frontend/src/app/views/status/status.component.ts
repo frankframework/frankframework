@@ -1,8 +1,8 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
-import {ConfigurationFilter} from 'src/app/pipes/configuration-filter.pipe';
-import {StatusService} from './status.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
+import { StatusService } from './status.service';
 import {
   Adapter,
   AdapterMessage,
@@ -15,9 +15,9 @@ import {
   Receiver,
   Summary,
 } from 'src/app/app.service';
-import {PollerService} from 'src/app/services/poller.service';
-import {getProcessStateIcon, getProcessStateIconColor} from 'src/app/utils';
-import {ServerInfo, ServerInfoService} from '../../services/server-info.service';
+import { PollerService } from 'src/app/services/poller.service';
+import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
+import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 

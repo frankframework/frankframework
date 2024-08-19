@@ -1,7 +1,7 @@
-import {Component, Input} from '@angular/core';
-import {ServerInfo} from '../../../services/server-info.service';
-import {Alert, MessageLog} from '../../../app.service';
-import {Router} from '@angular/router';
+import { Component, Input } from '@angular/core';
+import { ServerInfo } from '../../../services/server-info.service';
+import { Alert, MessageLog } from '../../../app.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-server-warnings',
