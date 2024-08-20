@@ -37,6 +37,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.core.SenderResult;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -436,7 +437,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return proceedingJoinPoint.proceed();
 		}
 		Object result = proceedingJoinPoint.proceed();
-		Parameter parameter = (Parameter)proceedingJoinPoint.getTarget();
+		IParameter parameter = (IParameter)proceedingJoinPoint.getTarget();
 		return ibisDebugger.parameterResolvedTo(parameter, getCorrelationId(session), result); // session is null in afterMessageProcessed()
 	}
 
