@@ -28,6 +28,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.logging.log4j.Logger;
@@ -138,40 +140,44 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	private Digester getDigester(Configuration configuration) throws ConfigurationException, ParserConfigurationException, SAXException {
-		XMLReader reader = XmlUtils.getXMLReader(configuration);
-		Digester digester = new Digester(reader) {
-			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
-			@Override
-			public SAXException createSAXException(String message, Exception e) {
-				return SaxException.createSaxException(message, getDocumentLocator(), e);
-			}
-			@Override
-			public SAXException createSAXException(Exception e) {
-				return SaxException.createSaxException(null, getDocumentLocator(), e);
-			}
-		};
+	private Digester getDigester(Configuration configuration) throws ConfigurationException {
+		try {
+			XMLReader reader = XmlUtils.getXMLReader(configuration);
+			Digester digester = new Digester(reader) {
+				// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
+				@Override
+				public SAXException createSAXException(String message, Exception e) {
+					return SaxException.createSaxException(message, getDocumentLocator(), e);
+				}
+				@Override
+				public SAXException createSAXException(Exception e) {
+					return SaxException.createSaxException(null, getDocumentLocator(), e);
+				}
+			};
 
-		digester.setUseContextClassLoader(true);
-		digester.push(configuration);
+			digester.setClassLoader(configuration.getClassLoader());
+			digester.push(configuration);
 
-		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
-		loadDigesterRules(digester, digesterRulesResource);
+			Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
+			loadDigesterRules(digester, digesterRulesResource);
 
-		if (validation) {
-			digester.setValidating(true);
-			digester.setNamespaceAware(true);
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
-			if (xsdUrl==null) {
-				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+			if (validation) {
+				digester.setValidating(true);
+				digester.setNamespaceAware(true);
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+
+				URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
+				if (xsdUrl==null) {
+					throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+				}
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
+				XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
+				digester.setErrorHandler(xeh);
 			}
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
-			XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
-			digester.setErrorHandler(xeh);
+			return digester;
+		} catch (ParserConfigurationException | SAXException e) {
+			throw new ConfigurationException("unable to create configuration parser", e);
 		}
-
-		return digester;
 	}
 
 	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) {
@@ -191,19 +197,15 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
-		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
-		Digester digester = null;
+		Resource configurationResource = getConfigurationResource(configuration);
 
-		Resource configurationResource = Resource.getResource(configuration, configurationFile);
-		if (configurationResource == null) {
-			throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
+		if(configurationResource == null) {
+			return;
 		}
 
+		Digester digester = getDigester(configuration);
 		try {
-			digester = getDigester(configuration);
-
-			if (log.isDebugEnabled())
-				log.debug("digesting configuration [{}] configurationFile [{}]", configuration.getName(), configurationFile);
+			log.debug("digesting configuration [{}] configurationFile [{}]", configuration::getName, configurationResource::getSystemId);
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);
@@ -217,8 +219,25 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			}
 			Locator locator = digester.getDocumentLocator();
 			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationResource + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
 		}
+	}
+
+	@Nullable
+	private Resource getConfigurationResource(Configuration configuration) throws ConfigurationException {
+		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
+
+		Resource configurationResource = Resource.getResource(configuration, configurationFile);
+		if (configurationResource != null) {
+			return configurationResource;
+		}
+
+		if(ConfigurationUtils.isConfigurationXmlOptional(configuration)) {
+			configuration.log("no configuration file found, skipping xml digest");
+			return null;
+		}
+
+		throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
 	}
 
 	/**
