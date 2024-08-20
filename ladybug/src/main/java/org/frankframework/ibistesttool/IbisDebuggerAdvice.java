@@ -20,8 +20,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.frankframework.configuration.IbisManager;
@@ -40,6 +38,7 @@ import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.core.SenderResult;
 import org.frankframework.documentbuilder.xml.XmlTee;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -61,6 +60,9 @@ import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
@@ -435,7 +437,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return proceedingJoinPoint.proceed();
 		}
 		Object result = proceedingJoinPoint.proceed();
-		Parameter parameter = (Parameter)proceedingJoinPoint.getTarget();
+		IParameter parameter = (IParameter)proceedingJoinPoint.getTarget();
 		return ibisDebugger.parameterResolvedTo(parameter, getCorrelationId(session), result); // session is null in afterMessageProcessed()
 	}
 

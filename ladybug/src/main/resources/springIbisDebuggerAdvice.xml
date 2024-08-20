@@ -20,7 +20,6 @@
 
 	<aop:config proxy-target-class="true">
 		<aop:aspect ref="ibisDebuggerAdvice">
-			<!-- Param firstPipe was added with IAF v4_12_a11 -->
 			<aop:around
 				pointcut=
 					"
@@ -31,7 +30,7 @@
 						)
 					)
 					and
-					args(pipeLine, correlationId, message, pipeLineSession, ..)
+					args(pipeLine, messageId, message, pipeLineSession, ..)
 					"
 				method="debugPipeLineInputOutputAbort"
 				arg-names="pipeLine, correlationId, message, pipeLineSession"
@@ -193,7 +192,7 @@
 					"
 					execution(
 						*
-						org.frankframework.parameters.Parameter.getValue(
+						org.frankframework.parameters.IParameter.getValue(
 							org.frankframework.parameters.ParameterValueList,
 							org.frankframework.stream.Message,
 							org.frankframework.core.PipeLineSession,
