@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 
 /**
@@ -64,7 +64,7 @@ public interface IbisDebugger {
 	public Object storeInSessionKey(String correlationId, String sessionKey, Object result);
 	public Message preserveInput(String correlationId, Message input);
 
-	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);
+	public Object parameterResolvedTo(IParameter parameter, String correlationId, Object value);
 	public <T> T showValue(String correlationId, String label, T value);
 
 	public boolean stubSender(ISender sender, String correlationId);
