@@ -167,10 +167,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	public void setTableAlias(String string) {
 		tableAlias = string;
 	}
-	
+
 	/**
 	 * Field containing the status of the message. 
-  	 * <b>NB: For optimal performance, an index should exist that starts with this field, followed by all fields that are used with a fixed value in the select condition, and end with the <code>orderField</code>.
+	 * <b>NB: For optimal performance, an index should exist that starts with this field, followed by all fields that are used with a fixed value in the select condition, and end with the <code>orderField</code>.
 	 * @ff.mandatory
 	 */
 	public void setStatusField(String fieldname) {

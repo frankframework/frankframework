@@ -99,6 +99,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDatasourceName();
+			if(StringUtils.isBlank(dsName)) { //for getPhysicalDestinationName (console) when not yet configured.
+				throw new JdbcException("No datasourceName specified");
+			}
+
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
 			} catch (NamingException | IllegalStateException e) {
