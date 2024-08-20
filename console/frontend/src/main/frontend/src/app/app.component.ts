@@ -28,7 +28,6 @@ import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
-import { PollerService } from './services/poller.service';
 import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { SweetalertService } from './services/sweetalert.service';
@@ -48,8 +47,6 @@ import { deepMerge } from './utils';
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: ServerInfo | null = null;
-  monitoring = false;
-  config_database = false;
   dtapStage = '';
   dtapSide = '';
   serverTime = '';
@@ -64,7 +61,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private consoleState: ConsoleState;
   private _subscriptions = new Subscription();
   private _subscriptionsReloadable = new Subscription();
-  private serializedRawAdapterData: Record<string, string> = {};
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
     windowClass: 'animated fadeIn',
@@ -79,7 +75,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private title: Title,
     private authService: AuthService,
-    private pollerService: PollerService,
     private notificationService: NotificationService,
     private miscService: MiscService,
     private sessionService: SessionService,
@@ -141,8 +136,6 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
-      this.pollerService.getAll().changeInterval(this.appConstants['console.idle.pollerInterval'] as number);
-
       const idleTimeout =
         Number.parseInt(this.appConstants['console.idle.timeout'] as string) > 0
           ? Number.parseInt(this.appConstants['console.idle.timeout'] as string)
@@ -181,8 +174,6 @@ export class AppComponent implements OnInit, OnDestroy {
     const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
       const element = document.querySelector<HTMLElement>('.swal2-container .swal2-close');
       if (element) element.click();
-
-      this.pollerService.getAll().changeInterval(this.appConstants['console.pollerInterval'] as number);
     });
     this._subscriptions.add(idleEndSubscription);
 
@@ -355,8 +346,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.processWarnings(configurations),
       );
 
-      this.websocketService.subscribe<Record<string, Partial<Adapter>>>('/event/adapters', (data) =>
-        this.pollerCallback(data),
+      this.websocketService.subscribe<Record<string, Partial<Adapter>>>('/event/adapters', (adapters) =>
+        this.processAdapters(adapters),
       );
 
       this.websocketService.subscribe<ClusterMemberEvent>('/event/cluster', (clusterMemeberEvent) =>
@@ -390,12 +381,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
     configurations['All'] = {
-      messages: configurations['messages'] as unknown as AdapterMessage[],
-      errorStoreCount: configurations['totalErrorStoreCount'] as unknown as number,
+      messages: configurations['messages'] as AdapterMessage[],
+      errorStoreCount: configurations['totalErrorStoreCount'] as  number,
       messageLevel: 'ERROR',
+      serverTime: configurations['serverTime'] as number,
+      uptime: configurations['serverTime'] as number,
     };
     delete configurations['messages'];
     delete configurations['totalErrorStoreCount'];
+    delete configurations['serverTime'];
+    delete configurations['uptime'];
 
     if (configurations['warnings']) {
       for (const warning of configurations['warnings'] as unknown as string[]) {
@@ -424,9 +419,8 @@ export class AppComponent implements OnInit, OnDestroy {
         );
       }
 
+      configuration.messageLevel = existingConfiguration?.messageLevel ??'INFO';
       if (configuration.messages) {
-        configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
-
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
           if (level == 'WARN' && configuration.messageLevel != 'ERROR') configuration.messageLevel = 'WARN';
@@ -493,10 +487,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (reloadedAdapters)
       this.toastService.success('Reloaded', 'Adapter(s) have successfully been reloaded!', { timeout: 3000 });
-  }
-
-  pollerCallback(adapters: Record<string, Partial<Adapter>>): void {
-    this.processAdapters(adapters);
   }
 
   finalizeStartup(data: Record<string, Adapter>): void {

@@ -139,6 +139,8 @@ export type MessageLog = {
   messageLevel: MessageLevel;
   exception?: string;
   warnings?: string[];
+  serverTime?: number;
+  uptime?: number;
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
@@ -419,7 +421,7 @@ export class AppService {
 
   removeAlerts(configuration: string): void {
     const indicesToRemove = findIndexOfAll(this.alerts, (alert) => alert.configuration === configuration);
-    const updatedAlerts = { ...this.alerts };
+    const updatedAlerts = [...this.alerts];
 
     for (const index of indicesToRemove) {
       updatedAlerts.splice(index, 1);
