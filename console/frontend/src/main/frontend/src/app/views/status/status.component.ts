@@ -3,20 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
-import {
-  Adapter,
-  AdapterMessage,
-  AdapterStatus,
-  Alert,
-  AppService,
-  Configuration,
-  MessageLog,
-  MessageSummary,
-  Receiver,
-  Summary,
-} from 'src/app/app.service';
+import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, Receiver } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
-import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
 import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
 
 type Filter = Record<AdapterStatus, boolean>;
@@ -42,39 +30,11 @@ export class StatusComponent implements OnInit, OnDestroy {
   isConfigStubbed: Record<string, boolean> = {};
   isConfigReloading: Record<string, boolean> = {};
   isConfigAutoReloadable: Record<string, boolean> = {};
-  msgBoxExpanded = false;
   adapterShowContent: Record<keyof typeof this.adapters, boolean> = {};
   loadFlowInline = true;
 
-  adapterSummary: Summary = {
-    started: 0,
-    stopped: 0,
-    starting: 0,
-    stopping: 0,
-    exception_starting: 0,
-    exception_stopping: 0,
-    error: 0,
-  };
-  receiverSummary: Summary = {
-    started: 0,
-    stopped: 0,
-    starting: 0,
-    stopping: 0,
-    exception_starting: 0,
-    exception_stopping: 0,
-    error: 0,
-  };
-  messageSummary: MessageSummary = {
-    info: 0,
-    warn: 0,
-    error: 0,
-  };
   alerts: Alert[] = [];
   messageLog: Record<string, MessageLog> = {};
-
-  // functions
-  getProcessStateIconFn = getProcessStateIcon;
-  getProcessStateIconColorFn = getProcessStateIconColor;
 
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
@@ -132,22 +92,12 @@ export class StatusComponent implements OnInit, OnDestroy {
 
     this.check4StubbedConfigs();
     this.getFreeDiskSpacePercentage();
-    this.adapterSummary = this.appService.adapterSummary;
-    this.receiverSummary = this.appService.receiverSummary;
-    this.messageSummary = this.appService.messageSummary;
     this.alerts = this.appService.alerts;
     this.messageLog = this.appService.messageLog;
     this.adapters = this.appService.adapters;
 
     const configurationsSubscription = this.appService.configurations$.subscribe(() => this.check4StubbedConfigs());
     this._subscriptions.add(configurationsSubscription);
-
-    const summariesSubscription = this.appService.summaries$.subscribe(() => {
-      this.adapterSummary = this.appService.adapterSummary;
-      this.receiverSummary = this.appService.receiverSummary;
-      this.messageSummary = this.appService.messageSummary;
-    });
-    this._subscriptions.add(summariesSubscription);
 
     const alertsSubscription = this.appService.alerts$.subscribe(() => {
       this.alerts = [...this.appService.alerts];
@@ -185,10 +135,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     filter[filterName] = !filter[filterName];
     this.filter = filter;
     this.updateQueryParams();
-  }
-
-  showContent(adapter: Adapter): boolean {
-    return this.adapterShowContent[`${adapter.configuration}/${adapter.name}`];
   }
 
   updateQueryParams(): void {
@@ -323,44 +269,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.appService.updateAdapterSummary(name, true);
     this.updateQueryParams();
     this.updateConfigurationFlowDiagram(name);
-  }
-
-  getTransactionalStores(receiver: Receiver): { name: string; numberOfMessages: number }[] {
-    return Object.values(receiver.transactionalStores);
-  }
-
-  getMessageLog(selectedConfiguration: string): AdapterMessage[] {
-    return this.messageLog[selectedConfiguration]?.messages ?? [];
-  }
-
-  startAdapter(adapter: Adapter): void {
-    adapter.state = 'starting';
-    this.statusService.updateAdapter(adapter.configuration, adapter.name, 'start').subscribe();
-  }
-
-  stopAdapter(adapter: Adapter): void {
-    adapter.state = 'stopping';
-    this.statusService.updateAdapter(adapter.configuration, adapter.name, 'stop').subscribe();
-  }
-
-  startReceiver(adapter: Adapter, receiver: Receiver): void {
-    receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'start').subscribe();
-  }
-
-  stopReceiver(adapter: Adapter, receiver: Receiver): void {
-    receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'stop').subscribe();
-  }
-
-  addThread(adapter: Adapter, receiver: Receiver): void {
-    receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'incthread').subscribe();
-  }
-
-  removeThread(adapter: Adapter, receiver: Receiver): void {
-    receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, 'decthread').subscribe();
   }
 
   private getCompiledAdapterList(): string[] {

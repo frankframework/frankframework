@@ -84,6 +84,9 @@ import { FileViewerComponent } from './components/file-viewer/file-viewer.compon
 import { HumanFileSizePipe } from './pipes/human-file-size.pipe';
 import { MonacoEditorComponent } from './components/monaco-editor/monaco-editor.component';
 import { ServerWarningsComponent } from './views/status/server-warnings/server-warnings.component';
+import { AdapterStatusComponent } from './views/status/adapter-status/adapter-status.component';
+import { ConfigurationMessagesComponent } from './views/status/configuration-messages/configuration-messages.component';
+import { ConfigurationSummaryComponent } from './views/status/configuration-summary/configuration-summary.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -134,6 +137,7 @@ const windowProvider: ValueProvider = {
     TestServiceListenerComponent,
     LoginComponent,
     ServerWarningsComponent,
+    AdapterStatusComponent,
 
     //modals
     FlowModalComponent,
@@ -152,6 +156,8 @@ const windowProvider: ValueProvider = {
 
     // directives
     QuickSubmitFormDirective,
+     ConfigurationMessagesComponent,
+     ConfigurationSummaryComponent,
   ],
   imports: [
     BrowserModule,
