@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import io.micrometer.core.instrument.Timer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -1216,7 +1217,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
+						Timer timer = configurationMetrics.createTimer(this, FrankMeterType.RECEIVER_PROCESSING_DURATION);
+						pipeLineResult = timer.recordCallable(() -> adapter.processMessageWithExceptions(messageId, compactedMessage, session));
 
 						session.setExitState(pipeLineResult);
 						result=pipeLineResult.getResult();

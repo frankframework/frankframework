@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import io.micrometer.core.instrument.Timer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.Adapter;
@@ -104,6 +105,10 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	public DistributionSummary createThreadBasedDistributionSummary(Receiver<?> receiver, FrankMeterType type, int threadNumber) {
 		List<Tag> tags = getTags(receiver, receiver.getName(), Collections.singletonList(Tag.of("thread", ""+threadNumber)));
 		return createDistributionSummary(type, tags);
+	}
+
+	public Timer createTimer(@Nonnull IConfigurationAware frankElement, FrankMeterType frankMeterType) {
+		return Timer.builder(frankMeterType.getMeterName()).tags(getTags(frankElement, frankElement.getName(), null)).register(meterRegistry);
 	}
 
 	public Gauge createGauge(@Nonnull Adapter frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {

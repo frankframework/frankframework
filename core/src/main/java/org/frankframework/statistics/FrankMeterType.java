@@ -34,11 +34,11 @@ public enum FrankMeterType {
 	PIPELINE_PROCESSED("frank.pipeline.messagesProcessed", Meter.Type.COUNTER),
 	PIPELINE_IN_PROCESS("frank.pipeline.messagesInProcess", Meter.Type.GAUGE),
 
-
 	RECEIVER_DURATION("frank.receiver.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	RECEIVER_RECEIVED("frank.receiver.messagesReceived", Meter.Type.COUNTER),
 	RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
-	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER);
+	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER),
+	RECEIVER_PROCESSING_DURATION("frank.receiver.processingDuration", Meter.Type.TIMER, FrankMeterType.TIME_UNIT);
 
 	public static final String TIME_UNIT = "ms";
 	public static final String SIZE_UNIT = "B";
