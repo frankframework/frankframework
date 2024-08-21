@@ -5,7 +5,7 @@ import org.frankframework.configuration.ConfigurationException;
 
 public class ConfigurationDigesterMock extends ConfigurationDigester {
 	@Override
-	public void digest() throws ConfigurationException {
+	public void configure() throws ConfigurationException {
 		// Ignore digest to speed up jUnit-tests
 	}
 }
