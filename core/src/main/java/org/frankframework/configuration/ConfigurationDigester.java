@@ -42,6 +42,7 @@ import org.frankframework.configuration.filters.SkipContainersFilter;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.documentbuilder.xml.XmlTee;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
@@ -98,7 +99,7 @@ import lombok.extern.log4j.Log4j2;
  * @see Configuration
  */
 @Log4j2
-public class ConfigurationDigester implements ApplicationContextAware {
+public class ConfigurationDigester implements ConfigurableLifecycle, ApplicationContextAware {
 	public static final String MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY = "migration.rewriteLegacyClassNames";
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -188,21 +189,21 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		loader.addRules(digester);
 	}
 
-	public void digest() throws ConfigurationException {
-		if(!(applicationContext instanceof Configuration configurationContext)) {
+	@Override
+	public void configure() throws ConfigurationException {
+		if(!(applicationContext instanceof Configuration configuration)) {
 			throw new IllegalStateException("no suitable Configuration found");
 		}
 
-		digestConfiguration(configurationContext);
-	}
-
-	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
 		Resource configurationResource = getConfigurationResource(configuration);
-
 		if(configurationResource == null) {
 			return;
 		}
 
+		digestConfiguration(configuration, configurationResource);
+	}
+
+	private void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
 		Digester digester = getDigester(configuration);
 		try {
 			log.debug("digesting configuration [{}] configurationFile [{}]", configuration::getName, configurationResource::getSystemId);
@@ -322,5 +323,25 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			return filter;
 		}
 		return handler;
+	}
+
+	@Override
+	public void start() {
+		// Do Nothing
+	}
+
+	@Override
+	public void stop() {
+		// Do Nothing
+	}
+
+	@Override
+	public boolean isRunning() {
+		return false;
+	}
+
+	@Override
+	public int getPhase() {
+		return -100; //Starts earlier
 	}
 }
