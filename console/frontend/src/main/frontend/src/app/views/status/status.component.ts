@@ -3,7 +3,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
-import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog } from 'src/app/app.service';
+import {
+  Adapter,
+  AdapterSearchFilterItem,
+  AdapterStatus,
+  Alert,
+  AppService,
+  Configuration,
+  MessageLog,
+} from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
 
@@ -128,6 +136,10 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  trackAdaptersByFn(index: number, adapter: Adapter): string {
+    return (<AdapterSearchFilterItem>adapter).id;
   }
 
   applyFilter(filterName: keyof Filter): void {
