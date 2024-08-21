@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AdapterStatusComponent } from './adapter-status.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AdapterStatusComponent', () => {
   let component: AdapterStatusComponent;
@@ -8,10 +9,10 @@ describe('AdapterStatusComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AdapterStatusComponent]
-    })
-    .compileComponents();
-    
+      imports: [HttpClientTestingModule],
+      declarations: [AdapterStatusComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(AdapterStatusComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
