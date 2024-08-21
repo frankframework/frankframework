@@ -18,6 +18,7 @@
 	-->
 
 	<bean primary="true" name="eventPublisher" class="org.frankframework.testutil.mock.EventPublisherMock" />
+	<bean primary="true"  name="configFlowGenerator" class="org.frankframework.testutil.mock.ConfigurationFlowGeneratorMock" />
 
 	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
 </beans>

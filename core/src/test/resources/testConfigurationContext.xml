@@ -16,9 +16,9 @@
 		Spring file used to overwrite certain beans that should be mocked during testing.
 		Mocked classes should contain the primary attribute to ensure they are used!
 	-->
+	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" />
 	<bean primary="true" name="configurationDigester" class="org.frankframework.testutil.mock.ConfigurationDigesterMock" />
-	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" scope="prototype" />
-	<bean primary="true"  name="configFlowGenerator" class="org.frankframework.testutil.mock.ConfigurationFlowGeneratorMock" />
+	<bean primary="true" name="configFlowGenerator" class="org.frankframework.testutil.mock.ConfigurationFlowGeneratorMock" />
 
 	<bean primary="true" name="eventPublisher" class="org.frankframework.testutil.mock.EventPublisherMock" />
 
