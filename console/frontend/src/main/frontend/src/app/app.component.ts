@@ -382,7 +382,7 @@ export class AppComponent implements OnInit, OnDestroy {
   processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
     configurations['All'] = {
       messages: configurations['messages'] as AdapterMessage[],
-      errorStoreCount: configurations['totalErrorStoreCount'] as  number,
+      errorStoreCount: configurations['totalErrorStoreCount'] as number,
       messageLevel: 'ERROR',
       serverTime: configurations['serverTime'] as number,
       uptime: configurations['serverTime'] as number,
@@ -419,7 +419,7 @@ export class AppComponent implements OnInit, OnDestroy {
         );
       }
 
-      configuration.messageLevel = existingConfiguration?.messageLevel ??'INFO';
+      configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;

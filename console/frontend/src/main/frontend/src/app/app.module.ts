@@ -156,8 +156,8 @@ const windowProvider: ValueProvider = {
 
     // directives
     QuickSubmitFormDirective,
-     ConfigurationMessagesComponent,
-     ConfigurationSummaryComponent,
+    ConfigurationMessagesComponent,
+    ConfigurationSummaryComponent,
   ],
   imports: [
     BrowserModule,
