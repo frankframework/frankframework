@@ -163,8 +163,8 @@ public abstract class DatabaseMigratorBase implements ConfigurableLifecycle, ICo
 	public void configure() throws ConfigurationException {
 		if(isEnabled()) {
 			try {
-				if(validate()) { //TODO validate during configure
-					update(); //TODO update during start
+				if(validate()) {
+					update();
 				}
 			} catch (Exception e) {
 				configuration.log("unable to run JDBC migration", e);

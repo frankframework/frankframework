@@ -20,8 +20,6 @@ import org.frankframework.util.flow.FlowDiagramManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +29,6 @@ import lombok.extern.log4j.Log4j2;
  * Uses {@link Configuration#getLoadedConfiguration()}.
  */
 @Log4j2
-@Order(Ordered.LOWEST_PRECEDENCE)
 public class ConfigurationFlowGenerator implements ConfigurableLifecycle, ApplicationContextAware {
 
 	@Autowired

@@ -18,7 +18,9 @@
 	-->
 
 	<bean primary="true" name="eventPublisher" class="org.frankframework.testutil.mock.EventPublisherMock" />
-	<bean primary="true"  name="configFlowGenerator" class="org.frankframework.testutil.mock.ConfigurationFlowGeneratorMock" />
+
+	<!-- bean just needs to be here to override the 'default' specified in SpringConfigurationContext.xml -->
+	<bean primary="true" name="configFlowGenerator" class="java.lang.Object" />
 
 	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
 </beans>
