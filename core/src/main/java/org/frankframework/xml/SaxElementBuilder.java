@@ -126,12 +126,14 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	public SaxElementBuilder startElement(String elementName) throws SAXException {
-		if (elementName==null) {
+		String cleanElementName = XmlUtils.cleanseElementName(elementName);
+
+		if (cleanElementName==null) {
 			promotedToObject = true;
 			return this;
 		}
 		writePendingStartElement();
-		return new SaxElementBuilder(elementName, handler, this);
+		return new SaxElementBuilder(cleanElementName, handler, this);
 	}
 
 	public void addElement(String elementName) throws SAXException {

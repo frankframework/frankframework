@@ -7,14 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URL;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.CsvParserPipe.HeaderCase;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.TestFileUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
@@ -72,6 +73,17 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
 		PipeRunResult prr = doPipe(csv);
 		assertXmlEquals(expected,prr.getResult().asString());
+	}
+
+	@Test
+	public void testFieldNamesWithInvalidElementName() throws Exception {
+		pipe.setFieldNames("naam,woonplaats+postcode,land");
+		configureAndStartPipe();
+		String csv = "Frank,Rotterdam+3014GT,Frankland\nFrank2,Rotterdam+1234AB,Nederland";
+		String expected = "<csv><record><naam>Frank</naam><woonplaats_postcode>Rotterdam+3014GT</woonplaats_postcode><land>Frankland</land></record><record><naam>Frank2</naam><woonplaats_postcode>Rotterdam+1234AB</woonplaats_postcode><land>Nederland</land></record></csv>";
+
+		PipeRunResult prr = doPipe(csv);
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
