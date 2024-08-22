@@ -98,10 +98,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		if (receiver.getListener() instanceof IPeekableListener<M>) {
-			messagePeekingStatistics = metricsInitializer.createDistributionSummary(receiver, FrankMeterType.LISTENER_MESSAGE_PEEKING);
+			messagePeekingStatistics = metricsInitializer.createSubDistributionSummary(receiver, receiver.getListener(), FrankMeterType.LISTENER_MESSAGE_PEEKING);
 		}
 
-		messageReceivingStatistics = metricsInitializer.createDistributionSummary(receiver, FrankMeterType.LISTENER_MESSAGE_RECEIVING);
+		messageReceivingStatistics = metricsInitializer.createSubDistributionSummary(receiver, receiver.getListener(), FrankMeterType.LISTENER_MESSAGE_RECEIVING);
 	}
 
 	public void start() {
