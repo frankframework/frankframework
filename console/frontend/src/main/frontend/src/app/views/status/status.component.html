@@ -199,13 +199,16 @@
   <div class="row">
     <div
       *ngFor="
-        let adapter of adapters | configurationFilter: selectedConfiguration : filter | searchFilter: searchText;
+        let adapterKV of adapters
+          | configurationFilter: selectedConfiguration : filter
+          | searchFilter: searchText
+          | keyvalue;
         trackBy: trackAdaptersByFn
       "
       class="col-lg-12 adapters"
     >
       <app-adapter-status
-        [adapter]="adapter"
+        [adapter]="adapterKV.value"
         [adapterShowContent]="adapterShowContent"
         [loadFlowInline]="loadFlowInline"
       ></app-adapter-status>

@@ -1,19 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, TrackByFunction } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
-import {
-  Adapter,
-  AdapterSearchFilterItem,
-  AdapterStatus,
-  Alert,
-  AppService,
-  Configuration,
-  MessageLog,
-} from 'src/app/app.service';
+import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
+import { KeyValue } from '@angular/common';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -138,9 +131,12 @@ export class StatusComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  trackAdaptersByFn(index: number, adapter: Adapter): string {
-    return (<AdapterSearchFilterItem>adapter).id;
-  }
+  trackAdaptersByFn: TrackByFunction<KeyValue<string, Adapter>> = (
+    _index: number,
+    adapterKV: KeyValue<string, Adapter>,
+  ): string => {
+    return adapterKV.key;
+  };
 
   applyFilter(filterName: keyof Filter): void {
     const filter = { ...this.filter };

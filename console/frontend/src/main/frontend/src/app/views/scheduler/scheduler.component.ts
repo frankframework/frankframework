@@ -40,7 +40,7 @@ export type Job = {
   styleUrls: ['./scheduler.component.scss'],
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
-  jobs: Record<string, Job[]> = {};
+  jobGroups: Record<string, Job[]> = {};
   scheduler: Scheduler = {
     name: '',
     version: '',
@@ -58,7 +58,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   searchFilter: string = '';
   refreshing: boolean = false;
   databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
-  jobShowContent: Record<keyof typeof this.jobs, boolean> = {};
+  jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
 
   private initialized = false;
 
@@ -79,11 +79,11 @@ export class SchedulerComponent implements OnInit, OnDestroy {
           jobs: Record<string, Job[]>;
         };
         this.scheduler = result.scheduler;
-        this.jobs = result.jobs;
+        this.jobGroups = result.jobs;
 
         this.refreshing = false;
         if (!this.initialized) {
-          for (const job of Object.keys(this.jobs)) {
+          for (const job of Object.keys(this.jobGroups)) {
             this.jobShowContent[job] = true;
           }
           this.initialized = true;
@@ -101,7 +101,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     this.pollerService.remove('schedules');
   }
 
-  showContent(job: keyof typeof this.jobs): boolean {
+  showContent(job: keyof typeof this.jobGroups): boolean {
     return this.jobShowContent[job];
   }
 

@@ -101,8 +101,6 @@ export type Adapter = {
   errorStoreMessageCount?: number;
 };
 
-export type AdapterSearchFilterItem = Adapter & { id: string };
-
 export type Configuration = {
   name: string;
   stubbed: boolean;
