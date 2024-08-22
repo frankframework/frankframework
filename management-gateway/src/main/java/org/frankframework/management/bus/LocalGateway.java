@@ -58,17 +58,17 @@ public class LocalGateway extends MessagingGatewaySupport implements OutboundGat
 	}
 
 	private long getSendTimeout(Message<?> requestMessage) {
-		Long sendTimeout = headerToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_SEND_TIMEOUT_HEADER));
+		Long sendTimeout = convertHeaderToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_SEND_TIMEOUT_HEADER));
 		return (sendTimeout != null ? sendTimeout : DEFAULT_REQUEST_TIMEOUT);
 	}
 
 	private long getReceiveTimeout(Message<?> requestMessage) {
-		Long sendTimeout = headerToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_RECEIVE_TIMEOUT_HEADER));
+		Long sendTimeout = convertHeaderToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_RECEIVE_TIMEOUT_HEADER));
 		return (sendTimeout != null ? sendTimeout : DEFAULT_REQUEST_TIMEOUT);
 	}
 
 	@Nullable
-	private Long headerToLong(@Nullable Object headerValue) {
+	private Long convertHeaderToLong(@Nullable Object headerValue) {
 		if (headerValue instanceof Number) {
 			return ((Number) headerValue).longValue();
 		}

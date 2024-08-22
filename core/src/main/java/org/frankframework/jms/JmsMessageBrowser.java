@@ -114,7 +114,7 @@ public abstract class JmsMessageBrowser<M, J extends jakarta.jms.Message> extend
 				queueBrowser=session.createBrowser((Queue)getDestination(), getSelector());
 			}
 			int count=0;
-			for (Enumeration enm=queueBrowser.getEnumeration();enm.hasMoreElements();enm.nextElement()) {
+			for (Enumeration<?> enm=queueBrowser.getEnumeration(); enm.hasMoreElements(); enm.nextElement()) {
 				count++;
 			}
 			return count;
@@ -167,16 +167,15 @@ public abstract class JmsMessageBrowser<M, J extends jakarta.jms.Message> extend
 
 	protected jakarta.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
-		jakarta.jms.Message msg = null;
 		QueueBrowser queueBrowser=null;
 		try {
 			session = (QueueSession)createSession();
 			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(selectors));
-			Enumeration msgenum = queueBrowser.getEnumeration();
+			Enumeration<?> msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
-				msg=(jakarta.jms.Message)msgenum.nextElement();
+				return (jakarta.jms.Message) msgenum.nextElement();
 			}
-			return msg;
+			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
