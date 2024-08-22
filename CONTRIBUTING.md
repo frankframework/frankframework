@@ -5,6 +5,13 @@
 Thanks for reading this we're glad you're taking an interest in contributing to our framework.
 We want you working on things you're excited about, there are however plenty of [issues](https://github.com/frankframework/frankframework/issues) that can be picked up.
 
+Before getting started it's recommended to get acquainted with the core classes in the framework. They've been documented pretty well, check out:
+* Receiver: org.frankframework.receivers.Receiver
+* Listener: org.frankframework.core.IPullingListener and org.frankframework.core.IPushingListener
+* Adapter: org.frankframework.core.Adapter
+* Pipe: org.frankframework.pipes.AbstractPipe
+* Sender: org.frankframework.senders.FrankSender
+
 ## Running the Frank!Framework
 
 If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/wearefrank/frank-runner) or follow the instructions for running the Frank!Framework inside your IDE (See [Developing with Eclipse](#developing-with-eclipse) or [Developing with IntelliJ](#developing-with-intellij)).

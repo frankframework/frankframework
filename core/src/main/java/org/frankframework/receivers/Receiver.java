@@ -1794,6 +1794,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		@SuppressWarnings("unchecked")
 		PullingListenerContainer<M> plc = applicationContext.getBean("listenerContainer", PullingListenerContainer.class);
 		plc.setReceiver(this);
+		plc.setMetricsInitializer(configurationMetrics);
 		plc.configure();
 		return plc;
 	}
