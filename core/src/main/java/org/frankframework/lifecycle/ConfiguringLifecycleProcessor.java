@@ -35,8 +35,10 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 		Map<Integer, LifecycleGroup> phases = new TreeMap<>();
 
 		lifecycleBeans.forEach((beanName, bean) -> {
-			int configurePhase = getPhase(bean);
-			phases.computeIfAbsent(configurePhase, phase -> new LifecycleGroup(phase)).add(beanName, bean);
+			if (bean instanceof ConfigurableLifecycle configurableBean) {
+				int configurePhase = getPhase(configurableBean);
+				phases.computeIfAbsent(configurePhase, LifecycleGroup::new).add(configurableBean);
+			}
 		});
 
 		if (!phases.isEmpty()) {
@@ -64,10 +66,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 			this.phase = phase;
 		}
 
-		public void add(String name, Lifecycle bean) {
-			if (bean instanceof ConfigurableLifecycle configurableBean) {
-				this.members.add(configurableBean);
-			}
+		public void add(ConfigurableLifecycle bean) {
+			this.members.add(bean);
 		}
 
 		public void configure() throws ConfigurationException {
