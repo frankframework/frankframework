@@ -59,11 +59,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PullingListenerContainer<M> implements IThreadCountControllable, HasStatistics {
-	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-
-	private @Getter @Setter ApplicationContext applicationContext;
-
+public class PullingListenerContainer<M> implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransactionDefinition txNew = null;
@@ -149,16 +145,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable, Ha
 		if (processToken.getMaxResourceLimit() > 1) {
 			processToken.reduceMaxResourceCount(1);
 		}
-	}
-
-	@Override
-	public Adapter getAdapter() {
-		return receiver.getAdapter();
-	}
-
-	@Override
-	public String getName() {
-		return "";
 	}
 
 	private class ControllerTask implements SchedulingAwareRunnable, INamedObject {
