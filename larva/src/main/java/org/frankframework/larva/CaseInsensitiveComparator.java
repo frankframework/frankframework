@@ -20,12 +20,8 @@ import java.util.Comparator;
 public class CaseInsensitiveComparator implements Comparator<String> {
 
 	@Override
-	public int compare(String object1, String object2) {
-		int result = 0;
-		if (object1 instanceof String string1 && object2 instanceof String string2) {
-			result = string1.toLowerCase().compareTo(string2.toLowerCase());
-		}
-		return result;
+	public int compare(String string1, String string2) {
+		return string1.toLowerCase().compareTo(string2.toLowerCase());
 	}
 
 }
