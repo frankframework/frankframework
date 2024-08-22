@@ -55,7 +55,7 @@ public class HttpUtils {
 		Enumeration<String> paramnames = request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
 			String paramname = StringEscapeUtils.escapeJava(paramnames.nextElement());
-			String paramvalue = request.getParameter(paramname);
+			String paramvalue = StringEscapeUtils.escapeJava(request.getParameter(paramname));
 			if (StringUtils.isNotEmpty(paramvalue)) {
 				if (result.length() > 0) {
 					result = result + ",";
