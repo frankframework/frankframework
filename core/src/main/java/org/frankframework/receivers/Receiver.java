@@ -15,7 +15,6 @@
 */
 package org.frankframework.receivers;
 
-import static org.frankframework.functional.FunctionalUtil.logMethod;
 import static org.frankframework.functional.FunctionalUtil.logValue;
 import static org.frankframework.functional.FunctionalUtil.supplier;
 
@@ -38,11 +37,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -120,6 +114,12 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -957,7 +957,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (RuntimeException e) {
-			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), e);
+			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", getLogPrefix(), originalMessageId, correlationId, e);
 			// no use trying again to send message on errorSender, will cause same exception!
 
 			// NB: Why does this case return, instead of re-throwing?
@@ -983,13 +983,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), e);
+			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", getLogPrefix(), originalMessageId, correlationId, rawMessageWrapper, e);
 			try {
 				if (!txStatus.isCompleted()) {
 					txManager.rollback(txStatus);
 				}
 			} catch (Exception rbe) {
-				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), rbe);
+				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", getLogPrefix(), originalMessageId, correlationId, rawMessageWrapper, rbe);
 			}
 		}
 	}

@@ -56,6 +56,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import jakarta.annotation.Nullable;
+
 /**
  * Container of {@link Adapter Adapters} that belong together.
  * A configuration may be deployed independently from other configurations.
@@ -465,12 +467,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
 	 * Because of this, it may not always represent the correct or accurate type.
 	 */
+	@Nullable
 	public String getClassLoaderType() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
 			}
+			return null;
+		}
+
+		if(getClassLoader() == null) {
 			return null;
 		}
 

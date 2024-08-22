@@ -203,9 +203,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	 * other parameters from the message and put those in the context.
 	 *
 	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
-	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
+	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map threadContext} depending on caller.
 	 * @return String  input {@link Message} for adapter.
 	 */
+	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<jakarta.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		try {
 			return extractMessage(rawMessage.getRawMessage(), context, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
@@ -237,6 +238,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		return replyMessage;
 	}
 
+	@Override
 	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<jakarta.jms.Message> rawMessageWrapper, PipeLineSession session) throws ListenerException {
 		String replyCid = null;
 

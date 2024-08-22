@@ -149,7 +149,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	 * Sets header of mail object if header exists
 	 * @param mail {@link Mail} address to send to
 	 * @param personalization {@link Personalization} options of the mail
-	 * @param headers Mail headers, as {@link Collection<Node>}
+	 * @param headers Mail headers, as {@link Collection}
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
 		if (headers != null && !headers.isEmpty()) {

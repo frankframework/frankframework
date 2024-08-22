@@ -9,7 +9,6 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
-import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
@@ -85,7 +84,7 @@ public class TestConfiguration extends Configuration {
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
-	 * ResultSet using a {@link FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockQuery(String query, ResultSet resultSet) {
 		qsPostProcessor.addFixedQuerySenderMock(query, resultSet);

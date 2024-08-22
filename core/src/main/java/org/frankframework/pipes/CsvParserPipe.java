@@ -163,7 +163,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 	/**
 	 * Enables the ASCII {@code (RS) Record Separator} and {@code (US) Unit Separator} Control Code field delimiters.
 	 * May not be used in combination with attribute {@code fieldSeparator}.
-	 * See {@linkplain https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators}.
+	 * See <a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators">WIKI Control Codes</a>.
 	 */
 	public void setUseControlCodes(boolean useControlCodes) {
 		this.useControlCodes = useControlCodes;

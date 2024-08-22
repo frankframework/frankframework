@@ -52,7 +52,7 @@ public class StreamCaptureUtils {
 			@Override
 			protected OutputStream getStream() {
 				if (isThresholdExceeded()) {
-					return NullOutputStream.NULL_OUTPUT_STREAM;
+					return NullOutputStream.INSTANCE;
 				}
 				return stream;
 			}

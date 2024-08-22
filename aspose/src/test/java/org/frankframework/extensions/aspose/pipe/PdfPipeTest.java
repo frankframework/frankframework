@@ -84,6 +84,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return new PdfPipe();
 	}
 
+	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
@@ -91,6 +92,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.setUnpackCommonFontsArchive(true);
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() {
 		synchronized(pdfOutputLocation) {

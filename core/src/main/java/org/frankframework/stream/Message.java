@@ -812,7 +812,7 @@ public class Message implements Serializable, Closeable {
 	 * @return Message[1234abcd:ByteArrayInputStream]
 	 */
 	public String getObjectId() {
-		return "Message[" + Integer.toHexString(hashCode()) + ":" + getRequestClass() + "]";
+		return ClassUtils.classNameOf(this) + "[" + Integer.toHexString(hashCode()) + ":" + getRequestClass() + "]";
 	}
 
 	/**
