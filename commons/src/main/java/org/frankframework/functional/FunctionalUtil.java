@@ -23,6 +23,10 @@ import java.util.function.Supplier;
  */
 public class FunctionalUtil {
 
+	private FunctionalUtil() {
+		// No-op
+	}
+
 	/**
 	 * Helper function to create a {@link Supplier} to supply the single constant argument value.
 	 * <p>
@@ -144,10 +148,5 @@ public class FunctionalUtil {
 	 */
 	public static <T,R> Function<T,R> function(Function<T, R> f) {
 		return f;
-	}
-
-
-	private FunctionalUtil() {
-		// No-op
 	}
 }

@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -20,7 +21,7 @@ public class DataSourceFactoryMock implements IDataSourceFactory {
 
 	public DataSourceFactoryMock() {
 		// Create a pooled datasource for the TestSecurityItems test, and wrap it in a delegating datasource to test it's recursive-ness.
-		DataSource ds = new OpenPoolingDataSource(new GenericObjectPool(Mockito.mock(PoolableConnectionFactory.class)));
+		DataSource ds = new OpenPoolingDataSource<PoolableConnection>(new GenericObjectPool<>(Mockito.mock(PoolableConnectionFactory.class)));
 		objects.put(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME, new TransactionalDbmsSupportAwareDataSourceProxy(ds));
 	}
 

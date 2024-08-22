@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import org.springframework.context.ApplicationContext;
 
 public class SpringUtils {
 
-	@SuppressWarnings("unchecked")
 	public static <T> T createBean(ApplicationContext applicationContext, Class<T> beanClass) {
-		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass);
 	}
 
 	public static void autowireByType(ApplicationContext applicationContext, Object existingBean) {

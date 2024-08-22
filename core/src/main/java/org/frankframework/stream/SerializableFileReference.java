@@ -80,15 +80,15 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	/**
-	 * Create a new {@link SerializableFileReference} from the given {@link byte[]}. The {@link byte[]} will be copied
+	 * Create a new {@link SerializableFileReference} from the given {@code byte[]}. The {@code byte[]} will be copied
 	 * to a temporary file on disk. The {@link SerializableFileReference} will be treated as binary data.
 	 * <p>
 	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
 	 * </p>
 	 *
-	 * @param data The {@link byte[]} from which to create the {@link SerializableFileReference}.
+	 * @param data The {@code byte[]} from which to create the {@link SerializableFileReference}.
 	 * @return A new binary {@link SerializableFileReference}.
-	 * @throws IOException If the {@link byte[]} cannot be written to a temporary file.
+	 * @throws IOException If the {@code byte[]} cannot be written to a temporary file.
 	 */
 	public static SerializableFileReference of(byte[] data) throws IOException {
 		return of(new ByteArrayInputStream(data));

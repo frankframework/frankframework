@@ -19,31 +19,16 @@ import static org.frankframework.util.DateFormatUtils.FULL_GENERIC_FORMATTER;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
-import jakarta.annotation.Nonnull;
-import lombok.Getter;
-import lombok.Setter;
-import net.bankid.merchant.library.AssuranceLevel;
-import net.bankid.merchant.library.AuthenticationRequest;
-import net.bankid.merchant.library.AuthenticationResponse;
-import net.bankid.merchant.library.Communicator;
-import net.bankid.merchant.library.Configuration;
-import net.bankid.merchant.library.DirectoryResponse;
-import net.bankid.merchant.library.ErrorResponse;
-import net.bankid.merchant.library.IMessenger;
-import net.bankid.merchant.library.SamlResponse;
-import net.bankid.merchant.library.ServiceId;
-import net.bankid.merchant.library.StatusRequest;
-import net.bankid.merchant.library.StatusResponse;
-import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -62,6 +47,23 @@ import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
+import net.bankid.merchant.library.AssuranceLevel;
+import net.bankid.merchant.library.AuthenticationRequest;
+import net.bankid.merchant.library.AuthenticationResponse;
+import net.bankid.merchant.library.Communicator;
+import net.bankid.merchant.library.Configuration;
+import net.bankid.merchant.library.DirectoryResponse;
+import net.bankid.merchant.library.ErrorResponse;
+import net.bankid.merchant.library.IMessenger;
+import net.bankid.merchant.library.SamlResponse;
+import net.bankid.merchant.library.ServiceId;
+import net.bankid.merchant.library.StatusRequest;
+import net.bankid.merchant.library.StatusResponse;
+import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 
 /**
  * Requires the net.bankid.merchant.library V1.2.9
@@ -293,8 +295,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				result.addSubElement(issuers);
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
-				Date txDate = response.getDirectoryDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+				timestamp.setValue(toFormattedDate(response.getDirectoryDateTimestamp()), false);
 				result.addSubElement(timestamp);
 
 				log.debug("received directory response [{}]", response::getRawMessage);
@@ -351,8 +352,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 					result.addSubElement(transactionIdXml);
 
 					XmlBuilder timestamp = new XmlBuilder("timestamp");
-					Date txDate = response.getStatusDateTimestamp().toGregorianCalendar().getTime();
-					timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+					timestamp.setValue(toFormattedDate(response.getStatusDateTimestamp()), false);
 					result.addSubElement(timestamp);
 				}
 
@@ -421,8 +421,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				result.addSubElement(transactionIdXml);
 
 				XmlBuilder creationTime = new XmlBuilder("createDateTimestamp");
-				Date txDate = response.getTransactionCreateDateTimestamp().toGregorianCalendar().getTime();
-				creationTime.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+				creationTime.setValue(toFormattedDate(response.getTransactionCreateDateTimestamp()), false);
 				result.addSubElement(creationTime);
 
 				log.debug("received authentication response [{}]", response::getRawMessage);
@@ -465,6 +464,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			destination.append(" statusUrl["+getAcquirerStatusUrl()+"]");
 
 		return destination.toString().trim();
+	}
+
+	private String toFormattedDate(XMLGregorianCalendar xmlGregorianCalendar) {
+		Instant txDate = xmlGregorianCalendar.toGregorianCalendar().getTime().toInstant();
+		return DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER);
 	}
 
 

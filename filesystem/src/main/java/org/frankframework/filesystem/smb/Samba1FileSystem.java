@@ -33,7 +33,6 @@ import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
@@ -318,7 +317,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to delete file [{}]", (Supplier<?>) ()-> getCanonicalNameOrErrorMessage(file), e);
+				log.warn("unable to delete file [{}]", getCanonicalNameOrErrorMessage(file), e);
 			}
 		}
 	}
