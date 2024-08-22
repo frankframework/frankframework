@@ -139,5 +139,5 @@ corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an examp
 
 ### Non-root
 
-This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000` instead of `root`. If you need
+This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=2000` and `GID=2000` instead of `root`. If you need
 to run as `root`, you will need to set `USER root` in your Dockerfile.
