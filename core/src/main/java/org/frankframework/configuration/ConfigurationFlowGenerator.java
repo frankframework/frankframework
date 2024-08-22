@@ -17,7 +17,6 @@ package org.frankframework.configuration;
 
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.flow.FlowDiagramManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -31,7 +30,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ConfigurationFlowGenerator implements ConfigurableLifecycle, ApplicationContextAware {
 
-	@Autowired
+	@Setter
 	private FlowDiagramManager flowDiagramManager;
 
 	@Setter
