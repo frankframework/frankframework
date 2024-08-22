@@ -58,7 +58,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
- * A configuration may be deployed independently from other configurations.
+ * A configuration may be deployed independently of other configurations.
  * Names of nested elements like {@link Adapter Adapters}, {@link Receiver Receivers}, listeners and senders
  * can be reused in other configurations.
  * <br/><br/>
