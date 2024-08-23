@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map.Entry;
 
+import lombok.Getter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -31,12 +32,9 @@ import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * Reads a message in CSV format, and turns it into XML.
@@ -117,10 +115,10 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	private void processCsvRecord(final CSVRecord csvRecord, final SaxDocumentBuilder document) throws PipeRunException {
 		try (SaxElementBuilder element = document.startElement("record")) {
-			for(Entry<String,String> entry: csvRecord.toMap().entrySet()) {
-				String key = XmlEncodingUtils.stripNonValidXmlCharacters(entry.getKey().replace(' ', '_'), false);
-				if(getHeaderCase() != null) {
-					key = getHeaderCase()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
+			for (Entry<String,String> entry: csvRecord.toMap().entrySet()) {
+				String key = entry.getKey();
+				if (getHeaderCase() != null) {
+					key = getHeaderCase() == HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
 				}
 				element.addElement(key, entry.getValue());
 			}
