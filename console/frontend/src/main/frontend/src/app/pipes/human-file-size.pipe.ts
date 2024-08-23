@@ -32,8 +32,7 @@ export class HumanFileSizePipe implements PipeTransform {
       bytes /= threshold;
       ++index;
     } while (
-      Math.round(Math.abs(bytes) * roundingPrecision) / roundingPrecision >=
-        threshold &&
+      Math.round(Math.abs(bytes) * roundingPrecision) / roundingPrecision >= threshold &&
       index < units.length - 1
     );
 

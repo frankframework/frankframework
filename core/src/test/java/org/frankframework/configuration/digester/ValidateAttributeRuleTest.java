@@ -437,7 +437,6 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testSuppressDeprecationWarningsForSomeAdapters() throws IOException {
 		// Arrange
@@ -465,7 +464,6 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals(3, configurationWarnings.getWarnings().size());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testSuppressDeprecationWarningsWithLocationInfo() throws IOException {
 		// Arrange

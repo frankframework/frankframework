@@ -12,10 +12,7 @@ export class SweetalertService {
 
   constructor(private Debug: DebugService) {}
 
-  defaults(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): SweetAlertOptions {
+  defaults(title: string | SweetAlertOptions, text?: string): SweetAlertOptions {
     // let args = arguments || [];
     const options = this.defaultSettings;
 
@@ -36,20 +33,14 @@ export class SweetalertService {
     return options; //let [options, callback] = this.defaults.apply(this, arguments);
   }
 
-  Input(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): Promise<SweetAlertResult<unknown>> {
+  Input(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
     const options = this.defaults(title, text);
     if (options.input == undefined) options.input = 'text';
     options.showCancelButton = true;
     return Swal.fire(options);
   }
 
-  Confirm(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): Promise<SweetAlertResult<unknown>> {
+  Confirm(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
     //(JsonObject, Callback)-> returns boolean
     const options = {
       title: 'Are you sure?',
@@ -59,37 +50,25 @@ export class SweetalertService {
     return Swal.fire(options);
   }
 
-  Info(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): Promise<SweetAlertResult<unknown>> {
+  Info(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
     let options: SweetAlertOptions = {};
     options = { icon: 'info', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
-  Warning(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): Promise<SweetAlertResult<unknown>> {
+  Warning(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
     let options: SweetAlertOptions = {};
     options = { icon: 'warning', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
-  Error(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): Promise<SweetAlertResult<unknown>> {
+  Error(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
     let options: SweetAlertOptions = {};
     options = { icon: 'error', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
-  Success(
-    title: string | SweetAlertOptions,
-    text?: string,
-  ): Promise<SweetAlertResult<unknown>> {
+  Success(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
     let options: SweetAlertOptions = {};
     options = { icon: 'success', ...this.defaults(title, text) };
     return Swal.fire(options);

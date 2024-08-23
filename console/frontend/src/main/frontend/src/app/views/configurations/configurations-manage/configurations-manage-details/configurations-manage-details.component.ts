@@ -1,20 +1,10 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  QueryList,
-  ViewChildren,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
-import {
-  SortEvent,
-  ThSortableDirective,
-  basicAnyValueTableSort,
-} from 'src/app/components/th-sortable.directive';
+import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/components/th-sortable.directive';
 
 @Component({
   selector: 'app-configurations-manage-details',
@@ -60,9 +50,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     this.route.paramMap.subscribe((params) => {
       const nameParameter = params.get('name');
       if (nameParameter && nameParameter != '')
-        this.appService.customBreadcrumbs(
-          `Configurations > Manage > ${nameParameter}`,
-        );
+        this.appService.customBreadcrumbs(`Configurations > Manage > ${nameParameter}`);
       else this.router.navigate(['..'], { relativeTo: this.route });
 
       this.promise = window.setInterval(() => {
@@ -79,23 +67,17 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
   update(): void {
     this.loading = true;
-    this.configurationsService
-      .getConfigurationVersions(this.configuration.name)
-      .subscribe((data) => {
-        for (const configs of data) {
-          if (configs.active) {
-            configs.actived = true;
-          }
+    this.configurationsService.getConfigurationVersions(this.configuration.name).subscribe((data) => {
+      for (const configs of data) {
+        if (configs.active) {
+          configs.actived = true;
         }
+      }
 
-        this.versions = data;
-        this.versionsSorted = basicAnyValueTableSort(
-          this.versions,
-          this.headers,
-          this.lastSortEvent,
-        );
-        this.loading = false;
-      });
+      this.versions = data;
+      this.versionsSorted = basicAnyValueTableSort(this.versions, this.headers, this.lastSortEvent);
+      this.loading = false;
+    });
   }
 
   download(config: Configuration): void {
@@ -109,21 +91,14 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   deleteConfig(config: Configuration): void {
     let message = '';
 
-    message = config.version
-      ? `Are you sure you want to remove version '${config.version}'?`
-      : 'Are you sure?';
+    message = config.version ? `Are you sure you want to remove version '${config.version}'?` : 'Are you sure?';
 
     this.sweetalertService.Confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {
         this.configurationsService
-          .deleteConfigurationVersion(
-            config.name,
-            encodeURIComponent(config.version!),
-          )
+          .deleteConfigurationVersion(config.name, encodeURIComponent(config.version!))
           .subscribe(() => {
-            this.toastService.success(
-              `Successfully removed version '${config.version}'`,
-            );
+            this.toastService.success(`Successfully removed version '${config.version}'`);
             this.update();
           });
       }
@@ -136,16 +111,10 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
       if (configs.version != config.version) configs.actived = false;
     }
     this.configurationsService
-      .updateConfigurationVersion(
-        config.name,
-        encodeURIComponent(config.version!),
-        { activate: config.active! },
-      )
+      .updateConfigurationVersion(config.name, encodeURIComponent(config.version!), { activate: config.active! })
       .subscribe({
         next: () => {
-          this.toastService.success(
-            `Successfully changed startup config to version '${config.version}'`,
-          );
+          this.toastService.success(`Successfully changed startup config to version '${config.version}'`);
         },
         error: () => {
           this.update();
@@ -155,17 +124,11 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
   scheduleReload(config: Configuration): void {
     this.configurationsService
-      .updateConfigurationVersion(
-        config.name,
-        encodeURIComponent(config.version!),
-        { autoreload: config.autoreload! },
-      )
+      .updateConfigurationVersion(config.name, encodeURIComponent(config.version!), { autoreload: config.autoreload! })
       .subscribe({
         next: () => {
           this.toastService.success(
-            `Successfully ${
-              config.autoreload ? 'enabled' : 'disabled'
-            } Auto Reload for version '${config.version}'`,
+            `Successfully ${config.autoreload ? 'enabled' : 'disabled'} Auto Reload for version '${config.version}'`,
           );
         },
         error: () => {
@@ -176,10 +139,6 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
   onSort(event: SortEvent): void {
     this.lastSortEvent = event;
-    this.versionsSorted = basicAnyValueTableSort<Configuration>(
-      this.versions,
-      this.headers,
-      event,
-    );
+    this.versionsSorted = basicAnyValueTableSort<Configuration>(this.versions, this.headers, event);
   }
 }

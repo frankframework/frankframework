@@ -30,11 +30,8 @@ interface AMDRequire {
   templateUrl: './monaco-editor.component.html',
   styleUrls: ['./monaco-editor.component.scss'],
 })
-export class MonacoEditorComponent
-  implements AfterViewInit, OnChanges, OnDestroy
-{
-  private editorSubject =
-    new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
+export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
+  private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
   editor$ = this.editorSubject.asObservable();
 
   @Input()
@@ -171,10 +168,7 @@ export class MonacoEditorComponent
     }
   }
 
-  setLineNumberInRoute(
-    startLineNumber: number,
-    endLineNumber: number | undefined = undefined,
-  ): void {
+  setLineNumberInRoute(startLineNumber: number, endLineNumber: number | undefined = undefined): void {
     let fragment = `L${startLineNumber}`;
     if (endLineNumber) fragment += `-${endLineNumber}`;
     this.zone.run(() => {
@@ -260,9 +254,7 @@ export class MonacoEditorComponent
   findMatchForRegex(regexp: string): monaco.editor.FindMatch[] | undefined {
     let matches: monaco.editor.FindMatch[] | undefined;
     this.editor$.pipe(first()).subscribe((editor) => {
-      matches = editor
-        .getModel()
-        ?.findMatches(regexp, false, true, true, null, false);
+      matches = editor.getModel()?.findMatches(regexp, false, true, true, null, false);
     });
     return matches;
   }

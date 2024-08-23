@@ -14,9 +14,7 @@
               <thead>
                 <tr>
                   <th>ProcessState</th>
-                  <th title="total number of messages for this ProcessState">
-                    #
-                  </th>
+                  <th title="total number of messages for this ProcessState">#</th>
                   <th>Adapter</th>
                   <th>Receiver</th>
                   <th title="number of messages">#</th>
@@ -25,12 +23,7 @@
               <tbody>
                 <ng-template ngFor let-item [ngForOf]="result | keyvalue">
                   <ng-template [ngIf]="item.value.items.length > 0">
-                    <tr
-                      *ngFor="
-                        let stateItem of item.value.items;
-                        let innerIndex = index
-                      "
-                    >
+                    <tr *ngFor="let stateItem of item.value.items; let innerIndex = index">
                       <td *ngIf="innerIndex === 0" rowspan="0">
                         {{ item.key }}
                       </td>
@@ -42,9 +35,7 @@
                       <td>
                         <span
                           class="text-{{ getProcessStateIconColorFn }}"
-                          title="Browse messages with ProcessState: {{
-                            item.key
-                          }}"
+                          title="Browse messages with ProcessState: {{ item.key }}"
                         >
                           <button
                             [routerLink]="[

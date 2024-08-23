@@ -47,17 +47,13 @@ export class ConfigurationsUploadComponent implements OnInit {
     this.appConstants = this.appService.APP_CONSTANTS;
     this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
-      this.form.datasource = this.appConstants[
-        'jdbc.datasource.default'
-      ] as string;
+      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
     });
   }
 
   ngOnInit(): void {
     this.appService.appConstants$.subscribe(() => {
-      this.form.datasource = this.appConstants[
-        'jdbc.datasource.default'
-      ] as string;
+      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
     });
 
     this.jdbcService.getJdbc().subscribe((data) => {
@@ -80,8 +76,7 @@ export class ConfigurationsUploadComponent implements OnInit {
     }
 
     const fd = new FormData();
-    if (this.form.datasource && this.form.datasource != '')
-      fd.append('datasource', this.form.datasource);
+    if (this.form.datasource && this.form.datasource != '') fd.append('datasource', this.form.datasource);
     else fd.append('datasource', this.datasources[0]);
 
     fd.append('encoding', this.form.encoding);
@@ -118,9 +113,7 @@ export class ConfigurationsUploadComponent implements OnInit {
         }
       },
       error: (errorData: HttpErrorResponse) => {
-        const error = errorData.error
-          ? errorData.error.error
-          : errorData.message;
+        const error = errorData.error ? errorData.error.error : errorData.message;
         this.error = error;
         this.result = '';
       },

@@ -16,10 +16,7 @@ export type RunState =
 export type RunStateRuntime = RunState | 'loading';
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
-export type TransactionalStores = Record<
-  'DONE' | 'ERROR',
-  { name: string; numberOfMessages: number }
->;
+export type TransactionalStores = Record<'DONE' | 'ERROR', { name: string; numberOfMessages: number }>;
 
 export type Receiver = {
   isEsbJmsFFListener: boolean;
@@ -142,6 +139,8 @@ export type MessageLog = {
   messageLevel: MessageLevel;
   exception?: string;
   warnings?: string[];
+  serverTime?: number;
+  uptime?: number;
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
@@ -253,8 +252,7 @@ export class AppService {
   messageLog$ = this.messageLogSubject.asObservable();
   instanceName$ = this.instanceNameSubject.asObservable();
   dtapStage$ = this.dtapStageSubject.asObservable();
-  databaseSchedulesEnabled$ =
-    this.databaseSchedulesEnabledSubject.asObservable();
+  databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
   summaries$ = this.summariesSubject.asObservable();
   iframePopoutUrl$ = this.iframePopoutUrlSubject.asObservable();
 
@@ -405,10 +403,7 @@ export class AppService {
   addAlert(type: string, configuration: string, message: string): void {
     const line = message.match(/line \[(\d+)]/);
     const isValidationAlert = message.includes('Validation');
-    const link =
-      line && !isValidationAlert
-        ? { name: configuration, '#': `L${line[1]}` }
-        : undefined;
+    const link = line && !isValidationAlert ? { name: configuration, '#': `L${line[1]}` } : undefined;
     this.alerts.push({
       link: link,
       type: type,
@@ -425,11 +420,8 @@ export class AppService {
   }
 
   removeAlerts(configuration: string): void {
-    const indicesToRemove = findIndexOfAll(
-      this.alerts,
-      (alert) => alert.configuration === configuration,
-    );
-    const updatedAlerts = { ...this.alerts };
+    const indicesToRemove = findIndexOfAll(this.alerts, (alert) => alert.configuration === configuration);
+    const updatedAlerts = [...this.alerts];
 
     for (const index of indicesToRemove) {
       updatedAlerts.splice(index, 1);
@@ -444,23 +436,16 @@ export class AppService {
   }
 
   getIafVersions(UID: string): Observable<IAFRelease[] | never[]> {
-    return this.http
-      .get<IAFRelease[]>(`https://ibissource.org/iaf/releases/?q=${UID}`)
-      .pipe(
-        catchError((error) => {
-          this.debugService.error(
-            'An error occured while comparing IAF versions',
-            error,
-          );
-          return of([]);
-        }),
-      );
+    return this.http.get<IAFRelease[]>(`https://ibissource.org/iaf/releases/?q=${UID}`).pipe(
+      catchError((error) => {
+        this.debugService.error('An error occured while comparing IAF versions', error);
+        return of([]);
+      }),
+    );
   }
 
   getClusterMembers(): Observable<ClusterMember[]> {
-    return this.http.get<ClusterMember[]>(
-      `${this.absoluteApiPath}cluster/members?type=worker`,
-    );
+    return this.http.get<ClusterMember[]>(`${this.absoluteApiPath}cluster/members?type=worker`);
   }
 
   updateSelectedClusterMember(id: string): Observable<object> {
@@ -470,9 +455,7 @@ export class AppService {
   }
 
   getConfigurations(): Observable<Configuration[]> {
-    return this.http.get<Configuration[]>(
-      `${this.absoluteApiPath}server/configurations`,
-    );
+    return this.http.get<Configuration[]>(`${this.absoluteApiPath}server/configurations`);
   }
 
   getAdapters(expanded?: string): Observable<Record<string, Adapter>> {
@@ -482,9 +465,7 @@ export class AppService {
   }
 
   getEnvironmentVariables(): Observable<ServerEnvironmentVariables> {
-    return this.http.get<ServerEnvironmentVariables>(
-      `${this.absoluteApiPath}environmentvariables`,
-    );
+    return this.http.get<ServerEnvironmentVariables>(`${this.absoluteApiPath}environmentvariables`);
   }
 
   getServerHealth(): Observable<string> {
@@ -493,10 +474,7 @@ export class AppService {
     });
   }
 
-  updateAdapterSummary(
-    configurationName: string,
-    changedConfiguration: boolean,
-  ): void {
+  updateAdapterSummary(configurationName: string, changedConfiguration: boolean): void {
     const updated = Date.now();
     if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
       //3 seconds
@@ -535,21 +513,14 @@ export class AppService {
     for (const adapterName in allAdapters) {
       const adapter = allAdapters[adapterName];
 
-      if (
-        adapter.configuration == configurationName ||
-        configurationName == 'All'
-      ) {
+      if (adapter.configuration == configurationName || configurationName == 'All') {
         // Only adapters for active config
         adapterSummary[adapter.state]++;
         for (const index in adapter.receivers) {
-          receiverSummary[
-            adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>
-          ]++;
+          receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
         }
         for (const index in adapter.messages) {
-          const level = adapter.messages[
-            +index
-          ].level.toLowerCase() as Lowercase<MessageLevel>;
+          const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
           messageSummary[level]++;
         }
       }

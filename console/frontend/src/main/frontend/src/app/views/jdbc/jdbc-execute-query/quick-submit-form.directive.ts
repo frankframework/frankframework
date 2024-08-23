@@ -11,9 +11,7 @@ export class QuickSubmitFormDirective {
   onEnter(event: KeyboardEvent): boolean | void {
     if (event.ctrlKey && event.key === 'Enter') {
       const formElement = this.element.nativeElement.form;
-      formElement
-        ?.querySelector<HTMLButtonElement>('button[type="submit"]')
-        ?.click();
+      formElement?.querySelector<HTMLButtonElement>('button[type="submit"]')?.click();
       return false;
     }
   }

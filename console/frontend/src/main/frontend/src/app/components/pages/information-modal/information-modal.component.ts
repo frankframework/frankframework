@@ -15,12 +15,7 @@ import { AppService } from '../../../app.service';
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    TimeSinceDirective,
-    ToDateDirective,
-    HumanFileSizePipe,
-  ],
+  imports: [CommonModule, TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
   protected error = false;
@@ -98,10 +93,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
 
   copy(): void {
     copyToClipboard(this.serverInfoService.getMarkdownFormatedServerInfo());
-    this.toastService.success(
-      'Copied',
-      'Copied environment information to clipboard',
-    );
+    this.toastService.success('Copied', 'Copied environment information to clipboard');
   }
 
   refresh(): void {

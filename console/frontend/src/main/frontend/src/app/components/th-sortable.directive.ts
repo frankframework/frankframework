@@ -1,13 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnInit,
-  Output,
-  QueryList,
-} from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, QueryList } from '@angular/core';
 import { anyCompare, compare } from '../utils';
 
 export type SortDirection = 'asc' | 'desc' | null;
@@ -16,10 +7,7 @@ export type SortEvent = {
   direction: SortDirection;
 };
 
-export function updateSortableHeaders(
-  headers: QueryList<ThSortableDirective>,
-  column: string | number | symbol,
-): void {
+export function updateSortableHeaders(headers: QueryList<ThSortableDirective>, column: string | number | symbol): void {
   for (const header of headers) {
     if (header.sortable !== column) {
       header.updateDirection(null);
@@ -97,9 +85,7 @@ export class ThSortableDirective implements OnInit {
       direction == null
         ? this.headerText
         : this.headerText +
-          (direction == 'asc'
-            ? ' <i class="fa fa-arrow-up"></i>'
-            : ' <i class="fa fa-arrow-down"></i>');
+          (direction == 'asc' ? ' <i class="fa fa-arrow-up"></i>' : ' <i class="fa fa-arrow-down"></i>');
     this.elementRef.nativeElement.innerHTML = updateColumnName;
   }
 

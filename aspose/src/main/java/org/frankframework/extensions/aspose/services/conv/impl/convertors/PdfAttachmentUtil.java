@@ -16,29 +16,29 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
+import org.frankframework.extensions.aspose.services.util.FileConstants;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.FileSpecification;
 import com.aspose.pdf.PageMode;
 import com.aspose.pdf.SaveFormat;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
-
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
-import org.frankframework.extensions.aspose.services.util.FileConstants;
-import org.frankframework.stream.Message;
 
 /**
  * This class will combine seperate pdf files to a single pdf with attachments.
@@ -133,7 +133,6 @@ public class PdfAttachmentUtil {
 
 	@Nonnull
 	private Document getPdfDocument(@Nonnull String filePath) {
-
 		if (pdfDocument == null) {
 			// Open the base pdf.
 			pdfDocument = new Document(filePath);
@@ -148,14 +147,17 @@ public class PdfAttachmentUtil {
 
 	@Nonnull
 	public static Message combineFiles(@Nonnull Message parent, @Nonnull Message attachment, String fileNameToAttach, String charset) throws IOException {
-		Document pdfDoc = new Document(parent.asInputStream(charset));
-		pdfDoc.setPageMode(PageMode.UseAttachments);
+		try (Document pdfDoc = new Document(parent.asInputStream(charset))) {
+			pdfDoc.setPageMode(PageMode.UseAttachments);
 
-		pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachment.asInputStream(charset), fileNameToAttach));
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		pdfDoc.save(baos, SaveFormat.Pdf);
+			pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachment.asInputStream(charset), fileNameToAttach));
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (OutputStream out = messageBuilder.asOutputStream()) {
+				pdfDoc.save(out, SaveFormat.Pdf);
+			}
 
-		return new Message(baos.toByteArray());
+			return messageBuilder.build();
+		}
 	}
 
 }

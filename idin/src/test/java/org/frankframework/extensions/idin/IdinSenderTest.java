@@ -34,19 +34,19 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import net.bankid.merchant.library.CommunicatorException;
-import net.bankid.merchant.library.Configuration;
-import net.bankid.merchant.library.IMessenger;
-import net.bankid.merchant.library.SigningKeyPair;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.idin.IdinSender.Action;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
+
+import net.bankid.merchant.library.CommunicatorException;
+import net.bankid.merchant.library.Configuration;
+import net.bankid.merchant.library.IMessenger;
+import net.bankid.merchant.library.SigningKeyPair;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -87,7 +87,9 @@ public class IdinSenderTest {
 				URL expected = ClassUtils.getResourceURL("/messages/"+expectedFile+"-request.xml");
 				assertNotNull(expected, "did not find [/messages/"+expectedFile+"-request.xml]");
 				String expectedString = StreamUtil.resourceToString(expected);
-				request = request.replaceAll("<createDateTimestamp[\\s\\S]*?<\\/createDateTimestamp>", "<createDateTimestamp/>");
+
+				//Complex regex, but ensures the correct format: `2024-08-22T11:49:01.760Z` is used.
+				request = request.replaceAll("<createDateTimestamp>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z<\\/createDateTimestamp>", "<createDateTimestamp/>");
 				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthnRequest xmlns:ns3=\"http://dummy\" signature=\"here\">");
 				request = request.replaceAll("<Signature[\\s\\S]*?<\\/Signature>", "");
 
@@ -118,7 +120,30 @@ public class IdinSenderTest {
 		sender.configure();
 
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		assertEquals("<result>\n" + "	<status>Success</status>\n" + "</result>", result);
+		String expected = """
+				<result>
+					<status>Success</status>
+					<saml>
+						<acquirerId>BANKNL2U</acquirerId>
+						<attributes>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.initials">SJĆ</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastnameprefix">Ja</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastnameprefix">Sm</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.bin">Some Subject</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastname">Smith</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:bankid.deliveredserviceid">4096</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastname">John</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastname">Jane</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastnameprefix">Jo</attribute>
+						</attributes>
+						<merchantReference>BANKID-1234029966811132</merchantReference>
+						<version>BANKNL2U</version>
+					</saml>
+					<transactionID>1234567890123457</transactionID>
+					<timestamp>2020-08-17 17:28:10.008</timestamp>
+				</result>\
+				""";
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -140,7 +165,31 @@ public class IdinSenderTest {
 		sender.configure();
 
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		assertEquals("<result>\n" + "	<status>Success</status>\n" + "</result>", result);
+
+		String expected = """
+				<result>
+					<status>Success</status>
+					<saml>
+						<acquirerId>BANKNL2U</acquirerId>
+						<attributes>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.initials">SJĆ</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastnameprefix">Ja</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastnameprefix">Sm</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.bin">Some Subject</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastname">Smith</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:bankid.deliveredserviceid">4096</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastname">John</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastname">Jane</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastnameprefix">Jo</attribute>
+						</attributes>
+						<merchantReference>BANKID-1234029966811132</merchantReference>
+						<version>BANKNL2U</version>
+					</saml>
+					<transactionID>1234567890123457</transactionID>
+					<timestamp>2020-08-17 17:28:10.008</timestamp>
+				</result>\
+				""";
+		assertEquals(expected, result);
 	}
 
 	@Test

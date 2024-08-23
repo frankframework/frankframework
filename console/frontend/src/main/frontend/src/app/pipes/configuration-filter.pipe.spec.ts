@@ -48,9 +48,7 @@ describe('ConfigurationFilterPipe', () => {
   it('returns adapters filtered by configuration', () => {
     const result = Object.values(pipe.transform(inputAdapters, 'config2'));
     expect(result.length).toBe(2);
-    expect(result.every((adapter) => adapter.configuration == 'config2')).toBe(
-      true,
-    );
+    expect(result.every((adapter) => adapter.configuration == 'config2')).toBe(true);
   });
 
   it('returns an emtpy object if configuration is not found', () => {

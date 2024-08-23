@@ -74,15 +74,9 @@ export class TestPipelineComponent implements OnInit {
 
   updateSessionKeys(sessionKey: FormSessionKey): void {
     if (sessionKey?.key != '' && sessionKey?.value != '') {
-      const keyIndex = this.formSessionKeys
-        .slice(0, -1)
-        .findIndex((f) => f.key === sessionKey.key);
+      const keyIndex = this.formSessionKeys.slice(0, -1).findIndex((f) => f.key === sessionKey.key);
       if (keyIndex > -1) {
-        if (
-          this.state.findIndex(
-            (f) => f.message === 'Session keys cannot have the same name!',
-          ) < 0
-        )
+        if (this.state.findIndex((f) => f.message === 'Session keys cannot have the same name!') < 0)
           //avoid adding it more than once
           this.addNote('warning', 'Session keys cannot have the same name!');
         return;
@@ -117,35 +111,22 @@ export class TestPipelineComponent implements OnInit {
       this.addNote('warning', 'Please specify an adapter!');
       return;
     }
-    if (this.form.encoding && this.form.encoding != '')
-      fd.append('encoding', this.form.encoding);
+    if (this.form.encoding && this.form.encoding != '') fd.append('encoding', this.form.encoding);
     if (this.file) {
       fd.append('file', this.file, this.file.name);
     } else {
-      const encoding =
-        this.form.encoding && this.form.encoding != ''
-          ? `;charset=${this.form.encoding}`
-          : '';
-      fd.append(
-        'message',
-        new Blob([this.form.message], { type: `text/plain${encoding}` }),
-        'message',
-      );
+      const encoding = this.form.encoding && this.form.encoding != '' ? `;charset=${this.form.encoding}` : '';
+      fd.append('message', new Blob([this.form.message], { type: `text/plain${encoding}` }), 'message');
     }
 
     if (this.formSessionKeys.length > 1) {
       this.formSessionKeys.pop();
-      const incompleteKeyIndex = this.formSessionKeys.findIndex(
-        (f) => f.key === '' || f.value === '',
-      );
+      const incompleteKeyIndex = this.formSessionKeys.findIndex((f) => f.key === '' || f.value === '');
 
       if (incompleteKeyIndex < 0) {
         fd.append('sessionKeys', JSON.stringify(this.formSessionKeys));
       } else {
-        this.addNote(
-          'warning',
-          'Please make sure all sessionkeys have name and value!',
-        );
+        this.addNote('warning', 'Please make sure all sessionkeys have name and value!');
         return;
       }
 
@@ -156,30 +137,25 @@ export class TestPipelineComponent implements OnInit {
     }
 
     this.processingMessage = true;
-    this.http
-      .post<PipelineResult>(
-        `${this.appService.absoluteApiPath}test-pipeline`,
-        fd,
-      )
-      .subscribe({
-        next: (returnData) => {
-          let warnLevel = 'success';
-          if (returnData.state == 'ERROR') warnLevel = 'danger';
-          this.addNote(warnLevel, returnData.state);
-          this.result = returnData.result;
-          this.processingMessage = false;
-          if (this.file != null) {
-            this.formFile.reset();
-            this.file = null;
-            this.form.message = returnData.message;
-          }
-        },
-        error: (errorData) => {
-          const error = errorData.error?.error ?? 'An error occured!';
-          this.result = '';
-          this.addNote('warning', error);
-          this.processingMessage = false;
-        },
-      });
+    this.http.post<PipelineResult>(`${this.appService.absoluteApiPath}test-pipeline`, fd).subscribe({
+      next: (returnData) => {
+        let warnLevel = 'success';
+        if (returnData.state == 'ERROR') warnLevel = 'danger';
+        this.addNote(warnLevel, returnData.state);
+        this.result = returnData.result;
+        this.processingMessage = false;
+        if (this.file != null) {
+          this.formFile.reset();
+          this.file = null;
+          this.form.message = returnData.message;
+        }
+      },
+      error: (errorData) => {
+        const error = errorData.error?.error ?? 'An error occured!';
+        this.result = '';
+        this.addNote('warning', error);
+        this.processingMessage = false;
+      },
+    });
   }
 }

@@ -1,14 +1,5 @@
-import {
-  Component,
-  DebugElement,
-  QueryList,
-  ViewChildren,
-} from '@angular/core';
-import {
-  SortEvent,
-  ThSortableDirective,
-  basicTableSort,
-} from './th-sortable.directive';
+import { Component, DebugElement, QueryList, ViewChildren } from '@angular/core';
+import { SortEvent, ThSortableDirective, basicTableSort } from './th-sortable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgForOf } from '@angular/common';
@@ -56,15 +47,12 @@ describe('ThSortableDirective', () => {
 
     fixture.detectChanges(); // initial binding
 
-    directiveElements = fixture.debugElement.queryAll(
-      By.directive(ThSortableDirective),
-    );
+    directiveElements = fixture.debugElement.queryAll(By.directive(ThSortableDirective));
   });
 
   it('on click switches from asc to desc', () => {
     directiveElements[0].nativeElement.click();
-    const directiveInstance =
-      directiveElements[0].injector.get(ThSortableDirective);
+    const directiveInstance = directiveElements[0].injector.get(ThSortableDirective);
 
     expect(directiveInstance.direction).toBe('asc');
     directiveElements[0].nativeElement.click();
@@ -72,11 +60,9 @@ describe('ThSortableDirective', () => {
   });
 
   it('sorts table rows', () => {
-    const directive0Instance =
-      directiveElements[0].injector.get(ThSortableDirective);
+    const directive0Instance = directiveElements[0].injector.get(ThSortableDirective);
     const directive0Element = directiveElements[0].nativeElement;
-    const directive1Instance =
-      directiveElements[1].injector.get(ThSortableDirective);
+    const directive1Instance = directiveElements[1].injector.get(ThSortableDirective);
     const directive1Element = directiveElements[1].nativeElement;
 
     directive0Element.click();

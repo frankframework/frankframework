@@ -68,9 +68,7 @@ export class FlowModalComponent {
 
   openNewTab(): void {
     const newTab = window.open('about:blank');
-    const svg = this.ngMermaid
-      .getMermaidSvgElement()
-      ?.cloneNode(true) as SVGSVGElement;
+    const svg = this.ngMermaid.getMermaidSvgElement()?.cloneNode(true) as SVGSVGElement;
 
     if (newTab && svg) {
       setTimeout(() => {
@@ -80,11 +78,7 @@ export class FlowModalComponent {
     }
   }
 
-  private canvasToBlob(
-    canvas: HTMLCanvasElement,
-    type?: string,
-    quality?: number,
-  ): Promise<Blob> {
+  private canvasToBlob(canvas: HTMLCanvasElement, type?: string, quality?: number): Promise<Blob> {
     return new Promise((resolve, reject) => {
       canvas.toBlob(
         (blob) => {
@@ -99,11 +93,7 @@ export class FlowModalComponent {
     });
   }
 
-  private svgToBase64(
-    svg: SVGSVGElement,
-    width?: number,
-    height?: number,
-  ): string {
+  private svgToBase64(svg: SVGSVGElement, width?: number, height?: number): string {
     const svgClone = svg.cloneNode(true) as SVGSVGElement;
     if (width) svgClone.setAttribute('height', `${height}px`);
     if (height) svgClone.setAttribute('width', `${width}px`);

@@ -15,8 +15,6 @@
 */
 package org.frankframework.extensions.aspose;
 
-import static org.frankframework.functional.FunctionalUtil.logMethod;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.EnumMap;
@@ -80,7 +78,7 @@ public class AsposeLicenseLoader {
 				licenseWrapper.loadLicense(inputStream);
 				log.info("loaded Aspose [{}] license", library::name);
 			} catch (Exception e) {
-				log.error("failed to load Aspose [{}] license", logMethod(library::name), e);
+				log.error("failed to load Aspose [{}] license", library.name(), e);
 				throw e;
 			}
 		}

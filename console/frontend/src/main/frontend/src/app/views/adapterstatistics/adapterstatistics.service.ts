@@ -65,10 +65,7 @@ export class AdapterstatisticsService {
     private Misc: MiscService,
   ) {}
 
-  getStatistics(
-    configurationName: string,
-    adapterName: string,
-  ): Observable<Statistics> {
+  getStatistics(configurationName: string, adapterName: string): Observable<Statistics> {
     return this.http.get<Statistics>(
       `${this.appService.absoluteApiPath}configurations/${this.Misc.escapeURL(
         configurationName,

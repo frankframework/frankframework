@@ -21,15 +21,9 @@ export class DebugService {
 
   head(level?: number): string {
     const d = new Date();
-    let date = `${`0${d.getUTCDate()}`.slice(-2)}-${`0${d.getUTCMonth()}`.slice(
-      -2,
-    )}-${d.getUTCFullYear()}`;
-    date += ` ${`0${d.getSeconds()}`.slice(-2)}:${`0${d.getMinutes()}`.slice(
-      -2,
-    )}:${`0${d.getHours()}`.slice(-2)}`;
-    return level == undefined
-      ? `${date} -`
-      : `${date} [${this.levelEnums[level]}] -`;
+    let date = `${`0${d.getUTCDate()}`.slice(-2)}-${`0${d.getUTCMonth()}`.slice(-2)}-${d.getUTCFullYear()}`;
+    date += ` ${`0${d.getSeconds()}`.slice(-2)}:${`0${d.getMinutes()}`.slice(-2)}:${`0${d.getHours()}`.slice(-2)}`;
+    return level == undefined ? `${date} -` : `${date} [${this.levelEnums[level]}] -`;
   }
 
   log(...arguments_: unknown[]): void {

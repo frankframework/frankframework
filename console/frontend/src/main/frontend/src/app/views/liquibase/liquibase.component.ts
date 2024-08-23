@@ -32,10 +32,9 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const configurationsSubscription =
-      this.appService.configurations$.subscribe(() =>
-        this.findFirstAvailabeConfiguration(),
-      );
+    const configurationsSubscription = this.appService.configurations$.subscribe(() =>
+      this.findFirstAvailabeConfiguration(),
+    );
     this._subscriptions.add(configurationsSubscription);
     this.findFirstAvailabeConfiguration();
   }
@@ -67,8 +66,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
       },
       error: (errorData: HttpErrorResponse) => {
         this.generateSql = false;
-        const error =
-          errorData && errorData.error ? errorData.error : 'An error occured!';
+        const error = errorData && errorData.error ? errorData.error : 'An error occured!';
         this.error = typeof error === 'object' ? error.error : error;
         this.result = '';
       },
@@ -77,9 +75,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
 
   private findFirstAvailabeConfiguration(): void {
     this.configurations = this.appService.configurations;
-    this.filteredConfigurations = this.configurations.filter(
-      (item) => item.jdbcMigrator === true,
-    );
+    this.filteredConfigurations = this.configurations.filter((item) => item.jdbcMigrator === true);
 
     for (const index in this.filteredConfigurations) {
       const configuration = this.configurations[index];

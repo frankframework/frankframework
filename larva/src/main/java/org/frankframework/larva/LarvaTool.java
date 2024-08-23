@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,7 +88,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.CaseInsensitiveComparator;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;

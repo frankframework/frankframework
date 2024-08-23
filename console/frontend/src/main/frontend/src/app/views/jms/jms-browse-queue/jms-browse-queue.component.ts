@@ -30,8 +30,7 @@ export class JmsBrowseQueueComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const browseJmsQueue =
-      this.webStorageService.get<JmsBrowseForm>('browseJmsQueue');
+    const browseJmsQueue = this.webStorageService.get<JmsBrowseForm>('browseJmsQueue');
     if (browseJmsQueue) this.form = browseJmsQueue;
 
     this.jmsService.getJms().subscribe((data) => {
@@ -48,8 +47,7 @@ export class JmsBrowseQueueComponent implements OnInit {
 
     this.processing = true;
     this.webStorageService.set('browseJmsQueue', formData);
-    if (!formData.connectionFactory)
-      formData.connectionFactory = this.connectionFactories[0] || '';
+    if (!formData.connectionFactory) formData.connectionFactory = this.connectionFactories[0] || '';
     if (!formData.type) formData.type = this.destinationTypes[0] || '';
 
     this.jmsService.postJmsBrowse(formData).subscribe({

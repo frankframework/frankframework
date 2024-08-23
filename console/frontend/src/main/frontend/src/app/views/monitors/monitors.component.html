@@ -9,9 +9,7 @@
           *ngFor="let configuration of configurations"
           [ngClass]="{ active: selectedConfiguration === configuration.name }"
         >
-          <a (click)="changeConfiguration(configuration.name)">{{
-            configuration.name
-          }}</a>
+          <a (click)="changeConfiguration(configuration.name)">{{ configuration.name }}</a>
         </li>
       </ul>
     </div>
@@ -108,20 +106,14 @@
             <div class="col-lg-3 hidden-md" *ngIf="monitor.lastHit">
               Last Hit: <span appToDate [time]="monitor.lastHit"></span>
             </div>
-            <div class="col-lg-2 hidden-md" *ngIf="monitor.hits">
-              Hits: {{ monitor.hits }} since last raise
-            </div>
+            <div class="col-lg-2 hidden-md" *ngIf="monitor.hits">Hits: {{ monitor.hits }} since last raise</div>
           </div>
         </div>
         <div class="ibox-content">
           <div *ngIf="monitor.raised" role="alert">
             <div class="col-md-6">
               Source:
-              {{
-                monitor.alarm.source
-                  ? monitor.alarm.source
-                  : 'Manually Triggered'
-              }}<br />
+              {{ monitor.alarm.source ? monitor.alarm.source : 'Manually Triggered' }}<br />
               Severity: {{ monitor.alarm.severity }}<br />
             </div>
           </div>
@@ -130,22 +122,13 @@
               <div class="form-group">
                 <label class="col-sm-3 control-label">Name</label>
                 <div class="col-sm-9">
-                  <input
-                    class="form-control m-b"
-                    name="name"
-                    type="text"
-                    [(ngModel)]="monitor.displayName"
-                  />
+                  <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitor.displayName" />
                 </div>
               </div>
               <div class="form-group">
                 <label class="col-sm-3 control-label">Type</label>
                 <div class="col-sm-9">
-                  <select
-                    class="form-control m-b"
-                    name="type"
-                    [(ngModel)]="monitor.type"
-                  >
+                  <select class="form-control m-b" name="type" [(ngModel)]="monitor.type">
                     <option *ngFor="let type of eventTypes" [ngValue]="type">
                       {{ type }}
                     </option>
@@ -154,17 +137,9 @@
               </div>
               <div class="form-group">
                 <label class="col-sm-3 control-label">Destinations</label>
-                <div
-                  class="col-sm-2"
-                  *ngFor="let destination of destinations; index as index"
-                >
+                <div class="col-sm-2" *ngFor="let destination of destinations; index as index">
                   <span class="form-control m-b" style="border: none"
-                    ><input
-                      icheck
-                      type="checkbox"
-                      name="destination"
-                      [(ngModel)]="monitor.activeDestinations[index]"
-                    />
+                    ><input icheck type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[index]" />
                     {{ destination }}</span
                   >
                 </div>
@@ -174,12 +149,7 @@
           <div *ngIf="!monitor.edit">
             <p>
               <strong>Log Destinations:</strong>
-              <span
-                *ngFor="
-                  let destination of monitor.destinations;
-                  let last = last
-                "
-              >
+              <span *ngFor="let destination of monitor.destinations; let last = last">
                 {{ destination }}<span *ngIf="!last">,</span>
               </span>
               <span *ngIf="monitor.destinations.length === 0">None</span>
@@ -191,9 +161,7 @@
                 <thead>
                   <tr>
                     <th class="col-md-1">Type</th>
-                    <th class="col-md-{{ monitor.edit ? 3 : 4 }}">
-                      EventCodes
-                    </th>
+                    <th class="col-md-{{ monitor.edit ? 3 : 4 }}">EventCodes</th>
                     <th class="col-md-4">Sources</th>
                     <th class="col-md-1">Severity</th>
                     <th class="col-md-1">Threshold</th>
@@ -203,12 +171,8 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let trigger of monitor.triggers">
-                    <td *ngIf="trigger.type === 'ALARM'">
-                      <i class="fa fa-warning m-r-xs"></i> Alarm
-                    </td>
-                    <td *ngIf="trigger.type === 'CLEARING'">
-                      <i class="fa fa-eraser m-r-xs"></i> Clearing
-                    </td>
+                    <td *ngIf="trigger.type === 'ALARM'"><i class="fa fa-warning m-r-xs"></i> Alarm</td>
+                    <td *ngIf="trigger.type === 'CLEARING'"><i class="fa fa-eraser m-r-xs"></i> Clearing</td>
                     <td>
                       <ul class="unstyled no-margins">
                         <li *ngFor="let event of trigger.events">
@@ -218,11 +182,7 @@
                     </td>
                     <td *ngIf="trigger.filter !== 'none'">
                       <ul class="unstyled no-margins">
-                        <ng-template
-                          ngFor
-                          let-sources
-                          [ngForOf]="trigger.sources | keyvalue"
-                        >
+                        <ng-template ngFor let-sources [ngForOf]="trigger.sources | keyvalue">
                           <li *ngIf="sources">
                             {{ sources.key }}
                             <ul>
@@ -243,12 +203,7 @@
                         title="Edit trigger {{ trigger.name }}"
                         class="btn btn-info btn-xs space-it-out"
                         type="button"
-                        [routerLink]="[
-                          '/monitors',
-                          monitor.name,
-                          'triggers',
-                          trigger.id
-                        ]"
+                        [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
                         [queryParams]="{ configuration: selectedConfiguration }"
                       >
                         Edit
@@ -267,12 +222,7 @@
                     <td colspan="7" class="text-center">
                       <button
                         class="btn btn-primary btn-outline btn-xs"
-                        [routerLink]="[
-                          '/monitors',
-                          monitor.name,
-                          'triggers',
-                          'new'
-                        ]"
+                        [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
                         [queryParams]="{ configuration: selectedConfiguration }"
                       >
                         <i class="fa fa-plus"></i> <i>Add Trigger</i>

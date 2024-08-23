@@ -15,10 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * FilePipe Tester.
- *
- * @author <Sina Sen>
+ * FilePipe Tester. This class is due to be removed! Do not add more tests
  */
+@SuppressWarnings("removal")
 public class FilePipeTest extends PipeTestBase<FilePipe> {
 
 	@TempDir

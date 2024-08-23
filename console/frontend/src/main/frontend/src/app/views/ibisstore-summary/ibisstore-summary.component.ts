@@ -1,11 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
-import {
-  JdbcService,
-  JdbcSummary,
-  JdbcSummaryForm,
-} from '../jdbc/jdbc.service';
+import { JdbcService, JdbcSummary, JdbcSummaryForm } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -32,14 +28,10 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
     private jdbcService: JdbcService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-        this.form['datasource'] = this.appConstants[
-          'jdbc.datasource.default'
-        ] as string;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+      this.form['datasource'] = this.appConstants['jdbc.datasource.default'] as string;
+    });
     this._subscriptions.add(appConstantsSubscription);
   }
 
@@ -52,8 +44,7 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
           : (this.appConstants['jdbc.datasource.default'] as string);
     });
     this.route.queryParamMap.subscribe((parameters) => {
-      if (parameters.has('datasource'))
-        this.fetch(parameters.get('datasource')!);
+      if (parameters.has('datasource')) this.fetch(parameters.get('datasource')!);
     });
   }
 
@@ -68,9 +59,7 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
         this.result = data.result;
       },
       error: (errorData: HttpErrorResponse) => {
-        const error = errorData.error
-          ? errorData.error.erorr
-          : errorData.message;
+        const error = errorData.error ? errorData.error.erorr : errorData.message;
         this.error = error;
         this.result = [];
       },
