@@ -58,7 +58,7 @@ public class XmlBuilder {
 	private List<String> cdata;
 
 	public XmlBuilder(String tagName) {
-		root = tagName;
+		root = XmlUtils.cleanseElementName(tagName);
 	}
 
 	public static XmlBuilder create(String tagName) {

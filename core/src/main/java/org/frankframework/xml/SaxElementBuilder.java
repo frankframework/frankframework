@@ -60,7 +60,7 @@ public class SaxElementBuilder implements AutoCloseable {
 
 	private SaxElementBuilder(String elementName, ContentHandler handler, SaxElementBuilder parent) {
 		this.handler = handler;
-		this.elementName = elementName;
+		this.elementName = XmlUtils.cleanseElementName(elementName);
 		this.parent = parent;
 		if (elementName!=null) {
 			attributes = new AttributesImpl();
