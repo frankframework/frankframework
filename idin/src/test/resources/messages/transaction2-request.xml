@@ -5,8 +5,8 @@
     </Issuer>
     <Merchant>
         <merchantID>1234567890</merchantID>
-        <subID>0</subID>
-        <merchantReturnURL>http://localhost</merchantReturnURL>
+        <subID>2</subID>
+        <merchantReturnURL>http://localhost:8080</merchantReturnURL>
     </Merchant>
     <Transaction>
         <language>nl</language>

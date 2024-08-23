@@ -5,11 +5,12 @@
     </Issuer>
     <Merchant>
         <merchantID>1234567890</merchantID>
-        <subID>0</subID>
+        <subID>1</subID>
         <merchantReturnURL>http://localhost</merchantReturnURL>
     </Merchant>
     <Transaction>
-        <language>nl</language>
+        <expirationPeriod>PT2M</expirationPeriod>
+        <language>de</language>
         <entranceCode>abc4ef7ons</entranceCode>
         <container><ns3:AuthnRequest xmlns:ns3="http://dummy" signature="here">
     <Issuer>1234567890</Issuer>
