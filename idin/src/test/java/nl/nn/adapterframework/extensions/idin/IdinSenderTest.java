@@ -114,8 +114,10 @@ public class IdinSenderTest {
 
 		sender.setAction(Action.RESPONSE);
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
+		URL expectedUrl = ClassUtils.getResourceURL("/expected/simpleRequestResponse.xml");
+		String expected = StreamUtil.resourceToString(expectedUrl);
 
-		assertEquals("<result>\n" + "	<status>Success</status>\n" + "</result>", result);
+		assertEquals(expected, result);
 	}
 
 	@Test
