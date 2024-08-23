@@ -15,7 +15,6 @@
 */
 package org.frankframework.configuration;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -41,10 +40,8 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -155,18 +152,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		setAdapterManager(getBean("adapterManager", AdapterManager.class));
 		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
-	}
-
-	@Override
-	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
-		super.loadBeanDefinitions(beanFactory);
-		ConfigurationDigester digester = beanFactory.getBean(ConfigurationDigester.class);
-		try {
-			digester.setApplicationContext(this);
-			digester.configure();
-		} catch (ConfigurationException e) {
-			throw new BeanInitializationException("unable to load config", e);
-		}
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
