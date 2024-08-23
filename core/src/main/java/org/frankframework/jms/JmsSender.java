@@ -139,7 +139,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 
 		Session session = super.createSession();
 
-		sessionStatistics.record((double) System.currentTimeMillis() - start);
+		if (sessionStatistics != null) {
+			sessionStatistics.record((double) System.currentTimeMillis() - start);
+		}
 
 		return session;
 	}
