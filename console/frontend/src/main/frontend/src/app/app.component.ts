@@ -52,8 +52,6 @@ import { ServerInfo, ServerInfoService } from './services/server-info.service';
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: ServerInfo | null = null;
-  monitoring = false;
-  config_database = false;
   dtapStage = '';
   dtapSide = '';
   serverTime = '';
@@ -399,9 +397,13 @@ export class AppComponent implements OnInit, OnDestroy {
             'totalErrorStoreCount'
           ] as unknown as number,
           messageLevel: 'ERROR',
+          serverTime: configurations['serverTime'] as unknown as number,
+          uptime: configurations['serverTime'] as unknown as number,
         };
         delete configurations['messages'];
         delete configurations['totalErrorStoreCount'];
+        delete configurations['serverTime'];
+        delete configurations['uptime'];
 
         if (configurations['warnings']) {
           for (const warning of configurations[
