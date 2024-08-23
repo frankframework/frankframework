@@ -25,6 +25,7 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
@@ -32,9 +33,12 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -48,6 +52,9 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.soap.SoapWrapper;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.HasStatistics;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
@@ -63,7 +70,7 @@ import org.xml.sax.SAXException;
  * @author Gerrit van Brakel
  */
 
-public class JmsSender extends JMSFacade implements ISenderWithParameters {
+public class JmsSender extends JMSFacade implements ISenderWithParameters, HasStatistics, AdapterAware {
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
 	private @Getter String messageType = null;
@@ -78,11 +85,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private @Getter String soapHeaderParam = "soapHeader";
 	private @Getter LinkMethod linkMethod = LinkMethod.MESSAGEID;
 	private @Getter String destinationParam = null;
+	private @Setter MetricsInitializer configurationMetrics;
 
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
 	private final @Getter List<String> responseHeadersList = new ArrayList<>();
+	private DistributionSummary sessionStatistics;
+	private @Getter @Setter Adapter adapter;
 
 	public enum LinkMethod {
 		/** use the generated messageId as the correlationId in the selector for response messages */
@@ -98,13 +108,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || !paramList.hasParameter("SoapAction"))) {
+		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList == null || !paramList.hasParameter("SoapAction"))) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setValue(getSoapAction());
 			addParameter(p);
 		}
-		if (paramList!=null) {
+
+		sessionStatistics = configurationMetrics.createSubDistributionSummary(this, "createSession", FrankMeterType.PIPE_DURATION);
+
+		if (paramList != null) {
 			paramList.configure();
 		}
 		super.configure();
@@ -112,12 +125,25 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			//configWarnings.add(log, msg);
-			soapWrapper=SoapWrapper.getInstance();
+			soapWrapper = SoapWrapper.getInstance();
 		}
 
 		if (responseHeaders != null) {
 			responseHeadersList.addAll(StringUtil.split(responseHeaders));
 		}
+	}
+
+	@Override
+	protected Session createSession() throws JmsException {
+		long start = System.currentTimeMillis();
+
+		Session session = super.createSession();
+
+		if (sessionStatistics != null) {
+			sessionStatistics.record((double) System.currentTimeMillis() - start);
+		}
+
+		return session;
 	}
 
 	/**
