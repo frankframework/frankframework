@@ -142,6 +142,8 @@ export type MessageLog = {
   messageLevel: MessageLevel;
   exception?: string;
   warnings?: string;
+  serverTime?: number;
+  uptime?: number;
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
