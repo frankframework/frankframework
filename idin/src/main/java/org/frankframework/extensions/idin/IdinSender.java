@@ -317,7 +317,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				status.setValue(response.getStatus(), false);
 				result.addSubElement(status);
 
-				if(response.getStatus() == StatusResponse.Success) {
+				if(StatusResponse.Success.equals(response.getStatus())) {
 					SamlResponse saml = response.getSamlResponse();
 					XmlBuilder samlXml = new XmlBuilder("saml");
 
