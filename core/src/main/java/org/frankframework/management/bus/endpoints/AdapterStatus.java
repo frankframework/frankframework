@@ -326,7 +326,7 @@ public class AdapterStatus extends BusEndpointBase {
 				Map<String, Object> listenerInfo = new HashMap<>();
 				listenerInfo.put("name", listener.getName());
 				listenerInfo.put("class", ClassUtils.nameOf(listener));
-				if (listener instanceof HasPhysicalDestination) {
+				if (listener instanceof HasPhysicalDestination && receiver.configurationSucceeded()) {
 					String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
 					listenerInfo.put("destination", pd);
 				}
@@ -365,12 +365,12 @@ public class AdapterStatus extends BusEndpointBase {
 			if (sender != null) {
 				receiverInfo.put("senderName", sender.getName());
 				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
-				if (sender instanceof HasPhysicalDestination destination) {
+				if (sender instanceof HasPhysicalDestination destination && receiver.configurationSucceeded()) {
 					String pd = destination.getPhysicalDestinationName();
 					receiverInfo.put("senderDestination", pd);
 				}
 			}
-			if (receiver.isThreadCountReadable()) {
+			if (receiver.isThreadCountReadable() && receiver.configurationSucceeded()) {
 				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
 				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
 

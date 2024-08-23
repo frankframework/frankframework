@@ -29,6 +29,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {
 
+	/**
+	 * The {@link ConfigurationDigester} may add new Lifecycle beans.
+	 * Which is why it cannot be a {@link ConfigurableLifecycle} itself.
+	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();

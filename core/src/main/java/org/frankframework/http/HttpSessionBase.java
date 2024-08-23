@@ -344,7 +344,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	 * The connectionManager has to be initialized with a sslSocketFactory.
 	 * The pool must be re-created once closed.
 	 */
-	public void configureConnectionManager() {
+	private void configureConnectionManager() {
 		int timeToLive = getConnectionTimeToLive();
 		if (timeToLive<=0) {
 			timeToLive = -1;

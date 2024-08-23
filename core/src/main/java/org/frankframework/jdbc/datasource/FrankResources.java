@@ -78,7 +78,7 @@ public class FrankResources {
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
 		Class<?> clazz = ClassUtils.loadClass(resource.getType());
 
-		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { //It's also possible to use the native drivers instead of the DataSources directy.
+		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { //It's also possible to use the native drivers instead of the DataSources directly.
 			return (O) loadDataSourceThroughDriver(clazz, url, properties);
 		}
 		if(lookupClass.isAssignableFrom(clazz)) {

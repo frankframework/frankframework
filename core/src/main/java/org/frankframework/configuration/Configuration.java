@@ -15,6 +15,7 @@
 */
 package org.frankframework.configuration;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,8 +41,10 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -154,6 +157,18 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 	}
 
+	@Override
+	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
+		super.loadBeanDefinitions(beanFactory);
+		ConfigurationDigester digester = beanFactory.getBean(ConfigurationDigester.class);
+		try {
+			digester.setApplicationContext(this);
+			digester.configure();
+		} catch (ConfigurationException e) {
+			throw new BeanInitializationException("unable to load config", e);
+		}
+	}
+
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
 	@Override
 	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
@@ -211,14 +226,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		long start = System.currentTimeMillis();
 
 		try {
+			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
+			configurationDigester.digest();
+
 			//Trigger a configure on all (Configurable) Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle configurableLifecycle) {
-				configurableLifecycle.configure();
+			if(!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+				throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 			}
+
+			configurableLifecycle.configure();
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
+			applicationLog.info("Configuration [{}] [{}] was not able to startup", getName(), getVersion());
 			throw e;
 		}
 		configured = true;

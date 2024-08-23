@@ -19,6 +19,8 @@
 	</beans>
 
 	<beans>
+		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" />
+
 		<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
 
 		<bean name="configurationMetrics" class="org.frankframework.statistics.MetricsInitializer" />
@@ -27,7 +29,6 @@
 
 <!-- Configurable Lifecycle beans -->
 		<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" />
-		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" />
 		<bean name="configFlowGenerator" class="org.frankframework.configuration.ConfigurationFlowGenerator" />
 		<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" />
 		<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" />
