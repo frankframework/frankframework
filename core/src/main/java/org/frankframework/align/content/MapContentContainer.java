@@ -142,6 +142,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 
 	@Override
 	public void endElementGroup(String localName) {
+		// NO OP
 	}
 
 	public Map<String,V> flattenedVertical() {
