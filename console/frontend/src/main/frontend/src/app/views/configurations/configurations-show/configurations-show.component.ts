@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import {Subscription} from "rxjs";
 
 type TransitionObject = {
   name?: string;
@@ -16,17 +17,18 @@ type TransitionObject = {
   templateUrl: './configurations-show.component.html',
   styleUrls: ['./configurations-show.component.scss'],
 })
-export class ConfigurationsShowComponent implements OnInit {
+export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor!: MonacoEditorComponent;
 
-  configurations: Configuration[] = [];
-  configuration: string = '';
-  selectedConfiguration: string = 'All';
-  loadedConfiguration: boolean = false;
-  fragment?: string;
+  protected configurations: Configuration[] = [];
+  protected selectedConfiguration: string = 'All';
+  protected loadedConfiguration: boolean = false;
 
+  private configuration: string = '';
+  private fragment?: string;
   private selectedAdapter?: string;
   private skipParamsUpdate: boolean = false;
+  private configsSubscription: Subscription | null = null;
 
   constructor(
     private router: Router,
@@ -37,7 +39,7 @@ export class ConfigurationsShowComponent implements OnInit {
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    this.appService.configurations$.subscribe(() => {
+    this.configsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
     });
 
@@ -57,6 +59,10 @@ export class ConfigurationsShowComponent implements OnInit {
 
       this.getConfiguration();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.configsSubscription?.unsubscribe();
   }
 
   update(loaded: boolean): void {
