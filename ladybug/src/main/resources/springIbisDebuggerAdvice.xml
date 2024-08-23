@@ -33,7 +33,7 @@
 					args(pipeLine, messageId, message, pipeLineSession, ..)
 					"
 				method="debugPipeLineInputOutputAbort"
-				arg-names="pipeLine, correlationId, message, pipeLineSession"
+				arg-names="pipeLine, messageId, message, pipeLineSession"
 			/>
 			<aop:around
 				pointcut=
