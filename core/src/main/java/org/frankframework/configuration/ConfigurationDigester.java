@@ -189,20 +189,19 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	public void digest() throws ConfigurationException {
-		if(!(applicationContext instanceof Configuration configurationContext)) {
+		if(!(applicationContext instanceof Configuration configuration)) {
 			throw new IllegalStateException("no suitable Configuration found");
 		}
 
-		digestConfiguration(configurationContext);
-	}
-
-	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
 		Resource configurationResource = getConfigurationResource(configuration);
-
 		if(configurationResource == null) {
 			return;
 		}
 
+		digestConfiguration(configuration, configurationResource);
+	}
+
+	private void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
 		Digester digester = getDigester(configuration);
 		try {
 			log.debug("digesting configuration [{}] configurationFile [{}]", configuration::getName, configurationResource::getSystemId);

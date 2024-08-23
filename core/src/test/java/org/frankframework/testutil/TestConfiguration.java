@@ -73,11 +73,6 @@ public class TestConfiguration extends Configuration {
 		}
 	}
 
-	@Override
-	protected void runMigrator() {
-		//Suppress migrator instantiation during test phase
-	}
-
 	public String getConfigWarning(int index) {
 		return getConfigurationWarnings().getWarnings().get(index);
 	}

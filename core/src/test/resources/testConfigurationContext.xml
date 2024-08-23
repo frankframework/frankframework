@@ -16,10 +16,12 @@
 		Spring file used to overwrite certain beans that should be mocked during testing.
 		Mocked classes should contain the primary attribute to ensure they are used!
 	-->
-
 	<bean primary="true" name="configurationDigester" class="org.frankframework.testutil.mock.ConfigurationDigesterMock" />
 
-	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
+	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" />
+
+	<!-- bean just needs to be here to override the 'default' specified in SpringConfigurationContext.xml -->
+	<bean primary="true" name="configFlowGenerator" class="java.lang.Object" />
 
 	<bean primary="true" name="eventPublisher" class="org.frankframework.testutil.mock.EventPublisherMock" />
 

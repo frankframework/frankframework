@@ -56,14 +56,7 @@
 
 	<bean name="adapterFlowProcessor" class="org.frankframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
 
-	<bean
-		name="flowDiagramManager"
-		class="org.frankframework.util.flow.FlowDiagramManager"
-		autowire="no"
-		scope="singleton"
-		lazy-init="true"
-		>
-	</bean>
+	<bean name="flowDiagramManager" class="org.frankframework.util.flow.FlowDiagramManager" lazy-init="true" />
 
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
 
