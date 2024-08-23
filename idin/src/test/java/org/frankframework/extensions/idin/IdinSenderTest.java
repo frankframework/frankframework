@@ -118,7 +118,30 @@ public class IdinSenderTest {
 		sender.configure();
 
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		assertEquals("<result>\n" + "	<status>Success</status>\n" + "</result>", result);
+		String expected = """
+				<result>
+					<status>Success</status>
+					<saml>
+						<acquirerId>BANKNL2U</acquirerId>
+						<attributes>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.initials">SJĆ</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastnameprefix">Ja</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastnameprefix">Sm</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.bin">Some Subject</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastname">Smith</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:bankid.deliveredserviceid">4096</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastname">John</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastname">Jane</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastnameprefix">Jo</attribute>
+						</attributes>
+						<merchantReference>BANKID-1234029966811132</merchantReference>
+						<version>BANKNL2U</version>
+					</saml>
+					<transactionID>1234567890123457</transactionID>
+					<timestamp>2020-08-17 17:28:10.008</timestamp>
+				</result>\
+				""";
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -140,7 +163,31 @@ public class IdinSenderTest {
 		sender.configure();
 
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		assertEquals("<result>\n" + "	<status>Success</status>\n" + "</result>", result);
+
+		String expected = """
+				<result>
+					<status>Success</status>
+					<saml>
+						<acquirerId>BANKNL2U</acquirerId>
+						<attributes>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.initials">SJĆ</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastnameprefix">Ja</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastnameprefix">Sm</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.bin">Some Subject</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.legallastname">Smith</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:bankid.deliveredserviceid">4096</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastname">John</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.partnerlastname">Jane</attribute>
+							<attribute name="urn:nl:bvn:bankid:1.0:consumer.preferredlastnameprefix">Jo</attribute>
+						</attributes>
+						<merchantReference>BANKID-1234029966811132</merchantReference>
+						<version>BANKNL2U</version>
+					</saml>
+					<transactionID>1234567890123457</transactionID>
+					<timestamp>2020-08-17 17:28:10.008</timestamp>
+				</result>\
+				""";
+		assertEquals(expected, result);
 	}
 
 	@Test
