@@ -19,12 +19,8 @@ export abstract class BaseIframeComponent {
 
   @HostListener('window:resize', ['$event'])
   calcTopBarHeight(): void {
-    const topinfobarHeight =
-      document.querySelector('app-pages-topinfobar')?.getBoundingClientRect()
-        .height ?? 0;
-    const topnavbarHeight =
-      document.querySelector('app-pages-topnavbar')?.getBoundingClientRect()
-        .height ?? 0;
+    const topinfobarHeight = document.querySelector('app-pages-topinfobar')?.getBoundingClientRect().height ?? 0;
+    const topnavbarHeight = document.querySelector('app-pages-topnavbar')?.getBoundingClientRect().height ?? 0;
     const newTopBarHeight = topinfobarHeight + topnavbarHeight;
     if (newTopBarHeight !== 0) {
       this.topBarHeightPx = Math.round(newTopBarHeight);

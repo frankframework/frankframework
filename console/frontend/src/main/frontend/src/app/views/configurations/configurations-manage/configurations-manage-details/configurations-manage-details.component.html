@@ -4,11 +4,7 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button
-              routerLink=".."
-              class="btn btn-xs pull-right btn-info"
-              type="button"
-            >
+            <button routerLink=".." class="btn btn-xs pull-right btn-info" type="button">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -28,9 +24,7 @@
               />
               <i
                 (click)="search = ''"
-                class="fa fa-times input-group-closeSearch{{
-                  search.length < 1 ? ' hidden' : ''
-                }}"
+                class="fa fa-times input-group-closeSearch{{ search.length < 1 ? ' hidden' : '' }}"
                 aria-hidden="true"
               ></i>
               <span class="input-group-addon">
@@ -45,17 +39,9 @@
                 <th sortable="filename" (sorted)="onSort($event)">Filename</th>
                 <th sortable="created" (sorted)="onSort($event)">Created At</th>
                 <th sortable="user" (sorted)="onSort($event)">User</th>
-                <th title="The configuration that's loaded upon IBIS startup">
-                  Startup Config
-                </th>
-                <th
-                  title="The configuration will be loaded on the next scheduled interval"
-                >
-                  Auto Reload
-                </th>
-                <th title="The configuration that's currently in use">
-                  Running Config
-                </th>
+                <th title="The configuration that's loaded upon IBIS startup">Startup Config</th>
+                <th title="The configuration will be loaded on the next scheduled interval">Auto Reload</th>
+                <th title="The configuration that's currently in use">Running Config</th>
                 <th></th>
               </tr>
             </thead>
@@ -84,11 +70,7 @@
                   />
                 </td>
                 <td>
-                  <i
-                    class="fa fa-check btn-xs"
-                    *ngIf="config.loaded"
-                    aria-hidden="true"
-                  ></i>
+                  <i class="fa fa-check btn-xs" *ngIf="config.loaded" aria-hidden="true"></i>
                 </td>
                 <td class="hideBtn1170 minw180px">
                   <button

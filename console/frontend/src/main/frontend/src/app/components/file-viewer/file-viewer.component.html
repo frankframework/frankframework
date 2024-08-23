@@ -1,8 +1,4 @@
-<pre
-  class="viewerContainer"
-  [innerText]="fileContents"
-  [ngClass]="{ error }"
-></pre>
+<pre class="viewerContainer" [innerText]="fileContents" [ngClass]="{ error }"></pre>
 <div *ngIf="loading" class="text-center animated fadeInDown">
   <div>
     <div class="sk-spinner sk-spinner-wave">

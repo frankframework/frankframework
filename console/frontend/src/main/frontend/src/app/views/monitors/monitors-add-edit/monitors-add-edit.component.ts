@@ -53,54 +53,44 @@ export class MonitorsAddEditComponent implements OnInit {
       this.pageTitle = title ?? '';
     });
 
-    this.route.paramMap
-      .pipe(combineLatestWith(this.route.queryParamMap))
-      .subscribe(([parameters, queryParameters]) => {
-        if (queryParameters.has('configuration')) {
-          this.selectedConfiguration = queryParameters.get('configuration')!;
-          this.monitor = parameters.get('monitor')!;
-          const triggerParameter = parameters.get('trigger')!;
-          this.triggerId = triggerParameter === 'new' ? -1 : +triggerParameter;
+    this.route.paramMap.pipe(combineLatestWith(this.route.queryParamMap)).subscribe(([parameters, queryParameters]) => {
+      if (queryParameters.has('configuration')) {
+        this.selectedConfiguration = queryParameters.get('configuration')!;
+        this.monitor = parameters.get('monitor')!;
+        const triggerParameter = parameters.get('trigger')!;
+        this.triggerId = triggerParameter === 'new' ? -1 : +triggerParameter;
 
-          this.monitorsService
-            .getTrigger(
-              this.selectedConfiguration,
-              this.monitor,
-              this.triggerId,
-            )
-            .subscribe({
-              next: (data) => {
-                this.eventsOptions = Object.keys(data.events).sort();
-                this.events = data.events;
-                this.severities = data.severities;
-                if (data.trigger) this.trigger = data.trigger;
-                this.calculateEventSources();
+        this.monitorsService.getTrigger(this.selectedConfiguration, this.monitor, this.triggerId).subscribe({
+          next: (data) => {
+            this.eventsOptions = Object.keys(data.events).sort();
+            this.events = data.events;
+            this.severities = data.severities;
+            if (data.trigger) this.trigger = data.trigger;
+            this.calculateEventSources();
 
-                if (data.trigger && data.trigger.sources) {
-                  const sources = { ...data.trigger.sources };
-                  this.trigger.changedSources = [];
-                  this.trigger.adapters = [];
+            if (data.trigger && data.trigger.sources) {
+              const sources = { ...data.trigger.sources };
+              this.trigger.changedSources = [];
+              this.trigger.adapters = [];
 
-                  for (const adapter in sources) {
-                    if (data.trigger.filter == 'SOURCE') {
-                      for (const index in sources[adapter]) {
-                        this.trigger.changedSources.push(
-                          `${adapter}$$${sources[adapter][index]}`,
-                        );
-                      }
-                    } else {
-                      this.trigger.adapters.push(adapter);
-                    }
+              for (const adapter in sources) {
+                if (data.trigger.filter == 'SOURCE') {
+                  for (const index in sources[adapter]) {
+                    this.trigger.changedSources.push(`${adapter}$$${sources[adapter][index]}`);
                   }
+                } else {
+                  this.trigger.adapters.push(adapter);
                 }
-                this.componentLoading = false;
-              },
-              error: () => this.navigateBack(),
-            });
-        } else {
-          this.router.navigate(['/monitors']);
-        }
-      });
+              }
+            }
+            this.componentLoading = false;
+          },
+          error: () => this.navigateBack(),
+        });
+      } else {
+        this.router.navigate(['/monitors']);
+      }
+    });
   }
 
   navigateBack(): void {
@@ -167,23 +157,13 @@ export class MonitorsAddEditComponent implements OnInit {
 
     if (this.triggerId && this.triggerId > -1) {
       this.monitorsService
-        .putTriggerUpdate(
-          this.selectedConfiguration,
-          this.monitor,
-          this.triggerId,
-          trigger,
-        )
+        .putTriggerUpdate(this.selectedConfiguration, this.monitor, this.triggerId, trigger)
         .subscribe(() => {
           this.navigateBack();
         });
     } else {
       this.monitorsService
-        .postTrigger(
-          this.selectedConfiguration,
-          this.monitor,
-          this.triggerId,
-          trigger,
-        )
+        .postTrigger(this.selectedConfiguration, this.monitor, this.triggerId, trigger)
         .subscribe(() => {
           this.navigateBack();
         });

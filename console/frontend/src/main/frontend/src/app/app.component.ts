@@ -1,11 +1,4 @@
-import {
-  Component,
-  Inject,
-  LOCALE_ID,
-  OnDestroy,
-  OnInit,
-  Renderer2,
-} from '@angular/core';
+import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
@@ -35,7 +28,6 @@ import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
-import { PollerService } from './services/poller.service';
 import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { SweetalertService } from './services/sweetalert.service';
@@ -44,11 +36,7 @@ import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
-import {
-  ClusterMemberEvent,
-  ClusterMemberEventType,
-  WebsocketService,
-} from './services/websocket.service';
+import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
 
 @Component({
@@ -59,8 +47,6 @@ import { deepMerge } from './utils';
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: ServerInfo | null = null;
-  monitoring = false;
-  config_database = false;
   dtapStage = '';
   dtapSide = '';
   serverTime = '';
@@ -75,7 +61,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private consoleState: ConsoleState;
   private _subscriptions = new Subscription();
   private _subscriptionsReloadable = new Subscription();
-  private serializedRawAdapterData: Record<string, string> = {};
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
     windowClass: 'animated fadeIn',
@@ -90,7 +75,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private title: Title,
     private authService: AuthService,
-    private pollerService: PollerService,
     private notificationService: NotificationService,
     private miscService: MiscService,
     private sessionService: SessionService,
@@ -120,10 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.router.events
       .pipe(
-        filter(
-          (event) =>
-            event instanceof NavigationStart && event.url.startsWith('/!'),
-        ),
+        filter((event) => event instanceof NavigationStart && event.url.startsWith('/!')),
         first(),
       )
       .subscribe((event) => {
@@ -131,40 +112,30 @@ export class AppComponent implements OnInit, OnDestroy {
         this.router.navigateByUrl(navigationEvent.url.replace('/!', ''));
       });
 
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationSkipped))
-      .subscribe(() => {
-        const childRoute = this.route.children.at(-1);
-        if (childRoute) {
-          this.routeQueryParams = childRoute.snapshot.queryParamMap;
-          this.routeData = childRoute.snapshot.data;
-        }
-      });
+    this.router.events.pipe(filter((event) => event instanceof NavigationSkipped)).subscribe(() => {
+      const childRoute = this.route.children.at(-1);
+      if (childRoute) {
+        this.routeQueryParams = childRoute.snapshot.queryParamMap;
+        this.routeData = childRoute.snapshot.data;
+      }
+    });
 
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        const childRoute = this.route.children.at(-1);
-        if (childRoute) {
-          this.handleQueryParams(childRoute.snapshot.queryParamMap);
-          this.routeData = childRoute.snapshot.data;
-          if (this.router.url === '/login') {
-            this.isLoginView = true;
-            this.renderer.addClass(document.body, 'gray-bg');
-          } else {
-            this.isLoginView = false;
-            this.renderer.removeClass(document.body, 'gray-bg');
-          }
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      const childRoute = this.route.children.at(-1);
+      if (childRoute) {
+        this.handleQueryParams(childRoute.snapshot.queryParamMap);
+        this.routeData = childRoute.snapshot.data;
+        if (this.router.url === '/login') {
+          this.isLoginView = true;
+          this.renderer.addClass(document.body, 'gray-bg');
+        } else {
+          this.isLoginView = false;
+          this.renderer.removeClass(document.body, 'gray-bg');
         }
-      });
+      }
+    });
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
-      this.pollerService
-        .getAll()
-        .changeInterval(
-          this.appConstants['console.idle.pollerInterval'] as number,
-        );
-
       const idleTimeout =
         Number.parseInt(this.appConstants['console.idle.timeout'] as string) > 0
           ? Number.parseInt(this.appConstants['console.idle.timeout'] as string)
@@ -180,16 +151,14 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this._subscriptions.add(idleStartSubscription);
 
-    const idleWarnSubscription = this.idle.onTimeoutWarning.subscribe(
-      (timeRemaining) => {
-        let minutes = Math.floor(timeRemaining / 60);
-        let seconds = Math.round(timeRemaining % 60);
-        if (minutes < 10) minutes = +'0' + minutes;
-        if (seconds < 10) seconds = +'0' + seconds;
-        const elm = document.querySelector('.swal2-container .idleTimer');
-        if (elm) elm.textContent = `${minutes}:${seconds}`;
-      },
-    );
+    const idleWarnSubscription = this.idle.onTimeoutWarning.subscribe((timeRemaining) => {
+      let minutes = Math.floor(timeRemaining / 60);
+      let seconds = Math.round(timeRemaining % 60);
+      if (minutes < 10) minutes = +'0' + minutes;
+      if (seconds < 10) seconds = +'0' + seconds;
+      const elm = document.querySelector('.swal2-container .idleTimer');
+      if (elm) elm.textContent = `${minutes}:${seconds}`;
+    });
     this._subscriptions.add(idleWarnSubscription);
 
     const idleTimeoutSubscription = this.idle.onTimeout.subscribe(() => {
@@ -203,20 +172,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleTimeoutSubscription);
 
     const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
-      const element = document.querySelector<HTMLElement>(
-        '.swal2-container .swal2-close',
-      );
+      const element = document.querySelector<HTMLElement>('.swal2-container .swal2-close');
       if (element) element.click();
-
-      this.pollerService
-        .getAll()
-        .changeInterval(this.appConstants['console.pollerInterval'] as number);
     });
     this._subscriptions.add(idleEndSubscription);
 
-    const reloadSubscription = this.appService.reload$.subscribe(() =>
-      this.onAppReload(),
-    );
+    const reloadSubscription = this.appService.reload$.subscribe(() => this.onAppReload());
     this._subscriptions.add(reloadSubscription);
 
     this.initializeFrankConsole();
@@ -288,14 +249,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
         const updateTime = (): void => {
           const serverDate = new Date();
-          serverDate.setTime(
-            serverDate.getTime() - this.consoleState.timeOffset,
-          );
-          this.serverTime = formatDate(
-            serverDate,
-            this.appConstants['console.dateFormat'] as string,
-            this.locale,
-          );
+          serverDate.setTime(serverDate.getTime() - this.consoleState.timeOffset);
+          this.serverTime = formatDate(serverDate, this.appConstants['console.dateFormat'] as string, this.locale);
         };
         window.setInterval(updateTime, 1000);
         updateTime();
@@ -333,10 +288,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        this.appConstants = Object.assign(
-          this.appConstants,
-          data['Application Constants']['All'],
-        ); //make FF!Application Constants default
+        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['All']); //make FF!Application Constants default
 
         const idleTime =
           Number.parseInt(this.appConstants['console.idle.time'] as string) > 0
@@ -344,21 +296,15 @@ export class AppComponent implements OnInit, OnDestroy {
             : 0;
         if (idleTime > 0) {
           const idleTimeout =
-            Number.parseInt(
-              this.appConstants['console.idle.timeout'] as string,
-            ) > 0
-              ? Number.parseInt(
-                  this.appConstants['console.idle.timeout'] as string,
-                )
+            Number.parseInt(this.appConstants['console.idle.timeout'] as string) > 0
+              ? Number.parseInt(this.appConstants['console.idle.timeout'] as string)
               : 0;
           this.idle.setIdle(idleTime);
           this.idle.setTimeout(idleTimeout);
         } else {
           this.idle.stop();
         }
-        this.appService.updateDatabaseSchedulesEnabled(
-          this.appConstants['loadDatabaseSchedules.active'] === 'true',
-        );
+        this.appService.updateDatabaseSchedulesEnabled(this.appConstants['loadDatabaseSchedules.active'] === 'true');
         this.appService.triggerAppConstants();
       }
     });
@@ -367,40 +313,25 @@ export class AppComponent implements OnInit, OnDestroy {
   checkIafVersions(): void {
     /* Check FF version */
     console.log('Checking FF version with remote...');
-    this.appService
-      .getIafVersions(this.miscService.getUID(this.serverInfo!))
-      .subscribe((response) => {
-        this.serverInfo = null;
-        if (!response || response.length === 0) return;
+    this.appService.getIafVersions(this.miscService.getUID(this.serverInfo!)).subscribe((response) => {
+      this.serverInfo = null;
+      if (!response || response.length === 0) return;
 
-        const release = response[0]; //Not sure what ID to pick, smallest or latest?
+      const release = response[0]; //Not sure what ID to pick, smallest or latest?
 
-        const newVersion =
-          release.tag_name.slice(0, 1) == 'v'
-            ? release.tag_name.slice(1)
-            : release.tag_name;
-        const currentVersion = this.appConstants[
-          'application.version'
-        ] as string;
-        const version =
-          this.miscService.compare_version(newVersion, currentVersion) || 0;
-        console.log(
-          `Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`,
-        );
-        this.sessionService.remove('IAF-Release');
+      const newVersion = release.tag_name.slice(0, 1) == 'v' ? release.tag_name.slice(1) : release.tag_name;
+      const currentVersion = this.appConstants['application.version'] as string;
+      const version = this.miscService.compare_version(newVersion, currentVersion) || 0;
+      console.log(`Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`);
+      this.sessionService.remove('IAF-Release');
 
-        if (+version > 0) {
-          this.sessionService.set('IAF-Release', release);
-          this.notificationService.add(
-            'fa-exclamation-circle',
-            'FF! update available!',
-            false,
-            () => {
-              this.router.navigate(['iaf-update']);
-            },
-          );
-        }
-      });
+      if (+version > 0) {
+        this.sessionService.set('IAF-Release', release);
+        this.notificationService.add('fa-exclamation-circle', 'FF! update available!', false, () => {
+          this.router.navigate(['iaf-update']);
+        });
+      }
+    });
     this.appService.getClusterMembers().subscribe((data) => {
       this.clusterMembers = data;
     });
@@ -411,23 +342,16 @@ export class AppComponent implements OnInit, OnDestroy {
       this.appService.updateLoading(false);
       this.loading = false;
 
-      this.websocketService.subscribe<Record<string, MessageLog>>(
-        '/event/server-warnings',
-        (configurations) => this.processWarnings(configurations),
+      this.websocketService.subscribe<Record<string, MessageLog>>('/event/server-warnings', (configurations) =>
+        this.processWarnings(configurations),
       );
 
-      this.websocketService.subscribe<Record<string, Partial<Adapter>>>(
-        '/event/adapters',
-        (data) => this.pollerCallback(data),
+      this.websocketService.subscribe<Record<string, Partial<Adapter>>>('/event/adapters', (adapters) =>
+        this.processAdapters(adapters),
       );
 
-      this.websocketService.subscribe<ClusterMemberEvent>(
-        '/event/cluster',
-        (clusterMemeberEvent) =>
-          this.updateClusterMembers(
-            clusterMemeberEvent.member,
-            clusterMemeberEvent.type,
-          ),
+      this.websocketService.subscribe<ClusterMemberEvent>('/event/cluster', (clusterMemeberEvent) =>
+        this.updateClusterMembers(clusterMemeberEvent.member, clusterMemeberEvent.type),
       );
     });
 
@@ -438,17 +362,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWarnings(): void {
-    const startupErrorSubscription = this.appService.startupError$.subscribe(
-      () => {
-        this.startupError = this.appService.startupError;
-      },
-    );
+    const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
+      this.startupError = this.appService.startupError;
+    });
     this._subscriptionsReloadable.add(startupErrorSubscription);
 
     this.http
-      .get<
-        Record<string, MessageLog>
-      >(`${this.appService.absoluteApiPath}server/warnings`)
+      .get<Record<string, MessageLog>>(`${this.appService.absoluteApiPath}server/warnings`)
       .subscribe((data) => this.processWarnings(data));
 
     this.initializeAdapters();
@@ -456,21 +376,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeAdapters(): void {
     //Get base information first, then update it with more details
-    this.appService
-      .getAdapters()
-      .subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
+    this.appService.getAdapters().subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
   processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
     configurations['All'] = {
-      messages: configurations['messages'] as unknown as AdapterMessage[],
-      errorStoreCount: configurations[
-        'totalErrorStoreCount'
-      ] as unknown as number,
+      messages: configurations['messages'] as AdapterMessage[],
+      errorStoreCount: configurations['totalErrorStoreCount'] as number,
       messageLevel: 'ERROR',
+      serverTime: configurations['serverTime'] as number,
+      uptime: configurations['serverTime'] as number,
     };
     delete configurations['messages'];
     delete configurations['totalErrorStoreCount'];
+    delete configurations['serverTime'];
+    delete configurations['uptime'];
 
     if (configurations['warnings']) {
       for (const warning of configurations['warnings'] as unknown as string[]) {
@@ -479,17 +399,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     for (const index in configurations) {
-      const existingConfiguration = this.appService.messageLog[index] as
-        | MessageLog
-        | undefined;
+      const existingConfiguration = this.appService.messageLog[index] as MessageLog | undefined;
       const configuration = configurations[index];
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
         continue;
       }
 
-      if (configuration.exception)
-        this.appService.addException(index, configuration.exception);
+      if (configuration.exception) this.appService.addException(index, configuration.exception);
       if (configuration.warnings) {
         for (const warning of configuration.warnings) {
           this.appService.addWarning(index, warning);
@@ -497,20 +414,16 @@ export class AppComponent implements OnInit, OnDestroy {
       }
 
       if (existingConfiguration && configuration.messages) {
-        configuration.messages = [
-          ...existingConfiguration.messages,
-          ...configuration.messages,
-        ].slice(-this.messageKeeperSize);
+        configuration.messages = [...existingConfiguration.messages, ...configuration.messages].slice(
+          -this.messageKeeperSize,
+        );
       }
 
+      configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
-        configuration.messageLevel =
-          existingConfiguration?.messageLevel ?? 'INFO';
-
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
-          if (level == 'WARN' && configuration.messageLevel != 'ERROR')
-            configuration.messageLevel = 'WARN';
+          if (level == 'WARN' && configuration.messageLevel != 'ERROR') configuration.messageLevel = 'WARN';
           if (level == 'ERROR') configuration.messageLevel = 'ERROR';
         }
       }
@@ -556,20 +469,13 @@ export class AppComponent implements OnInit, OnDestroy {
         adapter.status = 'stopped';
       }
 
-      if (!reloadedAdapters)
-        reloadedAdapters = this.hasAdapterReloaded(adapter);
+      if (!reloadedAdapters) reloadedAdapters = this.hasAdapterReloaded(adapter);
 
       updatedAdapters[adapterIndex] = adapter;
 
       const selectedConfiguration = this.routeQueryParams.get('configuration');
-      this.appService.updateAdapterSummary(
-        selectedConfiguration ?? 'All',
-        false,
-      );
-      this.updateAdapterNotifications(
-        adapter.name ?? existingAdapter.name,
-        adapter,
-      );
+      this.appService.updateAdapterSummary(selectedConfiguration ?? 'All', false);
+      this.updateAdapterNotifications(adapter.name ?? existingAdapter.name, adapter);
     }
 
     for (const deletedAdapter of deletedAdapters) {
@@ -580,15 +486,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appService.updateAdapters(updatedAdapters);
 
     if (reloadedAdapters)
-      this.toastService.success(
-        'Reloaded',
-        'Adapter(s) have successfully been reloaded!',
-        { timeout: 3000 },
-      );
-  }
-
-  pollerCallback(adapters: Record<string, Partial<Adapter>>): void {
-    this.processAdapters(adapters);
+      this.toastService.success('Reloaded', 'Adapter(s) have successfully been reloaded!', { timeout: 3000 });
   }
 
   finalizeStartup(data: Record<string, Adapter>): void {
@@ -596,17 +494,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.initializeWebsocket();
   }
 
-  processAdapterReceivers(
-    adapter: Partial<Adapter>,
-    existingAdapter?: Adapter,
-  ): void {
+  processAdapterReceivers(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
     if (adapter.receivers) {
       if (existingAdapter?.receivers) {
-        adapter.receivers = deepMerge(
-          [],
-          existingAdapter.receivers,
-          adapter.receivers,
-        );
+        adapter.receivers = deepMerge([], existingAdapter.receivers, adapter.receivers);
       }
 
       for (const index in adapter.receivers) {
@@ -623,10 +514,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  processAdapterPipes(
-    adapter: Partial<Adapter>,
-    existingAdapter?: Adapter,
-  ): void {
+  processAdapterPipes(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
     if (adapter.pipes) {
       if (existingAdapter?.pipes) {
         adapter.pipes = deepMerge([], existingAdapter.pipes, adapter.pipes);
@@ -651,22 +539,13 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  processAdapterMessages(
-    adapter: Partial<Adapter>,
-    existingAdapter?: Adapter,
-  ): void {
+  processAdapterMessages(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
     if (existingAdapter?.messages && adapter.messages) {
-      adapter.messages = [
-        ...existingAdapter.messages!,
-        ...adapter.messages,
-      ].slice(-this.messageKeeperSize);
+      adapter.messages = [...existingAdapter.messages!, ...adapter.messages].slice(-this.messageKeeperSize);
     }
   }
 
-  updateAdapterNotifications(
-    adapterName: string,
-    adapter: Partial<Adapter>,
-  ): void {
+  updateAdapterNotifications(adapterName: string, adapter: Partial<Adapter>): void {
     let name = adapterName;
     if (name.length > 20) name = `${name.slice(0, 17)}...`;
     if (adapter.started === true) {
@@ -674,56 +553,37 @@ export class AppComponent implements OnInit, OnDestroy {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
         // @ts-expect-error Receiver.started does not exist
         if (adapter.receivers[+x].started === false) {
-          this.notificationService.add(
-            'fa-exclamation-circle',
-            `Receiver '${name}' stopped!`,
-            false,
-            () => {
-              this.router.navigate(['status'], { fragment: adapter.name });
-            },
-          );
+          this.notificationService.add('fa-exclamation-circle', `Receiver '${name}' stopped!`, false, () => {
+            this.router.navigate(['status'], { fragment: adapter.name });
+          });
         }
       }
     } else if (adapter.started === false) {
-      this.notificationService.add(
-        'fa-exclamation-circle',
-        `Adapter '${name}' stopped!`,
-        false,
-        () => {
-          this.router.navigate(['status'], { fragment: adapter.name });
-        },
-      );
+      this.notificationService.add('fa-exclamation-circle', `Adapter '${name}' stopped!`, false, () => {
+        this.router.navigate(['status'], { fragment: adapter.name });
+      });
     }
   }
 
   hasAdapterReloaded(adapter: Partial<Adapter>): boolean {
     if (adapter.upSince) {
-      const oldAdapter =
-        this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
+      const oldAdapter = this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
       return adapter.upSince > oldAdapter?.upSince;
     }
     return false;
   }
 
   openInfoModel(): void {
-    this.modalService.open(
-      InformationModalComponent,
-      this.MODAL_OPTIONS_CLASSES,
-    );
+    this.modalService.open(InformationModalComponent, this.MODAL_OPTIONS_CLASSES);
   }
 
-  private updateClusterMembers(
-    member: ClusterMember,
-    action: ClusterMemberEventType,
-  ): void {
+  private updateClusterMembers(member: ClusterMember, action: ClusterMemberEventType): void {
     const memberExists = this.clusterMembers.some((m) => m.id === member.id);
     if (action === 'ADD_MEMBER' && !memberExists) {
       this.clusterMembers = [...this.clusterMembers, member];
       console.log('ADDED');
     } else if (action === 'REMOVE_MEMBER' && memberExists) {
-      this.clusterMembers = this.clusterMembers.filter(
-        (m) => m.id !== member.id,
-      );
+      this.clusterMembers = this.clusterMembers.filter((m) => m.id !== member.id);
     }
   }
 }

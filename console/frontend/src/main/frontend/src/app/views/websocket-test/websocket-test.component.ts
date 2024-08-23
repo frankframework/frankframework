@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IMessage } from '@stomp/stompjs';
@@ -20,9 +13,7 @@ import { WebsocketService } from 'src/app/services/websocket.service';
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })
-export class WebsocketTestComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('wsLog')
   private wsLog!: ElementRef<HTMLPreElement>;
 
@@ -33,28 +24,14 @@ export class WebsocketTestComponent
   constructor(private websocketService: WebsocketService) {}
 
   ngOnInit(): void {
+    this._subscriptions.add(this.websocketService.onConnected$.subscribe(() => this.onConnected()));
+    this._subscriptions.add(this.websocketService.onDisconnected$.subscribe(() => this.printToHtml('Disconnected')));
     this._subscriptions.add(
-      this.websocketService.onConnected$.subscribe(() => this.onConnected()),
+      this.websocketService.onWebSocketClose$.subscribe(() => this.printToHtml('WebSocket closed')),
     );
+    this._subscriptions.add(this.websocketService.onWebSocketError$.subscribe((event) => this.onError(event)));
     this._subscriptions.add(
-      this.websocketService.onDisconnected$.subscribe(() =>
-        this.printToHtml('Disconnected'),
-      ),
-    );
-    this._subscriptions.add(
-      this.websocketService.onWebSocketClose$.subscribe(() =>
-        this.printToHtml('WebSocket closed'),
-      ),
-    );
-    this._subscriptions.add(
-      this.websocketService.onWebSocketError$.subscribe((event) =>
-        this.onError(event),
-      ),
-    );
-    this._subscriptions.add(
-      this.websocketService.onMessage$.subscribe((event) =>
-        this.debugHandler(event.channel, event.message),
-      ),
+      this.websocketService.onMessage$.subscribe((event) => this.debugHandler(event.channel, event.message)),
     );
   }
 
@@ -75,10 +52,7 @@ export class WebsocketTestComponent
   }
 
   push(): void {
-    this.websocketService.publish(
-      '/debug',
-      JSON.stringify({ message: this.message }),
-    );
+    this.websocketService.publish('/debug', JSON.stringify({ message: this.message }));
     this.message = '';
   }
 

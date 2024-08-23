@@ -40,8 +40,7 @@ export class FlowComponent implements OnChanges {
         const status = data && data.status ? data.status : 204;
         if (status == 200) {
           const contentType = data.headers.get('Content-Type')!;
-          this.flow.isImage =
-            contentType.indexOf('image') > 0 || contentType.indexOf('svg') > 0; //display an image or a button to open a modal
+          this.flow.isImage = contentType.indexOf('image') > 0 || contentType.indexOf('svg') > 0; //display an image or a button to open a modal
           if (!this.flow.isImage) {
             //only store metadata when required
             this.flow.data = data;
@@ -66,8 +65,7 @@ export class FlowComponent implements OnChanges {
       windowClass: 'mermaidFlow',
     });
     modalReference.componentInstance.flow = xhr?.body;
-    modalReference.componentInstance.flowName =
-      this.adapter?.name ?? 'Configuration';
+    modalReference.componentInstance.flowName = this.adapter?.name ?? 'Configuration';
     setTimeout(() => {
       this.flowModalLadda = false;
     }, 1000);

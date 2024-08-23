@@ -20,17 +20,14 @@ export class ConfigurationsManageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    const appConfigurationsSubscription =
-      this.appService.configurations$.subscribe(() => {
-        this.configurations = this.appService.configurations;
-      });
+    const appConfigurationsSubscription = this.appService.configurations$.subscribe(() => {
+      this.configurations = this.appService.configurations;
+    });
     this.subscriptions.add(appConfigurationsSubscription);
 
-    const localConfigurationsSubscription = this.configurationsService
-      .getConfigurations()
-      .subscribe((data) => {
-        this.appService.updateConfigurations(data);
-      });
+    const localConfigurationsSubscription = this.configurationsService.getConfigurations().subscribe((data) => {
+      this.appService.updateConfigurations(data);
+    });
     this.subscriptions.add(localConfigurationsSubscription);
   }
 
@@ -39,9 +36,6 @@ export class ConfigurationsManageComponent implements OnInit, OnDestroy {
   }
 
   downloadAll(): void {
-    window.open(
-      `${this.appService.absoluteApiPath}/server/configurations/download`,
-      '_blank',
-    );
+    window.open(`${this.appService.absoluteApiPath}/server/configurations/download`, '_blank');
   }
 }

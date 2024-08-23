@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
@@ -22,14 +15,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    HamburgerComponent,
-    RouterModule,
-    TimeSinceDirective,
-    NgbDropdownModule,
-  ],
+  imports: [CommonModule, FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
 export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
   notificationCount: number = this.Notification.getCount();
@@ -65,8 +51,7 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
     this.loggedIn = this.authService.isLoggedIn();
 
     if (changes['clusterMembers']) {
-      this.selectedClusterMember =
-        this.clusterMembers.find((member) => member.selectedMember) ?? null;
+      this.selectedClusterMember = this.clusterMembers.find((member) => member.selectedMember) ?? null;
     }
   }
 
@@ -80,11 +65,9 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
 
   selectClusterMember(): void {
     if (this.selectedClusterMember) {
-      this.appService
-        .updateSelectedClusterMember(this.selectedClusterMember.id)
-        .subscribe(() => {
-          this.appService.triggerReload();
-        });
+      this.appService.updateSelectedClusterMember(this.selectedClusterMember.id).subscribe(() => {
+        this.appService.triggerReload();
+      });
     }
   }
 

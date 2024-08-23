@@ -1,14 +1,5 @@
-import {
-  AfterViewInit,
-  Component,
-  OnInit,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
-import type {
-  ADTColumns,
-  ADTSettings,
-} from 'angular-datatables/src/models/settings';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import type { ADTColumns, ADTSettings } from 'angular-datatables/src/models/settings';
 // import { DataTable } from "simple-datatables"
 import { Note, StorageService } from '../storage.service';
 import { DataTableDirective } from 'angular-datatables';
@@ -131,9 +122,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
     this.appService.customBreadcrumbs(
       `Adapter > ${
-        this.storageParams['storageSource'] == 'pipes'
-          ? `Pipes > ${this.storageParams['storageSourceName']} > `
-          : ''
+        this.storageParams['storageSource'] == 'pipes' ? `Pipes > ${this.storageParams['storageSourceName']} > ` : ''
       }${this.storageParams['processState']} List`,
     );
     // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
@@ -155,9 +144,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         const dataRecord = data as Record<string, NonNullable<unknown>>;
         const start = dataRecord['start'];
         const length = dataRecord['length'];
-        const order = (dataRecord['order'] as unknown[])[0] as
-          | { dir: 'asc' }
-          | { dir: 'desc' };
+        const order = (dataRecord['order'] as unknown[])[0] as { dir: 'asc' } | { dir: 'desc' };
         const direction = order.dir;
 
         let queryParameters = `?max=${length}&skip=${start}&sort=${direction}`;
@@ -188,9 +175,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
               }
             }
             for (const messageId in this.storageService.selectedMessages) {
-              const messageExists = response.messages.some(
-                (message) => message.id === messageId,
-              );
+              const messageExists = response.messages.some((message) => message.id === messageId);
               if (!messageExists) {
                 delete this.storageService.selectedMessages[messageId];
               }
@@ -275,8 +260,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
                   const title = columnData.replaceAll('"', '&quot;');
                   const leftTrancate = columnData.slice(0, 15);
                   const rightTrancate = columnData.slice(-15);
-                  data[index] =
-                    `<span title="${title}">${leftTrancate}&#8230;${rightTrancate}</span>`;
+                  data[index] = `<span title="${title}">${leftTrancate}&#8230;${rightTrancate}</span>`;
                 }
               }
             }
@@ -286,15 +270,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       ],
     };
 
-    const filterCookie = this.webStorageService.get<DisplayColumn>(
-      `${this.storageParams.processState}Filter`,
-    );
+    const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
     if (filterCookie) {
       for (const column of columns) {
-        if (
-          column.name &&
-          filterCookie[column.name as keyof DisplayColumn] === false
-        ) {
+        if (column.name && filterCookie[column.name as keyof DisplayColumn] === false) {
           column.visible = false;
         }
       }
@@ -363,9 +342,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
   truncate(): void {
     this.truncated = !this.truncated;
-    this.truncateButtonText = this.truncated
-      ? 'Show original'
-      : 'Truncate displayed data';
+    this.truncateButtonText = this.truncated ? 'Show original' : 'Truncate displayed data';
     this.storageService.updateTable();
   }
 
@@ -377,17 +354,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
 
   updateFilter(column: string): void {
-    this.webStorageService.set(
-      `${this.storageParams.processState}Filter`,
-      this.displayColumn,
-    );
+    this.webStorageService.set(`${this.storageParams.processState}Filter`, this.displayColumn);
 
     this.dataTable.dtInstance.then((table) => {
       const tableColumn = table.column(`${column}:name`);
       if (tableColumn && tableColumn.length == 1)
-        tableColumn.visible(
-          this.displayColumn[column as keyof typeof this.displayColumn],
-        );
+        tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
       table.draw();
     });
   }
@@ -411,18 +383,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       this.storageService.postResendMessages(fd).subscribe({
         next: () => {
           this.messagesResending = false;
-          this.storageService.addNote(
-            'success',
-            'Selected messages will be reprocessed',
-          );
+          this.storageService.addNote('success', 'Selected messages will be reprocessed');
           this.storageService.updateTable();
         },
         error: () => {
           this.messagesResending = false;
-          this.storageService.addNote(
-            'danger',
-            'Something went wrong, unable to resend all messages!',
-          );
+          this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
           this.storageService.updateTable();
         },
       });
@@ -436,18 +402,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       this.storageService.deleteMessages(fd).subscribe({
         next: () => {
           this.messagesDeleting = false;
-          this.storageService.addNote(
-            'success',
-            'Successfully deleted messages',
-          );
+          this.storageService.addNote('success', 'Successfully deleted messages');
           this.storageService.updateTable();
         },
         error: () => {
           this.messagesDeleting = false;
-          this.storageService.addNote(
-            'danger',
-            'Something went wrong, unable to delete all messages!',
-          );
+          this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
           this.storageService.updateTable();
         },
       });
@@ -469,18 +429,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           document.body.append(downloadLink);
           downloadLink.click();
           downloadLink.remove();
-          this.storageService.addNote(
-            'success',
-            'Successfully downloaded messages',
-          );
+          this.storageService.addNote('success', 'Successfully downloaded messages');
           this.messagesDownloading = false;
         },
         error: () => {
           this.messagesDownloading = false;
-          this.storageService.addNote(
-            'danger',
-            'Something went wrong, unable to download selected messages!',
-          );
+          this.storageService.addNote('danger', 'Something went wrong, unable to download selected messages!');
         },
       }); // TODO no intercept
     }
@@ -493,18 +447,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       this.storageService.postChangeProcessState(fd, targetState).subscribe({
         next: () => {
           this.changingProcessState = false;
-          this.storageService.addNote(
-            'success',
-            `Successfully changed the state of messages to ${targetState}`,
-          );
+          this.storageService.addNote('success', `Successfully changed the state of messages to ${targetState}`);
           this.storageService.updateTable();
         },
         error: () => {
           this.changingProcessState = false;
-          this.storageService.addNote(
-            'danger',
-            'Something went wrong, unable to move selected messages!',
-          );
+          this.storageService.addNote('danger', 'Something went wrong, unable to move selected messages!');
           this.storageService.updateTable();
         },
       });

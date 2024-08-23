@@ -10,10 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-edit.component.scss'],
 })
-export class SchedulerEditComponent
-  extends SchedulerAddEditParent
-  implements OnInit
-{
+export class SchedulerEditComponent extends SchedulerAddEditParent implements OnInit {
   override editMode = true;
 
   private groupName = '';
@@ -42,26 +39,21 @@ export class SchedulerEditComponent
       this.groupName = parameters.get('group')!;
       this.jobName = parameters.get('name')!;
 
-      this.schedulerService
-        .getJob(this.groupName, this.jobName)
-        .subscribe((data) => {
-          this.selectedConfiguration = data.configuration;
-          this.form = {
-            name: data.name,
-            group: data.group,
-            adapter:
-              Object.values(this.adapters).find(
-                (adapter) => adapter.name === data.adapter,
-              ) ?? null,
-            listener: data.listener,
-            cron: data.triggers[0].cronExpression || '',
-            interval: data.triggers[0].repeatInterval || '',
-            message: data.message,
-            description: data.description,
-            locker: data.locker,
-            lockkey: data.lockkey,
-          };
-        });
+      this.schedulerService.getJob(this.groupName, this.jobName).subscribe((data) => {
+        this.selectedConfiguration = data.configuration;
+        this.form = {
+          name: data.name,
+          group: data.group,
+          adapter: Object.values(this.adapters).find((adapter) => adapter.name === data.adapter) ?? null,
+          listener: data.listener,
+          cron: data.triggers[0].cronExpression || '',
+          interval: data.triggers[0].repeatInterval || '',
+          message: data.message,
+          description: data.description,
+          locker: data.locker,
+          lockkey: data.lockkey,
+        };
+      });
     });
   }
 
@@ -90,9 +82,7 @@ export class SchedulerEditComponent
         this.addLocalAlert('success', 'Successfully edited schedule!');
       },
       error: (errorData: HttpErrorResponse) => {
-        const error = errorData.error
-          ? errorData.error.error
-          : errorData.message;
+        const error = errorData.error ? errorData.error.error : errorData.message;
         this.addLocalAlert('warning', error);
       },
     }); // TODO no intercept

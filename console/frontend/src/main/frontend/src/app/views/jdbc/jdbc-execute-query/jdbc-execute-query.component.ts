@@ -45,26 +45,19 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     private jdbcService: JdbcService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
     this._subscriptions.add(appConstantsSubscription);
   }
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.form['datasource'] = this.appConstants[
-          'jdbc.datasource.default'
-        ] as string;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.form['datasource'] = this.appConstants['jdbc.datasource.default'] as string;
+    });
     this._subscriptions.add(appConstantsSubscription);
 
-    const executeQueryCookie =
-      this.webStorageService.get<JdbcQueryForm>('executeQuery');
+    const executeQueryCookie = this.webStorageService.get<JdbcQueryForm>('executeQuery');
 
     this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data);
@@ -118,8 +111,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
         this.processingMessage = false;
       },
       error: (errorData: HttpErrorResponse) => {
-        const error =
-          errorData && errorData.error ? errorData.error : 'An error occured';
+        const error = errorData && errorData.error ? errorData.error : 'An error occured';
         try {
           const errorMessage = JSON.parse(error);
           this.error = `${errorMessage.status}: ${errorMessage.error}`;

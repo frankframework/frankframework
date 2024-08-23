@@ -25,15 +25,9 @@
         <div class="ibox-content">
           <form role="form">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Configuration</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Configuration</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control"
-                  name="configuration"
-                  [(ngModel)]="form['configuration']"
-                >
+                <select class="form-control" name="configuration" [(ngModel)]="form['configuration']">
                   <option *ngFor="let configuration of filteredConfigurations">
                     {{ configuration.name }}
                   </option>
@@ -41,9 +35,7 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Upload Changeset</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Upload Changeset</label>
               <div class="col-sm-5">
                 <app-input-file-upload
                   (fileUpdated)="file = $event"

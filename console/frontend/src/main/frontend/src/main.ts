@@ -69,11 +69,7 @@ $(document).ready(function () {
   }
 
   window.addEventListener('keydown', function (event) {
-    if (
-      event.key == 'F' &&
-      (event.ctrlKey || event.metaKey) &&
-      event.shiftKey
-    ) {
+    if (event.key == 'F' && (event.ctrlKey || event.metaKey) && event.shiftKey) {
       const searchbar = document.querySelector('#searchbar');
       if (searchbar) {
         event.preventDefault();
@@ -95,10 +91,7 @@ function fix_height_function(): void {
 }
 
 //Detect if using any (older) version of Internet Explorer
-if (
-  navigator.userAgent.includes('MSIE') ||
-  navigator.appVersion.includes('Trident/')
-) {
+if (navigator.userAgent.includes('MSIE') || navigator.appVersion.includes('Trident/')) {
   $('body').prepend(
     "<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>",
   );
