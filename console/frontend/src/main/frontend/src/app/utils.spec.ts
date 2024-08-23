@@ -1,14 +1,6 @@
-import {
-  computeServerPath,
-  getProcessStateIcon,
-  getProcessStateIconColor,
-} from './utils';
+import { computeServerPath, getProcessStateIcon, getProcessStateIconColor } from './utils';
 
-function testProcessState(
-  state: string,
-  expectedIcon: string,
-  expectedIconColor: string,
-): () => void {
+function testProcessState(state: string, expectedIcon: string, expectedIconColor: string): () => void {
   return (): void => {
     expect(getProcessStateIcon(state)).toBe(expectedIcon);
     expect(getProcessStateIconColor(state)).toBe(expectedIconColor);

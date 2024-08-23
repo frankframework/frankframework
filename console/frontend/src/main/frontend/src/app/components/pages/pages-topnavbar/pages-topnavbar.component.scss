@@ -1,0 +1,25 @@
+/* .cluster-member-selector {
+  width: 180px;
+  padding: 6px 24px 6px 10px;
+  border: 2px solid #fdc300;
+  background-color: inherit;
+  border-radius: 25px;
+  outline: unset;
+  appearance: none;
+
+  + i.fa {
+    position: relative;
+    left: -22px;
+    pointer-events: none;
+  }
+} */
+.cluster-member-selector {
+  width: 180px;
+  margin-right: 10px;
+  border-color: #bdbfc2;
+  background-color: inherit;
+}
+
+.count-info > i.fa {
+  margin: 0;
+}

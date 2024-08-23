@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.InputStream;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.Default;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 
@@ -44,26 +43,24 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		int result = 0;
 
-		try (InputStream binaryInputStream = input.asInputStream(getCharset())){
-			Document doc = new Document(binaryInputStream);
-			result = doc.getPages().size();
+		try (InputStream binaryInputStream = input.asInputStream(charset)){
+			try (Document doc = new Document(binaryInputStream)) {
+				result = doc.getPages().size();
+			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot encode message using charset [" + getCharset() + "]", e);
+			throw new PipeRunException(this, "cannot encode message using charset [" + charset + "]", e);
 		} catch (InvalidPasswordException ip) {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
 		}
 
-		return new PipeRunResult(getSuccessForward(), Integer.toString(result) );
+		return new PipeRunResult(getSuccessForward(), Integer.toString(result));
 	}
 
 	/**
-	 * Charset to be used to encode the given input string
+	 * Charset to be used to read the input message.
+	 * Defaults to the message's known charset or UTF-8 when unknown.
 	 */
-	@Default("UTF-8")
 	public void setCharset(String charset){
 		this.charset = charset;
-	}
-	public String getCharset(){
-		return charset;
 	}
 }

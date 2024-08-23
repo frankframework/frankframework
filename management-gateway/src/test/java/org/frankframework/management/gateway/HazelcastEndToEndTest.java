@@ -27,11 +27,13 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import jakarta.annotation.security.RolesAllowed;
 
 @SpringJUnitConfig(classes = {SpringRootInitializer.class})
+@DirtiesContext
 public class HazelcastEndToEndTest {
 
 	@Autowired

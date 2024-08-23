@@ -122,7 +122,7 @@ public class UpdateLogDefinitions {
 		}
 	}
 
-	@SuppressWarnings("S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
+	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> updateLogConfiguration(Message<?> message) {

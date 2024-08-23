@@ -16,10 +16,7 @@ export type RunState =
 export type RunStateRuntime = RunState | 'loading';
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
-export type TransactionalStores = Record<
-  'DONE' | 'ERROR',
-  { name: string; numberOfMessages: number }
->;
+export type TransactionalStores = Record<'DONE' | 'ERROR', { name: string; numberOfMessages: number }>;
 
 export type Receiver = {
   isEsbJmsFFListener: boolean;
@@ -142,6 +139,8 @@ export type MessageLog = {
   messageLevel: MessageLevel;
   exception?: string;
   warnings?: string[];
+  serverTime?: number;
+  uptime?: number;
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
@@ -199,6 +198,14 @@ export type ServerEnvironmentVariables = {
   'System Properties': Record<string, string>;
 };
 
+export type ClusterMember = {
+  id: string;
+  address: string;
+  name: string;
+  localMember: boolean;
+  selectedMember: boolean;
+};
+
 export type AppConstants = Record<string, string | number | boolean | object>;
 
 export const appInitState = {
@@ -220,6 +227,7 @@ export type ConsoleState = {
 })
 export class AppService {
   private loadingSubject = new Subject<boolean>();
+  private reloadSubject = new Subject<void>();
   private customBreadcrumbsSubject = new Subject<string>();
   private appConstantsSubject = new Subject<void>();
   private adaptersSubject = new Subject<Record<string, Adapter>>();
@@ -234,6 +242,7 @@ export class AppService {
   private iframePopoutUrlSubject = new Subject<string>();
 
   loading$ = this.loadingSubject.asObservable();
+  reload$ = this.reloadSubject.asObservable();
   customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
   appConstants$ = this.appConstantsSubject.asObservable();
   adapters$ = this.adaptersSubject.asObservable();
@@ -243,8 +252,7 @@ export class AppService {
   messageLog$ = this.messageLogSubject.asObservable();
   instanceName$ = this.instanceNameSubject.asObservable();
   dtapStage$ = this.dtapStageSubject.asObservable();
-  databaseSchedulesEnabled$ =
-    this.databaseSchedulesEnabledSubject.asObservable();
+  databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
   summaries$ = this.summariesSubject.asObservable();
   iframePopoutUrl$ = this.iframePopoutUrlSubject.asObservable();
 
@@ -311,6 +319,10 @@ export class AppService {
     private http: HttpClient,
     private debugService: DebugService,
   ) {}
+
+  triggerReload(): void {
+    this.reloadSubject.next();
+  }
 
   updateLoading(loading: boolean): void {
     this.loadingSubject.next(loading);
@@ -391,10 +403,7 @@ export class AppService {
   addAlert(type: string, configuration: string, message: string): void {
     const line = message.match(/line \[(\d+)]/);
     const isValidationAlert = message.includes('Validation');
-    const link =
-      line && !isValidationAlert
-        ? { name: configuration, '#': `L${line[1]}` }
-        : undefined;
+    const link = line && !isValidationAlert ? { name: configuration, '#': `L${line[1]}` } : undefined;
     this.alerts.push({
       link: link,
       type: type,
@@ -411,11 +420,8 @@ export class AppService {
   }
 
   removeAlerts(configuration: string): void {
-    const indicesToRemove = findIndexOfAll(
-      this.alerts,
-      (alert) => alert.configuration === configuration,
-    );
-    const updatedAlerts = { ...this.alerts };
+    const indicesToRemove = findIndexOfAll(this.alerts, (alert) => alert.configuration === configuration);
+    const updatedAlerts = [...this.alerts];
 
     for (const index of indicesToRemove) {
       updatedAlerts.splice(index, 1);
@@ -430,23 +436,26 @@ export class AppService {
   }
 
   getIafVersions(UID: string): Observable<IAFRelease[] | never[]> {
-    return this.http
-      .get<IAFRelease[]>(`https://ibissource.org/iaf/releases/?q=${UID}`)
-      .pipe(
-        catchError((error) => {
-          this.debugService.error(
-            'An error occured while comparing IAF versions',
-            error,
-          );
-          return of([]);
-        }),
-      );
+    return this.http.get<IAFRelease[]>(`https://ibissource.org/iaf/releases/?q=${UID}`).pipe(
+      catchError((error) => {
+        this.debugService.error('An error occured while comparing IAF versions', error);
+        return of([]);
+      }),
+    );
+  }
+
+  getClusterMembers(): Observable<ClusterMember[]> {
+    return this.http.get<ClusterMember[]>(`${this.absoluteApiPath}cluster/members?type=worker`);
+  }
+
+  updateSelectedClusterMember(id: string): Observable<object> {
+    return this.http.post(`${this.absoluteApiPath}cluster/members`, {
+      id,
+    });
   }
 
   getConfigurations(): Observable<Configuration[]> {
-    return this.http.get<Configuration[]>(
-      `${this.absoluteApiPath}server/configurations`,
-    );
+    return this.http.get<Configuration[]>(`${this.absoluteApiPath}server/configurations`);
   }
 
   getAdapters(expanded?: string): Observable<Record<string, Adapter>> {
@@ -456,9 +465,7 @@ export class AppService {
   }
 
   getEnvironmentVariables(): Observable<ServerEnvironmentVariables> {
-    return this.http.get<ServerEnvironmentVariables>(
-      `${this.absoluteApiPath}environmentvariables`,
-    );
+    return this.http.get<ServerEnvironmentVariables>(`${this.absoluteApiPath}environmentvariables`);
   }
 
   getServerHealth(): Observable<string> {
@@ -467,10 +474,7 @@ export class AppService {
     });
   }
 
-  updateAdapterSummary(
-    configurationName: string,
-    changedConfiguration: boolean,
-  ): void {
+  updateAdapterSummary(configurationName: string, changedConfiguration: boolean): void {
     const updated = Date.now();
     if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
       //3 seconds
@@ -509,21 +513,14 @@ export class AppService {
     for (const adapterName in allAdapters) {
       const adapter = allAdapters[adapterName];
 
-      if (
-        adapter.configuration == configurationName ||
-        configurationName == 'All'
-      ) {
+      if (adapter.configuration == configurationName || configurationName == 'All') {
         // Only adapters for active config
         adapterSummary[adapter.state]++;
         for (const index in adapter.receivers) {
-          receiverSummary[
-            adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>
-          ]++;
+          receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
         }
         for (const index in adapter.messages) {
-          const level = adapter.messages[
-            +index
-          ].level.toLowerCase() as Lowercase<MessageLevel>;
+          const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
           messageSummary[level]++;
         }
       }

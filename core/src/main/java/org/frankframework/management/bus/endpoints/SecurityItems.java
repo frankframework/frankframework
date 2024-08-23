@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +32,7 @@ import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 
 import jakarta.annotation.security.RolesAllowed;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -56,8 +56,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlUtils;
 import org.springframework.messaging.Message;
-
-import lombok.Getter;
 
 @BusAware("frank-management-bus")
 public class SecurityItems extends BusEndpointBase {
@@ -244,13 +242,11 @@ public class SecurityItems extends BusEndpointBase {
 	}
 
 	private List<String> getAuthEntries() {
-		List<String> entries = new LinkedList<>();
+		List<String> entries = new ArrayList<>();
 		try {
 			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
-			if (knownAliases!=null) {
-				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
-				Collections.sort(entries, Comparator.naturalOrder());
-			}
+			entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
+			entries.sort(Comparator.naturalOrder());
 		} catch (Exception e) {
 			log.warn("could not retrieve aliases from CredentialFactory", e);
 		}
@@ -277,7 +273,7 @@ public class SecurityItems extends BusEndpointBase {
 	}
 
 	private List<Object> addAuthEntries() {
-		List<Object> authEntries = new LinkedList<>();
+		List<Object> authEntries = new ArrayList<>();
 
 		for(String authAlias : getAuthEntries()) {
 			Map<String, Object> ae = new HashMap<>();

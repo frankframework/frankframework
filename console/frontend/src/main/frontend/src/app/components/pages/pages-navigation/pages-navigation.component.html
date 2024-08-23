@@ -14,30 +14,18 @@
 
       <li routerLinkActive="active">
         <a data-cy-nav="adapterStatus" routerLink="/status"
-          ><i class="fa fa-dashboard"></i>
-          <span class="nav-label">Adapter Status</span></a
+          ><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a
         >
       </li>
-      <li
-        [ngClass]="getClassByRoute('active', 'configuration')"
-        class="nav-group"
-      >
+      <li [ngClass]="getClassByRoute('active', 'configuration')" class="nav-group">
         <a href=""
           ><i class="fa fa-cogs"></i>
           <span class="nav-label">Configurations</span>
           <span class="fa arrow"></span
         ></a>
-        <ul
-          class="nav nav-second-level"
-          [ngClass]="getClassByRoute('in', 'configuration')"
-        >
-          <li
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
-            <a
-              routerLink="/configurations"
-              [queryParams]="{ name: getConfigurationsQueryParam() }"
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'configuration')">
+          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <a routerLink="/configurations" [queryParams]="{ name: getConfigurationsQueryParam() }"
               >Show Configurations</a
             >
           </li>
@@ -48,13 +36,9 @@
       </li>
       <li [ngClass]="getClassByRoute('active', 'logging')" class="nav-group">
         <a href=""
-          ><i class="fa fa-life-ring"></i>
-          <span class="nav-label">Logging</span> <span class="fa arrow"></span
+          ><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span
         ></a>
-        <ul
-          class="nav nav-second-level"
-          [ngClass]="getClassByRoute('in', 'logging')"
-        >
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'logging')">
           <li
             routerLinkActive="active"
             [routerLinkActiveOptions]="{
@@ -71,18 +55,11 @@
           </li>
         </ul>
       </li>
-      <li
-        [ngClass]="getClassByRoute('active', ['testing', 'test-'])"
-        class="nav-group"
-      >
+      <li [ngClass]="getClassByRoute('active', ['testing', 'test-'])" class="nav-group">
         <a data-cy-nav="testing" href=""
-          ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span>
-          <span class="fa arrow"></span
+          ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
         ></a>
-        <ul
-          class="nav nav-second-level"
-          [ngClass]="getClassByRoute('in', ['testing', 'test-'])"
-        >
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', ['testing', 'test-'])">
           <li data-cy-nav="testingLarva" routerLinkActive="active">
             <a routerLink="/testing/larva">Larva</a>
           </li>
@@ -100,18 +77,9 @@
           </li>
         </ul>
       </li>
-      <li
-        [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'])"
-        class="nav-group"
-      >
-        <a href=""
-          ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span>
-          <span class="fa arrow"></span
-        ></a>
-        <ul
-          class="nav nav-second-level"
-          [ngClass]="getClassByRoute('in', ['jdbc', 'liquibase'])"
-        >
+      <li [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'])" class="nav-group">
+        <a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', ['jdbc', 'liquibase'])">
           <li routerLinkActive="active">
             <a routerLink="/jdbc/execute-query">Execute Query</a>
           </li>
@@ -124,14 +92,8 @@
         </ul>
       </li>
       <li [ngClass]="getClassByRoute('active', 'jms')" class="nav-group">
-        <a href=""
-          ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span>
-          <span class="fa arrow"></span
-        ></a>
-        <ul
-          class="nav nav-second-level"
-          [ngClass]="getClassByRoute('in', 'jms')"
-        >
+        <a href=""><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'jms')">
           <li routerLinkActive="active">
             <a routerLink="/jms/browse-queue">Browse Queue</a>
           </li>
@@ -141,33 +103,22 @@
         </ul>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/webservices"
-          ><i class="fa fa-paper-plane-o"></i>
-          <span class="nav-label">Webservices</span></a
-        >
+        <a routerLink="/webservices"><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/scheduler"
-          ><i class="fa fa-calendar"></i>
-          <span class="nav-label">Scheduler</span></a
-        >
+        <a routerLink="/scheduler"><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/monitors"
-          ><i class="fa fa-clone"></i>
-          <span class="nav-label">Monitors</span></a
-        >
+        <a routerLink="/monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
       </li>
       <li routerLinkActive="active">
         <a routerLink="/environment-variables"
-          ><i class="fa fa-language"></i>
-          <span class="nav-label">Environment Variables</span></a
+          ><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a
         >
       </li>
       <li class="nav-group">
         <a href=""
-          ><i class="fa fa-sitemap"></i>
-          <span class="nav-label">Overview</span> <span class="fa arrow"></span
+          ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
         ></a>
         <ul class="nav nav-second-level">
           <li routerLinkActive="active">
@@ -182,31 +133,21 @@
         </ul>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/security-items"
-          ><i class="fa fa-lock"></i>
-          <span class="nav-label">Security Items</span></a
-        >
+        <a routerLink="/security-items"><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a>
       </li>
       <li>
         <a (click)="openInfo()" class="pointer"
-          ><i class="fa fa-info-circle"></i>
-          <span class="nav-label">Information</span></a
+          ><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a
         >
       </li>
       <li style="border-top: 1px solid #19aa8d">
-        <a
-          target="_blank"
-          href="http://frank-manual.readthedocs.io/"
-          alt="Frank!Manual"
-          rel="noopener noreferrer"
-          ><i class="fa fa-book"></i>
-          <span class="nav-label">Frank!Manual</span></a
+        <a target="_blank" href="http://frank-manual.readthedocs.io/" alt="Frank!Manual" rel="noopener noreferrer"
+          ><i class="fa fa-book"></i> <span class="nav-label">Frank!Manual</span></a
         >
       </li>
       <li>
         <a target="_blank" href="../frankdoc" alt="Frank!Doc"
-          ><i class="fa fa-book"></i>
-          <span class="nav-label">Frank!Doc</span></a
+          ><i class="fa fa-book"></i> <span class="nav-label">Frank!Doc</span></a
         >
       </li>
       <li>

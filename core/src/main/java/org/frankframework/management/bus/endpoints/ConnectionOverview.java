@@ -15,9 +15,9 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class ConnectionOverview extends BusEndpointBase {
 	@TopicSelector(BusTopic.CONNECTION_OVERVIEW)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getAllConnections(Message<?> message) {
-		List<Object> connectionsIncoming = new LinkedList<>();
+		List<Object> connectionsIncoming = new ArrayList<>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			for(Adapter adapter: config.getRegisteredAdapters()) {

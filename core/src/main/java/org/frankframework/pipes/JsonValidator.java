@@ -17,7 +17,7 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.json.stream.JsonParser;
@@ -74,7 +74,7 @@ public class JsonValidator extends ValidatorBase {
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		final List<String> problems = new LinkedList<>();
+		final List<String> problems = new ArrayList<>();
 		// Problem handler which will print problems found.
 		ProblemHandler handler = service.createProblemPrinter(problems::add);
 		ValidationResult resultEvent;

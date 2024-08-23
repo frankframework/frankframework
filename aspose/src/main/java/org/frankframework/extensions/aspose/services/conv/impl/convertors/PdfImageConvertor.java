@@ -150,7 +150,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 		} finally {
 			doc.freeMemory();
-			doc.dispose();
 			doc.close();
 
 			// Delete always the temporary file.

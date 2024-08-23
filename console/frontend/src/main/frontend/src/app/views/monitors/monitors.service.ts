@@ -61,26 +61,16 @@ export class MonitorsService {
     private appService: AppService,
   ) {}
 
-  getUrl(
-    selectedConfiguration: string,
-    monitor: Monitor,
-    trigger?: Trigger,
-  ): string {
+  getUrl(selectedConfiguration: string, monitor: Monitor, trigger?: Trigger): string {
     let url = `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors/${monitor.name}`;
     if (trigger) url += `/triggers/${trigger.id}`;
     return url;
   }
 
-  getTriggerUrl(
-    selectedConfiguration: string,
-    monitorName: string,
-    triggerId: number,
-  ): string {
+  getTriggerUrl(selectedConfiguration: string, monitorName: string, triggerId: number): string {
     return `${
       this.appService.absoluteApiPath
-    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers/${
-      triggerId > -1 ? triggerId : ''
-    }`;
+    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers/${triggerId > -1 ? triggerId : ''}`;
   }
 
   getMonitors(selectedConfiguration: string): Observable<MonitorsResponse> {
@@ -89,14 +79,8 @@ export class MonitorsService {
     );
   }
 
-  getTrigger(
-    selectedConfiguration: string,
-    monitorName: string,
-    triggerId: number,
-  ): Observable<TriggerResponse> {
-    return this.http.get<TriggerResponse>(
-      this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
-    );
+  getTrigger(selectedConfiguration: string, monitorName: string, triggerId: number): Observable<TriggerResponse> {
+    return this.http.get<TriggerResponse>(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId));
   }
 
   postTrigger(
@@ -105,10 +89,7 @@ export class MonitorsService {
     triggerId: number,
     trigger: Trigger,
   ): Observable<object> {
-    return this.http.post(
-      this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
-      trigger,
-    );
+    return this.http.post(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId), trigger);
   }
 
   putMonitorOrTriggerAction(
@@ -142,19 +123,10 @@ export class MonitorsService {
     triggerId: number,
     trigger: Trigger,
   ): Observable<object> {
-    return this.http.put(
-      this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
-      trigger,
-    );
+    return this.http.put(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId), trigger);
   }
 
-  deleteMonitorOrTrigger(
-    selectedConfiguration: string,
-    monitor: Monitor,
-    trigger?: Trigger,
-  ): Observable<object> {
-    return this.http.delete(
-      this.getUrl(selectedConfiguration, monitor, trigger),
-    );
+  deleteMonitorOrTrigger(selectedConfiguration: string, monitor: Monitor, trigger?: Trigger): Observable<object> {
+    return this.http.delete(this.getUrl(selectedConfiguration, monitor, trigger));
   }
 }

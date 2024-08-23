@@ -23,40 +23,30 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
 
   constructor(private appService: AppService) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
     this._subscriptions.add(appConstantsSubscription);
   }
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    const configurationsSubscription =
-      this.appService.configurations$.subscribe(() => {
-        this.configurations = this.appService.configurations;
-      });
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
+      this.configurations = this.appService.configurations;
+    });
     this._subscriptions.add(configurationsSubscription);
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       let instanceName = null;
       for (const configName in data['Application Constants']) {
-        this.appConstants[configName] = this.convertPropertiesToArray(
-          data['Application Constants'][configName],
-        );
+        this.appConstants[configName] = this.convertPropertiesToArray(data['Application Constants'][configName]);
         if (instanceName == null) {
-          instanceName =
-            data['Application Constants'][configName]['instance.name'];
+          instanceName = data['Application Constants'][configName]['instance.name'];
         }
       }
       this.changeConfiguration('All');
-      this.environmentProperties = this.convertPropertiesToArray(
-        data['Environment Variables'],
-      );
-      this.systemProperties = this.convertPropertiesToArray(
-        data['System Properties'],
-      );
+      this.environmentProperties = this.convertPropertiesToArray(data['Environment Variables']);
+      this.systemProperties = this.convertPropertiesToArray(data['System Properties']);
     });
   }
 
@@ -69,9 +59,7 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this.configProperties = this.appConstants[name] as keyValueProperty[];
   }
 
-  private convertPropertiesToArray(
-    propertyList: Record<string, string>,
-  ): keyValueProperty[] {
+  private convertPropertiesToArray(propertyList: Record<string, string>): keyValueProperty[] {
     const temporary: keyValueProperty[] = [];
     for (const variableName in propertyList) {
       temporary.push({

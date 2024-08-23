@@ -45,6 +45,7 @@ import org.xml.sax.SAXException;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
+	private static final long MILLIS_PER_DAY = 24 * 60 * 60 * 1000L;
 
 	/**
 	 * Check if a source file exists.
@@ -243,8 +244,6 @@ public class FileSystemUtils {
 	}
 
 	public static <F> void rolloverByDay(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateDays) throws FileSystemException {
-		final long millisPerDay = 24 * 60 * 60 * 1000;
-
 		Date lastModified = fileSystem.getModificationTime(file);
 		Date sysTime = new Date();
 		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
@@ -255,7 +254,7 @@ public class FileSystemUtils {
 		fileSystem.renameFile(file, tgtFilename);
 
 		log.debug("Deleting files in folder [{}] that have a name starting with [{}] and are older than [{}] days", folder, srcFilename, rotateDays);
-		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
+		long threshold = sysTime.getTime()- rotateDays * MILLIS_PER_DAY;
 		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			for (F f : ds) {
 				String filename = fileSystem.getName(f);

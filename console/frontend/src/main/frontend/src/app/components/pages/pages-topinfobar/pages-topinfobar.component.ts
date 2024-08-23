@@ -25,31 +25,23 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        const childRoute = this.route.children.pop()!;
-        if (!childRoute.snapshot.data['breadcrumbIsCustom']) {
-          this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
-        }
-        this.popoutUrl = null;
-      });
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      const childRoute = this.route.children.pop()!;
+      if (!childRoute.snapshot.data['breadcrumbIsCustom']) {
+        this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
+      }
+      this.popoutUrl = null;
+    });
 
-    const loadingSubscription = this.appService.loading$.subscribe(
-      (loading) => (this.loading = loading),
-    );
+    const loadingSubscription = this.appService.loading$.subscribe((loading) => (this.loading = loading));
     this._subscriptions.add(loadingSubscription);
 
-    const customBreadcrumbsSubscription =
-      this.appService.customBreadscrumb$.subscribe(
-        (breadcrumbs) => (this.breadcrumbs = breadcrumbs),
-      );
+    const customBreadcrumbsSubscription = this.appService.customBreadscrumb$.subscribe(
+      (breadcrumbs) => (this.breadcrumbs = breadcrumbs),
+    );
     this._subscriptions.add(customBreadcrumbsSubscription);
 
-    const iframePopoutUrlSubscription =
-      this.appService.iframePopoutUrl$.subscribe(
-        (url) => (this.popoutUrl = url),
-      );
+    const iframePopoutUrlSubscription = this.appService.iframePopoutUrl$.subscribe((url) => (this.popoutUrl = url));
     this._subscriptions.add(iframePopoutUrlSubscription);
   }
 

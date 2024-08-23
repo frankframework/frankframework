@@ -20,8 +20,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.frankframework.configuration.IbisManager;
@@ -40,6 +38,7 @@ import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.core.SenderResult;
 import org.frankframework.documentbuilder.xml.XmlTee;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -61,6 +60,9 @@ import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
@@ -118,12 +120,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
 		}
-		ibisDebugger.showValue(correlationId, "exitState", pipeLineResult.getState().name());
+		ibisDebugger.showOutputValue(correlationId, "exitState", pipeLineResult.getState().name());
 		if (pipeLineResult.getExitCode()!=0) {
-			ibisDebugger.showValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
+			ibisDebugger.showOutputValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
 		}
 		if (!pipeLineResult.isSuccessful()) {
-			ibisDebugger.showValue(correlationId, "result", pipeLineResult.getResult());
+			ibisDebugger.showOutputValue(correlationId, "result", pipeLineResult.getResult());
 			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
 		} else {
 			Message result = ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult());
@@ -187,7 +189,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		PipeRunResult pipeRunResult = null;
 
 		if(StringUtils.isNotEmpty(messageRoot)) {
-			ibisDebugger.showValue(correlationId, "MessageRoot to be asserted", messageRoot);
+			ibisDebugger.showInputValue(correlationId, "MessageRoot to be asserted", messageRoot);
 		}
 
 		try {
@@ -246,12 +248,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			senderResult = new SenderResult(true, Message.nullMessage(), null, "stub");
 		}
 
-		ibisDebugger.showValue(correlationId, "success", senderResult.isSuccess());
+		ibisDebugger.showOutputValue(correlationId, "success", senderResult.isSuccess());
 		if (senderResult.getForwardName()!=null) {
-			ibisDebugger.showValue(correlationId, "forwardName", senderResult.getForwardName());
+			ibisDebugger.showOutputValue(correlationId, "forwardName", senderResult.getForwardName());
 		}
 		if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
-			ibisDebugger.showValue(correlationId, "errorMessage", senderResult.getErrorMessage());
+			ibisDebugger.showOutputValue(correlationId, "errorMessage", senderResult.getErrorMessage());
 		}
 
 		Message capturedResult = ibisDebugger.senderOutput(sender, correlationId, senderResult.getResult());
@@ -292,7 +294,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return contentHandler;
 		}
 		String correlationId = getCorrelationId(session);
-		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
+		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showInputValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
 			session.scheduleCloseOnSessionExit(writer, REQUESTER);
@@ -435,7 +437,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return proceedingJoinPoint.proceed();
 		}
 		Object result = proceedingJoinPoint.proceed();
-		Parameter parameter = (Parameter)proceedingJoinPoint.getTarget();
+		IParameter parameter = (IParameter)proceedingJoinPoint.getTarget();
 		return ibisDebugger.parameterResolvedTo(parameter, getCorrelationId(session), result); // session is null in afterMessageProcessed()
 	}
 

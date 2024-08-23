@@ -22,8 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -38,11 +36,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Manager for Monitoring.
- *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * <p>
+ * Configure/start/stop lifecycles are managed by Spring.
  *
  * @author Niels Meijer
  * @version 2.0
@@ -72,6 +72,11 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 		for(Monitor monitor : monitors) {
 			monitor.configure();
 		}
+	}
+
+	@Override
+	public int getPhase() {
+		return 300;
 	}
 
 	private String getLogPrefix() {

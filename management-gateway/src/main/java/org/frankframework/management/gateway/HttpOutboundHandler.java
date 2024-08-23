@@ -36,6 +36,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -125,6 +127,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	}
 
 	@Override
+	@Nonnull
 	@SuppressWarnings("rawtypes")
 	public Message handleRequestMessage(Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);

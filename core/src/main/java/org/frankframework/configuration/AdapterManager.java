@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
@@ -35,8 +34,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
- * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
+ * Manager which holds all adapters within a {@link Configuration}.
+ * The manager will start/stop adapters, in a different thread.
+ * <p>
+ * Configure/start/stop lifecycles are managed by Spring.
+ * @see ConfiguringLifecycleProcessor
  *
  */
 public class AdapterManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
@@ -49,6 +55,11 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	private final AtomicBoolean active = new AtomicBoolean(true); // Flag that indicates whether this manager is active and can accept new Adapters.
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
+
+	@Override
+	public int getPhase() {
+		return 100;
+	}
 
 	public void registerAdapter(Adapter adapter) {
 		if(!active.get()) {

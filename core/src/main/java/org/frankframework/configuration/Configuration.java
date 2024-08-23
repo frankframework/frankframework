@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -28,7 +28,6 @@ import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.migration.DatabaseMigratorBase;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
@@ -42,7 +41,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
-import org.frankframework.util.flow.FlowDiagramManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -55,6 +53,9 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
@@ -212,21 +213,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		long start = System.currentTimeMillis();
 
 		try {
-			runMigrator();
-
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
-			generateConfigurationFlow();
-
-			//Trigger a configure on all Lifecycle beans
+			//Trigger a configure on all (Configurable) Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle configurableLifecycle) {
-				configurableLifecycle.configure();
+			if(!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+				throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 			}
+
+			configurableLifecycle.configure();
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
+			applicationLog.info("Configuration [{}] [{}] was not able to startup", getName(), getVersion());
 			throw e;
 		}
 		configured = true;
@@ -242,34 +242,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
 		applicationLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
-	}
-
-	/**
-	 * Generate a flow over the digested {@link Configuration}.
-	 * Uses {@link Configuration#getLoadedConfiguration()}.
-	 */
-	private void generateConfigurationFlow() {
-		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-		try {
-			flowDiagramManager.generate(this);
-		} catch (Exception e) { //Don't throw an exception when generating the flow fails
-			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-		}
-	}
-
-	/** Execute any database changes before calling {@link #configure()}. */
-	protected void runMigrator() {
-		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
-		DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(databaseMigrator.isEnabled()) {
-			try {
-				if(databaseMigrator.validate()) {
-					databaseMigrator.update();
-				}
-			} catch (Exception e) {
-				log("unable to run JDBC migration", e);
-			}
-		}
 	}
 
 	@Override
@@ -465,12 +437,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
 	 * Because of this, it may not always represent the correct or accurate type.
 	 */
+	@Nullable
 	public String getClassLoaderType() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
 			}
+			return null;
+		}
+
+		if(getClassLoader() == null) {
 			return null;
 		}
 

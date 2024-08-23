@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.util;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -24,25 +25,25 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.core.INamedObject;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.core.INamedObject;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * A collection of class management utility methods.
  * @author Johan Verrips
  *
  */
+@Log4j2
 public abstract class ClassUtils {
-	private static final Logger log = LogManager.getLogger(ClassUtils.class);
 
 	/**
 	 * Return the context ClassLoader.
@@ -51,6 +52,11 @@ public abstract class ClassUtils {
 		return Thread.currentThread().getContextClassLoader();
 	}
 
+	/**
+	 * Attemps to locate the resource, first on the local class-path, if no match, it attempts to find the resource as file-path.
+	 * @throws FileNotFoundException in case the resource name is invalid
+	 */
+	@Nullable
 	public static URL getResourceURL(String resource) throws FileNotFoundException {
 		String resourceToUse = resource; //Don't change the original resource name for logging purposes
 
@@ -62,17 +68,36 @@ public abstract class ClassUtils {
 		URL url = getClassLoader().getResource(resourceToUse);
 
 		// then try to get it as a URL
-		if (url == null && resourceToUse.contains(":")) {
-			try {
-				url = new URL(resourceToUse.replace(" ", "%20"));
-			} catch (MalformedURLException e) {
-				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
-				fnfe.initCause(e);
-				throw fnfe;
-			}
+		if (url == null) {
+			log.trace("did not find resource [{}] on local classpath", resourceToUse);
+			url = getResourceNative(resourceToUse);
 		}
 
 		return url;
+	}
+
+	@Nullable
+	private static URL getResourceNative(String resource) throws FileNotFoundException {
+		try {
+			if (resource.contains(":")) {
+				String escapedURL = resource.replace(" ", "%20");
+				log.trace("attempt to look up resource natively [{}]", escapedURL);
+				return new URL(escapedURL);
+			} else {
+				// no URL -> treat as file path
+				File file = new File(resource);
+				log.trace("attempt to look up resource as file [{}]", file);
+				if(file.exists()) {
+					return file.toURI().toURL();
+				}
+			}
+		} catch (MalformedURLException e) {
+			FileNotFoundException fnfe = new FileNotFoundException("Resource location [" + resource + "] is neither a URL not a well-formed file path");
+			fnfe.initCause(e);
+			throw fnfe;
+		}
+
+		return null;
 	}
 
 	/**
@@ -296,7 +321,7 @@ public abstract class ClassUtils {
 
 	public static List<Object> getClassInfoList(Class<?> clazz) {
 		ClassLoader classLoader = clazz.getClassLoader();
-		List<Object> infoList = new LinkedList<>();
+		List<Object> infoList = new ArrayList<>();
 		String className = clazz.getName();
 		while (true) {
 			infoList.add(getClassInfo(clazz, classLoader));

@@ -88,7 +88,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	 * Return the specified factory or the default factory when empty.
 	 * The factory should be Spring wired
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	private ObjectCreationFactory<Object> getFactory(String factory) {
 		if("null".equals(factory)) { //Check against a null-string when you don't want to use the default factory
 			if(log.isTraceEnabled()) log.trace("NULL factory specified, skip factory registration");

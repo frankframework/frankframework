@@ -137,7 +137,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			}
 		}
 
-		log.debug("{}HttpSender constructed {}-method [{}] query [{}] ", getLogPrefix(), methodType, method.getURI(), method.getURI().getQuery());
+		log.debug("HttpSender constructed {}-method [{}] query [{}] ", methodType, method.getURI(), method.getURI().getQuery());
 		return method;
 	}
 

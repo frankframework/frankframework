@@ -20,11 +20,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
@@ -126,22 +126,22 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
-	private Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(ParameterValue pv, PipeLineSession session) throws SenderException, ParameterException {
-		Collection<MailAttachmentStream> attachments = null;
-		if (pv != null) {
-			attachments = retrieveAttachments(pv.asCollection(), session);
-			log.debug("MailSender [{}] retrieved attachments-parameter [{}]", getName(), attachments);
+	private @Nonnull Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(@Nullable ParameterValue pv, @Nonnull PipeLineSession session) throws SenderException, ParameterException {
+		if (pv == null) {
+			return Collections.emptyList();
 		}
+		Collection<MailAttachmentStream> attachments = retrieveAttachments(pv.asCollection(), session);
+		log.debug("MailSender [{}] retrieved attachments-parameter [{}]", getName(), attachments);
 		return attachments;
 	}
 
-	private Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
+	private @Nonnull Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
 			throws ParameterException, SenderException {
-		Collection<EMail> recipients = null;
-		if (pv != null) {
-			recipients = retrieveRecipients(pv.asCollection());
-			log.debug("MailSender [{}] retrieved recipients-parameter [{}]", getName(), recipients);
+		if (pv == null) {
+			return Collections.emptyList();
 		}
+		Collection<EMail> recipients = retrieveRecipients(pv.asCollection());
+		log.debug("MailSender [{}] retrieved recipients-parameter [{}]", getName(), recipients);
 		return recipients;
 	}
 
@@ -211,7 +211,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			}
 			pv = pvl.get("recipients");
 			Collection<EMail> recipientsCollection = retrieveRecipientsFromParameterList(pv);
-			if (recipientsCollection != null && !recipientsCollection.isEmpty()) {
+			if (!recipientsCollection.isEmpty()) {
 				recipients = new ArrayList<>(recipientsCollection);
 				mail.setRecipientList(recipients);
 			} else {
@@ -220,7 +220,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 			pv = pvl.get("attachments");
 			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, session);
-			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
+			if (!attachmentsCollection.isEmpty()) {
 				attachments = new ArrayList<>(attachmentsCollection);
 				mail.setAttachmentList(attachments);
 			}
@@ -231,65 +231,60 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mail;
 	}
 
-	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) throws SenderException {
-		List<EMail> recipients = null;
-		if (recipientsNode != null && !recipientsNode.isEmpty()) {
-			Iterator<Node> iter = recipientsNode.iterator();
-			if (iter.hasNext()) {
-				recipients = new LinkedList<>();
-				while (iter.hasNext()) {
-					Element recipientElement = (Element) iter.next();
-					String value = XmlUtils.getStringValue(recipientElement);
-					if (StringUtils.isNotEmpty(value)) {
-						String name = recipientElement.getAttribute("name");
-						String type = recipientElement.getAttribute("type");
-						EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type) ? type : "to");
-						recipients.add(recipient);
-					} else {
-						log.debug("empty recipient found, ignoring");
-					}
-				}
+	private @Nonnull List<EMail> retrieveRecipients(@Nonnull Collection<Node> recipientsNode) throws SenderException {
+		if (recipientsNode.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<EMail> recipients = new ArrayList<>(recipientsNode.size());
+		for (Node node : recipientsNode) {
+			Element recipientElement = (Element) node;
+			String value = XmlUtils.getStringValue(recipientElement);
+			if (!StringUtils.isNotEmpty(value)) {
+				log.debug("empty recipient found, ignoring");
+				continue;
 			}
-		} else {
-			throw new SenderException("no recipients for message");
+			String name = recipientElement.getAttribute("name");
+			String type = recipientElement.getAttribute("type");
+			EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type) ? type : "to");
+			recipients.add(recipient);
 		}
 
 		return recipients;
 	}
 
-	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, PipeLineSession session) throws SenderException {
-		Collection<MailAttachmentStream> attachments = null;
-		Iterator<Node> iter = attachmentsNode.iterator();
-		if (iter != null && iter.hasNext()) {
-			attachments = new LinkedList<>();
-			while (iter.hasNext()) {
-				Element attachmentElement = (Element) iter.next();
-				String name = attachmentElement.getAttribute("name");
-				String mimeType = attachmentElement.getAttribute("type");
-				if (StringUtils.isNotEmpty(mimeType) && mimeType.indexOf("/")<0) {
-					throw new SenderException("mimeType ["+mimeType+"] of attachment ["+name+"] must contain a forward slash ('/')");
-				}
-				String sessionKey = attachmentElement.getAttribute("sessionKey");
-				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
-
-				MailAttachmentStream attachment = null;
-				if (StringUtils.isNotEmpty(sessionKey)) {
-					Object object = session.get(sessionKey);
-					if (object instanceof InputStream stream) {
-						attachment = streamToMailAttachment(stream, base64, mimeType);
-					} else if (object instanceof String string) {
-						attachment = stringToMailAttachment(string, base64, mimeType);
-					} else {
-						throw new SenderException("MailSender ["+getName()+"] received unknown attachment type ["+object.getClass().getName()+"] in sessionkey");
-					}
-				} else {
-					String nodeValue = XmlUtils.getStringValue(attachmentElement);
-					attachment = stringToMailAttachment(nodeValue, base64, mimeType);
-				}
-				attachment.setName(name);
-				log.debug("created attachment [{}]", attachment);
-				attachments.add(attachment);
+	private @Nonnull Collection<MailAttachmentStream> retrieveAttachments(@Nonnull Collection<Node> attachmentsNode, @Nonnull PipeLineSession session) throws SenderException {
+		if (attachmentsNode.isEmpty()) {
+			return Collections.emptyList();
+		}
+		Collection<MailAttachmentStream> attachments = new ArrayList<>(attachmentsNode.size());
+		for (Node node : attachmentsNode) {
+			Element attachmentElement = (Element) node;
+			String name = attachmentElement.getAttribute("name");
+			String mimeType = attachmentElement.getAttribute("type");
+			if (StringUtils.isNotEmpty(mimeType) && !mimeType.contains("/")) {
+				throw new SenderException("mimeType [" + mimeType + "] of attachment [" + name + "] must contain a forward slash ('/')");
 			}
+			String sessionKey = attachmentElement.getAttribute("sessionKey");
+			boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
+
+			MailAttachmentStream attachment;
+			if (StringUtils.isNotEmpty(sessionKey)) {
+				Object object = session.get(sessionKey);
+				if (object instanceof InputStream stream) {
+					attachment = streamToMailAttachment(stream, base64, mimeType);
+				} else if (object instanceof String string) {
+					attachment = stringToMailAttachment(string, base64, mimeType);
+				} else {
+					throw new SenderException("MailSender [" + getName() + "] received unknown attachment type [" + object.getClass()
+							.getName() + "] in sessionkey");
+				}
+			} else {
+				String nodeValue = XmlUtils.getStringValue(attachmentElement);
+				attachment = stringToMailAttachment(nodeValue, base64, mimeType);
+			}
+			attachment.setName(name);
+			log.debug("created attachment [{}]", attachment);
+			attachments.add(attachment);
 		}
 		return attachments;
 	}
@@ -343,7 +338,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(messageType)) {
 			messageType=getDefaultMessageType();
 		}
-		if (messageType.indexOf("/")<0) {
+		if (!messageType.contains("/")) {
 			throw new SenderException("messageType ["+messageType+"] must contain a forward slash ('/')");
 		}
 		messageBase64 = XmlUtils.getChildTagAsBoolean(emailElement, "messageBase64");
@@ -388,7 +383,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	protected abstract MailSessionBase createMailSession() throws SenderException;
 
-	private EMail getEmailAddress(Element element, String type) throws SenderException {
+	private @Nullable EMail getEmailAddress(Element element, String type) throws SenderException {
 		if (element == null) {
 			return null;
 		}
@@ -632,7 +627,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 * @author Niels Meijer
 	 *
 	 */
-	protected abstract class MailAttachmentBase<T> {
+	protected abstract static class MailAttachmentBase<T> {
 		private String name;
 		private String mimeType;
 		private T value;
@@ -667,7 +662,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 	}
 
-	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{}
+	public static class MailAttachmentStream extends MailAttachmentBase<InputStream>{}
 
 	/**
 	 * Generic mail class

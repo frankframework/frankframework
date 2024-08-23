@@ -49,9 +49,7 @@ export class ServerInfoService {
   ) {}
 
   fetchServerInfo(): Observable<ServerInfo> {
-    return this.http.get<ServerInfo>(
-      `${this.appService.absoluteApiPath}server/info`,
-    );
+    return this.http.get<ServerInfo>(`${this.appService.absoluteApiPath}server/info`);
   }
 
   refresh(): void {

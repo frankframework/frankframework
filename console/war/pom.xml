@@ -91,9 +91,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>2.7.18</version>
+				<version>3.3.3</version>
 				<configuration>
-					<mainClass>org.frankframework.runner.ConsoleStandaloneInitializer</mainClass>
+					<mainClass>org.frankframework.console.runner.ConsoleStandaloneInitializer</mainClass>
 					<layout>WAR</layout>
 				</configuration>
 				<executions>

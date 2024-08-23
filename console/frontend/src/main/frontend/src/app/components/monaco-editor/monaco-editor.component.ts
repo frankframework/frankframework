@@ -4,10 +4,12 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   NgZone,
   OnChanges,
   OnDestroy,
+  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -28,17 +30,20 @@ interface AMDRequire {
   templateUrl: './monaco-editor.component.html',
   styleUrls: ['./monaco-editor.component.scss'],
 })
-export class MonacoEditorComponent
-  implements AfterViewInit, OnChanges, OnDestroy
-{
-  private editorSubject =
-    new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
+export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
+  private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
   editor$ = this.editorSubject.asObservable();
 
   @Input()
   value?: string;
+  @Output()
+  valueChange = new EventEmitter<string>();
   @Input()
-  options?: monaco.editor.IEditorOptions;
+  options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
+  @Input()
+  actions?: {
+    ctrlEnter?: monaco.editor.IActionDescriptor;
+  };
 
   @ViewChild('editor')
   protected editorContainer!: ElementRef;
@@ -95,6 +100,8 @@ export class MonacoEditorComponent
 
   private initializeMonaco(): void {
     this.initializeEditor();
+    this.initializeEvents();
+    this.initializeActions();
     this.initializeMouseEvents();
     this.highlightTheLineNumberInRoute();
   }
@@ -111,6 +118,30 @@ export class MonacoEditorComponent
       ...this.options,
     });
     this.editorSubject.next(this.editor);
+  }
+
+  private initializeEvents(): void {
+    this.editor$.pipe(first()).subscribe((editor) => {
+      editor.onDidChangeModelContent(() => {
+        this.valueChange.emit(editor.getValue());
+      });
+    });
+  }
+
+  private initializeActions(): void {
+    const actionKeyBindings: Record<string, number[]> = {
+      ctrlEnter: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+    };
+    this.editor$.pipe(first()).subscribe((editor) => {
+      for (const [action, descriptor] of Object.entries(this.actions || {})) {
+        editor.addAction({
+          id: descriptor.id,
+          label: descriptor.label,
+          keybindings: actionKeyBindings[action],
+          run: descriptor.run,
+        });
+      }
+    });
   }
 
   private initializeMouseEvents(): void {
@@ -137,10 +168,7 @@ export class MonacoEditorComponent
     }
   }
 
-  setLineNumberInRoute(
-    startLineNumber: number,
-    endLineNumber: number | undefined = undefined,
-  ): void {
+  setLineNumberInRoute(startLineNumber: number, endLineNumber: number | undefined = undefined): void {
     let fragment = `L${startLineNumber}`;
     if (endLineNumber) fragment += `-${endLineNumber}`;
     this.zone.run(() => {
@@ -226,9 +254,7 @@ export class MonacoEditorComponent
   findMatchForRegex(regexp: string): monaco.editor.FindMatch[] | undefined {
     let matches: monaco.editor.FindMatch[] | undefined;
     this.editor$.pipe(first()).subscribe((editor) => {
-      matches = editor
-        .getModel()
-        ?.findMatches(regexp, false, true, true, null, false);
+      matches = editor.getModel()?.findMatches(regexp, false, true, true, null, false);
     });
     return matches;
   }

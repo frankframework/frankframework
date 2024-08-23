@@ -4,9 +4,16 @@ Frank!Framework Release Notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (8.2)
+Upcoming (8.3)
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/8.1-release...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/8.2-release...HEAD)
+
+WebServiceListeners now use a different way of returning Multipart Attachments. The old behavior can be restored by setting 'WebServiceListener.backwardsCompatibleMultipartNotation=true'.
+
+
+8.2.0 - Jul 12th, 2024
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/v8.0.0...v8.1.0)
 
 Moved to Spring 6 and Spring Boot 3. Requires Jakarta package names.
 Requires JDK 17 or later, tested on JDK 17 and 21.

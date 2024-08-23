@@ -16,7 +16,7 @@
 package org.frankframework.util;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -58,7 +58,7 @@ public class XmlBuilder {
 	private List<String> cdata;
 
 	public XmlBuilder(String tagName) {
-		root = tagName;
+		root = XmlUtils.cleanseElementName(tagName);
 	}
 
 	public static XmlBuilder create(String tagName) {
@@ -93,14 +93,14 @@ public class XmlBuilder {
 			if (cdata != null) {
 				throw new IllegalStateException("XmlBuilder cannot have mixed content, cdata already set when trying to add element");
 			}
-			subElements = new LinkedList<>();
+			subElements = new ArrayList<>();
 		}
 		subElements.add(newElement);
 	}
 
 	public void setCdataValue(String value) {
 		text = null;
-		cdata = new LinkedList<>();
+		cdata = new ArrayList<>();
 		if (value != null) {
 			int cdata_end_pos;
 			while ((cdata_end_pos = value.indexOf(CDATA_END)) >= 0) {

@@ -16,9 +16,9 @@
 package org.frankframework.align;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -416,9 +416,7 @@ public class XmlAligner extends XMLFilterImpl {
 	protected static List<XSModel> getSchemaInformation(URL schemaURL) {
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
-		List<XSModel> schemaInformation= new LinkedList<>();
-		schemaInformation.add(xsModel);
-		return schemaInformation;
+		return Collections.singletonList(xsModel);
 	}
 
 	public void handleRecoverableError(String message, boolean ignoreFlag) throws SAXParseException {

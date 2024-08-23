@@ -22,9 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
@@ -37,7 +34,7 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
@@ -47,6 +44,9 @@ import org.frankframework.util.UUIDUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -218,7 +218,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
+	public Object parameterResolvedTo(IParameter parameter, String correlationId, Object value) {
 		if (parameter.isHidden()) {
 			log.debug("hiding parameter [{}] value", parameter::getName);
 			String hiddenValue;
@@ -240,10 +240,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public <T> T showValue(String correlationId, String label, T value) {
+	public <T> T showInputValue(String correlationId, String label, T value) {
 		return testTool.inputpoint(correlationId, null, label, value);
 	}
 
+	@Override
+	public <T> T showOutputValue(String correlationId, String label, T value) {
+		return testTool.outputpoint(correlationId, null, label, value);
+	}
 
 	@Override
 	public Message preserveInput(String correlationId, Message input) {

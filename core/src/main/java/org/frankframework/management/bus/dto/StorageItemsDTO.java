@@ -16,20 +16,18 @@
 package org.frankframework.management.bus.dto;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
 import lombok.Setter;
-
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
@@ -68,7 +66,7 @@ public class StorageItemsDTO {
 		Date endDate = filter.getEndDate();
 		try (IMessageBrowsingIterator iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder())) {
 			int count;
-			List<StorageItemDTO> messages = new LinkedList<>();
+			List<StorageItemDTO> messages = new ArrayList<>();
 
 			for (count=0; iterator.hasNext(); ) {
 				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {

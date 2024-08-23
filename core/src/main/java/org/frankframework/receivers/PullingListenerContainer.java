@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -35,6 +36,8 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.TransactionAttribute;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
@@ -57,6 +60,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransactionDefinition txNew = null;
+
+	private @Setter MetricsInitializer metricsInitializer;
+	private DistributionSummary messagePeekingStatistics;
+	private DistributionSummary messageReceivingStatistics;
 
 	private @Getter @Setter Receiver<M> receiver;
 	private @Getter @Setter PlatformTransactionManager txManager;
@@ -89,6 +96,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 			txNew = txDef;
 		}
+
+		if (receiver.getListener() instanceof IPeekableListener<M>) {
+			messagePeekingStatistics = metricsInitializer.createSubDistributionSummary(receiver, receiver.getListener(), FrankMeterType.LISTENER_MESSAGE_PEEKING);
+		}
+
+		messageReceivingStatistics = metricsInitializer.createSubDistributionSummary(receiver, receiver.getListener(), FrankMeterType.LISTENER_MESSAGE_RECEIVING);
 	}
 
 	public void start() {
@@ -218,7 +231,11 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								boolean messageAvailable = true;
 								if (isIdle() && listener instanceof IPeekableListener peekableListener) {
 									if (peekableListener.isPeekUntransacted()) {
+										long start = System.currentTimeMillis();
 										messageAvailable = peekableListener.hasRawMessageAvailable();
+										long end = System.currentTimeMillis();
+
+										messagePeekingStatistics.record((double) end - start);
 									}
 								}
 								if (messageAvailable) {
@@ -228,7 +245,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 										txStatus = txManager.getTransaction(txNew);
 										log.trace("Transaction Started, Get Message from Listener");
 									}
+
+									long start = System.currentTimeMillis();
 									rawMessage = listener.getRawMessage(threadContext);
+									long end = System.currentTimeMillis();
+
+									messageReceivingStatistics.record((double) end - start);
 								}
 								resetRetryInterval();
 								setIdle(rawMessage==null);
@@ -438,5 +460,4 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	public boolean isIdle() {
 		return idle.get();
 	}
-
 }

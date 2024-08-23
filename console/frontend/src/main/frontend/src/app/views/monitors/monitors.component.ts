@@ -1,12 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
-import {
-  ActivatedRoute,
-  ParamMap,
-  Router,
-  convertToParamMap,
-} from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, convertToParamMap } from '@angular/router';
 
 @Component({
   selector: 'app-monitors',
@@ -58,13 +53,9 @@ export class MonitorsComponent implements OnInit {
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    const configurationQueryParameter =
-      this.routeQueryParams.get('configuration');
+    const configurationQueryParameter = this.routeQueryParams.get('configuration');
 
-    if (
-      configurationQueryParameter == '' ||
-      configurationQueryParameter != name
-    ) {
+    if (configurationQueryParameter == '' || configurationQueryParameter != name) {
       // Update the URL
       this.router.navigate([], {
         relativeTo: this.route,
@@ -76,35 +67,27 @@ export class MonitorsComponent implements OnInit {
   }
 
   update(): void {
-    this.monitorsService
-      .getMonitors(this.selectedConfiguration)
-      .subscribe((data) => {
-        this.destinations = data.destinations;
-        this.eventTypes = data.eventTypes;
-        this.monitors = data.monitors;
+    this.monitorsService.getMonitors(this.selectedConfiguration).subscribe((data) => {
+      this.destinations = data.destinations;
+      this.eventTypes = data.eventTypes;
+      this.monitors = data.monitors;
 
-        this.totalRaised = 0;
-        for (const monitor of this.monitors) {
-          monitor.displayName = monitor.name;
-          if (monitor.raised) this.totalRaised++;
-          monitor.activeDestinations = [];
-          for (const index in this.destinations) {
-            const destination = this.destinations[index];
-            monitor.activeDestinations[index] =
-              monitor.destinations.includes(destination);
-          }
+      this.totalRaised = 0;
+      for (const monitor of this.monitors) {
+        monitor.displayName = monitor.name;
+        if (monitor.raised) this.totalRaised++;
+        monitor.activeDestinations = [];
+        for (const index in this.destinations) {
+          const destination = this.destinations[index];
+          monitor.activeDestinations[index] = monitor.destinations.includes(destination);
         }
-      });
+      }
+    });
   }
 
   raise(monitor: Monitor, trigger?: Trigger): void {
     this.monitorsService
-      .putMonitorOrTriggerAction(
-        'raise',
-        this.selectedConfiguration,
-        monitor,
-        trigger,
-      )
+      .putMonitorOrTriggerAction('raise', this.selectedConfiguration, monitor, trigger)
       .subscribe(() => {
         this.update();
       });
@@ -112,12 +95,7 @@ export class MonitorsComponent implements OnInit {
 
   clear(monitor: Monitor, trigger?: Trigger): void {
     this.monitorsService
-      .putMonitorOrTriggerAction(
-        'clear',
-        this.selectedConfiguration,
-        monitor,
-        trigger,
-      )
+      .putMonitorOrTriggerAction('clear', this.selectedConfiguration, monitor, trigger)
       .subscribe(() => {
         this.update();
       });
@@ -133,37 +111,26 @@ export class MonitorsComponent implements OnInit {
     }
 
     this.monitorsService
-      .putMonitorOrTriggerEdit(
-        destinations,
-        this.selectedConfiguration,
-        monitor,
-        trigger,
-      )
+      .putMonitorOrTriggerEdit(destinations, this.selectedConfiguration, monitor, trigger)
       .subscribe(() => {
         this.update();
       });
   }
 
   deleteMonitor(monitor: Monitor, trigger?: Trigger): void {
-    this.monitorsService
-      .deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger)
-      .subscribe(() => {
-        this.update();
-      });
+    this.monitorsService.deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger).subscribe(() => {
+      this.update();
+    });
   }
 
   deleteTrigger(monitor: Monitor, trigger?: Trigger): void {
-    this.monitorsService
-      .deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger)
-      .subscribe(() => {
-        this.update();
-      });
+    this.monitorsService.deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger).subscribe(() => {
+      this.update();
+    });
   }
 
   downloadXML(monitorName?: string): void {
-    let url = `${this.appService.getServerPath()}iaf/api/configurations/${
-      this.selectedConfiguration
-    }/monitors`;
+    let url = `${this.appService.getServerPath()}iaf/api/configurations/${this.selectedConfiguration}/monitors`;
     if (monitorName) {
       url += `/${monitorName}`;
     }

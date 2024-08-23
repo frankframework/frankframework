@@ -1,11 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { convertToParamMap, Router, RouterModule } from '@angular/router';
 import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
 import { ScrollToTopComponent } from './scroll-to-top.component';
@@ -35,8 +28,7 @@ export class PagesNavigationComponent implements OnChanges, OnInit {
   @Output() shouldOpenInfo = new EventEmitter<void>();
 
   protected frankframeworkLogoPath: string = 'assets/images/ff-kawaii.svg';
-  protected frankExclamationPath: string =
-    'assets/images/frank-exclemation.svg';
+  protected frankExclamationPath: string = 'assets/images/frank-exclemation.svg';
   protected encodedServerInfo: string = '';
 
   private readonly IMAGES_BASE_PATH = 'assets/images/';
@@ -48,9 +40,7 @@ export class PagesNavigationComponent implements OnChanges, OnInit {
 
   ngOnInit(): void {
     this.serverInfoService.serverInfo$.subscribe(() => {
-      this.encodedServerInfo = encodeURIComponent(
-        this.serverInfoService.getMarkdownFormatedServerInfo(),
-      );
+      this.encodedServerInfo = encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
     });
   }
 
@@ -64,15 +54,10 @@ export class PagesNavigationComponent implements OnChanges, OnInit {
     this.shouldOpenInfo.emit();
   }
 
-  getClassByRoute(
-    className: string,
-    routeState: string | string[],
-  ): Record<string, boolean> {
+  getClassByRoute(className: string, routeState: string | string[]): Record<string, boolean> {
     if (Array.isArray(routeState)) {
       return {
-        [className]: routeState.some((routePartial) =>
-          this.router.url.split('?')[0].includes(routePartial),
-        ),
+        [className]: routeState.some((routePartial) => this.router.url.split('?')[0].includes(routePartial)),
       };
     }
     return {

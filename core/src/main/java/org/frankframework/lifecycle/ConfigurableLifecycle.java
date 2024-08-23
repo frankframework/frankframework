@@ -15,6 +15,7 @@
 */
 package org.frankframework.lifecycle;
 
+import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.springframework.context.SmartLifecycle;
 
@@ -37,5 +38,14 @@ public interface ConfigurableLifecycle extends SmartLifecycle {
 	@Override
 	default int getPhase() {
 		return Integer.MAX_VALUE; //Starts later, stops first
+	}
+
+	/**
+	 * By default these beans are not started.
+	 * The {@link Configuration} may do so in the {@link Configuration#configure()} method.
+	 */
+	@Override
+	default boolean isAutoStartup() {
+		return false;
 	}
 }

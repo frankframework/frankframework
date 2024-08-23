@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
@@ -81,6 +81,7 @@ public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
+	private static final String INSTANCE_NAME = AppConstants.getInstance().getProperty("instance.name", null);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getProperty("configurations.names.application");
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
@@ -91,6 +92,12 @@ public class ConfigurationUtils {
 	 */
 	public static boolean isConfigurationStubbed(ClassLoader classLoader) {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+	}
+
+	public static boolean isConfigurationXmlOptional(Configuration configuration) {
+		return CONFIG_AUTO_FS_CLASSLOADER &&
+				configuration.getClassLoader() instanceof WebAppClassLoader &&
+				configuration.getName().equals(INSTANCE_NAME);
 	}
 
 	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
@@ -517,7 +524,7 @@ public class ConfigurationUtils {
 	}
 
 	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
-		List<String> sortedConfigurationNames = new LinkedList<>(allConfigNameItems.keySet());
+		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
 		sortedConfigurationNames.sort(new ParentConfigComparator());
 
 		Map<String, T> sortedConfigurations = new LinkedHashMap<>();

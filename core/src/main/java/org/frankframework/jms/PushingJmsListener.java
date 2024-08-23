@@ -60,7 +60,7 @@ import org.frankframework.util.CredentialFactory;
  * <code>transacted</code>="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
  *
  * </p><p>
- * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
+ * Setting {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
  * when the state of the Adapter equals the success state.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -68,7 +68,7 @@ import org.frankframework.util.CredentialFactory;
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
  * since a session has lower overhead in trying to prevent duplicate messages.
  * </p>
- * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if
+ * <p>The setting for {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} will only be processed if
  * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for
  * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
  *

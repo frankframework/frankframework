@@ -31,9 +31,7 @@ describe('QuickSubmitFormDirective', () => {
 
     fixture.detectChanges(); // initial binding
 
-    directiveElement = fixture.debugElement.query(
-      By.directive(QuickSubmitFormDirective),
-    );
+    directiveElement = fixture.debugElement.query(By.directive(QuickSubmitFormDirective));
   });
 
   it('emits event when ctrl+enter is pressed', () => {

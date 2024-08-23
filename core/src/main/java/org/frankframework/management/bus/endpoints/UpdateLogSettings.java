@@ -77,7 +77,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 		updateLogConfiguration(loglevel, logIntermediaryResults, maxMessageLength, enableDebugger);
 	}
 
-	@SuppressWarnings("S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
+	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
 	private void updateLogConfiguration(Level loglevel, Boolean logIntermediaryResults, Integer maxMessageLength, Boolean enableDebugger) {
 		StringBuilder msg = new StringBuilder();
 

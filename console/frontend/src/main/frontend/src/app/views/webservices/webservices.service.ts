@@ -38,8 +38,6 @@ export class WebservicesService {
   ) {}
 
   getWebservices(): Observable<WebServices> {
-    return this.http.get<WebServices>(
-      `${this.appService.absoluteApiPath}webservices`,
-    );
+    return this.http.get<WebServices>(`${this.appService.absoluteApiPath}webservices`);
   }
 }
