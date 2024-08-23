@@ -185,7 +185,7 @@ public class IbisException extends Exception {
 	@Nullable
 	private static Throwable getCause(Throwable t) {
 		Throwable cause = ExceptionUtils.getCause(t);
-		if(cause == null && t.getSuppressed().length > 0) {
+		if(cause == null && t != null && t.getSuppressed().length > 0) {
 			return t.getSuppressed()[0];
 		}
 		return cause;

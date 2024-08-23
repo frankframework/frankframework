@@ -229,11 +229,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
-		assertThrows(ListenerException.class, ()-> {
-			RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
-			fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test");
-			assertNull(rawMessage);
-		});
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertThrows(ListenerException.class, () -> fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test"));
 	}
 
 	@Test

@@ -520,16 +520,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Container for monitor objects
 	 */
 	public void setMonitoring(MonitorManager monitorManager) {
-		// Monitors self register in MonitorManager;
+		// Dummy Frank!Doc setter
+		// Monitors self register in MonitorManager
 	}
-	// above comment is used in FrankDoc
-	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
+
 	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
+		// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	}
 
 	public void setSharedResources(SharedResources resource) {
-		//Dummy Frank!Doc setter
+		// Dummy Frank!Doc setter
 	}
 
 	/**
