@@ -19,6 +19,12 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.json.Json;
+import jakarta.json.JsonMergePatch;
+import jakarta.json.JsonValue;
+
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -35,11 +41,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.json.Json;
-import jakarta.json.JsonMergePatch;
-import jakarta.json.JsonValue;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -70,7 +71,8 @@ public class FrankApiWebSocketBase {
 	protected String compareAndUpdateResponse(RequestMessageBuilder builder) {
 		final Message<?> response;
 		try {
-			response = gateway.sendSyncMessage(builder.build());
+			//TODO create a local cache and target specific members
+			response = gateway.sendSyncMessage(builder.build(null));
 		} catch (Exception e) { //BusException
 			log.error("exception while sending synchronous bus request", e);
 			return null;

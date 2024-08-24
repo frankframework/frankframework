@@ -17,6 +17,7 @@ package org.frankframework.management.bus;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import jakarta.annotation.Nonnull;
@@ -47,6 +48,7 @@ public interface OutboundGateway extends IntegrationPattern {
 		private boolean localMember;
 		private boolean selectedMember;
 		private String type;
+		private Map<String, String> attributes;
 	}
 
 	/**
