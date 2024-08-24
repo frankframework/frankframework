@@ -16,32 +16,41 @@
 package org.frankframework.console.controllers.socket;
 
 import java.util.EnumMap;
+import java.util.UUID;
+import java.util.WeakHashMap;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.frankframework.management.bus.BusTopic;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class MessageCacheStore {
 
-	private final EnumMap<BusTopic, String> topicCache = new EnumMap<>(BusTopic.class);
+	private final WeakHashMap<String, EnumMap<BusTopic, String>> memberCache = new WeakHashMap<>();
+//	private final EnumMap<BusTopic, String> topicCache = new EnumMap<>(BusTopic.class);
 
-	public void put(BusTopic topic, String message) {
+	public void put(@Nullable UUID uuid, @Nonnull BusTopic topic, @Nonnull String message) {
+		String key = uuid == null ? "local" : uuid.toString();
+		EnumMap<BusTopic, String> topicCache = memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
 		topicCache.put(topic, message);
 	}
 
 	@Nullable
-	public String get(BusTopic topic) {
+	public String get(@Nullable UUID uuid, @Nonnull BusTopic topic) {
+		String key = uuid == null ? "local" : uuid.toString();
+		EnumMap<BusTopic, String> topicCache = memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
 		return topicCache.get(topic);
 	}
 
 	@Nonnull
-	public String getAndUpdate(BusTopic topic, @Nonnull String latestJsonMessage) {
+	public String getAndUpdate(@Nullable UUID uuid, @Nonnull BusTopic topic, @Nonnull String latestJsonMessage) {
+		String key = uuid == null ? "local" : uuid.toString();
+		EnumMap<BusTopic, String> topicCache = memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
 		String cachedMessage = topicCache.put(topic, latestJsonMessage);
 		if(cachedMessage == null) {
 			return "{}";
