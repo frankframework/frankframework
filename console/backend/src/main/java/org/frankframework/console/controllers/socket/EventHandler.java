@@ -29,7 +29,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-//@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 60)

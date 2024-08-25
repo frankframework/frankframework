@@ -30,31 +30,31 @@ import org.springframework.stereotype.Component;
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class MessageCacheStore {
+	private static final UUID LOCAL_UUID = UUID.randomUUID();
 
-	private final WeakHashMap<String, EnumMap<BusTopic, String>> memberCache = new WeakHashMap<>();
-//	private final EnumMap<BusTopic, String> topicCache = new EnumMap<>(BusTopic.class);
+	private final WeakHashMap<UUID, EnumMap<BusTopic, String>> memberCache = new WeakHashMap<>();
 
 	public void put(@Nullable UUID uuid, @Nonnull BusTopic topic, @Nonnull String message) {
-		String key = uuid == null ? "local" : uuid.toString();
-		EnumMap<BusTopic, String> topicCache = memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
-		topicCache.put(topic, message);
+		getCache(uuid).put(topic, message);
 	}
 
 	@Nullable
 	public String get(@Nullable UUID uuid, @Nonnull BusTopic topic) {
-		String key = uuid == null ? "local" : uuid.toString();
-		EnumMap<BusTopic, String> topicCache = memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
-		return topicCache.get(topic);
+		return getCache(uuid).get(topic);
 	}
 
 	@Nonnull
 	public String getAndUpdate(@Nullable UUID uuid, @Nonnull BusTopic topic, @Nonnull String latestJsonMessage) {
-		String key = uuid == null ? "local" : uuid.toString();
-		EnumMap<BusTopic, String> topicCache = memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
-		String cachedMessage = topicCache.put(topic, latestJsonMessage);
+		String cachedMessage = getCache(uuid).put(topic, latestJsonMessage);
 		if(cachedMessage == null) {
 			return "{}";
 		}
 		return cachedMessage;
+	}
+
+	@Nonnull
+	private EnumMap<BusTopic, String> getCache(@Nullable UUID uuid) {
+		UUID key = uuid == null ? LOCAL_UUID : uuid;
+		return memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
 	}
 }
