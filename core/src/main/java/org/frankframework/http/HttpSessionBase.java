@@ -70,6 +70,9 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
+import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
@@ -83,6 +86,8 @@ import org.frankframework.http.authentication.OAuthAccessTokenManager.Authentica
 import org.frankframework.http.authentication.OAuthAuthenticationScheme;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.statistics.HasStatistics;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -142,12 +147,14 @@ import org.springframework.util.Assert;
  * @author	Niels Meijer
  * @since	7.0
  */
-public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore {
+public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics, AdapterAware {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Setter MetricsInitializer configurationMetrics;
+	private @Getter @Setter Adapter adapter;
 
 	/* CONNECTION POOL */
 	private @Getter int timeout = 10_000;
@@ -376,12 +383,31 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	private void buildHttpClient() {
 		configureConnectionManager();
-		httpClient = httpClientBuilder.build();
+
+		if (getApplicationContext() == null) {
+			// If there's no applicationContext, this is probably a sender created in Larva, we're missing the spring context here
+			// and we can't construct the interceptor. Besides that, it's probably not worth instrumenting either.
+			httpClient = httpClientBuilder.build();
+		} else {
+
+			IConfigurationAware element = (adapter != null) ? adapter : this;
+
+			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,
+					request -> request.getRequestLine().getUri(),
+					true
+			);
+
+			httpClient = httpClientBuilder
+					.addInterceptorFirst(interceptor.getRequestInterceptor())
+					.addInterceptorLast(interceptor.getResponseInterceptor())
+					.build();
+		}
 	}
 
 	protected void setHttpClient(CloseableHttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
+
 	protected void setHttpContext(HttpClientContext httpContext) {
 		this.defaultHttpClientContext = httpContext;
 	}

@@ -20,8 +20,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.DistributionSummary.Builder;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter.Type;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.search.Search;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.Adapter;
@@ -30,6 +40,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
+import org.frankframework.http.HttpSession;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.AppConstants;
@@ -39,16 +50,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.DistributionSummary.Builder;
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Meter.Type;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.search.Search;
-import lombok.Setter;
 
 public class MetricsInitializer implements InitializingBean, DisposableBean, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -87,6 +88,12 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 	private String findName(IConfigurationAware namedObject) {
 		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
+	}
+
+	public Timer.ResourceSample createTimerResource(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type, String... tags) {
+		return Timer.resource(meterRegistry, type.getMeterName())
+				.tags(tags)
+				.tags(getTags(frankElement, findName(frankElement), null));
 	}
 
 	/** This DistributionSummary is suffixed under a pipe */
@@ -150,8 +157,6 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return builder.register(meterRegistry);
 	}
 
-
-
 	private List<Tag> getTags(@Nonnull IConfigurationAware frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
 		ApplicationContext configuration = frankElement.getApplicationContext();
 		List<Tag> tags = new ArrayList<>(5);
@@ -182,18 +187,20 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private String getElementType(@Nonnull IConfigurationAware frankElement) {
-		if(frankElement instanceof Receiver) {
+		if (frankElement instanceof Receiver) {
 			return "receiver";
-		} else if(frankElement instanceof PipeLine) {
+		} else if (frankElement instanceof PipeLine) {
 			return "pipeline";
-		} else if(frankElement instanceof IPipe) {
+		} else if (frankElement instanceof IPipe) {
 			return "pipe";
-		} else if(frankElement instanceof Adapter) {
+		} else if (frankElement instanceof Adapter) {
 			return "adapter";
-		} else if(frankElement instanceof ISender) {
+		} else if (frankElement instanceof ISender) {
 			return "sender";
-		} else if(frankElement instanceof JobDef) {
+		} else if (frankElement instanceof JobDef) {
 			return "schedule";
+		} else if (frankElement instanceof HttpSession) {
+			return "httpSession";
 		} else {
 			throw new IllegalStateException("meter type not configured");
 		}

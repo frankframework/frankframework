@@ -39,6 +39,8 @@ public enum FrankMeterType {
 	RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
 	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER),
 
+	SENDER_HTTP("frank.sender.http", Meter.Type.TIMER),
+
 	LISTENER_MESSAGE_PEEKING("frank.listener.messagePeeking", Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	LISTENER_MESSAGE_RECEIVING("frank.listener.messageReceiving", Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT);
 
