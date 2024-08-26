@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 
 interface stackTrace {
   className: string;
@@ -9,9 +9,7 @@ interface stackTrace {
   lineNumber: string;
 }
 
-type ServerError = {
-  status: string;
-  error: string;
+type ServerError = ServerErrorResponse & {
   stackTrace?: stackTrace[];
 };
 
