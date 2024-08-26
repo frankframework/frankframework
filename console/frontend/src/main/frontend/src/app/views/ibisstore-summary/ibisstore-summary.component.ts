@@ -56,8 +56,12 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
         this.result = data.result;
       },
       error: (errorData: HttpErrorResponse) => {
-        const errorResponse = errorData.error as ServerErrorResponse | undefined;
-        this.error = errorResponse ? errorResponse.error : errorData.message;
+        try {
+          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          this.error = errorResponse ? errorResponse.error : errorData.message;
+        } catch {
+          this.error = errorData.message;
+        }
         this.result = [];
       },
     }); // TODO no intercept

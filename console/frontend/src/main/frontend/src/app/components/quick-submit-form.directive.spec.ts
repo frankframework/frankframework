@@ -4,7 +4,7 @@ import { QuickSubmitFormDirective } from './quick-submit-form.directive';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  // standalone: true,
+  standalone: true,
   template: `<form>
     <textarea appQuickSubmitForm></textarea>
     <button type="submit" (click)="changeTrigger($event)">Submit</button>
