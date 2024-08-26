@@ -390,6 +390,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			httpClient = httpClientBuilder.build();
 		} else {
 
+			// Adapter is not always available, use this instead. Also see `org.frankframework.statistics.MetricsInitializer.getElementType`
 			IConfigurationAware element = (adapter != null) ? adapter : this;
 
 			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,

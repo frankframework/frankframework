@@ -200,6 +200,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		} else if (frankElement instanceof JobDef) {
 			return "schedule";
 		} else if (frankElement instanceof HttpSession) {
+			// See `org.frankframework.http.HttpSessionBase.buildHttpClient` where this might use the HttpSession as frankElement
 			return "httpSession";
 		} else {
 			throw new IllegalStateException("meter type not configured");
