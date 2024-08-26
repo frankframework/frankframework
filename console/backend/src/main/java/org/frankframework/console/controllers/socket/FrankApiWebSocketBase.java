@@ -91,7 +91,6 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 	protected String compareAndUpdateResponse(RequestMessageBuilder builder, UUID target) {
 		final Message<?> response;
 		try {
-			//TODO create a local cache and target specific members
 			response = gateway.sendSyncMessage(builder.build(target));
 		} catch (Exception e) { //BusException
 			log.error("exception while sending synchronous bus request", e);
