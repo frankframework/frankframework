@@ -335,7 +335,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	/**
-	 * If set <code>false</code>, the call is made asynchronously. This implies isolated=<code>true</code>
+	 * If set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code>
 	 * @ff.default true
 	 */
 	public void setSynchronous(boolean b) {

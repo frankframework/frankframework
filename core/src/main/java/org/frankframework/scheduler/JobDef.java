@@ -69,49 +69,49 @@ import org.springframework.context.ApplicationContext;
  *   <tr>
  *     <td align="left"><code>Seconds</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>0-59</code></td>
+ *     <td align="left">0-59</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Minutes</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>0-59</code></td>
+ *     <td align="left">0-59</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Hours</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>0-23</code></td>
+ *     <td align="left">0-23</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Day-of-month</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>1-31</code></td>
+ *     <td align="left">1-31</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * ? / L C</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Month</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>1-12 or JAN-DEC</code></td>
+ *     <td align="left">1-12 or JAN-DEC</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Day-of-Week</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>1-7 or SUN-SAT</code></td>
+ *     <td align="left">1-7 or SUN-SAT</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * ? / L C #</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Year (Optional)</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>empty, 1970-2099</code></td>
+ *     <td align="left">>empty, 1970-2099</td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left"><code>, - * /</code></td>
  *   </tr>
@@ -179,87 +179,87 @@ import org.springframework.context.ApplicationContext;
  *   <tr>
  *     <td align="left"><code>"0 0 12 * * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 12pm (noon) every day</code></td>
+ *     <td align="left">Fire at 12pm (noon) every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 ? * *"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am every day</code></td>
+ *     <td align="left">Fire at 10:15am every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 * * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am every day</code></td>
+ *     <td align="left">Fire at 10:15am every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 * * ? *"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am every day</code></td>
+ *     <td align="left">Fire at 10:15am every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 * * ? 2005"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am every day during the year 2005</code></td>
+ *     <td align="left">Fire at 10:15am every day during the year 2005</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 * 14 * * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire every minute starting at 2pm and ending at 2:59pm, every day</code></td>
+ *     <td align="left">Fire every minute starting at 2pm and ending at 2:59pm, every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 0/5 14 * * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day</code></td>
+ *     <td align="left">Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 0/5 14,18 * * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day</code></td>
+ *     <td align="left">Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 0-5 14 * * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire every minute starting at 2pm and ending at 2:05pm, every day</code></td>
+ *     <td align="left">Fire every minute starting at 2pm and ending at 2:05pm, every day</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 10,44 14 ? 3 WED"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.</code></td>
+ *     <td align="left">Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 ? * MON-FRI"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday</code></td>
+ *     <td align="left">Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 15 * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am on the 15th day of every month</code></td>
+ *     <td align="left">Fire at 10:15am on the 15th day of every month</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 L * ?"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am on the last day of every month</code></td>
+ *     <td align="left">Fire at 10:15am on the last day of every month</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 ? * 6L"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am on the last Friday of every month</code></td>
+ *     <td align="left">Fire at 10:15am on the last Friday of every month</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 ? * 6L"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am on the last Friday of every month</code></td>
+ *     <td align="left">Fire at 10:15am on the last Friday of every month</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 ? * 6L 2002-2005"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005</code></td>
+ *     <td align="left">Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005</td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>"0 15 10 ? * 6#3"</code></td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left"><code>Fire at 10:15am on the third Friday of every month</code></td>
+ *     <td align="left">Fire at 10:15am on the third Friday of every month</td>
  *   </tr>
  * </table>
  * </p>

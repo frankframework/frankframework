@@ -85,46 +85,45 @@ import org.w3c.dom.Node;
 /**
  * Sender to obtain information from and write to a CMIS application.
  *
- *
  * <p>
- * When <code>action</code>=<code>get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
+ * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;id&gt;documentId&lt;/id&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
+ * <pre>{@code
+ * <cmis>
+ *     <id>documentId</id>
+ * </cmis>
+ * }</pre>
  * </p>
  * <p>
- * When <code>action</code>=<code>delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
- * </p>
- * <p>
- * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;id&gt;documentId&lt;/id&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
- * </p>
- * <p>
- * When <code>action</code>=<code>create</code> the input (xml string) indicates document properties to set. This input is optional.
+ * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;name&gt;Offerte&lt;/name&gt;
- *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
- *      &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
- *      &lt;properties&gt;
- *         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
- *         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
- *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
- *      &lt;/properties&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
+ * <pre>{@code
+ * <cmis>
+ *     <id>documentId</id>
+ * </cmis>
+ * }</pre>
+ * </p>
+ * <p>
+ * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
+ * </p>
+ * <p>
+ * <b>Example:</b>
+ * <pre>{@code
+ * <cmis>
+ *     <name>Offerte</name>
+ *     <objectTypeId>NNB_Geldlening</objectTypeId>
+ *     <mediaType>application/pdf</mediaType>
+ *     <properties>
+ *         <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz">2014-11-27T16:43:01.268+0100</property>
+ *         <property name="ArrivedBy">HDN</property>
+ *         <property name="DocumentType">Geldlening</property>
+ *     </properties>
+ * </cmis>
+ * }</pre>
  * </p>
  *
  * <p>
@@ -147,42 +146,42 @@ import org.w3c.dom.Node;
  * </table>
  * </p>
  * <p>
- * When <code>action</code>=<code>find</code> the input (xml string) indicates the query to perform.
+ * When <code>action=find</code> the input (xml string) indicates the query to perform.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;query&gt;
- *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
- *      &lt;maxItems&gt;10&lt;/maxItems&gt;
- *      &lt;skipCount&gt;0&lt;/skipCount&gt;
- *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
- *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
- *   &lt;/query&gt;
- * </code></pre>
+ * <pre>{@code
+ * <query>
+ *    <statement>select * from cmis:document</statement>
+ *    <maxItems>10</maxItems>
+ *    <skipCount>0</skipCount>
+ *    <searchAllVersions>true</searchAllVersions>
+ *    <includeAllowableActions>true</includeAllowableActions>
+ * </query
+ * }</pre>
  * </p>
  * <p>
- * When <code>action</code>=<code>update</code> the input (xml string) indicates document properties to update.
+ * When <code>action=update</code> the input (xml string) indicates document properties to update.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;id&gt;123456789&lt;/id&gt;
- *      &lt;properties&gt;
- *         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
- *         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
- *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
- *      &lt;/properties&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
+ * <pre>{@code
+ * <cmis>
+ *    <id>123456789</id>
+ *    <properties>
+ *       <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz">2014-11-27T16:43:01.268+0100</property>
+ *       <property name="ArrivedBy">HDN</property>
+ *       <property name="DocumentType">Geldlening</property>
+ *    </properties>
+ * </cmis>
+ * }</pre>
  * </p>
  *
  * <p>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>id</td><td>mandatory property "cmis:objectId" which indicates the document to update</td><td>&nbsp;</td></tr>
- * <tr><td>property</td><td>custom document property to update. See <code>action</code>=<code>create</code> for possible attributes</td><td>&nbsp;</td></tr>
+ * <tr><td>property</td><td>custom document property to update. See <code>action=create</code> for possible attributes</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *
@@ -963,18 +962,18 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setBindingType(bindingType);
 	}
 
-	/** If <code>action</code>=<code>create</code> the sessionKey that contains the file to use. If <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code> the sessionKey to store the result in */
+	/** If <code>action=create</code> the sessionKey that contains the file to use. If <code>action=get</code> and <code>getProperties=true</code> the sessionKey to store the result in */
 	public void setFileSessionKey(String string) {
 		fileSessionKey = string;
 	}
 
-	/** If <code>action</code>=<code>create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used */
+	/** If <code>action=create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used */
 	public void setFilenameSessionKey(String string) {
 		filenameSessionKey = string;
 	}
 
 	/**
-	 * If <code>action</code>=<code>create</code> the mime type used to store the document when it's not set in the input message by a property
+	 * If <code>action=create</code> the mime type used to store the document when it's not set in the input message by a property
 	 * @ff.default 'application/octet-stream'
 	 */
 	public void setDefaultMediaType(String string) {
@@ -982,7 +981,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
+	 * (Only used when <code>action=get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
 	 * @ff.default false
 	 */
 	public void setGetProperties(boolean b) {
@@ -990,7 +989,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>FileSessionKey</code>. If false, only the properties are returned
+	 * (Only used when <code>action=get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>fileSessionKey</code>. If false, only the properties are returned
 	 * @ff.default true
 	 */
 	public void setGetDocumentContent(boolean getDocumentContent) {
@@ -998,14 +997,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository
+	 * (Only used when <code>action=create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository
 	 * @ff.default true
 	 */
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
 	}
 
-	/** (Only used when <code>action</code>=<code>get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
+	/** (Only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
 	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("configure forward 'notFound' instead")
 	public void setResultOnNotFound(String string) {

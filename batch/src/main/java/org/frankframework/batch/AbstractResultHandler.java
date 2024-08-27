@@ -116,7 +116,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	/**
-	 * if set <code>true</code>, this resulthandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
+	 * if set to <code>true</code>, this resultHandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
 	 * @ff.default false
 	 */
 	@Override
@@ -129,7 +129,9 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	/**
-	 * When set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType} is handled as a block.
+	 * When set to <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType},
+	 * is handled as a block.
+	 *
 	 * @ff.default true
 	 */
 	public void setBlockByRecordType(boolean b) {

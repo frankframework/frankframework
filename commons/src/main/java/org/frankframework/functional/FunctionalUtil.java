@@ -34,9 +34,9 @@ public class FunctionalUtil {
 	 *     to a function that takes a number of {@link Object} parameters, such as Log4J log methods (in particular the
 	 *     methods where an exception is passed as last argument).
 	 *     For example:
-	 *     <code>
+	 *     <pre>{@code
 	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), supply(messageId), e);
-	 *     </code>
+	 *     }</pre>
 	 * </p>
 	 *
 	 * @param value Value to be supplied. NB: This should be a constant, otherwise its value is instantly
@@ -55,11 +55,11 @@ public class FunctionalUtil {
 	 *     when an array of mixed arguments should be passed all as type {@link org.apache.logging.log4j.util.Supplier}
 	 *     to a logger method (in particular the methods where an exception is passed as last argument).
 	 *     For example:
-	 *     <code>
+	 *     <pre>{@code
 	 *         String messageId = null;
 	 *         if (true) messageId = "msg id";
 	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), logValue(messageId), e);
-	 *     </code>
+	 *     }</pre>
 	 * </p>
 	 *
 	 * @param value Value to be supplied. NB: This should be a constant, otherwise its value is instantly
@@ -79,9 +79,9 @@ public class FunctionalUtil {
 	 *     when an array of mixed arguments should be passed all as type {@link org.apache.logging.log4j.util.Supplier}
 	 *     to a logger method (in particular the methods where an exception is passed as last argument).
 	 *     For example:
-	 *     <code>
+	 *     <pre>{@code
 	 *         log.error("Error with message id [{}]", logMethod(this::getLogPrefix), logValue(v), e);
-	 *     </code>
+	 *     }</pre>
 	 * </p>
 	 *
 	 * @param method Single-argument Method to be invoked.
@@ -102,18 +102,18 @@ public class FunctionalUtil {
 	 * </p>
 	 * <p>
 	 *     For example:
-	 *     <code>
+	 *     <pre>{@code
 	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), e);
-	 *     </code>
+	 *     }</pre>
 	 *     This can also be useful when for instance a no-arguments function should be passed to a JUnit arguments
 	 *     supplier for a parameterized unit test:
-	 *     <code>
-	 *	    public static Stream&lt;Arguments&gt; transactionManagers() {
+	 *     <pre>{@code
+	 *	    public static Stream<Arguments> transactionManagers() {
 	 * 		    return Stream.of(
 	 * 			    Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManager))
 	 * 		    );
 	 *      }
-	 *     </code>
+	 *     }</pre>
 	 * </p>
 	 *
 	 * @param s Supplier lambda or function reference.
@@ -133,13 +133,13 @@ public class FunctionalUtil {
 	 *     methods that take generic object parameters, such as JUnit {@code Arguments.of()}.
 	 * </p>
 	 * <p>For Example:</p>
-	 * <code>
-	 *  public static Stream&lt;Arguments&gt; transactionManagers() {
+	 * <pre>{@code
+	 *  public static Stream<Arguments> transactionManagers() {
 	 * 		return Stream.of(
 	 * 			Arguments.of(function(ReceiverTest::buildNarayanaTransactionManager))
 	 * 		);
 	 *  }
-	 * </code>
+	 * }</pre>
 	 *
 	 * @param f Lambda or function reference that takes a single parameter and returns a value.
 	 * @return Same lambda or function reference but now type verified by the compiler.

@@ -49,7 +49,8 @@ import org.w3c.dom.Node;
 
 /**
  * QuerySender that transforms the input message to a query.
- * <br/><code><pre>
+ * <br/>
+ * <pre>{@code
  *  select
  *  delete
  *  insert
@@ -62,14 +63,15 @@ import org.w3c.dom.Node;
  *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
  *         - where [0..1]
  *         - order [0..1]
- * <br/>
+ *
  *  alter - sequenceName
  *        - startWith
- * <br/>
+ *
  *  sql   - type [0..1] one of {select;ddl;other}, other by default
  *        - query
+ *
+ * }</pre>
  * <br/>
- * </pre></code><br/>
  *
  * @author  Peter Leeuwenburgh
  */

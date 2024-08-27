@@ -272,7 +272,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 	/**
-	 * If set <code>true</code>, trailing spaces are removed from each field
+	 * If set to <code>true</code>, trailing spaces are removed from each field
 	 * @ff.default false
 	 */
 	public void setTrim(boolean b) {

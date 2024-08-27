@@ -41,8 +41,7 @@ import org.frankframework.util.XmlBuilder;
 
 /**
  * <p>Example configuration:</p>
- * <pre><code>
- * {@literal
+ * <pre>{@code
  * <monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
  *    <trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
  *        <event>Receiver Shutdown</event>
@@ -51,9 +50,8 @@ import org.frankframework.util.XmlBuilder;
  *        <event>Receiver Shutdown</event>
  *    </trigger>
  * </monitor>
- * }
+ * }</pre>
  *
- * </code></pre>
  * @author  Gerrit van Brakel
  * @since   4.9
  *

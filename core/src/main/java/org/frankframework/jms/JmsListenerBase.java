@@ -434,7 +434,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	}
 
 	/**
-	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>,
+	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo=true</code>,
 	 * the sender specified reply destination takes precedence over this one.
 	 */
 	public void setReplyDestinationName(String destinationName) {

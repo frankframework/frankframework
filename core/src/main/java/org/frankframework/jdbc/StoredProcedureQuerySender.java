@@ -74,72 +74,72 @@ import jakarta.jms.JMSException;
  * <p>
  *	<h3>Sample Output for queryType=OTHER</h3>
  *	<h4>Basic Example with Only Simple Output Parameters</h4>
- *  <code><pre>
-	&lt;resultset&gt;
-		&lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
-		&lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
-	&lt;/resultset&gt;
- *  </pre></code>
+ * <pre>{@code
+ * <resultset>
+ * 	   <result param="r1" type="STRING">MESSAGE-CONTENTS</result>
+ *     <result param="r2" type="STRING">E</result>
+ * </resultset>
+ * }</pre>
  *
  *	<h4>Example with Resultset and Simple Output Parameters</h4>
- *  <code><pre>
-	 &lt;resultset&gt;
-		 &lt;result resultNr="1"&gt;
-			 &lt;fielddefinition&gt;
-				&lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&gt;
-				 &lt;field ...../&gt;
- 		     &lt;/fielddefinition&gt;
-			 &lt;rowset&gt;
-				 &lt;row number="0"&gt;
-					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
-					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
-					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
-					 &lt;field name="TCLOB" null="true"/&gt;
-					 &lt;field name="TBLOB" null="true"/&gt;
-				 &lt;/row&gt;
-                 &lt;row number="1" ...../&gt;
-			 &lt;/rowset&gt;
-		 &lt;/result&gt;
-		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
-	 &lt;/resultset&gt;
- *  </pre></code>
+ * <pre>{@code
+ * <resultset>
+ * 		 <result resultNr="1">
+ * 			 <fielddefinition>
+ * 				<field name="FIELDNAME"
+ * 						  type="columnType"
+ * 						  columnDisplaySize=""
+ * 						  precision=""
+ * 						  scale=""
+ * 						  isCurrency=""
+ * 						  columnTypeName=""
+ * 						  columnClassName=""/>
+ * 				 <field ...../>
+*  		     </fielddefinition>
+ * 			 <rowset>
+ * 				 <row number="0">
+ * 					 <field name="TKEY">MSG-ID</field>
+ * 					 <field name="TCHAR">E</field>
+ * 					 <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+ * 					 <field name="TCLOB" null="true"/>
+ * 					 <field name="TBLOB" null="true"/>
+ * 				 </row>
+ *                  <row number="1" ...../>
+ * 			 </rowset>
+ * 		 </result>
+ * 		 <result param="count" type="INTEGER">5</result>
+ * </resultset>
+ * }</pre>
  *
  *	<h4>Example with Simple and Cursor Output Parameters</h4>
- *	<code><pre>
-	&lt;resultset&gt;
-		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
-		&lt;result param="cursor1" type="LIST"&gt;
-			 &lt;fielddefinition&gt;
-				&lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&gt;
-				 &lt;field ...../&gt;
- 		     &lt;/fielddefinition&gt;
-			&lt;rowset&gt;
-				&lt;row number="0"&gt;
-					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
-					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
-					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
-					&lt;field name="TCLOB" null="true"/&gt;
-					&lt;field name="TBLOB" null="true"/&gt;
-				&lt;/row&gt;
-				&lt;row number="1" ..... /&gt;
-			&lt;/rowset&gt;
-		&lt;/result&gt;
-	&lt;/resultset&gt;
- *	</pre></code>
+ * <pre>{@code
+ * <resultset>
+ * 		<result param="count" type="INTEGER">5</result>
+ * 		<result param="cursor1" type="LIST">
+ * 			 <fielddefinition>
+ * 				<field name="FIELDNAME"
+ * 						  type="columnType"
+ * 						  columnDisplaySize=""
+ * 						  precision=""
+ * 						  scale=""
+ * 						  isCurrency=""
+ * 						  columnTypeName=""
+ * 						  columnClassName=""/>
+ * 				 <field ...../>
+ *  		</fielddefinition>
+ * 			<rowset>
+ * 				<row number="0">
+ * 					<field name="TKEY">MSG-ID</field>
+ * 					<field name="TCHAR">E</field>
+ * 					<field name="TMESSAGE">MESSAGE-CONTENTS</field>
+ * 					<field name="TCLOB" null="true"/>
+ * 					<field name="TBLOB" null="true"/>
+ * 				</row>
+ * 				<row number="1" ..... />
+ * 			</rowset>
+ * 		</result>
+ * 	</resultset>
+ * }</pre>
  * </p>
  * <p><em>NOTE:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
  * are expected.</p>

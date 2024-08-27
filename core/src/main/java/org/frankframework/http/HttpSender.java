@@ -516,13 +516,13 @@ public class HttpSender extends HttpSenderBase {
 		paramsInUrl = b;
 	}
 
-	/** (Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
+	/** (Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}
 
 	/**
-	 * If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body.
+	 * If set and <code>methodType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body.
 	 * For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
 	 * <ul>
 	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
@@ -548,7 +548,8 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	/**
-	 * If <code>true</code>, the input will be added to the URL for <code>methodType</code>=<code>GET</code>, or for <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code> if <code>postType</code>=<code>RAW</code>. This used to be the default behaviour in framework version 7.7 and earlier
+	 * If <code>true</code>, the input will be added to the URL for <code>methodType=GET</code>, or for <code>methodType=POST</code>, <code>PUT</code> or
+	 * <code>PATCH</code> if <code>postType=RAW</code>. This used to be the default behaviour in framework version 7.7 and earlier
 	 * @ff.default for methodType=<code>GET</code>: <code>false</code>,<br/>for methodTypes <code>POST</code>, <code>PUT</code>, <code>PATCH</code>: <code>true</code>
 	 */
 	public void setTreatInputMessageAsParameters(Boolean b) {
