@@ -18,13 +18,12 @@ type ServiceListenerResult = {
   styleUrls: ['./test-service-listener.component.scss'],
 })
 export class TestServiceListenerComponent implements OnInit {
-  state: AlertState[] = [];
-  file: File | null = null;
-  services: string[] = [];
-  processingMessage = false;
-  result = '';
+  protected state: AlertState[] = [];
+  protected services: string[] = [];
+  protected processingMessage = false;
+  protected result = '';
 
-  form = {
+  protected form = {
     service: '',
     encoding: '',
     message: '',
@@ -37,6 +36,8 @@ export class TestServiceListenerComponent implements OnInit {
       run: (): void => this.submit(),
     },
   };
+
+  private file: File | null = null;
 
   constructor(
     private http: HttpClient,

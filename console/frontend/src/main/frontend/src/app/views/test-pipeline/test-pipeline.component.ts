@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
+import { Subscription } from 'rxjs';
 
 type FormSessionKey = {
   key: string;
@@ -24,18 +25,18 @@ type PipelineResult = {
   templateUrl: './test-pipeline.component.html',
   styleUrls: ['./test-pipeline.component.scss'],
 })
-export class TestPipelineComponent implements OnInit {
-  configurations: Configuration[] = [];
-  adapters: Record<string, Adapter> = {};
-  state: AlertState[] = [];
-  file: File | null = null;
-  selectedConfiguration = '';
-  processingMessage = false;
-  result = '';
+export class TestPipelineComponent implements OnInit, OnDestroy {
+  @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
+  protected configurations: Configuration[] = [];
+  protected adapters: Record<string, Adapter> = {};
+  protected state: AlertState[] = [];
+  protected selectedConfiguration = '';
+  protected processingMessage = false;
+  protected result = '';
 
-  formSessionKeys: FormSessionKey[] = [{ key: '', value: '' }];
+  protected formSessionKeys: FormSessionKey[] = [{ key: '', value: '' }];
 
-  form = {
+  protected form = {
     adapter: '',
     encoding: '',
     message: '',
@@ -49,7 +50,8 @@ export class TestPipelineComponent implements OnInit {
     },
   };
 
-  @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
+  private file: File | null = null;
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private http: HttpClient,
@@ -58,14 +60,20 @@ export class TestPipelineComponent implements OnInit {
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    this.appService.configurations$.subscribe(() => {
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
     });
+    this.subscriptions.add(configurationsSubscription);
 
     this.adapters = this.appService.adapters;
-    this.appService.adapters$.subscribe(() => {
+    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.adapters = this.appService.adapters;
     });
+    this.subscriptions.add(adaptersSubscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   addNote(type: string, message: string): void {

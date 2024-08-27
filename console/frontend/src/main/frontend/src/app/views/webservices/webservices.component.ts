@@ -8,10 +8,10 @@ import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.se
   styleUrls: ['./webservices.component.scss'],
 })
 export class WebservicesComponent implements OnInit {
-  rootURL: string = this.appService.getServerPath();
-  services: Service[] = [];
-  apiListeners: ApiListener[] = [];
-  wsdls: Wsdl[] = [];
+  protected rootURL: string = this.appService.getServerPath();
+  protected services: Service[] = [];
+  protected apiListeners: ApiListener[] = [];
+  protected wsdls: Wsdl[] = [];
 
   constructor(
     private appService: AppService,

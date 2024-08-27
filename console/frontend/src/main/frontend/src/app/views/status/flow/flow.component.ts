@@ -12,6 +12,11 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
   styleUrls: ['./flow.component.scss'],
 })
 export class FlowComponent implements OnChanges {
+  @Input() adapter: Adapter | null = null;
+  @Input() configurationFlowDiagram: string | null = null;
+  @Input() height = 350;
+  @Input() canLoadInline = true;
+
   protected flow: {
     isImage: boolean;
     url: string;
@@ -19,11 +24,6 @@ export class FlowComponent implements OnChanges {
   } = { isImage: false, url: '' };
   protected flowModalLadda = false;
   protected loadInline = true;
-
-  @Input() adapter: Adapter | null = null;
-  @Input() configurationFlowDiagram: string | null = null;
-  @Input() height = 350;
-  @Input() canLoadInline = true;
 
   constructor(
     private appService: AppService,

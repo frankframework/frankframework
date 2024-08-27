@@ -28,22 +28,27 @@ type DisplayColumn = {
   styleUrls: ['./storage-list.component.scss'],
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
-  targetStates: Record<string, { name: string }> = {};
+  // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
+  @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
+  @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
+  @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
-  truncated = false;
-  truncateButtonText = 'Truncate displayed data';
-  filterBoxExpanded = false;
+  protected targetStates: Record<string, { name: string }> = {};
 
-  messagesResending = false;
-  messagesDeleting = false;
+  protected truncated = false;
+  protected truncateButtonText = 'Truncate displayed data';
+  protected filterBoxExpanded = false;
 
-  changingProcessState = false;
+  protected messagesResending = false;
+  protected messagesDeleting = false;
 
-  search: Record<string, string> = {};
-  searching = false;
-  clearSearchLadda = false;
-  messagesDownloading = false;
-  displayColumn: DisplayColumn = {
+  protected changingProcessState = false;
+
+  protected search: Record<string, string> = {};
+  protected searching = false;
+  protected clearSearchLadda = false;
+  protected messagesDownloading = false;
+  protected displayColumn: DisplayColumn = {
     id: true,
     insertDate: true,
     host: true,
@@ -53,7 +58,19 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     expiryDate: true,
     label: true,
   };
-  initialColumns: ADTColumns[] = [
+  protected dtOptions: ADTSettings = {};
+  protected dtTrigger = new Subject<ADTSettings>();
+
+  // service bindings
+  protected storageParams = this.storageService.storageParams;
+  closeNote = (index: number): void => {
+    this.storageService.closeNote(index);
+  };
+  getProcessStateIconFn = (processState: string): string => {
+    return getProcessStateIcon(processState);
+  };
+
+  private initialColumns: ADTColumns[] = [
     {
       data: null,
       defaultContent: '',
@@ -91,23 +108,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     },
     { name: 'label', data: 'label', orderable: false, defaultContent: '' },
   ];
-  dtOptions: ADTSettings = {};
-  dtTrigger = new Subject<ADTSettings>();
-
-  // service bindings
-  storageParams = this.storageService.storageParams;
-  closeNote = (index: number): void => {
-    this.storageService.closeNote(index);
-  };
-  getProcessStateIconFn = (processState: string): string => {
-    return getProcessStateIcon(processState);
-  };
-
-  // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
-  @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
-  @ViewChild('storageListDt')
-  storageListDt!: TemplateRef<StorageListDtComponent>;
-  @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
   constructor(
     private webStorageService: WebStorageService,
