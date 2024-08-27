@@ -26,10 +26,9 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -37,6 +36,8 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
+
+import lombok.Getter;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -140,12 +141,6 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	/** type of the optional status field which is set after the row is written to the file: timestamp */
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		setFilenameSessionKey(filenameSessionKey);
 	}
 
 	/**

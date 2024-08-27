@@ -34,6 +34,10 @@ public class TesttoolServlet extends WebContainerServlet {
 	@Override
 	public ApplicationInstance newApplicationInstance() {
 		WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		if(webApplicationContext == null) {
+			throw new IllegalStateException("no WebApplicationContext found");
+		}
+
 		return webApplicationContext.getBean("echo2Application", Echo2Application.class);
 	}
 

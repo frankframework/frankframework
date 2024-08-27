@@ -1453,8 +1453,7 @@ public class LarvaTool {
 		String message = null;
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender) querySendersInfo.get("readQueryQueryFixedQuerySender");
-			try {
-				PipeLineSession session = new PipeLineSession();
+			try (PipeLineSession session = new PipeLineSession()) {
 				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session).asString();
 			} catch(TimeoutException e) {
@@ -1658,9 +1657,10 @@ public class LarvaTool {
 	// Used by saveResultToFile.jsp
 	public static void writeFile(String fileName, String content) throws IOException {
 		String encoding = getEncoding(fileName, content);
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), encoding);
-		outputStreamWriter.write(content);
-		outputStreamWriter.close();
+
+		try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), encoding)) {
+			outputStreamWriter.write(content);
+		}
 	}
 
 	private static String getEncoding(String fileName, String content) {
