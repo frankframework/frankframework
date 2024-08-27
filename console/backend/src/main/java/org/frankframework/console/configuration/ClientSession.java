@@ -15,8 +15,16 @@
 */
 package org.frankframework.console.configuration;
 
+import java.util.List;
 import java.util.UUID;
 
+import jakarta.annotation.Nonnull;
+
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
 
@@ -24,8 +32,13 @@ import lombok.Getter;
 
 @Component
 @SessionScope
-public class ClientSession {
+public class ClientSession implements InitializingBean {
 
+	@Autowired
+	@Qualifier("outboundGateway")
+	private OutboundGateway outboundGateway;
+
+	@Nonnull
 	private @Getter UUID memberTarget;
 
 	public void setMemberTarget(UUID id) {
@@ -34,5 +47,15 @@ public class ClientSession {
 
 	public void setMemberTarget(String id) {
 		setMemberTarget(UUID.fromString(id));
+	}
+
+	//When a new session is created, assign a default target
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		List<ClusterMember> members = outboundGateway.getMembers();
+		members.stream().filter(m -> "worker".equals(m.getType())).findFirst().ifPresent(m -> {
+			m.setSelectedMember(true);
+			setMemberTarget(m.getId());
+		});
 	}
 }

@@ -149,7 +149,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		List<String> headers = new ArrayList<>();
 		headers.add(BusAction.ACTION_HEADER_NAME);
 		headers.add(BusTopic.TOPIC_HEADER_NAME);
-		headers.add(BusMessageUtils.HEADER_HOSTNAME_KEY);
+		headers.add(BusMessageUtils.HEADER_TARGET_KEY);
 		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		return headers.toArray(new String[0]);
 	}

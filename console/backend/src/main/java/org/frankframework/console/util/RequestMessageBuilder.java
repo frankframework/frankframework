@@ -18,9 +18,11 @@ package org.frankframework.console.util;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
+import jakarta.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusAction;
@@ -30,7 +32,6 @@ import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
-import jakarta.annotation.Nullable;
 import lombok.Getter;
 
 public class RequestMessageBuilder {
@@ -96,11 +97,7 @@ public class RequestMessageBuilder {
 		return new RequestMessageBuilder(topic, action);
 	}
 
-	public Message<?> build() {
-		return build(null);
-	}
-
-	public Message<?> build(@Nullable String targetHost) {
+	public Message<?> build(@Nullable UUID uuid) {
 		if (SEC_LOG.isInfoEnabled()) {
 			String headers = customHeaders.entrySet().stream()
 					.map(this::mapHeaderForLog)
@@ -115,9 +112,8 @@ public class RequestMessageBuilder {
 		}
 
 		// Optional target parameter, to target a specific backend node.
-		// TODO use session scoped value to set the host
-		if(StringUtils.isNotEmpty(targetHost)) {
-			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
+		if(uuid != null) {
+			builder.setHeader(BusMessageUtils.HEADER_TARGET_KEY, uuid);
 		}
 
 		for (Map.Entry<String, Object> customHeader : customHeaders.entrySet()) {

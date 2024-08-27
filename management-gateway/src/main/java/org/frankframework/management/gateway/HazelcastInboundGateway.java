@@ -16,6 +16,7 @@
 package org.frankframework.management.gateway;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.UUID;
 
 import com.hazelcast.collection.IQueue;
@@ -28,7 +29,9 @@ import jakarta.annotation.Nullable;
 import lombok.Lombok;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.SpringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.integration.support.MessageBuilder;
@@ -52,9 +55,13 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
 
+	@Value("${instance.name:}")
+	private String instanceName;
+
 	@Override
 	protected void onInit() {
-		hzInstance = HazelcastConfig.newHazelcastInstance("worker");
+		Map<String, String> attributes = Map.of(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY, instanceName);
+		hzInstance = HazelcastConfig.newHazelcastInstance("worker", attributes);
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
@@ -78,7 +85,14 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	 */
 	private <E extends Message<?>> void handleIncomingMessage(com.hazelcast.topic.Message<E> rawMessage) {
 		E message = rawMessage.getMessageObject();
+
+		UUID instanceId = hzInstance.getLocalEndpoint().getUuid();
+		UUID filterId = message.getHeaders().get(BusMessageUtils.HEADER_TARGET_KEY, UUID.class);
 		UUID messageId = message.getHeaders().getId();
+		if(filterId != null && !filterId.equals(instanceId)) {
+			log.trace("skipping message with id [{}] from member [{}]", () -> messageId, ()->rawMessage.getPublishingMember().getUuid());
+		}
+
 		log.trace("received message with id [{}] from member [{}]", () -> messageId, ()->rawMessage.getPublishingMember().getUuid());
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("messageId", messageId.toString())) {
