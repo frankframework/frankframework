@@ -24,11 +24,13 @@ import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.xml.sax.SAXParseException;
+
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StringUtil;
-import org.xml.sax.SAXParseException;
 
 /**
  * Base Exception with compact but informative getMessage().

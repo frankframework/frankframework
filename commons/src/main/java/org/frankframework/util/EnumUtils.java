@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import jakarta.annotation.Nullable;
+
 import org.frankframework.doc.DocumentedEnum;
 
 /**

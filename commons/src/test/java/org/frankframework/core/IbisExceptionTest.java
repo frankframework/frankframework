@@ -10,13 +10,14 @@ import java.util.stream.Stream;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
+import jakarta.jms.JMSException;
+import jakarta.mail.internet.AddressException;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import jakarta.jms.JMSException;
-import jakarta.mail.internet.AddressException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import oracle.jdbc.xa.OracleXAException;

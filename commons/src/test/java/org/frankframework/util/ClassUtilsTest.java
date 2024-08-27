@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.INamedObject;
 
 class ClassUtilsTest {
