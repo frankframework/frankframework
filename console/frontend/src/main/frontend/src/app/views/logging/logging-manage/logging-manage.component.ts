@@ -8,20 +8,19 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./logging-manage.component.scss'],
 })
 export class LoggingManageComponent implements OnInit {
-  logURL: string = 'server/logging';
-  updateDynamicParams: boolean = false;
-  loggers: Record<string, string> = {};
-  errorLevels: ErrorLevels = errorLevelsConst;
-  form: LoggingSettings = {
+  protected updateDynamicParams: boolean = false;
+  protected loggers: Record<string, string> = {};
+  protected errorLevels: ErrorLevels = errorLevelsConst;
+  protected form: LoggingSettings = {
     loglevel: 'DEBUG',
     logIntermediaryResults: true,
     maxMessageLength: -1,
     errorLevels: errorLevelsConst,
     enableDebugger: true,
   };
-  loggersLength: number = 0;
-  definitions: LogInformation['definitions'] = [];
-  alert: boolean | string = false;
+  protected loggersLength: number = 0;
+  protected definitions: LogInformation['definitions'] = [];
+  protected alert: string | null = null;
 
   constructor(
     private loggingService: LoggingService,
@@ -84,7 +83,6 @@ export class LoggingManageComponent implements OnInit {
         this.loggers = data.loggers;
         this.loggersLength = Object.keys(data.loggers).length;
         this.definitions = data.definitions;
-        console.log('DEFINITIONS:', data.definitions);
       },
       error: (data) => {
         console.error(data);

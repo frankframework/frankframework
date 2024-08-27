@@ -47,7 +47,7 @@ import { StorageListDtComponent } from './views/storage/storage-list/storage-lis
 import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
-import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
+import { QuickSubmitFormDirective } from './components/quick-submit-form.directive';
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
@@ -155,7 +155,6 @@ const windowProvider: ValueProvider = {
     MarkDownPipe,
 
     // directives
-    QuickSubmitFormDirective,
     ConfigurationMessagesComponent,
     ConfigurationSummaryComponent,
   ],
@@ -176,6 +175,7 @@ const windowProvider: ValueProvider = {
     ToDateDirective,
     ThSortableDirective,
     SideNavigationDirective,
+    QuickSubmitFormDirective,
 
     // standalone components
     CustomViewsComponent,
