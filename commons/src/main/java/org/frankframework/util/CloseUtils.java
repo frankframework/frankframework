@@ -22,7 +22,8 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class CloseUtils {
-	private CloseUtils() {}
+	private CloseUtils() {
+	}
 
 	/**
 	 * Safely close an {@link AutoCloseable}, logging but ignoring any exceptions thrown.

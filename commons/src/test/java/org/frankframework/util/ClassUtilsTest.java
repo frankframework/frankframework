@@ -17,37 +17,23 @@ import org.frankframework.core.INamedObject;
 
 class ClassUtilsTest {
 
-	private enum TestEnum {ONE,TWO}
-
 	@Test
 	void testConvertToType() {
 		assertAll(
-			() -> assertEquals(7, ClassUtils.convertToType(int.class, "7")),
-			() -> assertEquals(7, ClassUtils.convertToType(Integer.class, "7")),
-			() -> assertEquals(7L, ClassUtils.convertToType(long.class, "7")),
-			() -> assertEquals(7L, ClassUtils.convertToType(Long.class, "7")),
-			() -> assertEquals("7", ClassUtils.convertToType(String.class, "7")),
-			() -> assertTrue(ClassUtils.convertToType(boolean.class, "true")),
-			() -> assertTrue(ClassUtils.convertToType(Boolean.class, "true")),
-			() -> assertFalse(ClassUtils.convertToType(Boolean.class, "niet true")),
-			() -> assertEquals(TestEnum.ONE, ClassUtils.convertToType(TestEnum.class, "one")),
+				() -> assertEquals(7, ClassUtils.convertToType(int.class, "7")),
+				() -> assertEquals(7, ClassUtils.convertToType(Integer.class, "7")),
+				() -> assertEquals(7L, ClassUtils.convertToType(long.class, "7")),
+				() -> assertEquals(7L, ClassUtils.convertToType(Long.class, "7")),
+				() -> assertEquals("7", ClassUtils.convertToType(String.class, "7")),
+				() -> assertTrue(ClassUtils.convertToType(boolean.class, "true")),
+				() -> assertTrue(ClassUtils.convertToType(Boolean.class, "true")),
+				() -> assertFalse(ClassUtils.convertToType(Boolean.class, "niet true")),
+				() -> assertEquals(TestEnum.ONE, ClassUtils.convertToType(TestEnum.class, "one")),
 
-			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Object.class, "dummy")),
-			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Long.class, "dummy")),
-			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(int.class, "")) //Empty string
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Object.class, "dummy")),
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Long.class, "dummy")),
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(int.class, "")) //Empty string
 		);
-	}
-
-	private class DummyClassWithSetter {
-		private @Getter @Setter String field;
-		private @Getter TestEnum[] testEnums;
-		private @Getter String[] testStrings;
-		public void setEnumVarArgs(TestEnum... testEnum) {
-			this.testEnums = testEnum;
-		}
-		public void setTestStrings(String... testStrings) {
-			this.testStrings = testStrings;
-		}
 	}
 
 	@Test
@@ -121,10 +107,26 @@ class ClassUtilsTest {
 		assertThrows(NullPointerException.class, () -> ClassUtils.getDeclaredFieldValue(testClass, null));
 	}
 
+	private enum TestEnum {ONE, TWO}
+
 	@Setter
 	@SuppressWarnings("unused")
 	private static class TestClass {
 		private String field;
 
+	}
+
+	private class DummyClassWithSetter {
+		private @Getter @Setter String field;
+		private @Getter TestEnum[] testEnums;
+		private @Getter String[] testStrings;
+
+		public void setEnumVarArgs(TestEnum... testEnum) {
+			this.testEnums = testEnum;
+		}
+
+		public void setTestStrings(String... testStrings) {
+			this.testStrings = testStrings;
+		}
 	}
 }

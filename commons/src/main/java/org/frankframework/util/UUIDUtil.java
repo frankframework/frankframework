@@ -32,7 +32,7 @@ public class UUIDUtil {
 	public static String createSimpleUUID() {
 		UID uid = new UID();
 
-		String uidString=asHex(getIPAddress())+"-"+ uid;
+		String uidString = asHex(getIPAddress()) + "-" + uid;
 		// Replace semicolons by underscores, so IBIS will support it
 		uidString = uidString.replace(':', '_');
 		return uidString;
@@ -58,14 +58,11 @@ public class UUIDUtil {
 	}
 
 	/**
-	 *
 	 * @return the hexadecimal string representation of the byte array.
 	 */
-	public static String asHex(byte[] buf)
-	{
+	public static String asHex(byte[] buf) {
 		char[] chars = new char[2 * buf.length];
-		for (int i = 0; i < buf.length; ++i)
-		{
+		for (int i = 0; i < buf.length; ++i) {
 			chars[2 * i] = HEX_CHARS[(buf[i] & 0xF0) >>> 4];
 			chars[2 * i + 1] = HEX_CHARS[buf[i] & 0x0F];
 		}
@@ -73,7 +70,6 @@ public class UUIDUtil {
 	}
 
 	/**
-	 *
 	 * @return the ip address of the machine that the program runs on.
 	 */
 	private static byte[] getIPAddress() {
@@ -82,15 +78,12 @@ public class UUIDUtil {
 		try {
 			inetAddress = InetAddress.getLocalHost();
 			return inetAddress.getAddress();
-		}
-
-		catch (UnknownHostException uhe) {
-			return new byte[] {127,0,0,1};
+		} catch (UnknownHostException uhe) {
+			return new byte[]{127, 0, 0, 1};
 		}
 	}
 
 	/**
-	 *
 	 * @return a unique UUID string with length 31 (ipaddress with length 4*3, currentTime with length 13, hashcode with length 6)
 	 */
 	public static String createNumericUUID() {
@@ -118,6 +111,7 @@ public class UUIDUtil {
 	 * Misc.unsignedByteToInt(new Byte(12)) returns 12
 	 * Misc.unsignedByteToInt(new Byte(-12)) returns 244
 	 * </pre>
+	 *
 	 * @param b byte to be converted.
 	 * @return integer that is converted from unsigned byte.
 	 */
