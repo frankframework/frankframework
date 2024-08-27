@@ -28,7 +28,7 @@ import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 
 /**
- * Sender that writes an item to a collection, created by {@link CollectorPipeBase} with action=<code>OPEN</code>.
+ * Sender that writes an item to a collection, created by {@link CollectorPipeBase} with <code>action=OPEN</code>.
  *
  * @ff.parameters all parameters are handled by the collection.
  *

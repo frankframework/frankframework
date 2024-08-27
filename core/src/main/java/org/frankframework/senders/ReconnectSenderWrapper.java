@@ -31,13 +31,13 @@ import lombok.Setter;
  * This prevents (long) open connections inside Senders and possible connection failures.
  *
  * <b>Example:</b>
- * <pre><code>
- *   &lt;SenderPipe&gt;
- *     &lt;ReconnectSenderWrapper&gt;
- *        &lt;EchoSender myAttribute="myValue" /&gt;
- *     &lt;/ReconnectSenderWrapper&gt;
- *   &lt;/SenderPipe&gt;
- * </code></pre>
+ * <pre>{@code
+ * <SenderPipe>
+ *     <ReconnectSenderWrapper>
+ *         <EchoSender myAttribute="myValue" />
+ *     </ReconnectSenderWrapper>
+ * </SenderPipe>
+ * }</pre>
  * </p>
  *
  * @author  Niels Meijer

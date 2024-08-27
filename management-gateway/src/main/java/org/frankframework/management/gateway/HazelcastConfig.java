@@ -15,8 +15,11 @@
 */
 package org.frankframework.management.gateway;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.PropertyLoader;
 
@@ -24,11 +27,14 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.DefaultNodeContext;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.MobyNames;
 
 public class HazelcastConfig {
+	private static final AtomicInteger FACTORY_ID_GEN = new AtomicInteger();
 
 	public static final String ATTRIBUTE_TYPE_KEY = "type";
 	public static final String ATTRIBUTE_NAME_KEY = "name";
+	public static final String ATTRIBUTE_APPLICATION_KEY = "application";
 
 	public static final String REQUEST_TOPIC_NAME = "frank_integration_request_topic";
 	public static final String AUTHENTICATION_HEADER_KEY = BusMessageUtils.HEADER_PREFIX+"user";
@@ -41,17 +47,30 @@ public class HazelcastConfig {
 		return Config.loadFromClasspath(classLoader, resource, properties);
 	}
 
+	private static String computeName() {
+		int instanceNum = FACTORY_ID_GEN.incrementAndGet();
+		return MobyNames.getRandomName(instanceNum);
+	}
+
 	/**
 	 * Type such as console, worker or flow
 	 */
 	static HazelcastInstance newHazelcastInstance(String type) {
+		return newHazelcastInstance(type, null);
+	}
+	static HazelcastInstance newHazelcastInstance(String type, Map<String, String> attributes) {
 		Config config = HazelcastConfig.createHazelcastConfig();
+		String name = computeName();
+
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type);
+		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, name);
+		if(attributes != null) {
+			attributes.entrySet().stream()
+				.filter(e -> StringUtils.isNotBlank(e.getValue()))
+				.forEach(e -> config.getMemberAttributeConfig().setAttribute(e.getKey(), e.getValue())
+			);
+		}
 
-		HazelcastInstance instance = HazelcastInstanceFactory.newHazelcastInstance(config, null, new DefaultNodeContext());
-
-		//Update so we can see the generated moby-name
-		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, instance.getName());
-		return instance;
+		return HazelcastInstanceFactory.newHazelcastInstance(config, name, new DefaultNodeContext());
 	}
 }

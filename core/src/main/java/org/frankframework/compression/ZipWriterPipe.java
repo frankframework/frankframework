@@ -41,8 +41,8 @@ import org.frankframework.util.TemporaryDirectoryUtils;
  * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe ouput.
  * </p>
  *
- * @ff.parameter filename only for action=<code>WRITE</code>: the filename of the zip-entry
- * @ff.parameter contents only for action=<code>WRITE</code>: contents of the zip-entry, If not specified, the input is used.
+ * @ff.parameter filename only for <code>action=WRITE</code>: the filename of the zip-entry
+ * @ff.parameter contents only for <code>action=WRITE</code>: contents of the zip-entry, If not specified, the input is used.
  *
  * @author Gerrit van Brakel
  * @author Niels Meijer

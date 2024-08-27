@@ -46,12 +46,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -74,12 +75,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -104,12 +106,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -298,12 +301,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -324,12 +328,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -348,12 +353,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -374,12 +380,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -402,12 +409,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.

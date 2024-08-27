@@ -143,126 +143,125 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *
  * <h4>Example of Existing Configuration</h4>
  * The existing configuration might look like this in the calling adapter:
- * <pre><code>
- * &lt;module&gt;
- * 	&lt;adapter name="Adapter A"&gt;
- *   &lt;receiver name="Adapter A Receiver" &gt;
- *    &lt;listener name="Adapter A Listener"
- *        className="org.frankframework..." etc/&gt;
- *   &lt;/receiver&gt;
- * 	 &lt;pipeline firstPipe="..."&gt;
- * 	  &lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&gt;
- * 	   &lt;sender className="org.frankframework.senders.IbisJavaSender"
- * 	       serviceName="service-Adapter-B" /&gt;
- *     &lt;forward name="success" path="..." /&gt;
- * 	  &lt;/pipe&gt;
- *   &lt;/pipeline&gt;
- * 	&lt;/adapter&gt;
- * &lt;/module&gt;
- * </code></pre>
+ * <pre>{@code
+ * <module>
+ *     <adapter name="Adapter A">
+ *         <receiver name="Adapter A Receiver">
+ *             <listener name="Adapter A Listener"
+ *                 className="org.frankframework..." etc/>
+ *         </receiver>
+ *  	   <pipeline firstPipe="...">
+ *  	       <pipe name="send" className="org.frankframework.pipes.SenderPipe">
+ *  	           <sender className="org.frankframework.senders.IbisJavaSender"
+ *  	               serviceName="service-Adapter-B" />
+ *                 <forward name="success" path="..." />
+ *  	       </pipe>
+ *         </pipeline>
+ *     </adapter>
+ * </module>
+ * }</pre>
  *
  * Or like using the modern XML XSD and an IbisLocalSender instead:
- * <pre><code>
- *  &lt;Module&gt;
- *   &lt;Adapter name="Adapter A"&gt;
- *    &lt;Receiver name="Adapter A Receiver"&gt;
- *        ... Listener setup and other configuration
- *    &lt;/Receiver&gt;
- *    &lt;Pipeline&gt;
- *     &lt;SenderPipe name="send"&gt;
- *      &lt;IbisLocalSender name="call Adapter B"
- *          javaListener="Adapter B Listener"/&gt;
- *      &lt;Forward name="success" path="EXIT" /&gt;
- *     &lt;/SenderPipe&gt;
- *    &lt;/Pipeline&gt;
- *   &lt;/Adapter&gt;
- *  &lt;/Module&gt;
- * </code></pre>
+ * <pre>{@code
+ * <Module>
+ *     <Adapter name="Adapter A">
+ *         <Receiver name="Adapter A Receiver">
+ *             ... Listener setup and other configuration
+ *         </Receiver>
+ *         <Pipeline>
+ *             <SenderPipe name="send">
+ *                 <IbisLocalSender name="call Adapter B"
+ *                     javaListener="Adapter B Listener"/>
+ *                 <Forward name="success" path="EXIT" />
+ *             </SenderPipe>
+ *         </Pipeline>
+ *     </Adapter>
+ * </Module>
+ * }</pre>
  *
  * In the receiving adapter B the listener would have been configured like this:
- * <pre><code>
- * &lt;Module&gt;
- *  &lt;Adapter name="adapter B"&gt;
- *   &lt;Receiver name="Receiver B"&gt;
- *    &lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&gt;
- *   &lt;/Receiver&gt;
- *   &lt;Pipeline&gt;
- *       ...
- *   &lt;/Pipeline&gt;
- *  &lt;/Adapter&gt;
- * &lt;/Module&gt;
- * </code></pre>
+ * <pre>{@code
+ * <Module>
+ *     <Adapter name="adapter B">
+ *         <Receiver name="Receiver B">
+ *             <JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/>
+ *         </Receiver>
+ *         <Pipeline>
+ *             ...
+ *         </Pipeline>
+ *     </Adapter>
+ * </Module>
+ * }</pre>
  * <p/>
  *
  * <h4>Rewritten Example Configuration With FrankSender</h4>
  * This example shows the most simple way of using the FrankSender to call another adapter with least amount of overhead.
  *
- * <pre><code>
- *  &lt;Module&gt;
- *   &lt;Adapter name="Adapter A"&gt;
- *    &lt;Receiver name="Adapter A Receiver"&gt;
- *        ... Listener setup and other configuration
- *    &lt;/Receiver&gt;
- *    &lt;Pipeline&gt;
- *     &lt;SenderPipe name="send"&gt;
- *      &lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&gt;
- *      &lt;FrankSender name="call Adapter C"
- *          scope="ADAPTER"
- *          target="adapter B"
- *      /&gt;
- *      &lt;Forward name="success" path="EXIT" /&gt;
- *     &lt;/SenderPipe&gt;
- *    &lt;/Pipeline&gt;
- *   &lt;/Adapter&gt;
- *
- *   &lt;Adapter name="adapter B"&gt;
- *    &lt;!-- No receiver needed for FrankSender in this scenario --&gt;
- *    &lt;Pipeline&gt;
- *       ... Exits, Pipes etc
- *    &lt;/Pipeline&gt;
- *   &lt;/Adapter&gt;
- *  &lt;/Module&gt;
- * </code></pre>
+ * <pre>{@code
+ * <Module>
+ *     <Adapter name="Adapter A">
+ *         <Receiver name="Adapter A Receiver">
+ *             ... Listener setup and other configuration
+ *         </Receiver>
+ *         <Pipeline>
+ *             <SenderPipe name="send">
+ *                 <!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call -->
+ *                 <FrankSender name="call Adapter C"
+ *                     scope="ADAPTER"
+ *                     target="adapter B"
+ *                 />
+ *                 <Forward name="success" path="EXIT" />
+ *             </SenderPipe>
+ *         </Pipeline>
+ *     </Adapter>
+ *     <Adapter name="adapter B">
+ *         <!-- No receiver needed for FrankSender in this scenario -->
+ *         <Pipeline>
+ *             ... Exits, Pipes etc
+ *         </Pipeline>
+ *     </Adapter>
+ * </Module>
+ * }</pre>
  *
  * <h4>Rewritten Example Configuration With FrankSender and FrankListener</h4>
  * This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
  * of the sub-adapter for the extra error-handling done by the target receiver.
  *
- * <pre><code>
- *  &lt;Module&gt;
- *   &lt;Adapter name="Adapter A"&gt;
- *    &lt;Receiver name="Adapter A Receiver"&gt;
- *        ... Listener setup and other configuration
- *    &lt;/Receiver&gt;
- *    &lt;Pipeline&gt;
- *     &lt;SenderPipe name="send"&gt;
- *      &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
- *      &lt;FrankSender
- *           scope="LISTENER"
- *           target="Adapter B Listener"/&gt;
- *       &lt;Forward name="success" path="EXIT" /&gt;
- *     &lt;/SenderPipe&gt;
- *    &lt;/Pipeline&gt;
- *   &lt;/Adapter&gt;
- *  &lt;Adapter name="adapter B"&gt;
- *   &lt;!-- Messages will only be sent to the error storage if:
- *        - The target receiver is not transactional, and has maxTries="0", or
- *        - The target receiver is transaction, and the Sender is set up to retry sending on error
- *        For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
- *   --&gt;
- *   &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
- *    &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
- *    &lt;FrankListener name="Adapter B Listener"/&gt;
- *    &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
- *    &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
- *   &lt;/Receiver&gt;
- *   &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
- *   &lt;Pipeline transactionAttribute="RequiresNew"&gt;
- *       ... Exits, Pipes etc
- *   &lt;/Pipeline&gt;
- *  &lt;/Adapter&gt;
- *  &lt;/Module&gt;
- * </code></pre>
+ * <pre>{@code
+ * <Module>
+ *    <Adapter name="Adapter A">
+ *        <Receiver name="Adapter A Receiver">
+ *         ... Listener setup and other configuration
+ * 		  </Receiver>
+ * 		  <Pipeline>
+ *            <SenderPipe name="send">
+ *                <!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call -->
+ *                <FrankSender
+ *                    scope="LISTENER"
+ *                    target="Adapter B Listener"/>
+ *                <Forward name="success" path="EXIT" />
+ *            </SenderPipe>
+ *        </Pipeline>
+ *     </Adapter>
+ *     <Adapter name="adapter B">
+ *         <!-- Messages will only be sent to the error storage if:
+ *             - The target receiver is not transactional, and has maxTries="0", or
+ *             - The target receiver is transaction, and the Sender is set up to retry sending on error
+ *             For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
+ *         -->
+ *         <Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported">
+ *             <!-- Listener name is optional, defaults to Adapter name -->
+ *             <FrankListener name="Adapter B Listener"/>
+ *                 <!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that -->
+ *             <JdbcErrorStorage slotId="Adapter B - Errors" />
+ *         </Receiver>
+ *         <!-- If transactions are required, set transaction-attribute on the Pipeline -->
+ *         <Pipeline transactionAttribute="RequiresNew">
+ *             ... Exits, Pipes etc
+ *         </Pipeline>
+ *    </Adapter>
+ * </Module>
+ * }</pre>
  *
  * @ff.parameter {@code scope} Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
  * @ff.parameter {@code target} Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.

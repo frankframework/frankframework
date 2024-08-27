@@ -49,15 +49,15 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * <p>
  * Sample xml:<br/>
- * <pre><code>
- * &lt;adios rekenbox="L76HB150"&gt;
- *     &lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&gt;
- *     &lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&gt;
- *     &lt;rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" /&gt;
- *     &lt;rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" /&gt;
- * ...
- * &lt;/adios&gt;
- * </code></pre>
+ * <pre>{@code
+ * <adios rekenbox="L76HB150">
+ *     <rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" />
+ *     <rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" />
+ *     <rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" />
+ *     <rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" />
+ *     ...
+ * </adios>
+ * }</pre>
  * <br/>
  * For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
  * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element.

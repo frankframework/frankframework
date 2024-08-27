@@ -55,9 +55,10 @@ import org.frankframework.util.XmlUtils;
  *
  *
  * <p><b>AuthAlias:</b></p>
- * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
+ * <p>If you do not want to specify the nonce and the access token used to authenticate with Akamai, you can use the authalias property. The username
+ * represents the nonce and the password the access token.</p>
  *
- * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.
+ * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>UPLOAD</code> action are: md5, sha1, sha256 and mtime.
  *
  * @author	Niels Meijer
  * @since	7.0-B4

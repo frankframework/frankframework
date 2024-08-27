@@ -15,40 +15,60 @@
 */
 package org.frankframework.console.controllers.socket;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import jakarta.annotation.Nullable;
 
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EventHandler extends FrankApiWebSocketBase {
 
-	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 30)
+	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 60)
 	public void serverWarnings() {
 		propagateAuthenticationContext("server-warnings");
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET);
-		String jsonResponse = compareAndUpdateResponse(builder);
 
-		if (jsonResponse != null) {
-			this.messagingTemplate.convertAndSend("/event/server-warnings", jsonResponse);
+		List<ClusterMember> members = getClusterMembers();
+		if(members.isEmpty()) {
+			convertAndSend(builder, "/event/server-warnings", null);
+		} else {
+			for (ClusterMember clusterMember : members) {
+				UUID id = clusterMember.getId();
+				convertAndSend(builder, "/event/"+id.toString()+"/server-warnings", id);
+			}
 		}
 	}
 
-	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS, initialDelay = 30)
+	@Scheduled(fixedDelay = 20, timeUnit = TimeUnit.SECONDS, initialDelay = 60)
 	public void adapters() {
 		propagateAuthenticationContext("adapter-info");
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("expanded", "all");
-		String jsonResponse = compareAndUpdateResponse(builder);
 
-		if (jsonResponse != null) {
-			this.messagingTemplate.convertAndSend("/event/adapters", jsonResponse);
+		List<ClusterMember> members = getClusterMembers();
+		if(members.isEmpty()) {
+			convertAndSend(builder, "/event/adapters", null);
+		} else {
+			for (ClusterMember clusterMember : members) {
+				UUID id = clusterMember.getId();
+				convertAndSend(builder, "/event/"+id.toString()+"/adapters", id);
+			}
 		}
 	}
 
+	private void convertAndSend(RequestMessageBuilder builder, String destination, @Nullable UUID uuid) {
+		String jsonResponse = compareAndUpdateResponse(builder, uuid);
+
+		if (jsonResponse != null) {
+			this.messagingTemplate.convertAndSend(destination, jsonResponse);
+		}
+	}
 }

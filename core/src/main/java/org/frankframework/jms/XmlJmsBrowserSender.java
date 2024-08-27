@@ -41,52 +41,43 @@ import org.w3c.dom.Element;
  * </p>
  * <p>
  * <b>example (input):</b>
- * <code>
- * <pre>
- *   &lt;browse&gt;
- *      &lt;jmsRealm&gt;qcf&lt;/jmsRealm&gt;
- *      &lt;destinationName&gt;jms/GetPolicyDetailsRequest&lt;/destinationName&gt;
- *      &lt;destinationType&gt;QUEUE&lt;/destinationType&gt;
- *   &lt;/browse>
- * </pre>
- * </code>
+ * <pre>{@code
+ * <browse>
+ *    <jmsRealm>qcf</jmsRealm>
+ *    <destinationName>jms/GetPolicyDetailsRequest</destinationName>
+ *    <destinationType>QUEUE</destinationType>
+ * </browse>
+ * }</pre>
  * </p>
- *
- *
  * <p>
  * <b>example (browse output):</b>
- * <code>
- * <pre>
- *   &lt;result&gt;
- *	    &lt;items count="2"&gt;
- *	       &lt;item&gt;
- *	          &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
- *	          &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
- *	          &lt;correlationId&gt;...&lt;/correlationId&gt;
- *	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
- *	       &lt;/item&gt;
- *	       &lt;item&gt;
- *	          &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
- *	          &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
- *	          &lt;correlationId&gt;...&lt;/correlationId&gt;
- *	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
- *	       &lt;/item&gt;
- *	    &lt;/items&gt;
- *   &lt;/result&gt;
- * </pre>
- * </code>
+ * <pre>{@code
+ * <result>
+ *   <items count="2">
+ *      <item>
+ *         <timestamp>Thu Nov 20 13:36:31 CET 2014</timestamp>
+ *         <messageId>ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1</messageId>
+ *         <correlationId>...</correlationId>
+ *         <message><![CDATA[...]]></message>
+ *      </item>
+ *      <item>
+ *         <timestamp>Thu Dec 12 11:59:22 CET 2014</timestamp>
+ *         <messageId>ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1</messageId>
+ *         <correlationId>...</correlationId>
+ *         <message><![CDATA[...]]></message>
+ *      </item>
+ * 	 </items>
+ * </result>
+ * }</pre>
  * </p>
  *
  * <p>
  * <b>example (remove output):</b>
- * <code>
- * <pre>
- *   &lt;result&gt;
- *	    &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
- *   &lt;/result&gt;
- * </pre>
- * </code>
- * </p>
+ * <pre>{@code
+ * <result>
+ *     <itemsRemoved>2</itemsRemoved>
+ * </result>
+ * }</pre>
  *
  * @author  Peter Leeuwenburgh
  */

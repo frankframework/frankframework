@@ -18,13 +18,24 @@ package org.frankframework.console.controllers.socket;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.json.Json;
+import jakarta.json.JsonMergePatch;
+import jakarta.json.JsonValue;
 
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -35,19 +46,17 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.json.Json;
-import jakarta.json.JsonMergePatch;
-import jakarta.json.JsonValue;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class FrankApiWebSocketBase {
+public class FrankApiWebSocketBase implements InitializingBean, ApplicationListener<ClusterMemberEvent> {
 
 	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
 	private static final List<GrantedAuthority> READ_ONLY_AUTHORITY = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + "IbisObserver"));
 	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+
+	private @Getter List<ClusterMember> clusterMembers;
 
 	@Autowired
 	@Qualifier("outboundGateway")
@@ -59,6 +68,18 @@ public class FrankApiWebSocketBase {
 	@Autowired
 	private MessageCacheStore messageCacheStore;
 
+	@Override
+	public void afterPropertiesSet() {
+		clusterMembers = gateway.getMembers().stream()
+				.filter(m -> "worker".equals(m.getType()))
+				.toList();
+	}
+
+	@Override
+	public void onApplicationEvent(ClusterMemberEvent event) {
+		afterPropertiesSet();
+	}
+
 	protected final void propagateAuthenticationContext(String name) {
 		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
 		Authentication wsAuthentication = new AnonymousAuthenticationToken(name, name, READ_ONLY_AUTHORITY);
@@ -67,23 +88,23 @@ public class FrankApiWebSocketBase {
 	}
 
 	@Nullable
-	protected String compareAndUpdateResponse(RequestMessageBuilder builder) {
+	protected String compareAndUpdateResponse(RequestMessageBuilder builder, UUID target) {
 		final Message<?> response;
 		try {
-			response = gateway.sendSyncMessage(builder.build());
+			response = gateway.sendSyncMessage(builder.build(target));
 		} catch (Exception e) { //BusException
 			log.error("exception while sending synchronous bus request", e);
 			return null;
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
-		return convertMessageToDiff(builder.getTopic(), stringResponse);
+		return convertMessageToDiff(target, builder.getTopic(), stringResponse);
 	}
 
 	/** we can assume that all messages stored in the cache are JSON messages */
 	@Nullable
-	private String convertMessageToDiff(BusTopic topic, @Nonnull String latestJsonMessage) {
-		String cachedJsonMessage = messageCacheStore.getAndUpdate(topic, latestJsonMessage);
+	private String convertMessageToDiff(@Nullable UUID uuid, BusTopic topic, @Nonnull String latestJsonMessage) {
+		String cachedJsonMessage = messageCacheStore.getAndUpdate(uuid, topic, latestJsonMessage);
 		return findJsonDiff(cachedJsonMessage, latestJsonMessage);
 	}
 

@@ -38,18 +38,21 @@ import org.w3c.dom.NodeList;
  * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
  * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
  * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
- * <br/><code><pre>
- *	&lt;ignores&gt;
- *		&lt;ignore&gt;
- *			&lt;after&gt;...&lt;/after&gt;
- *			&lt;before&gt;...&lt;/before&gt;
- *		&lt;/ignore&gt;
- *		&lt;ignore&gt;
- *			&lt;after&gt;...&lt;/after&gt;
- *			&lt;before&gt;...&lt;/before&gt;
- *		&lt;/ignore&gt;
- *	&lt;/ignores&gt;
- * </pre></code><br/>Substrings between "after" and "before" are ignored
+ * <br/>
+ * <pre>{@code
+ * <ignores>
+ * 	   <ignore>
+ * 	       <after>...</after>
+ * 	       <before>...</before>
+ * 	   </ignore>
+ * 	   <ignore>
+ * 	       <after>...</after>
+ * 	       <before>...</before>
+ * 	   </ignore>
+ * </ignores>
+ * }</pre>
+ * <br/>
+ * Substrings between "after" and "before" are ignored
  *
  * @ff.forward lessthan operand1 &lt; operand2
  * @ff.forward greaterthan operand1 &gt; operand2

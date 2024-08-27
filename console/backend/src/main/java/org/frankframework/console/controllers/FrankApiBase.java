@@ -19,12 +19,14 @@ import jakarta.annotation.Nonnull;
 import lombok.Getter;
 
 import org.frankframework.console.ApiException;
+import org.frankframework.console.configuration.ClientSession;
 import org.frankframework.console.configuration.DeprecationInterceptor;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
@@ -36,13 +38,16 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Environment environment;
 
+	@Autowired
+	private ClientSession session;
+
 	protected final OutboundGateway getGateway() {
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
 	}
 
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
-		Message<?> message = getGateway().sendSyncMessage(input.build());
+		Message<?> message = getGateway().sendSyncMessage(input.build(session.getMemberTarget()));
 		if (message == null) {
 			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
 			if (input.getAction() != null) {
@@ -63,7 +68,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	public ResponseEntity<?> callAsyncGateway(RequestMessageBuilder input) {
 		OutboundGateway gateway = getGateway();
-		gateway.sendAsyncMessage(input.build());
+		gateway.sendAsyncMessage(input.build(session.getMemberTarget()));
 		return ResponseEntity.ok().build();
 	}
 

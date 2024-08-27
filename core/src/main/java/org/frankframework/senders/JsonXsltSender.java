@@ -88,13 +88,11 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	/**
-	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
+	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code> definitions
 	 * @ff.default j=http://www.w3.org/2013/XSL/json
 	 */
 	@Override
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}
-
-
 }

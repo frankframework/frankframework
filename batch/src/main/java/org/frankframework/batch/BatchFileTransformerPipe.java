@@ -157,7 +157,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	}
 
 	/**
-	 * If set <code>true</code>, the file processed will deleted after being processed, and not stored
+	 * If set <code>true</code>, the file processed will be deleted after being processed, and not stored
 	 * @ff.default false
 	 */
 	public void setDelete(boolean b) {

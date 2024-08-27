@@ -188,7 +188,7 @@ public final class AppConstants extends PropertyLoader {
 	/**
 	 * Load the contents of a properties file.
 	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
-	 * <code><pre>log4j2.properties,deploymentspecifics.properties</pre></code>
+	 * <code>log4j2.properties,deploymentspecifics.properties</code>
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
