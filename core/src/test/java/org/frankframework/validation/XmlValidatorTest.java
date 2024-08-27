@@ -39,7 +39,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 			if(rootElement != null) {
 				rootvalidations = new RootValidations("Envelope", "Body", rootElement);
 			}
-			ValidationResult result = xmlValidator.validate(testXml, session, "test", rootvalidations, null);
+			ValidationResult result = xmlValidator.validate(testXml, session, rootvalidations, null);
 			evaluateResult(result, session, null, expectedFailureReasons);
 			return result;
 		} catch (Exception e) {

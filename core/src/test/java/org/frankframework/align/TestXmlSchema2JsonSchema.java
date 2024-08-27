@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.json.JsonStructure;
+import jakarta.json.stream.JsonParser;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeForward;
 import org.frankframework.pipes.Json2XmlValidator;
@@ -17,9 +19,6 @@ import org.frankframework.util.StreamUtil;
 import org.leadpony.justify.api.JsonSchema;
 import org.leadpony.justify.api.JsonValidationService;
 import org.leadpony.justify.api.ProblemHandler;
-
-import jakarta.json.JsonStructure;
-import jakarta.json.stream.JsonParser;
 
 /*
  * @see: https://github.com/networknt/json-schema-validator
@@ -104,7 +103,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 	public void validateJson(String jsonString, String jsonSchemaContent) {
 		JsonValidationService service = JsonValidationService.newInstance();
 		JsonSchema schema = service.readSchema(new StringReader(jsonSchemaContent));
-		final List<String> problems = new LinkedList<>();
+		final List<String> problems = new ArrayList<>();
 		// Problem handler which will print problems found.
 		ProblemHandler handler = service.createProblemPrinter(problems::add);
 

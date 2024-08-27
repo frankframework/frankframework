@@ -45,6 +45,8 @@ public interface OutboundGateway extends IntegrationPattern {
 		private String address;
 		private String name;
 		private boolean localMember;
+		private boolean selectedMember;
+		private String type;
 	}
 
 	/**

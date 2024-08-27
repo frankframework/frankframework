@@ -32,7 +32,7 @@ import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.springframework.cglib.core.ReflectUtils;
@@ -341,6 +341,13 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public String toString() {
-		return ClassLoaderUtils.nameOf(this);
+		String logPrefix = ClassUtils.classNameOf(this) + "@" + Integer.toHexString(this.hashCode());
+
+		String configurationName = getConfigurationName();
+		if(StringUtils.isNotEmpty(configurationName)) {
+			logPrefix += "["+configurationName+"]";
+		}
+
+		return logPrefix;
 	}
 }

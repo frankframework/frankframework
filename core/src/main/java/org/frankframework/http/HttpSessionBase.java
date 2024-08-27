@@ -71,6 +71,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
@@ -343,7 +344,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	 * The connectionManager has to be initialized with a sslSocketFactory.
 	 * The pool must be re-created once closed.
 	 */
-	public void configureConnectionManager() {
+	private void configureConnectionManager() {
 		int timeToLive = getConnectionTimeToLive();
 		if (timeToLive<=0) {
 			timeToLive = -1;
@@ -739,16 +740,19 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	@Override
+	@Unsafe
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
 
+	@Unsafe
 	@Override
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
 
 	@Override
+	@Unsafe
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}

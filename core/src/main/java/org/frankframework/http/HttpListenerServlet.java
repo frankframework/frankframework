@@ -22,6 +22,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.text.StringEscapeUtils;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -84,7 +85,7 @@ public class HttpListenerServlet extends HttpServletBase {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		String message = request.getParameter(MESSAGE_PARAM);
+		String message = StringEscapeUtils.escapeJava(request.getParameter(MESSAGE_PARAM));
 		invoke(new Message(message), request,response);
 	}
 

@@ -4,70 +4,46 @@
   </div>
   <div class="modal-body">
     <ng-container *ngIf="error; else information">
-      <h3 class="text-center">
-        Unable to fetch server information due to an unexpected error.
-      </h3>
+      <h3 class="text-center">Unable to fetch server information due to an unexpected error.</h3>
     </ng-container>
     <ng-template #information>
       <h3 *ngIf="framework.name === ''">Loading...</h3>
       <p #environmentInformation>
-        <strong
-          >{{ framework.name
-          }}{{ framework.version ? ' ' + framework.version : '' }}</strong
+        <strong>{{ framework.name }}{{ framework.version ? ' ' + framework.version : '' }}</strong
         >: {{ instance.name }} {{ instance.version }}<br />
-        Running on <strong>{{ machineName }}</strong> using
-        <strong>{{ applicationServer }}</strong
+        Running on <strong>{{ machineName }}</strong> using <strong>{{ applicationServer }}</strong
         ><br />
         Java Version: <strong>{{ javaVersion }}</strong
         ><br />
         Heap size:
         <strong>{{ processMetrics.heapSize | humanFileSize }}</strong
-        >, total JVM memory:
-        <strong>{{ processMetrics.totalMemory | humanFileSize }}</strong
+        >, total JVM memory: <strong>{{ processMetrics.totalMemory | humanFileSize }}</strong
         ><br />
         Free memory:
         <strong>{{ processMetrics.freeMemory | humanFileSize }}</strong
-        >, max memory:
-        <strong>{{ processMetrics.maxMemory | humanFileSize }}</strong
+        >, max memory: <strong>{{ processMetrics.maxMemory | humanFileSize }}</strong
         ><br />
         Free disk space:
         <strong>{{ fileSystem.freeSpace | humanFileSize }}</strong
-        >, total disk space:
-        <strong>{{ fileSystem.totalSpace | humanFileSize }}</strong
+        >, total disk space: <strong>{{ fileSystem.totalSpace | humanFileSize }}</strong
         ><br />
         Up since:
-        <strong><span appToDate [time]="uptime"></span></strong> (<span
-          appTimeSince
-          [time]="uptime"
-        ></span
-        >)
+        <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>)
       </p>
     </ng-template>
   </div>
   <div class="modal-footer">
     <span class="pull-left p-xxs">
-      <a href="//frankframework.org" target="_blank">
-        <i class="fa fa-globe"></i> frankframework.org
-      </a>
+      <a href="//frankframework.org" target="_blank"> <i class="fa fa-globe"></i> frankframework.org </a>
       |
       <a href="//github.com/frankframework/frankframework" target="_blank">
         <i class="fa fa-github"></i> frankframework
       </a>
     </span>
-    <button
-      type="button"
-      class="btn btn-white"
-      title="Copy to clipboard"
-      (click)="copy()"
-    >
+    <button type="button" class="btn btn-white" title="Copy to clipboard" (click)="copy()">
       <i class="fa fa-clipboard"></i>
     </button>
-    <button
-      type="button"
-      class="btn btn-white"
-      title="Refresh information"
-      (click)="refresh()"
-    >
+    <button type="button" class="btn btn-white" title="Refresh information" (click)="refresh()">
       <i class="fa fa-refresh"></i>
     </button>
     <button type="button" class="btn btn-white" (click)="close()">Close</button>

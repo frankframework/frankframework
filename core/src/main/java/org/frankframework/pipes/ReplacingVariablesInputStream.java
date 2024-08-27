@@ -18,9 +18,9 @@ package org.frankframework.pipes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
@@ -48,13 +48,20 @@ public class ReplacingVariablesInputStream extends InputStream {
 	private final Queue<Integer> outQueue;
 	private boolean lookingForSuffix = false;
 
+	@Override
+	public void close() throws IOException {
+		if (this.in != null) {
+			this.in.close();
+		}
+	}
+
 	protected ReplacingVariablesInputStream(InputStream in, String variablePrefix, Properties properties) {
 		this.in = in;
 		this.variablePrefix = (variablePrefix + "{").getBytes();
 		this.properties = properties;
 
-		this.inQueue = new LinkedList<>();
-		this.outQueue = new LinkedList<>();
+		this.inQueue = new ArrayDeque<>();
+		this.outQueue = new ArrayDeque<>();
 	}
 
 	@Override

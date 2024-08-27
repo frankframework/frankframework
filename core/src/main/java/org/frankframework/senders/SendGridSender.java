@@ -108,7 +108,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 				Response response = sendGrid.api(request);
 				log.debug("SendGrid mail result: [{}]", response::getBody);
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+				throw new SenderException("exception sending mail with subject [" + mail.getSubject() + "]", e);
 			}
 		} else {
 			log.debug("no recipients left after whitelisting, mail is not send");
@@ -149,7 +149,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	 * Sets header of mail object if header exists
 	 * @param mail {@link Mail} address to send to
 	 * @param personalization {@link Personalization} options of the mail
-	 * @param headers Mail headers, as {@link Collection<Node>}
+	 * @param headers Mail headers, as {@link Collection}
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
 		if (headers != null && !headers.isEmpty()) {

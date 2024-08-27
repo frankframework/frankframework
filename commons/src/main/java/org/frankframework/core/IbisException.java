@@ -23,6 +23,9 @@ import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -136,7 +139,7 @@ public class IbisException extends Exception {
 		List<String> msgChain = getMessages(e, msg);
 		Throwable t = e;
 		for(String message:msgChain) {
-			String exceptionType = filter.accept(t) ? "" : "("+t.getClass().getSimpleName()+")";
+			String exceptionType = filter.accept(t) ? "" : "("+ClassUtils.classNameOf(t)+")";
 			message = StringUtil.concatStrings(exceptionType, " ", message);
 			result = StringUtil.concatStrings(result, ": ", message);
 			t = getCause(t);
@@ -179,9 +182,10 @@ public class IbisException extends Exception {
      *
      * <p>If none of the above is found, returns {@code null}.</p>
 	 */
+	@Nullable
 	private static Throwable getCause(Throwable t) {
 		Throwable cause = ExceptionUtils.getCause(t);
-		if(cause == null && t.getSuppressed().length > 0) {
+		if(cause == null && t != null && t.getSuppressed().length > 0) {
 			return t.getSuppressed()[0];
 		}
 		return cause;

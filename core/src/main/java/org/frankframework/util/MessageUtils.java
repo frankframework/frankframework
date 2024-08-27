@@ -110,7 +110,6 @@ public abstract class MessageUtils {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Message parse(AttachmentPart soapAttachment) throws SOAPException {
 		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}

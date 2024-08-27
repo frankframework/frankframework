@@ -23,12 +23,14 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.configuration.classloaders.ClassLoaderBase;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.InitializingBean;
@@ -44,7 +46,7 @@ import lombok.Setter;
  * @since	7.0-B4
  *
  */
-public abstract class DatabaseMigratorBase implements IConfigurationAware, InitializingBean {
+public abstract class DatabaseMigratorBase implements ConfigurableLifecycle, IConfigurationAware, InitializingBean {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
@@ -137,4 +139,36 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 		return AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false);
 	}
 
+	@Override
+	public int getPhase() {
+		return Integer.MIN_VALUE; // Starts first
+	}
+
+	@Override
+	public void start() {
+		//Do nothing
+	}
+
+	@Override
+	public void stop() {
+		//Do nothing
+	}
+
+	@Override
+	public boolean isRunning() {
+		return false;
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if(isEnabled()) {
+			try {
+				if(validate()) {
+					update();
+				}
+			} catch (Exception e) {
+				configuration.log("unable to run JDBC migration", e);
+			}
+		}
+	}
 }

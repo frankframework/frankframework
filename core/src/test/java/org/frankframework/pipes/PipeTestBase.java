@@ -81,7 +81,6 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		return doPipe(pipe, Message.asMessage(input), session);
 	}
 
-	@SuppressWarnings("deprecation")
 	protected PipeRunResult doPipe(final P pipe, final Message input, final PipeLineSession session) throws PipeRunException {
 		if (input != null && input.isRequestOfType(InputStream.class)) {
 			// Wrap input-stream in a stream that forces IOExceptions after it is closed; close the session

@@ -37,7 +37,7 @@ import org.graalvm.polyglot.Engine;
  * @since 8.2
  */
 @Log4j2
-@Deprecated(since = "8.2")
+@Deprecated
 public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	// Fixes some return types and other compatibility issues, but GraphvizJS still does not work. Warning: has security disadvantages and puts ECMAScript 5 compatibility on!

@@ -11,10 +11,7 @@ import { Subscription } from 'rxjs';
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })
-export class IframeCustomViewComponent
-  extends BaseIframeComponent
-  implements OnInit, OnDestroy
-{
+export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
   private routeSubscription?: Subscription;
 
   constructor(
@@ -37,10 +34,7 @@ export class IframeCustomViewComponent
   }
 
   loadPage(): void {
-    const routeState = this.location.getState() as Record<
-      string,
-      { name: string; url: string }
-    >;
+    const routeState = this.location.getState() as Record<string, { name: string; url: string }>;
 
     if (!('view' in routeState) || routeState['view'].url == '') {
       this.router.navigate(['status']);

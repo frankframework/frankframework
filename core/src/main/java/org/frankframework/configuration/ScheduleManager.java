@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,25 +21,26 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
+import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
+import org.frankframework.scheduler.SchedulerHelper;
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.util.RunState;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
-import org.frankframework.scheduler.SchedulerHelper;
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.util.RunState;
 
 /**
  * Container for jobs that are scheduled for periodic execution.
+ * <p>
+ * Configure/start/stop lifecycles are managed by Spring.
+ * @see ConfiguringLifecycleProcessor
  *
  * @author Niels Meijer
  *
- */
-/*
- * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  */
 public class ScheduleManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
@@ -63,6 +64,11 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 				throw new ConfigurationException("could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
 			}
 		}
+	}
+
+	@Override
+	public int getPhase() {
+		return 200;
 	}
 
 	/**

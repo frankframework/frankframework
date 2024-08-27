@@ -41,6 +41,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 
@@ -346,9 +347,9 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	/**
 	 * Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.
-	 * @ ff.default false
 	 * @param createRootFolder
 	 */
+	@Default("false")
 	public void setCreateRootFolder(boolean createRootFolder) {
 		this.createRootFolder = createRootFolder;
 	}

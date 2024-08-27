@@ -151,7 +151,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			}
 			return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
+			throw new SenderException("JdbcTableMessageBrowser ["+getName()+"] ",e);
 		}
 	}
 

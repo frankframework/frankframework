@@ -107,7 +107,8 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		ClusterMember cm = new ClusterMember();
 		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
 		cm.setId(member.getUuid());
-		cm.setName(member.getAttribute("name"));
+		cm.setType(member.getAttribute(HazelcastConfig.ATTRIBUTE_TYPE_KEY));
+		cm.setName(member.getAttribute(HazelcastConfig.ATTRIBUTE_NAME_KEY));
 		cm.setLocalMember(member.localMember());
 		return cm;
 	}

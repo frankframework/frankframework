@@ -26,9 +26,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -119,7 +119,7 @@ public class FileHandler implements IScopeProvider {
 	 */
 	public void configure() throws ConfigurationException {
 		// translation action separated string to Transformers
-		transformers = new LinkedList<>();
+		transformers = new ArrayList<>();
 		if (StringUtils.isEmpty(getActions()))
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 

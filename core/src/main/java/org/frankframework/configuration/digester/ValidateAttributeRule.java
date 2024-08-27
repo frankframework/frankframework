@@ -26,6 +26,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.doc.Protected;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringResolver;
@@ -61,36 +62,41 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		if (pd != null) {
 			m = pd.getWriteMethod();
 		}
-		if (m==null) { //validate if the attribute exists
+		if (m == null) { //validate if the attribute exists
 			addLocalWarning("does not have an attribute ["+name+"] to set to value ["+value+"]");
-		} else if(AnnotationUtils.findAnnotation(m, Protected.class) != null) {
+			return;
+		}
+
+		if (AnnotationUtils.findAnnotation(m, Protected.class) != null) {
 			addLocalWarning("attribute ["+name+"] is protected, cannot be set from configuration");
-		} else {
-			checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
+			return;
+		}
 
-			if(value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
-				value = resolveValue(value);
-			} else { //Only check for default values for non-property values
-				Method readMethod = pd.getReadMethod();
-				if(readMethod != null) { //And if a read method (getter) exists
-					checkTypeCompatibility(readMethod, name, value, attributes);
-				}
+		checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
+		checkIfMethodIsMarkedAsUnsafe(m, name);
+
+		if (value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
+			value = resolveValue(value);
+		} else { //Only check for default values for non-property values
+			Method readMethod = pd.getReadMethod();
+			if(readMethod != null) { //And if a read method (getter) exists
+				checkTypeCompatibility(readMethod, name, value, attributes);
 			}
+		}
 
-			log.trace("attempting to populate field [{}] with value [{}] on bean [{}]", name, value, getBean());
-			try {
-				ClassUtils.invokeSetter(getBean(), m, value);
-			} catch (IllegalStateException e) {
-				log.warn("error while invoking method [{}] with value [{}] on bean [{}]", m, value, getBean(), e);
-				addLocalWarning(e.getCause().getMessage());
-			} catch (IllegalArgumentException e) {
-				log.debug("unable to set attribute [{}] on method [{}] with value [{}]", name, m, value, e);
-				// When it's unable to convert to the provided type and:
-				// The type is not a String AND The value is empty
-				// Do not create a warning.
-				if(!"".equals(value)) {
-					addLocalWarning(e.getMessage());
-				}
+		log.trace("attempting to populate field [{}] with value [{}] on bean [{}]", name, value, getBean());
+		try {
+			ClassUtils.invokeSetter(getBean(), m, value);
+		} catch (IllegalStateException e) {
+			log.warn("error while invoking method [{}] with value [{}] on bean [{}]", m, value, getBean(), e);
+			addLocalWarning(e.getCause().getMessage());
+		} catch (IllegalArgumentException e) {
+			log.debug("unable to set attribute [{}] on method [{}] with value [{}]", name, m, value, e);
+			// When it's unable to convert to the provided type and:
+			// The type is not a String AND The value is empty
+			// Do not create a warning.
+			if(!"".equals(value)) {
+				addLocalWarning(e.getMessage());
 			}
 		}
 	}
@@ -146,6 +152,17 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 		} catch (IllegalArgumentException ignored) { // Can not happen with enums
 		}
+	}
+
+	private void checkIfMethodIsMarkedAsUnsafe(Method setterMethod, String attributeName) {
+		Unsafe unsafe = AnnotationUtils.findAnnotation(setterMethod, Unsafe.class);
+
+		if (unsafe == null) {
+			return;
+		}
+
+		String warning = "[" + attributeName + "] is unsafe and should not be used in a production environment.";
+		addSuppressibleWarning(warning, SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 	}
 
 	private void addConfigWarning(Class<?> clazz) {

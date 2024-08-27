@@ -713,7 +713,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				}
 				output = validationResult.getResult();
 			}
-			log.debug("response after validating ({}) [{}]", () -> ClassUtils.nameOf(validationResult.getResult()), validationResult::getResult);
+			log.debug("response after validating [{}]", validationResult::getResult);
 		}
 
 		if (outputWrapper != null) {
@@ -750,7 +750,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				exitState = PRESUMED_TIMEOUT_FORWARD;
 				throw new TimeoutException(PRESUMED_TIMEOUT_FORWARD);
 			}
-			try {
+			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("sender", sender.getName())){
 				SenderResult senderResult = sender.sendMessage(input, session);
 				PipeForward forward = findForwardForResult(senderResult);
 				sendResult = new PipeRunResult(forward, senderResult.getResult());

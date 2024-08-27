@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,6 +66,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -88,7 +88,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.CaseInsensitiveComparator;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
@@ -96,6 +95,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
@@ -214,7 +214,7 @@ public class LarvaTool {
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
 
-		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'");
+		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
 		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory);
 		debugMessage("Initialize 'wait before cleanup' variable");
 		int waitBeforeCleanUp = 100;
@@ -888,7 +888,20 @@ public class LarvaTool {
 	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
 		List<File> scenarioFiles = new ArrayList<>();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'");
-		File[] files = new File(scenariosDirectory).listFiles();
+
+		File directory = new File(scenariosDirectory);
+		Path targetPath = directory.toPath().normalize();
+
+		if (!directory.toPath().normalize().startsWith(targetPath)) {
+			String message = "Scenarios directory is outside of the target directory";
+			logger.warn(message);
+			errorMessage(message);
+
+			return scenarioFiles;
+		}
+
+		File[] files = directory.listFiles();
+
 		if (files == null) {
 			debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
 			return scenarioFiles;
@@ -1440,8 +1453,7 @@ public class LarvaTool {
 		String message = null;
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender) querySendersInfo.get("readQueryQueryFixedQuerySender");
-			try {
-				PipeLineSession session = new PipeLineSession();
+			try (PipeLineSession session = new PipeLineSession()) {
 				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session).asString();
 			} catch(TimeoutException e) {
@@ -1542,12 +1554,15 @@ public class LarvaTool {
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
 			// Determine the encoding the XML way but don't use an XML parser to
 			// read the file and transform it to a string to prevent changes in
-			// formatting and prevent adding an xml declaration where this is
+			// formatting and prevent adding a xml declaration where this is
 			// not present in the file. For example, when using a
 			// WebServiceSender to send a message to a WebServiceListener the
-			// xml message must not contain an xml declaration.
+			// xml message must not contain a xml declaration.
 			try (InputStream in = new FileInputStream(fileName)) {
 				XMLInputFactory factory = XMLInputFactory.newInstance();
+				factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+				factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+
 				XMLStreamReader parser = factory.createXMLStreamReader(in);
 				encoding = parser.getEncoding();
 				parser.close();
@@ -1642,9 +1657,10 @@ public class LarvaTool {
 	// Used by saveResultToFile.jsp
 	public static void writeFile(String fileName, String content) throws IOException {
 		String encoding = getEncoding(fileName, content);
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), encoding);
-		outputStreamWriter.write(content);
-		outputStreamWriter.close();
+
+		try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), encoding)) {
+			outputStreamWriter.write(content);
+		}
 	}
 
 	private static String getEncoding(String fileName, String content) {
@@ -2277,11 +2293,9 @@ public class LarvaTool {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
-					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
-
-					value = new LinkedList<>(parts);
+					value = StringUtil.split(propertyValue);
 				} else if ("map".equals(type)) {
-					List<String> parts = new ArrayList<>(Arrays.asList(propertyValue.split("\\s*(,\\s*)+")));
+					List<String> parts = StringUtil.split(propertyValue);
 					Map<String, String> map = new LinkedHashMap<>();
 
 					for (String part : parts) {

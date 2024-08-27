@@ -19,23 +19,25 @@
 	</beans>
 
 	<beans>
-		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" scope="singleton" />
+		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" />
 
 		<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
 
 		<bean name="configurationMetrics" class="org.frankframework.statistics.MetricsInitializer" />
 
-		<bean name="sharedWsdlDefinitions" class="org.frankframework.core.SharedWsdlDefinitions" scope="singleton"/>
+		<bean name="sharedWsdlDefinitions" class="org.frankframework.core.SharedWsdlDefinitions" />
 
-		<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
-		<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
+<!-- Configurable Lifecycle beans -->
+		<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" />
+		<bean name="configFlowGenerator" class="org.frankframework.configuration.ConfigurationFlowGenerator" />
+		<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" />
+		<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" />
+		<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 
-		<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
 
 		<bean name="configurationWarnings" class="org.frankframework.configuration.ConfigurationWarnings" />
 		<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 
-		<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 <!-- 	<bean name="applicationEventMulticaster" class="org.frankframework.lifecycle.FrankEventMulticaster" /> -->
 	</beans>
 </beans>

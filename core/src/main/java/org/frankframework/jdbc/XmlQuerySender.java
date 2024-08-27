@@ -129,7 +129,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					n = df.parse(value);
 				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Integer", e);
+					throw new SenderException("got exception parsing value [" + value + "] to Integer", e);
 				}
 				parameter = n.intValue();
 			} else if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
@@ -148,7 +148,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					n = df.parse(value);
 				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
+					throw new SenderException("got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
 				}
 				if (value.indexOf('.') >= 0) {
 					parameter = n.doubleValue();
@@ -161,7 +161,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					nDate = df.parse(value);
 				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+					throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
 				}
 				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
@@ -169,7 +169,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					nDate = XmlUtils.parseXmlDateTime(value);
 				} catch (Exception e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
+					throw new SenderException("got exception parsing value [" + value + "] from xml dateTime to Date", e);
 				}
 				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
@@ -225,14 +225,14 @@ public class XmlQuerySender extends DirectQuerySender {
 				String query = XmlUtils.getChildTagAsString(queryElement, "query");
 				result = sql(blockHandle, query, type);
 			} else {
-				throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
+				throw new SenderException("unknown root element [" + root + "]");
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
+			throw new SenderException("got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
+			throw new SenderException("got exception preparing [" + message + "]", e);
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception creating [" + message + "]", e);
+			throw new SenderException("got exception creating [" + message + "]", e);
 		}
 
 		return new SenderResult(result);
@@ -261,7 +261,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
+			throw new SenderException("got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
 		}
 	}
 
@@ -278,7 +278,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		try {
 			return executeUpdate(connection, query, columns);
 		} catch (SenderException t) {
-			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command [" + query + "]", t);
+			throw new SenderException("got exception executing an INSERT SQL command [" + query + "]", t);
 		}
 	}
 
@@ -291,7 +291,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command [" + query + "]", e);
+			throw new SenderException("got exception executing a DELETE SQL command [" + query + "]", e);
 		}
 	}
 
@@ -309,7 +309,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			String query = queryBuilder.toString();
 			return executeUpdate(connection, query, columns);
 		} catch (SenderException t) {
-			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command [" + queryBuilder + "]", t);
+			throw new SenderException("got exception executing an UPDATE SQL command [" + queryBuilder + "]", t);
 		}
 	}
 
@@ -335,7 +335,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 			}
 		} catch (SQLException | IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command ["+query+"]", e);
+			throw new SenderException("got exception executing a SQL command ["+query+"]", e);
 		}
 	}
 
@@ -351,7 +351,7 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	private Message alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
 		String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
-		log.debug("{} preparing procedure for query [{}]", this::getLogPrefix, ()-> callQuery);
+		log.debug("preparing procedure for query [{}]", ()-> callQuery);
 		try (CallableStatement callableStatement = connection.prepareCall(callQuery)){
 			callableStatement.setQueryTimeout(getTimeout());
 			int numRowsAffected = callableStatement.executeUpdate();

@@ -53,8 +53,7 @@ export class LoggingService {
   ) {}
 
   getLogging(directory: string): Observable<Logging> {
-    const url =
-      directory.length > 0 ? `logging?directory=${directory}` : 'logging';
+    const url = directory.length > 0 ? `logging?directory=${directory}` : 'logging';
     return this.http.get<Logging>(this.appService.absoluteApiPath + url);
   }
 
@@ -66,9 +65,7 @@ export class LoggingService {
     return this.http.get<LogInformation>(this.logSettingsURL);
   }
 
-  putLoggingSettingsChange(
-    action: Record<string, NonNullable<unknown>>,
-  ): Observable<object> {
+  putLoggingSettingsChange(action: Record<string, NonNullable<unknown>>): Observable<object> {
     return this.http.put(this.logSettingsURL, action);
   }
 

@@ -1,17 +1,18 @@
 import { Injectable, isDevMode } from '@angular/core';
-import {
-  Client,
-  IFrame,
-  IMessage,
-  IStompSocket,
-  StompSubscription,
-} from '@stomp/stompjs';
-import { AppService } from '../app.service';
+import { Client, IFrame, IMessage, IStompSocket, StompSubscription } from '@stomp/stompjs';
+import { AppService, ClusterMember } from '../app.service';
 import { Subject } from 'rxjs';
 
 type ChannelMessage = {
   channel: string;
   message: IMessage;
+};
+
+export type ClusterMemberEventType = 'ADD_MEMBER' | 'REMOVE_MEMBER';
+
+export type ClusterMemberEvent = {
+  type: ClusterMemberEventType;
+  member: ClusterMember;
 };
 
 @Injectable({
@@ -60,10 +61,7 @@ export class WebsocketService {
       this.onWebSocketErrorSubject.next(event);
     },
   });
-  private stompSubscriptions: Map<string, StompSubscription> = new Map<
-    string,
-    StompSubscription
-  >();
+  private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
 
   constructor(private appService: AppService) {}
 

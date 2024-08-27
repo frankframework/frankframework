@@ -26,10 +26,9 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -37,6 +36,8 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
+
+import lombok.Getter;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -55,12 +56,12 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFilenameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"filenameSessionKey must be specified");
+			throw new ConfigurationException("filenameSessionKey must be specified");
 		}
 		String sft = getStatusFieldType();
 		if (StringUtils.isNotEmpty(sft)) {
 			if (!"timestamp".equalsIgnoreCase(sft)) {
-				throw new ConfigurationException(getLogPrefix() + "illegal value for statusFieldType [" + sft + "], must be 'timestamp'");
+				throw new ConfigurationException("illegal value for statusFieldType [" + sft + "], must be 'timestamp'");
 			}
 		}
 		eolArray = System.getProperty("line.separator").getBytes();
@@ -70,14 +71,14 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	protected SenderResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		String fileName = session.getString(getFilenameSessionKey());
 		if (fileName == null) {
-			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]");
+			throw new SenderException("unable to get filename from session key ["+getFilenameSessionKey()+"]");
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			try {
 				maxRecords = session.getInteger(getMaxRecordsSessionKey());
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
+				throw new SenderException("unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
 			}
 		}
 
@@ -110,13 +111,13 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			throw new SenderException(getLogPrefix() + "could not find file [" + fileName + "]", e);
+			throw new SenderException("could not find file [" + fileName + "]", e);
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "got Exception resolving parameter", e);
+			throw new SenderException("got Exception resolving parameter", e);
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got IOException", e);
+			throw new SenderException("got IOException", e);
 		} catch (SQLException | JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
+			throw new SenderException("got exception executing a SQL command", e);
 		}
 		return new SenderResult(new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
 	}
@@ -140,12 +141,6 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	/** type of the optional status field which is set after the row is written to the file: timestamp */
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		setFilenameSessionKey(filenameSessionKey);
 	}
 
 	/**

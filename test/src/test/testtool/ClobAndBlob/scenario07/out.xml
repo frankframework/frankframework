@@ -1,4 +1,4 @@
-<errorMessage timestamp="IGNORE" originator="IAFIGNORE" message="SenderPipe [readBlobReadAsIfcompressed] msgId [IGNORE]: [org.frankframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check">
+<errorMessage timestamp="IGNORE" originator="IAFIGNORE" message="SenderPipe [readBlobReadAsIfcompressed] msgId [IGNORE]: got exception executing a SELECT SQL command: (ZipException) incorrect header check">
 	<location class="org.frankframework.pipes.SenderPipe" name="readBlobReadAsIfcompressed"/>
 	<details>IGNORE</details>
 	<originalMessage messageId="IGNORE" receivedTime="IGNORE">&lt;result/&gt;</originalMessage>

@@ -1,11 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { AppService, ConsoleState } from '../app.service';
 
 @Directive({
@@ -38,9 +31,7 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
 
   updateTime(): string {
     if (!this.time) return '';
-    let seconds = Math.round(
-      (Date.now() - this.time + this.consoleState.timeOffset) / 1000,
-    );
+    let seconds = Math.round((Date.now() - this.time + this.consoleState.timeOffset) / 1000);
 
     let minutes = seconds / 60;
     seconds = Math.floor(seconds % 60);

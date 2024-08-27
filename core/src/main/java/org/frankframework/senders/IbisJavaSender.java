@@ -77,7 +77,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getServiceNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify serviceName or serviceNameSessionKey");
+			throw new ConfigurationException("must specify serviceName or serviceNameSessionKey");
 		}
 	}
 
@@ -128,9 +128,9 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				String correlationID = session.getCorrelationId();
 				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
 			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
+				throw new SenderException("exception evaluating parameters", e);
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "exception processing message using request processor [" + serviceName + "]", e);
+				throw new SenderException("exception processing message using request processor [" + serviceName + "]", e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
@@ -174,7 +174,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if("DLL".equalsIgnoreCase(type)) {
 				dispatchType = type;
 			} else {
-				throw new ConfigurationException(getLogPrefix()+"the attribute 'setDispatchType' only supports the value 'DLL'");
+				throw new ConfigurationException("the attribute 'setDispatchType' only supports the value 'DLL'");
 			}
 		}
 	}

@@ -15,8 +15,8 @@ limitations under the License.
 */
 package org.frankframework.configuration;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ import org.springframework.context.ApplicationContextAware;
 public abstract class ApplicationWarningsBase implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private ApplicationContext applicationContext;
 	private AppConstants appConstants;
-	private final List<String> warnings = new LinkedList<>();
+	private final List<String> warnings = new ArrayList<>();
 
 	@Override
 	public void afterPropertiesSet() {

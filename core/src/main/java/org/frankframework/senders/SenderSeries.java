@@ -15,11 +15,15 @@
 */
 package org.frankframework.senders;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
@@ -30,10 +34,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Series of Senders, that are executed one after another.
  *
@@ -42,7 +42,7 @@ import lombok.Setter;
  */
 public class SenderSeries extends SenderWrapperBase {
 
-	private final List<ISender> senderList = new LinkedList<>();
+	private final List<ISender> senderList = new ArrayList<>();
 	private final Map<ISender, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
@@ -85,7 +85,7 @@ public class SenderSeries extends SenderWrapperBase {
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled())
-				log.debug("{}sending correlationID [{}] message [{}] to sender [{}]", getLogPrefix(), correlationID, message, sender.getName());
+				log.debug("sending correlationID [{}] message [{}] to sender [{}]", correlationID, message, sender.getName());
 			result = sender.sendMessage(message, session);
 			if (!result.isSuccess()) {
 				return result;

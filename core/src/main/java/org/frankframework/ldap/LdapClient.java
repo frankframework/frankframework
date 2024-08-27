@@ -20,12 +20,12 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -518,11 +518,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
 			@Override
 			public void handle(Attribute key, Object value) {
-				List<String> list = getData().get(key.getID());
-				if (list == null) {
-					list = new LinkedList<>();
-					getData().put(key.getID(), list);
-				}
+				List<String> list = getData().computeIfAbsent(key.getID(), k -> new ArrayList<>());
 				list.add((String) value);
 			}
 

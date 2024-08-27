@@ -171,7 +171,6 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					if (a != null) {
 						xsdTargetNamespace = a.getValue();
 					}
-					@SuppressWarnings("unchecked")
 					Iterator<Namespace> nsIterator = el.getNamespaces();
 					// search for default namespace of the schema, i.e. a namespace definition without a prefix
 					while (nsIterator.hasNext() && StringUtils.isEmpty(xsdDefaultNamespace)) {

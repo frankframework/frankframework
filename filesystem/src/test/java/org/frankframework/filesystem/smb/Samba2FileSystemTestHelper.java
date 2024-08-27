@@ -118,6 +118,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
+	@Override
 	public void close() {
 		CloseUtils.closeSilently(diskShare, session, connection, client);
 		diskShare = null;

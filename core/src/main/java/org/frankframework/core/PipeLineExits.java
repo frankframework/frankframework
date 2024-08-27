@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -41,7 +41,7 @@ import lombok.Getter;
  */
 public class PipeLineExits {
 
-	private final @Getter List<PipeLineExit> exits = new LinkedList<>();
+	private final @Getter List<PipeLineExit> exits = new ArrayList<>();
 
 	/**
 	 * PipeLine exits.

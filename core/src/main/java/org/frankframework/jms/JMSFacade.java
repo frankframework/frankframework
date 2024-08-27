@@ -15,8 +15,6 @@
 */
 package org.frankframework.jms;
 
-import static org.frankframework.functional.FunctionalUtil.logValue;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,25 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.jms.BytesMessage;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.Destination;
-import jakarta.jms.InvalidDestinationException;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageConsumer;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueSender;
-import jakarta.jms.QueueSession;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
-import jakarta.jms.Topic;
-import jakarta.jms.TopicPublisher;
-import jakarta.jms.TopicSession;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.configuration.ConfigurationException;
@@ -70,6 +49,26 @@ import org.frankframework.util.XmlException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.InvalidDestinationException;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueSender;
+import jakarta.jms.QueueSession;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicPublisher;
+import jakarta.jms.TopicSession;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 
 /**
@@ -398,7 +397,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			}
 			if (cidlen > correlationIdMaxLength) {
 				correlationID = correlationIdToHexPrefix + correlationID.substring(correlationID.length() - correlationIdMaxLength);
-				log.debug("correlationId shortened to [{}]", logValue(correlationID));
+				log.debug("correlationId shortened to [{}]", correlationID);
 			}
 		}
 		if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
@@ -409,7 +408,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				hexCorrelationID.append(Integer.toHexString(c));
 			}
 			correlationID = hexCorrelationID.toString();
-			log.debug("correlationId changed, based on hexidecimal values, to [{}]", logValue(correlationID));
+			log.debug("correlationId changed, based on hexidecimal values, to [{}]", correlationID);
 		}
 		message.setJMSCorrelationID(correlationID);
 	}

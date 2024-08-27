@@ -1,4 +1,4 @@
-<errorMessage timestamp="IGNORE" originator="IAFIGNORE" message="SenderPipe [Call ExceptionPipe] msgId [IGNORE]: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;">
+<errorMessage timestamp="IGNORE" originator="IAFIGNORE" message="SenderPipe [Call ExceptionPipe] msgId [IGNORE]: exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;">
 	<location class="org.frankframework.pipes.SenderPipe" name="Call ExceptionPipe"/>
 	<details>IGNORE</details>
 	<originalMessage messageId="IGNORE" receivedTime="IGNORE">&lt;test/&gt;</originalMessage>

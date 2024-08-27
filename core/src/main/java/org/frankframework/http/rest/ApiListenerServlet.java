@@ -23,24 +23,23 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import com.nimbusds.jose.util.JSONObjectUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import com.nimbusds.jose.util.JSONObjectUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
@@ -48,12 +47,13 @@ import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.http.HttpServletBase;
-import org.frankframework.http.InputStreamDataSource;
-import org.frankframework.http.PartMessage;
 import org.frankframework.http.mime.MultipartUtils;
+import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
 import org.frankframework.jwt.JwtSecurityHandler;
 import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.lifecycle.servlets.URLRequestMatcher;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
@@ -132,7 +132,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		final String remoteUser = request.getRemoteUser();
+		final String remoteUser = BusMessageUtils.getUserPrincipalName();
 
 		final ApiListener.HttpMethod method;
 		try {
@@ -144,7 +144,8 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		String uri = request.getPathInfo();
-		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
+		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}",
+				uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+ remoteUser +"]" : ""));
 
 		if (uri == null) {
 			response.setStatus(400);
@@ -270,7 +271,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
-			pipelineSession.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			pipelineSession.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				/*
@@ -472,45 +472,22 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(MultipartUtils.isMultipart(request)) {
 					final String multipartBodyName = listener.getMultipartBodyName();
 					try {
-						final InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
-						final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-						final XmlBuilder attachments = new XmlBuilder("parts");
+						MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
+						for (Entry<String, Message> entry : parts.messages().entrySet()) {
+							String fieldName = entry.getKey();
+							if((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+								body = entry.getValue();
 
-						for (int i = 0; i < mimeMultipart.getCount(); i++) {
-							final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-							final String fieldName = MultipartUtils.getFieldName(bodyPart);
-							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
-								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
+								Enumeration<String> names = request.getHeaderNames();
+								while(names.hasMoreElements()) {
+									String name = names.nextElement();
+									body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
+								}
 							}
-
-							final XmlBuilder attachment = new XmlBuilder("part");
-							attachment.addAttribute("name", fieldName);
-							PartMessage message = new PartMessage(bodyPart);
-							if (!MultipartUtils.isBinary(bodyPart)) {
-								// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-								LOG.trace("setting multipart formField [{}] to [{}]", fieldName, message);
-								pipelineSession.put(fieldName, message.asString());
-								attachment.addAttribute("type", "text");
-								attachment.addAttribute("value", message.asString());
-							} else {
-								// Process form file field (input type="file").
-								final String fieldNameName = fieldName + "Name";
-								final String fileName = MultipartUtils.getFileName(bodyPart);
-								LOG.trace("setting multipart formFile [{}] to [{}]", fieldNameName, fileName);
-								pipelineSession.put(fieldNameName, fileName);
-								LOG.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
-								pipelineSession.put(fieldName, message);
-
-								attachment.addAttribute("type", "file");
-								attachment.addAttribute("filename", fileName);
-								attachment.addAttribute("size", message.size());
-								attachment.addAttribute("sessionKey", fieldName);
-								attachment.addAttribute("mimeType", extractMimeType(bodyPart.getContentType()));
-							}
-							attachments.addSubElement(attachment);
+							pipelineSession.put(fieldName, entry.getValue());
 						}
-						pipelineSession.put("multipartAttachments", attachments.asXmlString());
-					} catch(MessagingException e) {
+						pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
+					} catch(IOException e) {
 						response.sendError(400, "Could not read mime multipart request");
 						LOG.warn("{} Could not read mime multipart request", createAbortMessage(remoteUser, 400), e);
 						return;
@@ -656,7 +633,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					List<String> logValueList = valueList.stream()
 							.map(StringEscapeUtils::escapeJava)
 							.collect(Collectors.toList());
-					LOG.trace("setting queryParameter [{}] to {}", paramName, logValueList);
+					LOG.trace("setting queryParameter [{}] to {}", StringEscapeUtils.escapeJava(paramName), logValueList);
 				}
 				params.put(paramName, valueList);
 			}
@@ -752,15 +729,6 @@ public class ApiListenerServlet extends HttpServletBase {
 		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}
 
-	private String extractMimeType(String contentType) {
-		final int semicolon = contentType.indexOf(";");
-		if(semicolon >= 0) {
-			return contentType.substring(0, semicolon);
-		} else {
-			return contentType;
-		}
-	}
-
 	private String buildAllowedMethodsHeader(Set<ApiListener.HttpMethod> methods) {
 		StringBuilder methodsBuilder = new StringBuilder();
 		methodsBuilder.append("OPTIONS");
@@ -774,9 +742,14 @@ public class ApiListenerServlet extends HttpServletBase {
 		return methodsBuilder.toString();
 	}
 
+	/**
+	 * Tomcat matches /api to /api/*. Not every application server does this. In order to both fix 
+	 * {@link URLRequestMatcher Authentication request matching} and the different Application Servers
+	 * matching on different methods, explicitly add `/api`.
+	 */
 	@Override
 	public String getUrlMapping() {
-		return "/api/*";
+		return "/api,/api/*";
 	}
 
 	private String createAbortMessage(String remoteUser, int statusCode) {

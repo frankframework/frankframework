@@ -27,20 +27,31 @@ import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 
 public class HazelcastConfig {
 
+	public static final String ATTRIBUTE_TYPE_KEY = "type";
+	public static final String ATTRIBUTE_NAME_KEY = "name";
+
 	public static final String REQUEST_TOPIC_NAME = "frank_integration_request_topic";
 	public static final String AUTHENTICATION_HEADER_KEY = BusMessageUtils.HEADER_PREFIX+"user";
 
 	static Config createHazelcastConfig() {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		String resource = "frankframework-hazelcast.xml";
+		String resource = "ff-hazelcast.xml";
 		Properties properties = new PropertyLoader("hazelcast.properties");
 		return Config.loadFromClasspath(classLoader, resource, properties);
 	}
 
-	static HazelcastInstance newHazelcastInstance(String name) {
+	/**
+	 * Type such as console, worker or flow
+	 */
+	static HazelcastInstance newHazelcastInstance(String type) {
 		Config config = HazelcastConfig.createHazelcastConfig();
-		config.getMemberAttributeConfig().setAttribute("name", name);
-		return HazelcastInstanceFactory.newHazelcastInstance(config, name, new DefaultNodeContext());
+		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type);
+
+		HazelcastInstance instance = HazelcastInstanceFactory.newHazelcastInstance(config, null, new DefaultNodeContext());
+
+		//Update so we can see the generated moby-name
+		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, instance.getName());
+		return instance;
 	}
 }
