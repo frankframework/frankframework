@@ -31,9 +31,9 @@
         <emptyLine />
         <package name="" withSubpackages="true" static="false" />
         <emptyLine />
-        <package name="nl.nn" withSubpackages="true" static="false" />
+        <package name="nl.nn.adapterframework" withSubpackages="true" static="false" />
         <emptyLine />
-        <package name="org.adapterframework" withSubpackages="true" static="false" />
+        <package name="org.frankframework" withSubpackages="true" static="false" />
       </value>
     </option>
     <option name="RECORD_COMPONENTS_WRAP" value="5" />

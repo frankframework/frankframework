@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -48,7 +49,7 @@ public class PropertyLoader extends Properties {
 
 		load(classLoader, propertiesFile);
 
-		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
+		// Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
 		if (classLoader != null) {
 			LOG.info("created new PropertyLoader for classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 		} else {
