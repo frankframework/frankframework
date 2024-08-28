@@ -263,8 +263,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * </Module>
  * }</pre>
  *
- * @ff.parameter {@code scope} Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
- * @ff.parameter {@code target} Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
+ * @ff.parameter "{@code scope}" Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
+ * @ff.parameter "{@code target}" Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  * @ff.forward "{@code <Exit.code>}" default
  *
