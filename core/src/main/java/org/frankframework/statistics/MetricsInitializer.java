@@ -31,7 +31,6 @@ import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.search.Search;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -63,7 +62,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private List<String> timeSLO; //ServiceLevelObjectives
 	private List<String> sizeSLO;
 
-	private @Getter @Setter MeterRegistry meterRegistry;
+	private @Setter MeterRegistry meterRegistry;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {

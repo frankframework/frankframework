@@ -16,7 +16,6 @@
 
 package org.frankframework.http;
 
-import io.micrometer.common.lang.NonNull;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.http.conn.routing.HttpRoute;
@@ -46,7 +45,7 @@ public class MicrometerConnectionManagerMetricsBinder implements MeterBinder {
 	}
 
 	@Override
-	public void bindTo(@NonNull MeterRegistry registry) {
+	public void bindTo(MeterRegistry registry) {
 		registerTotalMetrics();
 	}
 

@@ -80,7 +80,9 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() throws Exception {
-		return new HttpSender();
+		HttpSender httpSender = new HttpSender();
+		httpSender.setName("senderAuthenticationTest");
+		return httpSender;
 	}
 
 	//Send message

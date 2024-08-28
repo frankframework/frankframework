@@ -395,7 +395,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			IConfigurationAware element = (adapter != null) ? adapter : this;
 
 			new MicrometerConnectionManagerMetricsBinder(connectionManager, configurationMetrics, element)
-					.bindTo(configurationMetrics.getMeterRegistry());
+					.bindTo(null);
 
 			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,
 					request -> request.getRequestLine().getUri(),
