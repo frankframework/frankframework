@@ -56,6 +56,7 @@ export class AppComponent implements OnInit, OnDestroy {
   routeQueryParams: ParamMap = convertToParamMap({});
   isLoginView: boolean = false;
   clusterMembers: ClusterMember[] = [];
+  protected selectedClusterMember: ClusterMember | null = null;
 
   private appConstants: AppConstants;
   private consoleState: ConsoleState;
@@ -332,28 +333,30 @@ export class AppComponent implements OnInit, OnDestroy {
         });
       }
     });
-    this.appService.getClusterMembers().subscribe((data) => {
-      this.clusterMembers = data;
-    });
   }
 
   initializeWebsocket(): void {
-    this.websocketService.onConnected$.subscribe(() => {
-      this.appService.updateLoading(false);
-      this.loading = false;
+    if (this.loading) {
+      this.websocketService.onConnected$.subscribe(() => {
+        this.appService.updateLoading(false);
+        this.loading = false;
 
-      this.websocketService.subscribe<Record<string, MessageLog>>('/event/server-warnings', (configurations) =>
-        this.processWarnings(configurations),
-      );
+        const channelBaseUrl = this.selectedClusterMember ? `/event/${this.selectedClusterMember.id}` : '/event';
 
-      this.websocketService.subscribe<Record<string, Partial<Adapter>>>('/event/adapters', (adapters) =>
-        this.processAdapters(adapters),
-      );
+        this.websocketService.subscribe<Record<string, MessageLog>>(
+          `${channelBaseUrl}/server-warnings`,
+          (configurations) => this.processWarnings(configurations),
+        );
 
-      this.websocketService.subscribe<ClusterMemberEvent>('/event/cluster', (clusterMemeberEvent) =>
-        this.updateClusterMembers(clusterMemeberEvent.member, clusterMemeberEvent.type),
-      );
-    });
+        this.websocketService.subscribe<Record<string, Partial<Adapter>>>(`${channelBaseUrl}/adapters`, (adapters) =>
+          this.processAdapters(adapters),
+        );
+
+        this.websocketService.subscribe<ClusterMemberEvent>('/event/cluster', (clusterMemberEvent) =>
+          this.updateClusterMembers(clusterMemberEvent.member, clusterMemberEvent.type),
+        );
+      });
+    }
 
     this.appService.getAdapters('all').subscribe((data) => {
       this.processAdapters(data);
@@ -491,7 +494,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   finalizeStartup(data: Record<string, Adapter>): void {
     this.processAdapters(data);
-    this.initializeWebsocket();
+    this.appService.getClusterMembers().subscribe((data) => {
+      this.clusterMembers = data;
+      if (data.length > 0) {
+        this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
+      }
+      this.initializeWebsocket();
+    });
   }
 
   processAdapterReceivers(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
