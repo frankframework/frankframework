@@ -29,13 +29,13 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
-      this.form['datasource'] = this.appConstants['jdbc.datasource.default'] as string;
+      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
     });
     this._subscriptions.add(appConstantsSubscription);
 
     this.jdbcService.getJdbc().subscribe((data) => {
       this.datasources = data.datasources;
-      this.form['datasource'] =
+      this.form.datasource =
         this.appConstants['jdbc.datasource.default'] === undefined
           ? data.datasources[0]
           : (this.appConstants['jdbc.datasource.default'] as string);

@@ -44,17 +44,17 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
-      this.form['datasource'] = this.appConstants['jdbc.datasource.default'] as string;
+      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
     });
     this._subscriptions.add(appConstantsSubscription);
 
     this.jdbcService.getJdbc().subscribe((data) => {
-      this.form['datasource'] =
+      this.form.datasource =
         this.appConstants['jdbc.datasource.default'] == undefined
           ? data.datasources[0]
           : (this.appConstants['jdbc.datasource.default'] as string);
       this.datasources = data.datasources;
-      this.form.datasource = this.form['datasource'] ?? '';
+      this.form.datasource = data.datasources[0] ?? '';
       this.form.resultType = data.resultTypes[0] ?? '';
     });
   }

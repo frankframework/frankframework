@@ -140,21 +140,21 @@
                 <!-- [(ngModel)]="filter.started" -->
                 <label
                   (click)="applyFilter('started')"
-                  [ngClass]="{ active: this.filter['started'] }"
+                  [ngClass]="{ active: this.filter.started }"
                   class="btn btn-primary btn-outline btn-xs started"
                   >Started</label
                 >
                 <!-- [(ngModel)]="filter.stopped" -->
                 <label
                   (click)="applyFilter('stopped')"
-                  [ngClass]="{ active: this.filter['stopped'] }"
+                  [ngClass]="{ active: this.filter.stopped }"
                   class="btn btn-danger btn-outline btn-xs stopped"
                   >Stopped</label
                 >
                 <!-- [(ngModel)]="filter.warning" -->
                 <label
                   (click)="applyFilter('warning')"
-                  [ngClass]="{ active: this.filter['warning'] }"
+                  [ngClass]="{ active: this.filter.warning }"
                   class="btn btn-warning btn-outline btn-xs warning"
                   >Warning</label
                 >

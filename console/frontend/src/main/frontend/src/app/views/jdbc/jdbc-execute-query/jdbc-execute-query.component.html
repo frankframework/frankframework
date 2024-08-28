@@ -13,7 +13,7 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
-                <select class="form-control" name="datasource" [(ngModel)]="form['datasource']">
+                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
                   <option *ngFor="let datasource of datasources">
                     {{ datasource }}
                   </option>
@@ -23,7 +23,7 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Query Type</label>
               <div class="col-sm-9">
-                <select class="form-control" name="queryType" [(ngModel)]="form['queryType']">
+                <select class="form-control" name="queryType" [(ngModel)]="form.queryType">
                   <option *ngFor="let queryType of queryTypes">
                     {{ queryType }}
                   </option>
@@ -33,7 +33,7 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Result format</label>
               <div class="col-sm-9">
-                <select class="form-control" name="resultType" [(ngModel)]="form['resultType']">
+                <select class="form-control" name="resultType" [(ngModel)]="form.resultType">
                   <option *ngFor="let resultType of resultTypes; let first = first" [selected]="first">
                     {{ resultType }}
                   </option>
@@ -44,7 +44,7 @@
               <label class="col-sm-3 control-label label-height-30">Avoid Locking</label>
               <div class="col-sm-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="avoidLocking" [(ngModel)]="form['avoidLocking']"
+                  ><input type="checkbox" name="avoidLocking" [(ngModel)]="form.avoidLocking"
                 /></span>
               </div>
             </div>
@@ -52,7 +52,7 @@
               <label class="col-sm-3 control-label label-height-30">Trim Spaces</label>
               <div class="col-sm-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="trimSpaces" [(ngModel)]="form['trimSpaces']"
+                  ><input type="checkbox" name="trimSpaces" [(ngModel)]="form.trimSpaces"
                 /></span>
               </div>
             </div>
@@ -61,7 +61,7 @@
               <div class="col-sm-9" style="height: 200px">
                 <app-monaco-editor
                   class="form-control"
-                  [(value)]="form['query']"
+                  [(value)]="form.query"
                   [options]="{ language: 'sql' }"
                   [actions]="editorActions"
                 ></app-monaco-editor>

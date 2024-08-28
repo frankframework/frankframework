@@ -85,7 +85,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
       const configuration = this.configurations[index];
 
       if (configuration.jdbcMigrator) {
-        this.form['configuration'] = configuration.name;
+        this.form.configuration = configuration.name;
         break;
       }
     }
