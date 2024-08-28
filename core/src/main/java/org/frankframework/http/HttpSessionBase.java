@@ -30,9 +30,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
-import jakarta.annotation.Nonnull;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -89,6 +86,10 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * <p>
@@ -221,6 +222,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	 * Makes sure only http(s) requests can be performed.
 	 */
 	protected URI getURI(@Nonnull String url) throws URISyntaxException {
+		if(StringUtils.isBlank(url)) {
+			throw new URISyntaxException("<null>", "no url provided");
+		}
 		URIBuilder uri = new URIBuilder(url);
 
 		if(uri.getScheme() == null) {

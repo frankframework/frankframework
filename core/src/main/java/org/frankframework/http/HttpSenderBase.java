@@ -353,7 +353,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		try {
 			if (urlParameter != null && pvl != null) {
 				String url = pvl.get(getUrlParam()).asStringValue();
-				targetUri = getURI(url);
+				try {
+					targetUri = getURI(url);
+				} catch (URISyntaxException e) {
+					throw new SenderException("cannot interpret url", e);
+				}
 			} else {
 				targetUri = staticUri;
 			}

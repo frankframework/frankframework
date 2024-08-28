@@ -34,7 +34,7 @@
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>
-		<javadoc-plugin.version>3.8.0</javadoc-plugin.version>
+		<javadoc-plugin.version>3.10.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>
@@ -55,7 +55,7 @@
 		<aws.java.sdk.version>2.27.2</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.12.0</mockito.version>
+		<mockito.version>5.13.0</mockito.version>
 		<junit.version>5.11.0</junit.version>
 	</properties>
 
@@ -135,7 +135,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.27.3</version>
+				<version>4.27.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -709,7 +709,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.5.0</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<excludedGroups>${junit.excludedTags}</excludedGroups>
