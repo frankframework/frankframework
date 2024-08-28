@@ -144,8 +144,8 @@ import org.springframework.util.Assert;
  * please check password or authAlias configuration of the corresponding certificate.
  * </p>
  *
- * @author	Niels Meijer
- * @since	7.0
+ * @author Niels Meijer
+ * @since 7.0
  */
 public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics, AdapterAware {
 	protected final Logger log = LogUtil.getLogger(this);
@@ -185,7 +185,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/* PROXY */
 	private @Getter String proxyHost;
-	private @Getter int    proxyPort=80;
+	private @Getter int proxyPort = 80;
 	private @Getter String proxyAuthAlias;
 	private @Getter String proxyUsername;
 	private @Getter String proxyPassword;
@@ -350,17 +350,18 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	 * In order to support multiThreading and connectionPooling.
 	 * The connectionManager has to be initialized with a sslSocketFactory.
 	 * The pool must be re-created once closed.
+	 *
 	 */
-	private void configureConnectionManager() {
+	private PoolingHttpClientConnectionManager configureAndGetConnectionManager() {
 		int timeToLive = getConnectionTimeToLive();
-		if (timeToLive<=0) {
+		if (timeToLive <= 0) {
 			timeToLive = -1;
 		}
 
 		Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-			.register("http", PlainConnectionSocketFactory.getSocketFactory())
-			.register("https", sslSocketFactory)
-			.build();
+				.register("http", PlainConnectionSocketFactory.getSocketFactory())
+				.register("https", sslSocketFactory)
+				.build();
 
 		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.SECONDS);
 		log.debug("created PoolingHttpClientConnectionManager with custom SSLConnectionSocketFactory");
@@ -373,7 +374,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
-		httpClientBuilder.setConnectionManager(connectionManager);
+		return connectionManager;
 	}
 
 	@Override
@@ -382,16 +383,19 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	private void buildHttpClient() {
-		configureConnectionManager();
+		PoolingHttpClientConnectionManager connectionManager = configureAndGetConnectionManager();
+		httpClientBuilder.setConnectionManager(connectionManager);
 
 		if (getApplicationContext() == null) {
 			// If there's no applicationContext, this is probably a sender created in Larva, we're missing the spring context here
 			// and we can't construct the interceptor. Besides that, it's probably not worth instrumenting either.
 			httpClient = httpClientBuilder.build();
 		} else {
-
 			// Adapter is not always available, use this instead. Also see `org.frankframework.statistics.MetricsInitializer.getElementType`
 			IConfigurationAware element = (adapter != null) ? adapter : this;
+
+			new MicrometerConnectionManagerMetricsBinder(connectionManager, configurationMetrics, element)
+					.bindTo(configurationMetrics.getMeterRegistry());
 
 			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,
 					request -> request.getRequestLine().getUri(),

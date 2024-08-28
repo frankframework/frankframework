@@ -31,6 +31,7 @@ import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.search.Search;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +63,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private List<String> timeSLO; //ServiceLevelObjectives
 	private List<String> sizeSLO;
 
-	private @Setter MeterRegistry meterRegistry;
+	private @Getter @Setter MeterRegistry meterRegistry;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -86,6 +87,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private String findName(INamedObject namedObject) {
 		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
 	}
+
 	private String findName(IConfigurationAware namedObject) {
 		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
 	}
@@ -100,20 +102,23 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull INamedObject subFrankElement, @Nonnull FrankMeterType type) {
 		return createSubDistributionSummary(parentFrankElement, findName(subFrankElement), type);
 	}
+
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
 		List<Tag> tags = getTags(parentFrankElement, findName(parentFrankElement) + " -> " + subFrankElement, null);
 		return createDistributionSummary(type, tags);
 	}
+
 	public DistributionSummary createDistributionSummary(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
 		List<Tag> tags = getTags(frankElement, findName(frankElement), null);
 		return createDistributionSummary(type, tags);
 	}
+
 	public DistributionSummary createThreadBasedDistributionSummary(Receiver<?> receiver, FrankMeterType type, int threadNumber) {
 		List<Tag> tags = getTags(receiver, receiver.getName(), Collections.singletonList(Tag.of("thread", ""+threadNumber)));
 		return createDistributionSummary(type, tags);
 	}
 
-	public Gauge createGauge(@Nonnull Adapter frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {
+	public Gauge createGauge(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {
 		return createGauge(type, getTags(frankElement, frankElement.getName(), null), numberSupplier);
 	}
 
@@ -175,14 +180,14 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private Adapter getAdapter(@Nonnull IConfigurationAware frankElement) {
-		if(frankElement instanceof Adapter adapter) {
+		if (frankElement instanceof Adapter adapter) {
 			return adapter;
 		}
-		if(frankElement instanceof HasStatistics elm) {
-			if(elm.getAdapter() != null) {
-				return elm.getAdapter();
-			}
+
+		if (frankElement instanceof HasStatistics elm && elm.getAdapter() != null) {
+			return elm.getAdapter();
 		}
+
 		return null;
 	}
 
@@ -208,19 +213,22 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private double[] getPercentiles() {
-		if(percentiles.size() > 4) {
+		if (percentiles.size() > 4) {
 			log.warn("using more than 4 percentiles is heavily discouraged");
 		}
 		//Validate must be whole number between 50 and 100.
-		return percentiles.stream().mapToDouble(Double::parseDouble).map(e -> e / 100).toArray();
+		return percentiles.stream()
+				.mapToDouble(Double::parseDouble)
+				.map(e -> e / 100)
+				.toArray();
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		Search search = Search.in(meterRegistry).tag("configuration", applicationContext.getId());
-		search.counters().stream().forEach(meterRegistry::remove);
-		search.gauges().stream().forEach(meterRegistry::remove);
-		search.summaries().stream().forEach(meterRegistry::remove);
+		search.counters().forEach(meterRegistry::remove);
+		search.gauges().forEach(meterRegistry::remove);
+		search.summaries().forEach(meterRegistry::remove);
 	}
 
 }

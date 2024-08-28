@@ -1,5 +1,5 @@
 /*
-  Copyright 2019 VMware, Inc, Copyright 2024 WeAreFrank!
+  Copyright 2024 WeAreFrank!
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -50,10 +50,11 @@ public class MicrometerHttpClientInterceptor {
 
 	/**
 	 * Create a {@code MicrometerHttpClientInterceptor} instance.
-	 * @param uriMapper URI mapper to create {@code uri} tag
-	 * @param exportTagsForRoute whether to export tags for route
+	 *
 	 * @param configurationMetrics
 	 * @param parentFrankElement
+	 * @param uriMapper            URI mapper to create {@code uri} tag
+	 * @param exportTagsForRoute   whether to export tags for route
 	 */
 	public MicrometerHttpClientInterceptor(MetricsInitializer configurationMetrics, IConfigurationAware parentFrankElement,
 										   Function<HttpRequest, String> uriMapper, boolean exportTagsForRoute) {
@@ -74,10 +75,6 @@ public class MicrometerHttpClientInterceptor {
 	}
 
 	private Tags generateTagsForRoute(HttpContext context) {
-		return Tags.of(generateTagStringsForRoute(context));
-	}
-
-	private String[] generateTagStringsForRoute(HttpContext context) {
 		String targetScheme = "UNKNOWN";
 		String targetHost = "UNKNOWN";
 		String targetPort = "UNKNOWN";
@@ -90,10 +87,11 @@ public class MicrometerHttpClientInterceptor {
 			targetPort = String.valueOf(host.getPort());
 		}
 
-		return new String[] {
+		return Tags.of(
 				"target.schema", targetScheme,
 				"target.host", targetHost,
-				"target.port", targetPort };
+				"target.port", targetPort
+		);
 	}
 
 	public HttpRequestInterceptor getRequestInterceptor() {

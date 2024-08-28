@@ -9,4 +9,5 @@
 	<suppress files="IbisTester\.java" checks="[a-zA-Z0-9]*"/>
 	<suppress files="CalendarParser\.java" checks="[a-zA-Z0-9]*"/>
 	<suppress files="LdapClient\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="MicrometerConnectionManagerMetricsBinder\.java" checks="IllegalImport"/>
 </suppressions>
