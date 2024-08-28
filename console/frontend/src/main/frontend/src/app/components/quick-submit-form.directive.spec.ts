@@ -25,8 +25,8 @@ describe('QuickSubmitFormDirective', () => {
   let directiveElement: DebugElement;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [],
-      declarations: [TestComponent, QuickSubmitFormDirective],
+      imports: [TestComponent, QuickSubmitFormDirective],
+      declarations: [],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
