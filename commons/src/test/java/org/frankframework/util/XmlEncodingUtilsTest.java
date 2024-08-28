@@ -16,29 +16,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class XmlEncodingUtilsTest {
 
-	private static Stream<Arguments> testFileWithXmlDeclaration() {
-		return Stream.of(
-				Arguments.of(StandardCharsets.ISO_8859_1, null, "iso-8859-1.xml"),
-				Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.ISO_8859_1, "iso-8859-1.xml"),
-				Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.UTF_8, "iso-8859-1.xml"),
-
-				Arguments.of(StandardCharsets.UTF_8, null, "utf8-with-bom.xml"),
-				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.UTF_8, "utf8-with-bom.xml"),
-				Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml"),
-
-				Arguments.of(StandardCharsets.UTF_8, null, "file-without-xml-declaration.xml"),
-				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "file-without-xml-declaration.xml")
-		);
-	}
-
-	private static Stream<Arguments> testFileWithXmlDeclarationStream() {
-		return Stream.of(
-				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-with-bom.xml"),
-				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-without-bom.xml"),
-				Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml")
-		);
-	}
-
 	@Test
 	public void encodesSpecialCharacters() {
 		String input = "<>&\"'\n";
@@ -64,6 +41,29 @@ class XmlEncodingUtilsTest {
 		String input = "\n";
 		String expected = "&#10;";
 		assertEquals(expected, XmlEncodingUtils.encodeChars(input, true));
+	}
+
+	private static Stream<Arguments> testFileWithXmlDeclaration() {
+		return Stream.of(
+				Arguments.of(StandardCharsets.ISO_8859_1, null, "iso-8859-1.xml"),
+				Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.ISO_8859_1, "iso-8859-1.xml"),
+				Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.UTF_8, "iso-8859-1.xml"),
+
+				Arguments.of(StandardCharsets.UTF_8, null, "utf8-with-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.UTF_8, "utf8-with-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml"),
+
+				Arguments.of(StandardCharsets.UTF_8, null, "file-without-xml-declaration.xml"),
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "file-without-xml-declaration.xml")
+		);
+	}
+
+	private static Stream<Arguments> testFileWithXmlDeclarationStream() {
+		return Stream.of(
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-with-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-without-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml")
+		);
 	}
 
 	@ParameterizedTest

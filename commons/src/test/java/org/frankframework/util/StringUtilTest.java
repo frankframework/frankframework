@@ -30,52 +30,6 @@ import org.apache.logging.log4j.Logger;
 class StringUtilTest {
 	private static final Logger LOG = LogManager.getLogger(StringUtil.class);
 
-	public static Stream<Arguments> testSplitStringDefaultDelimiter() {
-		return Stream.of(
-				arguments("a,b", asList("a", "b")),
-				arguments(",a,,b,", asList("a", "b")),
-				arguments(" a , b ", asList("a", "b")),
-				arguments(null, Collections.emptyList()),
-				arguments("", Collections.emptyList())
-		);
-	}
-
-	public static Stream<Arguments> testSplitStringCustomDelimiters() {
-		return Stream.of(
-				arguments(null, "\\/", Collections.emptyList()),
-				arguments("", "\\/", Collections.emptyList()),
-				arguments("a,b;c", ";,", asList("a", "b", "c")),
-				arguments(";a,b;,c,", ";,", asList("a", "b", "c")),
-				arguments(" a , ;  b;,c ; ", ";,", asList("a", "b", "c")),
-				arguments(" a , ;  b  c  ", " ;,", asList("a", "b", "c")),
-				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", asList("a", "b", "c", "d", "e", "f", "g"))
-		);
-	}
-
-	static String escapeUnprintable(String input) {
-		if (input == null) {
-			return "null";
-		}
-		return input.chars()
-				.mapToObj(StringUtilTest::mapChar)
-				.collect(Collectors.joining());
-	}
-
-	static String mapChar(int chr) {
-		switch (chr) {
-			case '\t':
-				return "\\t";
-			case '\r':
-				return "\\r";
-			case '\n':
-				return "\\n";
-			case '\f':
-				return "\\f";
-			default:
-				return Character.toString((char) chr);
-		}
-	}
-
 	/**
 	 * Method: concatStrings(String part1, String separator, String part2)
 	 */
@@ -234,6 +188,16 @@ class StringUtilTest {
 		assertEquals("A, B, 3, 4 ...more", StringUtil.safeCollectionToString(c));
 	}
 
+	public static Stream<Arguments> testSplitStringDefaultDelimiter() {
+		return Stream.of(
+				arguments("a,b", asList("a", "b")),
+				arguments(",a,,b,", asList("a", "b")),
+				arguments(" a , b ", asList("a", "b")),
+				arguments(null, Collections.emptyList()),
+				arguments("", Collections.emptyList())
+		);
+	}
+
 	@ParameterizedTest
 	@MethodSource
 	void testSplitStringDefaultDelimiter(String input, Iterable<String> expected) {
@@ -242,6 +206,18 @@ class StringUtilTest {
 
 		// Assert
 		assertIterableEquals(expected, result);
+	}
+
+	public static Stream<Arguments> testSplitStringCustomDelimiters() {
+		return Stream.of(
+				arguments(null, "\\/", Collections.emptyList()),
+				arguments("", "\\/", Collections.emptyList()),
+				arguments("a,b;c", ";,", asList("a", "b", "c")),
+				arguments(";a,b;,c,", ";,", asList("a", "b", "c")),
+				arguments(" a , ;  b;,c ; ", ";,", asList("a", "b", "c")),
+				arguments(" a , ;  b  c  ", " ;,", asList("a", "b", "c")),
+				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", asList("a", "b", "c", "d", "e", "f", "g"))
+		);
 	}
 
 	@ParameterizedTest
@@ -255,6 +231,30 @@ class StringUtilTest {
 
 		// Assert
 		assertIterableEquals(expected, result);
+	}
+
+	static String escapeUnprintable(String input) {
+		if (input == null) {
+			return "null";
+		}
+		return input.chars()
+				.mapToObj(StringUtilTest::mapChar)
+				.collect(Collectors.joining());
+	}
+
+	static String mapChar(int chr) {
+		switch (chr) {
+			case '\t':
+				return "\\t";
+			case '\r':
+				return "\\r";
+			case '\n':
+				return "\\n";
+			case '\f':
+				return "\\f";
+			default:
+				return Character.toString((char) chr);
+		}
 	}
 
 	@Test

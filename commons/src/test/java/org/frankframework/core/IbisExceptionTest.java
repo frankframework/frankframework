@@ -26,43 +26,6 @@ import org.xml.sax.SAXParseException;
 
 public class IbisExceptionTest {
 
-	private static Stream<Arguments> sqlExceptions() {
-		return Stream.of(
-				Arguments.of("text: (SQLException) sql reason: (SQLException) spice it up with a suppressed message", new SQLException("sql reason")),
-				Arguments.of("text: (SQLException) sql reason: rootException", new SQLException("sql reason", new IbisException("rootException"))),
-				Arguments.of("text: (SQLException) errorCode [1234]: sql reason: rootException", new SQLException("sql reason", null, 1234, new IbisException("rootException"))),
-				Arguments.of("text: (SQLException) SQLState [xyz]: sql reason: rootException", new SQLException("sql reason", "xyz", new IbisException("rootException"))),
-				Arguments.of("text: (SQLException) SQLState [xyz], errorCode [1234]: sql reason: rootException", new SQLException("sql reason", "xyz", 1234, new IbisException("rootException")))
-		);
-	}
-
-	private static Stream<Arguments> oracleXaExceptions() {
-		return Stream.of(
-				Arguments.of("text: (OracleXAException) XAErr (0): Internal XA Error ORA-1234 SQLErr (0)", new OracleXAException(1234, 0)),
-				Arguments.of("text: (OracleXAException) xaError [5678] xaErrorMessage [Internal XA Error]: XAErr (5678): Internal XA Error ORA-1234 SQLErr (0)", new OracleXAException(1234, 5678)),
-				Arguments.of("text: (OracleXAException) xaError [1234] xaErrorMessage [Internal XA Error]: XAErr (1234): Internal XA Error ORA-1234 SQLErr (0): (SQLException) SQLState [xyz], errorCode [1234]: sql reason: rootException", new OracleXAException(new SQLException("sql reason", "xyz", 1234, new IbisException("rootException")), 1234))
-		);
-	}
-
-	private static Stream<Arguments> differentLocators() {
-		return Stream.of(
-				Arguments.of("wrapper: (SAXParseException) reason", new TestLocator("abc", null, -1, -1)),
-				Arguments.of("wrapper: (SAXParseException) SystemId [xyz]: reason", new TestLocator("abc", "xyz", -1, -1)),
-				Arguments.of("wrapper: (SAXParseException) line [13] column [37]: reason", new TestLocator("abc", null, 13, 37)),
-				Arguments.of("wrapper: (SAXParseException) SystemId [xyz] line [13] column [37]: reason", new TestLocator("abc", "xyz", 13, 37))
-		);
-	}
-
-	private static Stream<Arguments> differentSourceLocators() {
-		return Stream.of(
-				Arguments.of("wrapper: (TransformerException) reason", null),
-				Arguments.of("wrapper: (TransformerException) reason", new TestLocator("abc", null, -1, -1)),
-				Arguments.of("wrapper: (TransformerException) SystemId [xyz]: reason", new TestLocator("abc", "xyz", -1, -1)),
-				Arguments.of("wrapper: (TransformerException) line [13] column [37]: reason", new TestLocator("abc", null, 13, 37)),
-				Arguments.of("wrapper: (TransformerException) SystemId [xyz] line [13] column [37]: reason", new TestLocator("abc", "xyz", 13, 37))
-		);
-	}
-
 	@Test
 	public void twoNestedExceptionsWithDifferentMessages() {
 		IbisExceptionSubClass exception = new IbisExceptionSubClass("Some text here", new NullPointerException("some other text here"));
@@ -120,6 +83,16 @@ public class IbisExceptionTest {
 		assertEquals("(AddressException) [ref] at column [15]: test", result);
 	}
 
+	private static Stream<Arguments> sqlExceptions() {
+		return Stream.of(
+				Arguments.of("text: (SQLException) sql reason: (SQLException) spice it up with a suppressed message", new SQLException("sql reason")),
+				Arguments.of("text: (SQLException) sql reason: rootException", new SQLException("sql reason", new IbisException("rootException"))),
+				Arguments.of("text: (SQLException) errorCode [1234]: sql reason: rootException", new SQLException("sql reason", null, 1234, new IbisException("rootException"))),
+				Arguments.of("text: (SQLException) SQLState [xyz]: sql reason: rootException", new SQLException("sql reason", "xyz", new IbisException("rootException"))),
+				Arguments.of("text: (SQLException) SQLState [xyz], errorCode [1234]: sql reason: rootException", new SQLException("sql reason", "xyz", 1234, new IbisException("rootException")))
+		);
+	}
+
 	@ParameterizedTest
 	@MethodSource("sqlExceptions")
 	public void sqlExceptions(String expectedMessage, SQLException cause) {
@@ -133,6 +106,14 @@ public class IbisExceptionTest {
 
 		// Assert
 		assertEquals(expectedMessage, result);
+	}
+
+	private static Stream<Arguments> oracleXaExceptions() {
+		return Stream.of(
+				Arguments.of("text: (OracleXAException) XAErr (0): Internal XA Error ORA-1234 SQLErr (0)", new OracleXAException(1234, 0)),
+				Arguments.of("text: (OracleXAException) xaError [5678] xaErrorMessage [Internal XA Error]: XAErr (5678): Internal XA Error ORA-1234 SQLErr (0)", new OracleXAException(1234, 5678)),
+				Arguments.of("text: (OracleXAException) xaError [1234] xaErrorMessage [Internal XA Error]: XAErr (1234): Internal XA Error ORA-1234 SQLErr (0): (SQLException) SQLState [xyz], errorCode [1234]: sql reason: rootException", new OracleXAException(new SQLException("sql reason", "xyz", 1234, new IbisException("rootException")), 1234))
+		);
 	}
 
 	@ParameterizedTest
@@ -191,6 +172,15 @@ public class IbisExceptionTest {
 		assertEquals("wrapper: (JMSException) reason: (IOException) rootMsg", result);
 	}
 
+	private static Stream<Arguments> differentLocators() {
+		return Stream.of(
+				Arguments.of("wrapper: (SAXParseException) reason", new TestLocator("abc", null, -1, -1)),
+				Arguments.of("wrapper: (SAXParseException) SystemId [xyz]: reason", new TestLocator("abc", "xyz", -1, -1)),
+				Arguments.of("wrapper: (SAXParseException) line [13] column [37]: reason", new TestLocator("abc", null, 13, 37)),
+				Arguments.of("wrapper: (SAXParseException) SystemId [xyz] line [13] column [37]: reason", new TestLocator("abc", "xyz", 13, 37))
+		);
+	}
+
 	@ParameterizedTest
 	@MethodSource("differentLocators")
 	public void testSAXParseException(String expectedMessage, Locator locator) {
@@ -205,6 +195,16 @@ public class IbisExceptionTest {
 
 		// Assert
 		assertEquals(expectedMessage + ": (IOException) spice it up with a suppressed message", result);
+	}
+
+	private static Stream<Arguments> differentSourceLocators() {
+		return Stream.of(
+				Arguments.of("wrapper: (TransformerException) reason", null),
+				Arguments.of("wrapper: (TransformerException) reason", new TestLocator("abc", null, -1, -1)),
+				Arguments.of("wrapper: (TransformerException) SystemId [xyz]: reason", new TestLocator("abc", "xyz", -1, -1)),
+				Arguments.of("wrapper: (TransformerException) line [13] column [37]: reason", new TestLocator("abc", null, 13, 37)),
+				Arguments.of("wrapper: (TransformerException) SystemId [xyz] line [13] column [37]: reason", new TestLocator("abc", "xyz", 13, 37))
+		);
 	}
 
 	@ParameterizedTest
