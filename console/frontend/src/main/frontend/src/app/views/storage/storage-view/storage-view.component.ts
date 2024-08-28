@@ -11,12 +11,12 @@ import { AppService } from 'src/app/app.service';
   styleUrls: ['./storage-view.component.scss'],
 })
 export class StorageViewComponent implements OnInit {
-  message: PartialMessage = {
+  protected message: PartialMessage = {
     id: '0', //this.$state.params["messageId"],
     resending: false,
     deleting: false,
   };
-  metadata?: Message = {
+  protected metadata?: Message = {
     id: '',
     originalId: '',
     correlationId: '',
@@ -28,7 +28,7 @@ export class StorageViewComponent implements OnInit {
   };
 
   // service bindings
-  storageParams = this.storageService.storageParams;
+  protected storageParams = this.storageService.storageParams;
   closeNote = (index: number): void => {
     this.storageService.closeNote(index);
   };

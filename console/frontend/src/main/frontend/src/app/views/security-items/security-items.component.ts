@@ -18,18 +18,18 @@ import {
   styleUrls: ['./security-items.component.scss'],
 })
 export class SecurityItemsComponent implements OnInit {
-  sapSystems: SapSystem[] = [];
-  authEntries: AuthEntry[] = [];
-  jmsRealms: JmsRealm[] = [];
-  securityRoles: Record<string, SecurityRole> = {};
-  certificates: CertificateList[] = [];
-  xmlComponents: Record<string, string> = {};
-  datasources: Datasource[] = [];
-  supportedConnectionOptions: supportedConnectionOptions = {
+  protected sapSystems: SapSystem[] = [];
+  protected authEntries: AuthEntry[] = [];
+  protected jmsRealms: JmsRealm[] = [];
+  protected securityRoles: Record<string, SecurityRole> = {};
+  protected certificates: CertificateList[] = [];
+  protected xmlComponents: Record<string, string> = {};
+  protected datasources: Datasource[] = [];
+  protected supportedConnectionOptions: supportedConnectionOptions = {
     protocols: [],
     cyphers: [],
   };
-  links: Link[] = [];
+  protected links: Link[] = [];
 
   constructor(
     private appService: AppService,

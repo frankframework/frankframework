@@ -10,11 +10,10 @@ import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.com
 export class FlowModalComponent {
   @Input() flowName = '';
   @Input() flow = '';
+  @ViewChild(NgMermaidComponent) ngMermaid!: NgMermaidComponent;
 
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
-
-  @ViewChild(NgMermaidComponent) ngMermaid!: NgMermaidComponent;
 
   constructor(private activeModal: NgbActiveModal) {}
 

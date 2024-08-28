@@ -1,6 +1,3 @@
-<!-- Angular Router Outlet -->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
     <span class="ng-binding ng-scope" [innerHTML]="error"></span>
@@ -12,11 +9,11 @@
           <h4>IbisStore Summary</h4>
         </div>
         <div class="ibox-content">
-          <form role="ngForm">
+          <form>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
-                <select class="form-control" name="datasource" [(ngModel)]="form['datasource']">
+                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
                   <option *ngFor="let datasource of datasources" [value]="datasource">
                     {{ datasource }}
                   </option>
