@@ -26,13 +26,12 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +42,9 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 import org.frankframework.util.StringResolver;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * This ConfigurationFactory is loaded after the log4j2.properties file has been initialized.
@@ -67,19 +69,6 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
 		setLogDir();
 	}
-
-	/**
-	 * Hierarchy of log directories to search for. Strings will be split by "/".
-	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.
-	 */
-	private static final String[] logDirectoryHierarchy = new String[] {
-			"site.logdir",
-			"user.dir/logs",
-			"user.dir/log",
-			"jboss.server.base.dir/log",
-			"wtp.deploy/../logs",
-			"catalina.base/logs"
-	};
 
 	@Override
 	protected String[] getSupportedTypes() {
@@ -281,14 +270,20 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 	}
 
 	/**
+	 * Hierarchy of log directories to search for. Strings will be split by "/".
+	 * Before "/" split will be assumed to be a property, and after the split will be a (sub-) directory.
+	 */
+	private static List<String> getDefaultLogDirectories() {
+		return List.of("site.logdir", "user.dir/logs", "user.dir/log", "jboss.server.base.dir/log", "wtp.deploy/../logs", "catalina.base/logs");
+	}
+
+	/**
 	 * Finds the first directory in the given hierarchy.
-	 * logDirectoryHierarchy is an array of Strings.
-	 *                  Strings will be split by "/" and before split will be assumed to be property,
-	 *                  and after split will be the subdirectory.
+	 * @see #getDefaultLogDirectories()
 	 * @return File object that is a directory. Or null, if no directories were found.
 	 */
 	private static File findLogDir() {
-		for(String option : logDirectoryHierarchy) {
+		for(String option : getDefaultLogDirectories()) {
 			int splitIndex = option.indexOf('/');
 
 			String property = System.getProperty(option.substring(0, splitIndex == -1 ? option.length() : splitIndex));
