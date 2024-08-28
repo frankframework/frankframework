@@ -1,10 +1,10 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
-import {Subscription} from "rxjs";
+import { Subscription } from 'rxjs';
 
 type TransitionObject = {
   name?: string;
