@@ -65,6 +65,7 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 
 	static {
 		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
+		setLogDir();
 	}
 
 	/**
@@ -89,7 +90,6 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 	@Override
 	public Configuration getConfiguration(LoggerContext loggerContext, ConfigurationSource source) {
 		try {
-			setLogDir();
 			Properties properties = getProperties();
 			setLevel(properties);
 
@@ -104,7 +104,7 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 
 				@Override // Add hashcode to toString() so we can differentiate the XmlConfigurations in the startup log
 				public String toString() {
-					return this.getClass().getSuperclass().getCanonicalName() + "@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
+					return "FrankXmlConfiguration@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
 				}
 			};
 		} catch (IOException e) {
