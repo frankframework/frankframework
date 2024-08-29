@@ -21,11 +21,11 @@ type Connections = {
   styleUrls: ['./connections.component.scss'],
 })
 export class ConnectionsComponent implements OnInit, AfterViewInit {
-  @ViewChild(DataTableDirective, { static: false })
-  datatableElement!: DataTableDirective;
-  dtOptions: ADTSettings = {};
-  // truncateLengthOptions = [50, 100, 200];
-  minimalTruncateLength = 100;
+  @ViewChild(DataTableDirective, { static: false }) datatableElement!: DataTableDirective;
+
+  protected dtOptions: ADTSettings = {};
+
+  private minimalTruncateLength = 100;
 
   constructor(
     private http: HttpClient,
@@ -115,14 +115,6 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
             column.search(input['value']).draw();
           }
         });
-      });
-    });
-  }
-
-  updateTable(): void {
-    this.datatableElement.dtInstance.then((table) => {
-      table.columns([0, 1, 3]).every(function () {
-        this.search('').draw();
       });
     });
   }

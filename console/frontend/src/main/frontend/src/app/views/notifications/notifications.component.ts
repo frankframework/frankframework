@@ -8,14 +8,14 @@ import { NotificationService, Notification } from 'src/app/services/notification
   styleUrls: ['./notifications.component.scss'],
 })
 export class NotificationsComponent implements OnInit {
-  notification: Notification | false = {
+  protected notification: Notification | false = {
     icon: '',
     title: '',
     message: false,
     fn: false,
     time: 0,
   };
-  text: string = '';
+  protected text: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -32,9 +32,5 @@ export class NotificationsComponent implements OnInit {
         this.text = 'Showing a list with all notifications!';
       }
     });
-
-    // this.hooksService.register("adapterUpdated:2", function (adapter: Adapter) {
-    //   console.warn("What is the scope of: ", adapter);
-    // });
   }
 }

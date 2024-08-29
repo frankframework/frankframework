@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  * Classes that implement the annotation are automatically picked up by Spring,
  * and in combination with the ServletRegisteringPostProcessor the servlets are
  * automatically registered with the ServletManager.
- *
+ * <p>
  * The servlet name will be deduced if not specified.
  *
  * @author Niels Meijer
@@ -42,6 +42,22 @@ public interface DynamicRegistration {
 	String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
 	String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
 	String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisTester", "IbisWebService"};
+
+	/**
+	 * Name of the to-be implemented class
+	 */
+	default String getName() {
+		return this.getClass().getSimpleName();
+	}
+
+	/**
+	 * Order in which to automatically instantiate and load the class.<br/>
+	 * <code>0</code> to let the application server determine, <code>-1</code> to disable
+	 * This value may be overridden by setting property <code>servlet.servlet-name.loadOnStartup</code>
+	 */
+	default int loadOnStartUp() {
+		return -1;
+	}
 
 	interface Servlet extends DynamicRegistration, jakarta.servlet.Servlet {
 
@@ -68,21 +84,5 @@ public interface DynamicRegistration {
 		 * {@link jakarta.servlet.http.HttpServlet Servlet} specific init parameters
 		 */
 		Map<String, String> getParameters();
-	}
-
-	/**
-	 * Name of the to-be implemented class
-	 */
-	default String getName() {
-		return this.getClass().getSimpleName();
-	}
-
-	/**
-	 * Order in which to automatically instantiate and load the class.<br/>
-	 * <code>0</code> to let the application server determine, <code>-1</code> to disable
-	 * This value may be overridden by setting property <code>servlet.servlet-name.loadOnStartup</code>
-	 */
-	default int loadOnStartUp() {
-		return -1;
 	}
 }

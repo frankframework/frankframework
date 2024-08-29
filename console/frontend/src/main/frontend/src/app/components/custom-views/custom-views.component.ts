@@ -3,22 +3,23 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { RouterModule } from '@angular/router';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NgbModule],
 })
 export class CustomViewsComponent implements OnInit, OnDestroy {
-  appConstants: AppConstants = this.appService.APP_CONSTANTS;
-  customViews: {
+  protected customViews: {
     view: string;
     name: string;
     url: string;
   }[] = [];
 
+  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
   private _subscriptions = new Subscription();
 
   constructor(private appService: AppService) {}

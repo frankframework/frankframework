@@ -36,7 +36,6 @@
                   <td>
                     <input
                       disabled
-                      icheck
                       type="checkbox"
                       name="id"
                       (change)="updateFilter('id')"
@@ -51,7 +50,6 @@
                   <th>Timestamp (From)</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('insertDate')"
                       [(ngModel)]="displayColumn.insertDate"
@@ -81,7 +79,7 @@
                 <tr>
                   <th>Host</th>
                   <td>
-                    <input icheck type="checkbox" (change)="updateFilter('host')" [(ngModel)]="displayColumn.host" />
+                    <input type="checkbox" (change)="updateFilter('host')" [(ngModel)]="displayColumn.host" />
                   </td>
                   <td>
                     <input type="text" class="full-width" [(ngModel)]="search['host']" />
@@ -91,7 +89,6 @@
                   <th>Original ID</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('originalId')"
                       [(ngModel)]="displayColumn.originalId"
@@ -105,7 +102,6 @@
                   <th>Correlation ID</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('correlationId')"
                       [(ngModel)]="displayColumn.correlationId"
@@ -118,12 +114,7 @@
                 <tr>
                   <th>Comment</th>
                   <td>
-                    <input
-                      icheck
-                      type="checkbox"
-                      (change)="updateFilter('comment')"
-                      [(ngModel)]="displayColumn.comment"
-                    />
+                    <input type="checkbox" (change)="updateFilter('comment')" [(ngModel)]="displayColumn.comment" />
                   </td>
                   <td>
                     <input type="text" class="full-width" [(ngModel)]="search['comment']" />
@@ -133,7 +124,6 @@
                   <th>Expires</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('expiryDate')"
                       [(ngModel)]="displayColumn.expiryDate"
@@ -144,7 +134,7 @@
                 <tr>
                   <th>Label</th>
                   <td>
-                    <input icheck type="checkbox" (change)="updateFilter('label')" [(ngModel)]="displayColumn.label" />
+                    <input type="checkbox" (change)="updateFilter('label')" [(ngModel)]="displayColumn.label" />
                   </td>
                   <td>
                     <input type="text" class="full-width" [(ngModel)]="search['label']" />

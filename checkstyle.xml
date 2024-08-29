@@ -112,5 +112,12 @@
 			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
 			<property name="ignoreComments" value="true" />
 		</module>
+		<module name="MatchXpath">
+			<property name="id" value="singleLineCommentStartWithSpace"/>
+			<property name="query"
+				value="//SINGLE_LINE_COMMENT[./COMMENT_CONTENT[not(starts-with(@text, ' '))
+                       and not(@text = '\n') and not(ends-with(@text, '//\n')) ]]"/>
+			<message key="matchxpath.match" value="Single line comment text should start with space."/>
+		</module>
 	</module>
 </module>

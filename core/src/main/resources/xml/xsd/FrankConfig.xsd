@@ -96,7 +96,7 @@
     </xs:attribute>
     <xs:attribute name="msgLogLevel">
       <xs:annotation>
-        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Default: &lt;code&gt;INFO, unless overridden by property msg.log.level.default&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Default: &lt;code&gt;INFO&lt;/code&gt;, unless overridden by property &lt;code&gt;msg.log.level.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MessageLogLevelAttributeValuesType variableRef" />
@@ -283,7 +283,7 @@
     </xs:attribute>
     <xs:attribute name="elementToMove" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: {sessionKey: + &lt;code&gt;elementToMoveSessionKey&lt;/code&gt; + }</xs:documentation>
+        <xs:documentation>If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: &lt;code&gt;{sessionKey: elementToMoveSessionKey}&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elementToMoveSessionKey" type="xs:string">
@@ -377,7 +377,7 @@
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
- &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
+ &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
@@ -681,18 +681,19 @@
  &lt;br/&gt;&lt;br/&gt;
  If no exits are specified, a default one is created with name="READY" and state="SUCCESS".
  &lt;br/&gt;&lt;br/&gt;
- &lt;b&gt;example:&lt;/b&gt; &lt;code&gt;&lt;pre&gt;
-   &amp;lt;Exits&amp;gt;
-      &amp;lt;Exit name="READY" state="SUCCESS" /&amp;gt;
-      &amp;lt;Exit name="Created" state="ERROR" code="201" empty="true" /&amp;gt;
-      &amp;lt;Exit name="NotModified" state="ERROR" code="304" empty="true" /&amp;gt;
-      &amp;lt;Exit name="BadRequest" state="ERROR" code="400" empty="true" /&amp;gt;
-      &amp;lt;Exit name="NotAuthorized" state="ERROR" code="401" empty="true" /&amp;gt;
-      &amp;lt;Exit name="NotAllowed" state="ERROR" code="403" empty="true" /&amp;gt;
-      &amp;lt;Exit name="Teapot" state="SUCCESS" code="418" /&amp;gt;
-      &amp;lt;Exit name="ServerError" state="ERROR" code="500" /&amp;gt;
-   &amp;lt;/Exits&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
+ &lt;b&gt;example:&lt;/b&gt;
+ &lt;pre&gt;{@code
+ &lt;Exits&gt;
+    &lt;Exit name="READY" state="SUCCESS" /&gt;
+    &lt;Exit name="Created" state="ERROR" code="201" empty="true" /&gt;
+    &lt;Exit name="NotModified" state="ERROR" code="304" empty="true" /&gt;
+    &lt;Exit name="BadRequest" state="ERROR" code="400" empty="true" /&gt;
+    &lt;Exit name="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
+    &lt;Exit name="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
+    &lt;Exit name="Teapot" state="SUCCESS" code="418" /&gt;
+    &lt;Exit name="ServerError" state="ERROR" code="500" /&gt;
+ &lt;/Exits&gt;
+ }&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:element name="Exit" minOccurs="1" maxOccurs="unbounded" type="ExitType" />
@@ -773,7 +774,9 @@
   </xs:complexType>
   <xs:complexType name="SchedulerType">
     <xs:annotation>
-      <xs:documentation>Container for jobs that are scheduled for periodic execution.</xs:documentation>
+      <xs:documentation>Container for jobs that are scheduled for periodic execution.
+ &lt;p&gt;
+ Configure/start/stop lifecycles are managed by Spring.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="JobElementGroup" minOccurs="0" maxOccurs="unbounded" />
@@ -891,7 +894,9 @@
   </xs:complexType>
   <xs:complexType name="MonitoringType">
     <xs:annotation>
-      <xs:documentation>Manager for Monitoring.</xs:documentation>
+      <xs:documentation>Manager for Monitoring.
+ &lt;p&gt;
+ Configure/start/stop lifecycles are managed by Spring.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="DestinationElementGroup" minOccurs="0" maxOccurs="unbounded" />
@@ -905,8 +910,7 @@
   <xs:complexType name="MonitorType">
     <xs:annotation>
       <xs:documentation>&lt;p&gt;Example configuration:&lt;/p&gt;
- &lt;pre&gt;&lt;code&gt;
- {@literal
+ &lt;pre&gt;{@code
  &lt;monitor name="Receiver Shutdown" destinations="MONITOR_LOG"&gt;
     &lt;trigger className="org.frankframework.monitoring.Alarm" severity="WARNING"&gt;
         &lt;event&gt;Receiver Shutdown&lt;/event&gt;
@@ -915,9 +919,7 @@
         &lt;event&gt;Receiver Shutdown&lt;/event&gt;
     &lt;/trigger&gt;
  &lt;/monitor&gt;
- }
-
- &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
+ }&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="TriggerElementGroup" minOccurs="0" maxOccurs="unbounded" />
@@ -1094,7 +1096,7 @@
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
- &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
+ &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
@@ -1412,24 +1414,21 @@
       </xs:element>
       <xs:element name="MessageStoreListener">
         <xs:annotation>
-          <xs:documentation>Read messages from the IBISSTORE database table previously stored by a
- MessageStoreSender.
-
+          <xs:documentation>Read messages from the IBISSTORE database table previously stored by a MessageStoreSender.
+ &lt;p&gt;
  Example configuration:
- &lt;code&gt;&lt;pre&gt;
-	&amp;lt;Receiver
-		name="03 MessageStoreReceiver"
-		numThreads="4"
-		transactionAttribute="Required"
-		pollInterval="1"
-		&amp;gt;
-		&amp;lt;MessageStoreListener
-			name="03 MessageStoreListener"
-			slotId="${instance.name}/TestMessageStore"
-			statusValueInProcess="I"
-		/&amp;gt;
-	&amp;lt;/Receiver&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ 	&lt;Receiver
+ 		name="03 MessageStoreReceiver"
+ 		numThreads="4"
+ 		transactionAttribute="Required"
+ 		pollInterval="1"&gt;
+ 		&lt;MessageStoreListener
+ 			name="03 MessageStoreListener"
+ 			slotId="${instance.name}/TestMessageStore"
+ 			statusValueInProcess="I" /&gt;
+ 	&lt;/Receiver&gt;
+ }&lt;/pre&gt;
 
  If you have a &lt;code&gt;MessageStoreListener&lt;/code&gt;, failed messages are automatically kept in database
  table IBISSTORE. Messages are also kept after successful processing. The state of a message
@@ -1700,7 +1699,7 @@
     </xs:attribute>
     <xs:attribute name="consumes">
       <xs:annotation>
-        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415 Unsupported Media Type&lt;/code&gt; is replied. Default: ANY</xs:documentation>
+        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415&lt;/code&gt; status (Unsupported Media Type) is returned. Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -3540,7 +3539,7 @@
     </xs:attribute>
     <xs:attribute name="keyNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for keyxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>namespace defintions for keyxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyStyleSheet" type="xs:string">
@@ -3570,7 +3569,7 @@
     </xs:attribute>
     <xs:attribute name="valueNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for valuexpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>namespace defintions for valuexpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="valueStyleSheet" type="xs:string">
@@ -3630,46 +3629,45 @@
         <xs:annotation>
           <xs:documentation>Sender to obtain information from and write to a CMIS application.
 
-
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
+ When &lt;code&gt;action=get&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+     &lt;id&gt;documentId&lt;/id&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;delete&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
- &lt;/p&gt;
- &lt;p&gt;
- &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
- &lt;/p&gt;
- &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the input (xml string) indicates document properties to set. This input is optional.
+ When &lt;code&gt;action=delete&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;name&amp;gt;Offerte&amp;lt;/name&amp;gt;
-      &amp;lt;objectTypeId&amp;gt;NNB_Geldlening&amp;lt;/objectTypeId&amp;gt;
-      &amp;lt;mediaType&amp;gt;application/pdf&amp;lt;/mediaType&amp;gt;
-      &amp;lt;properties&amp;gt;
-         &amp;lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
-         &amp;lt;property name="ArrivedBy"&amp;gt;HDN&amp;lt;/property&amp;gt;
-         &amp;lt;property name="DocumentType"&amp;gt;Geldlening&amp;lt;/property&amp;gt;
-      &amp;lt;/properties&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+     &lt;id&gt;documentId&lt;/id&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
+ &lt;/p&gt;
+ &lt;p&gt;
+ When &lt;code&gt;action=create&lt;/code&gt; the input (xml string) indicates document properties to set. This input is optional.
+ &lt;/p&gt;
+ &lt;p&gt;
+ &lt;b&gt;Example:&lt;/b&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+     &lt;name&gt;Offerte&lt;/name&gt;
+     &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
+     &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
+     &lt;properties&gt;
+         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
+         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
+         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
+     &lt;/properties&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
@@ -3692,42 +3690,42 @@
  &lt;/table&gt;
  &lt;/p&gt;
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;find&lt;/code&gt; the input (xml string) indicates the query to perform.
+ When &lt;code&gt;action=find&lt;/code&gt; the input (xml string) indicates the query to perform.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;query&amp;gt;
-      &amp;lt;statement&amp;gt;select * from cmis:document&amp;lt;/statement&amp;gt;
-      &amp;lt;maxItems&amp;gt;10&amp;lt;/maxItems&amp;gt;
-      &amp;lt;skipCount&amp;gt;0&amp;lt;/skipCount&amp;gt;
-      &amp;lt;searchAllVersions&amp;gt;true&amp;lt;/searchAllVersions&amp;gt;
-      &amp;lt;includeAllowableActions&amp;gt;true&amp;lt;/includeAllowableActions&amp;gt;
-   &amp;lt;/query&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;query&gt;
+    &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
+    &lt;maxItems&gt;10&lt;/maxItems&gt;
+    &lt;skipCount&gt;0&lt;/skipCount&gt;
+    &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
+    &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
+ &lt;/query
+ }&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;update&lt;/code&gt; the input (xml string) indicates document properties to update.
+ When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates document properties to update.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;id&amp;gt;123456789&amp;lt;/id&amp;gt;
-      &amp;lt;properties&amp;gt;
-         &amp;lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
-         &amp;lt;property name="ArrivedBy"&amp;gt;HDN&amp;lt;/property&amp;gt;
-         &amp;lt;property name="DocumentType"&amp;gt;Geldlening&amp;lt;/property&amp;gt;
-      &amp;lt;/properties&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+    &lt;id&gt;123456789&lt;/id&gt;
+    &lt;properties&gt;
+       &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
+       &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
+       &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
+    &lt;/properties&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
  &lt;table border="1"&gt;
  &lt;tr&gt;&lt;th&gt;attributes&lt;/th&gt;&lt;th&gt;description&lt;/th&gt;&lt;th&gt;default&lt;/th&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;id&lt;/td&gt;&lt;td&gt;mandatory property "cmis:objectId" which indicates the document to update&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;property&lt;/td&gt;&lt;td&gt;custom document property to update. See &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; for possible attributes&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;property&lt;/td&gt;&lt;td&gt;custom document property to update. See &lt;code&gt;action=create&lt;/code&gt; for possible attributes&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
  &lt;/table&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
@@ -3942,126 +3940,125 @@
 
  &lt;h4&gt;Example of Existing Configuration&lt;/h4&gt;
  The existing configuration might look like this in the calling adapter:
- &lt;pre&gt;&lt;code&gt;
- &amp;lt;module&amp;gt;
- 	&amp;lt;adapter name="Adapter A"&amp;gt;
-   &amp;lt;receiver name="Adapter A Receiver" &amp;gt;
-    &amp;lt;listener name="Adapter A Listener"
-        className="org.frankframework..." etc/&amp;gt;
-   &amp;lt;/receiver&amp;gt;
- 	 &amp;lt;pipeline firstPipe="..."&amp;gt;
- 	  &amp;lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&amp;gt;
- 	   &amp;lt;sender className="org.frankframework.senders.IbisJavaSender"
- 	       serviceName="service-Adapter-B" /&amp;gt;
-     &amp;lt;forward name="success" path="..." /&amp;gt;
- 	  &amp;lt;/pipe&amp;gt;
-   &amp;lt;/pipeline&amp;gt;
- 	&amp;lt;/adapter&amp;gt;
- &amp;lt;/module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;module&gt;
+     &lt;adapter name="Adapter A"&gt;
+         &lt;receiver name="Adapter A Receiver"&gt;
+             &lt;listener name="Adapter A Listener"
+                 className="org.frankframework..." etc/&gt;
+         &lt;/receiver&gt;
+  	   &lt;pipeline firstPipe="..."&gt;
+  	       &lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&gt;
+  	           &lt;sender className="org.frankframework.senders.IbisJavaSender"
+  	               serviceName="service-Adapter-B" /&gt;
+                 &lt;forward name="success" path="..." /&gt;
+  	       &lt;/pipe&gt;
+         &lt;/pipeline&gt;
+     &lt;/adapter&gt;
+ &lt;/module&gt;
+ }&lt;/pre&gt;
 
  Or like using the modern XML XSD and an IbisLocalSender instead:
- &lt;pre&gt;&lt;code&gt;
-  &amp;lt;Module&amp;gt;
-   &amp;lt;Adapter name="Adapter A"&amp;gt;
-    &amp;lt;Receiver name="Adapter A Receiver"&amp;gt;
-        ... Listener setup and other configuration
-    &amp;lt;/Receiver&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-     &amp;lt;SenderPipe name="send"&amp;gt;
-      &amp;lt;IbisLocalSender name="call Adapter B"
-          javaListener="Adapter B Listener"/&amp;gt;
-      &amp;lt;Forward name="success" path="EXIT" /&amp;gt;
-     &amp;lt;/SenderPipe&amp;gt;
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-  &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+     &lt;Adapter name="Adapter A"&gt;
+         &lt;Receiver name="Adapter A Receiver"&gt;
+             ... Listener setup and other configuration
+         &lt;/Receiver&gt;
+         &lt;Pipeline&gt;
+             &lt;SenderPipe name="send"&gt;
+                 &lt;IbisLocalSender name="call Adapter B"
+                     javaListener="Adapter B Listener"/&gt;
+                 &lt;Forward name="success" path="EXIT" /&gt;
+             &lt;/SenderPipe&gt;
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;
 
  In the receiving adapter B the listener would have been configured like this:
- &lt;pre&gt;&lt;code&gt;
- &amp;lt;Module&amp;gt;
-  &amp;lt;Adapter name="adapter B"&amp;gt;
-   &amp;lt;Receiver name="Receiver B"&amp;gt;
-    &amp;lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&amp;gt;
-   &amp;lt;/Receiver&amp;gt;
-   &amp;lt;Pipeline&amp;gt;
-       ...
-   &amp;lt;/Pipeline&amp;gt;
-  &amp;lt;/Adapter&amp;gt;
- &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+     &lt;Adapter name="adapter B"&gt;
+         &lt;Receiver name="Receiver B"&gt;
+             &lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&gt;
+         &lt;/Receiver&gt;
+         &lt;Pipeline&gt;
+             ...
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;
  &lt;p/&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender&lt;/h4&gt;
  This example shows the most simple way of using the FrankSender to call another adapter with least amount of overhead.
 
- &lt;pre&gt;&lt;code&gt;
-  &amp;lt;Module&amp;gt;
-   &amp;lt;Adapter name="Adapter A"&amp;gt;
-    &amp;lt;Receiver name="Adapter A Receiver"&amp;gt;
-        ... Listener setup and other configuration
-    &amp;lt;/Receiver&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-     &amp;lt;SenderPipe name="send"&amp;gt;
-      &amp;lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&amp;gt;
-      &amp;lt;FrankSender name="call Adapter C"
-          scope="ADAPTER"
-          target="adapter B"
-      /&amp;gt;
-      &amp;lt;Forward name="success" path="EXIT" /&amp;gt;
-     &amp;lt;/SenderPipe&amp;gt;
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-
-   &amp;lt;Adapter name="adapter B"&amp;gt;
-    &amp;lt;!-- No receiver needed for FrankSender in this scenario --&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-       ... Exits, Pipes etc
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-  &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+     &lt;Adapter name="Adapter A"&gt;
+         &lt;Receiver name="Adapter A Receiver"&gt;
+             ... Listener setup and other configuration
+         &lt;/Receiver&gt;
+         &lt;Pipeline&gt;
+             &lt;SenderPipe name="send"&gt;
+                 &lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&gt;
+                 &lt;FrankSender name="call Adapter C"
+                     scope="ADAPTER"
+                     target="adapter B"
+                 /&gt;
+                 &lt;Forward name="success" path="EXIT" /&gt;
+             &lt;/SenderPipe&gt;
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+     &lt;Adapter name="adapter B"&gt;
+         &lt;!-- No receiver needed for FrankSender in this scenario --&gt;
+         &lt;Pipeline&gt;
+             ... Exits, Pipes etc
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender and FrankListener&lt;/h4&gt;
  This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
  of the sub-adapter for the extra error-handling done by the target receiver.
 
- &lt;pre&gt;&lt;code&gt;
-  &amp;lt;Module&amp;gt;
-   &amp;lt;Adapter name="Adapter A"&amp;gt;
-    &amp;lt;Receiver name="Adapter A Receiver"&amp;gt;
-        ... Listener setup and other configuration
-    &amp;lt;/Receiver&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-     &amp;lt;SenderPipe name="send"&amp;gt;
-      &amp;lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&amp;gt;
-      &amp;lt;FrankSender
-           scope="LISTENER"
-           target="Adapter B Listener"/&amp;gt;
-       &amp;lt;Forward name="success" path="EXIT" /&amp;gt;
-     &amp;lt;/SenderPipe&amp;gt;
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-  &amp;lt;Adapter name="adapter B"&amp;gt;
-   &amp;lt;!-- Messages will only be sent to the error storage if:
-        - The target receiver is not transactional, and has maxTries="0", or
-        - The target receiver is transaction, and the Sender is set up to retry sending on error
-        For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
-   --&amp;gt;
-   &amp;lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&amp;gt;
-    &amp;lt;!-- Listener name is optional, defaults to Adapter name --&amp;gt;
-    &amp;lt;FrankListener name="Adapter B Listener"/&amp;gt;
-    &amp;lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&amp;gt;
-    &amp;lt;JdbcErrorStorage slotId="Adapter B - Errors" /&amp;gt;
-   &amp;lt;/Receiver&amp;gt;
-   &amp;lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&amp;gt;
-   &amp;lt;Pipeline transactionAttribute="RequiresNew"&amp;gt;
-       ... Exits, Pipes etc
-   &amp;lt;/Pipeline&amp;gt;
-  &amp;lt;/Adapter&amp;gt;
-  &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+    &lt;Adapter name="Adapter A"&gt;
+        &lt;Receiver name="Adapter A Receiver"&gt;
+         ... Listener setup and other configuration
+ 		  &lt;/Receiver&gt;
+ 		  &lt;Pipeline&gt;
+            &lt;SenderPipe name="send"&gt;
+                &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
+                &lt;FrankSender
+                    scope="LISTENER"
+                    target="Adapter B Listener"/&gt;
+                &lt;Forward name="success" path="EXIT" /&gt;
+            &lt;/SenderPipe&gt;
+        &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+     &lt;Adapter name="adapter B"&gt;
+         &lt;!-- Messages will only be sent to the error storage if:
+             - The target receiver is not transactional, and has maxTries="0", or
+             - The target receiver is transaction, and the Sender is set up to retry sending on error
+             For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
+         --&gt;
+         &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
+             &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
+             &lt;FrankListener name="Adapter B Listener"/&gt;
+                 &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
+             &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
+         &lt;/Receiver&gt;
+         &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
+         &lt;Pipeline transactionAttribute="RequiresNew"&gt;
+             ... Exits, Pipes etc
+         &lt;/Pipeline&gt;
+    &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4306,40 +4303,36 @@
 
  &lt;h2&gt;example&lt;/h2&gt;
  Consider the following configuration example:
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;sender
-        className="org.frankframework.ldap.LdapSender"
-        ldapProviderURL="ldap://servername:389/o=ing"
-        operation="read"
-        attributesToReturn="givenName,sn,telephoneNumber" &amp;gt;
-     &amp;lt;param name="entryName" xpathExpression="entryName" /&amp;gt;
-   &amp;lt;/sender&amp;gt;
- &lt;/pre&gt;
- &lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;sender
+      className="org.frankframework.ldap.LdapSender"
+      ldapProviderURL="ldap://servername:389/o=ing"
+      operation="read"
+      attributesToReturn="givenName,sn,telephoneNumber" &gt;
+     &lt;param name="entryName" xpathExpression="entryName" /&gt;
+ &lt;/sender&gt;
+ }&lt;/pre&gt;
  &lt;br/&gt;
 
  This may result in the following output:
- &lt;code&gt;&lt;pre&gt;
- &amp;lt;ldap&amp;gt;
-	&amp;lt;entryName&amp;gt;uid=srp,ou=people&amp;lt;/entryName&amp;gt;
-
-	&amp;lt;attributes&amp;gt;
-		&amp;lt;attribute attrID="givenName"&amp;gt;
-			&amp;lt;value&amp;gt;Jan&amp;lt;/value&amp;gt;
-		&amp;lt;/attribute&amp;gt;
-
-		&amp;lt;attribute attrID="telephoneNumber"&amp;gt;
-			&amp;lt;value&amp;gt;010 5131123&amp;lt;/value&amp;gt;
-			&amp;lt;value&amp;gt;06 23456064&amp;lt;/value&amp;gt;
-		&amp;lt;/attribute&amp;gt;
-
-		&amp;lt;attribute attrID="sn"&amp;gt;
-			&amp;lt;value&amp;gt;Jansen&amp;lt;/value&amp;gt;
-		&amp;lt;/attribute&amp;gt;
-	&amp;lt;/attributes&amp;gt;
- &amp;lt;/ldap&amp;gt;
-  &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;ldap&gt;
+ 	   &lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
+ 	   &lt;attributes&gt;
+         &lt;attribute attrID="givenName"&gt;
+             &lt;value&gt;Jan&lt;/value&gt;
+         &lt;/attribute&gt;
+         &lt;attribute attrID="telephoneNumber"&gt;
+             &lt;value&gt;010 5131123&lt;/value&gt;
+             &lt;value&gt;06 23456064&lt;/value&gt;
+         &lt;/attribute&gt;
+ 	       &lt;attribute attrID="sn"&gt;
+             &lt;value&gt;Jansen&lt;/value&gt;
+ 	       &lt;/attribute&gt;
+ 	   &lt;/attributes&gt;
+ &lt;/ldap&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;
 
  Search or Read?
 
@@ -4349,41 +4342,44 @@
  together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the
  specified context are returned.
 
- Sample result of a &lt;code&gt;read&lt;/code&gt; operation:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
-	&amp;lt;attributes&amp;gt;
-	    &amp;lt;attribute&amp;gt;
-	    &amp;lt;attribute name="employeeType" value="Extern"/&amp;gt;
-	    &amp;lt;attribute name="roomNumber" value="DP 2.13.025"/&amp;gt;
-	    &amp;lt;attribute name="departmentCode" value="358000"/&amp;gt;
-	    &amp;lt;attribute name="organizationalHierarchy"&amp;gt;
-	        &amp;lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	    &amp;lt;/attribute&gt;
-	    &amp;lt;attribute name="givenName" value="Gerrit"/&gt;
-	&amp;lt;/attributes&amp;gt;
-
- &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;
- Sample result of a &lt;code&gt;search&lt;/code&gt; operation:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
-	&amp;lt;entries&amp;gt;
-	 &amp;lt;entry name="uid=srp"&amp;gt;
-	   &amp;lt;attributes&amp;gt;
-	    &amp;lt;attribute&amp;gt;
-	    &amp;lt;attribute name="employeeType" value="Extern"/&amp;gt;
-	    &amp;lt;attribute name="roomNumber" value="DP 2.13.025"/&amp;gt;
-	    &amp;lt;attribute name="departmentCode" value="358000"/&amp;gt;
-	    &amp;lt;attribute name="organizationalHierarchy"&amp;gt;
-	        &amp;lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	    &amp;lt;/attribute&gt;
-	    &amp;lt;attribute name="givenName" value="Gerrit"/&gt;
-	   &amp;lt;/attributes&amp;gt;
-	  &amp;lt;/entry&amp;gt;
-   &amp;lt;entry&amp;gt; .... &amp;lt;/entry&amp;gt;
-   .....
-	&amp;lt;/entries&amp;gt;
- &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;</xs:documentation>
+ Sample result of a &lt;code&gt;read&lt;/code&gt; operation:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;attributes&gt;
+ 	   &lt;attribute&gt;
+ 	   &lt;attribute name="employeeType" value="Extern"/&gt;
+ 	   &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
+ 	   &lt;attribute name="departmentCode" value="358000"/&gt;
+ 	   &lt;attribute name="organizationalHierarchy"&gt;
+ 	       &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	       &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	       &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	   &lt;/attribute&gt;
+ 	   &lt;attribute name="givenName" value="Gerrit"/&gt;
+ &lt;/attributes&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;
+ Sample result of a &lt;code&gt;search&lt;/code&gt; operation:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;entries&gt;
+ 	   &lt;entry name="uid=srp"&gt;
+ 	       &lt;attributes&gt;
+ 	           &lt;attribute&gt;
+ 	           &lt;attribute name="employeeType" value="Extern"/&gt;
+ 	           &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
+ 	           &lt;attribute name="departmentCode" value="358000"/&gt;
+ 	           &lt;attribute name="organizationalHierarchy"&gt;
+ 	               &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	               &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	               &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	           &lt;/attribute&gt;
+ 	           &lt;attribute name="givenName" value="Gerrit"/&gt;
+ 	       &lt;/attributes&gt;
+ 	   &lt;/entry&gt;
+     &lt;entry&gt; .... &lt;/entry&gt;
+    .....
+ &lt;/entries&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4449,33 +4445,33 @@
           <xs:documentation>sender that sends a mail specified by an XML message.
  &lt;p&gt;
  Sample email.xml:
- &lt;code&gt;&lt;pre&gt;
-    &amp;lt;email&amp;gt;
-       &amp;lt;recipients&amp;gt;
-          &amp;lt;recipient type="to"&amp;gt;***@hotmail.com&amp;lt;/recipient&amp;gt;
-          &amp;lt;recipient type="cc"&amp;gt;***@gmail.com&amp;lt;/recipient&amp;gt;
-       &amp;lt;/recipients&amp;gt;
-       &amp;lt;from name="*** ***"&amp;gt;***@yahoo.com&amp;lt;/from&amp;gt;
-       &amp;lt;subject&amp;gt;This is the subject&amp;lt;/subject&amp;gt;
-       &amp;lt;threadTopic&amp;gt;subject&amp;lt;/threadTopic&amp;gt;
-       &amp;lt;message&amp;gt;This is the message&amp;lt;/message&amp;gt;
-       &amp;lt;messageType&amp;gt;text/plain&amp;lt;/messageType&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-       &amp;lt;messageBase64&amp;gt;false&amp;lt;/messageBase64&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-       &amp;lt;charset&amp;gt;UTF-8&amp;lt;/charset&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-       &amp;lt;attachments&amp;gt;
-          &amp;lt;attachment name="filename1.txt"&amp;gt;This is the first attachment&amp;lt;/attachment&amp;gt;
-          &amp;lt;attachment name="filename2.pdf" base64="true"&amp;gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&amp;lt;/attachment&amp;gt;
-          &amp;lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&amp;gt;
-          &amp;lt;attachment name="filename4.pdf" sessionKey="fileContent"/&amp;gt;
-       &amp;lt;/attachments&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-   &amp;lt;/email&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;email&gt;
+     &lt;recipients&gt;
+         &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
+         &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
+     &lt;/recipients&gt;
+     &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
+     &lt;subject&gt;This is the subject&lt;/subject&gt;
+     &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
+     &lt;message&gt;This is the message&lt;/message&gt;
+     &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
+     &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
+     &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
+     &lt;attachments&gt;
+         &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
+         &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
+         &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
+         &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
+     &lt;/attachments&gt;&lt;!-- Optional --&gt;
+ &lt;/email&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  Notice: the XML message must be valid XML. Therefore, especially the message element
  must be plain text or be wrapped as CDATA. Example:
- &lt;code&gt;&lt;pre&gt;
-    &amp;lt;message&amp;gt;&amp;lt;![CDATA[&amp;lt;h1&amp;gt;This is a HtmlMessage&amp;lt;/h1&amp;gt;]]&amp;gt;&amp;lt;/message&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  The &lt;code&gt;sessionKey&lt;/code&gt; attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
  &lt;/p&gt;&lt;p&gt;
@@ -4518,14 +4514,13 @@
  to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  &lt;br/&gt;&lt;br/&gt;
  Example configuration:
- &lt;code&gt;&lt;pre&gt;
-	&amp;lt;SenderPipe name="Send"&amp;gt;
-		&amp;lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&amp;gt;
-	&amp;lt;/SenderPipe&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ &lt;SenderPipe name="Send"&gt;
+     &lt;MessageStoreSender
+ 	     slotId="${instance.name}/TestMessageStore"
+ 		 onlyStoreWhenMessageIdUnique="false" /&gt;
+ &lt;/SenderPipe&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4569,7 +4564,8 @@
 
 
  &lt;p&gt;&lt;b&gt;AuthAlias:&lt;/b&gt;&lt;/p&gt;
- &lt;p&gt;If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;If you do not want to specify the nonce and the access token used to authenticate with Akamai, you can use the authalias property. The username
+ represents the nonce and the password the access token.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4597,13 +4593,13 @@
  This prevents (long) open connections inside Senders and possible connection failures.
 
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;SenderPipe&amp;gt;
-     &amp;lt;ReconnectSenderWrapper&amp;gt;
-        &amp;lt;EchoSender myAttribute="myValue" /&amp;gt;
-     &amp;lt;/ReconnectSenderWrapper&amp;gt;
-   &amp;lt;/SenderPipe&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;SenderPipe&gt;
+     &lt;ReconnectSenderWrapper&gt;
+         &lt;EchoSender myAttribute="myValue" /&gt;
+     &lt;/ReconnectSenderWrapper&gt;
+ &lt;/SenderPipe&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4783,72 +4779,72 @@
  &lt;p&gt;
 	&lt;h3&gt;Sample Output for queryType=OTHER&lt;/h3&gt;
 	&lt;h4&gt;Basic Example with Only Simple Output Parameters&lt;/h4&gt;
-  &lt;code&gt;&lt;pre&gt;
-	&amp;lt;resultset&amp;gt;
-		&amp;lt;result param="r1" type="STRING"&amp;gt;MESSAGE-CONTENTS&amp;lt;/result&amp;gt;
-		&amp;lt;result param="r2" type="STRING"&amp;gt;E&amp;lt;/result&amp;gt;
-	&amp;lt;/resultset&amp;gt;
-  &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;resultset&gt;
+ 	   &lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
+     &lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
+ &lt;/resultset&gt;
+ }&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Resultset and Simple Output Parameters&lt;/h4&gt;
-  &lt;code&gt;&lt;pre&gt;
-	 &amp;lt;resultset&amp;gt;
-		 &amp;lt;result resultNr="1"&amp;gt;
-			 &amp;lt;fielddefinition&amp;gt;
-				&amp;lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&amp;gt;
-				 &amp;lt;field ...../&amp;gt;
- 		     &amp;lt;/fielddefinition&amp;gt;
-			 &amp;lt;rowset&amp;gt;
-				 &amp;lt;row number="0"&amp;gt;
-					 &amp;lt;field name="TKEY"&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
-					 &amp;lt;field name="TCHAR"&amp;gt;E&amp;lt;/field&amp;gt;
-					 &amp;lt;field name="TMESSAGE"&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
-					 &amp;lt;field name="TCLOB" null="true"/&amp;gt;
-					 &amp;lt;field name="TBLOB" null="true"/&amp;gt;
-				 &amp;lt;/row&amp;gt;
-                 &amp;lt;row number="1" ...../&amp;gt;
-			 &amp;lt;/rowset&amp;gt;
-		 &amp;lt;/result&amp;gt;
-		 &amp;lt;result param="count" type="INTEGER"&amp;gt;5&amp;lt;/result&amp;gt;
-	 &amp;lt;/resultset&amp;gt;
-  &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;resultset&gt;
+ 		 &lt;result resultNr="1"&gt;
+ 			 &lt;fielddefinition&gt;
+ 				&lt;field name="FIELDNAME"
+ 						  type="columnType"
+ 						  columnDisplaySize=""
+ 						  precision=""
+ 						  scale=""
+ 						  isCurrency=""
+ 						  columnTypeName=""
+ 						  columnClassName=""/&gt;
+ 				 &lt;field ...../&gt;
+  		     &lt;/fielddefinition&gt;
+ 			 &lt;rowset&gt;
+ 				 &lt;row number="0"&gt;
+ 					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+ 					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
+ 					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+ 					 &lt;field name="TCLOB" null="true"/&gt;
+ 					 &lt;field name="TBLOB" null="true"/&gt;
+ 				 &lt;/row&gt;
+                  &lt;row number="1" ...../&gt;
+ 			 &lt;/rowset&gt;
+ 		 &lt;/result&gt;
+ 		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+ &lt;/resultset&gt;
+ }&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Simple and Cursor Output Parameters&lt;/h4&gt;
-	&lt;code&gt;&lt;pre&gt;
-	&amp;lt;resultset&amp;gt;
-		&amp;lt;result param="count" type="INTEGER"&amp;gt;5&amp;lt;/result&amp;gt;
-		&amp;lt;result param="cursor1" type="LIST"&amp;gt;
-			 &amp;lt;fielddefinition&amp;gt;
-				&amp;lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&amp;gt;
-				 &amp;lt;field ...../&amp;gt;
- 		     &amp;lt;/fielddefinition&amp;gt;
-			&amp;lt;rowset&amp;gt;
-				&amp;lt;row number="0"&amp;gt;
-					&amp;lt;field name="TKEY"&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
-					&amp;lt;field name="TCHAR"&amp;gt;E&amp;lt;/field&amp;gt;
-					&amp;lt;field name="TMESSAGE"&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
-					&amp;lt;field name="TCLOB" null="true"/&amp;gt;
-					&amp;lt;field name="TBLOB" null="true"/&amp;gt;
-				&amp;lt;/row&amp;gt;
-				&amp;lt;row number="1" ..... /&amp;gt;
-			&amp;lt;/rowset&amp;gt;
-		&amp;lt;/result&amp;gt;
-	&amp;lt;/resultset&amp;gt;
-	&lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;resultset&gt;
+ 		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+ 		&lt;result param="cursor1" type="LIST"&gt;
+ 			 &lt;fielddefinition&gt;
+ 				&lt;field name="FIELDNAME"
+ 						  type="columnType"
+ 						  columnDisplaySize=""
+ 						  precision=""
+ 						  scale=""
+ 						  isCurrency=""
+ 						  columnTypeName=""
+ 						  columnClassName=""/&gt;
+ 				 &lt;field ...../&gt;
+  		&lt;/fielddefinition&gt;
+ 			&lt;rowset&gt;
+ 				&lt;row number="0"&gt;
+ 					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+ 					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
+ 					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+ 					&lt;field name="TCLOB" null="true"/&gt;
+ 					&lt;field name="TBLOB" null="true"/&gt;
+ 				&lt;/row&gt;
+ 				&lt;row number="1" ..... /&gt;
+ 			&lt;/rowset&gt;
+ 		&lt;/result&gt;
+ 	&lt;/resultset&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;&lt;em&gt;NOTE:&lt;/em&gt; Support for stored procedures is currently experimental and changes in the currently produced output-format
  are expected.&lt;/p&gt;</xs:documentation>
@@ -4941,52 +4937,43 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;example (input):&lt;/b&gt;
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;browse&amp;gt;
-      &amp;lt;jmsRealm&amp;gt;qcf&amp;lt;/jmsRealm&amp;gt;
-      &amp;lt;destinationName&amp;gt;jms/GetPolicyDetailsRequest&amp;lt;/destinationName&amp;gt;
-      &amp;lt;destinationType&amp;gt;QUEUE&amp;lt;/destinationType&amp;gt;
-   &amp;lt;/browse&gt;
- &lt;/pre&gt;
- &lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;browse&gt;
+    &lt;jmsRealm&gt;qcf&lt;/jmsRealm&gt;
+    &lt;destinationName&gt;jms/GetPolicyDetailsRequest&lt;/destinationName&gt;
+    &lt;destinationType&gt;QUEUE&lt;/destinationType&gt;
+ &lt;/browse&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
-
-
  &lt;p&gt;
  &lt;b&gt;example (browse output):&lt;/b&gt;
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;result&amp;gt;
-	    &amp;lt;items count="2"&amp;gt;
-	       &amp;lt;item&amp;gt;
-	          &amp;lt;timestamp&amp;gt;Thu Nov 20 13:36:31 CET 2014&amp;lt;/timestamp&amp;gt;
-	          &amp;lt;messageId&amp;gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&amp;lt;/messageId&amp;gt;
-	          &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
-	          &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
-	       &amp;lt;/item&amp;gt;
-	       &amp;lt;item&amp;gt;
-	          &amp;lt;timestamp&amp;gt;Thu Dec 12 11:59:22 CET 2014&amp;lt;/timestamp&amp;gt;
-	          &amp;lt;messageId&amp;gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&amp;lt;/messageId&amp;gt;
-	          &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
-	          &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
-	       &amp;lt;/item&amp;gt;
-	    &amp;lt;/items&amp;gt;
-   &amp;lt;/result&amp;gt;
- &lt;/pre&gt;
- &lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;result&gt;
+   &lt;items count="2"&gt;
+      &lt;item&gt;
+         &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
+         &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
+         &lt;correlationId&gt;...&lt;/correlationId&gt;
+         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
+      &lt;/item&gt;
+      &lt;item&gt;
+         &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
+         &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
+         &lt;correlationId&gt;...&lt;/correlationId&gt;
+         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
+      &lt;/item&gt;
+ 	 &lt;/items&gt;
+ &lt;/result&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
  &lt;b&gt;example (remove output):&lt;/b&gt;
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;result&amp;gt;
-	    &amp;lt;itemsRemoved&amp;gt;2&amp;lt;/itemsRemoved&amp;gt;
-   &amp;lt;/result&amp;gt;
- &lt;/pre&gt;
- &lt;/code&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ &lt;result&gt;
+     &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
+ &lt;/result&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4999,7 +4986,8 @@
       <xs:element name="XmlQuerySender">
         <xs:annotation>
           <xs:documentation>QuerySender that transforms the input message to a query.
- &lt;br/&gt;&lt;code&gt;&lt;pre&gt;
+ &lt;br/&gt;
+ &lt;pre&gt;{@code
   select
   delete
   insert
@@ -5012,14 +5000,15 @@
                                           - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
          - where [0..1]
          - order [0..1]
- &lt;br/&gt;
+
   alter - sequenceName
         - startWith
- &lt;br/&gt;
+
   sql   - type [0..1] one of {select;ddl;other}, other by default
         - query
- &lt;br/&gt;
- &lt;/pre&gt;&lt;/code&gt;&lt;br/&gt;</xs:documentation>
+
+ }&lt;/pre&gt;
+ &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -5327,32 +5316,32 @@
     </xs:attribute>
     <xs:attribute name="fileSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the sessionKey that contains the file to use. If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt; and &lt;code&gt;getProperties&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt; the sessionKey to store the result in</xs:documentation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the sessionKey that contains the file to use. If &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getProperties=true&lt;/code&gt; the sessionKey to store the result in</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="filenameSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the session key that contains the name of the file to use. If not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the session key that contains the name of the file to use. If not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="defaultMediaType" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the mime type used to store the document when it's not set in the input message by a property Default: 'application/octet-stream'</xs:documentation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the mime type used to store the document when it's not set in the input message by a property Default: 'application/octet-stream'</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getProperties" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt;). If true, the content of the document is put to &lt;code&gt;FileSessionKey&lt;/code&gt; and all document properties are put in the result as a xml string Default: false</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;). If true, the content of the document is put to &lt;code&gt;FileSessionKey&lt;/code&gt; and all document properties are put in the result as a xml string Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getDocumentContent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt;). If true, the attachment for the document is the sender result or, if set, stored in &lt;code&gt;FileSessionKey&lt;/code&gt;. If false, only the properties are returned Default: true</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;). If true, the attachment for the document is the sender result or, if set, stored in &lt;code&gt;fileSessionKey&lt;/code&gt;. If false, only the properties are returned Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useRootFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt;). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository Default: true</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=create&lt;/code&gt;). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keepSession" type="frankBoolean">
@@ -5764,7 +5753,7 @@
     <xs:attribute ref="linkMethod" />
     <xs:attribute name="replyTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>(Only for &lt;code&gt;synchronous&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;). Maximum time in ms to wait for a reply. 0 means no timeout. Default: 5000</xs:documentation>
+        <xs:documentation>(Only for &lt;code&gt;synchronous=true&lt;/code&gt;). Maximum time in ms to wait for a reply. 0 means no timeout. Default: 5000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="messageType" />
@@ -6263,12 +6252,12 @@
     </xs:attribute>
     <xs:attribute name="firstBodyPartName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt; and &lt;code&gt;postType&lt;/code&gt;=&lt;code&gt;URLENCODED&lt;/code&gt;, &lt;code&gt;FORM-DATA&lt;/code&gt; or &lt;code&gt;MTOM&lt;/code&gt;) Prepends a new BodyPart using the specified name and uses the input of the Sender as content</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;methodType=POST&lt;/code&gt; and &lt;code&gt;postType=URLENCODED&lt;/code&gt;, &lt;code&gt;FORM-DATA&lt;/code&gt; or &lt;code&gt;MTOM&lt;/code&gt;) Prepends a new BodyPart using the specified name and uses the input of the Sender as content</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set and &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt; and &lt;code&gt;paramsInUrl&lt;/code&gt;=&lt;code&gt;false&lt;/code&gt;, a multipart/form-data entity is created instead of a request body.
+        <xs:documentation>If set and &lt;code&gt;methodType=POST&lt;/code&gt; and &lt;code&gt;paramsInUrl=false&lt;/code&gt;, a multipart/form-data entity is created instead of a request body.
  For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
  &lt;ul&gt;
  &lt;li&gt;name: optional, used as 'filename' in Content-Disposition&lt;/li&gt;
@@ -6286,7 +6275,8 @@
     </xs:attribute>
     <xs:attribute name="treatInputMessageAsParameters" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the input will be added to the URL for &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;GET&lt;/code&gt;, or for &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; or &lt;code&gt;PATCH&lt;/code&gt; if &lt;code&gt;postType&lt;/code&gt;=&lt;code&gt;RAW&lt;/code&gt;. This used to be the default behaviour in framework version 7.7 and earlier Default: for methodType=&lt;code&gt;GET&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;,&lt;br/&gt;for methodTypes &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt;, &lt;code&gt;PATCH&lt;/code&gt;: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the input will be added to the URL for &lt;code&gt;methodType=GET&lt;/code&gt;, or for &lt;code&gt;methodType=POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; or
+ &lt;code&gt;PATCH&lt;/code&gt; if &lt;code&gt;postType=RAW&lt;/code&gt;. This used to be the default behaviour in framework version 7.7 and earlier Default: for methodType=&lt;code&gt;GET&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;,&lt;br/&gt;for methodTypes &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt;, &lt;code&gt;PATCH&lt;/code&gt;: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6525,7 +6515,7 @@
     </xs:attribute>
     <xs:attribute name="synchronous" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the call is made asynchronously. This implies isolated=&lt;code&gt;true&lt;/code&gt; Default: true</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the call is made asynchronously. This implies &lt;code&gt;isolated=true&lt;/code&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="isolated" type="frankBoolean">
@@ -6762,7 +6752,7 @@
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JavascriptSenderDeclaredAttributeGroup">
-    <xs:attribute name="jsFileName" type="xs:string">
+    <xs:attribute name="jsFileName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>the name of the javascript file containing the functions to run</xs:documentation>
       </xs:annotation>
@@ -6863,7 +6853,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
+        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7114,7 +7104,7 @@
     </xs:attribute>
     <xs:attribute name="createRootFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.</xs:documentation>
+        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -8021,7 +8011,7 @@
     </xs:attribute>
     <xs:attribute name="staleTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Used when StaleChecking=&lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+        <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="protocol" type="xs:string">
@@ -8715,46 +8705,45 @@
         <xs:annotation>
           <xs:documentation>Sender to obtain information from and write to a CMIS application.
 
-
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
+ When &lt;code&gt;action=get&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+     &lt;id&gt;documentId&lt;/id&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;delete&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
- &lt;/p&gt;
- &lt;p&gt;
- &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
- &lt;/p&gt;
- &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the input (xml string) indicates document properties to set. This input is optional.
+ When &lt;code&gt;action=delete&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;name&amp;gt;Offerte&amp;lt;/name&amp;gt;
-      &amp;lt;objectTypeId&amp;gt;NNB_Geldlening&amp;lt;/objectTypeId&amp;gt;
-      &amp;lt;mediaType&amp;gt;application/pdf&amp;lt;/mediaType&amp;gt;
-      &amp;lt;properties&amp;gt;
-         &amp;lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
-         &amp;lt;property name="ArrivedBy"&amp;gt;HDN&amp;lt;/property&amp;gt;
-         &amp;lt;property name="DocumentType"&amp;gt;Geldlening&amp;lt;/property&amp;gt;
-      &amp;lt;/properties&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+     &lt;id&gt;documentId&lt;/id&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
+ &lt;/p&gt;
+ &lt;p&gt;
+ When &lt;code&gt;action=create&lt;/code&gt; the input (xml string) indicates document properties to set. This input is optional.
+ &lt;/p&gt;
+ &lt;p&gt;
+ &lt;b&gt;Example:&lt;/b&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+     &lt;name&gt;Offerte&lt;/name&gt;
+     &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
+     &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
+     &lt;properties&gt;
+         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
+         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
+         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
+     &lt;/properties&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
@@ -8777,42 +8766,42 @@
  &lt;/table&gt;
  &lt;/p&gt;
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;find&lt;/code&gt; the input (xml string) indicates the query to perform.
+ When &lt;code&gt;action=find&lt;/code&gt; the input (xml string) indicates the query to perform.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;query&amp;gt;
-      &amp;lt;statement&amp;gt;select * from cmis:document&amp;lt;/statement&amp;gt;
-      &amp;lt;maxItems&amp;gt;10&amp;lt;/maxItems&amp;gt;
-      &amp;lt;skipCount&amp;gt;0&amp;lt;/skipCount&amp;gt;
-      &amp;lt;searchAllVersions&amp;gt;true&amp;lt;/searchAllVersions&amp;gt;
-      &amp;lt;includeAllowableActions&amp;gt;true&amp;lt;/includeAllowableActions&amp;gt;
-   &amp;lt;/query&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;query&gt;
+    &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
+    &lt;maxItems&gt;10&lt;/maxItems&gt;
+    &lt;skipCount&gt;0&lt;/skipCount&gt;
+    &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
+    &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
+ &lt;/query
+ }&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
- When &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;update&lt;/code&gt; the input (xml string) indicates document properties to update.
+ When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates document properties to update.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;cmis&amp;gt;
-      &amp;lt;id&amp;gt;123456789&amp;lt;/id&amp;gt;
-      &amp;lt;properties&amp;gt;
-         &amp;lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
-         &amp;lt;property name="ArrivedBy"&amp;gt;HDN&amp;lt;/property&amp;gt;
-         &amp;lt;property name="DocumentType"&amp;gt;Geldlening&amp;lt;/property&amp;gt;
-      &amp;lt;/properties&amp;gt;
-   &amp;lt;/cmis&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;cmis&gt;
+    &lt;id&gt;123456789&lt;/id&gt;
+    &lt;properties&gt;
+       &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
+       &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
+       &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
+    &lt;/properties&gt;
+ &lt;/cmis&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
  &lt;table border="1"&gt;
  &lt;tr&gt;&lt;th&gt;attributes&lt;/th&gt;&lt;th&gt;description&lt;/th&gt;&lt;th&gt;default&lt;/th&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;id&lt;/td&gt;&lt;td&gt;mandatory property "cmis:objectId" which indicates the document to update&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;property&lt;/td&gt;&lt;td&gt;custom document property to update. See &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; for possible attributes&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;property&lt;/td&gt;&lt;td&gt;custom document property to update. See &lt;code&gt;action=create&lt;/code&gt; for possible attributes&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
  &lt;/table&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
@@ -9027,126 +9016,125 @@
 
  &lt;h4&gt;Example of Existing Configuration&lt;/h4&gt;
  The existing configuration might look like this in the calling adapter:
- &lt;pre&gt;&lt;code&gt;
- &amp;lt;module&amp;gt;
- 	&amp;lt;adapter name="Adapter A"&amp;gt;
-   &amp;lt;receiver name="Adapter A Receiver" &amp;gt;
-    &amp;lt;listener name="Adapter A Listener"
-        className="org.frankframework..." etc/&amp;gt;
-   &amp;lt;/receiver&amp;gt;
- 	 &amp;lt;pipeline firstPipe="..."&amp;gt;
- 	  &amp;lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&amp;gt;
- 	   &amp;lt;sender className="org.frankframework.senders.IbisJavaSender"
- 	       serviceName="service-Adapter-B" /&amp;gt;
-     &amp;lt;forward name="success" path="..." /&amp;gt;
- 	  &amp;lt;/pipe&amp;gt;
-   &amp;lt;/pipeline&amp;gt;
- 	&amp;lt;/adapter&amp;gt;
- &amp;lt;/module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;module&gt;
+     &lt;adapter name="Adapter A"&gt;
+         &lt;receiver name="Adapter A Receiver"&gt;
+             &lt;listener name="Adapter A Listener"
+                 className="org.frankframework..." etc/&gt;
+         &lt;/receiver&gt;
+  	   &lt;pipeline firstPipe="..."&gt;
+  	       &lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&gt;
+  	           &lt;sender className="org.frankframework.senders.IbisJavaSender"
+  	               serviceName="service-Adapter-B" /&gt;
+                 &lt;forward name="success" path="..." /&gt;
+  	       &lt;/pipe&gt;
+         &lt;/pipeline&gt;
+     &lt;/adapter&gt;
+ &lt;/module&gt;
+ }&lt;/pre&gt;
 
  Or like using the modern XML XSD and an IbisLocalSender instead:
- &lt;pre&gt;&lt;code&gt;
-  &amp;lt;Module&amp;gt;
-   &amp;lt;Adapter name="Adapter A"&amp;gt;
-    &amp;lt;Receiver name="Adapter A Receiver"&amp;gt;
-        ... Listener setup and other configuration
-    &amp;lt;/Receiver&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-     &amp;lt;SenderPipe name="send"&amp;gt;
-      &amp;lt;IbisLocalSender name="call Adapter B"
-          javaListener="Adapter B Listener"/&amp;gt;
-      &amp;lt;Forward name="success" path="EXIT" /&amp;gt;
-     &amp;lt;/SenderPipe&amp;gt;
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-  &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+     &lt;Adapter name="Adapter A"&gt;
+         &lt;Receiver name="Adapter A Receiver"&gt;
+             ... Listener setup and other configuration
+         &lt;/Receiver&gt;
+         &lt;Pipeline&gt;
+             &lt;SenderPipe name="send"&gt;
+                 &lt;IbisLocalSender name="call Adapter B"
+                     javaListener="Adapter B Listener"/&gt;
+                 &lt;Forward name="success" path="EXIT" /&gt;
+             &lt;/SenderPipe&gt;
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;
 
  In the receiving adapter B the listener would have been configured like this:
- &lt;pre&gt;&lt;code&gt;
- &amp;lt;Module&amp;gt;
-  &amp;lt;Adapter name="adapter B"&amp;gt;
-   &amp;lt;Receiver name="Receiver B"&amp;gt;
-    &amp;lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&amp;gt;
-   &amp;lt;/Receiver&amp;gt;
-   &amp;lt;Pipeline&amp;gt;
-       ...
-   &amp;lt;/Pipeline&amp;gt;
-  &amp;lt;/Adapter&amp;gt;
- &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+     &lt;Adapter name="adapter B"&gt;
+         &lt;Receiver name="Receiver B"&gt;
+             &lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&gt;
+         &lt;/Receiver&gt;
+         &lt;Pipeline&gt;
+             ...
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;
  &lt;p/&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender&lt;/h4&gt;
  This example shows the most simple way of using the FrankSender to call another adapter with least amount of overhead.
 
- &lt;pre&gt;&lt;code&gt;
-  &amp;lt;Module&amp;gt;
-   &amp;lt;Adapter name="Adapter A"&amp;gt;
-    &amp;lt;Receiver name="Adapter A Receiver"&amp;gt;
-        ... Listener setup and other configuration
-    &amp;lt;/Receiver&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-     &amp;lt;SenderPipe name="send"&amp;gt;
-      &amp;lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&amp;gt;
-      &amp;lt;FrankSender name="call Adapter C"
-          scope="ADAPTER"
-          target="adapter B"
-      /&amp;gt;
-      &amp;lt;Forward name="success" path="EXIT" /&amp;gt;
-     &amp;lt;/SenderPipe&amp;gt;
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-
-   &amp;lt;Adapter name="adapter B"&amp;gt;
-    &amp;lt;!-- No receiver needed for FrankSender in this scenario --&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-       ... Exits, Pipes etc
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-  &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+     &lt;Adapter name="Adapter A"&gt;
+         &lt;Receiver name="Adapter A Receiver"&gt;
+             ... Listener setup and other configuration
+         &lt;/Receiver&gt;
+         &lt;Pipeline&gt;
+             &lt;SenderPipe name="send"&gt;
+                 &lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&gt;
+                 &lt;FrankSender name="call Adapter C"
+                     scope="ADAPTER"
+                     target="adapter B"
+                 /&gt;
+                 &lt;Forward name="success" path="EXIT" /&gt;
+             &lt;/SenderPipe&gt;
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+     &lt;Adapter name="adapter B"&gt;
+         &lt;!-- No receiver needed for FrankSender in this scenario --&gt;
+         &lt;Pipeline&gt;
+             ... Exits, Pipes etc
+         &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender and FrankListener&lt;/h4&gt;
  This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
  of the sub-adapter for the extra error-handling done by the target receiver.
 
- &lt;pre&gt;&lt;code&gt;
-  &amp;lt;Module&amp;gt;
-   &amp;lt;Adapter name="Adapter A"&amp;gt;
-    &amp;lt;Receiver name="Adapter A Receiver"&amp;gt;
-        ... Listener setup and other configuration
-    &amp;lt;/Receiver&amp;gt;
-    &amp;lt;Pipeline&amp;gt;
-     &amp;lt;SenderPipe name="send"&amp;gt;
-      &amp;lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&amp;gt;
-      &amp;lt;FrankSender
-           scope="LISTENER"
-           target="Adapter B Listener"/&amp;gt;
-       &amp;lt;Forward name="success" path="EXIT" /&amp;gt;
-     &amp;lt;/SenderPipe&amp;gt;
-    &amp;lt;/Pipeline&amp;gt;
-   &amp;lt;/Adapter&amp;gt;
-  &amp;lt;Adapter name="adapter B"&amp;gt;
-   &amp;lt;!-- Messages will only be sent to the error storage if:
-        - The target receiver is not transactional, and has maxTries="0", or
-        - The target receiver is transaction, and the Sender is set up to retry sending on error
-        For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
-   --&amp;gt;
-   &amp;lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&amp;gt;
-    &amp;lt;!-- Listener name is optional, defaults to Adapter name --&amp;gt;
-    &amp;lt;FrankListener name="Adapter B Listener"/&amp;gt;
-    &amp;lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&amp;gt;
-    &amp;lt;JdbcErrorStorage slotId="Adapter B - Errors" /&amp;gt;
-   &amp;lt;/Receiver&amp;gt;
-   &amp;lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&amp;gt;
-   &amp;lt;Pipeline transactionAttribute="RequiresNew"&amp;gt;
-       ... Exits, Pipes etc
-   &amp;lt;/Pipeline&amp;gt;
-  &amp;lt;/Adapter&amp;gt;
-  &amp;lt;/Module&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ &lt;Module&gt;
+    &lt;Adapter name="Adapter A"&gt;
+        &lt;Receiver name="Adapter A Receiver"&gt;
+         ... Listener setup and other configuration
+ 		  &lt;/Receiver&gt;
+ 		  &lt;Pipeline&gt;
+            &lt;SenderPipe name="send"&gt;
+                &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
+                &lt;FrankSender
+                    scope="LISTENER"
+                    target="Adapter B Listener"/&gt;
+                &lt;Forward name="success" path="EXIT" /&gt;
+            &lt;/SenderPipe&gt;
+        &lt;/Pipeline&gt;
+     &lt;/Adapter&gt;
+     &lt;Adapter name="adapter B"&gt;
+         &lt;!-- Messages will only be sent to the error storage if:
+             - The target receiver is not transactional, and has maxTries="0", or
+             - The target receiver is transaction, and the Sender is set up to retry sending on error
+             For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
+         --&gt;
+         &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
+             &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
+             &lt;FrankListener name="Adapter B Listener"/&gt;
+                 &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
+             &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
+         &lt;/Receiver&gt;
+         &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
+         &lt;Pipeline transactionAttribute="RequiresNew"&gt;
+             ... Exits, Pipes etc
+         &lt;/Pipeline&gt;
+    &lt;/Adapter&gt;
+ &lt;/Module&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9391,40 +9379,36 @@
 
  &lt;h2&gt;example&lt;/h2&gt;
  Consider the following configuration example:
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;sender
-        className="org.frankframework.ldap.LdapSender"
-        ldapProviderURL="ldap://servername:389/o=ing"
-        operation="read"
-        attributesToReturn="givenName,sn,telephoneNumber" &amp;gt;
-     &amp;lt;param name="entryName" xpathExpression="entryName" /&amp;gt;
-   &amp;lt;/sender&amp;gt;
- &lt;/pre&gt;
- &lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;sender
+      className="org.frankframework.ldap.LdapSender"
+      ldapProviderURL="ldap://servername:389/o=ing"
+      operation="read"
+      attributesToReturn="givenName,sn,telephoneNumber" &gt;
+     &lt;param name="entryName" xpathExpression="entryName" /&gt;
+ &lt;/sender&gt;
+ }&lt;/pre&gt;
  &lt;br/&gt;
 
  This may result in the following output:
- &lt;code&gt;&lt;pre&gt;
- &amp;lt;ldap&amp;gt;
-	&amp;lt;entryName&amp;gt;uid=srp,ou=people&amp;lt;/entryName&amp;gt;
-
-	&amp;lt;attributes&amp;gt;
-		&amp;lt;attribute attrID="givenName"&amp;gt;
-			&amp;lt;value&amp;gt;Jan&amp;lt;/value&amp;gt;
-		&amp;lt;/attribute&amp;gt;
-
-		&amp;lt;attribute attrID="telephoneNumber"&amp;gt;
-			&amp;lt;value&amp;gt;010 5131123&amp;lt;/value&amp;gt;
-			&amp;lt;value&amp;gt;06 23456064&amp;lt;/value&amp;gt;
-		&amp;lt;/attribute&amp;gt;
-
-		&amp;lt;attribute attrID="sn"&amp;gt;
-			&amp;lt;value&amp;gt;Jansen&amp;lt;/value&amp;gt;
-		&amp;lt;/attribute&amp;gt;
-	&amp;lt;/attributes&amp;gt;
- &amp;lt;/ldap&amp;gt;
-  &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;ldap&gt;
+ 	   &lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
+ 	   &lt;attributes&gt;
+         &lt;attribute attrID="givenName"&gt;
+             &lt;value&gt;Jan&lt;/value&gt;
+         &lt;/attribute&gt;
+         &lt;attribute attrID="telephoneNumber"&gt;
+             &lt;value&gt;010 5131123&lt;/value&gt;
+             &lt;value&gt;06 23456064&lt;/value&gt;
+         &lt;/attribute&gt;
+ 	       &lt;attribute attrID="sn"&gt;
+             &lt;value&gt;Jansen&lt;/value&gt;
+ 	       &lt;/attribute&gt;
+ 	   &lt;/attributes&gt;
+ &lt;/ldap&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;
 
  Search or Read?
 
@@ -9434,41 +9418,44 @@
  together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the
  specified context are returned.
 
- Sample result of a &lt;code&gt;read&lt;/code&gt; operation:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
-	&amp;lt;attributes&amp;gt;
-	    &amp;lt;attribute&amp;gt;
-	    &amp;lt;attribute name="employeeType" value="Extern"/&amp;gt;
-	    &amp;lt;attribute name="roomNumber" value="DP 2.13.025"/&amp;gt;
-	    &amp;lt;attribute name="departmentCode" value="358000"/&amp;gt;
-	    &amp;lt;attribute name="organizationalHierarchy"&amp;gt;
-	        &amp;lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	    &amp;lt;/attribute&gt;
-	    &amp;lt;attribute name="givenName" value="Gerrit"/&gt;
-	&amp;lt;/attributes&amp;gt;
-
- &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;
- Sample result of a &lt;code&gt;search&lt;/code&gt; operation:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
-	&amp;lt;entries&amp;gt;
-	 &amp;lt;entry name="uid=srp"&amp;gt;
-	   &amp;lt;attributes&amp;gt;
-	    &amp;lt;attribute&amp;gt;
-	    &amp;lt;attribute name="employeeType" value="Extern"/&amp;gt;
-	    &amp;lt;attribute name="roomNumber" value="DP 2.13.025"/&amp;gt;
-	    &amp;lt;attribute name="departmentCode" value="358000"/&amp;gt;
-	    &amp;lt;attribute name="organizationalHierarchy"&amp;gt;
-	        &amp;lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	        &amp;lt;item value="ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&amp;gt;
-	    &amp;lt;/attribute&gt;
-	    &amp;lt;attribute name="givenName" value="Gerrit"/&gt;
-	   &amp;lt;/attributes&amp;gt;
-	  &amp;lt;/entry&amp;gt;
-   &amp;lt;entry&amp;gt; .... &amp;lt;/entry&amp;gt;
-   .....
-	&amp;lt;/entries&amp;gt;
- &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;</xs:documentation>
+ Sample result of a &lt;code&gt;read&lt;/code&gt; operation:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;attributes&gt;
+ 	   &lt;attribute&gt;
+ 	   &lt;attribute name="employeeType" value="Extern"/&gt;
+ 	   &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
+ 	   &lt;attribute name="departmentCode" value="358000"/&gt;
+ 	   &lt;attribute name="organizationalHierarchy"&gt;
+ 	       &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	       &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	       &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	   &lt;/attribute&gt;
+ 	   &lt;attribute name="givenName" value="Gerrit"/&gt;
+ &lt;/attributes&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;
+ Sample result of a &lt;code&gt;search&lt;/code&gt; operation:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;entries&gt;
+ 	   &lt;entry name="uid=srp"&gt;
+ 	       &lt;attributes&gt;
+ 	           &lt;attribute&gt;
+ 	           &lt;attribute name="employeeType" value="Extern"/&gt;
+ 	           &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
+ 	           &lt;attribute name="departmentCode" value="358000"/&gt;
+ 	           &lt;attribute name="organizationalHierarchy"&gt;
+ 	               &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	               &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	               &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ 	           &lt;/attribute&gt;
+ 	           &lt;attribute name="givenName" value="Gerrit"/&gt;
+ 	       &lt;/attributes&gt;
+ 	   &lt;/entry&gt;
+     &lt;entry&gt; .... &lt;/entry&gt;
+    .....
+ &lt;/entries&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9534,33 +9521,33 @@
           <xs:documentation>sender that sends a mail specified by an XML message.
  &lt;p&gt;
  Sample email.xml:
- &lt;code&gt;&lt;pre&gt;
-    &amp;lt;email&amp;gt;
-       &amp;lt;recipients&amp;gt;
-          &amp;lt;recipient type="to"&amp;gt;***@hotmail.com&amp;lt;/recipient&amp;gt;
-          &amp;lt;recipient type="cc"&amp;gt;***@gmail.com&amp;lt;/recipient&amp;gt;
-       &amp;lt;/recipients&amp;gt;
-       &amp;lt;from name="*** ***"&amp;gt;***@yahoo.com&amp;lt;/from&amp;gt;
-       &amp;lt;subject&amp;gt;This is the subject&amp;lt;/subject&amp;gt;
-       &amp;lt;threadTopic&amp;gt;subject&amp;lt;/threadTopic&amp;gt;
-       &amp;lt;message&amp;gt;This is the message&amp;lt;/message&amp;gt;
-       &amp;lt;messageType&amp;gt;text/plain&amp;lt;/messageType&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-       &amp;lt;messageBase64&amp;gt;false&amp;lt;/messageBase64&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-       &amp;lt;charset&amp;gt;UTF-8&amp;lt;/charset&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-       &amp;lt;attachments&amp;gt;
-          &amp;lt;attachment name="filename1.txt"&amp;gt;This is the first attachment&amp;lt;/attachment&amp;gt;
-          &amp;lt;attachment name="filename2.pdf" base64="true"&amp;gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&amp;lt;/attachment&amp;gt;
-          &amp;lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&amp;gt;
-          &amp;lt;attachment name="filename4.pdf" sessionKey="fileContent"/&amp;gt;
-       &amp;lt;/attachments&amp;gt;&amp;lt;!-- Optional --&amp;gt;
-   &amp;lt;/email&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;email&gt;
+     &lt;recipients&gt;
+         &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
+         &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
+     &lt;/recipients&gt;
+     &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
+     &lt;subject&gt;This is the subject&lt;/subject&gt;
+     &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
+     &lt;message&gt;This is the message&lt;/message&gt;
+     &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
+     &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
+     &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
+     &lt;attachments&gt;
+         &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
+         &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
+         &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
+         &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
+     &lt;/attachments&gt;&lt;!-- Optional --&gt;
+ &lt;/email&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  Notice: the XML message must be valid XML. Therefore, especially the message element
  must be plain text or be wrapped as CDATA. Example:
- &lt;code&gt;&lt;pre&gt;
-    &amp;lt;message&amp;gt;&amp;lt;![CDATA[&amp;lt;h1&amp;gt;This is a HtmlMessage&amp;lt;/h1&amp;gt;]]&amp;gt;&amp;lt;/message&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  The &lt;code&gt;sessionKey&lt;/code&gt; attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
  &lt;/p&gt;&lt;p&gt;
@@ -9603,14 +9590,13 @@
  to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  &lt;br/&gt;&lt;br/&gt;
  Example configuration:
- &lt;code&gt;&lt;pre&gt;
-	&amp;lt;SenderPipe name="Send"&amp;gt;
-		&amp;lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&amp;gt;
-	&amp;lt;/SenderPipe&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ &lt;SenderPipe name="Send"&gt;
+     &lt;MessageStoreSender
+ 	     slotId="${instance.name}/TestMessageStore"
+ 		 onlyStoreWhenMessageIdUnique="false" /&gt;
+ &lt;/SenderPipe&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9654,7 +9640,8 @@
 
 
  &lt;p&gt;&lt;b&gt;AuthAlias:&lt;/b&gt;&lt;/p&gt;
- &lt;p&gt;If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;If you do not want to specify the nonce and the access token used to authenticate with Akamai, you can use the authalias property. The username
+ represents the nonce and the password the access token.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9682,13 +9669,13 @@
  This prevents (long) open connections inside Senders and possible connection failures.
 
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;&lt;code&gt;
-   &amp;lt;SenderPipe&amp;gt;
-     &amp;lt;ReconnectSenderWrapper&amp;gt;
-        &amp;lt;EchoSender myAttribute="myValue" /&amp;gt;
-     &amp;lt;/ReconnectSenderWrapper&amp;gt;
-   &amp;lt;/SenderPipe&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;SenderPipe&gt;
+     &lt;ReconnectSenderWrapper&gt;
+         &lt;EchoSender myAttribute="myValue" /&gt;
+     &lt;/ReconnectSenderWrapper&gt;
+ &lt;/SenderPipe&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9868,72 +9855,72 @@
  &lt;p&gt;
 	&lt;h3&gt;Sample Output for queryType=OTHER&lt;/h3&gt;
 	&lt;h4&gt;Basic Example with Only Simple Output Parameters&lt;/h4&gt;
-  &lt;code&gt;&lt;pre&gt;
-	&amp;lt;resultset&amp;gt;
-		&amp;lt;result param="r1" type="STRING"&amp;gt;MESSAGE-CONTENTS&amp;lt;/result&amp;gt;
-		&amp;lt;result param="r2" type="STRING"&amp;gt;E&amp;lt;/result&amp;gt;
-	&amp;lt;/resultset&amp;gt;
-  &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;resultset&gt;
+ 	   &lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
+     &lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
+ &lt;/resultset&gt;
+ }&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Resultset and Simple Output Parameters&lt;/h4&gt;
-  &lt;code&gt;&lt;pre&gt;
-	 &amp;lt;resultset&amp;gt;
-		 &amp;lt;result resultNr="1"&amp;gt;
-			 &amp;lt;fielddefinition&amp;gt;
-				&amp;lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&amp;gt;
-				 &amp;lt;field ...../&amp;gt;
- 		     &amp;lt;/fielddefinition&amp;gt;
-			 &amp;lt;rowset&amp;gt;
-				 &amp;lt;row number="0"&amp;gt;
-					 &amp;lt;field name="TKEY"&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
-					 &amp;lt;field name="TCHAR"&amp;gt;E&amp;lt;/field&amp;gt;
-					 &amp;lt;field name="TMESSAGE"&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
-					 &amp;lt;field name="TCLOB" null="true"/&amp;gt;
-					 &amp;lt;field name="TBLOB" null="true"/&amp;gt;
-				 &amp;lt;/row&amp;gt;
-                 &amp;lt;row number="1" ...../&amp;gt;
-			 &amp;lt;/rowset&amp;gt;
-		 &amp;lt;/result&amp;gt;
-		 &amp;lt;result param="count" type="INTEGER"&amp;gt;5&amp;lt;/result&amp;gt;
-	 &amp;lt;/resultset&amp;gt;
-  &lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;resultset&gt;
+ 		 &lt;result resultNr="1"&gt;
+ 			 &lt;fielddefinition&gt;
+ 				&lt;field name="FIELDNAME"
+ 						  type="columnType"
+ 						  columnDisplaySize=""
+ 						  precision=""
+ 						  scale=""
+ 						  isCurrency=""
+ 						  columnTypeName=""
+ 						  columnClassName=""/&gt;
+ 				 &lt;field ...../&gt;
+  		     &lt;/fielddefinition&gt;
+ 			 &lt;rowset&gt;
+ 				 &lt;row number="0"&gt;
+ 					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+ 					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
+ 					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+ 					 &lt;field name="TCLOB" null="true"/&gt;
+ 					 &lt;field name="TBLOB" null="true"/&gt;
+ 				 &lt;/row&gt;
+                  &lt;row number="1" ...../&gt;
+ 			 &lt;/rowset&gt;
+ 		 &lt;/result&gt;
+ 		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+ &lt;/resultset&gt;
+ }&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Simple and Cursor Output Parameters&lt;/h4&gt;
-	&lt;code&gt;&lt;pre&gt;
-	&amp;lt;resultset&amp;gt;
-		&amp;lt;result param="count" type="INTEGER"&amp;gt;5&amp;lt;/result&amp;gt;
-		&amp;lt;result param="cursor1" type="LIST"&amp;gt;
-			 &amp;lt;fielddefinition&amp;gt;
-				&amp;lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&amp;gt;
-				 &amp;lt;field ...../&amp;gt;
- 		     &amp;lt;/fielddefinition&amp;gt;
-			&amp;lt;rowset&amp;gt;
-				&amp;lt;row number="0"&amp;gt;
-					&amp;lt;field name="TKEY"&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
-					&amp;lt;field name="TCHAR"&amp;gt;E&amp;lt;/field&amp;gt;
-					&amp;lt;field name="TMESSAGE"&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
-					&amp;lt;field name="TCLOB" null="true"/&amp;gt;
-					&amp;lt;field name="TBLOB" null="true"/&amp;gt;
-				&amp;lt;/row&amp;gt;
-				&amp;lt;row number="1" ..... /&amp;gt;
-			&amp;lt;/rowset&amp;gt;
-		&amp;lt;/result&amp;gt;
-	&amp;lt;/resultset&amp;gt;
-	&lt;/pre&gt;&lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;resultset&gt;
+ 		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+ 		&lt;result param="cursor1" type="LIST"&gt;
+ 			 &lt;fielddefinition&gt;
+ 				&lt;field name="FIELDNAME"
+ 						  type="columnType"
+ 						  columnDisplaySize=""
+ 						  precision=""
+ 						  scale=""
+ 						  isCurrency=""
+ 						  columnTypeName=""
+ 						  columnClassName=""/&gt;
+ 				 &lt;field ...../&gt;
+  		&lt;/fielddefinition&gt;
+ 			&lt;rowset&gt;
+ 				&lt;row number="0"&gt;
+ 					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+ 					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
+ 					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+ 					&lt;field name="TCLOB" null="true"/&gt;
+ 					&lt;field name="TBLOB" null="true"/&gt;
+ 				&lt;/row&gt;
+ 				&lt;row number="1" ..... /&gt;
+ 			&lt;/rowset&gt;
+ 		&lt;/result&gt;
+ 	&lt;/resultset&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;&lt;em&gt;NOTE:&lt;/em&gt; Support for stored procedures is currently experimental and changes in the currently produced output-format
  are expected.&lt;/p&gt;</xs:documentation>
@@ -10026,52 +10013,43 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;example (input):&lt;/b&gt;
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;browse&amp;gt;
-      &amp;lt;jmsRealm&amp;gt;qcf&amp;lt;/jmsRealm&amp;gt;
-      &amp;lt;destinationName&amp;gt;jms/GetPolicyDetailsRequest&amp;lt;/destinationName&amp;gt;
-      &amp;lt;destinationType&amp;gt;QUEUE&amp;lt;/destinationType&amp;gt;
-   &amp;lt;/browse&gt;
- &lt;/pre&gt;
- &lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;browse&gt;
+    &lt;jmsRealm&gt;qcf&lt;/jmsRealm&gt;
+    &lt;destinationName&gt;jms/GetPolicyDetailsRequest&lt;/destinationName&gt;
+    &lt;destinationType&gt;QUEUE&lt;/destinationType&gt;
+ &lt;/browse&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
-
-
  &lt;p&gt;
  &lt;b&gt;example (browse output):&lt;/b&gt;
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;result&amp;gt;
-	    &amp;lt;items count="2"&amp;gt;
-	       &amp;lt;item&amp;gt;
-	          &amp;lt;timestamp&amp;gt;Thu Nov 20 13:36:31 CET 2014&amp;lt;/timestamp&amp;gt;
-	          &amp;lt;messageId&amp;gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&amp;lt;/messageId&amp;gt;
-	          &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
-	          &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
-	       &amp;lt;/item&amp;gt;
-	       &amp;lt;item&amp;gt;
-	          &amp;lt;timestamp&amp;gt;Thu Dec 12 11:59:22 CET 2014&amp;lt;/timestamp&amp;gt;
-	          &amp;lt;messageId&amp;gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&amp;lt;/messageId&amp;gt;
-	          &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
-	          &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
-	       &amp;lt;/item&amp;gt;
-	    &amp;lt;/items&amp;gt;
-   &amp;lt;/result&amp;gt;
- &lt;/pre&gt;
- &lt;/code&gt;
+ &lt;pre&gt;{@code
+ &lt;result&gt;
+   &lt;items count="2"&gt;
+      &lt;item&gt;
+         &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
+         &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
+         &lt;correlationId&gt;...&lt;/correlationId&gt;
+         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
+      &lt;/item&gt;
+      &lt;item&gt;
+         &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
+         &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
+         &lt;correlationId&gt;...&lt;/correlationId&gt;
+         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
+      &lt;/item&gt;
+ 	 &lt;/items&gt;
+ &lt;/result&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
  &lt;b&gt;example (remove output):&lt;/b&gt;
- &lt;code&gt;
- &lt;pre&gt;
-   &amp;lt;result&amp;gt;
-	    &amp;lt;itemsRemoved&amp;gt;2&amp;lt;/itemsRemoved&amp;gt;
-   &amp;lt;/result&amp;gt;
- &lt;/pre&gt;
- &lt;/code&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ &lt;result&gt;
+     &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
+ &lt;/result&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10084,7 +10062,8 @@
       <xs:element name="XmlQueryErrorSender">
         <xs:annotation>
           <xs:documentation>QuerySender that transforms the input message to a query.
- &lt;br/&gt;&lt;code&gt;&lt;pre&gt;
+ &lt;br/&gt;
+ &lt;pre&gt;{@code
   select
   delete
   insert
@@ -10097,14 +10076,15 @@
                                           - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
          - where [0..1]
          - order [0..1]
- &lt;br/&gt;
+
   alter - sequenceName
         - startWith
- &lt;br/&gt;
+
   sql   - type [0..1] one of {select;ddl;other}, other by default
         - query
- &lt;br/&gt;
- &lt;/pre&gt;&lt;/code&gt;&lt;br/&gt;</xs:documentation>
+
+ }&lt;/pre&gt;
+ &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12422,15 +12402,15 @@
 
  &lt;p&gt;
  Sample xml:&lt;br/&gt;
- &lt;pre&gt;&lt;code&gt;
- &amp;lt;adios rekenbox="L76HB150"&amp;gt;
-     &amp;lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&amp;gt;
-     &amp;lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&amp;gt;
-     &amp;lt;rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" /&amp;gt;
-     &amp;lt;rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" /&amp;gt;
- ...
- &amp;lt;/adios&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;{@code
+ &lt;adios rekenbox="L76HB150"&gt;
+     &lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&gt;
+     &lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&gt;
+     &lt;rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" /&gt;
+     &lt;rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" /&gt;
+     ...
+ &lt;/adios&gt;
+ }&lt;/pre&gt;
  &lt;br/&gt;
  For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
  On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element.
@@ -12736,35 +12716,32 @@
  The steam is closed after reading.
 
  Example configuration:
- &lt;pre&gt;&lt;code&gt;
-	&amp;lt;pipe
-		name="Read issuer"
-		className="org.frankframework.pipes.FilePipe"
-		actions="read"
-		fileName="dir/issuer.cer"
-		preserveInput="true"
-		outputType="stream"
-		storeResultInSessionKey="issuer"
-		&amp;gt;
-		&amp;lt;forward name="success" path="Read CRL" /&amp;gt;
-	&amp;lt;/pipe&amp;gt;
-	&amp;lt;pipe
-		name="Read CRL"
-		className="org.frankframework.pipes.FilePipe"
-		actions="read"
-		fileName="dir/CRL.crl"
-		outputType="stream"
-		&amp;gt;
-		&amp;lt;forward name="success" path="Transform CRL" /&amp;gt;
-	&amp;lt;/pipe&amp;gt;
-	&amp;lt;pipe
-		name="Transform CRL"
-		className="org.frankframework.pipes.CrlPipe"
-		issuerSessionKey="issuer"
-		&amp;gt;
-		&amp;lt;forward name="success" path="EXIT" /&amp;gt;
-	&amp;lt;/pipe&amp;gt;
- &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;{@code
+ 	&lt;pipe
+ 		name="Read issuer"
+ 		className="org.frankframework.pipes.FilePipe"
+ 		actions="read"
+ 		fileName="dir/issuer.cer"
+ 		preserveInput="true"
+ 		outputType="stream"
+ 		storeResultInSessionKey="issuer"&gt;
+ 		&lt;forward name="success" path="Read CRL" /&gt;
+ 	&lt;/pipe&gt;
+ 	&lt;pipe
+ 		name="Read CRL"
+ 		className="org.frankframework.pipes.FilePipe"
+ 		actions="read"
+ 		fileName="dir/CRL.crl"
+ 		outputType="stream"&gt;
+ 		&lt;forward name="success" path="Transform CRL" /&gt;
+ 	&lt;/pipe&gt;
+ 	&lt;pipe
+ 		name="Transform CRL"
+ 		className="org.frankframework.pipes.CrlPipe"
+ 		issuerSessionKey="issuer"&gt;
+ 		&lt;forward name="success" path="EXIT" /&gt;
+ 	&lt;/pipe&gt;
+ }&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13507,19 +13484,21 @@
           <xs:documentation>Transforms between ascii and an XML representation.
 
  &lt;p&gt;
- Sample xml:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
- 	&amp;lt;CALCBOXMESSAGE&amp;gt;
-		&amp;lt;OPDRACHT&amp;gt;
-			&amp;lt;OPDRACHTSOORT&amp;gt;ONTTREK_RISICO_EN_KOSTEN&amp;lt;/OPDRACHTSOORT&amp;gt;
-			&amp;lt;BASISRENDEMENTSOORT&amp;gt;NVT&amp;lt;/BASISRENDEMENTSOORT&amp;gt;
-			&amp;lt;BEDRAG&amp;gt;625&amp;lt;/BEDRAG&amp;gt;
-			&amp;lt;DATUM&amp;gt;20071201&amp;lt;/DATUM&amp;gt;
+ Sample xml:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;CALCBOXMESSAGE&gt;
+ 		&lt;OPDRACHT&gt;
+ 		    &lt;OPDRACHTSOORT&gt;ONTTREK_RISICO_EN_KOSTEN&lt;/OPDRACHTSOORT&gt;
+ 		    &lt;BASISRENDEMENTSOORT&gt;NVT&lt;/BASISRENDEMENTSOORT&gt;
+ 		    &lt;BEDRAG&gt;625&lt;/BEDRAG&gt;
+ 		    &lt;DATUM&gt;20071201&lt;/DATUM&gt;
+     ...
+ &lt;/CALCBOXMESSAGE&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;
 
-          ...
- 	&amp;lt;/CALCBOXMESSAGE&amp;gt;
- &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;
-
- Sample ascii:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
+ Sample ascii:&lt;br/&gt;
+ &lt;pre&gt;{@code
  	OPDRACHT : #SAMENGESTELD
  	OPDRACHT.OPDRACHTSOORT :ONTTREK_RISICO_EN_KOSTEN
  	OPDRACHT.BASISRENDEMENTSOORT :NVT
@@ -13528,7 +13507,7 @@
 
           ...
  	EINDEREKENVERZOEK :EINDE
- &lt;/pre&gt;&lt;/code&gt;
+ }&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;&lt;b&gt;Configuration:&lt;/b&gt;
@@ -13660,22 +13639,26 @@
         <xs:annotation>
           <xs:documentation>Pipe that sends a mail-message using a MailSender as its sender.
  &lt;br/&gt;
- Sample email.xml:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
-	&amp;lt;email&amp;gt;
-	    &amp;lt;recipients&amp;gt;
-	        &amp;lt;recipient&amp;gt;***@natned&amp;lt;/recipient&amp;gt;
-	        &amp;lt;recipient&amp;gt;***@nn.nl&amp;lt;/recipient&amp;gt;
-	    &amp;lt;/recipients&amp;gt;
-	    &amp;lt;from&amp;gt;***@nn.nl&amp;lt;/from&amp;gt;
-	    &amp;lt;subject&amp;gt;this is the subject&amp;lt;/subject&amp;gt;
-	    &amp;lt;message&amp;gt;dit is de message&amp;lt;/message&amp;gt;
-	&amp;lt;/email&amp;gt;
- &lt;/pre&gt;&lt;/code&gt; &lt;br/&gt;
+ Sample email.xml:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ 	&lt;email&gt;
+ 	    &lt;recipients&gt;
+ 	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
+ 	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
+ 	    &lt;/recipients&gt;
+ 	    &lt;from&gt;***@nn.nl&lt;/from&gt;
+ 	    &lt;subject&gt;this is the subject&lt;/subject&gt;
+ 	    &lt;message&gt;dit is de message&lt;/message&gt;
+ 	&lt;/email&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;
  Notice: it must be valid XML. Therefore, especially the message element
  must be plain text or be wrapped as CDATA.&lt;br/&gt;&lt;br/&gt;
- example:&lt;br/&gt;&lt;code&gt;&lt;pre&gt;
- &amp;lt;message&amp;gt;&amp;lt;![CDATA[&amp;lt;h1&amp;gt;This is a HtmlMessage&amp;lt;/h1&amp;gt;]]&amp;gt;&amp;lt;/message&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;&lt;br/&gt;</xs:documentation>
+ example:&lt;br/&gt;
+ &lt;pre&gt;{@code
+ &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
+ }&lt;/pre&gt;
+ &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14333,7 +14316,8 @@
   <xs:attributeGroup name="AmountOfPagesPipeDeclaredAttributeGroup">
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used to encode the given input string Default: UTF-8</xs:documentation>
+        <xs:documentation>Charset to be used to read the input message.
+ Defaults to the message's known charset or UTF-8 when unknown.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14954,6 +14938,13 @@
         <xs:documentation>Format the XML output in easy legible way</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="useControlCodes" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Enables the ASCII {@code (RS) Record Separator} and {@code (US) Unit Separator} Control Code field delimiters.
+ May not be used in combination with attribute {@code fieldSeparator}.
+ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators"&gt;WIKI Control Codes&lt;/a&gt;.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="CsvParserPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CsvParserPipeDeclaredAttributeGroup" />
@@ -15233,6 +15224,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queueRegex" type="xs:string" />
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="GetTibcoQueuesCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
@@ -15391,7 +15387,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
+        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15803,7 +15799,7 @@
     </xs:attribute>
     <xs:attribute name="createRootFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.</xs:documentation>
+        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16202,7 +16198,7 @@
     <xs:attribute name="sleepWhenEqualToPrevious" type="frankInt">
       <xs:annotation>
         <xs:documentation>Set to a time &lt;i&gt;in milliseconds&lt;/i&gt; to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in
- this virtual machine or &lt;code&gt;-1 to disable&lt;/code&gt;. The thread will sleep for the specified time before recalculating a new value. Set the
+ this virtual machine or &lt;code&gt;-1&lt;/code&gt; to disable. The thread will sleep for the specified time before recalculating a new value. Set the
  timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
  &lt;b&gt;note:&lt;/b&gt; When you're looking for a GUID parameter for your XSLT it might be better to use
  &amp;lt;param name=&amp;quot;guid&amp;quot; pattern=&amp;quot;{hostname}_{uid}&amp;quot;/&amp;gt;, see Parameter. Default: -1</xs:documentation>
@@ -16622,6 +16618,11 @@
         <xs:documentation>If empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="SendTibcoMessageCumulativeAttributeGroup">
     <xs:attributeGroup ref="SendTibcoMessageDeclaredAttributeGroup" />
@@ -17028,7 +17029,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions.</xs:documentation>
+        <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="frankBoolean">
@@ -17318,7 +17319,7 @@
     <xs:attribute name="cronExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>CRON expression that determines the frequency of execution.
- Can &lt;code&gt;not&lt;/code&gt; be used in combination with Interval.</xs:documentation>
+ Can &lt;b&gt;not&lt;/b&gt; be used in combination with Interval.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="interval" type="frankInt">
@@ -19110,7 +19111,7 @@
   </xs:attribute>
   <xs:attribute name="replyDestinationName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;,
+      <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo=true&lt;/code&gt;,
  the sender specified reply destination takes precedence over this one.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
@@ -19425,7 +19426,8 @@
   </xs:attribute>
   <xs:attribute name="linkMethod">
     <xs:annotation>
-      <xs:documentation>(Only used when &lt;code&gt;synchronous&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt; and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
+      <xs:documentation>(Only used when &lt;code&gt;synchronous=true&lt;/code&gt; and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline,
+ the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="LinkMethodAttributeValuesType variableRef" />
@@ -19715,7 +19717,7 @@
   </xs:attribute>
   <xs:attribute name="staleTimeout" type="frankInt">
     <xs:annotation>
-      <xs:documentation>Used when StaleChecking=&lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+      <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="connectionTimeToLive" type="frankInt">

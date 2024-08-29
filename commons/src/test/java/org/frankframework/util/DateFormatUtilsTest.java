@@ -35,7 +35,7 @@ public class DateFormatUtilsTest {
 
 	@BeforeAll
 	public static void setUp() {
-		if(!CI_TZ.hasSameRules(TEST_TZ)) {
+		if (!CI_TZ.hasSameRules(TEST_TZ)) {
 			log.warn("CI TimeZone [{}] differs from test TimeZone [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
 		}
 	}
@@ -44,7 +44,7 @@ public class DateFormatUtilsTest {
 	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private Date adjustForTimezone(Date date) {
-		if(CI_TZ.hasSameRules(TEST_TZ)) {
+		if (CI_TZ.hasSameRules(TEST_TZ)) {
 			return date;
 		} else {
 			return new Date(adjustForTimezone(date.getTime()));
@@ -55,7 +55,7 @@ public class DateFormatUtilsTest {
 	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private long adjustForTimezone(long epochMillis) {
-		if(CI_TZ.hasSameRules(TEST_TZ)) {
+		if (CI_TZ.hasSameRules(TEST_TZ)) {
 			return epochMillis;
 		} else {
 			int offset = CI_TZ.getOffset(epochMillis);
@@ -97,37 +97,37 @@ public class DateFormatUtilsTest {
 
 	@Test
 	public void unableToParseDate() {
-		assertThrows(DateTimeParseException.class, ()->DateFormatUtils.parseToLocalDate("05/10/98", DateFormatUtils.SHORT_DATE_FORMATTER));
+		assertThrows(DateTimeParseException.class, () -> DateFormatUtils.parseToLocalDate("05/10/98", DateFormatUtils.SHORT_DATE_FORMATTER));
 	}
 
 	@Test
 	public void unableToParseFullGenericWithoutTime() {
-		assertThrows(DateTimeParseException.class, ()-> DateFormatUtils.parseToInstant("2000-01-01", DateFormatUtils.FULL_GENERIC_FORMATTER));
+		assertThrows(DateTimeParseException.class, () -> DateFormatUtils.parseToInstant("2000-01-01", DateFormatUtils.FULL_GENERIC_FORMATTER));
 	}
 
 	@Test
 	public void testParseToLocalDate() {
 		LocalDate localDate = DateFormatUtils.parseToLocalDate("2024-05-16");
 		assertAll(
-			()->assertEquals(2024, localDate.getYear()),
-			()->assertEquals(Month.MAY, localDate.getMonth()),
-			()->assertEquals(16, localDate.getDayOfMonth())
+				() -> assertEquals(2024, localDate.getYear()),
+				() -> assertEquals(Month.MAY, localDate.getMonth()),
+				() -> assertEquals(16, localDate.getDayOfMonth())
 		);
 	}
 
 	@Test
 	public void testParseLocalDateInvalidDatePattern() {
-		assertThrows(IllegalArgumentException.class, ()->DateFormatUtils.parseToLocalDate("not a date"));
+		assertThrows(IllegalArgumentException.class, () -> DateFormatUtils.parseToLocalDate("not a date"));
 	}
 
 	@Test
 	public void testParseGenericDateInvalidDatePattern() {
-		assertThrows(IllegalArgumentException.class, ()->DateFormatUtils.parseGenericDate("not a date"));
+		assertThrows(IllegalArgumentException.class, () -> DateFormatUtils.parseGenericDate("not a date"));
 	}
 
 	@Test
 	public void testParseAnyDate1() {
-		assertThrows(IllegalArgumentException.class, ()-> DateFormatUtils.parseAnyDate("12-2013-10"));
+		assertThrows(IllegalArgumentException.class, () -> DateFormatUtils.parseAnyDate("12-2013-10"));
 	}
 
 	@Test
@@ -156,7 +156,7 @@ public class DateFormatUtilsTest {
 
 	@Test
 	public void testParseGenericDate1() {
-		assertThrows(IllegalArgumentException.class, ()-> DateFormatUtils.parseGenericDate("12-2013-10"));
+		assertThrows(IllegalArgumentException.class, () -> DateFormatUtils.parseGenericDate("12-2013-10"));
 	}
 
 	@Test
@@ -191,7 +191,15 @@ public class DateFormatUtilsTest {
 	@Test
 	public void testInstantInsteadOfDate() {
 		// Arrange
-		Instant theMoment = Instant.now().atZone(ZoneOffset.UTC).withYear(2023).withMonth(5).withDayOfMonth(4).withHour(11).withMinute(11).withSecond(11).toInstant();
+		Instant theMoment = Instant.now()
+				.atZone(ZoneOffset.UTC)
+				.withYear(2023)
+				.withMonth(5)
+				.withDayOfMonth(4)
+				.withHour(11)
+				.withMinute(11)
+				.withSecond(11)
+				.toInstant();
 
 		// Act
 		String dateString = DateFormatUtils.format(theMoment, DateFormatUtils.GENERIC_DATETIME_FORMATTER.withZone(ZoneId.of("UTC")));

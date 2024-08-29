@@ -45,19 +45,19 @@ import { deepMerge } from './utils';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  loading = true;
-  serverInfo: ServerInfo | null = null;
-  dtapStage = '';
-  dtapSide = '';
-  serverTime = '';
-  startupError: string | null = null;
-  userName?: string;
-  routeData: Data = {};
-  routeQueryParams: ParamMap = convertToParamMap({});
-  isLoginView: boolean = false;
-  clusterMembers: ClusterMember[] = [];
+  protected loading = true;
+  protected dtapStage = '';
+  protected dtapSide = '';
+  protected serverTime = '';
+  protected startupError: string | null = null;
+  protected userName?: string;
+  protected routeData: Data = {};
+  protected routeQueryParams: ParamMap = convertToParamMap({});
+  protected isLoginView: boolean = false;
+  protected clusterMembers: ClusterMember[] = [];
   protected selectedClusterMember: ClusterMember | null = null;
 
+  private serverInfo: ServerInfo | null = null;
   private appConstants: AppConstants;
   private consoleState: ConsoleState;
   private _subscriptions = new Subscription();

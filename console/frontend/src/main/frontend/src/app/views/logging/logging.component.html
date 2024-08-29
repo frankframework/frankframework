@@ -78,10 +78,7 @@
           </div>
         </div>
         <div *ngIf="viewFile">
-          <app-file-viewer
-            [fileName]="viewFile"
-            style="width: 100%; min-height: 650px; border: none; overflow: hidden"
-          ></app-file-viewer>
+          <app-file-viewer [fileName]="viewFile"></app-file-viewer>
         </div>
       </div>
     </div>

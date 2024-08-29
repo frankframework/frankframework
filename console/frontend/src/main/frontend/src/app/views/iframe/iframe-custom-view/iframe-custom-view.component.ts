@@ -15,8 +15,8 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
   private routeSubscription?: Subscription;
 
   constructor(
-    sanitizer: DomSanitizer,
-    appService: AppService,
+    protected override sanitizer: DomSanitizer,
+    protected override appService: AppService,
     private router: Router,
     private route: ActivatedRoute,
     private location: LocationStrategy,

@@ -40,8 +40,8 @@ export type Job = {
   styleUrls: ['./scheduler.component.scss'],
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
-  jobGroups: Record<string, Job[]> = {};
-  scheduler: Scheduler = {
+  protected jobGroups: Record<string, Job[]> = {};
+  protected scheduler: Scheduler = {
     name: '',
     version: '',
     started: false,
@@ -55,10 +55,10 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     schedulerClass: '',
     jobStoreClass: '',
   };
-  searchFilter: string = '';
-  refreshing: boolean = false;
-  databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
-  jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
+  protected searchFilter: string = '';
+  protected refreshing: boolean = false;
+  protected databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
+  protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
 
   private initialized = false;
 
