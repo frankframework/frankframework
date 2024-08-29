@@ -194,6 +194,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.websocketService.deactivate();
     this._subscriptionsReloadable.unsubscribe();
     this.consoleState.init = appInitState.UN_INIT;
+
+    this.appService.resetAlerts();
+    this.appService.resetMessageLog();
+    this.appService.resetAdapters();
+    this.appService.updateLoading(true);
+
     this.initializeFrankConsole();
   }
 
@@ -217,7 +223,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.debugService.log('Initializing Frank!Console');
 
     this.consoleState.init = appInitState.INIT;
-    this.serverInfoService.refresh();
     this.serverInfoService.serverInfo$.pipe(first()).subscribe({
       next: (data) => {
         this.serverInfo = data;
@@ -287,6 +292,8 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       },
     });
+    this.serverInfoService.refresh();
+
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
         this.appConstants = Object.assign(this.appConstants, data['Application Constants']['All']); //make FF!Application Constants default
@@ -336,9 +343,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWebsocket(): void {
+    this.appService.updateLoading(false);
     if (this.loading) {
       this.websocketService.onConnected$.subscribe(() => {
-        this.appService.updateLoading(false);
         this.loading = false;
 
         const channelBaseUrl = this.selectedClusterMember ? `/event/${this.selectedClusterMember.id}` : '/event';
@@ -382,7 +389,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appService.getAdapters().subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
-  processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
+  processWarnings(configurations: Record<string, Partial<MessageLog> | number | string>): void {
     configurations['All'] = {
       messages: configurations['messages'] as AdapterMessage[],
       errorStoreCount: configurations['totalErrorStoreCount'] as number,
@@ -390,10 +397,10 @@ export class AppComponent implements OnInit, OnDestroy {
       serverTime: configurations['serverTime'] as number,
       uptime: configurations['serverTime'] as number,
     };
-    delete configurations['messages'];
-    delete configurations['totalErrorStoreCount'];
-    delete configurations['serverTime'];
-    delete configurations['uptime'];
+    // delete configurations['messages'];
+    // delete configurations['totalErrorStoreCount'];
+    // delete configurations['serverTime'];
+    // delete configurations['uptime'];
 
     if (configurations['warnings']) {
       for (const warning of configurations['warnings'] as unknown as string[]) {
@@ -406,6 +413,9 @@ export class AppComponent implements OnInit, OnDestroy {
       const configuration = configurations[index];
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
+        continue;
+      } else if (Array.isArray(configuration) || typeof configuration !== 'object') {
+        delete configurations[index];
         continue;
       }
 
@@ -432,7 +442,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.appService.updateMessageLog(configurations);
+    this.appService.updateMessageLog(configurations as Record<string, Partial<MessageLog>>);
   }
 
   processAdapters(adapters: Record<string, Partial<Adapter>>): void {

@@ -201,9 +201,13 @@ export type ServerEnvironmentVariables = {
 export type ClusterMember = {
   id: string;
   address: string;
-  name: string;
   localMember: boolean;
   selectedMember: boolean;
+  type: 'worker';
+  attributes: Record<string, string> & {
+    name?: string;
+    application?: string;
+  };
 };
 
 export type AppConstants = Record<string, string | number | boolean | object>;
@@ -341,6 +345,11 @@ export class AppService {
     this.adaptersSubject.next({ ...this.adapters });
   }
 
+  resetAdapters(): void {
+    this.adapters = {};
+    this.adaptersSubject.next(this.adapters);
+  }
+
   removeAdapter(adapter: string): void {
     delete this.adapters[adapter];
   }
@@ -348,6 +357,11 @@ export class AppService {
   updateAlerts(alerts: Alert[]): void {
     this.alerts = alerts;
     this.alertsSubject.next(alerts);
+  }
+
+  resetAlerts(): void {
+    this.alerts = [];
+    this.alertsSubject.next(this.alerts);
   }
 
   startupError: string | null = null;
@@ -372,6 +386,11 @@ export class AppService {
   updateMessageLog(messageLog: Record<string, Partial<MessageLog>>): void {
     this.messageLog = deepMerge({}, this.messageLog, messageLog);
     this.messageLogSubject.next({ ...this.messageLog });
+  }
+
+  resetMessageLog(): void {
+    this.messageLog = {};
+    this.messageLogSubject.next(this.messageLog);
   }
 
   instanceName = '';

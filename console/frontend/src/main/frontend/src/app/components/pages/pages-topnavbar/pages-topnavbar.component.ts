@@ -67,7 +67,7 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getClusterMemberTitle(member: ClusterMember): string {
-    return `Name: ${member.name}
+    return `Name: ${member.attributes.name ?? ''}
 ID: ${member.id}
 Address: ${member.address}`;
   }
