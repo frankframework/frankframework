@@ -107,6 +107,7 @@
               <label class="col-sm-3 control-label label-height-30">Message</label>
               <div class="col-sm-9" style="height: 200px">
                 <app-monaco-editor
+                  data-cy-test-pipeline="message"
                   class="form-control"
                   [(value)]="form.message"
                   [options]="{ language: 'text' }"
