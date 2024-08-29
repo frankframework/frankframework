@@ -17,12 +17,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -225,8 +226,8 @@ class StringUtilTest {
 		// Act
 		List<String> result = StringUtil.split(input, delimiters);
 
-		LOG.debug("input: [{}]", ()->escapeUnprintable(input));
-		LOG.debug("result [{}]", ()->String.join("|", result));
+		LOG.debug("input: [{}]", () -> escapeUnprintable(input));
+		LOG.debug("result [{}]", () -> String.join("|", result));
 
 		// Assert
 		assertIterableEquals(expected, result);
@@ -252,23 +253,7 @@ class StringUtilTest {
 			case '\f':
 				return "\\f";
 			default:
-				return Character.toString((char)chr);
-		}
-	}
-
-	@SuppressWarnings("unused")
-	private static class ToStringTestClass {
-		private final String field1 = "tralala";
-		private final String field2 = "lalala";
-		private final boolean field3 = false;
-		private final String password = "top-secret";
-		private final String hoofdletterPassword = "bottom-secret";
-		private final Properties props = new Properties();
-
-		public ToStringTestClass() {
-			props.put("no-string-password", Collections.singletonList("something"));
-			props.setProperty("com.tibco.tibjms.factory.username", "tipko");
-			props.setProperty("com.tibco.tibjms.factory.password", "not-so-secret");
+				return Character.toString((char) chr);
 		}
 	}
 
@@ -291,5 +276,21 @@ class StringUtilTest {
 	@Test
 	public void testReflectionToStringNull() {
 		assertEquals("<null>", StringUtil.reflectionToString(null));
+	}
+
+	@SuppressWarnings("unused")
+	private static class ToStringTestClass {
+		private final String field1 = "tralala";
+		private final String field2 = "lalala";
+		private final boolean field3 = false;
+		private final String password = "top-secret";
+		private final String hoofdletterPassword = "bottom-secret";
+		private final Properties props = new Properties();
+
+		public ToStringTestClass() {
+			props.put("no-string-password", Collections.singletonList("something"));
+			props.setProperty("com.tibco.tibjms.factory.username", "tipko");
+			props.setProperty("com.tibco.tibjms.factory.password", "not-so-secret");
+		}
 	}
 }
