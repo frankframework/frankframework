@@ -459,10 +459,11 @@ export class AppComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      adapter.status = 'started';
+      adapter.status = existingAdapter?.status ?? 'started';
       adapter.hasSender = false;
       adapter.sendersMessageLogCount = 0;
       adapter.senderTransactionalStorageMessageCount = 0;
+      if (!adapter.state) adapter.state = existingAdapter.state ?? 'error';
 
       this.processAdapterReceivers(adapter, existingAdapter);
       this.processAdapterPipes(adapter, existingAdapter);
@@ -471,17 +472,14 @@ export class AppComponent implements OnInit, OnDestroy {
       if (adapter.receiverReachedMaxExceptions) {
         adapter.status = 'warning';
       }
-      /*					//If last message is WARN or ERROR change adapter status to warning.
-                if(adapter.messages.length > 0 && adapter.status != 'stopped') {
-                  let message = adapter.messages[adapter.messages.length -1];
-                  if(message.level != "INFO")
-                    adapter.status = 'warning';
-                }
-      */
+      //If last message is WARN or ERROR change adapter status to warning.
+      if (adapter.messages && adapter.messages.length > 0 && adapter.status != 'stopped') {
+        const message = adapter.messages.at(-1);
+        if (message && message.level != 'INFO') adapter.status = 'warning';
+      }
       if (adapter.state != 'started') {
         adapter.status = 'stopped';
       }
-
       if (!reloadedAdapters) reloadedAdapters = this.hasAdapterReloaded(adapter);
 
       updatedAdapters[adapterIndex] = adapter;
