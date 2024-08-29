@@ -51,6 +51,7 @@ import io.micrometer.core.instrument.search.Search;
 import lombok.Setter;
 
 public class MetricsInitializer implements InitializingBean, DisposableBean, ApplicationContextAware {
+	public static final String PARENT_CHILD_NAME_FORMAT = "%s -> %s";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 
@@ -93,8 +94,9 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull INamedObject subFrankElement, @Nonnull FrankMeterType type) {
 		return createSubDistributionSummary(parentFrankElement, findName(subFrankElement), type);
 	}
+
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
-		List<Tag> tags = getTags(parentFrankElement, findName(parentFrankElement) + " -> " + subFrankElement, null);
+		List<Tag> tags = getTags(parentFrankElement, String.format(PARENT_CHILD_NAME_FORMAT, findName(parentFrankElement), subFrankElement), null);
 		return createDistributionSummary(type, tags);
 	}
 	public DistributionSummary createDistributionSummary(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {

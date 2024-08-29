@@ -51,6 +51,7 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.MetricsInitializer;
 
 public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat DECIMAL_FORMAT = new DecimalFormat("#");
@@ -94,6 +95,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		JsonArrayBuilder durationStatistics = Json.createArrayBuilder();
 		JsonArrayBuilder sizeStatistics = Json.createArrayBuilder();
 		JsonArrayBuilder waitStatistics = Json.createArrayBuilder();
+
 		if(pipelineSize != null) {
 			sizeStatistics.add(pipelineSize);
 		}
@@ -120,7 +122,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 				waitStatistics.add(waitTime);
 			}
 		}
-		pipeDurations.values().stream().forEach(durationStatistics::add); //Add whatever remains (unsorted)
+		pipeDurations.values().forEach(durationStatistics::add); //Add whatever remains (unsorted)
 
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("durationPerPipe", durationStatistics);
@@ -197,6 +199,10 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private JsonArrayBuilder getReceivers(Adapter adapter, Collection<Meter> meters) {
 		JsonArrayBuilder receivers = Json.createArrayBuilder();
 
+		// Get everything we need for the summaries outside the for loop
+		List<LocalDistributionSummary> summaryListReceiving = getDistributionSummaryList(meters, FrankMeterType.LISTENER_MESSAGE_RECEIVING);
+		List<LocalDistributionSummary> summaryListPeeking = getDistributionSummaryList(meters, FrankMeterType.LISTENER_MESSAGE_PEEKING);
+
 		for (Receiver<?> receiver: adapter.getReceivers()) {
 			if(!receiver.configurationSucceeded()) continue;
 
@@ -206,6 +212,11 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			receiverMap.add("messagesReceived", receiver.getMessagesReceived());
 			receiverMap.add("messagesRejected", receiver.getMessagesRejected());
 			receiverMap.add("messagesRetried", receiver.getMessagesRetried());
+
+			String name = String.format(MetricsInitializer.PARENT_CHILD_NAME_FORMAT, receiver.getName(), receiver.getListener().getName());
+
+			receiverMap.add("messagesReceiving", getSubDistributionSummaryForReceiver(summaryListReceiving, name));
+			receiverMap.add("messagesPeeking", getSubDistributionSummaryForReceiver(summaryListPeeking, name));
 
 			receiverMap.add("processing", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_DURATION));
 
@@ -220,6 +231,35 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 				.map(LocalDistributionSummary.class::cast)
 				.collect(Collectors.toMap(e -> extractNameFromTag(e, "name"), e -> readSummary(e, extractNameFromTag(e, "name")+ nameSuffix)));
 	}
+
+	/**
+	 * @param distributionSummaryList
+	 * @param name
+	 * @return a {@link JsonArrayBuilder} for the receiver with the given name
+	 */
+	private JsonArrayBuilder getSubDistributionSummaryForReceiver(List<LocalDistributionSummary> distributionSummaryList, String name) {
+		JsonArrayBuilder byReceiver = Json.createArrayBuilder();
+
+		distributionSummaryList.stream()
+				.filter(summary -> extractNameFromTag(summary, "name").equals(name))
+				.map(summary -> readSummary(summary, extractNameFromTag(summary, "name")))
+				.forEach(byReceiver::add);
+
+		return byReceiver;
+	}
+
+	/**
+	 * @param meters
+	 * @param meterType
+	 * @return a list of LocalDistributionSummary for the given meterType based on the given meters
+	 */
+	private List<LocalDistributionSummary> getDistributionSummaryList(Collection<Meter> meters, FrankMeterType meterType) {
+		return meters.stream()
+				.filter(meterType::isOfType)
+				.map(LocalDistributionSummary.class::cast)
+				.toList();
+	}
+
 	private JsonArrayBuilder getDistributionSummaryByThread(Collection<Meter> meters, FrankMeterType meterType) {
 		JsonArrayBuilder threadsStats = Json.createArrayBuilder();
 
