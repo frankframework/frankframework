@@ -397,10 +397,6 @@ export class AppComponent implements OnInit, OnDestroy {
       serverTime: configurations['serverTime'] as number,
       uptime: configurations['serverTime'] as number,
     };
-    // delete configurations['messages'];
-    // delete configurations['totalErrorStoreCount'];
-    // delete configurations['serverTime'];
-    // delete configurations['uptime'];
 
     if (configurations['warnings']) {
       for (const warning of configurations['warnings'] as unknown as string[]) {
@@ -557,9 +553,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   processAdapterMessages(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
-    if (existingAdapter?.messages && adapter.messages) {
+    //   Wont work because the message "date" property keeps being updated
+    /*if (existingAdapter?.messages && adapter.messages) {
       adapter.messages = [...existingAdapter.messages!, ...adapter.messages].slice(-this.messageKeeperSize);
-    }
+    }*/
+    if (!adapter.messages) adapter.messages = existingAdapter?.messages ?? [];
   }
 
   updateAdapterNotifications(adapterName: string, adapter: Partial<Adapter>): void {
