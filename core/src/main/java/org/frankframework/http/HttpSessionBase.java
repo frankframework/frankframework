@@ -53,6 +53,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
@@ -66,6 +67,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
@@ -86,6 +88,7 @@ import org.frankframework.http.authentication.OAuthAccessTokenManager.Authentica
 import org.frankframework.http.authentication.OAuthAuthenticationScheme;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
@@ -394,8 +397,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			// Adapter is not always available, use this instead. Also see `org.frankframework.statistics.MetricsInitializer.getElementType`
 			IConfigurationAware element = (adapter != null) ? adapter : this;
 
-			new MicrometerConnectionManagerMetricsBinder(connectionManager, configurationMetrics, element)
-					.bindTo(null);
+
+			registerConnectionMetrics(element, connectionManager);
 
 			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,
 					request -> request.getRequestLine().getUri(),
@@ -407,6 +410,18 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 					.addInterceptorLast(interceptor.getResponseInterceptor())
 					.build();
 		}
+	}
+
+	/**
+	 * Registers the gauges for httpClient connection metrics.
+	 * @param frankElement
+	 * @param connPoolControl
+	 */
+	private void registerConnectionMetrics(IConfigurationAware frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_MAX, () -> connPoolControl.getTotalStats().getMax());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_AVAILABLE, () -> connPoolControl.getTotalStats().getAvailable());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_LEASED, () -> connPoolControl.getTotalStats().getLeased());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_PENDING, () -> connPoolControl.getTotalStats().getPending());
 	}
 
 	protected void setHttpClient(CloseableHttpClient httpClient) {
