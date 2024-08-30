@@ -79,7 +79,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	 */
 	@Override
 	protected void appendDetail(StringBuffer buffer, String fieldName, final Map<?, ?> map) {
-		Map<Object, Object> hiddenValues = new HashMap<>(map); //Deep copy, we don't want to alter the original map!
+		Map<Object, Object> hiddenValues = new HashMap<>(map); // Deep copy, we don't want to alter the original map!
 
 		for (Object key : map.keySet()) {
 			if (key instanceof String string && containsHiddenWord(string)) {

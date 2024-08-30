@@ -24,7 +24,7 @@ public class SpringUtils {
 	/**
 	 * Even though this has been deprecated, we cannot use the new/alternative method due to the autowireByName capability.
 	 */
-	@SuppressWarnings({"unchecked", "deprecation"})
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public static <T> T createBean(ApplicationContext applicationContext, Class<T> beanClass) {
 		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}

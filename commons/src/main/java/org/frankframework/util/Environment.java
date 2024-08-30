@@ -84,7 +84,7 @@ public class Environment {
 						|| (OS.contains("windows xp"))) {
 			envCommand = "cmd.exe /c set";
 		} else {
-			//assume Unix
+			// assume Unix
 			envCommand = "env";
 		}
 		return envCommand;

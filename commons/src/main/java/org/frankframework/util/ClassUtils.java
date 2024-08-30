@@ -60,7 +60,7 @@ public abstract class ClassUtils {
 	 */
 	@Nullable
 	public static URL getResourceURL(String resource) throws FileNotFoundException {
-		String resourceToUse = resource; //Don't change the original resource name for logging purposes
+		String resourceToUse = resource; // Don't change the original resource name for logging purposes
 
 		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.
 		// Resources retrieved from ClassLoaders should never start with a leading slash
@@ -208,7 +208,7 @@ public abstract class ClassUtils {
 			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
 
-		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+		try {// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
 			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue.getClass()
 					.getCanonicalName(), () -> ClassUtils.nameOf(bean));
@@ -222,7 +222,7 @@ public abstract class ClassUtils {
 	private static Object parseValueToSet(Method method, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = method.getParameters()[0].getType();
 
-		//Try to parse as primitive
+		// Try to parse as primitive
 		try {
 			return convertToType(setterArgumentClass, value);
 		} catch (IllegalArgumentException e) {
@@ -249,7 +249,7 @@ public abstract class ClassUtils {
 		if (value == null) {
 			return null;
 		}
-		//Try to parse the value as an Enum
+		// Try to parse the value as an Enum
 		if (type.isEnum()) {
 			return parseAsEnum(type, value);
 		}
@@ -267,15 +267,15 @@ public abstract class ClassUtils {
 				case "int", "java.lang.Integer" -> Integer.parseInt(value);
 				case "long", "java.lang.Long" -> Long.parseLong(value);
 				case "boolean", "java.lang.Boolean" -> {
-					if (value.isEmpty()) { //parseBoolean returns FALSE when it cannot parse the value
+					if (value.isEmpty()) { // parseBoolean returns FALSE when it cannot parse the value
 						throw new IllegalArgumentException("cannot convert empty string to boolean");
 					}
-					yield Boolean.parseBoolean(value); //parseBoolean returns FALSE when it cannot parse the value
+					yield Boolean.parseBoolean(value); // parseBoolean returns FALSE when it cannot parse the value
 				}
 				case "java.lang.String" -> value;
 				default -> throw new IllegalArgumentException("cannot convert to type [" + type.getName() + "], not implemented");
 			};
-		} catch (NumberFormatException e) { //Throw a -more descriptive- NumberFormatException instead of 'For input string'
+		} catch (NumberFormatException e) { // Throw a -more descriptive- NumberFormatException instead of 'For input string'
 			throw new NumberFormatException("value [" + value + "] cannot be converted to a number [" + type.getName() + "]");
 		}
 	}
@@ -292,18 +292,18 @@ public abstract class ClassUtils {
 		return EnumUtils.parse((Class<E>) enumClass, null, value);
 	}
 
-	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
 		invokeSetter(o, name, value, value.getClass());
 	}
 
-	public static void invokeSetter(Object o, String name, Object value, Class<?> clazz) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Class<?>[] argsTypes = {clazz};
+	public static void invokeSetter(Object o, String name, Object value, Class<?> clazz) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
+		Class<?>[] argsTypes = { clazz };
 		Method setterMtd = o.getClass().getMethod(name, argsTypes);
-		Object[] args = {value};
+		Object[] args = { value };
 		setterMtd.invoke(o, args);
 	}
 
-	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
 		Method getterMtd = o.getClass().getMethod(name, (Class<?>[]) null);
 		if (forceAccess) {
 			getterMtd.setAccessible(true);
