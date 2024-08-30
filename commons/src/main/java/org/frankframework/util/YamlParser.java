@@ -69,7 +69,7 @@ public class YamlParser {
 		// Threat as a single value and store it in the properties.
 		else {
 			if (value != null) {
-				String valueToString = value.toString(); //String / Integer
+				String valueToString = value.toString(); // String / Integer
 				properties.setProperty(key, valueToString);
 			}
 		}

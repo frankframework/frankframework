@@ -131,7 +131,7 @@ public class StringUtil {
 	 */
 	public static String hideAll(String message, Collection<Pattern> collection, int mode) {
 		if (collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
-			return message; //Nothing to do!
+			return message; // Nothing to do!
 
 		String result = message;
 		for (Pattern regex : collection) {
@@ -194,7 +194,9 @@ public class StringUtil {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(string);
 		int count = 0;
-		while (matcher.find()) {count++;}
+		while (matcher.find()) {
+			count++;
+		}
 		return count;
 	}
 
@@ -305,7 +307,7 @@ public class StringUtil {
 
 		try {
 			return new ReflectionToStringBuilder(object, OMIT_PASSWORD_FIELDS_STYLE).toString();
-		} catch (Exception e) { //amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
+		} catch (Exception e) { // amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
 			LogManager.getLogger(object).warn("exception getting string representation of object", e);
 
 			// In case this method is called from the objects toString method, we cannot call toString here!

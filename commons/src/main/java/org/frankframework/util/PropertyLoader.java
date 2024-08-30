@@ -205,17 +205,17 @@ public class PropertyLoader extends Properties {
 			}
 			List<URL> resources = Collections.list(classLoader.getResources(filename));
 			if (resources.isEmpty()) {
-				if (rootPropertyFile.equals(filename)) { //The file cannot be found, abort!
+				if (rootPropertyFile.equals(filename)) { // The file cannot be found, abort!
 					String msg = rootPropertyFile + " file not found, unable to initialize PropertyLoader";
 					LOG.error(msg);
 					throw new MissingResourceException(msg, this.getClass().getSimpleName(), rootPropertyFile);
 				}
 
-				//An additional file to load properties from cannot be found
+				// An additional file to load properties from cannot be found
 				LOG.debug("cannot find resource [{}] in classloader [{}] to load additional properties from, ignoring", filename, classLoader);
 			}
 
-			//We need to reverse the loading order to make sure the parent files are loaded first
+			// We need to reverse the loading order to make sure the parent files are loaded first
 			Collections.reverse(resources);
 
 			for (URL url : resources) {
@@ -227,8 +227,7 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
-	//Special Getters
-
+	// Special Getters
 
 	/**
 	 * Gets a <code>String</code> value
