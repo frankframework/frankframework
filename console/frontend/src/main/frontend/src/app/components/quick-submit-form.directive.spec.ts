@@ -4,7 +4,7 @@ import { QuickSubmitFormDirective } from './quick-submit-form.directive';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  // standalone: true,
+  standalone: true,
   template: `<form>
     <textarea appQuickSubmitForm></textarea>
     <button type="submit" (click)="changeTrigger($event)">Submit</button>
@@ -25,8 +25,8 @@ describe('QuickSubmitFormDirective', () => {
   let directiveElement: DebugElement;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [],
-      declarations: [TestComponent, QuickSubmitFormDirective],
+      imports: [TestComponent, QuickSubmitFormDirective],
+      declarations: [],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding

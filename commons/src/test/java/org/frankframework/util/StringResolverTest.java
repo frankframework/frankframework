@@ -14,11 +14,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import org.apache.commons.lang3.StringUtils;
 
 
 public class StringResolverTest {
@@ -221,7 +222,7 @@ public class StringResolverTest {
 		String result = StringResolver.substVars("blalblalab ${dir}", null, properties);
 		assertEquals("blalblalab d:/temporary/dir", result);
 
-		result = StringResolver.substVars("blalblalab ${dir}",null, properties, true);
+		result = StringResolver.substVars("blalblalab ${dir}", null, properties, true);
 		assertEquals("blalblalab ${dir:-${path:-d:/temporary}/dir}", result);
 	}
 
@@ -326,13 +327,13 @@ public class StringResolverTest {
 	@Test
 	public void resolveWithIncorrectExpression() {
 		// Act
-		assertThrows(IllegalArgumentException.class, ()-> StringResolver.substVars("blablabla ${key1", properties));
+		assertThrows(IllegalArgumentException.class, () -> StringResolver.substVars("blablabla ${key1", properties));
 	}
 
 	@Test
 	public void resolveWithIncorrectCustomDelimiters() {
 		// Act
-		assertThrows(IllegalArgumentException.class, ()-> StringResolver.substVars("blalblalab |key1|", properties, null, null, "|", "|"));
+		assertThrows(IllegalArgumentException.class, () -> StringResolver.substVars("blalblalab |key1|", properties, null, null, "|", "|"));
 	}
 
 
@@ -342,7 +343,7 @@ public class StringResolverTest {
 		Set<String> propsToHide = Collections.singleton("key1");
 
 		// Act
-		String result = StringResolver.substVars("blalblalab ${key1}", properties, null, propsToHide );
+		String result = StringResolver.substVars("blalblalab ${key1}", properties, null, propsToHide);
 
 		// Assert
 		assertEquals("blalblalab ******", result);

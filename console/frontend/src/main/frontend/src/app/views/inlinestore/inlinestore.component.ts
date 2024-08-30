@@ -18,13 +18,9 @@ type InlineStore = Record<string, { items: stateItemItem[]; totalMessageCount: n
   styleUrls: ['./inlinestore.component.scss'],
 })
 export class InlinestoreComponent implements OnInit {
-  result: InlineStore = {};
-  getProcessStateIconFn = (
-    processState: string,
-  ): 'fa-server' | 'fa-gears' | 'fa-sign-in' | 'fa-pause-circle' | 'fa-times-circle' =>
-    getProcessStateIcon(processState);
-  getProcessStateIconColorFn = (processState: string): 'success' | 'warning' | 'danger' =>
-    getProcessStateIconColor(processState);
+  protected result: InlineStore = {};
+  protected readonly getProcessStateIconColorFn = getProcessStateIconColor;
+  protected readonly getProcessStateIconFn = getProcessStateIcon;
 
   constructor(
     private http: HttpClient,

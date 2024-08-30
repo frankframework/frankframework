@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { JmsService } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ServerErrorResponse } from '../../../app.service';
 
 interface Form {
   destination: string;
@@ -22,20 +23,20 @@ interface Form {
   styleUrls: ['./jms-send-message.component.scss'],
 })
 export class JmsSendMessageComponent implements OnInit {
-  destinationTypes: string[] = ['QUEUE', 'TOPIC'];
-  processing: boolean = false;
-  file: File | null = null;
-  connectionFactories: string[] = [];
-  error: string = '';
-  successMessage: string = '';
-  form: Form = {
+  protected destinationTypes: string[] = ['QUEUE', 'TOPIC'];
+  protected processing: boolean = false;
+  protected file: File | null = null;
+  protected connectionFactories: string[] = [];
+  protected error: string | null = null;
+  protected successMessage: string = '';
+  protected form: Form = {
     destination: '',
     replyTo: '',
     message: '',
     persistent: false,
     propertyValue: '',
     propertyKey: '',
-    type: 'QUEUE',
+    type: this.destinationTypes[0],
     connectionFactory: '',
     synchronous: false,
     lookupDestination: false,
@@ -92,30 +93,37 @@ export class JmsSendMessageComponent implements OnInit {
 
     this.jmsService.postJmsMessage(fd).subscribe({
       next: () => {
-        this.error = '';
+        this.error = null;
         this.processing = false;
         this.successMessage = 'JMS Message sent successfully';
       },
       error: (errorData: HttpErrorResponse) => {
         this.processing = false;
-        const error = errorData.error
-          ? errorData.error.error
-          : 'An unknown error occured, check the logs for more info.';
-        this.error = typeof error === 'object' ? error.error : error;
+        try {
+          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          this.error = errorResponse ? errorResponse.error : 'An unknown error occured, check the logs for more info.';
+        } catch {
+          this.error = errorData.message;
+        }
       },
     });
   }
 
   reset(): void {
-    this.error = '';
+    this.error = null;
     this.successMessage = '';
-    if (!this.form) return;
-    if (this.form['destination']) this.form['destination'] = '';
-    if (this.form['replyTo']) this.form['replyTo'] = '';
-    if (this.form['message']) this.form['message'] = '';
-    if (this.form['persistent']) this.form['persistent'] = false;
-    if (this.form['propertyValue']) this.form['propertyValue'] = '';
-    if (this.form['propertyKey']) this.form['propertyKey'] = '';
-    if (this.form['type']) this.form['type'] = this.destinationTypes[0];
+    this.form = {
+      destination: '',
+      replyTo: '',
+      message: '',
+      persistent: false,
+      propertyValue: '',
+      propertyKey: '',
+      type: this.destinationTypes[0],
+      connectionFactory: '',
+      synchronous: false,
+      lookupDestination: false,
+      encoding: '',
+    };
   }
 }

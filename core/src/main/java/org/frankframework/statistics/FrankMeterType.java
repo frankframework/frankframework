@@ -39,8 +39,14 @@ public enum FrankMeterType {
 	RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
 	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER),
 
-	LISTENER_MESSAGE_PEEKING("frank.listener.messagePeeking", Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
-	LISTENER_MESSAGE_RECEIVING("frank.listener.messageReceiving", Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT);
+	SENDER_HTTP("frank.sender.http", Meter.Type.TIMER),
+	SENDER_HTTP_CLIENT_MAX("frank.sender.httpClient.max", Meter.Type.GAUGE),
+	SENDER_HTTP_CLIENT_AVAILABLE("frank.sender.httpClient.available", Meter.Type.GAUGE),
+	SENDER_HTTP_CLIENT_LEASED("frank.sender.httpClient.leased", Meter.Type.GAUGE),
+	SENDER_HTTP_CLIENT_PENDING("frank.sender.httpClient.pending", Meter.Type.GAUGE),
+
+	LISTENER_MESSAGE_PEEKING("frank.listener.messagePeeking", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
+	LISTENER_MESSAGE_RECEIVING("frank.listener.messageReceiving", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT);
 
 	public static final String TIME_UNIT = "ms";
 	public static final String SIZE_UNIT = "B";

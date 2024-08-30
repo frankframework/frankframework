@@ -208,6 +208,11 @@ export type ClusterMember = {
 
 export type AppConstants = Record<string, string | number | boolean | object>;
 
+export type ServerErrorResponse = {
+  status: string;
+  error: string;
+};
+
 export const appInitState = {
   UN_INIT: -1,
   PRE_INIT: 0,

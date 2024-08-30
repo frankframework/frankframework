@@ -2,6 +2,7 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
 
 @Directive({
   selector: '[appQuickSubmitForm]',
+  standalone: true,
 })
 export class QuickSubmitFormDirective {
   constructor(private element: ElementRef<HTMLInputElement>) {}

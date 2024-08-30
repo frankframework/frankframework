@@ -1,6 +1,3 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <ngb-alert *ngFor="let alert of state" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
   <div class="row">
@@ -124,7 +121,7 @@
               <label class="col-sm-3 control-label">Contains Locker</label>
               <div class="col-sm-1">
                 <span class="form-control" style="border: none"
-                  ><input icheck type="checkbox" [(ngModel)]="form.locker" name="locker"
+                  ><input type="checkbox" [(ngModel)]="form.locker" name="locker"
                 /></span>
               </div>
               <div class="col-sm-8">

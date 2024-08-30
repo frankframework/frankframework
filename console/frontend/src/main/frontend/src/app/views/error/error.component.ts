@@ -1,7 +1,7 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 
 interface stackTrace {
   className: string;
@@ -9,9 +9,7 @@ interface stackTrace {
   lineNumber: string;
 }
 
-type ServerError = {
-  status: string;
-  error: string;
+type ServerError = ServerErrorResponse & {
   stackTrace?: stackTrace[];
 };
 
@@ -20,19 +18,26 @@ type ServerError = {
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
 })
-export class ErrorComponent implements OnInit {
-  cooldownCounter: number = 0;
-  viewStackTrace: boolean = false;
-  stackTrace?: stackTrace[];
+export class ErrorComponent implements OnInit, OnDestroy {
+  protected cooldownCounter: number = 0;
+  protected viewStackTrace: boolean = false;
+  protected stackTrace?: stackTrace[];
+
+  private interval?: number;
 
   constructor(
     private router: Router,
-    private http: HttpClient,
     private appService: AppService,
   ) {}
 
   ngOnInit(): void {
     this.checkState();
+  }
+
+  ngOnDestroy(): void {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
   }
 
   cooldown(data: ServerError): void {
@@ -47,10 +52,10 @@ export class ErrorComponent implements OnInit {
       this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
-      const interval = window.setInterval(() => {
+      this.interval = window.setInterval(() => {
         this.cooldownCounter--;
         if (this.cooldownCounter < 1) {
-          clearInterval(interval);
+          clearInterval(this.interval);
           this.checkState();
         }
       }, 1000);
@@ -63,9 +68,6 @@ export class ErrorComponent implements OnInit {
     this.appService.getServerHealth().subscribe({
       next: () => {
         this.router.navigate(['/status']);
-        /* setTimeout(() => {
-        window.location.reload();
-      }, 50); */
       },
       error: (response: HttpErrorResponse) => {
         try {

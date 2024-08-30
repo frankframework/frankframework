@@ -23,10 +23,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Target(TYPE)
-@Label(name="Element Type")
+@Label(name = "Element Type")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ElementType {
+
+	@LabelValue ElementTypes value();
 
 	enum ElementTypes {
 		UNKNOWN,
@@ -40,6 +42,4 @@ public @interface ElementType {
 		ERRORHANDLING,
 		TRANSLATOR
 	}
-
-	@LabelValue ElementTypes value();
 }

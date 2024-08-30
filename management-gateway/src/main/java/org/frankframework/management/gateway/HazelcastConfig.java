@@ -44,7 +44,12 @@ public class HazelcastConfig {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		String resource = "ff-hazelcast.xml";
 		Properties properties = new PropertyLoader("hazelcast.properties");
-		return Config.loadFromClasspath(classLoader, resource, properties);
+		Config config = Config.loadFromClasspath(classLoader, resource, properties);
+
+		// Not recommended for production environments, and frankly better to configure one's cluster properly to begin with.
+		config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
+
+		return config;
 	}
 
 	private static String computeName() {
