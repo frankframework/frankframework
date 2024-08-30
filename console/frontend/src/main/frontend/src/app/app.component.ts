@@ -55,6 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
   protected routeQueryParams: ParamMap = convertToParamMap({});
   protected isLoginView: boolean = false;
   protected clusterMembers: ClusterMember[] = [];
+  protected selectedClusterMember: ClusterMember | null = null;
 
   private serverInfo: ServerInfo | null = null;
   private appConstants: AppConstants;
@@ -193,6 +194,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.websocketService.deactivate();
     this._subscriptionsReloadable.unsubscribe();
     this.consoleState.init = appInitState.UN_INIT;
+
+    this.appService.resetAlerts();
+    this.appService.resetMessageLog();
+    this.appService.resetAdapters();
+    this.appService.updateLoading(true);
+
     this.initializeFrankConsole();
   }
 
@@ -216,7 +223,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.debugService.log('Initializing Frank!Console');
 
     this.consoleState.init = appInitState.INIT;
-    this.serverInfoService.refresh();
     this.serverInfoService.serverInfo$.pipe(first()).subscribe({
       next: (data) => {
         this.serverInfo = data;
@@ -286,6 +292,8 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       },
     });
+    this.serverInfoService.refresh();
+
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
         this.appConstants = Object.assign(this.appConstants, data['Application Constants']['All']); //make FF!Application Constants default
@@ -332,28 +340,30 @@ export class AppComponent implements OnInit, OnDestroy {
         });
       }
     });
-    this.appService.getClusterMembers().subscribe((data) => {
-      this.clusterMembers = data;
-    });
   }
 
   initializeWebsocket(): void {
-    this.websocketService.onConnected$.subscribe(() => {
-      this.appService.updateLoading(false);
-      this.loading = false;
+    this.appService.updateLoading(false);
+    if (this.loading) {
+      this.websocketService.onConnected$.subscribe(() => {
+        this.loading = false;
 
-      this.websocketService.subscribe<Record<string, MessageLog>>('/event/server-warnings', (configurations) =>
-        this.processWarnings(configurations),
-      );
+        const channelBaseUrl = this.selectedClusterMember ? `/event/${this.selectedClusterMember.id}` : '/event';
 
-      this.websocketService.subscribe<Record<string, Partial<Adapter>>>('/event/adapters', (adapters) =>
-        this.processAdapters(adapters),
-      );
+        this.websocketService.subscribe<Record<string, MessageLog>>(
+          `${channelBaseUrl}/server-warnings`,
+          (configurations) => this.processWarnings(configurations),
+        );
 
-      this.websocketService.subscribe<ClusterMemberEvent>('/event/cluster', (clusterMemeberEvent) =>
-        this.updateClusterMembers(clusterMemeberEvent.member, clusterMemeberEvent.type),
-      );
-    });
+        this.websocketService.subscribe<Record<string, Partial<Adapter>>>(`${channelBaseUrl}/adapters`, (adapters) =>
+          this.processAdapters(adapters),
+        );
+
+        this.websocketService.subscribe<ClusterMemberEvent>('/event/cluster', (clusterMemberEvent) =>
+          this.updateClusterMembers(clusterMemberEvent.member, clusterMemberEvent.type),
+        );
+      });
+    }
 
     this.appService.getAdapters('all').subscribe((data) => {
       this.processAdapters(data);
@@ -379,7 +389,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appService.getAdapters().subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
-  processWarnings(configurations: Record<string, Partial<MessageLog>>): void {
+  processWarnings(configurations: Record<string, Partial<MessageLog> | number | string>): void {
     configurations['All'] = {
       messages: configurations['messages'] as AdapterMessage[],
       errorStoreCount: configurations['totalErrorStoreCount'] as number,
@@ -387,10 +397,6 @@ export class AppComponent implements OnInit, OnDestroy {
       serverTime: configurations['serverTime'] as number,
       uptime: configurations['serverTime'] as number,
     };
-    delete configurations['messages'];
-    delete configurations['totalErrorStoreCount'];
-    delete configurations['serverTime'];
-    delete configurations['uptime'];
 
     if (configurations['warnings']) {
       for (const warning of configurations['warnings'] as unknown as string[]) {
@@ -403,6 +409,9 @@ export class AppComponent implements OnInit, OnDestroy {
       const configuration = configurations[index];
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
+        continue;
+      } else if (Array.isArray(configuration) || typeof configuration !== 'object') {
+        delete configurations[index];
         continue;
       }
 
@@ -429,7 +438,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.appService.updateMessageLog(configurations);
+    this.appService.updateMessageLog(configurations as Record<string, Partial<MessageLog>>);
   }
 
   processAdapters(adapters: Record<string, Partial<Adapter>>): void {
@@ -446,10 +455,11 @@ export class AppComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      adapter.status = 'started';
+      adapter.status = existingAdapter?.status ?? 'started';
       adapter.hasSender = false;
       adapter.sendersMessageLogCount = 0;
       adapter.senderTransactionalStorageMessageCount = 0;
+      if (!adapter.state) adapter.state = existingAdapter.state ?? 'error';
 
       this.processAdapterReceivers(adapter, existingAdapter);
       this.processAdapterPipes(adapter, existingAdapter);
@@ -458,17 +468,14 @@ export class AppComponent implements OnInit, OnDestroy {
       if (adapter.receiverReachedMaxExceptions) {
         adapter.status = 'warning';
       }
-      /*					//If last message is WARN or ERROR change adapter status to warning.
-                if(adapter.messages.length > 0 && adapter.status != 'stopped') {
-                  let message = adapter.messages[adapter.messages.length -1];
-                  if(message.level != "INFO")
-                    adapter.status = 'warning';
-                }
-      */
+      //If last message is WARN or ERROR change adapter status to warning.
+      if (adapter.messages && adapter.messages.length > 0 && adapter.status != 'stopped') {
+        const message = adapter.messages.at(-1);
+        if (message && message.level != 'INFO') adapter.status = 'warning';
+      }
       if (adapter.state != 'started') {
         adapter.status = 'stopped';
       }
-
       if (!reloadedAdapters) reloadedAdapters = this.hasAdapterReloaded(adapter);
 
       updatedAdapters[adapterIndex] = adapter;
@@ -491,7 +498,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   finalizeStartup(data: Record<string, Adapter>): void {
     this.processAdapters(data);
-    this.initializeWebsocket();
+    this.appService.getClusterMembers().subscribe((data) => {
+      this.clusterMembers = data;
+      if (data.length > 0) {
+        this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
+      }
+      this.initializeWebsocket();
+    });
   }
 
   processAdapterReceivers(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
@@ -540,9 +553,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   processAdapterMessages(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
-    if (existingAdapter?.messages && adapter.messages) {
+    //   Wont work because the message "date" property keeps being updated
+    /*if (existingAdapter?.messages && adapter.messages) {
       adapter.messages = [...existingAdapter.messages!, ...adapter.messages].slice(-this.messageKeeperSize);
-    }
+    }*/
+    if (!adapter.messages) adapter.messages = existingAdapter?.messages ?? [];
   }
 
   updateAdapterNotifications(adapterName: string, adapter: Partial<Adapter>): void {

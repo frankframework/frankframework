@@ -34,7 +34,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 	@Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 60)
 	public void serverWarnings() {
 		propagateAuthenticationContext("server-warnings");
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS);
 
 		List<ClusterMember> members = getClusterMembers();
 		if(members.isEmpty()) {
