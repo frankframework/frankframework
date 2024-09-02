@@ -40,6 +40,7 @@ import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.compo
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
 import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
+import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
 
 export const routes: Routes = [
   {
@@ -137,6 +138,14 @@ export const routes: Routes = [
     title: 'Logging',
     data: {
       breadcrumbs: 'Logging > Log Settings',
+    },
+  },
+  {
+    path: 'logging/settings/add',
+    component: LoggingAddComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbs: 'Logging > Log Settings > Add Logger',
     },
   },
   {
