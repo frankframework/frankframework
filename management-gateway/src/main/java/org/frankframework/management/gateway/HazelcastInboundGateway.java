@@ -114,13 +114,13 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		propagateAuthenticationContext(headers);
 
 		try {
-			if(tempReplyChannel == null) { // send async
+			if (tempReplyChannel == null) { // send async
 				log.trace("processing message id [{}] asynchronous", headers::getId);
 				super.send(incomingMessage);
 			} else {
 				log.trace("processing message id [{}] synchronous", headers::getId);
 				Message<?> response = super.sendAndReceiveMessage(incomingMessage);
-				if(response == null) {
+				if (response == null) {
 					log.trace("synchronous message did not return a response");
 					return;
 				}
@@ -141,16 +141,16 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	private void handleResponse(Message<?> response, @Nonnull final String tempReplyChannel) {
 		MessageHeaders headers = response.getHeaders();
 
-		if(response instanceof ErrorMessage errMsg) {
+		if (response instanceof ErrorMessage errMsg) {
 			throw Lombok.sneakyThrow(errMsg.getPayload());
 		}
-		if(response.getPayload() instanceof InputStream inputStream) {
+		if (response.getPayload() instanceof InputStream inputStream) {
 			response = MessageBuilder.withPayload(new SerializableInputStream(inputStream)).copyHeaders(headers).build();
 		}
 
 		log.trace("sending response message id [{}] to reply-channel [{}]", headers::getId, () -> tempReplyChannel);
 		IQueue<Message<?>> responseQueue = hzInstance.getQueue(tempReplyChannel);
-		if(!responseQueue.offer(response)) {
+		if (!responseQueue.offer(response)) {
 			log.error("unable to send response [{}] to reply-channel [{}]", response, tempReplyChannel);
 		}
 	}
