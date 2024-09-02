@@ -89,11 +89,12 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		UUID instanceId = hzInstance.getLocalEndpoint().getUuid();
 		UUID filterId = message.getHeaders().get(BusMessageUtils.HEADER_TARGET_KEY, UUID.class);
 		UUID messageId = message.getHeaders().getId();
-		if(filterId != null && !filterId.equals(instanceId)) {
-			log.trace("skipping message with id [{}] from member [{}]", () -> messageId, ()->rawMessage.getPublishingMember().getUuid());
+		if (filterId != null && !filterId.equals(instanceId)) {
+			log.trace("skipping message with id [{}] from member [{}]", () -> messageId, () -> rawMessage.getPublishingMember().getUuid());
+			return;
 		}
 
-		log.trace("received message with id [{}] from member [{}]", () -> messageId, ()->rawMessage.getPublishingMember().getUuid());
+		log.trace("received message with id [{}] from member [{}]", () -> messageId, () -> rawMessage.getPublishingMember().getUuid());
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("messageId", messageId.toString())) {
 			String tempReplyChannel = (String) message.getHeaders().getReplyChannel();
