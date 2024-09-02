@@ -79,7 +79,7 @@ public class Base64Pipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection() == Direction.ENCODE;// TRUE encode - FALSE decode
 
 		InputStream binaryInputStream;
 		try {
