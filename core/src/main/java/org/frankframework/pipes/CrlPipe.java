@@ -37,26 +37,31 @@ import org.frankframework.util.XmlBuilder;
 
 /**
  * Pipe that reads a CRL from an input stream and transforms it to an XML.
- * The steam is closed after reading.
+ * The stream is closed after reading.
  *
  * Example configuration:
  * <pre>{@code
+ * 			<pipe name="Read input CSV file"
+ *                   className="org.frankframework.pipes.FixedResultPipe">
+ * 				<param name="filename" sessionKey="filePathName"/>
+ * 				<forward name="success" path="Process each Line" />
+ * 			</pipe>
  * 	<pipe
  * 		name="Read issuer"
- * 		className="org.frankframework.pipes.FilePipe"
- * 		actions="read"
- * 		fileName="dir/issuer.cer"
- * 		preserveInput="true"
- * 		outputType="stream"
- * 		storeResultInSessionKey="issuer">
+ * 		className="org.frankframework.pipes.FixedResultPipe"
+ * 		filename="dir/issuer.cer">
+ * 		<forward name="success" path="PutFileInSession" />
+ * 	</pipe>
+ * 	<pipe
+ * 		name="PutFileInSession"
+ * 		className="org.frankframework.pipes.PutInSessionPipe"
+ * 		sessionKey="issuer">
  * 		<forward name="success" path="Read CRL" />
  * 	</pipe>
  * 	<pipe
  * 		name="Read CRL"
- * 		className="org.frankframework.pipes.FilePipe"
- * 		actions="read"
- * 		fileName="dir/CRL.crl"
- * 		outputType="stream">
+ * 		className="org.frankframework.pipes.FixedResultPipe"
+ * 		fileName="dir/CRL.crl">
  * 		<forward name="success" path="Transform CRL" />
  * 	</pipe>
  * 	<pipe
