@@ -135,7 +135,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		root.add("receivers", getReceivers(adapter, adapterScopedMeters));
 		root.add("hourly", getHourlyStatistics(adapter));
 
-		root.add("http", getHttpStatistics(adapter, adapterScopedMeters));
+		root.add("http", getHttpStatistics(adapterScopedMeters));
 
 		JsonObjectBuilder totalMessageProcessingTime = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPELINE_DURATION);
 		if(totalMessageProcessingTime != null) {
@@ -145,7 +145,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return root.build();
 	}
 
-	private JsonObjectBuilder getHttpStatistics(Adapter adapter, Collection<Meter> adapterScopedMeters) {
+	private JsonObjectBuilder getHttpStatistics(Collection<Meter> adapterScopedMeters) {
 		JsonObjectBuilder httpObjectBuilder = Json.createObjectBuilder();
 
 		// get http gauges
