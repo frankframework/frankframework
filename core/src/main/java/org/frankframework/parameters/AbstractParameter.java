@@ -263,8 +263,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		} else {
 			requestedSessionKey = getSessionKey();
 		}
-		TransformerPool pool = getTransformerPool();
-		if (pool != null) {
+
+		if (transformerPool != null) {
 			try {
 				/*
 				 * determine source for XSLT transformation from
@@ -345,7 +345,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							String transformResult = pool.deprecatedParameterTransformAction(source, null, pvl);
+							String transformResult = transformerPool.deprecatedParameterTransformAction(source, null, pvl);
 							if (StringUtils.isNotEmpty(transformResult)) {
 								result = transformResult;
 							}
@@ -387,7 +387,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						result = message.getContext().get(getContextKey());
 					} else {
 						message.preserve();
-						result=message;
+						result = message;
 					}
 				} catch (IOException e) {
 					throw new ParameterException(getName(), e);
@@ -398,19 +398,21 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		if (result instanceof Message resultMessage) {
 			if (Message.isNull(resultMessage)) {
 				result = null;
-			} else if (resultMessage.isRequestOfType(String.class)) { //Used by getMinLength and getMaxLength
+			} else if ((getMinLength() >= 0 || getMaxLength() >= 0) && resultMessage.isRequestOfType(String.class)) { // Used by getMinLength and getMaxLength
 				try {
-					result = resultMessage.asString();
+					result = resultMessage.asString(); // WARNING this removes the MessageContext
 				} catch (IOException ignored) {
 					// Already checked for String, so this should never happen
 				}
 			}
 		}
+
 		if (result != null && !"".equals(result)) {
+			// If result is not empty log it
 			final Object finalResult = result;
 			LOG.debug("Parameter [{}] resolved to [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
 		} else {
-			// if result is empty then return specified default value
+			// If result is empty then return specified default value
 			Object valueByDefault=null;
 			Iterator<DefaultValueMethods> it = getDefaultValueMethodsList().iterator();
 			while (valueByDefault == null && it.hasNext()) {
@@ -446,6 +448,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				LOG.debug("Parameter [{}] resolved to default value [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
 			}
 		}
+
 		if (result instanceof String stringResult) {
 			if (getMinLength()>=0 && !(this instanceof NumberParameter)) { //Numbers are formatted left-pad with leading 0's opposed to right-pad spaces.
 				if (stringResult.length() < getMinLength()) {
@@ -460,6 +463,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				}
 			}
 		}
+
 		if(result != null && getType().requiresTypeConversion) {
 			try {
 				result = getValueAsType(result, namespaceAware);
