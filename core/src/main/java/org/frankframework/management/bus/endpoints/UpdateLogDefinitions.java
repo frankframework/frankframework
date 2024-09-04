@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.StandardLevel;
@@ -148,6 +149,23 @@ public class UpdateLogDefinitions {
 			return EmptyMessage.accepted();
 		}
 		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
+	}
+
+	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public Message<?> createLogConfiguration(Message<?> message) {
+		String logLevelStr = BusMessageUtils.getHeader(message, "level", null);
+		Level level = Level.toLevel(logLevelStr, null);
+		String logPackage = BusMessageUtils.getHeader(message, "logPackage", null);
+
+		if(StringUtils.isNotEmpty(logPackage) && level != null) {
+			LoggerContext logContext = LoggerContext.getContext(false);
+			Configuration logConfiguration = logContext.getConfiguration();
+
+			logConfiguration.addLogger(logPackage, new LoggerConfig(logPackage, level, false));
+			return EmptyMessage.accepted();
+		}
+		throw new BusException("neither [logPackage] or [level] provided");
 	}
 
 	private void log2SecurityLog(String logMessage) {

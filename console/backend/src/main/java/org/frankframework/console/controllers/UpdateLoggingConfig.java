@@ -29,6 +29,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -75,6 +76,20 @@ public class UpdateLoggingConfig extends FrankApiBase {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("logging")
+	@Description("create a new logger definition")
+	@PostMapping(value = "/server/logging/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> createLogDefinition(LogDefinitionMultipartBody multipartBody) {
+		String logger = RequestUtils.resolveRequiredProperty("logger", multipartBody.logger(), null);
+		String level = RequestUtils.resolveRequiredProperty("level", multipartBody.level(), null);
+
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
+		request.addHeader("logPackage", logger);
+		request.addHeader("level", level);
+		return callSyncGateway(request);
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Relation("logging")
 	@Description("update the loglevel of a specific logger")
 	@PutMapping(value = "/server/logging/settings", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateLogDefinition(@RequestBody Map<String, Object> json) {
@@ -99,4 +114,9 @@ public class UpdateLoggingConfig extends FrankApiBase {
 
 		return callSyncGateway(request);
 	}
+
+	public record LogDefinitionMultipartBody(
+		String logger,
+		String level
+	) {}
 }

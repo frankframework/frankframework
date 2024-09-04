@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 export const errorLevelsConst = ['DEBUG', 'INFO', 'WARN', 'ERROR'] as const;
-
 export type ErrorLevels = typeof errorLevelsConst;
 
 export type LoggingFile = {
@@ -63,6 +62,10 @@ export class LoggingService {
 
   getLoggingSettingsLogInformation(): Observable<LogInformation> {
     return this.http.get<LogInformation>(this.logSettingsURL);
+  }
+
+  postLoggingSettings(formData: FormData): Observable<object> {
+    return this.http.post(this.logSettingsURL, formData);
   }
 
   putLoggingSettingsChange(action: Record<string, NonNullable<unknown>>): Observable<object> {

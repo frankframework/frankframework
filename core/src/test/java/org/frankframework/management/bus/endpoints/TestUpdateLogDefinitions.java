@@ -34,6 +34,8 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 public class TestUpdateLogDefinitions extends BusTestBase {
 	private static final String LOG_DEFINITION_PACKAGE = "org.frankframework.management.bus";
 	private static final String EXCEPTION_MESSAGE = "neither [reconfigure], [logPackage] or [level] provided";
+	private static final String NEW_LOG_DEFINITION_PACKAGE = "org.frankframework.core.Adapter";
+	private static final String NEW_LOG_EXCEPTION_MESSAGE = "neither [logPackage] or [level] provided";
 
 	@Test
 	public void getLogDefinitions() throws Exception {
@@ -147,6 +149,45 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	public void updateLogDefinitions() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
+		request.setHeader("level", "debug");
+		Message<?> response = callSyncGateway(request);
+
+		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+	}
+
+	@Test
+	public void createLogDefinitionEmptyHeader() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
+		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
+		request.setHeader("level", "");
+
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals(NEW_LOG_EXCEPTION_MESSAGE, be.getMessage());
+		}
+	}
+
+	@Test
+	public void createLogDefinitionNoHeader() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
+		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
+
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals(NEW_LOG_EXCEPTION_MESSAGE, be.getMessage());
+		}
+	}
+
+	@Test
+	public void createLogDefinition() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
+		request.setHeader("logPackage", NEW_LOG_DEFINITION_PACKAGE);
 		request.setHeader("level", "debug");
 		Message<?> response = callSyncGateway(request);
 
