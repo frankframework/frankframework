@@ -49,13 +49,8 @@ import org.frankframework.util.XmlBuilder;
  * 	<pipe
  * 		name="Read issuer"
  * 		className="org.frankframework.pipes.FixedResultPipe"
- * 		filename="dir/issuer.cer">
- * 		<forward name="success" path="PutFileInSession" />
- * 	</pipe>
- * 	<pipe
- * 		name="PutFileInSession"
- * 		className="org.frankframework.pipes.PutInSessionPipe"
- * 		sessionKey="issuer">
+ * 		filename="dir/issuer.cer"
+ * 		storeResultInSessionKey="issuer"	>
  * 		<forward name="success" path="Read CRL" />
  * 	</pipe>
  * 	<pipe

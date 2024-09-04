@@ -31,13 +31,10 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
-				actions="read" outputType="stream" getInputFromFixedValue="RestListener/pdf/sample.pdf"
-				fileSource="classpath" storeResultInSessionKey="fileContent"
-				preserveInput="true">
+			<pipe name="readFile" className="org.frankframework.pipes.FixedResultPipe"
+				filename="RestListener/pdf/sample.pdf" storeResultInSessionKey="fileContent">
 				<forward name="success" path="setFileName" />
 			</pipe>
-
 			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"
 				sessionKey="fileContentName" value="sample.pdf">
 				<forward name="success" path="callRest" />
@@ -49,8 +46,7 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
 					postType="FORMDATA"
-					sharedResourceRef="SharedHttpSession"
-				>
+					sharedResourceRef="SharedHttpSession">
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
 					<param name="file" sessionKey="fileContent"/>
@@ -222,9 +218,8 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
-				actions="read" outputType="stream" getInputFromFixedValue="RestListener/pdf/sample.pdf"
-				fileSource="classpath" streamResultToServlet="true">
+			<pipe name="readFile" className="org.frankframework.pipes.FixedResultPipe"
+				filename="RestListener/pdf/sample.pdf">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
