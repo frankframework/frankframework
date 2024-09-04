@@ -13,6 +13,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.3.12",
+    "@angular/cdk": "^17.3.10",
     "@angular/common": "^17.3.12",
     "@angular/compiler": "^17.3.12",
     "@angular/core": "^17.3.12",
@@ -58,6 +59,7 @@
     "@angular-eslint/template-parser": "^17.3.12",
     "@angular/cli": "^17.3.9",
     "@angular/compiler-cli": "^17.3.12",
+    "@types/d3": "^7.4.3",
     "@types/datatables.net": "^1.10.25",
     "@types/dompurify": "^3.0.5",
     "@types/jasmine": "~4.3.0",
