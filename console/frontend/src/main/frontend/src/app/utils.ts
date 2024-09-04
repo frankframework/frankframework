@@ -4,6 +4,11 @@ import type { merge } from 'lodash';
 
 export const deepMerge: typeof merge = _merge;
 
+export function whenElementExists<T extends HTMLElement>(selector: string, callback: (element: T) => void): void {
+  const element = document.querySelector<T>(selector);
+  if (element) callback(element);
+}
+
 export function computeServerPath(): string {
   let path = window.location.pathname;
 

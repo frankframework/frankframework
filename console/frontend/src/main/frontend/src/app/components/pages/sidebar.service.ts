@@ -4,32 +4,37 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class SidebarService {
+  private bodyElement = document.querySelector<HTMLElement>('body')!;
+  private sideMenuElement = document.querySelector<HTMLElement>('#side-menu');
+
   toggle(): void {
-    $('body').toggleClass('mini-navbar');
+    this.bodyElement.classList.toggle('mini-navbar');
     this.swichStates();
   }
 
   small(): void {
-    $('body').addClass('mini-navbar');
+    this.bodyElement.classList.add('mini-navbar');
     this.swichStates();
   }
 
   private swichStates(): void {
-    if (!$('body').hasClass('mini-navbar') || $('body').hasClass('body-small')) {
-      // Hide menu in order to smoothly turn on when maximize menu
-      $('#side-menu').hide();
-      // For smoothly turn on menu
-      setTimeout(function () {
-        $('#side-menu').fadeIn(400);
-      }, 200);
-    } else if ($('body').hasClass('fixed-sidebar')) {
-      $('#side-menu').hide();
-      setTimeout(function () {
-        $('#side-menu').fadeIn(400);
-      }, 100);
-    } else {
-      // Remove all inline style from jquery fadeIn function to reset menu state
-      $('#side-menu').removeAttr('style');
+    if (this.sideMenuElement) {
+      if (!this.bodyElement.classList.contains('mini-navbar') || this.bodyElement.classList.contains('body-small')) {
+        // Hide menu in order to smoothly turn on when maximize menu
+        this.sideMenuElement.style.display = 'none';
+        // For smoothly turn on menu
+        setTimeout(() => {
+          this.sideMenuElement.fadeIn(400);
+        }, 200);
+      } else if (this.bodyElement.classList.contains('fixed-sidebar')) {
+        this.sideMenuElement.style.display = 'none';
+        setTimeout(() => {
+          this.sideMenuElement.fadeIn(400);
+        }, 100);
+      } else {
+        // Remove all inline style from jquery fadeIn function to reset menu state
+        this.sideMenuElement.removeAttribute('style');
+      }
     }
   }
 }
