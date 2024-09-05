@@ -38,10 +38,6 @@
             "messagesReceived": 0.0,
             "messagesRejected": 0.0,
             "messagesRetried": 0.0,
-            "messagesReceiving": [
-            ],
-            "messagesPeeking": [
-            ],
             "processing": [
             ]
         }
