@@ -52,6 +52,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 public class MetricsInitializer implements InitializingBean, DisposableBean, ApplicationContextAware {
+	public static final String PARENT_CHILD_NAME_FORMAT = "%s -> %s";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 
@@ -103,7 +104,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
-		List<Tag> tags = getTags(parentFrankElement, findName(parentFrankElement) + " -> " + subFrankElement, null);
+		List<Tag> tags = getTags(parentFrankElement, String.format(PARENT_CHILD_NAME_FORMAT, findName(parentFrankElement), subFrankElement), null);
 		return createDistributionSummary(type, tags);
 	}
 
