@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -236,6 +235,17 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return counter.get(0).value();
 	}
 
+	/**
+	 * @return the meters for the given receiver
+	 */
+	private List<Meter> getMetersForReceiver(Collection<Meter> meters, String receiverName, String listenerName) {
+		String formattedName = String.format(MetricsInitializer.PARENT_CHILD_NAME_FORMAT, receiverName, listenerName);
+
+		return meters.stream()
+				.filter(meter -> extractNameFromTag(meter, "name").equals(formattedName))
+				.toList();
+	}
+
 	private JsonObjectBuilder getDistributionSummary(Collection<Meter> meters, FrankMeterType type) {
 		List<LocalDistributionSummary> duration = meters.stream().filter(type::isOfType).map(LocalDistributionSummary.class::cast).toList();
 		if(duration.size() > 1) {
@@ -263,26 +273,27 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private JsonArrayBuilder getReceivers(Adapter adapter, Collection<Meter> meters) {
 		JsonArrayBuilder receivers = Json.createArrayBuilder();
 
-		// Get everything we need for the summaries outside the for loop
-		List<LocalDistributionSummary> summaryListReceiving = getDistributionSummaryList(meters, FrankMeterType.LISTENER_MESSAGE_RECEIVING);
-		List<LocalDistributionSummary> summaryListPeeking = getDistributionSummaryList(meters, FrankMeterType.LISTENER_MESSAGE_PEEKING);
-
 		for (Receiver<?> receiver: adapter.getReceivers()) {
 			if(!receiver.configurationSucceeded()) continue;
-
 			JsonObjectBuilder receiverMap = Json.createObjectBuilder();
 
-			receiverMap.add("name", receiver.getName());
+			String receiverName = receiver.getName();
+			receiverMap.add("name", receiverName);
 			receiverMap.add("messagesReceived", receiver.getMessagesReceived());
 			receiverMap.add("messagesRejected", receiver.getMessagesRejected());
 			receiverMap.add("messagesRetried", receiver.getMessagesRetried());
 
-			String name = String.format(MetricsInitializer.PARENT_CHILD_NAME_FORMAT, receiver.getName(), receiver.getListener().getName());
+			List<Meter> metersForReceiver = getMetersForReceiver(meters, receiverName, receiver.getListener().getName());
+			JsonObjectBuilder receivingSummary = getDistributionSummary(metersForReceiver, FrankMeterType.LISTENER_MESSAGE_RECEIVING);
+			JsonObjectBuilder peekingSummary = getDistributionSummary(metersForReceiver, FrankMeterType.LISTENER_MESSAGE_PEEKING);
 
-			getSubDistributionSummaryForReceiver(summaryListReceiving, name)
-					.ifPresent(summary -> receiverMap.add("messagesReceiving", summary));
-			getSubDistributionSummaryForReceiver(summaryListPeeking, name)
-					.ifPresent(summary -> receiverMap.add("messagesPeeking", summary));
+			if (receivingSummary != null) {
+				receiverMap.add("messagesReceiving", receivingSummary);
+			}
+
+			if (peekingSummary != null) {
+				receiverMap.add("messagesPeeking", getDistributionSummary(metersForReceiver, FrankMeterType.LISTENER_MESSAGE_PEEKING));
+			}
 
 			receiverMap.add("processing", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_DURATION));
 
@@ -296,30 +307,6 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 				.filter(meterType::isOfType)
 				.map(LocalDistributionSummary.class::cast)
 				.collect(Collectors.toMap(e -> extractNameFromTag(e, "name"), e -> readSummary(e, extractNameFromTag(e, "name")+ nameSuffix)));
-	}
-
-	/**
-	 * @param distributionSummaryList
-	 * @param name
-	 * @return an Optional {@link JsonObjectBuilder} for the receiver with the given name
-	 */
-	private Optional<JsonObjectBuilder> getSubDistributionSummaryForReceiver(List<LocalDistributionSummary> distributionSummaryList, String name) {
-		return distributionSummaryList.stream()
-				.filter(summary -> extractNameFromTag(summary, "name").equals(name))
-				.findFirst()
-				.map(summary -> readSummary(summary, extractNameFromTag(summary, "name")));
-	}
-
-	/**
-	 * @param meters
-	 * @param meterType
-	 * @return a list of LocalDistributionSummary for the given meterType based on the given meters
-	 */
-	private List<LocalDistributionSummary> getDistributionSummaryList(Collection<Meter> meters, FrankMeterType meterType) {
-		return meters.stream()
-				.filter(meterType::isOfType)
-				.map(LocalDistributionSummary.class::cast)
-				.toList();
 	}
 
 	private JsonArrayBuilder getDistributionSummaryByThread(Collection<Meter> meters, FrankMeterType meterType) {
