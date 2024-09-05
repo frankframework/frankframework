@@ -207,14 +207,14 @@
     <xs:attribute name="startTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
-  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+  aborted and all resources closed and the receiver will be in state &lt;code&gt;EXCEPTION_STARTING&lt;/code&gt;
   and a new start command may be issued again.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="stopTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
-  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+  and the receiver will be in state &lt;code&gt;EXCEPTION_STOPPING&lt;/code&gt;.
   The receiver will no longer be running but some resources might not have been cleaned up properly.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -317,7 +317,7 @@
     </xs:attribute>
     <xs:attribute name="forceRetryFlag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to retry. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to &lt;code&gt;retry&lt;/code&gt;. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
@@ -682,18 +682,16 @@
  If no exits are specified, a default one is created with name="READY" and state="SUCCESS".
  &lt;br/&gt;&lt;br/&gt;
  &lt;b&gt;example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;Exits&gt;
-    &lt;Exit name="READY" state="SUCCESS" /&gt;
-    &lt;Exit name="Created" state="ERROR" code="201" empty="true" /&gt;
-    &lt;Exit name="NotModified" state="ERROR" code="304" empty="true" /&gt;
-    &lt;Exit name="BadRequest" state="ERROR" code="400" empty="true" /&gt;
-    &lt;Exit name="NotAuthorized" state="ERROR" code="401" empty="true" /&gt;
-    &lt;Exit name="NotAllowed" state="ERROR" code="403" empty="true" /&gt;
-    &lt;Exit name="Teapot" state="SUCCESS" code="418" /&gt;
-    &lt;Exit name="ServerError" state="ERROR" code="500" /&gt;
- &lt;/Exits&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Exits&amp;gt;
+    &amp;lt;Exit name=&amp;quot;&amp;lt;code&amp;gt;READY&amp;lt;/code&amp;gt;&amp;quot; state=&amp;quot;&amp;lt;code&amp;gt;SUCCESS&amp;lt;/code&amp;gt;&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;Created&amp;quot; state=&amp;quot;ERROR&amp;quot; code=&amp;quot;201&amp;quot; empty=&amp;quot;true&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;NotModified&amp;quot; state=&amp;quot;ERROR&amp;quot; code=&amp;quot;304&amp;quot; empty=&amp;quot;true&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;BadRequest&amp;quot; state=&amp;quot;ERROR&amp;quot; code=&amp;quot;400&amp;quot; empty=&amp;quot;true&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;NotAuthorized&amp;quot; state=&amp;quot;ERROR&amp;quot; code=&amp;quot;401&amp;quot; empty=&amp;quot;true&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;NotAllowed&amp;quot; state=&amp;quot;ERROR&amp;quot; code=&amp;quot;403&amp;quot; empty=&amp;quot;true&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;Teapot&amp;quot; state=&amp;quot;SUCCESS&amp;quot; code=&amp;quot;418&amp;quot; /&amp;gt;
+    &amp;lt;Exit name=&amp;quot;ServerError&amp;quot; state=&amp;quot;ERROR&amp;quot; code=&amp;quot;500&amp;quot; /&amp;gt;
+ &amp;lt;/Exits&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:element name="Exit" minOccurs="1" maxOccurs="unbounded" type="ExitType" />
@@ -709,21 +707,21 @@
  the optionally specified http status code. Each Exit should have a unique name. See Exits
  for examples.
  &lt;br/&gt;&lt;br/&gt;
- When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
- state SUCCESS.
+ When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name &lt;code&gt;READY&lt;/code&gt; and
+ state &lt;code&gt;SUCCESS&lt;/code&gt;.
  &lt;br/&gt;&lt;br/&gt;
  The name of an Exit can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a Forward within a Pipe.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The name of the Exit that can be referenced by a PipeForward's &lt;code&gt;path&lt;/code&gt; attribute. When a Pipeline doesn't have an Exits
- element configured it will be initialized with one Exit having name READY (and state SUCCESS)</xs:documentation>
+ element configured it will be initialized with one Exit having name &lt;code&gt;READY&lt;/code&gt; (and state SUCCESS)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="state" use="required">
       <xs:annotation>
         <xs:documentation>The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
- element configured it will be initialized with one Exit having state SUCCESS (and name READY)</xs:documentation>
+ element configured it will be initialized with one Exit having state SUCCESS (and name &lt;code&gt;READY&lt;/code&gt;)</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ExitStateAttributeValuesType variableRef" />
@@ -910,16 +908,14 @@
   <xs:complexType name="MonitorType">
     <xs:annotation>
       <xs:documentation>&lt;p&gt;Example configuration:&lt;/p&gt;
- &lt;pre&gt;{@code
- &lt;monitor name="Receiver Shutdown" destinations="MONITOR_LOG"&gt;
-    &lt;trigger className="org.frankframework.monitoring.Alarm" severity="WARNING"&gt;
-        &lt;event&gt;Receiver Shutdown&lt;/event&gt;
-    &lt;/trigger&gt;
-    &lt;trigger className="org.frankframework.monitoring.Clearing" severity="WARNING"&gt;
-        &lt;event&gt;Receiver Shutdown&lt;/event&gt;
-    &lt;/trigger&gt;
- &lt;/monitor&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;monitor name=&amp;quot;Receiver Shutdown&amp;quot; destinations=&amp;quot;MONITOR_LOG&amp;quot;&amp;gt;
+    &amp;lt;trigger className=&amp;quot;org.frankframework.monitoring.Alarm&amp;quot; severity=&amp;quot;WARNING&amp;quot;&amp;gt;
+        &amp;lt;event&amp;gt;Receiver Shutdown&amp;lt;/event&amp;gt;
+    &amp;lt;/trigger&amp;gt;
+    &amp;lt;trigger className=&amp;quot;org.frankframework.monitoring.Clearing&amp;quot; severity=&amp;quot;WARNING&amp;quot;&amp;gt;
+        &amp;lt;event&amp;gt;Receiver Shutdown&amp;lt;/event&amp;gt;
+    &amp;lt;/trigger&amp;gt;
+ &amp;lt;/monitor&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="TriggerElementGroup" minOccurs="0" maxOccurs="unbounded" />
@@ -1417,18 +1413,16 @@
           <xs:documentation>Read messages from the IBISSTORE database table previously stored by a MessageStoreSender.
  &lt;p&gt;
  Example configuration:
- &lt;pre&gt;{@code
- 	&lt;Receiver
- 		name="03 MessageStoreReceiver"
- 		numThreads="4"
- 		transactionAttribute="Required"
- 		pollInterval="1"&gt;
- 		&lt;MessageStoreListener
- 			name="03 MessageStoreListener"
- 			slotId="${instance.name}/TestMessageStore"
- 			statusValueInProcess="I" /&gt;
- 	&lt;/Receiver&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Receiver
+ 		name=&amp;quot;03 MessageStoreReceiver&amp;quot;
+ 		numThreads=&amp;quot;4&amp;quot;
+ 		transactionAttribute=&amp;quot;Required&amp;quot;
+ 		pollInterval=&amp;quot;1&amp;quot;&amp;gt;
+ 		&amp;lt;MessageStoreListener
+ 			name=&amp;quot;03 MessageStoreListener&amp;quot;
+ 			slotId=&amp;quot;${instance.name}/TestMessageStore&amp;quot;
+ 			statusValueInProcess=&amp;quot;I&amp;quot; /&amp;gt;
+ 	&amp;lt;/Receiver&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  If you have a &lt;code&gt;MessageStoreListener&lt;/code&gt;, failed messages are automatically kept in database
  table IBISSTORE. Messages are also kept after successful processing. The state of a message
@@ -2186,7 +2180,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -2298,7 +2292,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -2379,7 +2373,7 @@
       <xs:annotation>
         <xs:documentation>Name of the listener by which it can be found by the org.frankframework.senders.FrankSender. If this
  is not configured, the name will default to the name of the org.frankframework.core.Adapter.
- The name of the {@code FrankListener} must be unique across the configuration.</xs:documentation>
+ The name of the &lt;code&gt;FrankListener&lt;/code&gt; must be unique across the configuration.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
@@ -2529,7 +2523,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -2625,7 +2619,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3610,7 +3604,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom user-metadata on S3 files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -3634,40 +3628,34 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-     &lt;id&gt;documentId&lt;/id&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+     &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  When &lt;code&gt;action=delete&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-     &lt;id&gt;documentId&lt;/id&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+     &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  When &lt;code&gt;action=create&lt;/code&gt; the input (xml string) indicates document properties to set. This input is optional.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-     &lt;name&gt;Offerte&lt;/name&gt;
-     &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
-     &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
-     &lt;properties&gt;
-         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
-         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
-         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
-     &lt;/properties&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+     &amp;lt;name&amp;gt;Offerte&amp;lt;/name&amp;gt;
+     &amp;lt;objectTypeId&amp;gt;NNB_Geldlening&amp;lt;/objectTypeId&amp;gt;
+     &amp;lt;mediaType&amp;gt;application/pdf&amp;lt;/mediaType&amp;gt;
+     &amp;lt;properties&amp;gt;
+         &amp;lt;property name=&amp;quot;ArrivedAt&amp;quot; type=&amp;quot;datetime&amp;quot; formatString=&amp;quot;yyyy-MM-dd'T'HH:mm:ss.SSSz&amp;quot;&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
+         &amp;lt;property name=&amp;quot;ArrivedBy&amp;quot;&amp;gt;HDN&amp;lt;/property&amp;gt;
+         &amp;lt;property name=&amp;quot;DocumentType&amp;quot;&amp;gt;Geldlening&amp;lt;/property&amp;gt;
+     &amp;lt;/properties&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
@@ -3694,31 +3682,27 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;query&gt;
-    &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
-    &lt;maxItems&gt;10&lt;/maxItems&gt;
-    &lt;skipCount&gt;0&lt;/skipCount&gt;
-    &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
-    &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
- &lt;/query
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;query&amp;gt;
+    &amp;lt;statement&amp;gt;select * from cmis:document&amp;lt;/statement&amp;gt;
+    &amp;lt;maxItems&amp;gt;10&amp;lt;/maxItems&amp;gt;
+    &amp;lt;skipCount&amp;gt;0&amp;lt;/skipCount&amp;gt;
+    &amp;lt;searchAllVersions&amp;gt;true&amp;lt;/searchAllVersions&amp;gt;
+    &amp;lt;includeAllowableActions&amp;gt;true&amp;lt;/includeAllowableActions&amp;gt;
+ &amp;lt;/query&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates document properties to update.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-    &lt;id&gt;123456789&lt;/id&gt;
-    &lt;properties&gt;
-       &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
-       &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
-       &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
-    &lt;/properties&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+    &amp;lt;id&amp;gt;123456789&amp;lt;/id&amp;gt;
+    &amp;lt;properties&amp;gt;
+       &amp;lt;property name=&amp;quot;ArrivedAt&amp;quot; type=&amp;quot;datetime&amp;quot; formatString=&amp;quot;yyyy-MM-dd'T'HH:mm:ss.SSSz&amp;quot;&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
+       &amp;lt;property name=&amp;quot;ArrivedBy&amp;quot;&amp;gt;HDN&amp;lt;/property&amp;gt;
+       &amp;lt;property name=&amp;quot;DocumentType&amp;quot;&amp;gt;Geldlening&amp;lt;/property&amp;gt;
+    &amp;lt;/properties&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
@@ -3854,17 +3838,17 @@
           <xs:documentation>Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
  &lt;p&gt;
  Sends a message to another Frank!Framework-adapter in the same Frank!Framework instance, or an external program running in
- the same JVM as the Frank!Framework. If the callee exits with an {@code &lt;Exit/&gt;} that has state PipeLine.ExitState#ERROR,
- an error is considered to happen in the caller which means that the {@code exception} forward is followed if it is present.
+ the same JVM as the Frank!Framework. If the callee exits with an &lt;code&gt;&amp;lt;Exit/&amp;gt;&lt;/code&gt; that has state PipeLine.ExitState#ERROR,
+ an error is considered to happen in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
  &lt;/p&gt;
  &lt;p&gt;
- Returns {@code exit.code} as forward name to the SenderPipe, provided that {@code exit.code} can be parsed as integer.
+ Returns &lt;code&gt;exit.code&lt;/code&gt; as forward name to the SenderPipe, provided that &lt;code&gt;exit.code&lt;/code&gt; can be parsed as integer.
  For example, if the called adapter has an exit state with code
- {@code 2}, then the SenderPipe supports a forward with name {@code 2}
- that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example {@code c2}.
+ &lt;code&gt;2&lt;/code&gt;, then the SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
+ that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p&gt;
- A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is {@code ADAPTER}.
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p/&gt;
 
@@ -3876,15 +3860,15 @@
  &lt;h4&gt;Configuring FrankSender and Adapter&lt;/h4&gt;
  &lt;ul&gt;
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
-   &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (note the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
+   &lt;li&gt;Set the attribute &lt;code&gt;target&lt;/code&gt; to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set &lt;code&gt;target&lt;/code&gt; to &lt;code&gt;targetConfigurationName/targetAdapterName&lt;/code&gt; (note the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
    &lt;li&gt;The adapter does not need to have a receiver configured to be called from a FrankSender,&lt;/li&gt;
    &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
    &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
-   or on the SenderPipe that contains this {@code FrankSender}.&lt;/li&gt;
+   or on the SenderPipe that contains this &lt;code&gt;FrankSender&lt;/code&gt;.&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;Configuring FrankSender with FrankListener&lt;/h4&gt;
@@ -3892,8 +3876,8 @@
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
    &lt;li&gt;In the target adapter, define a org.frankframework.receivers.Receiver with a FrankListener&lt;/li&gt;
    &lt;li&gt;Give a unique name to the listener: FrankListener#setName(String). If the name is not set, the name of the Adapter will be used.&lt;/li&gt;
-   &lt;li&gt;Set the #setScope(Scope) to {@code LISTENER} and the #setTarget(String) to the listener name as per previous point&lt;/li&gt;
-   &lt;li&gt;If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name&lt;/li&gt;
+   &lt;li&gt;Set the #setScope(Scope) to &lt;code&gt;LISTENER&lt;/code&gt; and the #setTarget(String) to the listener name as per previous point&lt;/li&gt;
+   &lt;li&gt;If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash (&lt;code&gt;/&lt;/code&gt;) as separator between configuration and listener name&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;Configuring FrankSender and Remote Application&lt;/h4&gt;
@@ -3902,15 +3886,15 @@
  &lt;/p&gt;
  &lt;ul&gt;
      &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
-     &lt;li&gt;Set the attribute {@code scope} to either {@code JVM} for a Java application, or to {@code DLL} for code loaded from a DLL&lt;/li&gt;
-     &lt;li&gt;Set the attribute {@code target} to the service-name the other application used to register itself&lt;/li&gt;
+     &lt;li&gt;Set the attribute &lt;code&gt;scope&lt;/code&gt; to either &lt;code&gt;JVM&lt;/code&gt; for a Java application, or to &lt;code&gt;DLL&lt;/code&gt; for code loaded from a DLL&lt;/li&gt;
+     &lt;li&gt;Set the attribute &lt;code&gt;target&lt;/code&gt; to the service-name the other application used to register itself&lt;/li&gt;
  &lt;/ul&gt;
  &lt;p&gt;
  In the other application:
  &lt;ul&gt;
-     &lt;li&gt;Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library&lt;/li&gt;
-     &lt;li&gt;Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}&lt;/li&gt;
-     &lt;li&gt;See the implementation code of the {@code JavaListener} in the Frank!Framework for an example&lt;/li&gt;
+     &lt;li&gt;Implement the interface &lt;code&gt;nl.nn.adapterframework.dispatcher.RequestProcessor&lt;/code&gt; from the IbisServiceDispatcher library&lt;/li&gt;
+     &lt;li&gt;Register the instance with the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManager&lt;/code&gt; obtained via the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManagerFactory&lt;/code&gt;&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the &lt;code&gt;JavaListener&lt;/code&gt; in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
@@ -3922,10 +3906,10 @@
  &lt;p&gt;
  You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
  &lt;ul&gt;
-     &lt;li&gt;If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character&lt;/li&gt;
-     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}&lt;/li&gt;
-     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope {@code JVM}
-     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.&lt;/li&gt;
+     &lt;li&gt;If you leave the default scope as &lt;code&gt;ADAPTER&lt;/code&gt;, then the &lt;code&gt;target&lt;/code&gt; property needs to have both configuration name and adapter name, separated by a &lt;code&gt;/&lt;/code&gt; character&lt;/li&gt;
+     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's &lt;code&gt;PipeLine&lt;/code&gt;&lt;/li&gt;
+     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope &lt;code&gt;JVM&lt;/code&gt;
+     and set the &lt;code&gt;target&lt;/code&gt; attribute to the &lt;code&gt;serviceName&lt;/code&gt; attribute of the &lt;code&gt;JavaListener&lt;/code&gt;.&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
 
@@ -3940,125 +3924,115 @@
 
  &lt;h4&gt;Example of Existing Configuration&lt;/h4&gt;
  The existing configuration might look like this in the calling adapter:
- &lt;pre&gt;{@code
- &lt;module&gt;
-     &lt;adapter name="Adapter A"&gt;
-         &lt;receiver name="Adapter A Receiver"&gt;
-             &lt;listener name="Adapter A Listener"
-                 className="org.frankframework..." etc/&gt;
-         &lt;/receiver&gt;
-  	   &lt;pipeline firstPipe="..."&gt;
-  	       &lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&gt;
-  	           &lt;sender className="org.frankframework.senders.IbisJavaSender"
-  	               serviceName="service-Adapter-B" /&gt;
-                 &lt;forward name="success" path="..." /&gt;
-  	       &lt;/pipe&gt;
-         &lt;/pipeline&gt;
-     &lt;/adapter&gt;
- &lt;/module&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;module&amp;gt;
+     &amp;lt;adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+         &amp;lt;receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
+             &amp;lt;listener name=&amp;quot;Adapter A Listener&amp;quot;
+                 className=&amp;quot;org.frankframework...&amp;quot; etc/&amp;gt;
+         &amp;lt;/receiver&amp;gt;
+  	   &amp;lt;pipeline firstPipe=&amp;quot;...&amp;quot;&amp;gt;
+  	       &amp;lt;pipe name=&amp;quot;send&amp;quot; className=&amp;quot;org.frankframework.pipes.SenderPipe&amp;quot;&amp;gt;
+  	           &amp;lt;sender className=&amp;quot;org.frankframework.senders.IbisJavaSender&amp;quot;
+  	               serviceName=&amp;quot;service-Adapter-B&amp;quot; /&amp;gt;
+                 &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;...&amp;quot; /&amp;gt;
+  	       &amp;lt;/pipe&amp;gt;
+         &amp;lt;/pipeline&amp;gt;
+     &amp;lt;/adapter&amp;gt;
+ &amp;lt;/module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  Or like using the modern XML XSD and an IbisLocalSender instead:
- &lt;pre&gt;{@code
- &lt;Module&gt;
-     &lt;Adapter name="Adapter A"&gt;
-         &lt;Receiver name="Adapter A Receiver"&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
              ... Listener setup and other configuration
-         &lt;/Receiver&gt;
-         &lt;Pipeline&gt;
-             &lt;SenderPipe name="send"&gt;
-                 &lt;IbisLocalSender name="call Adapter B"
-                     javaListener="Adapter B Listener"/&gt;
-                 &lt;Forward name="success" path="EXIT" /&gt;
-             &lt;/SenderPipe&gt;
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
+             &amp;lt;SenderPipe name=&amp;quot;send&amp;quot;&amp;gt;
+                 &amp;lt;IbisLocalSender name=&amp;quot;call Adapter B&amp;quot;
+                     javaListener=&amp;quot;Adapter B Listener&amp;quot;/&amp;gt;
+                 &amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+             &amp;lt;/SenderPipe&amp;gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  In the receiving adapter B the listener would have been configured like this:
- &lt;pre&gt;{@code
- &lt;Module&gt;
-     &lt;Adapter name="adapter B"&gt;
-         &lt;Receiver name="Receiver B"&gt;
-             &lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&gt;
-         &lt;/Receiver&gt;
-         &lt;Pipeline&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;adapter B&amp;quot;&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Receiver B&amp;quot;&amp;gt;
+             &amp;lt;JavaListener name=&amp;quot;Adapter B Listener&amp;quot; serviceName=&amp;quot;service-Adapter-B&amp;quot;/&amp;gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
              ...
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;p/&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender&lt;/h4&gt;
  This example shows the most simple way of using the FrankSender to call another adapter with least amount of overhead.
 
- &lt;pre&gt;{@code
- &lt;Module&gt;
-     &lt;Adapter name="Adapter A"&gt;
-         &lt;Receiver name="Adapter A Receiver"&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
              ... Listener setup and other configuration
-         &lt;/Receiver&gt;
-         &lt;Pipeline&gt;
-             &lt;SenderPipe name="send"&gt;
-                 &lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&gt;
-                 &lt;FrankSender name="call Adapter C"
-                     scope="ADAPTER"
-                     target="adapter B"
-                 /&gt;
-                 &lt;Forward name="success" path="EXIT" /&gt;
-             &lt;/SenderPipe&gt;
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
-     &lt;Adapter name="adapter B"&gt;
-         &lt;!-- No receiver needed for FrankSender in this scenario --&gt;
-         &lt;Pipeline&gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
+             &amp;lt;SenderPipe name=&amp;quot;send&amp;quot;&amp;gt;
+                 &amp;lt;!-- when scope=&amp;quot;ADAPTER&amp;quot;, then target is directly the name of the adapter you want to call --&amp;gt;
+                 &amp;lt;FrankSender name=&amp;quot;call Adapter C&amp;quot;
+                     scope=&amp;quot;ADAPTER&amp;quot;
+                     target=&amp;quot;adapter B&amp;quot;
+                 /&amp;gt;
+                 &amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+             &amp;lt;/SenderPipe&amp;gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;adapter B&amp;quot;&amp;gt;
+         &amp;lt;!-- No receiver needed for FrankSender in this scenario --&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
              ... Exits, Pipes etc
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender and FrankListener&lt;/h4&gt;
  This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
  of the sub-adapter for the extra error-handling done by the target receiver.
 
- &lt;pre&gt;{@code
- &lt;Module&gt;
-    &lt;Adapter name="Adapter A"&gt;
-        &lt;Receiver name="Adapter A Receiver"&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+    &amp;lt;Adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+        &amp;lt;Receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
          ... Listener setup and other configuration
- 		  &lt;/Receiver&gt;
- 		  &lt;Pipeline&gt;
-            &lt;SenderPipe name="send"&gt;
-                &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
-                &lt;FrankSender
-                    scope="LISTENER"
-                    target="Adapter B Listener"/&gt;
-                &lt;Forward name="success" path="EXIT" /&gt;
-            &lt;/SenderPipe&gt;
-        &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
-     &lt;Adapter name="adapter B"&gt;
-         &lt;!-- Messages will only be sent to the error storage if:
-             - The target receiver is not transactional, and has maxTries="0", or
+ 		  &amp;lt;/Receiver&amp;gt;
+ 		  &amp;lt;Pipeline&amp;gt;
+            &amp;lt;SenderPipe name=&amp;quot;send&amp;quot;&amp;gt;
+                &amp;lt;!-- when scope=&amp;quot;LISTENER&amp;quot;, then target is directly the name of the FrankListener in the adapter you want to call --&amp;gt;
+                &amp;lt;FrankSender
+                    scope=&amp;quot;LISTENER&amp;quot;
+                    target=&amp;quot;Adapter B Listener&amp;quot;/&amp;gt;
+                &amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+            &amp;lt;/SenderPipe&amp;gt;
+        &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;adapter B&amp;quot;&amp;gt;
+         &amp;lt;!-- Messages will only be sent to the error storage if:
+             - The target receiver is not transactional, and has maxTries=&amp;quot;0&amp;quot;, or
              - The target receiver is transaction, and the Sender is set up to retry sending on error
              For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
-         --&gt;
-         &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
-             &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
-             &lt;FrankListener name="Adapter B Listener"/&gt;
-                 &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
-             &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
-         &lt;/Receiver&gt;
-         &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
-         &lt;Pipeline transactionAttribute="RequiresNew"&gt;
+         --&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Receiver B&amp;quot; maxRetries=&amp;quot;0&amp;quot; transactionAttribute=&amp;quot;NotSupported&amp;quot;&amp;gt;
+             &amp;lt;!-- Listener name is optional, defaults to Adapter name --&amp;gt;
+             &amp;lt;FrankListener name=&amp;quot;Adapter B Listener&amp;quot;/&amp;gt;
+                 &amp;lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&amp;gt;
+             &amp;lt;JdbcErrorStorage slotId=&amp;quot;Adapter B - Errors&amp;quot; /&amp;gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&amp;gt;
+         &amp;lt;Pipeline transactionAttribute=&amp;quot;RequiresNew&amp;quot;&amp;gt;
              ... Exits, Pipes etc
-         &lt;/Pipeline&gt;
-    &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;</xs:documentation>
+         &amp;lt;/Pipeline&amp;gt;
+    &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4259,7 +4233,7 @@
  or an array of primitive types / strings, as the output of the sender will be of type String.
  &lt;/p&gt;
  &lt;p&gt;
- Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
+ Failure to ensure the output is a string may mean the result will look like &lt;code&gt;[Object object]&lt;/code&gt;.
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4303,35 +4277,31 @@
 
  &lt;h2&gt;example&lt;/h2&gt;
  Consider the following configuration example:
- &lt;pre&gt;{@code
- &lt;sender
-      className="org.frankframework.ldap.LdapSender"
-      ldapProviderURL="ldap://servername:389/o=ing"
-      operation="read"
-      attributesToReturn="givenName,sn,telephoneNumber" &gt;
-     &lt;param name="entryName" xpathExpression="entryName" /&gt;
- &lt;/sender&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;sender
+      className=&amp;quot;org.frankframework.ldap.LdapSender&amp;quot;
+      ldapProviderURL=&amp;quot;ldap://servername:389/o=ing&amp;quot;
+      operation=&amp;quot;read&amp;quot;
+      attributesToReturn=&amp;quot;givenName,sn,telephoneNumber&amp;quot; &amp;gt;
+     &amp;lt;param name=&amp;quot;entryName&amp;quot; xpathExpression=&amp;quot;entryName&amp;quot; /&amp;gt;
+ &amp;lt;/sender&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
 
  This may result in the following output:
- &lt;pre&gt;{@code
- &lt;ldap&gt;
- 	   &lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
- 	   &lt;attributes&gt;
-         &lt;attribute attrID="givenName"&gt;
-             &lt;value&gt;Jan&lt;/value&gt;
-         &lt;/attribute&gt;
-         &lt;attribute attrID="telephoneNumber"&gt;
-             &lt;value&gt;010 5131123&lt;/value&gt;
-             &lt;value&gt;06 23456064&lt;/value&gt;
-         &lt;/attribute&gt;
- 	       &lt;attribute attrID="sn"&gt;
-             &lt;value&gt;Jansen&lt;/value&gt;
- 	       &lt;/attribute&gt;
- 	   &lt;/attributes&gt;
- &lt;/ldap&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;ldap&amp;gt;
+ 	   &amp;lt;entryName&amp;gt;uid=srp,ou=people&amp;lt;/entryName&amp;gt;
+ 	   &amp;lt;attributes&amp;gt;
+         &amp;lt;attribute attrID=&amp;quot;givenName&amp;quot;&amp;gt;
+             &amp;lt;value&amp;gt;Jan&amp;lt;/value&amp;gt;
+         &amp;lt;/attribute&amp;gt;
+         &amp;lt;attribute attrID=&amp;quot;telephoneNumber&amp;quot;&amp;gt;
+             &amp;lt;value&amp;gt;010 5131123&amp;lt;/value&amp;gt;
+             &amp;lt;value&amp;gt;06 23456064&amp;lt;/value&amp;gt;
+         &amp;lt;/attribute&amp;gt;
+ 	       &amp;lt;attribute attrID=&amp;quot;sn&amp;quot;&amp;gt;
+             &amp;lt;value&amp;gt;Jansen&amp;lt;/value&amp;gt;
+ 	       &amp;lt;/attribute&amp;gt;
+ 	   &amp;lt;/attributes&amp;gt;
+ &amp;lt;/ldap&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
 
  Search or Read?
@@ -4343,42 +4313,38 @@
  specified context are returned.
 
  Sample result of a &lt;code&gt;read&lt;/code&gt; operation:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;attributes&gt;
- 	   &lt;attribute&gt;
- 	   &lt;attribute name="employeeType" value="Extern"/&gt;
- 	   &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- 	   &lt;attribute name="departmentCode" value="358000"/&gt;
- 	   &lt;attribute name="organizationalHierarchy"&gt;
- 	       &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	       &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	       &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	   &lt;/attribute&gt;
- 	   &lt;attribute name="givenName" value="Gerrit"/&gt;
- &lt;/attributes&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;attributes&amp;gt;
+ 	   &amp;lt;attribute&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;employeeType&amp;quot; value=&amp;quot;Extern&amp;quot;/&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;roomNumber&amp;quot; value=&amp;quot;DP 2.13.025&amp;quot;/&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;departmentCode&amp;quot; value=&amp;quot;358000&amp;quot;/&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;organizationalHierarchy&amp;quot;&amp;gt;
+ 	       &amp;lt;item value=&amp;quot;ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	       &amp;lt;item value=&amp;quot;ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	       &amp;lt;item value=&amp;quot;ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	   &amp;lt;/attribute&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;givenName&amp;quot; value=&amp;quot;Gerrit&amp;quot;/&amp;gt;
+ &amp;lt;/attributes&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
  Sample result of a &lt;code&gt;search&lt;/code&gt; operation:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;entries&gt;
- 	   &lt;entry name="uid=srp"&gt;
- 	       &lt;attributes&gt;
- 	           &lt;attribute&gt;
- 	           &lt;attribute name="employeeType" value="Extern"/&gt;
- 	           &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- 	           &lt;attribute name="departmentCode" value="358000"/&gt;
- 	           &lt;attribute name="organizationalHierarchy"&gt;
- 	               &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	               &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	               &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	           &lt;/attribute&gt;
- 	           &lt;attribute name="givenName" value="Gerrit"/&gt;
- 	       &lt;/attributes&gt;
- 	   &lt;/entry&gt;
-     &lt;entry&gt; .... &lt;/entry&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;entries&amp;gt;
+ 	   &amp;lt;entry name=&amp;quot;uid=srp&amp;quot;&amp;gt;
+ 	       &amp;lt;attributes&amp;gt;
+ 	           &amp;lt;attribute&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;employeeType&amp;quot; value=&amp;quot;Extern&amp;quot;/&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;roomNumber&amp;quot; value=&amp;quot;DP 2.13.025&amp;quot;/&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;departmentCode&amp;quot; value=&amp;quot;358000&amp;quot;/&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;organizationalHierarchy&amp;quot;&amp;gt;
+ 	               &amp;lt;item value=&amp;quot;ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	               &amp;lt;item value=&amp;quot;ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	               &amp;lt;item value=&amp;quot;ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	           &amp;lt;/attribute&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;givenName&amp;quot; value=&amp;quot;Gerrit&amp;quot;/&amp;gt;
+ 	       &amp;lt;/attributes&amp;gt;
+ 	   &amp;lt;/entry&amp;gt;
+     &amp;lt;entry&amp;gt; .... &amp;lt;/entry&amp;gt;
     .....
- &lt;/entries&gt;
- }&lt;/pre&gt;
+ &amp;lt;/entries&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4395,7 +4361,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -4445,33 +4411,29 @@
           <xs:documentation>sender that sends a mail specified by an XML message.
  &lt;p&gt;
  Sample email.xml:
- &lt;pre&gt;{@code
- &lt;email&gt;
-     &lt;recipients&gt;
-         &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
-         &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
-     &lt;/recipients&gt;
-     &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
-     &lt;subject&gt;This is the subject&lt;/subject&gt;
-     &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
-     &lt;message&gt;This is the message&lt;/message&gt;
-     &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
-     &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
-     &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
-     &lt;attachments&gt;
-         &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
-         &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
-         &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
-         &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
-     &lt;/attachments&gt;&lt;!-- Optional --&gt;
- &lt;/email&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;email&amp;gt;
+     &amp;lt;recipients&amp;gt;
+         &amp;lt;recipient type=&amp;quot;to&amp;quot;&amp;gt;***@hotmail.com&amp;lt;/recipient&amp;gt;
+         &amp;lt;recipient type=&amp;quot;cc&amp;quot;&amp;gt;***@gmail.com&amp;lt;/recipient&amp;gt;
+     &amp;lt;/recipients&amp;gt;
+     &amp;lt;from name=&amp;quot;*** ***&amp;quot;&amp;gt;***@yahoo.com&amp;lt;/from&amp;gt;
+     &amp;lt;subject&amp;gt;This is the subject&amp;lt;/subject&amp;gt;
+     &amp;lt;threadTopic&amp;gt;subject&amp;lt;/threadTopic&amp;gt;
+     &amp;lt;message&amp;gt;This is the message&amp;lt;/message&amp;gt;
+     &amp;lt;messageType&amp;gt;text/plain&amp;lt;/messageType&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+     &amp;lt;messageBase64&amp;gt;false&amp;lt;/messageBase64&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+     &amp;lt;charset&amp;gt;UTF-8&amp;lt;/charset&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+     &amp;lt;attachments&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename1.txt&amp;quot;&amp;gt;This is the first attachment&amp;lt;/attachment&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename2.pdf&amp;quot; base64=&amp;quot;true&amp;quot;&amp;gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&amp;lt;/attachment&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename3.pdf&amp;quot; url=&amp;quot;file:/c:/filename3.pdf&amp;quot;/&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename4.pdf&amp;quot; sessionKey=&amp;quot;fileContent&amp;quot;/&amp;gt;
+     &amp;lt;/attachments&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+ &amp;lt;/email&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  Notice: the XML message must be valid XML. Therefore, especially the message element
  must be plain text or be wrapped as CDATA. Example:
- &lt;pre&gt;{@code
- &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;message&amp;gt;&amp;lt;![CDATA[&amp;lt;h1&amp;gt;This is a HtmlMessage&amp;lt;/h1&amp;gt;]]&amp;gt;&amp;lt;/message&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  The &lt;code&gt;sessionKey&lt;/code&gt; attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
  &lt;/p&gt;&lt;p&gt;
@@ -4514,13 +4476,11 @@
  to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  &lt;br/&gt;&lt;br/&gt;
  Example configuration:
- &lt;pre&gt;{@code
- &lt;SenderPipe name="Send"&gt;
-     &lt;MessageStoreSender
- 	     slotId="${instance.name}/TestMessageStore"
- 		 onlyStoreWhenMessageIdUnique="false" /&gt;
- &lt;/SenderPipe&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe name=&amp;quot;Send&amp;quot;&amp;gt;
+     &amp;lt;MessageStoreSender
+ 	     slotId=&amp;quot;${instance.name}/TestMessageStore&amp;quot;
+ 		 onlyStoreWhenMessageIdUnique=&amp;quot;false&amp;quot; /&amp;gt;
+ &amp;lt;/SenderPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4593,13 +4553,11 @@
  This prevents (long) open connections inside Senders and possible connection failures.
 
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;SenderPipe&gt;
-     &lt;ReconnectSenderWrapper&gt;
-         &lt;EchoSender myAttribute="myValue" /&gt;
-     &lt;/ReconnectSenderWrapper&gt;
- &lt;/SenderPipe&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe&amp;gt;
+     &amp;lt;ReconnectSenderWrapper&amp;gt;
+         &amp;lt;EchoSender myAttribute=&amp;quot;myValue&amp;quot; /&amp;gt;
+     &amp;lt;/ReconnectSenderWrapper&amp;gt;
+ &amp;lt;/SenderPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4772,79 +4730,73 @@
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
-     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
-     have a corresponding IParameter entry. Output parameters should have {@code mode="OUTPUT"}, or
-     {@code mode="INOUT"} depending on how the stored procedure is defined.
+     All stored procedure parameters that are not fixed, so specified in the query with a &lt;code&gt;?&lt;/code&gt;, should
+     have a corresponding IParameter entry. Output parameters should have &lt;code&gt;mode=&amp;quot;OUTPUT&amp;quot;&lt;/code&gt;, or
+     &lt;code&gt;mode=&amp;quot;INOUT&amp;quot;&lt;/code&gt; depending on how the stored procedure is defined.
  &lt;/p&gt;
  &lt;p&gt;
 	&lt;h3&gt;Sample Output for queryType=OTHER&lt;/h3&gt;
 	&lt;h4&gt;Basic Example with Only Simple Output Parameters&lt;/h4&gt;
- &lt;pre&gt;{@code
- &lt;resultset&gt;
- 	   &lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
-     &lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
- &lt;/resultset&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;resultset&amp;gt;
+ 	   &amp;lt;result param=&amp;quot;r1&amp;quot; type=&amp;quot;STRING&amp;quot;&amp;gt;MESSAGE-CONTENTS&amp;lt;/result&amp;gt;
+     &amp;lt;result param=&amp;quot;r2&amp;quot; type=&amp;quot;STRING&amp;quot;&amp;gt;E&amp;lt;/result&amp;gt;
+ &amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Resultset and Simple Output Parameters&lt;/h4&gt;
- &lt;pre&gt;{@code
- &lt;resultset&gt;
- 		 &lt;result resultNr="1"&gt;
- 			 &lt;fielddefinition&gt;
- 				&lt;field name="FIELDNAME"
- 						  type="columnType"
- 						  columnDisplaySize=""
- 						  precision=""
- 						  scale=""
- 						  isCurrency=""
- 						  columnTypeName=""
- 						  columnClassName=""/&gt;
- 				 &lt;field ...../&gt;
-  		     &lt;/fielddefinition&gt;
- 			 &lt;rowset&gt;
- 				 &lt;row number="0"&gt;
- 					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
- 					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
- 					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
- 					 &lt;field name="TCLOB" null="true"/&gt;
- 					 &lt;field name="TBLOB" null="true"/&gt;
- 				 &lt;/row&gt;
-                  &lt;row number="1" ...../&gt;
- 			 &lt;/rowset&gt;
- 		 &lt;/result&gt;
- 		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
- &lt;/resultset&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;resultset&amp;gt;
+ 		 &amp;lt;result resultNr=&amp;quot;1&amp;quot;&amp;gt;
+ 			 &amp;lt;fielddefinition&amp;gt;
+ 				&amp;lt;field name=&amp;quot;FIELDNAME&amp;quot;
+ 						  type=&amp;quot;columnType&amp;quot;
+ 						  columnDisplaySize=&amp;quot;&amp;quot;
+ 						  precision=&amp;quot;&amp;quot;
+ 						  scale=&amp;quot;&amp;quot;
+ 						  isCurrency=&amp;quot;&amp;quot;
+ 						  columnTypeName=&amp;quot;&amp;quot;
+ 						  columnClassName=&amp;quot;&amp;quot;/&amp;gt;
+ 				 &amp;lt;field ...../&amp;gt;
+  		     &amp;lt;/fielddefinition&amp;gt;
+ 			 &amp;lt;rowset&amp;gt;
+ 				 &amp;lt;row number=&amp;quot;0&amp;quot;&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TKEY&amp;quot;&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TCHAR&amp;quot;&amp;gt;E&amp;lt;/field&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TMESSAGE&amp;quot;&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TCLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TBLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 				 &amp;lt;/row&amp;gt;
+                  &amp;lt;row number=&amp;quot;1&amp;quot; ...../&amp;gt;
+ 			 &amp;lt;/rowset&amp;gt;
+ 		 &amp;lt;/result&amp;gt;
+ 		 &amp;lt;result param=&amp;quot;count&amp;quot; type=&amp;quot;INTEGER&amp;quot;&amp;gt;5&amp;lt;/result&amp;gt;
+ &amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Simple and Cursor Output Parameters&lt;/h4&gt;
- &lt;pre&gt;{@code
- &lt;resultset&gt;
- 		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
- 		&lt;result param="cursor1" type="LIST"&gt;
- 			 &lt;fielddefinition&gt;
- 				&lt;field name="FIELDNAME"
- 						  type="columnType"
- 						  columnDisplaySize=""
- 						  precision=""
- 						  scale=""
- 						  isCurrency=""
- 						  columnTypeName=""
- 						  columnClassName=""/&gt;
- 				 &lt;field ...../&gt;
-  		&lt;/fielddefinition&gt;
- 			&lt;rowset&gt;
- 				&lt;row number="0"&gt;
- 					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
- 					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
- 					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
- 					&lt;field name="TCLOB" null="true"/&gt;
- 					&lt;field name="TBLOB" null="true"/&gt;
- 				&lt;/row&gt;
- 				&lt;row number="1" ..... /&gt;
- 			&lt;/rowset&gt;
- 		&lt;/result&gt;
- 	&lt;/resultset&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;resultset&amp;gt;
+ 		&amp;lt;result param=&amp;quot;count&amp;quot; type=&amp;quot;INTEGER&amp;quot;&amp;gt;5&amp;lt;/result&amp;gt;
+ 		&amp;lt;result param=&amp;quot;cursor1&amp;quot; type=&amp;quot;LIST&amp;quot;&amp;gt;
+ 			 &amp;lt;fielddefinition&amp;gt;
+ 				&amp;lt;field name=&amp;quot;FIELDNAME&amp;quot;
+ 						  type=&amp;quot;columnType&amp;quot;
+ 						  columnDisplaySize=&amp;quot;&amp;quot;
+ 						  precision=&amp;quot;&amp;quot;
+ 						  scale=&amp;quot;&amp;quot;
+ 						  isCurrency=&amp;quot;&amp;quot;
+ 						  columnTypeName=&amp;quot;&amp;quot;
+ 						  columnClassName=&amp;quot;&amp;quot;/&amp;gt;
+ 				 &amp;lt;field ...../&amp;gt;
+  		&amp;lt;/fielddefinition&amp;gt;
+ 			&amp;lt;rowset&amp;gt;
+ 				&amp;lt;row number=&amp;quot;0&amp;quot;&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TKEY&amp;quot;&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TCHAR&amp;quot;&amp;gt;E&amp;lt;/field&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TMESSAGE&amp;quot;&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TCLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TBLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 				&amp;lt;/row&amp;gt;
+ 				&amp;lt;row number=&amp;quot;1&amp;quot; ..... /&amp;gt;
+ 			&amp;lt;/rowset&amp;gt;
+ 		&amp;lt;/result&amp;gt;
+ 	&amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;&lt;em&gt;NOTE:&lt;/em&gt; Support for stored procedures is currently experimental and changes in the currently produced output-format
  are expected.&lt;/p&gt;</xs:documentation>
@@ -4937,43 +4889,37 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;example (input):&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;browse&gt;
-    &lt;jmsRealm&gt;qcf&lt;/jmsRealm&gt;
-    &lt;destinationName&gt;jms/GetPolicyDetailsRequest&lt;/destinationName&gt;
-    &lt;destinationType&gt;QUEUE&lt;/destinationType&gt;
- &lt;/browse&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;browse&amp;gt;
+    &amp;lt;jmsRealm&amp;gt;qcf&amp;lt;/jmsRealm&amp;gt;
+    &amp;lt;destinationName&amp;gt;jms/GetPolicyDetailsRequest&amp;lt;/destinationName&amp;gt;
+    &amp;lt;destinationType&amp;gt;QUEUE&amp;lt;/destinationType&amp;gt;
+ &amp;lt;/browse&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;example (browse output):&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;result&gt;
-   &lt;items count="2"&gt;
-      &lt;item&gt;
-         &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
-         &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
-         &lt;correlationId&gt;...&lt;/correlationId&gt;
-         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
-      &lt;/item&gt;
-      &lt;item&gt;
-         &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
-         &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
-         &lt;correlationId&gt;...&lt;/correlationId&gt;
-         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
-      &lt;/item&gt;
- 	 &lt;/items&gt;
- &lt;/result&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;result&amp;gt;
+   &amp;lt;items count=&amp;quot;2&amp;quot;&amp;gt;
+      &amp;lt;item&amp;gt;
+         &amp;lt;timestamp&amp;gt;Thu Nov 20 13:36:31 CET 2014&amp;lt;/timestamp&amp;gt;
+         &amp;lt;messageId&amp;gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&amp;lt;/messageId&amp;gt;
+         &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
+         &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
+      &amp;lt;/item&amp;gt;
+      &amp;lt;item&amp;gt;
+         &amp;lt;timestamp&amp;gt;Thu Dec 12 11:59:22 CET 2014&amp;lt;/timestamp&amp;gt;
+         &amp;lt;messageId&amp;gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&amp;lt;/messageId&amp;gt;
+         &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
+         &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
+      &amp;lt;/item&amp;gt;
+ 	 &amp;lt;/items&amp;gt;
+ &amp;lt;/result&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
  &lt;b&gt;example (remove output):&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;result&gt;
-     &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
- &lt;/result&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;result&amp;gt;
+     &amp;lt;itemsRemoved&amp;gt;2&amp;lt;/itemsRemoved&amp;gt;
+ &amp;lt;/result&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4987,8 +4933,7 @@
         <xs:annotation>
           <xs:documentation>QuerySender that transforms the input message to a query.
  &lt;br/&gt;
- &lt;pre&gt;{@code
-  select
+ &lt;pre&gt;&lt;code&gt;select
   delete
   insert
   update - tableName
@@ -5005,9 +4950,7 @@
         - startWith
 
   sql   - type [0..1] one of {select;ddl;other}, other by default
-        - query
-
- }&lt;/pre&gt;
+        - query&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -5114,7 +5057,7 @@
     </xs:attribute>
     <xs:attribute name="bucketName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by |</xs:documentation>
+        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by &lt;code&gt;|&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -5159,7 +5102,7 @@
   <xs:attributeGroup name="FileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [&lt;code&gt;action&lt;/code&gt;] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -5167,17 +5110,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=&lt;code&gt;list&lt;/code&gt;. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -5187,32 +5130,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, write, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions &lt;code&gt;create&lt;/code&gt;, &lt;code&gt;write&lt;/code&gt;, &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt;, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -5222,17 +5165,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for read and write action</xs:documentation>
+        <xs:documentation>Charset to be used for &lt;code&gt;read&lt;/code&gt; and &lt;code&gt;write&lt;/code&gt; action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions &lt;code&gt;delete&lt;/code&gt;, &lt;code&gt;readDelete&lt;/code&gt; and &lt;code&gt;move&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -5427,7 +5370,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -5836,7 +5779,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -5948,7 +5891,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -6046,11 +5989,11 @@
     <xs:attribute name="target" type="xs:string">
       <xs:annotation>
         <xs:documentation>Target: service-name of service in other application that should be called, or name of adapter to be called.
- If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("{@code /}").
+ If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("&lt;code&gt;/&lt;/code&gt;").
  &lt;br/&gt;
  It is possible to set a target at runtime via a parameter.
  &lt;br/&gt;
- If a parameter with name target exists but has no value, then the target configured
+ If a parameter with name &lt;code&gt;target&lt;/code&gt; exists but has no value, then the target configured
  via the attribute will be used as a default.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6210,7 +6153,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -6727,7 +6670,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7256,7 +7199,7 @@
  by different JdbcTransactionalStorage instances.
  &lt;br/&gt;
  This field is optional, unless the attribute #onlyStoreWhenMessageIdUnique is
- set to {@code true}.</xs:documentation>
+ set to &lt;code&gt;true&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="type" />
@@ -7391,17 +7334,17 @@
   <xs:attributeGroup name="MongoDbSenderDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The MongoDB datasource Default: mongodb.datasource.default</xs:documentation>
+        <xs:documentation>The MongoDB datasource Default: &lt;code&gt;mongodb.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="database" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Database to connect to. Can be overridden by parameter database</xs:documentation>
+        <xs:documentation>Database to connect to. Can be overridden by parameter &lt;code&gt;database&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collection" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Collection to act upon. Can be overridden by parameter collection</xs:documentation>
+        <xs:documentation>Collection to act upon. Can be overridden by parameter &lt;code&gt;collection&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="action">
@@ -7414,12 +7357,12 @@
     </xs:attribute>
     <xs:attribute name="filter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter. Can contain references to parameters between ?{ and }. Can be overridden by parameter filter</xs:documentation>
+        <xs:documentation>Filter. Can contain references to parameters between &lt;code&gt;?{&lt;/code&gt; and &lt;code&gt;}&lt;/code&gt;. Can be overridden by parameter &lt;code&gt;filter&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="limit" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter limit. Default: 0</xs:documentation>
+        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter &lt;code&gt;limit&lt;/code&gt;. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="countOnly" type="frankBoolean">
@@ -7986,7 +7929,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -8605,7 +8548,7 @@
     <xs:attribute name="warn" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
@@ -8686,7 +8629,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom user-metadata on S3 files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -8710,40 +8653,34 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-     &lt;id&gt;documentId&lt;/id&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+     &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  When &lt;code&gt;action=delete&lt;/code&gt; the input (xml string) indicates the id of the document to get. This input is mandatory.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-     &lt;id&gt;documentId&lt;/id&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+     &amp;lt;id&amp;gt;documentId&amp;lt;/id&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  When &lt;code&gt;action=create&lt;/code&gt; the input (xml string) indicates document properties to set. This input is optional.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-     &lt;name&gt;Offerte&lt;/name&gt;
-     &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
-     &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
-     &lt;properties&gt;
-         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
-         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
-         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
-     &lt;/properties&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+     &amp;lt;name&amp;gt;Offerte&amp;lt;/name&amp;gt;
+     &amp;lt;objectTypeId&amp;gt;NNB_Geldlening&amp;lt;/objectTypeId&amp;gt;
+     &amp;lt;mediaType&amp;gt;application/pdf&amp;lt;/mediaType&amp;gt;
+     &amp;lt;properties&amp;gt;
+         &amp;lt;property name=&amp;quot;ArrivedAt&amp;quot; type=&amp;quot;datetime&amp;quot; formatString=&amp;quot;yyyy-MM-dd'T'HH:mm:ss.SSSz&amp;quot;&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
+         &amp;lt;property name=&amp;quot;ArrivedBy&amp;quot;&amp;gt;HDN&amp;lt;/property&amp;gt;
+         &amp;lt;property name=&amp;quot;DocumentType&amp;quot;&amp;gt;Geldlening&amp;lt;/property&amp;gt;
+     &amp;lt;/properties&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
@@ -8770,31 +8707,27 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;query&gt;
-    &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
-    &lt;maxItems&gt;10&lt;/maxItems&gt;
-    &lt;skipCount&gt;0&lt;/skipCount&gt;
-    &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
-    &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
- &lt;/query
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;query&amp;gt;
+    &amp;lt;statement&amp;gt;select * from cmis:document&amp;lt;/statement&amp;gt;
+    &amp;lt;maxItems&amp;gt;10&amp;lt;/maxItems&amp;gt;
+    &amp;lt;skipCount&amp;gt;0&amp;lt;/skipCount&amp;gt;
+    &amp;lt;searchAllVersions&amp;gt;true&amp;lt;/searchAllVersions&amp;gt;
+    &amp;lt;includeAllowableActions&amp;gt;true&amp;lt;/includeAllowableActions&amp;gt;
+ &amp;lt;/query&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates document properties to update.
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;cmis&gt;
-    &lt;id&gt;123456789&lt;/id&gt;
-    &lt;properties&gt;
-       &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
-       &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
-       &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
-    &lt;/properties&gt;
- &lt;/cmis&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;cmis&amp;gt;
+    &amp;lt;id&amp;gt;123456789&amp;lt;/id&amp;gt;
+    &amp;lt;properties&amp;gt;
+       &amp;lt;property name=&amp;quot;ArrivedAt&amp;quot; type=&amp;quot;datetime&amp;quot; formatString=&amp;quot;yyyy-MM-dd'T'HH:mm:ss.SSSz&amp;quot;&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
+       &amp;lt;property name=&amp;quot;ArrivedBy&amp;quot;&amp;gt;HDN&amp;lt;/property&amp;gt;
+       &amp;lt;property name=&amp;quot;DocumentType&amp;quot;&amp;gt;Geldlening&amp;lt;/property&amp;gt;
+    &amp;lt;/properties&amp;gt;
+ &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
@@ -8930,17 +8863,17 @@
           <xs:documentation>Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
  &lt;p&gt;
  Sends a message to another Frank!Framework-adapter in the same Frank!Framework instance, or an external program running in
- the same JVM as the Frank!Framework. If the callee exits with an {@code &lt;Exit/&gt;} that has state PipeLine.ExitState#ERROR,
- an error is considered to happen in the caller which means that the {@code exception} forward is followed if it is present.
+ the same JVM as the Frank!Framework. If the callee exits with an &lt;code&gt;&amp;lt;Exit/&amp;gt;&lt;/code&gt; that has state PipeLine.ExitState#ERROR,
+ an error is considered to happen in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
  &lt;/p&gt;
  &lt;p&gt;
- Returns {@code exit.code} as forward name to the SenderPipe, provided that {@code exit.code} can be parsed as integer.
+ Returns &lt;code&gt;exit.code&lt;/code&gt; as forward name to the SenderPipe, provided that &lt;code&gt;exit.code&lt;/code&gt; can be parsed as integer.
  For example, if the called adapter has an exit state with code
- {@code 2}, then the SenderPipe supports a forward with name {@code 2}
- that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example {@code c2}.
+ &lt;code&gt;2&lt;/code&gt;, then the SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
+ that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p&gt;
- A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is {@code ADAPTER}.
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p/&gt;
 
@@ -8952,15 +8885,15 @@
  &lt;h4&gt;Configuring FrankSender and Adapter&lt;/h4&gt;
  &lt;ul&gt;
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
-   &lt;li&gt;Set the attribute {@code target} to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set {@code target} to {@code targetConfigurationName/targetAdapterName} (note the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
+   &lt;li&gt;Set the attribute &lt;code&gt;target&lt;/code&gt; to &lt;i&gt;targetAdapterName&lt;/i&gt;&lt;/li&gt;
+   &lt;li&gt;If the adapter is in another Configuration deployed in the same Frank!Framework instance, then set &lt;code&gt;target&lt;/code&gt; to &lt;code&gt;targetConfigurationName/targetAdapterName&lt;/code&gt; (note the slash-separator between Configuration name and Adapter name).&lt;/li&gt;
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
    &lt;li&gt;The adapter does not need to have a receiver configured to be called from a FrankSender,&lt;/li&gt;
    &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
    &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
-   or on the SenderPipe that contains this {@code FrankSender}.&lt;/li&gt;
+   or on the SenderPipe that contains this &lt;code&gt;FrankSender&lt;/code&gt;.&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;Configuring FrankSender with FrankListener&lt;/h4&gt;
@@ -8968,8 +8901,8 @@
    &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
    &lt;li&gt;In the target adapter, define a org.frankframework.receivers.Receiver with a FrankListener&lt;/li&gt;
    &lt;li&gt;Give a unique name to the listener: FrankListener#setName(String). If the name is not set, the name of the Adapter will be used.&lt;/li&gt;
-   &lt;li&gt;Set the #setScope(Scope) to {@code LISTENER} and the #setTarget(String) to the listener name as per previous point&lt;/li&gt;
-   &lt;li&gt;If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name&lt;/li&gt;
+   &lt;li&gt;Set the #setScope(Scope) to &lt;code&gt;LISTENER&lt;/code&gt; and the #setTarget(String) to the listener name as per previous point&lt;/li&gt;
+   &lt;li&gt;If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash (&lt;code&gt;/&lt;/code&gt;) as separator between configuration and listener name&lt;/li&gt;
  &lt;/ul&gt;
 
  &lt;h4&gt;Configuring FrankSender and Remote Application&lt;/h4&gt;
@@ -8978,15 +8911,15 @@
  &lt;/p&gt;
  &lt;ul&gt;
      &lt;li&gt;Define a SenderPipe with a FrankSender&lt;/li&gt;
-     &lt;li&gt;Set the attribute {@code scope} to either {@code JVM} for a Java application, or to {@code DLL} for code loaded from a DLL&lt;/li&gt;
-     &lt;li&gt;Set the attribute {@code target} to the service-name the other application used to register itself&lt;/li&gt;
+     &lt;li&gt;Set the attribute &lt;code&gt;scope&lt;/code&gt; to either &lt;code&gt;JVM&lt;/code&gt; for a Java application, or to &lt;code&gt;DLL&lt;/code&gt; for code loaded from a DLL&lt;/li&gt;
+     &lt;li&gt;Set the attribute &lt;code&gt;target&lt;/code&gt; to the service-name the other application used to register itself&lt;/li&gt;
  &lt;/ul&gt;
  &lt;p&gt;
  In the other application:
  &lt;ul&gt;
-     &lt;li&gt;Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library&lt;/li&gt;
-     &lt;li&gt;Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}&lt;/li&gt;
-     &lt;li&gt;See the implementation code of the {@code JavaListener} in the Frank!Framework for an example&lt;/li&gt;
+     &lt;li&gt;Implement the interface &lt;code&gt;nl.nn.adapterframework.dispatcher.RequestProcessor&lt;/code&gt; from the IbisServiceDispatcher library&lt;/li&gt;
+     &lt;li&gt;Register the instance with the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManager&lt;/code&gt; obtained via the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManagerFactory&lt;/code&gt;&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the &lt;code&gt;JavaListener&lt;/code&gt; in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
@@ -8998,10 +8931,10 @@
  &lt;p&gt;
  You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
  &lt;ul&gt;
-     &lt;li&gt;If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character&lt;/li&gt;
-     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}&lt;/li&gt;
-     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope {@code JVM}
-     and set the {@code target} attribute to the {@code serviceName} attribute of the {@code JavaListener}.&lt;/li&gt;
+     &lt;li&gt;If you leave the default scope as &lt;code&gt;ADAPTER&lt;/code&gt;, then the &lt;code&gt;target&lt;/code&gt; property needs to have both configuration name and adapter name, separated by a &lt;code&gt;/&lt;/code&gt; character&lt;/li&gt;
+     &lt;li&gt;When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's &lt;code&gt;PipeLine&lt;/code&gt;&lt;/li&gt;
+     &lt;li&gt;If you do need a transaction and the adapter has a JavaListener that has org.frankframework.receivers.JavaListener#setServiceName(String) defined, you can use the FrankSender with scope &lt;code&gt;JVM&lt;/code&gt;
+     and set the &lt;code&gt;target&lt;/code&gt; attribute to the &lt;code&gt;serviceName&lt;/code&gt; attribute of the &lt;code&gt;JavaListener&lt;/code&gt;.&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
 
@@ -9016,125 +8949,115 @@
 
  &lt;h4&gt;Example of Existing Configuration&lt;/h4&gt;
  The existing configuration might look like this in the calling adapter:
- &lt;pre&gt;{@code
- &lt;module&gt;
-     &lt;adapter name="Adapter A"&gt;
-         &lt;receiver name="Adapter A Receiver"&gt;
-             &lt;listener name="Adapter A Listener"
-                 className="org.frankframework..." etc/&gt;
-         &lt;/receiver&gt;
-  	   &lt;pipeline firstPipe="..."&gt;
-  	       &lt;pipe name="send" className="org.frankframework.pipes.SenderPipe"&gt;
-  	           &lt;sender className="org.frankframework.senders.IbisJavaSender"
-  	               serviceName="service-Adapter-B" /&gt;
-                 &lt;forward name="success" path="..." /&gt;
-  	       &lt;/pipe&gt;
-         &lt;/pipeline&gt;
-     &lt;/adapter&gt;
- &lt;/module&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;module&amp;gt;
+     &amp;lt;adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+         &amp;lt;receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
+             &amp;lt;listener name=&amp;quot;Adapter A Listener&amp;quot;
+                 className=&amp;quot;org.frankframework...&amp;quot; etc/&amp;gt;
+         &amp;lt;/receiver&amp;gt;
+  	   &amp;lt;pipeline firstPipe=&amp;quot;...&amp;quot;&amp;gt;
+  	       &amp;lt;pipe name=&amp;quot;send&amp;quot; className=&amp;quot;org.frankframework.pipes.SenderPipe&amp;quot;&amp;gt;
+  	           &amp;lt;sender className=&amp;quot;org.frankframework.senders.IbisJavaSender&amp;quot;
+  	               serviceName=&amp;quot;service-Adapter-B&amp;quot; /&amp;gt;
+                 &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;...&amp;quot; /&amp;gt;
+  	       &amp;lt;/pipe&amp;gt;
+         &amp;lt;/pipeline&amp;gt;
+     &amp;lt;/adapter&amp;gt;
+ &amp;lt;/module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  Or like using the modern XML XSD and an IbisLocalSender instead:
- &lt;pre&gt;{@code
- &lt;Module&gt;
-     &lt;Adapter name="Adapter A"&gt;
-         &lt;Receiver name="Adapter A Receiver"&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
              ... Listener setup and other configuration
-         &lt;/Receiver&gt;
-         &lt;Pipeline&gt;
-             &lt;SenderPipe name="send"&gt;
-                 &lt;IbisLocalSender name="call Adapter B"
-                     javaListener="Adapter B Listener"/&gt;
-                 &lt;Forward name="success" path="EXIT" /&gt;
-             &lt;/SenderPipe&gt;
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
+             &amp;lt;SenderPipe name=&amp;quot;send&amp;quot;&amp;gt;
+                 &amp;lt;IbisLocalSender name=&amp;quot;call Adapter B&amp;quot;
+                     javaListener=&amp;quot;Adapter B Listener&amp;quot;/&amp;gt;
+                 &amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+             &amp;lt;/SenderPipe&amp;gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  In the receiving adapter B the listener would have been configured like this:
- &lt;pre&gt;{@code
- &lt;Module&gt;
-     &lt;Adapter name="adapter B"&gt;
-         &lt;Receiver name="Receiver B"&gt;
-             &lt;JavaListener name="Adapter B Listener" serviceName="service-Adapter-B"/&gt;
-         &lt;/Receiver&gt;
-         &lt;Pipeline&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;adapter B&amp;quot;&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Receiver B&amp;quot;&amp;gt;
+             &amp;lt;JavaListener name=&amp;quot;Adapter B Listener&amp;quot; serviceName=&amp;quot;service-Adapter-B&amp;quot;/&amp;gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
              ...
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;p/&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender&lt;/h4&gt;
  This example shows the most simple way of using the FrankSender to call another adapter with least amount of overhead.
 
- &lt;pre&gt;{@code
- &lt;Module&gt;
-     &lt;Adapter name="Adapter A"&gt;
-         &lt;Receiver name="Adapter A Receiver"&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
              ... Listener setup and other configuration
-         &lt;/Receiver&gt;
-         &lt;Pipeline&gt;
-             &lt;SenderPipe name="send"&gt;
-                 &lt;!-- when scope="ADAPTER", then target is directly the name of the adapter you want to call --&gt;
-                 &lt;FrankSender name="call Adapter C"
-                     scope="ADAPTER"
-                     target="adapter B"
-                 /&gt;
-                 &lt;Forward name="success" path="EXIT" /&gt;
-             &lt;/SenderPipe&gt;
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
-     &lt;Adapter name="adapter B"&gt;
-         &lt;!-- No receiver needed for FrankSender in this scenario --&gt;
-         &lt;Pipeline&gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
+             &amp;lt;SenderPipe name=&amp;quot;send&amp;quot;&amp;gt;
+                 &amp;lt;!-- when scope=&amp;quot;ADAPTER&amp;quot;, then target is directly the name of the adapter you want to call --&amp;gt;
+                 &amp;lt;FrankSender name=&amp;quot;call Adapter C&amp;quot;
+                     scope=&amp;quot;ADAPTER&amp;quot;
+                     target=&amp;quot;adapter B&amp;quot;
+                 /&amp;gt;
+                 &amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+             &amp;lt;/SenderPipe&amp;gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;adapter B&amp;quot;&amp;gt;
+         &amp;lt;!-- No receiver needed for FrankSender in this scenario --&amp;gt;
+         &amp;lt;Pipeline&amp;gt;
              ... Exits, Pipes etc
-         &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;
+         &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  &lt;h4&gt;Rewritten Example Configuration With FrankSender and FrankListener&lt;/h4&gt;
  This example shows why you might want to call the other adapter via the FrankListener. This adds a bit more overhead to the call
  of the sub-adapter for the extra error-handling done by the target receiver.
 
- &lt;pre&gt;{@code
- &lt;Module&gt;
-    &lt;Adapter name="Adapter A"&gt;
-        &lt;Receiver name="Adapter A Receiver"&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;Module&amp;gt;
+    &amp;lt;Adapter name=&amp;quot;Adapter A&amp;quot;&amp;gt;
+        &amp;lt;Receiver name=&amp;quot;Adapter A Receiver&amp;quot;&amp;gt;
          ... Listener setup and other configuration
- 		  &lt;/Receiver&gt;
- 		  &lt;Pipeline&gt;
-            &lt;SenderPipe name="send"&gt;
-                &lt;!-- when scope="LISTENER", then target is directly the name of the FrankListener in the adapter you want to call --&gt;
-                &lt;FrankSender
-                    scope="LISTENER"
-                    target="Adapter B Listener"/&gt;
-                &lt;Forward name="success" path="EXIT" /&gt;
-            &lt;/SenderPipe&gt;
-        &lt;/Pipeline&gt;
-     &lt;/Adapter&gt;
-     &lt;Adapter name="adapter B"&gt;
-         &lt;!-- Messages will only be sent to the error storage if:
-             - The target receiver is not transactional, and has maxTries="0", or
+ 		  &amp;lt;/Receiver&amp;gt;
+ 		  &amp;lt;Pipeline&amp;gt;
+            &amp;lt;SenderPipe name=&amp;quot;send&amp;quot;&amp;gt;
+                &amp;lt;!-- when scope=&amp;quot;LISTENER&amp;quot;, then target is directly the name of the FrankListener in the adapter you want to call --&amp;gt;
+                &amp;lt;FrankSender
+                    scope=&amp;quot;LISTENER&amp;quot;
+                    target=&amp;quot;Adapter B Listener&amp;quot;/&amp;gt;
+                &amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+            &amp;lt;/SenderPipe&amp;gt;
+        &amp;lt;/Pipeline&amp;gt;
+     &amp;lt;/Adapter&amp;gt;
+     &amp;lt;Adapter name=&amp;quot;adapter B&amp;quot;&amp;gt;
+         &amp;lt;!-- Messages will only be sent to the error storage if:
+             - The target receiver is not transactional, and has maxTries=&amp;quot;0&amp;quot;, or
              - The target receiver is transaction, and the Sender is set up to retry sending on error
              For internal adapters, sending / receiving with retries might not make sense so the example does not show that.
-         --&gt;
-         &lt;Receiver name="Receiver B" maxRetries="0" transactionAttribute="NotSupported"&gt;
-             &lt;!-- Listener name is optional, defaults to Adapter name --&gt;
-             &lt;FrankListener name="Adapter B Listener"/&gt;
-                 &lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&gt;
-             &lt;JdbcErrorStorage slotId="Adapter B - Errors" /&gt;
-         &lt;/Receiver&gt;
-         &lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&gt;
-         &lt;Pipeline transactionAttribute="RequiresNew"&gt;
+         --&amp;gt;
+         &amp;lt;Receiver name=&amp;quot;Receiver B&amp;quot; maxRetries=&amp;quot;0&amp;quot; transactionAttribute=&amp;quot;NotSupported&amp;quot;&amp;gt;
+             &amp;lt;!-- Listener name is optional, defaults to Adapter name --&amp;gt;
+             &amp;lt;FrankListener name=&amp;quot;Adapter B Listener&amp;quot;/&amp;gt;
+                 &amp;lt;!-- This adapter now has an error storage -- without Receiver and FrankListener the sub-adapter couldn't have that --&amp;gt;
+             &amp;lt;JdbcErrorStorage slotId=&amp;quot;Adapter B - Errors&amp;quot; /&amp;gt;
+         &amp;lt;/Receiver&amp;gt;
+         &amp;lt;!-- If transactions are required, set transaction-attribute on the Pipeline --&amp;gt;
+         &amp;lt;Pipeline transactionAttribute=&amp;quot;RequiresNew&amp;quot;&amp;gt;
              ... Exits, Pipes etc
-         &lt;/Pipeline&gt;
-    &lt;/Adapter&gt;
- &lt;/Module&gt;
- }&lt;/pre&gt;</xs:documentation>
+         &amp;lt;/Pipeline&amp;gt;
+    &amp;lt;/Adapter&amp;gt;
+ &amp;lt;/Module&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9335,7 +9258,7 @@
  or an array of primitive types / strings, as the output of the sender will be of type String.
  &lt;/p&gt;
  &lt;p&gt;
- Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
+ Failure to ensure the output is a string may mean the result will look like &lt;code&gt;[Object object]&lt;/code&gt;.
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9379,35 +9302,31 @@
 
  &lt;h2&gt;example&lt;/h2&gt;
  Consider the following configuration example:
- &lt;pre&gt;{@code
- &lt;sender
-      className="org.frankframework.ldap.LdapSender"
-      ldapProviderURL="ldap://servername:389/o=ing"
-      operation="read"
-      attributesToReturn="givenName,sn,telephoneNumber" &gt;
-     &lt;param name="entryName" xpathExpression="entryName" /&gt;
- &lt;/sender&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;sender
+      className=&amp;quot;org.frankframework.ldap.LdapSender&amp;quot;
+      ldapProviderURL=&amp;quot;ldap://servername:389/o=ing&amp;quot;
+      operation=&amp;quot;read&amp;quot;
+      attributesToReturn=&amp;quot;givenName,sn,telephoneNumber&amp;quot; &amp;gt;
+     &amp;lt;param name=&amp;quot;entryName&amp;quot; xpathExpression=&amp;quot;entryName&amp;quot; /&amp;gt;
+ &amp;lt;/sender&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
 
  This may result in the following output:
- &lt;pre&gt;{@code
- &lt;ldap&gt;
- 	   &lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
- 	   &lt;attributes&gt;
-         &lt;attribute attrID="givenName"&gt;
-             &lt;value&gt;Jan&lt;/value&gt;
-         &lt;/attribute&gt;
-         &lt;attribute attrID="telephoneNumber"&gt;
-             &lt;value&gt;010 5131123&lt;/value&gt;
-             &lt;value&gt;06 23456064&lt;/value&gt;
-         &lt;/attribute&gt;
- 	       &lt;attribute attrID="sn"&gt;
-             &lt;value&gt;Jansen&lt;/value&gt;
- 	       &lt;/attribute&gt;
- 	   &lt;/attributes&gt;
- &lt;/ldap&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;ldap&amp;gt;
+ 	   &amp;lt;entryName&amp;gt;uid=srp,ou=people&amp;lt;/entryName&amp;gt;
+ 	   &amp;lt;attributes&amp;gt;
+         &amp;lt;attribute attrID=&amp;quot;givenName&amp;quot;&amp;gt;
+             &amp;lt;value&amp;gt;Jan&amp;lt;/value&amp;gt;
+         &amp;lt;/attribute&amp;gt;
+         &amp;lt;attribute attrID=&amp;quot;telephoneNumber&amp;quot;&amp;gt;
+             &amp;lt;value&amp;gt;010 5131123&amp;lt;/value&amp;gt;
+             &amp;lt;value&amp;gt;06 23456064&amp;lt;/value&amp;gt;
+         &amp;lt;/attribute&amp;gt;
+ 	       &amp;lt;attribute attrID=&amp;quot;sn&amp;quot;&amp;gt;
+             &amp;lt;value&amp;gt;Jansen&amp;lt;/value&amp;gt;
+ 	       &amp;lt;/attribute&amp;gt;
+ 	   &amp;lt;/attributes&amp;gt;
+ &amp;lt;/ldap&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
 
  Search or Read?
@@ -9419,42 +9338,38 @@
  specified context are returned.
 
  Sample result of a &lt;code&gt;read&lt;/code&gt; operation:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;attributes&gt;
- 	   &lt;attribute&gt;
- 	   &lt;attribute name="employeeType" value="Extern"/&gt;
- 	   &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- 	   &lt;attribute name="departmentCode" value="358000"/&gt;
- 	   &lt;attribute name="organizationalHierarchy"&gt;
- 	       &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	       &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	       &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	   &lt;/attribute&gt;
- 	   &lt;attribute name="givenName" value="Gerrit"/&gt;
- &lt;/attributes&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;attributes&amp;gt;
+ 	   &amp;lt;attribute&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;employeeType&amp;quot; value=&amp;quot;Extern&amp;quot;/&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;roomNumber&amp;quot; value=&amp;quot;DP 2.13.025&amp;quot;/&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;departmentCode&amp;quot; value=&amp;quot;358000&amp;quot;/&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;organizationalHierarchy&amp;quot;&amp;gt;
+ 	       &amp;lt;item value=&amp;quot;ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	       &amp;lt;item value=&amp;quot;ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	       &amp;lt;item value=&amp;quot;ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	   &amp;lt;/attribute&amp;gt;
+ 	   &amp;lt;attribute name=&amp;quot;givenName&amp;quot; value=&amp;quot;Gerrit&amp;quot;/&amp;gt;
+ &amp;lt;/attributes&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
  Sample result of a &lt;code&gt;search&lt;/code&gt; operation:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;entries&gt;
- 	   &lt;entry name="uid=srp"&gt;
- 	       &lt;attributes&gt;
- 	           &lt;attribute&gt;
- 	           &lt;attribute name="employeeType" value="Extern"/&gt;
- 	           &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- 	           &lt;attribute name="departmentCode" value="358000"/&gt;
- 	           &lt;attribute name="organizationalHierarchy"&gt;
- 	               &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	               &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	               &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- 	           &lt;/attribute&gt;
- 	           &lt;attribute name="givenName" value="Gerrit"/&gt;
- 	       &lt;/attributes&gt;
- 	   &lt;/entry&gt;
-     &lt;entry&gt; .... &lt;/entry&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;entries&amp;gt;
+ 	   &amp;lt;entry name=&amp;quot;uid=srp&amp;quot;&amp;gt;
+ 	       &amp;lt;attributes&amp;gt;
+ 	           &amp;lt;attribute&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;employeeType&amp;quot; value=&amp;quot;Extern&amp;quot;/&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;roomNumber&amp;quot; value=&amp;quot;DP 2.13.025&amp;quot;/&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;departmentCode&amp;quot; value=&amp;quot;358000&amp;quot;/&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;organizationalHierarchy&amp;quot;&amp;gt;
+ 	               &amp;lt;item value=&amp;quot;ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	               &amp;lt;item value=&amp;quot;ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	               &amp;lt;item value=&amp;quot;ou=000001,ou=OPS&amp;amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing&amp;quot;/&amp;gt;
+ 	           &amp;lt;/attribute&amp;gt;
+ 	           &amp;lt;attribute name=&amp;quot;givenName&amp;quot; value=&amp;quot;Gerrit&amp;quot;/&amp;gt;
+ 	       &amp;lt;/attributes&amp;gt;
+ 	   &amp;lt;/entry&amp;gt;
+     &amp;lt;entry&amp;gt; .... &amp;lt;/entry&amp;gt;
     .....
- &lt;/entries&gt;
- }&lt;/pre&gt;
+ &amp;lt;/entries&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9471,7 +9386,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -9521,33 +9436,29 @@
           <xs:documentation>sender that sends a mail specified by an XML message.
  &lt;p&gt;
  Sample email.xml:
- &lt;pre&gt;{@code
- &lt;email&gt;
-     &lt;recipients&gt;
-         &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
-         &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
-     &lt;/recipients&gt;
-     &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
-     &lt;subject&gt;This is the subject&lt;/subject&gt;
-     &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
-     &lt;message&gt;This is the message&lt;/message&gt;
-     &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
-     &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
-     &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
-     &lt;attachments&gt;
-         &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
-         &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
-         &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
-         &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
-     &lt;/attachments&gt;&lt;!-- Optional --&gt;
- &lt;/email&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;email&amp;gt;
+     &amp;lt;recipients&amp;gt;
+         &amp;lt;recipient type=&amp;quot;to&amp;quot;&amp;gt;***@hotmail.com&amp;lt;/recipient&amp;gt;
+         &amp;lt;recipient type=&amp;quot;cc&amp;quot;&amp;gt;***@gmail.com&amp;lt;/recipient&amp;gt;
+     &amp;lt;/recipients&amp;gt;
+     &amp;lt;from name=&amp;quot;*** ***&amp;quot;&amp;gt;***@yahoo.com&amp;lt;/from&amp;gt;
+     &amp;lt;subject&amp;gt;This is the subject&amp;lt;/subject&amp;gt;
+     &amp;lt;threadTopic&amp;gt;subject&amp;lt;/threadTopic&amp;gt;
+     &amp;lt;message&amp;gt;This is the message&amp;lt;/message&amp;gt;
+     &amp;lt;messageType&amp;gt;text/plain&amp;lt;/messageType&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+     &amp;lt;messageBase64&amp;gt;false&amp;lt;/messageBase64&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+     &amp;lt;charset&amp;gt;UTF-8&amp;lt;/charset&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+     &amp;lt;attachments&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename1.txt&amp;quot;&amp;gt;This is the first attachment&amp;lt;/attachment&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename2.pdf&amp;quot; base64=&amp;quot;true&amp;quot;&amp;gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&amp;lt;/attachment&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename3.pdf&amp;quot; url=&amp;quot;file:/c:/filename3.pdf&amp;quot;/&amp;gt;
+         &amp;lt;attachment name=&amp;quot;filename4.pdf&amp;quot; sessionKey=&amp;quot;fileContent&amp;quot;/&amp;gt;
+     &amp;lt;/attachments&amp;gt;&amp;lt;!-- Optional --&amp;gt;
+ &amp;lt;/email&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  Notice: the XML message must be valid XML. Therefore, especially the message element
  must be plain text or be wrapped as CDATA. Example:
- &lt;pre&gt;{@code
- &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;message&amp;gt;&amp;lt;![CDATA[&amp;lt;h1&amp;gt;This is a HtmlMessage&amp;lt;/h1&amp;gt;]]&amp;gt;&amp;lt;/message&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;&lt;p&gt;
  The &lt;code&gt;sessionKey&lt;/code&gt; attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
  &lt;/p&gt;&lt;p&gt;
@@ -9590,13 +9501,11 @@
  to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  &lt;br/&gt;&lt;br/&gt;
  Example configuration:
- &lt;pre&gt;{@code
- &lt;SenderPipe name="Send"&gt;
-     &lt;MessageStoreSender
- 	     slotId="${instance.name}/TestMessageStore"
- 		 onlyStoreWhenMessageIdUnique="false" /&gt;
- &lt;/SenderPipe&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe name=&amp;quot;Send&amp;quot;&amp;gt;
+     &amp;lt;MessageStoreSender
+ 	     slotId=&amp;quot;${instance.name}/TestMessageStore&amp;quot;
+ 		 onlyStoreWhenMessageIdUnique=&amp;quot;false&amp;quot; /&amp;gt;
+ &amp;lt;/SenderPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9669,13 +9578,11 @@
  This prevents (long) open connections inside Senders and possible connection failures.
 
  &lt;b&gt;Example:&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;SenderPipe&gt;
-     &lt;ReconnectSenderWrapper&gt;
-         &lt;EchoSender myAttribute="myValue" /&gt;
-     &lt;/ReconnectSenderWrapper&gt;
- &lt;/SenderPipe&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe&amp;gt;
+     &amp;lt;ReconnectSenderWrapper&amp;gt;
+         &amp;lt;EchoSender myAttribute=&amp;quot;myValue&amp;quot; /&amp;gt;
+     &amp;lt;/ReconnectSenderWrapper&amp;gt;
+ &amp;lt;/SenderPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9848,79 +9755,73 @@
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
-     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
-     have a corresponding IParameter entry. Output parameters should have {@code mode="OUTPUT"}, or
-     {@code mode="INOUT"} depending on how the stored procedure is defined.
+     All stored procedure parameters that are not fixed, so specified in the query with a &lt;code&gt;?&lt;/code&gt;, should
+     have a corresponding IParameter entry. Output parameters should have &lt;code&gt;mode=&amp;quot;OUTPUT&amp;quot;&lt;/code&gt;, or
+     &lt;code&gt;mode=&amp;quot;INOUT&amp;quot;&lt;/code&gt; depending on how the stored procedure is defined.
  &lt;/p&gt;
  &lt;p&gt;
 	&lt;h3&gt;Sample Output for queryType=OTHER&lt;/h3&gt;
 	&lt;h4&gt;Basic Example with Only Simple Output Parameters&lt;/h4&gt;
- &lt;pre&gt;{@code
- &lt;resultset&gt;
- 	   &lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
-     &lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
- &lt;/resultset&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;resultset&amp;gt;
+ 	   &amp;lt;result param=&amp;quot;r1&amp;quot; type=&amp;quot;STRING&amp;quot;&amp;gt;MESSAGE-CONTENTS&amp;lt;/result&amp;gt;
+     &amp;lt;result param=&amp;quot;r2&amp;quot; type=&amp;quot;STRING&amp;quot;&amp;gt;E&amp;lt;/result&amp;gt;
+ &amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Resultset and Simple Output Parameters&lt;/h4&gt;
- &lt;pre&gt;{@code
- &lt;resultset&gt;
- 		 &lt;result resultNr="1"&gt;
- 			 &lt;fielddefinition&gt;
- 				&lt;field name="FIELDNAME"
- 						  type="columnType"
- 						  columnDisplaySize=""
- 						  precision=""
- 						  scale=""
- 						  isCurrency=""
- 						  columnTypeName=""
- 						  columnClassName=""/&gt;
- 				 &lt;field ...../&gt;
-  		     &lt;/fielddefinition&gt;
- 			 &lt;rowset&gt;
- 				 &lt;row number="0"&gt;
- 					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
- 					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
- 					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
- 					 &lt;field name="TCLOB" null="true"/&gt;
- 					 &lt;field name="TBLOB" null="true"/&gt;
- 				 &lt;/row&gt;
-                  &lt;row number="1" ...../&gt;
- 			 &lt;/rowset&gt;
- 		 &lt;/result&gt;
- 		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
- &lt;/resultset&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;resultset&amp;gt;
+ 		 &amp;lt;result resultNr=&amp;quot;1&amp;quot;&amp;gt;
+ 			 &amp;lt;fielddefinition&amp;gt;
+ 				&amp;lt;field name=&amp;quot;FIELDNAME&amp;quot;
+ 						  type=&amp;quot;columnType&amp;quot;
+ 						  columnDisplaySize=&amp;quot;&amp;quot;
+ 						  precision=&amp;quot;&amp;quot;
+ 						  scale=&amp;quot;&amp;quot;
+ 						  isCurrency=&amp;quot;&amp;quot;
+ 						  columnTypeName=&amp;quot;&amp;quot;
+ 						  columnClassName=&amp;quot;&amp;quot;/&amp;gt;
+ 				 &amp;lt;field ...../&amp;gt;
+  		     &amp;lt;/fielddefinition&amp;gt;
+ 			 &amp;lt;rowset&amp;gt;
+ 				 &amp;lt;row number=&amp;quot;0&amp;quot;&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TKEY&amp;quot;&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TCHAR&amp;quot;&amp;gt;E&amp;lt;/field&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TMESSAGE&amp;quot;&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TCLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 					 &amp;lt;field name=&amp;quot;TBLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 				 &amp;lt;/row&amp;gt;
+                  &amp;lt;row number=&amp;quot;1&amp;quot; ...../&amp;gt;
+ 			 &amp;lt;/rowset&amp;gt;
+ 		 &amp;lt;/result&amp;gt;
+ 		 &amp;lt;result param=&amp;quot;count&amp;quot; type=&amp;quot;INTEGER&amp;quot;&amp;gt;5&amp;lt;/result&amp;gt;
+ &amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
 	&lt;h4&gt;Example with Simple and Cursor Output Parameters&lt;/h4&gt;
- &lt;pre&gt;{@code
- &lt;resultset&gt;
- 		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
- 		&lt;result param="cursor1" type="LIST"&gt;
- 			 &lt;fielddefinition&gt;
- 				&lt;field name="FIELDNAME"
- 						  type="columnType"
- 						  columnDisplaySize=""
- 						  precision=""
- 						  scale=""
- 						  isCurrency=""
- 						  columnTypeName=""
- 						  columnClassName=""/&gt;
- 				 &lt;field ...../&gt;
-  		&lt;/fielddefinition&gt;
- 			&lt;rowset&gt;
- 				&lt;row number="0"&gt;
- 					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
- 					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
- 					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
- 					&lt;field name="TCLOB" null="true"/&gt;
- 					&lt;field name="TBLOB" null="true"/&gt;
- 				&lt;/row&gt;
- 				&lt;row number="1" ..... /&gt;
- 			&lt;/rowset&gt;
- 		&lt;/result&gt;
- 	&lt;/resultset&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;resultset&amp;gt;
+ 		&amp;lt;result param=&amp;quot;count&amp;quot; type=&amp;quot;INTEGER&amp;quot;&amp;gt;5&amp;lt;/result&amp;gt;
+ 		&amp;lt;result param=&amp;quot;cursor1&amp;quot; type=&amp;quot;LIST&amp;quot;&amp;gt;
+ 			 &amp;lt;fielddefinition&amp;gt;
+ 				&amp;lt;field name=&amp;quot;FIELDNAME&amp;quot;
+ 						  type=&amp;quot;columnType&amp;quot;
+ 						  columnDisplaySize=&amp;quot;&amp;quot;
+ 						  precision=&amp;quot;&amp;quot;
+ 						  scale=&amp;quot;&amp;quot;
+ 						  isCurrency=&amp;quot;&amp;quot;
+ 						  columnTypeName=&amp;quot;&amp;quot;
+ 						  columnClassName=&amp;quot;&amp;quot;/&amp;gt;
+ 				 &amp;lt;field ...../&amp;gt;
+  		&amp;lt;/fielddefinition&amp;gt;
+ 			&amp;lt;rowset&amp;gt;
+ 				&amp;lt;row number=&amp;quot;0&amp;quot;&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TKEY&amp;quot;&amp;gt;MSG-ID&amp;lt;/field&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TCHAR&amp;quot;&amp;gt;E&amp;lt;/field&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TMESSAGE&amp;quot;&amp;gt;MESSAGE-CONTENTS&amp;lt;/field&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TCLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 					&amp;lt;field name=&amp;quot;TBLOB&amp;quot; null=&amp;quot;true&amp;quot;/&amp;gt;
+ 				&amp;lt;/row&amp;gt;
+ 				&amp;lt;row number=&amp;quot;1&amp;quot; ..... /&amp;gt;
+ 			&amp;lt;/rowset&amp;gt;
+ 		&amp;lt;/result&amp;gt;
+ 	&amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;&lt;em&gt;NOTE:&lt;/em&gt; Support for stored procedures is currently experimental and changes in the currently produced output-format
  are expected.&lt;/p&gt;</xs:documentation>
@@ -10013,43 +9914,37 @@
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;example (input):&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;browse&gt;
-    &lt;jmsRealm&gt;qcf&lt;/jmsRealm&gt;
-    &lt;destinationName&gt;jms/GetPolicyDetailsRequest&lt;/destinationName&gt;
-    &lt;destinationType&gt;QUEUE&lt;/destinationType&gt;
- &lt;/browse&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;browse&amp;gt;
+    &amp;lt;jmsRealm&amp;gt;qcf&amp;lt;/jmsRealm&amp;gt;
+    &amp;lt;destinationName&amp;gt;jms/GetPolicyDetailsRequest&amp;lt;/destinationName&amp;gt;
+    &amp;lt;destinationType&amp;gt;QUEUE&amp;lt;/destinationType&amp;gt;
+ &amp;lt;/browse&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
  &lt;p&gt;
  &lt;b&gt;example (browse output):&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;result&gt;
-   &lt;items count="2"&gt;
-      &lt;item&gt;
-         &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
-         &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
-         &lt;correlationId&gt;...&lt;/correlationId&gt;
-         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
-      &lt;/item&gt;
-      &lt;item&gt;
-         &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
-         &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
-         &lt;correlationId&gt;...&lt;/correlationId&gt;
-         &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
-      &lt;/item&gt;
- 	 &lt;/items&gt;
- &lt;/result&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;result&amp;gt;
+   &amp;lt;items count=&amp;quot;2&amp;quot;&amp;gt;
+      &amp;lt;item&amp;gt;
+         &amp;lt;timestamp&amp;gt;Thu Nov 20 13:36:31 CET 2014&amp;lt;/timestamp&amp;gt;
+         &amp;lt;messageId&amp;gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&amp;lt;/messageId&amp;gt;
+         &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
+         &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
+      &amp;lt;/item&amp;gt;
+      &amp;lt;item&amp;gt;
+         &amp;lt;timestamp&amp;gt;Thu Dec 12 11:59:22 CET 2014&amp;lt;/timestamp&amp;gt;
+         &amp;lt;messageId&amp;gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&amp;lt;/messageId&amp;gt;
+         &amp;lt;correlationId&amp;gt;...&amp;lt;/correlationId&amp;gt;
+         &amp;lt;message&amp;gt;&amp;lt;![CDATA[...]]&amp;gt;&amp;lt;/message&amp;gt;
+      &amp;lt;/item&amp;gt;
+ 	 &amp;lt;/items&amp;gt;
+ &amp;lt;/result&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;
  &lt;b&gt;example (remove output):&lt;/b&gt;
- &lt;pre&gt;{@code
- &lt;result&gt;
-     &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
- &lt;/result&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;result&amp;gt;
+     &amp;lt;itemsRemoved&amp;gt;2&amp;lt;/itemsRemoved&amp;gt;
+ &amp;lt;/result&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10063,8 +9958,7 @@
         <xs:annotation>
           <xs:documentation>QuerySender that transforms the input message to a query.
  &lt;br/&gt;
- &lt;pre&gt;{@code
-  select
+ &lt;pre&gt;&lt;code&gt;select
   delete
   insert
   update - tableName
@@ -10081,9 +9975,7 @@
         - startWith
 
   sql   - type [0..1] one of {select;ddl;other}, other by default
-        - query
-
- }&lt;/pre&gt;
+        - query&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -10950,7 +10842,7 @@
     </xs:attribute>
     <xs:attribute name="inputFormatSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: Json2XmlValidator.inputFormat &amp;lt;name of the pipe&amp;gt;</xs:documentation>
+        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: &lt;code&gt;Json2XmlValidator.inputFormat &lt;/code&gt;&amp;lt;name of the pipe&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
@@ -11780,12 +11672,12 @@
     </xs:attribute>
     <xs:attribute name="soapNamespaceSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store auto-detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: soapNamespace</xs:documentation>
+        <xs:documentation>Key of session variable to store auto-detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: &lt;code&gt;soapNamespace&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: soapHeader</xs:documentation>
+        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: &lt;code&gt;soapHeader&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyle" type="xs:string">
@@ -12402,15 +12294,13 @@
 
  &lt;p&gt;
  Sample xml:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;adios rekenbox="L76HB150"&gt;
-     &lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&gt;
-     &lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&gt;
-     &lt;rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" /&gt;
-     &lt;rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" /&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;adios rekenbox=&amp;quot;L76HB150&amp;quot;&amp;gt;
+     &amp;lt;rubriek naam=&amp;quot;BER_VERZ_CD&amp;quot; waarde=&amp;quot;COMBIFLEX_BELEGGING&amp;quot; /&amp;gt;
+     &amp;lt;rubriek naam=&amp;quot;INBR_CD&amp;quot; waarde=&amp;quot;NIEUWE_VERZEKERING&amp;quot; /&amp;gt;
+     &amp;lt;rubriek naam=&amp;quot;PENS_DT_BEP_CD&amp;quot;  waarde=&amp;quot;DT_UIT_PENS_LFT&amp;quot; /&amp;gt;
+     &amp;lt;rubriek nummer=&amp;quot;313&amp;quot; naam=&amp;quot;AS_OPSL_PRD_TRM_PRM&amp;quot; index=&amp;quot;3&amp;quot; recordnr=&amp;quot;74&amp;quot; record=&amp;quot;VUT_VERZEKERING&amp;quot; waarde=&amp;quot;52.34&amp;quot; /&amp;gt;
      ...
- &lt;/adios&gt;
- }&lt;/pre&gt;
+ &amp;lt;/adios&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
  For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
  On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element.
@@ -12716,32 +12606,30 @@
  The steam is closed after reading.
 
  Example configuration:
- &lt;pre&gt;{@code
- 	&lt;pipe
- 		name="Read issuer"
- 		className="org.frankframework.pipes.FilePipe"
- 		actions="read"
- 		fileName="dir/issuer.cer"
- 		preserveInput="true"
- 		outputType="stream"
- 		storeResultInSessionKey="issuer"&gt;
- 		&lt;forward name="success" path="Read CRL" /&gt;
- 	&lt;/pipe&gt;
- 	&lt;pipe
- 		name="Read CRL"
- 		className="org.frankframework.pipes.FilePipe"
- 		actions="read"
- 		fileName="dir/CRL.crl"
- 		outputType="stream"&gt;
- 		&lt;forward name="success" path="Transform CRL" /&gt;
- 	&lt;/pipe&gt;
- 	&lt;pipe
- 		name="Transform CRL"
- 		className="org.frankframework.pipes.CrlPipe"
- 		issuerSessionKey="issuer"&gt;
- 		&lt;forward name="success" path="EXIT" /&gt;
- 	&lt;/pipe&gt;
- }&lt;/pre&gt;</xs:documentation>
+ &lt;pre&gt;&lt;code&gt;&amp;lt;pipe
+ 		name=&amp;quot;Read issuer&amp;quot;
+ 		className=&amp;quot;org.frankframework.pipes.FilePipe&amp;quot;
+ 		actions=&amp;quot;read&amp;quot;
+ 		fileName=&amp;quot;dir/issuer.cer&amp;quot;
+ 		preserveInput=&amp;quot;true&amp;quot;
+ 		outputType=&amp;quot;stream&amp;quot;
+ 		storeResultInSessionKey=&amp;quot;issuer&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;Read CRL&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;
+ 	&amp;lt;pipe
+ 		name=&amp;quot;Read CRL&amp;quot;
+ 		className=&amp;quot;org.frankframework.pipes.FilePipe&amp;quot;
+ 		actions=&amp;quot;read&amp;quot;
+ 		fileName=&amp;quot;dir/CRL.crl&amp;quot;
+ 		outputType=&amp;quot;stream&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;Transform CRL&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;
+ 	&amp;lt;pipe
+ 		name=&amp;quot;Transform CRL&amp;quot;
+ 		className=&amp;quot;org.frankframework.pipes.CrlPipe&amp;quot;
+ 		issuerSessionKey=&amp;quot;issuer&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13081,69 +12969,57 @@
  You can use the EchoPipe for a static value. This looked like this before:
 
  &lt;pre&gt;
- {@code
- &lt;pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World"&gt;
-     &lt;forward name="success" path="EXIT"/&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResult&amp;quot; returnString=&amp;quot;Hello World&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot;/&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  Becomes:
  &lt;pre&gt;
- {@code
- &lt;pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World"&gt;
-     &lt;forward name="success" path="EXIT"/&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.EchoPipe&amp;quot; getInputFromFixedValue=&amp;quot;Hello World&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot;/&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  &lt;h3&gt;For replacing a value&lt;/h3&gt;
  You can use the ReplacerPipe to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
  This looked like:
  &lt;pre&gt;
- {@code
- &lt;pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
-     returnString="&amp;lt;msg mid=&amp;quot;MID&amp;quot; action=&amp;quot;ACTION&amp;quot; /&amp;gt;" replaceFixedParams="true"&gt;
-     &lt;param name="MID" sessionKey="mid" /&gt;
- 	   &lt;param name="ACTION" xpathExpression="request/@action" /&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
+     returnString=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;MID&amp;amp;quot; action=&amp;amp;quot;ACTION&amp;amp;quot; /&amp;amp;gt;&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
+     &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
+ 	   &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  And can now be written like this (note the ?{..} syntax):
  &lt;pre&gt;
- {@code
- &lt;pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
-     getInputFromFixedValue="&amp;lt;msg mid=&amp;quot;?{MID}&amp;quot; action=&amp;quot;?{ACTION}&amp;quot; /&amp;gt;"&gt;
- 	   &lt;param name="MID" sessionKey="mid" /&gt;
- 	   &lt;param name="ACTION" xpathExpression="request/@action" /&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
+     getInputFromFixedValue=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;?{MID}&amp;amp;quot; action=&amp;amp;quot;?{ACTION}&amp;amp;quot; /&amp;amp;gt;&amp;quot;&amp;gt;
+ 	   &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
+ 	   &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
  &lt;pre&gt;
- {@code
- &lt;FixedResultPipe name="InputValidateError"
-     filename="ManageFileSystem/xml/ErrorMessage.xml"
-     replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML"&gt;
-     &lt;forward name="success" path="EXIT" /&gt;
- &lt;/FixedResultPipe&gt;
- }
+ &lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
+     filename=&amp;quot;ManageFileSystem/xml/ErrorMessage.xml&amp;quot;
+     replaceFrom=&amp;quot;%reasonCode&amp;quot; replaceTo=&amp;quot;NOT_WELL_FORMED_XML&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ &amp;lt;/FixedResultPipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  And now should be solved like this:
  &lt;pre&gt;
- {@code
- &lt;FixedResultPipe name="InputValidateError"
-     filename="ManageFileSystem/xml/ErrorMessage.xml"&gt;
-     &lt;forward name="success" path="replaceReasonCode" /&gt;
- &lt;/FixedResultPipe&gt;
- &lt;ReplacerPipe name="replaceReasonCode"
-     find="%reasonCode"
-     replace="NOT_WELL_FORMED_XML"&gt;
-     &lt;forward name="success" path="EXIT" /&gt;
- &lt;/ReplacerPipe&gt;
- }
+ &lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
+     filename=&amp;quot;ManageFileSystem/xml/ErrorMessage.xml&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;replaceReasonCode&amp;quot; /&amp;gt;
+ &amp;lt;/FixedResultPipe&amp;gt;
+ &amp;lt;ReplacerPipe name=&amp;quot;replaceReasonCode&amp;quot;
+     find=&amp;quot;%reasonCode&amp;quot;
+     replace=&amp;quot;NOT_WELL_FORMED_XML&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ &amp;lt;/ReplacerPipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
 
@@ -13151,61 +13027,57 @@
  In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
  was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
  &lt;pre&gt;
- {@code
- 	&lt;CompareStringPipe name="compareIdAndCid" &gt;
- 		&lt;param name="operand1" sessionKey="id"/&gt;
- 		&lt;param name="operand2" sessionKey="cid"/&gt;
- 		&lt;forward name="equals" path="IdAndCidSame" /&gt;
- 		&lt;forward name="lessthan" path="IdAndCidDifferent" /&gt;
- 		&lt;forward name="greaterthan" path="IdAndCidDifferent" /&gt;
- 	&lt;/CompareStringPipe&gt;
- 	&lt;FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="displayKeys" /&gt;
- 	&lt;/FixedResultPipe&gt;
- 	&lt;FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="displayKeys" /&gt;
- 	&lt;/FixedResultPipe&gt;
+ &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 	&amp;lt;/CompareStringPipe&amp;gt;
+ 	&amp;lt;FixedResultPipe name=&amp;quot;IdAndCidSame&amp;quot; returnString=&amp;quot;true&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
+ 	&amp;lt;/FixedResultPipe&amp;gt;
+ 	&amp;lt;FixedResultPipe name=&amp;quot;IdAndCidDifferent&amp;quot; returnString=&amp;quot;false&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
+ 	&amp;lt;/FixedResultPipe&amp;gt;
 
-  &lt;pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
- 		returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true"&gt;
- 		&lt;param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&amp;#47;@branch" /&gt;
- 		&lt;param name="MID" sessionKey="id" /&gt;
- 		&lt;param name="CID" sessionKey="cid" /&gt;
- 		&lt;param name="SAME" sessionKey="IdAndCidSame" /&gt;
- 		&lt;forward name="success" path="EXIT" /&gt;
- 	&lt;/pipe&gt;
- }
+  &amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
+ 		returnString=&amp;quot;branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
+ 		&amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  Was rewritten to the following:
  &lt;pre&gt;
- {@code
- 	&lt;CompareStringPipe name="compareIdAndCid" &gt;
- 		&lt;param name="operand1" sessionKey="id"/&gt;
- 		&lt;param name="operand2" sessionKey="cid"/&gt;
- 		&lt;forward name="equals" path="IdAndCidSame" /&gt;
- 		&lt;forward name="lessthan" path="IdAndCidDifferent" /&gt;
- 		&lt;forward name="greaterthan" path="IdAndCidDifferent" /&gt;
- 	&lt;/CompareStringPipe&gt;
+ &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 	&amp;lt;/CompareStringPipe&amp;gt;
 
- 	&lt;PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="putOriginalMessageInSession" /&gt;
- 	&lt;/PutInSessionPipe&gt;
- 	&lt;PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="putOriginalMessageInSession" /&gt;
- 	&lt;/PutInSessionPipe&gt;
+ 	&amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidSame&amp;quot; value=&amp;quot;true&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
+ 	&amp;lt;/PutInSessionPipe&amp;gt;
+ 	&amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidDifferent&amp;quot; value=&amp;quot;false&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
+ 	&amp;lt;/PutInSessionPipe&amp;gt;
 
- 	&lt;PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/&gt;
+ 	&amp;lt;PutInSessionPipe name=&amp;quot;putOriginalMessageInSession&amp;quot; sessionKey=&amp;quot;incomingMessage&amp;quot;/&amp;gt;
 
- 	&lt;pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
- 		getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]"&gt;
- 		&lt;param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&amp;#47;@branch" /&gt;
- 		&lt;param name="MID" sessionKey="id" /&gt;
- 		&lt;param name="CID" sessionKey="cid" /&gt;
- 		&lt;param name="SAME" sessionKey="IdAndCidSame" /&gt;
- 		&lt;forward name="success" path="EXIT" /&gt;
- 	&lt;/pipe&gt;
- }
+ 	&amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
+ 		getInputFromFixedValue=&amp;quot;branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]&amp;quot;&amp;gt;
+ 		&amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  &lt;p&gt;
 
@@ -13485,29 +13357,25 @@
 
  &lt;p&gt;
  Sample xml:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;CALCBOXMESSAGE&gt;
- 		&lt;OPDRACHT&gt;
- 		    &lt;OPDRACHTSOORT&gt;ONTTREK_RISICO_EN_KOSTEN&lt;/OPDRACHTSOORT&gt;
- 		    &lt;BASISRENDEMENTSOORT&gt;NVT&lt;/BASISRENDEMENTSOORT&gt;
- 		    &lt;BEDRAG&gt;625&lt;/BEDRAG&gt;
- 		    &lt;DATUM&gt;20071201&lt;/DATUM&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;CALCBOXMESSAGE&amp;gt;
+ 		&amp;lt;OPDRACHT&amp;gt;
+ 		    &amp;lt;OPDRACHTSOORT&amp;gt;ONTTREK_RISICO_EN_KOSTEN&amp;lt;/OPDRACHTSOORT&amp;gt;
+ 		    &amp;lt;BASISRENDEMENTSOORT&amp;gt;NVT&amp;lt;/BASISRENDEMENTSOORT&amp;gt;
+ 		    &amp;lt;BEDRAG&amp;gt;625&amp;lt;/BEDRAG&amp;gt;
+ 		    &amp;lt;DATUM&amp;gt;20071201&amp;lt;/DATUM&amp;gt;
      ...
- &lt;/CALCBOXMESSAGE&gt;
- }&lt;/pre&gt;
+ &amp;lt;/CALCBOXMESSAGE&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
 
  Sample ascii:&lt;br/&gt;
- &lt;pre&gt;{@code
- 	OPDRACHT : #SAMENGESTELD
+ &lt;pre&gt;&lt;code&gt;OPDRACHT : #SAMENGESTELD
  	OPDRACHT.OPDRACHTSOORT :ONTTREK_RISICO_EN_KOSTEN
  	OPDRACHT.BASISRENDEMENTSOORT :NVT
  	OPDRACHT.BEDRAG :625
  	OPDRACHT.DATUM :20071201
 
           ...
- 	EINDEREKENVERZOEK :EINDE
- }&lt;/pre&gt;
+ 	EINDEREKENVERZOEK :EINDE&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
 
  &lt;p&gt;&lt;b&gt;Configuration:&lt;/b&gt;
@@ -13604,7 +13472,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -13640,24 +13508,20 @@
           <xs:documentation>Pipe that sends a mail-message using a MailSender as its sender.
  &lt;br/&gt;
  Sample email.xml:&lt;br/&gt;
- &lt;pre&gt;{@code
- 	&lt;email&gt;
- 	    &lt;recipients&gt;
- 	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
- 	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
- 	    &lt;/recipients&gt;
- 	    &lt;from&gt;***@nn.nl&lt;/from&gt;
- 	    &lt;subject&gt;this is the subject&lt;/subject&gt;
- 	    &lt;message&gt;dit is de message&lt;/message&gt;
- 	&lt;/email&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;email&amp;gt;
+ 	    &amp;lt;recipients&amp;gt;
+ 	        &amp;lt;recipient&amp;gt;***@natned&amp;lt;/recipient&amp;gt;
+ 	        &amp;lt;recipient&amp;gt;***@nn.nl&amp;lt;/recipient&amp;gt;
+ 	    &amp;lt;/recipients&amp;gt;
+ 	    &amp;lt;from&amp;gt;***@nn.nl&amp;lt;/from&amp;gt;
+ 	    &amp;lt;subject&amp;gt;this is the subject&amp;lt;/subject&amp;gt;
+ 	    &amp;lt;message&amp;gt;dit is de message&amp;lt;/message&amp;gt;
+ 	&amp;lt;/email&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;
  Notice: it must be valid XML. Therefore, especially the message element
  must be plain text or be wrapped as CDATA.&lt;br/&gt;&lt;br/&gt;
  example:&lt;br/&gt;
- &lt;pre&gt;{@code
- &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
- }&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;message&amp;gt;&amp;lt;![CDATA[&amp;lt;h1&amp;gt;This is a HtmlMessage&amp;lt;/h1&amp;gt;]]&amp;gt;&amp;lt;/message&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;br/&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -14632,12 +14496,12 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trimSpaces" type="frankBoolean">
@@ -14940,8 +14804,8 @@
     </xs:attribute>
     <xs:attribute name="useControlCodes" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Enables the ASCII {@code (RS) Record Separator} and {@code (US) Unit Separator} Control Code field delimiters.
- May not be used in combination with attribute {@code fieldSeparator}.
+        <xs:documentation>Enables the ASCII &lt;code&gt;(RS) Record Separator&lt;/code&gt; and &lt;code&gt;(US) Unit Separator&lt;/code&gt; Control Code field delimiters.
+ May not be used in combination with attribute &lt;code&gt;fieldSeparator&lt;/code&gt;.
  See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators"&gt;WIKI Control Codes&lt;/a&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -15810,7 +15674,7 @@
   <xs:attributeGroup name="FileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [&lt;code&gt;action&lt;/code&gt;] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -15818,17 +15682,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=&lt;code&gt;list&lt;/code&gt;. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -15838,32 +15702,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, write, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions &lt;code&gt;create&lt;/code&gt;, &lt;code&gt;write&lt;/code&gt;, &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt;, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -15873,17 +15737,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for read and write action</xs:documentation>
+        <xs:documentation>Charset to be used for &lt;code&gt;read&lt;/code&gt; and &lt;code&gt;write&lt;/code&gt; action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions &lt;code&gt;delete&lt;/code&gt;, &lt;code&gt;readDelete&lt;/code&gt; and &lt;code&gt;move&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -15920,7 +15784,7 @@
     </xs:attribute>
     <xs:attribute name="continueOnError" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution. Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the pipe will never forward to the &lt;code&gt;ExceptionForward&lt;/code&gt; even if an error occurred during execution. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16095,18 +15959,18 @@
 
  &lt;p&gt;
  Conversion result files are stored as messages in the session, under keys numbered based
- on the value set here. If #isSaveSeparate() is {@code false} then only the main
- document is stored in the session, if it is {@code true} then each attachment is stored
+ on the value set here. If #isSaveSeparate() is &lt;code&gt;false&lt;/code&gt; then only the main
+ document is stored in the session, if it is &lt;code&gt;true&lt;/code&gt; then each attachment is stored
  separately.
  &lt;/p&gt;
  &lt;p&gt;
      For example, if a file is converted that has 2 attachments and #setSaveSeparate(boolean)
-     is set to {@code true} then there will be the following 3 session keys (assuming the default value
+     is set to &lt;code&gt;true&lt;/code&gt; then there will be the following 3 session keys (assuming the default value
      is unchanged):
      &lt;ol&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles1}&lt;/li&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles2}&lt;/li&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles3}&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles1&lt;/code&gt;&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles2&lt;/code&gt;&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles3&lt;/code&gt;&lt;/li&gt;
      &lt;/ol&gt;
      Each session key will contain a FileMessage referencing the contents of that PDF.
  &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
@@ -16206,7 +16070,7 @@
     </xs:attribute>
     <xs:attribute name="returnFixedDate" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be 2001-12-17 09:30:47 (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be &lt;code&gt;2001-12-17 09:30:47&lt;/code&gt; (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getCurrentTimeStampInMillis" type="frankBoolean">
@@ -16373,7 +16237,7 @@
  &lt;p&gt;
  &lt;b&gt;NB:&lt;/b&gt; This will only replace or remove characters considered non-printable. This
  will not check if a given character is valid in the particular way it is used. Thus it will
- not remove or replace, for instance, a single {@code '&amp;'} character.
+ not remove or replace, for instance, a single &lt;code&gt;'&amp;amp;'&lt;/code&gt; character.
  &lt;/p&gt;
  &lt;p&gt;
  See also:
@@ -17394,7 +17258,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -18594,7 +18458,7 @@
       </xs:enumeration>
       <xs:enumeration value="LIST">
         <xs:annotation>
-          <xs:documentation>Used for StoredProcedure OUT parameters when the database type is a {@code CURSOR} or java.sql.JDBCType#REF_CURSOR.
+          <xs:documentation>Used for StoredProcedure OUT parameters when the database type is a &lt;code&gt;CURSOR&lt;/code&gt; or java.sql.JDBCType#REF_CURSOR.
  See also org.frankframework.jdbc.StoredProcedureQuerySender.
  &lt;br/&gt;
  DEPRECATED: Type LIST can also be used in larva test to Convert a List to an xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)</xs:documentation>
@@ -19153,7 +19017,7 @@
  MessageClass#BYTES for JMS BytesMessage, or MessageClass#AUTO for auto-determination
  based on whether the input Message is binary or character.
  &lt;p&gt;
- Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property {@code jms.messageClass.default}
+ Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property &lt;code&gt;jms.messageClass.default&lt;/code&gt;
  &lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
@@ -19286,7 +19150,7 @@
   <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="connectionsArePooled" type="frankBoolean">
@@ -19381,7 +19245,7 @@
   </xs:attribute>
   <xs:attribute name="useNamedParams" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="includeFieldDefinition" type="frankBoolean">
@@ -19687,7 +19551,7 @@
   </xs:attribute>
   <xs:attribute name="verifyHostname" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -19737,7 +19601,7 @@
   </xs:attribute>
   <xs:attribute name="supportedCipherSuites" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
+      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
  See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
@@ -19971,9 +19835,9 @@
     <xs:annotation>
       <xs:documentation>Regular expression to mask strings in the log. For example, the regular expression &lt;code&gt;(?&amp;lt;=&amp;lt;password&amp;gt;).*?(?=&amp;lt;/password&amp;gt;)&lt;/code&gt;
  will replace every character between keys '&amp;lt;password&amp;gt;' and '&amp;lt;/password&amp;gt;'. &lt;b&gt;note:&lt;/b&gt; this feature is used at adapter level,
- so a {@code hideRegex} set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
+ so a &lt;code&gt;hideRegex&lt;/code&gt; set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
  The regular expressions are matched against part of the log lines. See int)
- with {@code mode = 0} for how regular expressions are matched and replaced.</xs:documentation>
+ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched and replaced.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="outputSoapBody" type="xs:string">
@@ -20083,7 +19947,7 @@
   <xs:attribute name="warn" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCaching" type="frankBoolean">
@@ -20118,12 +19982,12 @@
   </xs:attribute>
   <xs:attribute name="maxItems" type="frankInt">
     <xs:annotation>
-      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward maxItemsReached can be configured to follow Default: 0</xs:documentation>
+      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward &lt;code&gt;maxItemsReached&lt;/code&gt; can be configured to follow Default: 0</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="stopConditionXPathExpression" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Expression evaluated on each result and forwards to [stopConditionMet] forward if configured.
+      <xs:documentation>Expression evaluated on each result and forwards to [&lt;code&gt;stopConditionMet&lt;/code&gt;] forward if configured.
  Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used.
  This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.
  Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>
