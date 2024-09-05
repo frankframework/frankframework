@@ -1,8 +1,6 @@
 import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import type { ADTColumns, ADTSettings } from 'angular-datatables/src/models/settings';
 // import { DataTable } from "simple-datatables"
 import { Note, StorageService } from '../storage.service';
-import { DataTableDirective } from 'angular-datatables';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { Subject } from 'rxjs';
 import { AppService } from 'src/app/app.service';

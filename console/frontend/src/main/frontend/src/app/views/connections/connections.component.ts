@@ -1,9 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { DataTableDirective } from 'angular-datatables';
-import { ADTSettings } from 'angular-datatables/src/models/settings';
 import { AppService } from 'src/app/app.service';
 import { copyToClipboard } from 'src/app/utils';
+import { DataSource } from '@angular/cdk/table';
+import { DataTableColumn } from '../../components/datatable/datatable.component';
+import { CollectionViewer } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 type Connections = {
   data: {
@@ -15,15 +17,25 @@ type Connections = {
   }[];
 };
 
+type ConnectionsData = Connections['data'][number];
+
 @Component({
   selector: 'app-connections',
   templateUrl: './connections.component.html',
   styleUrls: ['./connections.component.scss'],
 })
 export class ConnectionsComponent implements OnInit, AfterViewInit {
-  @ViewChild(DataTableDirective, { static: false }) datatableElement!: DataTableDirective;
+  // @ViewChild(DataTableDirective, { static: false }) datatableElement!: DataTableDirective;
 
-  protected dtOptions: ADTSettings = {};
+  // protected dtOptions: ADTSettings = {};
+  protected datasource: ConnectionsDataSource = new ConnectionsDataSource();
+  protected displayedColumns: DataTableColumn<Connections['data'][number]>[] = [
+    { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName' },
+    { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName' },
+    { name: 'domain', displayName: 'Domain', property: 'domain' },
+    { name: 'destination', displayName: 'Destination', property: 'destination' },
+    { name: 'direction', displayName: 'Direction', property: 'direction' },
+  ];
 
   private minimalTruncateLength = 100;
 
@@ -33,6 +45,22 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.http.get<Connections>(`${this.appService.absoluteApiPath}connections`).subscribe((response) => {
+      this.datasource.data = response.data;
+      /*callback({
+        ...response,
+        draw: (data as Record<string, unknown>)['draw'],
+        recordsTotal: response.data.length,
+        recordsFiltered: response.data.length,
+      });*/
+    });
+  }
+
+  ngAfterViewInit(): void {
+    null;
+  }
+
+  /*ngOnInit(): void {
     this.dtOptions = {
       processing: true,
       lengthMenu: [50, 100, 250, 500],
@@ -117,5 +145,25 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
         });
       });
     });
+  }*/
+}
+// TODO make own datatable datasource
+export class ConnectionsDataSource extends DataSource<ConnectionsData> {
+  private _data = new BehaviorSubject<ConnectionsData[]>([]);
+
+  get data(): ConnectionsData[] {
+    return this._data.value;
+  }
+
+  set data(value: ConnectionsData[]) {
+    this._data.next(value);
+  }
+
+  connect(): Observable<ConnectionsData[]> {
+    return this._data;
+  }
+
+  disconnect(): void {
+    this._data.complete();
   }
 }

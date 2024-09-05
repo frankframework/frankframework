@@ -5,7 +5,8 @@
         <h4>Connections</h4>
       </div>
       <div class="ibox-content">
-        <table id="datatable" class="table table-striped table-hover" datatable [dtOptions]="dtOptions">
+        <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns"></app-datatable>
+        <!--<table id="datatable"  datatable [dtOptions]="dtOptions">
           <thead>
             <tr>
               <th>
@@ -29,7 +30,7 @@
             </tr>
           </thead>
           <tbody></tbody>
-        </table>
+        </table>-->
       </div>
     </div>
   </div>

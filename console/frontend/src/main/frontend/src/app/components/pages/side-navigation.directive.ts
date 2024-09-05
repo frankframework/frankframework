@@ -9,6 +9,6 @@ export class SideNavigationDirective implements AfterViewInit {
 
   ngAfterViewInit(): void {
     // @ts-expect-error metisMenu is not a function
-    $(this.element.nativeElement).metisMenu();
+    $(this.element.nativeElement).metisMenu(); // TODO replace with CDK accordion & css transition
   }
 }

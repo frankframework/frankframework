@@ -7,7 +7,6 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
 import { LaddaModule } from 'angular2-ladda';
-import { DataTablesModule } from 'angular-datatables';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -87,6 +86,7 @@ import { ServerWarningsComponent } from './views/status/server-warnings/server-w
 import { AdapterStatusComponent } from './views/status/adapter-status/adapter-status.component';
 import { ConfigurationMessagesComponent } from './views/status/configuration-messages/configuration-messages.component';
 import { ConfigurationSummaryComponent } from './views/status/configuration-summary/configuration-summary.component';
+import { DatatableComponent } from './components/datatable/datatable.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -168,7 +168,6 @@ const windowProvider: ValueProvider = {
     AppRoutingModule,
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
-    DataTablesModule,
 
     // standalone directives
     TimeSinceDirective,
@@ -191,6 +190,7 @@ const windowProvider: ValueProvider = {
     PagesTopnavbarComponent,
     HumanFileSizePipe,
     MonacoEditorComponent,
+    DatatableComponent,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],
