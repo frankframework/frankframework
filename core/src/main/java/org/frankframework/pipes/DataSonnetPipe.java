@@ -56,7 +56,7 @@ import org.frankframework.util.StreamUtil;
  * from and to different file formats specified by supported {@link DataSonnetOutputType outputTypes}.
  * </p>
  * <p>
- * The input message will be referenced by the key {@code payload}.
+ * The pipe input message will be set to the JSON object called {@code payload}.
  * It's required for the input message to have a correct MimeType, else the text will be interpreted as a String.
  * </p>
  * <p>
