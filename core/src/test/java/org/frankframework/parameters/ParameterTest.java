@@ -342,7 +342,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
+	public void testEmptyParameterResolvesToMessage() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.configure();
@@ -352,7 +352,9 @@ public class ParameterTest {
 
 		Message message = new Message("fakeMessage");
 
-		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("fakeMessage", msg.asString());
 
 		assertTrue(p.requiresInputValueForResolution());
 	}
@@ -413,7 +415,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterValueMessageString() throws ConfigurationException, ParameterException {
+	public void testParameterValueMessageString() throws Exception {
 		String sessionKey = "mySessionKey";
 		String sessionMessage = "message goes here " + UUID.randomUUID();
 
@@ -428,7 +430,9 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		assertEquals(sessionMessage, p.getValue(alreadyResolvedParameters, message, session, false));
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals(sessionMessage, msg.asString());
 
 		assertFalse(p.requiresInputValueForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
