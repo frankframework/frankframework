@@ -23,7 +23,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import jakarta.annotation.Nonnull;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
@@ -41,11 +48,7 @@ import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import jakarta.annotation.Nonnull;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonStructure;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -193,14 +196,9 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private JsonObjectBuilder getJsonBuilderForTimer(Timer timer) {
 		JsonObjectBuilder timerObject = Json.createObjectBuilder();
 
-		timerObject.add("hostname", timer.getId().getTag( "hostname"));
-		timerObject.add("instance", timer.getId().getTag( "instance"));
-		timerObject.add("method", timer.getId().getTag( "method"));
-		timerObject.add("outcome", timer.getId().getTag( "outcome"));
-		timerObject.add("status", timer.getId().getTag( "status"));
-		timerObject.add("target_host", timer.getId().getTag( "target.host"));
-		timerObject.add("target_port", timer.getId().getTag( "target.port"));
-		timerObject.add("target_schema", timer.getId().getTag( "target.schema"));
+		Id timerId = timer.getId();
+
+		timerObject.add("status", timerId.getTag("status"));
 		timerObject.add("count", timer.count());
 		timerObject.add("total", timer.totalTime(timer.baseTimeUnit()));
 		timerObject.add("max", timer.max(timer.baseTimeUnit()));
@@ -281,8 +279,10 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 			String name = String.format(MetricsInitializer.PARENT_CHILD_NAME_FORMAT, receiver.getName(), receiver.getListener().getName());
 
-			receiverMap.add("messagesReceiving", getSubDistributionSummaryForReceiver(summaryListReceiving, name));
-			receiverMap.add("messagesPeeking", getSubDistributionSummaryForReceiver(summaryListPeeking, name));
+			getSubDistributionSummaryForReceiver(summaryListReceiving, name)
+					.ifPresent(summary -> receiverMap.add("messagesReceiving", summary));
+			getSubDistributionSummaryForReceiver(summaryListPeeking, name)
+					.ifPresent(summary -> receiverMap.add("messagesPeeking", summary));
 
 			receiverMap.add("processing", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_DURATION));
 
@@ -301,17 +301,13 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	/**
 	 * @param distributionSummaryList
 	 * @param name
-	 * @return a {@link JsonArrayBuilder} for the receiver with the given name
+	 * @return an Optional {@link JsonObjectBuilder} for the receiver with the given name
 	 */
-	private JsonArrayBuilder getSubDistributionSummaryForReceiver(List<LocalDistributionSummary> distributionSummaryList, String name) {
-		JsonArrayBuilder byReceiver = Json.createArrayBuilder();
-
-		distributionSummaryList.stream()
+	private Optional<JsonObjectBuilder> getSubDistributionSummaryForReceiver(List<LocalDistributionSummary> distributionSummaryList, String name) {
+		return distributionSummaryList.stream()
 				.filter(summary -> extractNameFromTag(summary, "name").equals(name))
-				.map(summary -> readSummary(summary, extractNameFromTag(summary, "name")))
-				.forEach(byReceiver::add);
-
-		return byReceiver;
+				.findFirst()
+				.map(summary -> readSummary(summary, extractNameFromTag(summary, "name")));
 	}
 
 	/**
