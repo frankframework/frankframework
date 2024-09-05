@@ -39,6 +39,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.Resource;
+import org.frankframework.doc.ElementType;
+import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.parameters.DateParameter;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
@@ -48,7 +50,47 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
+/**
+ * <p>
+ * Using {@code jsonnet} transformation files, the DataSonnetPipe uses JSonnet at it's core to transform files 
+ * from and to different file formats specified by supported {@link DataSonnetOutputType outputTypes}.
+ * </p>
+ * <p>
+ * The input message will be reference to the key {@code payload}.
+ * It's required for the input message to have a correct MimeType, else the text will be interpreted as a String.
+ * </p>
+ * <p>
+ * Input message (JSON) format:
+ * <pre>{@code
+ * {
+ *   "userId" : "123",
+ *   "name" : "DataSonnet"
+ * }
+ * }</pre>
+ * 
+ * Jsonnet stylesheet:
+ * <pre>{@code
+ * {
+ *   "uid": payload.userId,
+ *   "uname": payload.name,
+ * }
+ * }</pre>
+ * Produces the following JSON output:
+ * <pre>{@code
+ * {
+ *   "uid": "123",
+ *   "uname": "DataSonnet"
+ * }
+ * }</pre>
+ * </p>
+ * 
+ * @ff.parameters Any parameters are added to the stylesheet, parameter names must be unique.
+ * 
+ * @see <a href="https://jsonnet.org/">https://jsonnet.org/</a> for live examples.
+ * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
+ */
 @Log4j2
+@ElementType(ElementTypes.TRANSLATOR)
 public class DataSonnetPipe extends FixedForwardPipe {
 	private String styleSheetName;
 	private Mapper mapper;
