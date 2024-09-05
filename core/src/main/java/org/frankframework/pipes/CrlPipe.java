@@ -41,16 +41,16 @@ import org.frankframework.util.XmlBuilder;
  *
  * Example configuration:
  * <pre>{@code
- * 			<pipe name="Read input CSV file"
- *                   className="org.frankframework.pipes.FixedResultPipe">
- * 				<param name="filename" sessionKey="filePathName"/>
- * 				<forward name="success" path="Process each Line" />
- * 			</pipe>
+ * 	<pipe name="Read input CSV file"
+ *                 className="org.frankframework.pipes.FixedResultPipe">
+ * 		<param name="filename" sessionKey="filePathName"/>
+ * 		<forward name="success" path="Process each Line" />
+ * 	</pipe>
  * 	<pipe
  * 		name="Read issuer"
  * 		className="org.frankframework.pipes.FixedResultPipe"
  * 		filename="dir/issuer.cer"
- * 		storeResultInSessionKey="issuer"	>
+ * 		storeResultInSessionKey="issuer">
  * 		<forward name="success" path="Read CRL" />
  * 	</pipe>
  * 	<pipe
@@ -66,7 +66,6 @@ import org.frankframework.util.XmlBuilder;
  * 		<forward name="success" path="EXIT" />
  * 	</pipe>
  * }</pre>
- *
  *
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot
