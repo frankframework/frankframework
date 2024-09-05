@@ -90,7 +90,6 @@
 		<Logger name="org.apache.http.headers" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
 		<Logger name="org.apache.http.wire" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
 		<Logger name="org.aspectj.weaver" level="WARN" />
-		<Logger name="bitronix.tm" level="INFO" />
 		<Logger name="com.arjuna" level="INFO" />
 		<Logger name="org.frankframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
