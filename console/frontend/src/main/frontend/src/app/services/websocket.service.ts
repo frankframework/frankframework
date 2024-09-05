@@ -35,8 +35,9 @@ export class WebsocketService {
 
   private baseUrl: string = `${window.location.host}${this.appService.absoluteApiPath}`;
   private errorCount: number = 0;
+  private webSocketProtocol: string = window.location.protocol == 'https:' ? 'wss' : 'ws';
   private client: Client = new Client({
-    brokerURL: `ws://${this.baseUrl}ws`,
+    brokerURL: `${this.webSocketProtocol}://${this.baseUrl}ws`,
     connectionTimeout: 3000,
     debug: (message) => (): void => {
       if (isDevMode()) console.debug(message);
