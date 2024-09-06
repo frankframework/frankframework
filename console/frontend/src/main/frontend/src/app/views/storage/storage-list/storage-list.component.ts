@@ -1,9 +1,6 @@
 import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-// import { DataTable } from "simple-datatables"
 import { Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
-import { Subject } from 'rxjs';
-import { AppService } from 'src/app/app.service';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
@@ -27,7 +24,7 @@ type DisplayColumn = {
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
   // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
-  @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
+  // @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
   @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
@@ -56,8 +53,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     expiryDate: true,
     label: true,
   };
-  protected dtOptions: ADTSettings = {};
-  protected dtTrigger = new Subject<ADTSettings>();
+  // protected dtOptions: ADTSettings = {};
+  // protected dtTrigger = new Subject<ADTSettings>();
 
   // service bindings
   protected storageParams = this.storageService.storageParams;
@@ -68,7 +65,22 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     return getProcessStateIcon(processState);
   };
 
-  private initialColumns: ADTColumns[] = [
+  constructor(
+    private webStorageService: WebStorageService,
+    private Session: SessionService,
+    private SweetAlert: SweetalertService,
+    protected storageService: StorageService,
+  ) {}
+
+  ngOnInit(): void {
+    null;
+  }
+
+  ngAfterViewInit(): void {
+    null;
+  }
+
+  /*private initialColumns: ADTColumns[] = [
     {
       data: null,
       defaultContent: '',
@@ -289,31 +301,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       };
     }
 
-    // simple-datatables
-    /* const table = new DataTable(this.dtElement.nativeElement, {
-      // columns: columns,
-      searchable: false,
-      paging: true,
-    });
-
-    table.data = {
-      headings: [
-        { text: '', data: defaultContent, type: 'html' },
-        { text: "pos", data: "position", type: 'string'  },
-        { text: "id", data: "messageId", type: 'string' },
-        { text: "insertDate", data: "insertDate", type: 'string' },
-        { text: "host", data: "host", type: 'string' },
-        { text: "originalId", data: "originalId", type: 'string' },
-        { text: "correlationId", data: "correlationId", type: 'string' },
-        { text: "comment", data: "comment", type: 'string' },
-        { text: "expiryDate", data: "expiryDate", type: 'string' },
-        { text: "label", data: "label", type: 'string' },
-      ],
-      data: []
-    }; */
-
     this.dtTrigger.next(this.dtOptions);
-  }
+  }*/
 
   getNotes(): Note[] {
     return this.storageService.notes;
@@ -354,12 +343,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   updateFilter(column: string): void {
     this.webStorageService.set(`${this.storageParams.processState}Filter`, this.displayColumn);
 
-    this.dataTable.dtInstance.then((table) => {
+    /*this.dataTable.dtInstance.then((table) => {
       const tableColumn = table.column(`${column}:name`);
       if (tableColumn && tableColumn.length == 1)
         tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
       table.draw();
-    });
+    });*/
   }
 
   selectAll(): void {

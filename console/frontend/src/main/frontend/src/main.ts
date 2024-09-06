@@ -8,7 +8,7 @@ import { whenElementExists } from './app/utils';
 declare global {
   interface Window {
     server: string;
-    SockJS: typeof SockJS; // use premad bundle because sockjs developers don't understand using global might be a bad idea in non-node environments
+    SockJS: typeof SockJS; // use premade bundle because sockjs developers don't understand using global might be a bad idea in non-node environments
   }
 }
 
@@ -48,31 +48,8 @@ function onReady(): void {
   console.timeEnd('documentReady');
   console.log('Launching GUI!');
   whenElementExists('.loading', (element) => (element.style.display = ''));
-  // Full height of sidebar
-  fix_height_function();
 
   const bodyElement = document.querySelector<HTMLElement>('body')!;
-
-  for (const event of ['resize', 'scroll']) {
-    window.addEventListener(event, function () {
-      if (!bodyElement.classList?.contains('body-small')) {
-        fix_height();
-      }
-    });
-  }
-
-  window.addEventListener('load', function () {
-    if (!bodyElement.classList?.contains('body-small')) {
-      fix_height(500);
-    }
-  });
-
-  function fix_height(time?: number): void {
-    if (!time) time = 50;
-    setTimeout(function () {
-      fix_height_function();
-    }, time);
-  }
 
   window.addEventListener('keydown', function (event) {
     if (event.key == 'F' && (event.ctrlKey || event.metaKey) && event.shiftKey) {
@@ -109,24 +86,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', onReady);
 } else {
   onReady();
-}
-
-function fix_height_function(): void {
-  const wrapperElement = document.querySelector<HTMLElement>('#page-wrapper')!;
-  const navbarHeight = document.querySelector<HTMLElement>('nav.navbar-default')!.clientHeight;
-  const wrapperHeight = wrapperElement.clientHeight;
-
-  wrapperElement.style.minHeight =
-    navbarHeight <= wrapperHeight && window.innerHeight > navbarHeight
-      ? window.getComputedStyle(document.documentElement).height
-      : `${navbarHeight}px`;
-}
-
-//Detect if using any (older) version of Internet Explorer
-if (navigator.userAgent.includes('MSIE') || navigator.appVersion.includes('Trident/')) {
-  document
-    .querySelector<HTMLElement>('body')!
-    .prepend(
-      "<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>",
-    );
 }

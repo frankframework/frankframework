@@ -42,6 +42,15 @@
       </div>
     </div>
   </app-root>
-</body>
 
+  <script type="text/javascript">
+    //Detect if using any (older) version of Internet Explorer
+    if (navigator.userAgent.indexOf('MSIE') > -1 || navigator.appVersion.indexOf('Trident/') > -1) {
+      var warning = document.createElement("div")
+      var bodyElement = document.querySelector('.loading');
+      warning.innerHTML = "<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>"
+      bodyElement.insertBefore(warning, bodyElement.firstChild);
+    }
+  </script>
+</body>
 </html>

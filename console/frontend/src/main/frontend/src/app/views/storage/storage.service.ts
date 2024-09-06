@@ -62,7 +62,7 @@ export class StorageService {
     messageId: null,
   };
   selectedMessages: Record<string, boolean> = {};
-  dtElement?: DataTableDirective | null;
+  // dtElement?: DataTableDirective | null;
 
   constructor(
     private http: HttpClient,
@@ -135,7 +135,7 @@ export class StorageService {
   }
 
   updateTable(): void {
-    this.dtElement?.dtInstance.then((table) => table.draw());
+    // this.dtElement?.dtInstance.then((table) => table.draw());
     for (const index in this.selectedMessages) {
       this.selectedMessages[index] = false;
     }
