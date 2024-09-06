@@ -35,9 +35,10 @@ export class WebsocketService {
 
   private baseUrl: string = `${window.location.host}${this.appService.absoluteApiPath}`;
   private errorCount: number = 0;
-  private webSocketProtocol: string = window.location.protocol == 'https:' ? 'wss' : 'ws';
+  private httpProtocol: string = window.location.protocol == 'https:' ? 'https:' : 'http:';
+  private webSocketProtocol: string = this.httpProtocol == 'https:' ? 'wss:' : 'ws:';
   private client: Client = new Client({
-    brokerURL: `${this.webSocketProtocol}://${this.baseUrl}ws`,
+    brokerURL: `${this.webSocketProtocol}//${this.baseUrl}ws`,
     connectionTimeout: 3000,
     debug: (message) => (): void => {
       if (isDevMode()) console.debug(message);
@@ -107,7 +108,7 @@ export class WebsocketService {
 
   private enableSockJs(): void {
     this.client.webSocketFactory = (): IStompSocket => {
-      return new window.SockJS(`http://${this.baseUrl}stomp`, undefined, {
+      return new window.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
         transports: [
           'xhr-streaming',
           'xhr-polling',
