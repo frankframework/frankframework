@@ -52,7 +52,7 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * <p>
- * Using {@code jsonnet} transformation files, the DataSonnetPipe uses JSonnet at it's core to transform files 
+ * Using {@code .jsonnet} transformation files, the DataSonnetPipe uses JSonnet at it's core to transform files
  * from and to different file formats specified by supported {@link DataSonnetOutputType outputTypes}.
  * </p>
  * <p>
@@ -84,7 +84,7 @@ import org.frankframework.util.StreamUtil;
  * }</pre>
  * </p>
  * 
- * @ff.parameters Any parameters are added to the stylesheet, parameter names must be unique.
+ * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet, parameter names must be unique.
  * 
  * @see <a href="https://jsonnet.org/">https://jsonnet.org/</a> for live examples.
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
