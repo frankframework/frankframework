@@ -24,12 +24,12 @@ export class SidebarService {
         this.sideMenuElement.style.display = 'none';
         // For smoothly turn on menu
         setTimeout(() => {
-          this.sideMenuElement.fadeIn(400);
+          this.sideMenuElement?.animate({ opacity: 1 }, 400);
         }, 200);
       } else if (this.bodyElement.classList.contains('fixed-sidebar')) {
         this.sideMenuElement.style.display = 'none';
         setTimeout(() => {
-          this.sideMenuElement.fadeIn(400);
+          this.sideMenuElement?.animate({ opacity: 1 }, 400);
         }, 100);
       } else {
         // Remove all inline style from jquery fadeIn function to reset menu state
