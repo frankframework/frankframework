@@ -395,16 +395,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 		}
 
-		if (result instanceof Message resultMessage) {
-			if (Message.isNull(resultMessage)) {
-				result = null;
-			} else if ((getMinLength() >= 0 || getMaxLength() >= 0) && resultMessage.isRequestOfType(String.class)) { // Used by getMinLength and getMaxLength
-				try {
-					result = resultMessage.asString(); // WARNING this removes the MessageContext
-				} catch (IOException ignored) {
-					// Already checked for String, so this should never happen
-				}
-			}
+		if (result instanceof Message msg && msg.isNull()) {
+			result = null; // Cannot remove this, ParameterValues may return null, and should fallback to `other` defaults.
 		}
 
 		if (result != null && !"".equals(result)) {
@@ -442,37 +434,59 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						throw new IllegalArgumentException("Unknown defaultValues method ["+method+"]");
 				}
 			}
-			if (valueByDefault!=null) {
+			if (valueByDefault != null) {
 				result = valueByDefault;
 				final Object finalResult = result;
 				LOG.debug("Parameter [{}] resolved to default value [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
 			}
 		}
 
-		if (result instanceof String stringResult) {
-			if (getMinLength()>=0 && !(this instanceof NumberParameter)) { //Numbers are formatted left-pad with leading 0's opposed to right-pad spaces.
-				if (stringResult.length() < getMinLength()) {
-					LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
-					result = StringUtils.rightPad(stringResult, getMinLength());
-				}
-			}
-			if (getMaxLength()>=0) {
-				if (stringResult.length() > getMaxLength()) { //Still trims length regardless of type
-					LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
-					result = stringResult.substring(0, getMaxLength());
-				}
-			}
+		if (getMinLength() >= 0 || getMaxLength() >= 0) {
+			result = applyMinAndMaxLengths(result);
 		}
 
 		if(result != null && getType().requiresTypeConversion) {
 			try {
-				result = getValueAsType(result, namespaceAware);
+				return getValueAsType(result, namespaceAware);
 			} catch(IOException e) {
 				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
 			}
 		}
 
 		return result;
+	}
+
+	private Object applyMinAndMaxLengths(final Object request) {
+		if (request instanceof Message msg && msg.isRequestOfType(String.class)) { // Used by getMinLength and getMaxLength
+			try {
+				return applyMinAndMaxLengths(msg.asString()); // WARNING this removes the MessageContext
+			} catch (IOException e) {
+				// Already checked for String, so this should never happen
+			}
+		}
+
+		if (request instanceof String str) {
+			return applyMinAndMaxLengths(str);
+		}
+
+		// All other types
+		return request;
+	}
+
+	private String applyMinAndMaxLengths(String stringResult) {
+		if (getMinLength()>=0 && !(this instanceof NumberParameter)) { // Numbers are formatted left-pad with leading 0's opposed to right-pad spaces.
+			if (stringResult.length() < getMinLength()) {
+				LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
+				return StringUtils.rightPad(stringResult, getMinLength());
+			}
+		}
+		if (getMaxLength()>=0) {
+			if (stringResult.length() > getMaxLength()) { // Still trims length regardless of type
+				LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
+				return stringResult.substring(0, getMaxLength());
+			}
+		}
+		return stringResult;
 	}
 
 	/** Converts raw data to configured parameter type */
