@@ -2336,17 +2336,17 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -11252,6 +11252,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="DataSonnetPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DataSonnetPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="DelayPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -12984,6 +12993,34 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="CsvParserPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CsvParserPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="DataSonnetPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="DataSonnetPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DataSonnetPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="DataSonnetPipeDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputType">
+      <xs:annotation>
+        <xs:documentation>Output file format, DataSonnet is semi-capable of converting the converted JSON to a different format.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DataSonnetPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DataSonnetPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DelayPipeType">
@@ -16957,6 +16994,14 @@
       <xs:pattern value="[uU][pP][pP][eE][rR][cC][aA][sS][eE]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="DataSonnetOutputTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[jJ][sS][oO][nN]" />
+      <xs:pattern value="[cC][sS][vV]" />
+      <xs:pattern value="[xX][mM][lL]" />
+      <xs:pattern value="[yY][aA][mM][lL]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_7">
     <xs:restriction base="xs:string">
       <xs:pattern value="[eE][nN][cC][oO][dD][eE]" />
@@ -17720,17 +17765,17 @@
   </xs:attribute>
   <xs:attribute name="verifyHostname" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="followRedirects" type="frankBoolean">
