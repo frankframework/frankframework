@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.frankframework.util.UUIDUtil;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -67,17 +68,21 @@ public class Debugger extends org.frankframework.ibistesttool.Debugger {
 		if (adapter == null) {
 			return "Adapter '" + RESEND_ADAPTER_NAME + "' not found";
 		}
-		PipeLineSession pipeLineSession = new PipeLineSession();
 		synchronized(inRerun) {
 			inRerun.add(correlationId);
 		}
-		try {
+		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 			if(securityContext.getUserPrincipal() != null) {
 				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 			}
-			PipeLineResult processResult = adapter.processMessageDirect(correlationId, new Message(inputMessage), pipeLineSession);
-			if (!(processResult.isSuccessful() && "<ok/>".equalsIgnoreCase(processResult.getResult().asString()))) {
-				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + processResult.getResult().asString();
+			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
+			String messageId = "tibet2-resend" + UUIDUtil.createSimpleUUID();
+
+			PipeLineResult processResult = adapter.processMessageDirect(messageId, new Message(inputMessage), pipeLineSession);
+			String stringResult = processResult.getResult().asString();
+			if (!(processResult.isSuccessful() && "<ok/>".equalsIgnoreCase(stringResult))) {
+				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + stringResult;
 			}
 			return null;
 		} catch (IOException e) {
