@@ -49,7 +49,7 @@ public class ClientSession implements InitializingBean {
 		setMemberTarget(UUID.fromString(id));
 	}
 
-	//When a new session is created, assign a default target
+	// When a new session is created, assign a default target
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		List<ClusterMember> members = outboundGateway.getMembers();
