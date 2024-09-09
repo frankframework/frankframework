@@ -138,7 +138,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 *Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
 
-### Set up a Lombok in Eclipse
+### Set up Lombok in Eclipse
 - Download the [Lombok dependency](https://projectlombok.org/). Please open it as a Java application.
 - You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
 - Press Install / Update.
