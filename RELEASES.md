@@ -10,6 +10,7 @@ Upcoming (8.3)
 
 WebServiceListeners now use a different way of returning Multipart Attachments. The old behavior can be restored by setting 'WebServiceListener.backwardsCompatibleMultipartNotation=true'.
 
+The `messageType` attribute of IMapListener, ExchangeMailListener, DirectoryListener, FtpFileSystemListener, FtpsFileSystemListener, SambaListener and Samba2Listener is an enum and no longer supports a custom value to search for attributes in the file. This can be achieved by using the `INFO` `messageType` with a xpath expression.
 
 8.2.0 - Jul 12th, 2024
 --------------
