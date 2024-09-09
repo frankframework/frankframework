@@ -51,17 +51,6 @@ import org.frankframework.stream.Message;
  *     <li>SHA512</li>
  * </ul>
  *
- * CRC32 and Adler32 are {@link Checksum} implementations, the others are {@link MessageDigest} implementations.
- * <p>
- * Example usage:
- * <pre>{@code
- * <pipe className="org.frankframework.pipes.ChecksumPipe"
- *     name="SHA"
- *     algorithm="SHA">
- *     <forward name="success" path="READY"/>
- * </pipe>
- * }</pre>
- *
  * @author Gerrit van Brakel
  * @since 4.9
  */

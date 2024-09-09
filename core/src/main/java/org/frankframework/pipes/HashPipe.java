@@ -48,17 +48,6 @@ import org.frankframework.util.StreamUtil;
  * Use this Pipe if you need to verify integrity and authenticity of a message. If you only need to verify integrity of the message
  * use the {@link ChecksumPipe}.
  *
- * <p>
- * Example usage:
- * <pre>{@code
- * <pipe className="org.frankframework.pipes.HashPipe"
- *     name="SHA"
- *     algorithm="HmacSHA1"
- *     secret="privateSecretString">
- *     <forward name="success" path="READY"/>
- * </pipe>
- * }</pre>
- *
  * @author Niels Meijer
  */
 @ElementType(ElementTypes.TRANSLATOR)
