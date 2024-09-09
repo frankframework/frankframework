@@ -1,11 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
-import { copyToClipboard } from 'src/app/utils';
-import { DataSource } from '@angular/cdk/table';
-import { DataTableColumn } from '../../components/datatable/datatable.component';
-import { CollectionViewer } from '@angular/cdk/collections';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { DataTableColumn, DataTableDataSource } from '../../components/datatable/datatable.component';
 
 type Connections = {
   data: {
@@ -28,7 +24,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
   // @ViewChild(DataTableDirective, { static: false }) datatableElement!: DataTableDirective;
 
   // protected dtOptions: ADTSettings = {};
-  protected datasource: ConnectionsDataSource = new ConnectionsDataSource();
+  protected datasource: DataTableDataSource<ConnectionsData> = new DataTableDataSource();
   protected displayedColumns: DataTableColumn<Connections['data'][number]>[] = [
     { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName' },
     { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName' },
@@ -146,24 +142,4 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
       });
     });
   }*/
-}
-// TODO make own datatable datasource
-export class ConnectionsDataSource extends DataSource<ConnectionsData> {
-  private _data = new BehaviorSubject<ConnectionsData[]>([]);
-
-  get data(): ConnectionsData[] {
-    return this._data.value;
-  }
-
-  set data(value: ConnectionsData[]) {
-    this._data.next(value);
-  }
-
-  connect(): Observable<ConnectionsData[]> {
-    return this._data;
-  }
-
-  disconnect(): void {
-    this._data.complete();
-  }
 }
