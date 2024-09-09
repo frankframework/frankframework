@@ -9,7 +9,7 @@ import { SessionService } from 'src/app/services/session.service';
   styleUrls: ['./iaf-update.component.scss'],
 })
 export class IafUpdateComponent implements OnInit {
-  release?: IAFRelease;
+  protected release?: IAFRelease;
 
   constructor(
     private router: Router,

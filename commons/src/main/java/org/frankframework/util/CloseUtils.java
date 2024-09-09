@@ -18,11 +18,14 @@ package org.frankframework.util;
 import java.util.Collection;
 
 import jakarta.annotation.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class CloseUtils {
-	private CloseUtils() {}
+	private CloseUtils() {
+		// Don't construct utils class
+	}
 
 	/**
 	 * Safely close an {@link AutoCloseable}, logging but ignoring any exceptions thrown.

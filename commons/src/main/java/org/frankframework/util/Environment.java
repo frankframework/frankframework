@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,10 +59,10 @@ public class Environment {
 		String line;
 		while ((line = br.readLine()) != null) {
 			int idx = line.indexOf('=');
-			if (idx>=0) {
+			if (idx >= 0) {
 				String key = line.substring(0, idx);
 				String value = line.substring(idx + 1);
-				props.setProperty(key,value);
+				props.setProperty(key, value);
 			}
 		}
 		return props;
@@ -78,12 +79,12 @@ public class Environment {
 		if (OS.contains("windows 9")) {
 			envCommand = "command.com /c set";
 		} else if (
-			(OS.contains("nt"))
-				|| (OS.contains("windows 20"))
-				|| (OS.contains("windows xp"))) {
+				(OS.contains("nt"))
+						|| (OS.contains("windows 20"))
+						|| (OS.contains("windows xp"))) {
 			envCommand = "cmd.exe /c set";
 		} else {
-			//assume Unix
+			// assume Unix
 			envCommand = "env";
 		}
 		return envCommand;
@@ -94,17 +95,16 @@ public class Environment {
 	 * {@link System#getProperty(String, String)}. The {@link SecurityException} if thrown, is hidden.
 	 *
 	 * @param property The property to search for.
-	 * @param def The default value to return, may be {@code null}.
+	 * @param def      The default value to return, may be {@code null}.
 	 * @return the string value of the system property, or the default value if
-	 *         there is no property with that property.
-	 *         May return {@code null} if the default value was {@code null}.
-	 *
+	 * 		there is no property with that property.
+	 * 		May return {@code null} if the default value was {@code null}.
 	 * @since 1.1
 	 */
 	public static Optional<String> getSystemProperty(String property, String def) {
 		try {
 			String result = System.getenv().get(property);
-			if (result!=null) {
+			if (result != null) {
 				return Optional.of(result);
 			}
 		} catch (Throwable e) {

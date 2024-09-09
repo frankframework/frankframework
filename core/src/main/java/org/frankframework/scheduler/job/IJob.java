@@ -44,7 +44,7 @@ public interface IJob extends IConfigurable {
 
 	/**
 	 * CRON expression that determines the frequency of execution.
-	 * Can <code>not</code> be used in combination with Interval.
+	 * Can <b>not</b> be used in combination with Interval.
 	 */
 	public void setCronExpression(String cronExpression);
 	public String getCronExpression();

@@ -15,7 +15,9 @@
 */
 package org.frankframework.management.gateway;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -107,8 +109,9 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		ClusterMember cm = new ClusterMember();
 		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
 		cm.setId(member.getUuid());
-		cm.setType(member.getAttribute(HazelcastConfig.ATTRIBUTE_TYPE_KEY));
-		cm.setName(member.getAttribute(HazelcastConfig.ATTRIBUTE_NAME_KEY));
+		Map<String, String> attrs = new HashMap<>(member.getAttributes());
+		cm.setType(attrs.remove(HazelcastConfig.ATTRIBUTE_TYPE_KEY));
+		cm.setAttributes(attrs);
 		cm.setLocalMember(member.localMember());
 		return cm;
 	}

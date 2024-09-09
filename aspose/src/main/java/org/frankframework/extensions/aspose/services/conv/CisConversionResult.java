@@ -55,7 +55,7 @@ public class CisConversionResult {
 	private final List<CisConversionResult> attachments = new ArrayList<>();
 
 	/**
-	 * Converted document when succeeded (otherwise <code>null</code>) -
+	 * Converted document when succeeded (otherwise <code>null</code>)
 	 */
 	@Setter @Getter private File pdfResultFile;
 

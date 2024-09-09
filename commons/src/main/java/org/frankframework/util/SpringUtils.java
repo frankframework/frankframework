@@ -38,7 +38,7 @@ public class SpringUtils {
 	}
 
 	public static void autowire(ApplicationContext applicationContext, Object existingBean, int autowireMode) {
-		if (applicationContext==null) {
+		if (applicationContext == null) {
 			throw new NullPointerException("ApplicationContext not set");
 		}
 

@@ -25,8 +25,7 @@ import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.stream.Message;
 
 /**
- * The <code>ISender</code> is responsible for sending a message to
- * some destination.
+ * Marks an implementation as responsible for sending a message to some destination.
  *
  * @author  Gerrit van Brakel
  */

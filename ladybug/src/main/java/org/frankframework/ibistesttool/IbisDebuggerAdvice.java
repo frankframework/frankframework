@@ -102,13 +102,13 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
 		String correlationId = getCorrelationId(session);
-		message = ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
+		message = ibisDebugger.pipelineInput(pipeLine, correlationId, message);
 		TreeSet<String> keys = new TreeSet<>(session.keySet());
 		Iterator<String> iterator = keys.iterator();
 		while (iterator.hasNext()) {
 			String sessionKey = iterator.next();
 			Object sessionValue = session.get(sessionKey);
-			sessionValue = ibisDebugger.pipeLineSessionKey(correlationId, sessionKey, sessionValue);
+			sessionValue = ibisDebugger.pipelineSessionKey(correlationId, sessionKey, sessionValue);
 			session.put(sessionKey, sessionValue);
 		}
 		PipeLineResult pipeLineResult = null;
@@ -118,22 +118,23 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			args[3] = pipeLineSessionDebugger;
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
-			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
+			throw ibisDebugger.pipelineAbort(pipeLine, correlationId, throwable);
 		}
 		ibisDebugger.showOutputValue(correlationId, "exitState", pipeLineResult.getState().name());
 		if (pipeLineResult.getExitCode()!=0) {
 			ibisDebugger.showOutputValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
 		}
+
 		if (!pipeLineResult.isSuccessful()) {
-			ibisDebugger.showOutputValue(correlationId, "result", pipeLineResult.getResult());
-			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
+			ibisDebugger.pipelineAbort(pipeLine, correlationId, pipeLineResult.getResult());
 		} else {
-			Message result = ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult());
+			Message result = ibisDebugger.pipelineOutput(pipeLine, correlationId, pipeLineResult.getResult());
 			if(Message.isNull(result)) {
 				log.error("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
 			}
 			pipeLineResult.setResult(result);
 		}
+
 		return pipeLineResult;
 	}
 

@@ -6,9 +6,9 @@ import { AppService } from 'src/app/app.service';
   template: '',
 })
 export abstract class BaseIframeComponent {
-  url: string = '';
-  iframeSrc?: SafeResourceUrl;
-  redirectURL?: string;
+  protected url: string = '';
+  protected iframeSrc?: SafeResourceUrl;
+  protected redirectURL?: string;
 
   private topBarHeightPx = 99;
 

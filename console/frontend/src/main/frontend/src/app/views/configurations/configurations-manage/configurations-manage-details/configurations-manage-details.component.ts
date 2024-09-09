@@ -12,7 +12,7 @@ import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/
   styleUrls: ['./configurations-manage-details.component.scss'],
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
-  configuration: Configuration = {
+  protected configuration: Configuration = {
     name: '',
     stubbed: false,
     state: 'STOPPED',
@@ -20,13 +20,11 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     jdbcMigrator: false,
     version: '',
   };
-  configurations: Configuration[] = [];
-  loading: boolean = false;
-  promise: number = -1;
-  versions: Configuration[] = [];
-  versionsSorted: Configuration[] = [];
-  search: string = '';
+  protected versionsSorted: Configuration[] = [];
+  protected search: string = '';
 
+  private promise: number = -1;
+  private versions: Configuration[] = [];
   private lastSortEvent: SortEvent = { direction: null, column: '' };
 
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
@@ -47,8 +45,8 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
-      const nameParameter = params.get('name');
+    this.route.paramMap.subscribe((parameters) => {
+      const nameParameter = parameters.get('name');
       if (nameParameter && nameParameter != '')
         this.appService.customBreadcrumbs(`Configurations > Manage > ${nameParameter}`);
       else this.router.navigate(['..'], { relativeTo: this.route });
@@ -66,7 +64,6 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   }
 
   update(): void {
-    this.loading = true;
     this.configurationsService.getConfigurationVersions(this.configuration.name).subscribe((data) => {
       for (const configs of data) {
         if (configs.active) {
@@ -76,7 +73,6 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
       this.versions = data;
       this.versionsSorted = basicAnyValueTableSort(this.versions, this.headers, this.lastSortEvent);
-      this.loading = false;
     });
   }
 
@@ -89,9 +85,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   }
 
   deleteConfig(config: Configuration): void {
-    let message = '';
-
-    message = config.version ? `Are you sure you want to remove version '${config.version}'?` : 'Are you sure?';
+    const message = config.version ? `Are you sure you want to remove version '${config.version}'?` : 'Are you sure?';
 
     this.sweetalertService.Confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {

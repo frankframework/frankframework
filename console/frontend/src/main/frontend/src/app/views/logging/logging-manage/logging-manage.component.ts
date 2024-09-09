@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-logging-manage',
@@ -8,24 +9,25 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./logging-manage.component.scss'],
 })
 export class LoggingManageComponent implements OnInit {
-  logURL: string = 'server/logging';
-  updateDynamicParams: boolean = false;
-  loggers: Record<string, string> = {};
-  errorLevels: ErrorLevels = errorLevelsConst;
-  form: LoggingSettings = {
+  protected updateDynamicParams: boolean = false;
+  protected loggers: Record<string, string> = {};
+  protected errorLevels: ErrorLevels = errorLevelsConst;
+  protected form: LoggingSettings = {
     loglevel: 'DEBUG',
     logIntermediaryResults: true,
     maxMessageLength: -1,
     errorLevels: errorLevelsConst,
     enableDebugger: true,
   };
-  loggersLength: number = 0;
-  definitions: LogInformation['definitions'] = [];
-  alert: boolean | string = false;
+  protected loggersLength: number = 0;
+  protected definitions: LogInformation['definitions'] = [];
+  protected alert: string | null = null;
 
   constructor(
     private loggingService: LoggingService,
     private toastService: ToastService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +53,10 @@ export class LoggingManageComponent implements OnInit {
       this.toastService.success(`Updated logger [${logger}] to [${level}]`);
       this.updateLogInformation();
     });
+  }
+
+  addLogger(): void {
+    this.router.navigate(['add'], { relativeTo: this.route });
   }
 
   //Reconfigure Log4j2
@@ -84,7 +90,6 @@ export class LoggingManageComponent implements OnInit {
         this.loggers = data.loggers;
         this.loggersLength = Object.keys(data.loggers).length;
         this.definitions = data.definitions;
-        console.log('DEFINITIONS:', data.definitions);
       },
       error: (data) => {
         console.error(data);

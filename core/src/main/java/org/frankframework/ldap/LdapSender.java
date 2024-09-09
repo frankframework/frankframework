@@ -15,6 +15,7 @@
 */
 package org.frankframework.ldap;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -22,6 +23,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.naming.Context;
 import javax.naming.NameClassPair;
@@ -38,9 +40,12 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
+import lombok.Lombok;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ISenderWithParameters;
@@ -65,40 +70,36 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  * <h2>example</h2>
  * Consider the following configuration example:
- * <code>
- * <pre>
- *   &lt;sender
- *        className="org.frankframework.ldap.LdapSender"
- *        ldapProviderURL="ldap://servername:389/o=ing"
- *        operation="read"
- *        attributesToReturn="givenName,sn,telephoneNumber" &gt;
- *     &lt;param name="entryName" xpathExpression="entryName" /&gt;
- *   &lt;/sender&gt;
- * </pre>
- * </code>
+ * <pre>{@code
+ * <sender
+ *      className="org.frankframework.ldap.LdapSender"
+ *      ldapProviderURL="ldap://servername:389/o=ing"
+ *      operation="read"
+ *      attributesToReturn="givenName,sn,telephoneNumber" >
+ *     <param name="entryName" xpathExpression="entryName" />
+ * </sender>
+ * }</pre>
  * <br/>
  *
  * This may result in the following output:
- * <code><pre>
- * &lt;ldap&gt;
- *	&lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
- *
- *	&lt;attributes&gt;
- *		&lt;attribute attrID="givenName"&gt;
- *			&lt;value&gt;Jan&lt;/value&gt;
- *		&lt;/attribute&gt;
- *
- *		&lt;attribute attrID="telephoneNumber"&gt;
- *			&lt;value&gt;010 5131123&lt;/value&gt;
- *			&lt;value&gt;06 23456064&lt;/value&gt;
- *		&lt;/attribute&gt;
- *
- *		&lt;attribute attrID="sn"&gt;
- *			&lt;value&gt;Jansen&lt;/value&gt;
- *		&lt;/attribute&gt;
- *	&lt;/attributes&gt;
- * &lt;/ldap&gt;
- *  </pre></code> <br/>
+ * <pre>{@code
+ * <ldap>
+ * 	   <entryName>uid=srp,ou=people</entryName>
+ * 	   <attributes>
+ *         <attribute attrID="givenName">
+ *             <value>Jan</value>
+ *         </attribute>
+ *         <attribute attrID="telephoneNumber">
+ *             <value>010 5131123</value>
+ *             <value>06 23456064</value>
+ *         </attribute>
+ * 	       <attribute attrID="sn">
+ *             <value>Jansen</value>
+ * 	       </attribute>
+ * 	   </attributes>
+ * </ldap>
+ * }</pre>
+ * <br/>
  *
  * Search or Read?
  *
@@ -108,41 +109,44 @@ import org.frankframework.util.XmlEncodingUtils;
  * together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the
  * specified context are returned.
  *
- * Sample result of a <code>read</code> operation:<br/><code><pre>
- *	&lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="employeeType" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	&lt;/attributes&gt;
- *
- * </pre></code> <br/>
- * Sample result of a <code>search</code> operation:<br/><code><pre>
- *	&lt;entries&gt;
- *	 &lt;entry name="uid=srp"&gt;
- *	   &lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="employeeType" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	   &lt;/attributes&gt;
- *	  &lt;/entry&gt;
- *   &lt;entry&gt; .... &lt;/entry&gt;
- *   .....
- *	&lt;/entries&gt;
- * </pre></code> <br/>
+ * Sample result of a <code>read</code> operation:<br/>
+ * <pre>{@code
+ * <attributes>
+ * 	   <attribute>
+ * 	   <attribute name="employeeType" value="Extern"/>
+ * 	   <attribute name="roomNumber" value="DP 2.13.025"/>
+ * 	   <attribute name="departmentCode" value="358000"/>
+ * 	   <attribute name="organizationalHierarchy">
+ * 	       <item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	       <item value="ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	       <item value="ou=000001,ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	   </attribute>
+ * 	   <attribute name="givenName" value="Gerrit"/>
+ * </attributes>
+ * }</pre>
+ * <br/>
+ * Sample result of a <code>search</code> operation:<br/>
+ * <pre>{@code
+ * <entries>
+ * 	   <entry name="uid=srp">
+ * 	       <attributes>
+ * 	           <attribute>
+ * 	           <attribute name="employeeType" value="Extern"/>
+ * 	           <attribute name="roomNumber" value="DP 2.13.025"/>
+ * 	           <attribute name="departmentCode" value="358000"/>
+ * 	           <attribute name="organizationalHierarchy">
+ * 	               <item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	               <item value="ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	               <item value="ou=000001,ou=OPS&IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/>
+ * 	           </attribute>
+ * 	           <attribute name="givenName" value="Gerrit"/>
+ * 	       </attributes>
+ * 	   </entry>
+ *     <entry> .... </entry>
+ *    .....
+ * </entries>
+ * }</pre>
+ * <br/>
  *
  * @ff.parameter entryName Represents entryName (RDN) of interest.
  * @ff.parameter filterExpression Filter expression (handy with searching - see RFC2254).
@@ -413,7 +417,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	}
 
 
-	private String performOperationRead(String entryName, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationRead(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try{
 			dirContext = getDirContext(paramValueMap);
@@ -434,7 +438,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationUpdate(String entryName, PipeLineSession session, Map<String,Object> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationUpdate(String entryName, PipeLineSession session, Map<String, String> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		String entryNameAfter = entryName;
 		if (paramValueMap != null){
 			String newEntryName = (String)paramValueMap.get("newEntryName");
@@ -545,7 +549,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationCreate(String entryName, PipeLineSession session, Map<String,Object> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationCreate(String entryName, PipeLineSession session, Map<String, String> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject==Manipulation.ATTRIBUTE) {
 			String result=null;
 			NamingEnumeration<?> na = attrs.getAll();
@@ -637,7 +641,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationDelete(String entryName, PipeLineSession session, Map<String,Object> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationDelete(String entryName, PipeLineSession session, Map<String, String> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject==Manipulation.ATTRIBUTE) {
 			String result=null;
 			NamingEnumeration<?> na = attrs.getAll();
@@ -731,7 +735,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 //		retobj - If true, return the object bound to the name of the entry; if false, do not return object.
 //		attrs - The identifiers of the attributes to return along with the entry. If null, return all attributes. If empty return no attributes.
 
-	private String performOperationSearch(String entryName, PipeLineSession session, Map<String,Object> paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
+	private String performOperationSearch(String entryName, PipeLineSession session, Map<String, String> paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
 		int timeout=getSearchTimeout();
 		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout,
 													getAttributesReturnedParameter(), false, false);
@@ -752,7 +756,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationGetSubContexts(String entryName, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetSubContexts(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
@@ -766,7 +770,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationGetTree(String entryName, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetTree(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
@@ -776,7 +780,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationChallenge(String principal, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException {
+	private String performOperationChallenge(String principal, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException {
 		DirContext dirContext = null;
 		try{
 			// Use loopkupDirContext instead of getDirContext to prevent
@@ -799,7 +803,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationChangeUnicodePwd(String entryName, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationChangeUnicodePwd(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
 		ModificationItem[] modificationItems = new ModificationItem[2];
 		modificationItems[0] = new ModificationItem(
 				DirContext.REMOVE_ATTRIBUTE,
@@ -835,11 +839,25 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 * @return - Depending on operation, DEFAULT_RESULT or read/search result (always XML)
 	 */
 	public String performOperation(Message message, PipeLineSession session) throws SenderException, ParameterException {
-		Map<String,Object> paramValueMap = null;
+		Map<String, String> paramValueMap = null;
 		String entryName = null;
 		if (paramList != null){
-			paramValueMap = paramList.getValues(message, session).getValueMap();
-			entryName = (String)paramValueMap.get("entryName");
+			paramValueMap = paramList.getValues(message, session)
+					.getValueMap()
+					.entrySet()
+					.stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, e -> {
+						if(e.getValue() instanceof Message m) {
+							try {
+								return m.asString();
+							} catch (IOException ex) {
+								throw Lombok.sneakyThrow(new SenderException("unable to read parameter ["+e.getKey()+"]", ex));
+							}
+						}
+						return (String) e.getValue();
+					}));
+
+			entryName = paramValueMap.get("entryName");
 			if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);
 		}
 		if ((entryName == null || StringUtils.isEmpty(entryName)) && getOperation() != Operation.CHALLENGE) {
@@ -877,7 +895,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 * Return xml element containing all of the subcontexts of the parent context with their attributes.
 	 * @return tree xml.
 	 */
-	private XmlBuilder getTree(DirContext parentContext, String context, PipeLineSession session, Map<String,Object> paramValueMap) {
+	private XmlBuilder getTree(DirContext parentContext, String context, PipeLineSession session, Map<String, String> paramValueMap) {
 		XmlBuilder contextElem = new XmlBuilder("context");
 		contextElem.addAttribute("name", context);
 
@@ -1010,7 +1028,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	/**
 	 * Retrieves the DirContext from the JNDI environment and sets the <code>providerURL</code> back to <code>ldapProviderURL</code> if specified.
 	 */
-	protected synchronized DirContext loopkupDirContext(Map<String,Object> paramValueMap) throws NamingException {
+	protected synchronized DirContext loopkupDirContext(Map<String, String> paramValueMap) throws NamingException {
 		DirContext dirContext;
 		if (jndiEnv==null) {
 			Hashtable<Object, Object> newJndiEnv = getJndiEnv();
@@ -1047,7 +1065,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 //		return (DirContext) dirContextTemplate.lookup(""); 	// return copy to be thread-safe
 	}
 
-	protected DirContext getDirContext(Map<String, Object> paramValueMap) throws SenderException {
+	protected DirContext getDirContext(Map<String, String> paramValueMap) throws SenderException {
 		try {
 			return loopkupDirContext(paramValueMap);
 		} catch (NamingException e) {

@@ -14,12 +14,11 @@ type Credentials = {
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit, AfterViewInit {
-  credentials: Credentials = {
+  protected credentials: Credentials = {
     username: '',
     password: '',
   };
-  notifications: Alert[] = [];
-
+  protected notifications: Alert[] = [];
   protected isUwu: boolean = false;
 
   constructor(

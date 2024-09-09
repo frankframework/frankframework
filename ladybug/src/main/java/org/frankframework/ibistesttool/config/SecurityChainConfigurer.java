@@ -59,15 +59,16 @@ import lombok.extern.log4j.Log4j2;
  * 
  * When running standalone this Filter will need to be added manually, by either a bean definition or by using the {@link AbstractSecurityWebApplicationInitializer}.
  * 
- * <pre><code>
+ * <pre>{@code
  * public FilterRegistrationBean<DelegatingFilterProxy> securityFilterChainRegistration() {
- * 	DelegatingFilterProxy delegatingFilterProxy = new DelegatingFilterProxy();
- * 	delegatingFilterProxy.setTargetBeanName(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
- * 	FilterRegistrationBean<DelegatingFilterProxy> registrationBean = new FilterRegistrationBean<>(delegatingFilterProxy);
- * 	registrationBean.addUrlPatterns("/*");
- * 	return registrationBean;
+ * 	   DelegatingFilterProxy delegatingFilterProxy = new DelegatingFilterProxy();
+ * 	   delegatingFilterProxy.setTargetBeanName(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
+ * 	   FilterRegistrationBean<DelegatingFilterProxy> registrationBean = new FilterRegistrationBean<>(delegatingFilterProxy);
+ * 	   registrationBean.addUrlPatterns("/*");
+ *
+ * 	   return registrationBean;
  * }
- * </code></pre>
+ * }</pre>
  */
 @Log4j2
 @Configuration

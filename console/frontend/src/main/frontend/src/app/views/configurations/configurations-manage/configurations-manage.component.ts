@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./configurations-manage.component.scss'],
 })
 export class ConfigurationsManageComponent implements OnInit, OnDestroy {
-  configurations: Configuration[] = [];
+  protected configurations: Configuration[] = [];
 
   private subscriptions = new Subscription();
 
@@ -25,10 +25,9 @@ export class ConfigurationsManageComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(appConfigurationsSubscription);
 
-    const localConfigurationsSubscription = this.configurationsService.getConfigurations().subscribe((data) => {
+    this.configurationsService.getConfigurations().subscribe((data) => {
       this.appService.updateConfigurations(data);
     });
-    this.subscriptions.add(localConfigurationsSubscription);
   }
 
   ngOnDestroy(): void {

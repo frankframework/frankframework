@@ -34,11 +34,12 @@ public interface IbisDebugger {
 	public void setIbisManager(IbisManager ibisManager);
 	public IbisManager getIbisManager();
 
-	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
-	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output);
-	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
+	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input);
+	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output);
+	public Message pipelineAbort(PipeLine pipeLine, String correlationId, Message output);
+	public Throwable pipelineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
-	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue);
+	public Object pipelineSessionKey(String correlationId, String sessionKey, Object sessionValue);
 
 	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input);
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output);

@@ -81,7 +81,7 @@
     </xs:attribute>
     <xs:attribute name="msgLogLevel">
       <xs:annotation>
-        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Default: &lt;code&gt;INFO, unless overridden by property msg.log.level.default&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Default: &lt;code&gt;INFO&lt;/code&gt;, unless overridden by property &lt;code&gt;msg.log.level.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MessageLogLevelAttributeValuesType variableRef" />
@@ -142,14 +142,14 @@
     <xs:attribute name="startTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
-  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+  aborted and all resources closed and the receiver will be in state &lt;code&gt;EXCEPTION_STARTING&lt;/code&gt;
   and a new start command may be issued again.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="stopTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
-  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+  and the receiver will be in state &lt;code&gt;EXCEPTION_STOPPING&lt;/code&gt;.
   The receiver will no longer be running but some resources might not have been cleaned up properly.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -219,7 +219,7 @@
     </xs:attribute>
     <xs:attribute name="elementToMove" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: {sessionKey: + &lt;code&gt;elementToMoveSessionKey&lt;/code&gt; + }</xs:documentation>
+        <xs:documentation>If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: &lt;code&gt;{sessionKey: elementToMoveSessionKey}&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elementToMoveSessionKey" type="xs:string">
@@ -253,7 +253,7 @@
     </xs:attribute>
     <xs:attribute name="forceRetryFlag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to retry. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to &lt;code&gt;retry&lt;/code&gt;. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
@@ -318,7 +318,7 @@
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
- &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
+ &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
@@ -563,14 +563,14 @@
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
         <xs:documentation>The name of the Exit that can be referenced by a PipeForward's &lt;code&gt;path&lt;/code&gt; attribute. When a Pipeline doesn't have an Exits
- element configured it will be initialized with one Exit having name READY (and state SUCCESS)</xs:documentation>
+ element configured it will be initialized with one Exit having name &lt;code&gt;READY&lt;/code&gt; (and state SUCCESS)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="path" type="xs:string" />
     <xs:attribute name="state" use="required">
       <xs:annotation>
         <xs:documentation>The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
- element configured it will be initialized with one Exit having state SUCCESS (and name READY)</xs:documentation>
+ element configured it will be initialized with one Exit having state SUCCESS (and name &lt;code&gt;READY&lt;/code&gt;)</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ExitStateAttributeValuesType variableRef" />
@@ -985,7 +985,7 @@
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
- &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
+ &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
@@ -1206,7 +1206,7 @@
     </xs:attribute>
     <xs:attribute name="keyNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for keyxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>namespace defintions for keyxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyStyleSheet" type="xs:string">
@@ -1236,7 +1236,7 @@
     </xs:attribute>
     <xs:attribute name="valueNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace defintions for valuexpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>namespace defintions for valuexpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="valueStyleSheet" type="xs:string">
@@ -1868,7 +1868,7 @@
     </xs:attribute>
     <xs:attribute name="bucketName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by |</xs:documentation>
+        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by &lt;code&gt;|&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -1913,7 +1913,7 @@
   <xs:attributeGroup name="FileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [&lt;code&gt;action&lt;/code&gt;] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -1921,17 +1921,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=&lt;code&gt;list&lt;/code&gt;. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -1941,32 +1941,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, write, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions &lt;code&gt;create&lt;/code&gt;, &lt;code&gt;write&lt;/code&gt;, &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt;, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -1976,17 +1976,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for read and write action</xs:documentation>
+        <xs:documentation>Charset to be used for &lt;code&gt;read&lt;/code&gt; and &lt;code&gt;write&lt;/code&gt; action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions &lt;code&gt;delete&lt;/code&gt;, &lt;code&gt;readDelete&lt;/code&gt; and &lt;code&gt;move&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -2059,7 +2059,7 @@
     <xs:attribute ref="linkMethod" />
     <xs:attribute name="replyTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>(Only for &lt;code&gt;synchronous&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;). Maximum time in ms to wait for a reply. 0 means no timeout. Default: 5000</xs:documentation>
+        <xs:documentation>(Only for &lt;code&gt;synchronous=true&lt;/code&gt;). Maximum time in ms to wait for a reply. 0 means no timeout. Default: 5000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="messageType" />
@@ -2220,37 +2220,37 @@
     </xs:attribute>
     <xs:attribute name="fileSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the sessionKey that contains the file to use. If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt; and &lt;code&gt;getProperties&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt; the sessionKey to store the result in</xs:documentation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the sessionKey that contains the file to use. If &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getProperties=true&lt;/code&gt; the sessionKey to store the result in</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="filenameSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the session key that contains the name of the file to use. If not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the session key that contains the name of the file to use. If not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="defaultMediaType" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt; the mime type used to store the document when it's not set in the input message by a property Default: 'application/octet-stream'</xs:documentation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the mime type used to store the document when it's not set in the input message by a property Default: 'application/octet-stream'</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getProperties" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt;). If true, the content of the document is put to &lt;code&gt;FileSessionKey&lt;/code&gt; and all document properties are put in the result as a xml string Default: false</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;). If true, the content of the document is put to &lt;code&gt;FileSessionKey&lt;/code&gt; and all document properties are put in the result as a xml string Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getDocumentContent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt;). If true, the attachment for the document is the sender result or, if set, stored in &lt;code&gt;FileSessionKey&lt;/code&gt;. If false, only the properties are returned Default: true</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;). If true, the attachment for the document is the sender result or, if set, stored in &lt;code&gt;fileSessionKey&lt;/code&gt;. If false, only the properties are returned Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useRootFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;create&lt;/code&gt;). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository Default: true</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=create&lt;/code&gt;). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="resultOnNotFound" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;action&lt;/code&gt;=&lt;code&gt;get&lt;/code&gt;) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keepSession" type="frankBoolean">
@@ -2336,17 +2336,17 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -2760,7 +2760,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -2872,7 +2872,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -3107,11 +3107,11 @@
     <xs:attribute name="target" type="xs:string">
       <xs:annotation>
         <xs:documentation>Target: service-name of service in other application that should be called, or name of adapter to be called.
- If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("{@code /}").
+ If the adapter is in another configuration, prefix the adapter name with the name of that configuration and a slash ("&lt;code&gt;/&lt;/code&gt;").
  &lt;br/&gt;
  It is possible to set a target at runtime via a parameter.
  &lt;br/&gt;
- If a parameter with name target exists but has no value, then the target configured
+ If a parameter with name &lt;code&gt;target&lt;/code&gt; exists but has no value, then the target configured
  via the attribute will be used as a default.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -3275,7 +3275,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -3326,12 +3326,12 @@
     </xs:attribute>
     <xs:attribute name="firstBodyPartName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt; and &lt;code&gt;postType&lt;/code&gt;=&lt;code&gt;URLENCODED&lt;/code&gt;, &lt;code&gt;FORM-DATA&lt;/code&gt; or &lt;code&gt;MTOM&lt;/code&gt;) Prepends a new BodyPart using the specified name and uses the input of the Sender as content</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;methodType=POST&lt;/code&gt; and &lt;code&gt;postType=URLENCODED&lt;/code&gt;, &lt;code&gt;FORM-DATA&lt;/code&gt; or &lt;code&gt;MTOM&lt;/code&gt;) Prepends a new BodyPart using the specified name and uses the input of the Sender as content</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set and &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt; and &lt;code&gt;paramsInUrl&lt;/code&gt;=&lt;code&gt;false&lt;/code&gt;, a multipart/form-data entity is created instead of a request body.
+        <xs:documentation>If set and &lt;code&gt;methodType=POST&lt;/code&gt; and &lt;code&gt;paramsInUrl=false&lt;/code&gt;, a multipart/form-data entity is created instead of a request body.
  For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
  &lt;ul&gt;
  &lt;li&gt;name: optional, used as 'filename' in Content-Disposition&lt;/li&gt;
@@ -3349,7 +3349,8 @@
     </xs:attribute>
     <xs:attribute name="treatInputMessageAsParameters" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the input will be added to the URL for &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;GET&lt;/code&gt;, or for &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; or &lt;code&gt;PATCH&lt;/code&gt; if &lt;code&gt;postType&lt;/code&gt;=&lt;code&gt;RAW&lt;/code&gt;. This used to be the default behaviour in framework version 7.7 and earlier Default: for methodType=&lt;code&gt;GET&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;,&lt;br/&gt;for methodTypes &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt;, &lt;code&gt;PATCH&lt;/code&gt;: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the input will be added to the URL for &lt;code&gt;methodType=GET&lt;/code&gt;, or for &lt;code&gt;methodType=POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; or
+ &lt;code&gt;PATCH&lt;/code&gt; if &lt;code&gt;postType=RAW&lt;/code&gt;. This used to be the default behaviour in framework version 7.7 and earlier Default: for methodType=&lt;code&gt;GET&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;,&lt;br/&gt;for methodTypes &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt;, &lt;code&gt;PATCH&lt;/code&gt;: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3611,7 +3612,7 @@
     </xs:attribute>
     <xs:attribute name="synchronous" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the call is made asynchronously. This implies isolated=&lt;code&gt;true&lt;/code&gt; Default: true</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the call is made asynchronously. This implies &lt;code&gt;isolated=true&lt;/code&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="isolated" type="frankBoolean">
@@ -3855,7 +3856,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3884,7 +3885,7 @@
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JavascriptSenderDeclaredAttributeGroup">
-    <xs:attribute name="jsFileName" type="xs:string">
+    <xs:attribute name="jsFileName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>the name of the javascript file containing the functions to run</xs:documentation>
       </xs:annotation>
@@ -3993,7 +3994,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
+        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4290,7 +4291,7 @@
     </xs:attribute>
     <xs:attribute name="createRootFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.</xs:documentation>
+        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4460,7 +4461,7 @@
  by different JdbcTransactionalStorage instances.
  &lt;br/&gt;
  This field is optional, unless the attribute #onlyStoreWhenMessageIdUnique is
- set to {@code true}.</xs:documentation>
+ set to &lt;code&gt;true&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="type" />
@@ -4601,17 +4602,17 @@
   <xs:attributeGroup name="MongoDbSenderDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The MongoDB datasource Default: mongodb.datasource.default</xs:documentation>
+        <xs:documentation>The MongoDB datasource Default: &lt;code&gt;mongodb.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="database" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Database to connect to. Can be overridden by parameter database</xs:documentation>
+        <xs:documentation>Database to connect to. Can be overridden by parameter &lt;code&gt;database&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collection" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Collection to act upon. Can be overridden by parameter collection</xs:documentation>
+        <xs:documentation>Collection to act upon. Can be overridden by parameter &lt;code&gt;collection&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="action">
@@ -4624,12 +4625,12 @@
     </xs:attribute>
     <xs:attribute name="filter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter. Can contain references to parameters between ?{ and }. Can be overridden by parameter filter</xs:documentation>
+        <xs:documentation>Filter. Can contain references to parameters between &lt;code&gt;?{&lt;/code&gt; and &lt;code&gt;}&lt;/code&gt;. Can be overridden by parameter &lt;code&gt;filter&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="limit" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter limit. Default: 0</xs:documentation>
+        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter &lt;code&gt;limit&lt;/code&gt;. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="countOnly" type="frankBoolean">
@@ -4983,7 +4984,6 @@
         <xs:documentation>type of the optional status field which is set after the row is written to the file: timestamp</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="fileNameSessionKey" type="xs:string" />
     <xs:attribute name="filenameSessionKey" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Key of session variable that contains the name of the file to use.</xs:documentation>
@@ -5322,7 +5322,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -5347,7 +5347,7 @@
     </xs:attribute>
     <xs:attribute name="staleTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Used when StaleChecking=&lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+        <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="protocol" type="xs:string">
@@ -6051,7 +6051,7 @@
     <xs:attribute name="warn" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
@@ -6401,7 +6401,7 @@
     </xs:attribute>
     <xs:attribute name="consumes">
       <xs:annotation>
-        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415 Unsupported Media Type&lt;/code&gt; is replied. Default: ANY</xs:documentation>
+        <xs:documentation>The required contentType on requests, if it doesn't match a &lt;code&gt;415&lt;/code&gt; status (Unsupported Media Type) is returned. Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -6872,7 +6872,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -6984,7 +6984,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -7071,7 +7071,7 @@
       <xs:annotation>
         <xs:documentation>Name of the listener by which it can be found by the org.frankframework.senders.FrankSender. If this
  is not configured, the name will default to the name of the org.frankframework.core.Adapter.
- The name of the {@code FrankListener} must be unique across the configuration.</xs:documentation>
+ The name of the &lt;code&gt;FrankListener&lt;/code&gt; must be unique across the configuration.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
@@ -7221,7 +7221,7 @@
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
@@ -7336,7 +7336,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7569,7 +7569,7 @@
     <xs:attribute name="topics" type="xs:string">
       <xs:annotation>
         <xs:documentation>The topics to listen to as comma-separated list. Regular expressions are supported,
- for instance: {@code example.*}.</xs:documentation>
+ for instance: &lt;code&gt;example.*&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -9343,7 +9343,7 @@
     </xs:attribute>
     <xs:attribute name="inputFormatSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: Json2XmlValidator.inputFormat &amp;lt;name of the pipe&amp;gt;</xs:documentation>
+        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: &lt;code&gt;Json2XmlValidator.inputFormat &lt;/code&gt;&amp;lt;name of the pipe&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
@@ -9911,12 +9911,12 @@
     </xs:attribute>
     <xs:attribute name="soapNamespaceSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store auto-detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: soapNamespace</xs:documentation>
+        <xs:documentation>Key of session variable to store auto-detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: &lt;code&gt;soapNamespace&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: soapHeader</xs:documentation>
+        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: &lt;code&gt;soapHeader&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyle" type="xs:string">
@@ -10493,7 +10493,7 @@
     </xs:attribute>
     <xs:attribute name="trim" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, trailing spaces are removed from each field Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, trailing spaces are removed from each field Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
@@ -10680,12 +10680,13 @@
     </xs:attribute>
     <xs:attribute name="default" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>if set &lt;code&gt;true&lt;/code&gt;, this resulthandler is the default for all flows that do not have a handler specified Default: false</xs:documentation>
+        <xs:documentation>if set to &lt;code&gt;true&lt;/code&gt;, this resultHandler is the default for all flows that do not have a handler specified Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blockByRecordType" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;(default), every group of records, as indicated by RecordHandler.newRecordType is handled as a block. Default: true</xs:documentation>
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;(default), every group of records, as indicated by RecordHandler.newRecordType,
+ is handled as a block. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
@@ -10699,7 +10700,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jmsRealm" type="xs:string">
@@ -11246,6 +11247,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CsvParserPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DataSonnetPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DataSonnetPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12073,7 +12083,8 @@
   <xs:attributeGroup name="AmountOfPagesPipeDeclaredAttributeGroup">
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used to encode the given input string Default: UTF-8</xs:documentation>
+        <xs:documentation>Charset to be used to read the input message.
+ Defaults to the message's known charset or UTF-8 when unknown.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -12272,7 +12283,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jmsRealm" type="xs:string">
@@ -12318,7 +12329,7 @@
     </xs:attribute>
     <xs:attribute name="delete" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will deleted after being processed, and not stored Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will be deleted after being processed, and not stored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -12600,12 +12611,12 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trimSpaces" type="frankBoolean">
@@ -12972,9 +12983,44 @@
         <xs:documentation>Format the XML output in easy legible way</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="useControlCodes" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Enables the ASCII &lt;code&gt;(RS) Record Separator&lt;/code&gt; and &lt;code&gt;(US) Unit Separator&lt;/code&gt; Control Code field delimiters.
+ May not be used in combination with attribute &lt;code&gt;fieldSeparator&lt;/code&gt;.
+ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators"&gt;WIKI Control Codes&lt;/a&gt;.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="CsvParserPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CsvParserPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="DataSonnetPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="DataSonnetPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DataSonnetPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="DataSonnetPipeDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputType">
+      <xs:annotation>
+        <xs:documentation>Output file format, DataSonnet is semi-capable of converting the converted JSON to a different format.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DataSonnetPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DataSonnetPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DelayPipeType">
@@ -13478,6 +13524,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queueRegex" type="xs:string" />
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="GetTibcoQueuesCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
@@ -13676,7 +13727,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
+        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14160,7 +14211,7 @@
     </xs:attribute>
     <xs:attribute name="createRootFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet.</xs:documentation>
+        <xs:documentation>Whether the LocalFileSystem tries to create the root folder if it doesn't exist yet. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14171,7 +14222,7 @@
   <xs:attributeGroup name="FileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [&lt;code&gt;action&lt;/code&gt;] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -14179,17 +14230,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=&lt;code&gt;list&lt;/code&gt;. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -14199,32 +14250,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, write, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions &lt;code&gt;create&lt;/code&gt;, &lt;code&gt;write&lt;/code&gt;, &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt;, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -14234,17 +14285,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for read and write action</xs:documentation>
+        <xs:documentation>Charset to be used for &lt;code&gt;read&lt;/code&gt; and &lt;code&gt;write&lt;/code&gt; action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions &lt;code&gt;delete&lt;/code&gt;, &lt;code&gt;readDelete&lt;/code&gt; and &lt;code&gt;move&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -14285,7 +14336,7 @@
     </xs:attribute>
     <xs:attribute name="continueOnError" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution. Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the pipe will never forward to the &lt;code&gt;ExceptionForward&lt;/code&gt; even if an error occurred during execution. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14489,18 +14540,18 @@
 
  &lt;p&gt;
  Conversion result files are stored as messages in the session, under keys numbered based
- on the value set here. If #isSaveSeparate() is {@code false} then only the main
- document is stored in the session, if it is {@code true} then each attachment is stored
+ on the value set here. If #isSaveSeparate() is &lt;code&gt;false&lt;/code&gt; then only the main
+ document is stored in the session, if it is &lt;code&gt;true&lt;/code&gt; then each attachment is stored
  separately.
  &lt;/p&gt;
  &lt;p&gt;
      For example, if a file is converted that has 2 attachments and #setSaveSeparate(boolean)
-     is set to {@code true} then there will be the following 3 session keys (assuming the default value
+     is set to &lt;code&gt;true&lt;/code&gt; then there will be the following 3 session keys (assuming the default value
      is unchanged):
      &lt;ol&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles1}&lt;/li&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles2}&lt;/li&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles3}&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles1&lt;/code&gt;&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles2&lt;/code&gt;&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles3&lt;/code&gt;&lt;/li&gt;
      &lt;/ol&gt;
      Each session key will contain a FileMessage referencing the contents of that PDF.
  &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
@@ -14672,7 +14723,7 @@
     <xs:attribute name="sleepWhenEqualToPrevious" type="frankInt">
       <xs:annotation>
         <xs:documentation>Set to a time &lt;i&gt;in milliseconds&lt;/i&gt; to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in
- this virtual machine or &lt;code&gt;-1 to disable&lt;/code&gt;. The thread will sleep for the specified time before recalculating a new value. Set the
+ this virtual machine or &lt;code&gt;-1&lt;/code&gt; to disable. The thread will sleep for the specified time before recalculating a new value. Set the
  timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
  &lt;b&gt;note:&lt;/b&gt; When you're looking for a GUID parameter for your XSLT it might be better to use
  &amp;lt;param name=&amp;quot;guid&amp;quot; pattern=&amp;quot;{hostname}_{uid}&amp;quot;/&amp;gt;, see Parameter. Default: -1</xs:documentation>
@@ -14680,7 +14731,7 @@
     </xs:attribute>
     <xs:attribute name="returnFixedDate" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be 2001-12-17 09:30:47 (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be &lt;code&gt;2001-12-17 09:30:47&lt;/code&gt; (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getCurrentTimeStampInMillis" type="frankBoolean">
@@ -14863,7 +14914,7 @@
  &lt;p&gt;
  &lt;b&gt;NB:&lt;/b&gt; This will only replace or remove characters considered non-printable. This
  will not check if a given character is valid in the particular way it is used. Thus it will
- not remove or replace, for instance, a single {@code '&amp;'} character.
+ not remove or replace, for instance, a single &lt;code&gt;'&amp;amp;'&lt;/code&gt; character.
  &lt;/p&gt;
  &lt;p&gt;
  See also:
@@ -15135,6 +15186,11 @@
     <xs:attribute name="soapAction" type="xs:string">
       <xs:annotation>
         <xs:documentation>If empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15618,7 +15674,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions.</xs:documentation>
+        <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="frankBoolean">
@@ -15953,7 +16009,7 @@
     <xs:attribute name="cronExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>CRON expression that determines the frequency of execution.
- Can &lt;code&gt;not&lt;/code&gt; be used in combination with Interval.</xs:documentation>
+ Can &lt;b&gt;not&lt;/b&gt; be used in combination with Interval.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="interval" type="frankInt">
@@ -16044,7 +16100,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -16938,6 +16994,14 @@
       <xs:pattern value="[uU][pP][pP][eE][rR][cC][aA][sS][eE]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="DataSonnetOutputTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[jJ][sS][oO][nN]" />
+      <xs:pattern value="[cC][sS][vV]" />
+      <xs:pattern value="[xX][mM][lL]" />
+      <xs:pattern value="[yY][aA][mM][lL]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_7">
     <xs:restriction base="xs:string">
       <xs:pattern value="[eE][nN][cC][oO][dD][eE]" />
@@ -17182,7 +17246,8 @@
   </xs:attribute>
   <xs:attribute name="linkMethod">
     <xs:annotation>
-      <xs:documentation>(Only used when &lt;code&gt;synchronous&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt; and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
+      <xs:documentation>(Only used when &lt;code&gt;synchronous=true&lt;/code&gt; and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline,
+ the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="LinkMethodAttributeValuesType variableRef" />
@@ -17230,7 +17295,7 @@
  MessageClass#BYTES for JMS BytesMessage, or MessageClass#AUTO for auto-determination
  based on whether the input Message is binary or character.
  &lt;p&gt;
- Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property {@code jms.messageClass.default}
+ Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property &lt;code&gt;jms.messageClass.default&lt;/code&gt;
  &lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
@@ -17373,7 +17438,7 @@
   <xs:attribute name="jndiProperties" type="xs:string" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="connectionsArePooled" type="frankBoolean">
@@ -17418,7 +17483,7 @@
   </xs:attribute>
   <xs:attribute name="useNamedParams" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="includeFieldDefinition" type="frankBoolean">
@@ -17700,17 +17765,17 @@
   </xs:attribute>
   <xs:attribute name="verifyHostname" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="followRedirects" type="frankBoolean">
@@ -17730,7 +17795,7 @@
   </xs:attribute>
   <xs:attribute name="staleTimeout" type="frankInt">
     <xs:annotation>
-      <xs:documentation>Used when StaleChecking=&lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+      <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="connectionTimeToLive" type="frankInt">
@@ -17750,7 +17815,7 @@
   </xs:attribute>
   <xs:attribute name="supportedCipherSuites" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
+      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
  See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
@@ -17904,7 +17969,7 @@
   </xs:attribute>
   <xs:attribute name="replyDestinationName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;,
+      <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo=true&lt;/code&gt;,
  the sender specified reply destination takes precedence over this one.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
@@ -18178,9 +18243,9 @@
     <xs:annotation>
       <xs:documentation>Regular expression to mask strings in the log. For example, the regular expression &lt;code&gt;(?&amp;lt;=&amp;lt;password&amp;gt;).*?(?=&amp;lt;/password&amp;gt;)&lt;/code&gt;
  will replace every character between keys '&amp;lt;password&amp;gt;' and '&amp;lt;/password&amp;gt;'. &lt;b&gt;note:&lt;/b&gt; this feature is used at adapter level,
- so a {@code hideRegex} set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
+ so a &lt;code&gt;hideRegex&lt;/code&gt; set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
  The regular expressions are matched against part of the log lines. See int)
- with {@code mode = 0} for how regular expressions are matched and replaced.</xs:documentation>
+ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched and replaced.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="root" type="xs:string">
@@ -18302,7 +18367,7 @@
   <xs:attribute name="warn" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCaching" type="frankBoolean">
@@ -18350,12 +18415,12 @@
   </xs:attribute>
   <xs:attribute name="maxItems" type="frankInt">
     <xs:annotation>
-      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward maxItemsReached can be configured to follow Default: 0</xs:documentation>
+      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward &lt;code&gt;maxItemsReached&lt;/code&gt; can be configured to follow Default: 0</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="stopConditionXPathExpression" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Expression evaluated on each result and forwards to [stopConditionMet] forward if configured.
+      <xs:documentation>Expression evaluated on each result and forwards to [&lt;code&gt;stopConditionMet&lt;/code&gt;] forward if configured.
  Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used.
  This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.
  Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>

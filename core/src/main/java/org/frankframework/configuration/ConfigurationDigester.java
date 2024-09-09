@@ -81,19 +81,19 @@ import lombok.extern.log4j.Log4j2;
  * means that you may specify entities that will be resolved during parsing.
  * </p>
  * Example:
- * <code><pre>
-&lt;?xml version="1.0"?&gt;
-&lt;!DOCTYPE configuration
-[
-&lt;!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml"&gt;
-]&gt;
-
-&lt;configuration name="HelloWorld"&gt;
-
-&HelloWorld;
-
-&lt;/configuration&gt;
-</pre></code>
+ * <pre>{@code
+ * <?xml version="1.0"?>
+ * <!DOCTYPE configuration
+ * [
+ * <!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml">
+ * ]>
+ *
+ * <configuration name="HelloWorld">
+ *
+ * &HelloWorld;
+ *
+ * </configuration>
+ * }</pre>
  * @author Johan Verrips
  * @see Configuration
  */

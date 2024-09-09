@@ -39,14 +39,14 @@ import lombok.Setter;
  * users.password [string] Set the password of the user
  * users.roles [array] Set the roles of the user. Options: `IbisTester`, `IbisDataAdmin`, `IbisAdmin`, `IbisWebService`, `IbisObserver`
  * e.g.
- * <pre><code>
+ * <pre>{@code
  * users:
  *   - username: Tester
  *     password: ChangeMe!
  *     roles:
  *       - IbisTester
  *       - IbisObserver
- * </code></pre>
+ * }</pre>
  */
 public class YmlFileAuthenticator extends ServletAuthenticatorBase {
 

@@ -16,32 +16,30 @@ type Filter = Record<AdapterStatus, boolean>;
   styleUrls: ['./status.component.scss'],
 })
 export class StatusComponent implements OnInit, OnDestroy {
-  filter: Filter = {
+  protected filter: Filter = {
     started: true,
     stopped: true,
     warning: true,
   };
-  configurations: Configuration[] = [];
-  adapters: Record<string, Adapter> = {};
-  adapterName = '';
-  searchText = '';
-  selectedConfiguration = 'All';
-  reloading = false;
-  configurationFlowDiagram: string | null = null;
-  isConfigStubbed: Record<string, boolean> = {};
-  isConfigReloading: Record<string, boolean> = {};
-  isConfigAutoReloadable: Record<string, boolean> = {};
-  adapterShowContent: Record<keyof typeof this.adapters, boolean> = {};
-  loadFlowInline = true;
-
-  alerts: Alert[] = [];
-  messageLog: Record<string, MessageLog> = {};
-
-  private _subscriptions = new Subscription();
-  private hasExpendedAdaptersLoaded = false;
-
+  protected configurations: Configuration[] = [];
+  protected adapters: Record<string, Adapter> = {};
+  protected searchText = '';
+  protected selectedConfiguration = 'All';
+  protected reloading = false;
+  protected configurationFlowDiagram: string | null = null;
+  protected isConfigStubbed: Record<string, boolean> = {};
+  protected isConfigReloading: Record<string, boolean> = {};
+  protected isConfigAutoReloadable: Record<string, boolean> = {};
+  protected adapterShowContent: Record<keyof typeof this.adapters, boolean> = {};
+  protected loadFlowInline = true;
+  protected alerts: Alert[] = [];
+  protected messageLog: Record<string, MessageLog> = {};
   protected serverInfo?: ServerInfo;
   protected freeDiskSpacePercentage?: number;
+
+  private adapterName = '';
+  private _subscriptions = new Subscription();
+  private hasExpendedAdaptersLoaded = false;
 
   constructor(
     private Poller: PollerService,

@@ -391,7 +391,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 	}
 
 	/**
-	 * (Only used when <code>synchronous</code>=<code>true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.
+	 * (Only used when <code>synchronous=true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline,
+	 * the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.
 	 * @ff.default MESSAGEID
 	 */
 	public void setLinkMethod(LinkMethod method) {
@@ -399,7 +400,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 	}
 
 	/**
-	 * (Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout.
+	 * (Only for <code>synchronous=true</code>). Maximum time in ms to wait for a reply. 0 means no timeout.
 	 * @ff.default 5000
 	 */
 	public void setReplyTimeout(int i) {

@@ -83,10 +83,6 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 			return ResponseUtils.convertToSpringResponse(response);
 		}
 
-		if(session.getMemberTarget() == null) {
-			members.stream().filter(m -> "worker".equals(m.getType())).findFirst().ifPresent(m -> { m.setSelectedMember(true); session.setMemberTarget(m.getId()); });
-		}
-
 		for(ClusterMember member : members) {
 			member.setSelectedMember(session.getMemberTarget().equals(member.getId()));
 		}

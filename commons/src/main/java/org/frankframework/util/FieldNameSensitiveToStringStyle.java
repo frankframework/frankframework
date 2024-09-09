@@ -25,7 +25,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
  * Similar to the {@link ToStringStyle#SHORT_PREFIX_STYLE} which excludes
  * fields containing the words 'password' and 'secret'.
- * 
+ *
  * @author Niels Meijer
  */
 class FieldNameSensitiveToStringStyle extends ToStringStyle {
@@ -39,7 +39,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	}
 
 	/**
-	 * Ensure <code>Singleton</ode> after serialization.
+	 * Ensure <code>Singleton</code> after serialization.
 	 * 
 	 * @return the singleton
 	 */
@@ -49,7 +49,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 
 	@Override
 	protected void appendDetail(StringBuffer buffer, final String fieldName, final Object value) {
-		if(containsHiddenWord(fieldName) && value instanceof String) {
+		if (containsHiddenWord(fieldName) && value instanceof String) {
 			super.appendDetail(buffer, fieldName, hideValue(value));
 		} else {
 			super.appendDetail(buffer, fieldName, value);
@@ -58,8 +58,8 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 
 	private boolean containsHiddenWord(final String name) {
 		String lcName = name.toLowerCase();
-		for(String field : PROTECTED_FIELDS) {
-			if(lcName.contains(field)) {
+		for (String field : PROTECTED_FIELDS) {
+			if (lcName.contains(field)) {
 				return true;
 			}
 		}
@@ -67,7 +67,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	}
 
 	private String hideValue(Object value) {
-		if(value instanceof String string) {
+		if (value instanceof String string) {
 			return StringUtil.hide(string);
 		} else {
 			return "***hidden***";
@@ -79,10 +79,10 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	 */
 	@Override
 	protected void appendDetail(StringBuffer buffer, String fieldName, final Map<?, ?> map) {
-		Map<Object, Object> hiddenValues = new HashMap<>(map); //Deep copy, we don't want to alter the original map!
+		Map<Object, Object> hiddenValues = new HashMap<>(map); // Deep copy, we don't want to alter the original map!
 
-		for(Object key : map.keySet()) {
-			if(key instanceof String string && containsHiddenWord(string)) {
+		for (Object key : map.keySet()) {
+			if (key instanceof String string && containsHiddenWord(string)) {
 				Object hideMe = hiddenValues.remove(key);
 				hiddenValues.put(key, hideValue(hideMe));
 			}

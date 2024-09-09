@@ -1,6 +1,7 @@
 package org.frankframework.console.controllers;
 
 import org.frankframework.console.configuration.ApiExceptionHandler;
+import org.frankframework.console.configuration.ClientSession;
 import org.frankframework.console.configuration.WebConfiguration;
 import org.frankframework.console.controllers.socket.MessageCacheStore;
 import org.mockito.Mockito;
@@ -19,6 +20,11 @@ public class WebTestConfiguration {
 	@Bean
 	MessageCacheStore messageCacheStore() {
 		return new MessageCacheStore();
+	}
+
+	@Bean
+	ClientSession createClientSession() {
+		return new ClientSession();
 	}
 
 	@Bean

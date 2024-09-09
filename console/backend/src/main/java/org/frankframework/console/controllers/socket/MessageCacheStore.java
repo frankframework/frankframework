@@ -16,36 +16,45 @@
 package org.frankframework.console.controllers.socket;
 
 import java.util.EnumMap;
+import java.util.UUID;
+import java.util.WeakHashMap;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.frankframework.management.bus.BusTopic;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class MessageCacheStore {
+	private static final UUID LOCAL_UUID = UUID.randomUUID();
 
-	private final EnumMap<BusTopic, String> topicCache = new EnumMap<>(BusTopic.class);
+	private final WeakHashMap<UUID, EnumMap<BusTopic, String>> memberCache = new WeakHashMap<>();
 
-	public void put(BusTopic topic, String message) {
-		topicCache.put(topic, message);
+	public void put(@Nullable UUID uuid, @Nonnull BusTopic topic, @Nonnull String message) {
+		getCache(uuid).put(topic, message);
 	}
 
 	@Nullable
-	public String get(BusTopic topic) {
-		return topicCache.get(topic);
+	public String get(@Nullable UUID uuid, @Nonnull BusTopic topic) {
+		return getCache(uuid).get(topic);
 	}
 
 	@Nonnull
-	public String getAndUpdate(BusTopic topic, @Nonnull String latestJsonMessage) {
-		String cachedMessage = topicCache.put(topic, latestJsonMessage);
+	public String getAndUpdate(@Nullable UUID uuid, @Nonnull BusTopic topic, @Nonnull String latestJsonMessage) {
+		String cachedMessage = getCache(uuid).put(topic, latestJsonMessage);
 		if(cachedMessage == null) {
 			return "{}";
 		}
 		return cachedMessage;
+	}
+
+	@Nonnull
+	private EnumMap<BusTopic, String> getCache(@Nullable UUID uuid) {
+		UUID key = uuid == null ? LOCAL_UUID : uuid;
+		return memberCache.computeIfAbsent(key, t -> new EnumMap<>(BusTopic.class));
 	}
 }

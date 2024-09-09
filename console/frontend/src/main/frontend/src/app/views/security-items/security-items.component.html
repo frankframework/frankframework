@@ -84,7 +84,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let cert; in: certificates">
+                <tr *ngFor="let cert of certificates">
                   <td>{{ cert.adapter }}</td>
                   <td>{{ cert.pipe }}</td>
                   <td>{{ cert.certificate.name }}</td>

@@ -23,9 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.HostnamePropertySourcePostProcessor;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
@@ -59,12 +57,10 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private @Setter BeanFactory beanFactory;
 	private @Setter ApplicationContext applicationContext;
 	private MessageChannel nullChannel;
-	private String hostname;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); //Messages that do not match the TopicSelector will be discarded
-		hostname = applicationContext.getEnvironment().getProperty(HostnamePropertySourcePostProcessor.HOSTNAME_PROPERTY);
 
 		ClassPathBeanDefinitionScanner scanner = scan();
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
@@ -127,7 +123,6 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		initializeBean(serviceActivator);
 
 		MessageSelectorChain selectors = new MessageSelectorChain();
-		selectors.add(hostSelector());
 		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
 		if(action != null) {
 			selectors.add(headerSelector(action.value(), BusAction.ACTION_HEADER_NAME));
@@ -152,16 +147,6 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		} else {
 			log.error("unable to register ServiceActivator [{}]", componentName);
 		}
-	}
-
-	/**
-	 * Matches when no host was provided or when the host header matches.
-	 */
-	public MessageSelector hostSelector() {
-		return message -> {
-			String headerValue = (String) message.getHeaders().get(BusMessageUtils.HEADER_HOSTNAME_KEY);
-			return StringUtils.isEmpty(headerValue) || hostname.equalsIgnoreCase(headerValue);
-		};
 	}
 
 	private MessageSelector activeSelector(ApplicationContext applicationContext) {

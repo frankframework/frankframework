@@ -26,8 +26,8 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 
 /**
- * The <code>ITransactionalStorage</code> is responsible for storing and
- * retrieving-back messages under transaction control.
+ * Marks an implementation as responsible for storing and retrieving-back messages under transaction control.
+ *
  * @see Receiver
  * @author  Gerrit van Brakel
  * @since   4.1

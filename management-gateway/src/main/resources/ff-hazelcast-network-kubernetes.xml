@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- example file for kubernetes deployments -->
+
+<hazelcast xmlns="http://www.hazelcast.com/schema/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<network>
+		<join>
+			<kubernetes enabled="true" service-dns="SERVICE-NAME.NAMESPACE.svc.cluster.local" service-port="5701">
+				<namespace>default</namespace>
+			</kubernetes>
+		</join>
+	</network>
+</hazelcast>

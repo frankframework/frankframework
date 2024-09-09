@@ -342,7 +342,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
+	public void testEmptyParameterResolvesToMessage() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.configure();
@@ -352,7 +352,9 @@ public class ParameterTest {
 
 		Message message = new Message("fakeMessage");
 
-		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("fakeMessage", msg.asString());
 
 		assertTrue(p.requiresInputValueForResolution());
 	}
@@ -413,7 +415,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterValueMessageString() throws ConfigurationException, ParameterException {
+	public void testParameterValueMessageString() throws Exception {
 		String sessionKey = "mySessionKey";
 		String sessionMessage = "message goes here " + UUID.randomUUID();
 
@@ -428,7 +430,9 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		assertEquals(sessionMessage, p.getValue(alreadyResolvedParameters, message, session, false));
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals(sessionMessage, msg.asString());
 
 		assertFalse(p.requiresInputValueForResolution());
 		assertTrue(p.consumesSessionVariable(sessionKey));
@@ -663,7 +667,7 @@ public class ParameterTest {
 	public void testStringWithMaxLength() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("string");
-		p.setValue("1234567890");
+		p.setValue("abcdefghijklmnop");
 		p.setMaxLength(5);
 		p.configure();
 
@@ -672,14 +676,46 @@ public class ParameterTest {
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
 		assertInstanceOf(String.class, result);
-		assertEquals("12345", (String) result);
+		assertEquals("abcde", (String) result);
+	}
+
+	@Test
+	public void testShortStringWithMaxLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setValue("abcde");
+		p.setMaxLength(12);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertInstanceOf(String.class, result);
+		assertEquals("abcde", (String) result);
+	}
+
+	@Test
+	public void testLongStringWithMinLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setValue("abcdefghijklmnop");
+		p.setMinLength(12);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertInstanceOf(String.class, result);
+		assertEquals("abcdefghijklmnop", (String) result);
 	}
 
 	@Test
 	public void testStringWithMinLength() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("string");
-		p.setValue("1234567890");
+		p.setValue("abcde");
 		p.setMinLength(15);
 		p.configure();
 
@@ -688,7 +724,66 @@ public class ParameterTest {
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
 		assertInstanceOf(String.class, result);
-		assertEquals("1234567890     ", (String) result);
+		assertEquals("abcde          ", (String) result);
+	}
+
+	@Test
+	public void testStringWithMinAndMaxLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setValue("abcdefg");
+		p.setMinLength(5);
+		p.setMaxLength(10);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertInstanceOf(String.class, result);
+		assertEquals("abcdefg", (String) result);
+	}
+
+	@Test
+	public void testMessageWithMinAndMaxLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setSessionKey("testkey");
+		p.setMinLength(5);
+		p.setMaxLength(10);
+		p.configure();
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put("testkey", new Message("abcdefg"));
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+
+			assertInstanceOf(String.class, result);
+			assertEquals("abcdefg", (String) result);
+		}
+	}
+
+	@Test
+	public void testByteArrayWithMinAndMaxLength() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("string");
+		p.setSessionKey("testkey");
+		p.setMinLength(5);
+		p.setMaxLength(10);
+		p.configure();
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put("testkey", new Message("abcdefghijklmnop").asByteArray());
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+
+			assertInstanceOf(byte[].class, result);
+			assertEquals("abcdefghijklmnop", new String((byte[]) result));
+		}
 	}
 
 	@Test
@@ -1358,7 +1453,7 @@ public class ParameterTest {
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
-		String result = (String) p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
+		Object result = p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
 
 		assertNull(result);
 	}

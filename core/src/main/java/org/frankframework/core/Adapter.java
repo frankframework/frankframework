@@ -990,7 +990,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 
 	/**
 	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
-	 * @ff.default <code>INFO, unless overridden by property msg.log.level.default</code>
+	 * @ff.default <code>INFO</code>, unless overridden by property <code>msg.log.level.default</code>
 	 */
 	public void setMsgLogLevel(MessageLogLevel level) {
 		msgLogLevel = level.getEffectiveLevel();
