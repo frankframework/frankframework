@@ -30,5 +30,4 @@ public class DebugController {
 	}
 
 	public record DebugMessage(String message) {}
-	
 }
