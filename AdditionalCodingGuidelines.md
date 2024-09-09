@@ -16,6 +16,7 @@ Aim of these code style guidelines is to promote code that is:
 - Maintainable
 - Has fewer bugs
 - Make it easier to reason about what the code does
+- Documented
 
 Guidelines
 ----------
@@ -311,3 +312,11 @@ fun registerApplicationModules(modules: List<String>) =
 			 log.info { "Loading IAF module [$version] version [$module]" }
 		 }
 ```
+
+### Documentation
+Since javadoc is used for generating documentation in the Frank!Doc, it's important to provide usable information in the class for Frank Developers.
+
+* Please provide documentation in the javadoc if there's been a (breaking) change and offer an example in the documentation. See [FixedResultPipe.java](https://github.com/frankframework/frankframework/blob/master/core/src/main/java/org/frankframework/pipes/FixedResultPipe.java) for instance.  
+* When using Code examples, please use `<pre>{@code ... }</pre>` blocks.
+* When referring to classes, please use `{@link ClassName}`
+* When referring to a value, please use `{@literal null}`
