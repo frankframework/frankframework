@@ -19,13 +19,14 @@ import static org.frankframework.util.DateFormatUtils.FULL_GENERIC_FORMATTER;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
@@ -64,7 +66,6 @@ import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 
 /**
  * Requires the net.bankid.merchant.library V1.2.9
- * Compile with Java 1.8+
  *
  * @author Niels Meijer
  */
@@ -90,8 +91,8 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private @Getter CredentialFactory merchantCertificateCredentials = null;
 	private @Getter String acquirerCertificateAlias = null;
 	private @Getter String acquirerAlternativeCertificateAlias = null;
-	private @Getter String SAMLCertificateAlias = null;
-	private @Getter CredentialFactory SAMLCertificateCredentials = null;
+	private @Getter String samlCertificateAlias = null;
+	private @Getter CredentialFactory samlCertificateCredentials = null;
 
 	private @Getter boolean logsEnabled = false;
 	private @Getter boolean serviceLogsEnabled = false;
@@ -136,53 +137,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private Configuration getConfiguration() throws ConfigurationException {
 		Configuration idinConfig = createConfiguration();
 
-		if(StringUtils.isNotEmpty(getMerchantID()))
-			idinConfig.setMerchantID(getMerchantID());
-		if(getMerchantSubID() > 0)
-			idinConfig.setMerchantSubID(getMerchantSubID());
-		if(StringUtils.isNotEmpty(getMerchantReturnUrl()))
-			idinConfig.setMerchantReturnUrl(getMerchantReturnUrl());
-
-		if(StringUtils.isNotEmpty(getAcquirerDirectoryUrl()))
-			idinConfig.setAcquirerDirectoryURL(getAcquirerDirectoryUrl());
-		if(StringUtils.isNotEmpty(getAcquirerTransactionUrl()))
-			idinConfig.setAcquirerTransactionURL(getAcquirerTransactionUrl());
-		if(StringUtils.isNotEmpty(getAcquirerStatusUrl()))
-			idinConfig.setAcquirerStatusURL(getAcquirerStatusUrl());
-
-		if(StringUtils.isNotEmpty(getKeyStoreLocation())) {
-			idinConfig.setKeyStoreLocation(getKeyStoreLocation());
-			if(StringUtils.isNotEmpty(getKeyStorePassword()))
-				idinConfig.setKeyStorePassword(getKeyStorePassword());
-		}
-
-		if(StringUtils.isNotEmpty(getMerchantCertificateAlias())) {
-			idinConfig.setMerchantCertificateAlias(getMerchantCertificateAlias());
-			if(StringUtils.isNotEmpty(getMerchantCertificatePassword()))
-				idinConfig.setMerchantCertificatePassword(getMerchantCertificatePassword());
-		}
-
-		if(StringUtils.isNotEmpty(getAcquirerCertificateAlias()))
-			idinConfig.setAcquirerCertificateAlias(getAcquirerCertificateAlias());
-		if(StringUtils.isNotEmpty(getAcquirerAlternativeCertificateAlias()))
-			idinConfig.setAcquirerAlternateCertificateAlias(getAcquirerAlternativeCertificateAlias());
-
-		if(StringUtils.isNotEmpty(getSAMLCertificateAlias())) {
-			idinConfig.setSamlCertificateAlias(getSAMLCertificateAlias());
+		if(StringUtils.isNotEmpty(getSamlCertificateAlias())) {
+			idinConfig.setSamlCertificateAlias(getSamlCertificateAlias());
 			if(StringUtils.isNotEmpty(getSAMLCertificatePassword()))
 				idinConfig.setSamlCertificatePassword(getSAMLCertificatePassword());
 		}
-
-		if(isLogsEnabled())
-			idinConfig.setLogsEnabled(isLogsEnabled());
-		if(isServiceLogsEnabled())
-			idinConfig.setServiceLogsEnabled(isServiceLogsEnabled());
-		if(StringUtils.isNotEmpty(getServiceLogsLocation()))
-			idinConfig.setServiceLogsLocation(getServiceLogsLocation());
-		if(StringUtils.isNotEmpty(getServiceLogsPattern()))
-			idinConfig.setServiceLogsPattern(getServiceLogsPattern());
-
-		idinConfig.setTls12Enabled(isTls12Enabled());
 
 		try {
 			idinConfig.Setup(idinConfig); // Somehow required to setup the KeyStoreKeyProviderFactory.
@@ -194,7 +153,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	protected Configuration createConfiguration() throws ConfigurationException {
-		final Configuration config = new Configuration();
+		Configuration config = null;
 		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
 			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
 			if(defaultIdinConfigXML == null) {
@@ -202,10 +161,30 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 
 			try {
+				config = new Configuration();
 				config.Load(defaultIdinConfigXML.openStream());
 			} catch (ParserConfigurationException | SAXException | IOException e) {
 				throw new ConfigurationException("unable to read iDin configuration from XML file ["+getIDinConfigurationXML()+"]", e);
 			}
+		} else {
+			config = new Configuration(getMerchantID(),
+										getMerchantSubID(),
+										getMerchantReturnUrl(),
+										getKeyStoreLocation(),
+										getKeyStorePassword(),
+										getMerchantCertificateAlias(),
+										getMerchantCertificatePassword(),
+										getAcquirerCertificateAlias(),
+										getAcquirerAlternativeCertificateAlias(),
+										getAcquirerDirectoryUrl(),
+										getAcquirerTransactionUrl(),
+										getAcquirerStatusUrl(),
+										isLogsEnabled(),
+										isServiceLogsEnabled(),
+										getServiceLogsLocation(),
+										getServiceLogsPattern(),
+										isTls12Enabled(),
+										null);
 		}
 		return config;
 	}
@@ -292,8 +271,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				result.addSubElement(issuers);
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
-				Date txDate = response.getDirectoryDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+				timestamp.setValue(toFormattedDate(response.getDirectoryDateTimestamp()), false);
 				result.addSubElement(timestamp);
 
 				log.debug("received directory response [{}]", response::getRawMessage);
@@ -350,8 +328,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 					result.addSubElement(transactionIdXml);
 
 					XmlBuilder timestamp = new XmlBuilder("timestamp");
-					Date txDate = response.getStatusDateTimestamp().toGregorianCalendar().getTime();
-					timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+					timestamp.setValue(toFormattedDate(response.getStatusDateTimestamp()), false);
 					result.addSubElement(timestamp);
 				}
 
@@ -420,8 +397,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				result.addSubElement(transactionIdXml);
 
 				XmlBuilder creationTime = new XmlBuilder("createDateTimestamp");
-				Date txDate = response.getTransactionCreateDateTimestamp().toGregorianCalendar().getTime();
-				creationTime.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+				creationTime.setValue(toFormattedDate(response.getTransactionCreateDateTimestamp()), false);
 				result.addSubElement(creationTime);
 
 				log.debug("received authentication response [{}]", response::getRawMessage);
@@ -464,6 +440,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			destination.append(" statusUrl["+getAcquirerStatusUrl()+"]");
 
 		return destination.toString().trim();
+	}
+
+	private String toFormattedDate(XMLGregorianCalendar xmlGregorianCalendar) {
+		Instant txDate = xmlGregorianCalendar.toGregorianCalendar().getTime().toInstant();
+		return DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER);
 	}
 
 
@@ -631,33 +612,33 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
 	 * PKCS#12 format which has the extension .p12 or .pfx;
 	 *
-	 * @param SAMLCertificateAlias The alias assigned to the SAML certificate in the keystore.
+	 * @param samlCertificateAlias The alias assigned to the SAML certificate in the keystore.
 	 * This could  be the alias supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
-	public void setSAMLCertificateAlias(String sAMLCertificateAlias) {
-		this.SAMLCertificateAlias = sAMLCertificateAlias;
+	public void setSamlCertificateAlias(String samlCertificateAlias) {
+		this.samlCertificateAlias = samlCertificateAlias;
 	}
 
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param SAMLCertificatePassword The password for the SAML Certificate
+	 * @param samlCertificatePassword The password for the SAML Certificate
 	 */
-	public void setSAMLCertificatePassword(String sAMLCertificatePassword) {
-		this.SAMLCertificateCredentials = new CredentialFactory(null, null, sAMLCertificatePassword);
+	public void setSAMLCertificatePassword(String samlCertificatePassword) {
+		this.samlCertificateCredentials = new CredentialFactory(null, null, samlCertificatePassword);
 	}
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param sAMLCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
+	 * @param samlCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
 	 */
-	public void setSAMLCertificateAuthAlias(String sAMLCertificateAuthAlias) {
-		this.SAMLCertificateCredentials = new CredentialFactory(sAMLCertificateAuthAlias);
+	public void setSAMLCertificateAuthAlias(String samlCertificateAuthAlias) {
+		this.samlCertificateCredentials = new CredentialFactory(samlCertificateAuthAlias);
 	}
 	public String getSAMLCertificatePassword() {
-		if(SAMLCertificateCredentials == null)
+		if(samlCertificateCredentials == null)
 			return null;
 
-		return SAMLCertificateCredentials.getPassword();
+		return samlCertificateCredentials.getPassword();
 	}
 
 
@@ -694,6 +675,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	/**
 	 * Load configuration from XML. Attributes may overwrite this 'default'.
 	 */
+	@Mandatory
 	public void setConfigurationXML(String iDinConfigurationXML) {
 		this.iDinConfigurationXML = iDinConfigurationXML;
 	}
