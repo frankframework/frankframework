@@ -125,8 +125,8 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 	private SecurityFilterChain configureChain() throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
 
-		authenticator.registerServlet(createServletConfig("backendServletBean"));
-		authenticator.registerServlet(createServletConfig("frontendServletBean"));
+		authenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
+		authenticator.registerServlet(createServletConfig("ladybugFrontendServletBean"));
 		authenticator.registerServlet(createServletConfig("testtoolServletBean"));
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
