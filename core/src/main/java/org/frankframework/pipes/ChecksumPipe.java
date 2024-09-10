@@ -91,4 +91,14 @@ public class ChecksumPipe extends HashPipe {
 	public void setInputIsFile(boolean b) {
 		inputIsFile = b;
 	}
+
+	/**
+	 * Type of checksum to be calculated
+	 * @ff.default MD5
+	 */
+	@Deprecated(forRemoval = true, since = "8.3.0")
+	@ConfigurationWarning("Please use setAlgorithm to set the algorithm")
+	public void setType(Algorithm value) {
+		setAlgorithm(value);
+	}
 }

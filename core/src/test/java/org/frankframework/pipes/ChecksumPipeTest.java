@@ -52,7 +52,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 		assertNotNull(doPipe(pipe,"anotherDummy", session));
 	}
 
-	public static Stream<Arguments> values() {
+	public static Stream<Arguments> fileValues() {
 		return Stream.of(
 				Arguments.of(Algorithm.MD5, "/Pipes/2.txt", "506c38ca885a4cebb13caad6c265f417", "UGw4yohaTOuxPKrWwmX0Fw=="),
 				Arguments.of(Algorithm.SHA, "/Pipes/2.txt", "be1f0d458a058e1113baca693b505f5bf26fd01a", "vh8NRYoFjhETusppO1BfW/Jv0Bo="),
@@ -63,9 +63,9 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 		);
 	}
 
-	@MethodSource("values")
+	@MethodSource("fileValues")
 	@ParameterizedTest
-	public void testChecksumAndEncoding(Algorithm algorithm, String fileUrl, String expectedHex, String expectedBase64) throws Exception {
+	public void testChecksumAndForFiles(Algorithm algorithm, String fileUrl, String expectedHex, String expectedBase64) throws Exception {
 		URL file = TestFileUtils.getTestFileURL(fileUrl);
 		assertEquals(expectedHex, calculateChecksum(file.getPath(), algorithm, true, HashPipe.HashEncoding.Hex));
 		assertEquals(expectedHex, calculateChecksum(file.openStream(), algorithm, HashPipe.HashEncoding.Hex));
