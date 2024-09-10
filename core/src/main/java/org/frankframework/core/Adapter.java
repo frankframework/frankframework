@@ -17,14 +17,19 @@ package org.frankframework.core;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +38,10 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.task.TaskExecutor;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -56,9 +65,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
 import org.frankframework.util.StringUtil;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.task.TaskExecutor;
 
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
@@ -141,6 +147,9 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter String composedHideRegex;
 	private @Getter Pattern composedHideRegexPattern;
 
+	private @Getter String expectsSessionKeys;
+	private Set<String> expectsSessionKeysSet;
+
 	private static class SenderLastExitState {
 		private final String lastExitState;
 		private final long lastExitStateDate;
@@ -216,6 +225,12 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		}
 		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
+		}
+
+		if (StringUtils.isNotBlank(expectsSessionKeys)) {
+			expectsSessionKeysSet = new HashSet<>(StringUtil.split(expectsSessionKeys));
+		} else {
+			expectsSessionKeysSet = Collections.emptySet();
 		}
 
 		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
@@ -586,6 +601,9 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
 		}
 
+		if (!expectsSessionKeysSet.isEmpty()) {
+			verifyExpectedSessionKeysPresent(pipeLineSession);
+		}
 		long startTime = System.currentTimeMillis();
 		incNumOfMessagesInProcess(startTime);
 
@@ -625,6 +643,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
+			Objects.requireNonNull(result, "'result' should never be NULL here, programming error.");
 			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
 			if (result.getExitCode() != 0) {
 				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
@@ -640,6 +659,14 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
 			}
+		}
+	}
+
+	private void verifyExpectedSessionKeysPresent(PipeLineSession session) throws ListenerException {
+		Set<String> missing = new HashSet<>(expectsSessionKeysSet);
+		missing.removeAll(session.keySet());
+		if (!missing.isEmpty()) {
+			throw new ListenerException("Adapter [" + getName() + "] called without expected session keys " + missing);
 		}
 	}
 
@@ -1015,4 +1042,14 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		msgLogHidden = b;
 	}
 
+	/**
+	 * The pipeline of this adapter expects to use the following session keys to be set on call. This
+	 * is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
+	 * so callers can see what session keys to set on call, and for verification that those session keys are present.
+	 *
+	 * @param expectsSessionKeys Session keys to set on call of the adapter, comma-separated.
+	 */
+	public void setExpectsSessionKeys(String expectsSessionKeys) {
+		this.expectsSessionKeys = expectsSessionKeys;
+	}
 }
