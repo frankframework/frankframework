@@ -27,7 +27,7 @@ import nl.nn.testtool.web.FrontendServlet;
 public class LadybugConfiguration {
 
 	@Bean
-	public ServletRegistrationBean<ApiServlet> backendServletBean() {
+	public ServletRegistrationBean<ApiServlet> ladybugApiServletBean() {
 		ServletRegistrationBean<ApiServlet> registrationBean = new ServletRegistrationBean<>();
 		ApiServlet servlet = new ApiServlet();
 		registrationBean.setServlet(servlet);
@@ -40,7 +40,7 @@ public class LadybugConfiguration {
 	}
 
 	@Bean
-	public ServletRegistrationBean<FrontendServlet> frontendServletBean() {
+	public ServletRegistrationBean<FrontendServlet> ladybugFrontendServletBean() {
 		ServletRegistrationBean<FrontendServlet> registrationBean = new ServletRegistrationBean<>();
 		FrontendServlet servlet = new FrontendServlet();
 		registrationBean.setServlet(servlet);
