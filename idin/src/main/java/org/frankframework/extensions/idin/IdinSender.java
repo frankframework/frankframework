@@ -123,7 +123,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		// In order to implement this properly we should consider making the iDinSender a HttpSender, so it inherits the nightmare of configurable SSL and proxy settings.
 		// A 'proxy authentication fix' is below, this will however be used by default by ALL HttpURLConnection's in this JVM, therefore highly discouraged!
 
-		//		cf=new CredentialFactory(getProxyAuthAliasName(), null, null);	
+//		cf=new CredentialFactory(getProxyAuthAliasName(), null, null);
 //		Authenticator.setDefault( new Authenticator() {
 //            @Override
 //            protected PasswordAuthentication getPasswordAuthentication() {
@@ -196,8 +196,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	protected Configuration createConfiguration() throws ConfigurationException {
-		final Configuration config = new Configuration();
-
+		Configuration config = null;
 		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
 			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
 			if(defaultIdinConfigXML == null) {
@@ -205,10 +204,30 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 
 			try {
+				config = new Configuration();
 				config.Load(defaultIdinConfigXML.openStream());
 			} catch (ParserConfigurationException | SAXException | IOException e) {
 				throw new ConfigurationException("unable to read iDin configuration from XML file ["+getIDinConfigurationXML()+"]", e);
 			}
+		} else {
+			config = new Configuration(getMerchantID(),
+										getMerchantSubID(),
+										getMerchantReturnUrl(),
+										getKeyStoreLocation(),
+										getKeyStorePassword(),
+										getMerchantCertificateAlias(),
+										getMerchantCertificatePassword(),
+										getAcquirerCertificateAlias(),
+										getAcquirerAlternativeCertificateAlias(),
+										getAcquirerDirectoryUrl(),
+										getAcquirerTransactionUrl(),
+										getAcquirerStatusUrl(),
+										isLogsEnabled(),
+										isServiceLogsEnabled(),
+										getServiceLogsLocation(),
+										getServiceLogsPattern(),
+										isTls12Enabled(),
+										null);
 		}
 		return config;
 	}
