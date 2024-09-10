@@ -41,7 +41,7 @@ import lombok.extern.log4j.Log4j2;
 public class SpringBusExceptionHandler {
 
 	public enum ManagedException {
-		AUTHENTICATION(AuthenticationException.class, HttpStatus.UNAUTHORIZED), //Authentication exception
+		AUTHENTICATION(AuthenticationException.class, HttpStatus.UNAUTHORIZED), // Authentication exception
 		AUTHORIZATION(AccessDeniedException.class, HttpStatus.FORBIDDEN), // Authorization exception
 		BUS_EXCEPTION(BusException.class, SpringBusExceptionHandler.ManagedException::convertBusException), // Managed BUS exception
 		BACKEND_UNAVAILABLE(ResourceAccessException.class, HttpStatus.SERVICE_UNAVAILABLE), // Server doesn't exist
@@ -105,7 +105,7 @@ public class SpringBusExceptionHandler {
 		Throwable cause = mhe.getCause();
 		for (int i = 0; i < 5 && cause != null; i++) {
 			ManagedException mex = ManagedException.parse(cause);
-			if (mex != null) { //If a ManagedException is found, throw it directly
+			if (mex != null) { // If a ManagedException is found, throw it directly
 				return mex.toResponse(cause);
 			}
 			cause = cause.getCause();

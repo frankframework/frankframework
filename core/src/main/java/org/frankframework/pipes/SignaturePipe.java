@@ -156,7 +156,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
 				case VERIFY:
 					ParameterValueList pvl = getParameterList().getValues(message, session);
-					Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
+					Message signatureMsg = pvl.get(PARAMETER_SIGNATURE).asMessage();
 					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
 
 					boolean verified = dsa.verify(signature);

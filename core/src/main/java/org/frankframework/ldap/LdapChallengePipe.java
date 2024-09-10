@@ -15,9 +15,8 @@
 */
 package org.frankframework.ldap;
 
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IPipe;
@@ -27,6 +26,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.ldap.LdapSender.Operation;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 
@@ -91,16 +91,16 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		String credentials;
 		String principal;
 
-		Map<String,Object> paramMap=null;
 		try {
-			paramMap = getParameterList().getValues(msg, pls).getValueMap();
+			ParameterValueList pvl = getParameterList().getValues(msg, pls);
+
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
 			} else {
-				ldapProviderURL = (String)paramMap.get("ldapProviderURL");
+				ldapProviderURL = pvl.get("ldapProviderURL").asStringValue();
 			}
-			credentials = (String)paramMap.get("credentials");
-			principal = (String)paramMap.get("principal");
+			credentials = pvl.get("credentials").asStringValue();
+			principal = pvl.get("principal").asStringValue();
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Invalid parameter", e);
 		}

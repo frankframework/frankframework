@@ -38,7 +38,7 @@ public class DateParameter extends AbstractParameter {
 	private DateFormatType formatType;
 
 	public DateParameter() {
-		setType(ParameterType.DATE); //Defaults to Date
+		setType(ParameterType.DATE); // Defaults to Date
 	}
 
 	public enum DateFormatType {
@@ -70,9 +70,9 @@ public class DateParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
-		if (request instanceof Date) {
-			return request;
+	protected Date getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+		if (request instanceof Date date) {
+			return date;
 		}
 		Message requestMessage = Message.asMessage(request);
 
@@ -84,7 +84,7 @@ public class DateParameter extends AbstractParameter {
 		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> requestMessage, this::getFormatString);
 		DateFormat df = new SimpleDateFormat(getFormatString());
 		try {
-			return df.parseObject(requestMessage.asString());
+			return df.parse(requestMessage.asString());
 		} catch (ParseException e) {
 			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
 		}

@@ -46,7 +46,7 @@ public class CspFilter implements Filter {
 		policyDirectives.add("style-src 'self' https://fonts.googleapis.com/css 'unsafe-inline';");
 		policyDirectives.add("font-src 'self' https://fonts.gstatic.com;");
 		policyDirectives.add("script-src 'self' 'unsafe-eval' 'nonce-ffVersion' 'sha256-nTT9HlzZYsLZk5BbdhMKiMCvEgbfaqTeueMbRW8r6Ak=';");
-		policyDirectives.add("connect-src 'self' https://ibissource.org/iaf/releases/;");
+		policyDirectives.add("connect-src 'self' ws: wss: https://ibissource.org/iaf/releases/;");
 		policyDirectives.add("img-src 'self' data:;");
 		policyDirectives.add("frame-ancestors 'self';");
 		policyDirectives.add("form-action 'none';");

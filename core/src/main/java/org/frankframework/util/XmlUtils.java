@@ -1297,7 +1297,7 @@ public class XmlUtils {
 	 * sets all the parameters of the transformer using a Map with parameter values.
 	 * @throws IOException If an IOException occurs.
 	 */
-	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
+	public static void setTransformerParameters(Transformer t, Map<String, Object> parameters) throws IOException {
 		t.clearParameters();
 		if (parameters == null) {
 			return;

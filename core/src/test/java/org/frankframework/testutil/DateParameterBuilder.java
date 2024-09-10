@@ -34,10 +34,10 @@ public class DateParameterBuilder extends DateParameter {
 		return numberParam;
 	}
 
-	public static DateParameterBuilder create(String name, Integer value) {
+	public static DateParameterBuilder create(String name, String value) {
 		DateParameterBuilder numberParam = new DateParameterBuilder();
 		numberParam.setName(name);
-		numberParam.setValue(""+value);
+		numberParam.setValue(value);
 		return numberParam;
 	}
 }
