@@ -26,6 +26,9 @@ import org.frankframework.management.Action;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.EnumUtils;
 
+/**
+ * Job which can stop/start adapters and receivers.
+ */
 public class ActionJob extends JobDef {
 	private @Getter @Setter AdapterManager adapterManager;
 	private @Getter String configurationName;
@@ -52,7 +55,7 @@ public class ActionJob extends JobDef {
 			throw new ConfigurationException("an adapterName must be specified");
 		}
 		Adapter adapter = adapterManager.getAdapter(getAdapterName());
-		if (adapter == null) { //Make sure the adapter is registered in this configuration
+		if (adapter == null) { // Make sure the adapter is registered in this configuration
 			String msg = "Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 			throw new ConfigurationException(msg);
 		}
@@ -83,9 +86,8 @@ public class ActionJob extends JobDef {
 		this.configurationName = configurationName;
 	}
 
-	/** Adapter on which job operates
-	 * @ff.mandatory
-	 */
+	/** Adapter on which job operates */
+	@Mandatory
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
 	}

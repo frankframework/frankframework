@@ -22,6 +22,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.receivers.FrankListener;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
@@ -31,6 +33,9 @@ import org.frankframework.util.UUIDUtil;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Scheduled job to send messages to a {@link FrankListener}.
+ */
 public class SendMessageJob extends JobDef {
 	private @Setter IbisLocalSender localSender = null;
 	private @Getter String javaListener;
@@ -58,7 +63,7 @@ public class SendMessageJob extends JobDef {
 	public void execute() throws JobExecutionException, TimeoutException {
 		try (Message toSendMessage = getMessage() == null ? Message.nullMessage() : new Message(getMessage());
 				PipeLineSession session = new PipeLineSession()) {
-			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
+			// Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 
 			localSender.open();
@@ -76,8 +81,8 @@ public class SendMessageJob extends JobDef {
 
 	/**
 	 * JavaListener to send the message to
-	 * @ff.mandatory
 	 */
+	@Mandatory
 	public void setJavaListener(String javaListener) {
 		this.javaListener = javaListener;
 	}

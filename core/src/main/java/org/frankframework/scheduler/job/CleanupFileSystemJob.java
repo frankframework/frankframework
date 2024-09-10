@@ -21,6 +21,11 @@ import java.util.List;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.DirectoryCleaner;
 
+/**
+ * Frank!Framework job to empty files in a given directory that have been
+ * stale (untouched) for the given {@core retention} duration.
+ * See {@link DirectoryCleaner} for more info.
+ */
 public class CleanupFileSystemJob extends JobDef {
 
 	private final List<DirectoryCleaner> directoryCleaners = new ArrayList<>();

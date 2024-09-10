@@ -49,6 +49,11 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
 
+/**
+ * Frank!Framework job to cleanup the {@code IBISSTORE} and {@code IBISLOCK} tables.
+ * Find all MessageLogs and Lockers in the current configuration and removes database
+ * entries which have surpassed their corresponding {@link JdbcTransactionalStorage#getExpiryDateField() MessageLog's ExpiryDateField}. 
+ */
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
