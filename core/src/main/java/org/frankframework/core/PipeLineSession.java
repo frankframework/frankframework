@@ -28,12 +28,14 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
@@ -201,6 +203,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
+		if (obj instanceof Message message) {
+			return message;
+		}
 		if(obj != null) {
 			return Message.asMessage(obj);
 		}

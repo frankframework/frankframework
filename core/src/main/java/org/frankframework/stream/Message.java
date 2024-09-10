@@ -828,7 +828,7 @@ public class Message implements Serializable, Closeable {
 			return nullMessage();
 		}
 		if (object instanceof Message message) {
-			// NB: This situation can lead to hard-to-debug issues with messages either not being closed, or closed too early.
+			// NB: This case can lead to hard-to-debug issues with messages either not being closed, or closed too early. Should ideally be avoided.
 			message.assertNotClosed();
 			return message;
 		}

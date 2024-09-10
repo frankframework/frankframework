@@ -24,12 +24,13 @@ import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -68,6 +69,7 @@ public class ParameterValue {
 		return value;
 	}
 	public Message asMessage() {
+		if (value instanceof Message message) return message;
 		return Message.asMessage(value);
 	}
 

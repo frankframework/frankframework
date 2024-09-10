@@ -602,17 +602,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			if (substitutionValueMessage != null) {
 				if (substitutionValueMessage instanceof Date substitutionValueDate) {
 					substitutionValue = getSubstitutionValueForDate(substitutionValueDate, formatType);
+				} else if (substitutionValueMessage instanceof String stringValue) {
+					substitutionValue = preFormatDateType(stringValue, formatType, formatString);
 				} else {
-					if (substitutionValueMessage instanceof String stringValue) {
-						substitutionValue = preFormatDateType(stringValue, formatType, formatString);
-					} else {
-						try {
-							Message message = Message.asMessage(substitutionValueMessage); // Do not close object from session here; might be reused later
-							substitutionValue = message.asString();
-						} catch (IOException e) {
-							throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name, e);
-						}
-					}
+					substitutionValue = session.getString(name);
 					if (substitutionValue == null) throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name);
 				}
 			}
