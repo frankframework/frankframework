@@ -14,7 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.pipes.ChecksumPipe.Algorithm;
+import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 
@@ -80,7 +80,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	private String calculateChecksum(Object input, Algorithm type, boolean isFile, HashPipe.HashEncoding hashEncoding) throws Exception {
 		pipe.setInputIsFile(isFile);
-		pipe.setType(type);
+		pipe.setAlgorithm(type);
 		pipe.setHashEncoding(hashEncoding);
 		configureAndStartPipe();
 

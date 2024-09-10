@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.core.PipeRunException;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.pipes.HashPipe.HashAlgorithm;
 import org.frankframework.pipes.HashPipe.HashEncoding;
+import org.frankframework.pipes.hash.Algorithm;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
 
@@ -21,10 +21,9 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void noSecret() throws Exception {
-		configureAndStartPipe();
-		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(""));
-		assertThat(e.getMessage(), Matchers.endsWith("empty secret, unable to hash"));
+	public void noSecret() {
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.endsWith("using a secret is mandatory"));
 	}
 
 	@Test
@@ -40,7 +39,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void md5() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
+		pipe.setAlgorithm(Algorithm.HmacMD5);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
@@ -51,7 +50,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void sha512() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
+		pipe.setAlgorithm(Algorithm.HmacSHA512);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
@@ -74,7 +73,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void md5hex() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
-		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
+		pipe.setAlgorithm(Algorithm.HmacMD5);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
@@ -86,7 +85,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void sha512hex() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
-		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
+		pipe.setAlgorithm(Algorithm.HmacSHA512);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
@@ -97,7 +96,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void paramSha512hex() throws Exception {
 		pipe.setBinaryToTextEncoding(HashEncoding.Hex); //also tests deprecated BinaryToTextEncoding. same output as above test
-		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
+		pipe.setAlgorithm(Algorithm.HmacSHA512);
 		pipe.addParameter(new Parameter("secret", "Potato"));
 		configureAndStartPipe();
 
@@ -110,7 +109,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void emptyParamSha512hex() throws Exception {
 		pipe.setSecret("Aardappel");
 		pipe.setHashEncoding(HashEncoding.Hex);
-		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
+		pipe.setAlgorithm(Algorithm.HmacSHA512);
 		pipe.addParameter(new Parameter("secret", null));
 		configureAndStartPipe();
 

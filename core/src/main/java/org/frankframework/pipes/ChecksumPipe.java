@@ -16,21 +16,17 @@
 package org.frankframework.pipes;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.zip.Adler32;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 import lombok.Getter;
-import org.apache.commons.codec.binary.Base64;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.stream.Message;
 
 /**
@@ -53,48 +49,36 @@ import org.frankframework.stream.Message;
  *
  * @author Gerrit van Brakel
  * @since 4.9
+ * @deprecated please use the {@link HashPipe}
  */
-public class ChecksumPipe extends FixedForwardPipe {
+@Deprecated(forRemoval = true, since = "8.3.0")
+@ConfigurationWarning("Use the HashPipe")
+public class ChecksumPipe extends HashPipe {
 
-	private @Getter String charset;
-	private @Getter Algorithm algorithm = Algorithm.MD5;
 	private @Getter boolean inputIsFile;
-	private @Getter HashPipe.HashEncoding hashEncoding = HashPipe.HashEncoding.Hex;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		// Set the defaults for this Pipe, these are different compared to the HashPipe
+		if (getAlgorithm() == null) {
+			setAlgorithm(Algorithm.MD5);
+		}
+
+		if (getHashEncoding() == null) {
+			setHashEncoding(HashPipe.HashEncoding.Hex);
+		}
+
+		super.configure();
+	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		try {
-			ChecksumGenerator checksumGenerator = ChecksumGenerator.getInstance(getAlgorithm());
-			byte[] barr = new byte[1000];
-			try (InputStream fis = isInputIsFile() ? new FileInputStream(message.asString()) : message.asInputStream(getCharset())) {
-				int c;
-				while ((c = fis.read(barr)) >= 0) {
-					checksumGenerator.update(barr, 0, c);
-				}
-			}
+		try (InputStream fis = isInputIsFile() ? new FileInputStream(message.asString()) : message.asInputStream(getCharset())) {
 
-			return new PipeRunResult(getSuccessForward(), checksumGenerator.getResult(hashEncoding));
-		} catch (Exception e) {
+			return super.doPipe(new Message(fis, message.getContext()), session);
+		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot calculate [" + getAlgorithm() + "]" + (isInputIsFile() ? " on file [" + message + "]" : " using charset [" + getCharset() + "]"), e);
 		}
-	}
-
-	/**
-	 * Character encoding to be used to encode message before calculating checksum.
-	 */
-	public void setCharset(String string) {
-		charset = string;
-	}
-
-	/**
-	 * Type of Algorithm to use the generate a checksum for the message
-	 *
-	 * @ff.default MD5
- 	 * @Deprecated(forRemoval = true, since = "8.3.0")
-	 * @ConfigurationWarning("Please use setAlgorithm to set the type of algorithm you want to use. The possible values remain the same")
-	 */
-	public void setType(Algorithm value) {
-		setAlgorithm(value);
 	}
 
 	/**
@@ -106,108 +90,5 @@ public class ChecksumPipe extends FixedForwardPipe {
 	@ConfigurationWarning("Please use fileSystemPipe to read the file first.")
 	public void setInputIsFile(boolean b) {
 		inputIsFile = b;
-	}
-
-	/**
-	 * The algorithm to use to generate the checksum for the input message.
-	 *
-	 * @ff.default ChecksumType.MD5
-	 * @param algorithm
-	 */
-	public void setAlgorithm(Algorithm algorithm) {
-		this.algorithm = algorithm;
-	}
-
-	/**
-	 * Method to use for converting the hash from bytes to String
-	 * @ff.default HashEncoding.Hex
-	 */
-	public void setHashEncoding(HashPipe.HashEncoding hashEncoding) {
-		this.hashEncoding = hashEncoding;
-	}
-
-	public enum Algorithm {
-		MD5,
-		SHA,
-		SHA256("SHA-256"),
-		SHA384("SHA-384"),
-		SHA512("SHA-512"),
-		CRC32,
-		ADLER32;
-
-		private final String algorithm;
-
-		Algorithm(String algorithm) {
-			this.algorithm = algorithm;
-		}
-
-		Algorithm() {
-			this(null);
-		}
-
-		public String getAlgorithm() {
-			return algorithm != null ? algorithm : name();
-		}
-	}
-
-	protected interface ChecksumGenerator {
-		void update(byte[] b, int offset, int length);
-
-		String getResult(HashPipe.HashEncoding hashEncoding);
-
-		static ChecksumGenerator getInstance(Algorithm algorithm) throws NoSuchAlgorithmException {
-			return switch (algorithm) {
-				case MD5, SHA, SHA256, SHA384, SHA512 -> new MessageDigestGenerator(algorithm);
-				case CRC32 -> new BasicGenerator(new CRC32());
-				case ADLER32 -> new BasicGenerator(new Adler32());
-			};
-		}
-	}
-
-	static class BasicGenerator implements ChecksumGenerator {
-		private final Checksum checksum;
-
-		BasicGenerator(Checksum checksum) {
-			super();
-			this.checksum = checksum;
-			checksum.reset();
-		}
-
-		@Override
-		public void update(byte[] b, int offset, int length) {
-			checksum.update(b, offset, length);
-		}
-
-		@Override
-		public String getResult(HashPipe.HashEncoding hashEncoding) {
-			if (hashEncoding == HashPipe.HashEncoding.Base64) {
-				return Base64.encodeBase64String(BigInteger.valueOf(checksum.getValue()).toByteArray());
-			}
-
-			return Long.toHexString(checksum.getValue());
-		}
-	}
-
-	static class MessageDigestGenerator implements ChecksumGenerator {
-		private final MessageDigest messageDigest;
-
-		MessageDigestGenerator(Algorithm type) throws NoSuchAlgorithmException {
-			super();
-			this.messageDigest = MessageDigest.getInstance(type.getAlgorithm());
-		}
-
-		@Override
-		public void update(byte[] b, int offset, int length) {
-			messageDigest.update(b, offset, length);
-		}
-
-		@Override
-		public String getResult(HashPipe.HashEncoding hashEncoding) {
-			if (hashEncoding == HashPipe.HashEncoding.Base64) {
-				return Base64.encodeBase64String(messageDigest.digest());
-			}
-
-			return new BigInteger(1, messageDigest.digest()).toString(16);
-		}
 	}
 }
