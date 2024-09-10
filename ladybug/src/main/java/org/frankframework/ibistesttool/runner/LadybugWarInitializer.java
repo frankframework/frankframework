@@ -80,7 +80,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		AppConstants properties = AppConstants.getInstance();
 		String file = properties.getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
 
-		//Only allow this (by default) for this context, application.propeties may be overwritten.
+		// Only allow this (by default) for this context, application.propeties may be overwritten.
 		application.setAllowBeanDefinitionOverriding(true);
 		Set<String> set = new HashSet<>();
 		set.add(getConfigFile(file));
