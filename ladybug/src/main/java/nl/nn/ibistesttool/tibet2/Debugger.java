@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -66,15 +67,18 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 		if (adapter == null) {
 			return "Adapter '" + RESEND_ADAPTER_NAME + "' not found";
 		}
-		PipeLineSession pipeLineSession = new PipeLineSession();
 		synchronized(inRerun) {
 			inRerun.add(correlationId);
 		}
-		try {
+		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 			if(securityContext.getUserPrincipal() != null) {
 				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 			}
-			PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
+			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
+			String messageId = "tibet2-resend" + UUIDUtil.createSimpleUUID();
+
+			PipeLineResult processResult = adapter.processMessage(messageId, new Message(inputMessage), pipeLineSession);
 			if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
 				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + processResult.getResult().asString();
 			}
