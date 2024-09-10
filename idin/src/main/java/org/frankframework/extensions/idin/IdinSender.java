@@ -196,8 +196,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	protected Configuration createConfiguration() throws ConfigurationException {
-		final Configuration config = new Configuration();
-
+		Configuration config = null;
 		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
 			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
 			if(defaultIdinConfigXML == null) {
@@ -205,10 +204,30 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 
 			try {
+				config = new Configuration();
 				config.Load(defaultIdinConfigXML.openStream());
 			} catch (ParserConfigurationException | SAXException | IOException e) {
 				throw new ConfigurationException("unable to read iDin configuration from XML file ["+getIDinConfigurationXML()+"]", e);
 			}
+		} else {
+			config = new Configuration(getMerchantID(),
+										getMerchantSubID(),
+										getMerchantReturnUrl(),
+										getKeyStoreLocation(),
+										getKeyStorePassword(),
+										getMerchantCertificateAlias(),
+										getMerchantCertificatePassword(),
+										getAcquirerCertificateAlias(),
+										getAcquirerAlternativeCertificateAlias(),
+										getAcquirerDirectoryUrl(),
+										getAcquirerTransactionUrl(),
+										getAcquirerStatusUrl(),
+										isLogsEnabled(),
+										isServiceLogsEnabled(),
+										getServiceLogsLocation(),
+										getServiceLogsPattern(),
+										isTls12Enabled(),
+										null);
 		}
 		return config;
 	}
