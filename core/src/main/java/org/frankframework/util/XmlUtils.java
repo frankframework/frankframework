@@ -70,10 +70,35 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPException;
+
+import com.ctc.wstx.api.ReaderConfig;
+import com.ctc.wstx.stax.WstxInputFactory;
+
+import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.SimpleXmlSerializer;
+import org.htmlcleaner.TagNode;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
@@ -92,30 +117,6 @@ import org.frankframework.xml.NonResolvingExternalEntityResolver;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.XmlWriter;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.ext.LexicalHandler;
-
-import com.ctc.wstx.api.ReaderConfig;
-import com.ctc.wstx.stax.WstxInputFactory;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.xml.soap.MessageFactory;
-import jakarta.xml.soap.SOAPException;
-import net.sf.saxon.xpath.XPathFactoryImpl;
 
 /**
  * Some utilities for working with XML.
@@ -1302,23 +1303,30 @@ public class XmlUtils {
 		if (parameters == null) {
 			return;
 		}
-		for (String paramName:parameters.keySet()) {
-			Object value = parameters.get(paramName);
+		for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+			String paramName = entry.getKey();
+			Object value = sanitizeValue(paramName, entry.getValue());
 			if (value != null) {
-				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
-					try {
-						value = MessageUtils.asString(value);
-					} catch (IOException e) {
-						throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
-					}
-				}
 				t.setParameter(paramName, value);
 				log.debug("setting parameter [{}] on transformer from class [{}]", paramName, value.getClass().getTypeName());
-			}
-			else {
+			} else {
 				log.info("omitting setting of parameter [{}] on transformer, as it has a null-value", paramName);
 			}
 		}
+	}
+
+	private static Object sanitizeValue(String paramName, Object value) throws IOException {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
+			try {
+				return MessageUtils.asString(value);
+			} catch (IOException e) {
+				throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
+			}
+		}
+		return value;
 	}
 
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, SAXException {

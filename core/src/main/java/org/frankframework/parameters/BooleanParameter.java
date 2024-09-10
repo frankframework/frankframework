@@ -17,10 +17,9 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 
-import org.frankframework.core.ParameterException;
-import org.frankframework.stream.Message;
-
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.stream.Message;
 
 @Log4j2
 public class BooleanParameter extends AbstractParameter {
@@ -30,13 +29,22 @@ public class BooleanParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Boolean getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Boolean getValueAsType(Object request, boolean namespaceAware) throws IOException {
 		if (request instanceof Boolean bool) {
 			return bool;
 		}
 
-		Message requestMessage = Message.asMessage(request);
-		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->requestMessage);
+		if (request instanceof Message message) {
+			return parseFromMessage(message);
+		}
+
+		try (Message requestMessage = Message.asMessage(request)) {
+			return parseFromMessage(requestMessage);
+		}
+	}
+
+	private boolean parseFromMessage(Message requestMessage) throws IOException {
+		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, () -> requestMessage);
 		return Boolean.parseBoolean(requestMessage.asString());
 	}
 }

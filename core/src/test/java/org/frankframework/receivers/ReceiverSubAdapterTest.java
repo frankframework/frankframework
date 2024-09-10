@@ -19,6 +19,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -32,6 +35,7 @@ import org.frankframework.core.PipeLineExits;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -43,9 +47,6 @@ import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
-
-import nl.nn.adapterframework.dispatcher.DispatcherException;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
 @Log4j2
 public class ReceiverSubAdapterTest {
@@ -153,13 +154,10 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private IListener<String> createMockListener(Receiver<String> receiver) throws ListenerException {
-		IListener<String> listener = mock();
+		MessageStoreListener<String> listener = mock();
 		receiver.setListener(listener);
 
-		when(listener.extractMessage(any(), any())).thenAnswer(params -> {
-			RawMessageWrapper<String> rawMessageWrapper = params.getArgument(0);
-			return Message.asMessage(rawMessageWrapper.getRawMessage());
-		});
+		when(listener.extractMessage(any(), any())).thenCallRealMethod();
 		when(listener.getName()).thenReturn(receiver.getName());
 		when(listener.getApplicationContext()).thenReturn(receiver.getApplicationContext());
 		when(listener.getConfigurationClassLoader()).thenReturn(receiver.getConfigurationClassLoader());

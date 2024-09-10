@@ -21,16 +21,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlUtils;
-
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class DateParameter extends AbstractParameter {
@@ -74,8 +74,17 @@ public class DateParameter extends AbstractParameter {
 		if (request instanceof Date date) {
 			return date;
 		}
-		Message requestMessage = Message.asMessage(request);
 
+		if (request instanceof Message message) {
+			return parseFromMessage(message);
+		}
+
+		try (Message requestMessage = Message.asMessage(request)) {
+			return parseFromMessage(requestMessage);
+		}
+	}
+
+	private Date parseFromMessage(Message requestMessage) throws IOException, ParameterException {
 		if(formatType == DateFormatType.XMLDATETIME) {
 			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> requestMessage);
 			return XmlUtils.parseXmlDateTime(requestMessage.asString());

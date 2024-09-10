@@ -22,14 +22,14 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class NumberParameter extends AbstractParameter {
@@ -115,26 +115,24 @@ public class NumberParameter extends AbstractParameter {
 			if (request instanceof Number number) {
 				return number;
 			}
-			final Message requestMessage = Message.asMessage(request);
-			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->requestMessage, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
+			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->request, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
 			DecimalFormat decimalFormat = new DecimalFormat();
 			decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-			try {
+			try (Message requestMessage = Message.asMessage(request)) {
 				return decimalFormat.parse(requestMessage.asString());
 			} catch (ParseException e) {
-				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
 			}
 		}
 		if(getType() == ParameterType.INTEGER) {
 			if (request instanceof Integer integer) {
 				return integer;
 			}
-			final Message requestMessage = Message.asMessage(request);
-			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->requestMessage);
-			try {
+			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->request);
+			try (Message requestMessage = Message.asMessage(request)) {
 				return Integer.parseInt(requestMessage.asString());
 			} catch (NumberFormatException e) {
-				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to integer", e);
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
 			}
 		}
 		throw new ParameterException("unexpected type");

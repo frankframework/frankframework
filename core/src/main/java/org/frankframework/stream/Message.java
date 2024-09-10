@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -49,6 +50,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Lombok;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -57,10 +59,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
-import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -71,9 +76,6 @@ import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 public class Message implements Serializable, Closeable {
 	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
@@ -83,7 +85,7 @@ public class Message implements Serializable, Closeable {
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
-	private static final long serialVersionUID = 437863352486501445L;
+	private static final @Serial long serialVersionUID = 437863352486501445L;
 	private transient Cleaner.Cleanable cleanable;
 	private transient MessageNotClosedAction messageNotClosedAction;
 
@@ -768,7 +770,7 @@ public class Message implements Serializable, Closeable {
 	 * Check if a message is empty. If message size cannot be determined, return {@code false} to be on the safe side although this
 	 * might not be strictly correct.
 	 *
-	 * @return {@code true} if the message is empty, {@false} if message is not empty or if the size cannot be determined up-front.
+	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
 	 */
 	public boolean isEmpty() {
 		return size() == 0;
@@ -826,6 +828,7 @@ public class Message implements Serializable, Closeable {
 			return nullMessage();
 		}
 		if (object instanceof Message message) {
+			// NB: This situation can lead to hard-to-debug issues with messages either not being closed, or closed too early.
 			message.assertNotClosed();
 			return message;
 		}
@@ -837,10 +840,6 @@ public class Message implements Serializable, Closeable {
 		}
 		if (object instanceof Path path) {
 			return new PathMessage(path);
-		}
-		if (object instanceof MessageWrapper wrapper) {
-			wrapper.getMessage().assertNotClosed();
-			return wrapper.getMessage();
 		}
 		if (object instanceof RawMessageWrapper) {
 			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
@@ -1081,11 +1080,10 @@ public class Message implements Serializable, Closeable {
 			} else {
 				newRef = SerializableFileReference.of(asReader(), getCharset());
 			}
-			newMessage = Message.asMessage(newRef);
+			newMessage = new Message(copyContext(), newRef);
 		} else {
-			newMessage = Message.asMessage(request);
+			newMessage = new Message(copyContext(), request);
 		}
-		newMessage.context = copyContext();
 		return newMessage;
 	}
 }

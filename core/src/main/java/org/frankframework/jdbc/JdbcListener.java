@@ -28,7 +28,11 @@ import java.util.Map;
 import java.util.Set;
 
 import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
@@ -43,9 +47,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * JdbcListener base class.
@@ -319,6 +320,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
+			return messageWrapper.getMessage();
+		}
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

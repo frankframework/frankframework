@@ -38,6 +38,10 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.IConfigurable;
@@ -61,9 +65,6 @@ import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 /**
  * Generic parameter definition.
