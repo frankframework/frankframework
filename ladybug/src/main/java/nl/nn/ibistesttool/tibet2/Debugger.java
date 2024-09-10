@@ -67,17 +67,17 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 		if (adapter == null) {
 			return "Adapter '" + RESEND_ADAPTER_NAME + "' not found";
 		}
-		PipeLineSession pipeLineSession = new PipeLineSession();
 		synchronized(inRerun) {
 			inRerun.add(correlationId);
 		}
-		try {
+		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 			if(securityContext.getUserPrincipal() != null) {
 				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 			}
 			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 			String messageId = "tibet2-resend" + UUIDUtil.createSimpleUUID();
+
 			PipeLineResult processResult = adapter.processMessage(messageId, new Message(inputMessage), pipeLineSession);
 			if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
 				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + processResult.getResult().asString();
