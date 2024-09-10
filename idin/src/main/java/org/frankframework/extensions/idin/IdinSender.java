@@ -123,7 +123,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		// In order to implement this properly we should consider making the iDinSender a HttpSender, so it inherits the nightmare of configurable SSL and proxy settings.
 		// A 'proxy authentication fix' is below, this will however be used by default by ALL HttpURLConnection's in this JVM, therefore highly discouraged!
 
-		//		cf=new CredentialFactory(getProxyAuthAliasName(), null, null);	
+//		cf=new CredentialFactory(getProxyAuthAliasName(), null, null);
 //		Authenticator.setDefault( new Authenticator() {
 //            @Override
 //            protected PasswordAuthentication getPasswordAuthentication() {
@@ -138,11 +138,53 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private Configuration getConfiguration() throws ConfigurationException {
 		Configuration idinConfig = createConfiguration();
 
+		if(StringUtils.isNotEmpty(getMerchantID()))
+			idinConfig.setMerchantID(getMerchantID());
+		if(getMerchantSubID() > 0)
+			idinConfig.setMerchantSubID(getMerchantSubID());
+		if(StringUtils.isNotEmpty(getMerchantReturnUrl()))
+			idinConfig.setMerchantReturnUrl(getMerchantReturnUrl());
+
+		if(StringUtils.isNotEmpty(getAcquirerDirectoryUrl()))
+			idinConfig.setAcquirerDirectoryURL(getAcquirerDirectoryUrl());
+		if(StringUtils.isNotEmpty(getAcquirerTransactionUrl()))
+			idinConfig.setAcquirerTransactionURL(getAcquirerTransactionUrl());
+		if(StringUtils.isNotEmpty(getAcquirerStatusUrl()))
+			idinConfig.setAcquirerStatusURL(getAcquirerStatusUrl());
+
+		if(StringUtils.isNotEmpty(getKeyStoreLocation())) {
+			idinConfig.setKeyStoreLocation(getKeyStoreLocation());
+			if(StringUtils.isNotEmpty(getKeyStorePassword()))
+				idinConfig.setKeyStorePassword(getKeyStorePassword());
+		}
+
+		if(StringUtils.isNotEmpty(getMerchantCertificateAlias())) {
+			idinConfig.setMerchantCertificateAlias(getMerchantCertificateAlias());
+			if(StringUtils.isNotEmpty(getMerchantCertificatePassword()))
+				idinConfig.setMerchantCertificatePassword(getMerchantCertificatePassword());
+		}
+
+		if(StringUtils.isNotEmpty(getAcquirerCertificateAlias()))
+			idinConfig.setAcquirerCertificateAlias(getAcquirerCertificateAlias());
+		if(StringUtils.isNotEmpty(getAcquirerAlternativeCertificateAlias()))
+			idinConfig.setAcquirerAlternateCertificateAlias(getAcquirerAlternativeCertificateAlias());
+
 		if(StringUtils.isNotEmpty(getSamlCertificateAlias())) {
 			idinConfig.setSamlCertificateAlias(getSamlCertificateAlias());
 			if(StringUtils.isNotEmpty(getSAMLCertificatePassword()))
 				idinConfig.setSamlCertificatePassword(getSAMLCertificatePassword());
 		}
+
+		if(isLogsEnabled())
+			idinConfig.setLogsEnabled(true);
+		if(isServiceLogsEnabled())
+			idinConfig.setServiceLogsEnabled(true);
+		if(StringUtils.isNotEmpty(getServiceLogsLocation()))
+			idinConfig.setServiceLogsLocation(getServiceLogsLocation());
+		if(StringUtils.isNotEmpty(getServiceLogsPattern()))
+			idinConfig.setServiceLogsPattern(getServiceLogsPattern());
+
+		idinConfig.setTls12Enabled(isTls12Enabled());
 
 		try {
 			idinConfig.Setup(idinConfig); // Somehow required to setup the KeyStoreKeyProviderFactory.
