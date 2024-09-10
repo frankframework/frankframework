@@ -138,53 +138,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private Configuration getConfiguration() throws ConfigurationException {
 		Configuration idinConfig = createConfiguration();
 
-		if(StringUtils.isNotEmpty(getMerchantID()))
-			idinConfig.setMerchantID(getMerchantID());
-		if(getMerchantSubID() > 0)
-			idinConfig.setMerchantSubID(getMerchantSubID());
-		if(StringUtils.isNotEmpty(getMerchantReturnUrl()))
-			idinConfig.setMerchantReturnUrl(getMerchantReturnUrl());
-
-		if(StringUtils.isNotEmpty(getAcquirerDirectoryUrl()))
-			idinConfig.setAcquirerDirectoryURL(getAcquirerDirectoryUrl());
-		if(StringUtils.isNotEmpty(getAcquirerTransactionUrl()))
-			idinConfig.setAcquirerTransactionURL(getAcquirerTransactionUrl());
-		if(StringUtils.isNotEmpty(getAcquirerStatusUrl()))
-			idinConfig.setAcquirerStatusURL(getAcquirerStatusUrl());
-
-		if(StringUtils.isNotEmpty(getKeyStoreLocation())) {
-			idinConfig.setKeyStoreLocation(getKeyStoreLocation());
-			if(StringUtils.isNotEmpty(getKeyStorePassword()))
-				idinConfig.setKeyStorePassword(getKeyStorePassword());
-		}
-
-		if(StringUtils.isNotEmpty(getMerchantCertificateAlias())) {
-			idinConfig.setMerchantCertificateAlias(getMerchantCertificateAlias());
-			if(StringUtils.isNotEmpty(getMerchantCertificatePassword()))
-				idinConfig.setMerchantCertificatePassword(getMerchantCertificatePassword());
-		}
-
-		if(StringUtils.isNotEmpty(getAcquirerCertificateAlias()))
-			idinConfig.setAcquirerCertificateAlias(getAcquirerCertificateAlias());
-		if(StringUtils.isNotEmpty(getAcquirerAlternativeCertificateAlias()))
-			idinConfig.setAcquirerAlternateCertificateAlias(getAcquirerAlternativeCertificateAlias());
-
 		if(StringUtils.isNotEmpty(getSamlCertificateAlias())) {
 			idinConfig.setSamlCertificateAlias(getSamlCertificateAlias());
 			if(StringUtils.isNotEmpty(getSAMLCertificatePassword()))
 				idinConfig.setSamlCertificatePassword(getSAMLCertificatePassword());
 		}
-
-		if(isLogsEnabled())
-			idinConfig.setLogsEnabled(true);
-		if(isServiceLogsEnabled())
-			idinConfig.setServiceLogsEnabled(true);
-		if(StringUtils.isNotEmpty(getServiceLogsLocation()))
-			idinConfig.setServiceLogsLocation(getServiceLogsLocation());
-		if(StringUtils.isNotEmpty(getServiceLogsPattern()))
-			idinConfig.setServiceLogsPattern(getServiceLogsPattern());
-
-		idinConfig.setTls12Enabled(isTls12Enabled());
 
 		try {
 			idinConfig.Setup(idinConfig); // Somehow required to setup the KeyStoreKeyProviderFactory.
