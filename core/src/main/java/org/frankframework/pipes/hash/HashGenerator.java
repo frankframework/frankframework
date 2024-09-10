@@ -65,7 +65,7 @@ class BasicGenerator implements HashGenerator {
 			return Base64.encodeBase64String(BigInteger.valueOf(checksum.getValue()).toByteArray());
 		}
 
-		// By using `Hex.encodeHexString(result)` the resulting String is left padded with '00'
+		// By using getHashString, `Hex.encodeHexString(result)` is used, which results in a left padded String with '00'
 		return Long.toHexString(checksum.getValue());
 	}
 }

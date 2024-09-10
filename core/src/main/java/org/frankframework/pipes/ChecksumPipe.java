@@ -77,7 +77,7 @@ public class ChecksumPipe extends HashPipe {
 
 			return super.doPipe(new Message(fis, message.getContext()), session);
 		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot calculate [" + getAlgorithm() + "]" + (isInputIsFile() ? " on file [" + message + "]" : " using charset [" + getCharset() + "]"), e);
+			throw new PipeRunException(this, "Error reading input" + (isInputIsFile() ? " file [" + message + "]" : " using charset [" + getCharset() + "]"), e);
 		}
 	}
 
