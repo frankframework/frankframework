@@ -84,7 +84,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-			//sender.setParamsInUrl(false);
+			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -116,7 +116,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-//			sender.setParamsInUrl(false);
+			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -150,7 +150,6 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-//			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -182,7 +181,6 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-//			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("file");
 			sender.setPostType(HttpSender.PostType.FORMDATA);
 			sender.setAllowSelfSignedCertificates(true);
