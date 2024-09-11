@@ -47,7 +47,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 		}
 	}
 
-	@Scheduled(fixedDelay = 20, timeUnit = TimeUnit.SECONDS, initialDelay = 60)
+	@Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS, initialDelay = 60)
 	public void adapters() {
 		propagateAuthenticationContext("adapter-info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);

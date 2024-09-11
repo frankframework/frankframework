@@ -2592,14 +2592,7 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="prettyPrint" />
-    <xs:attribute name="outputFormat">
-      <xs:annotation>
-        <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute ref="outputFormat" />
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcQuerySenderBaseCumulativeAttributeGroup">
     <xs:attributeGroup ref="JdbcQuerySenderBaseDeclaredAttributeGroup" />
@@ -5594,14 +5587,7 @@
     <xs:attribute ref="closeOutputstreamOnExit" />
     <xs:attribute ref="streamCharset" />
     <xs:attribute ref="prettyPrint" />
-    <xs:attribute name="outputFormat">
-      <xs:annotation>
-        <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute ref="outputFormat" />
     <xs:attributeGroup ref="JdbcSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="WebServiceNtlmSenderType">
@@ -6676,6 +6662,14 @@
         <xs:documentation>Optional base folder, that serves as root for all other folders</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using &lt;code&gt;ATTRIBUTE&lt;/code&gt; Default: PATH</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="DirectoryListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="DirectoryListenerDeclaredAttributeGroup" />
@@ -6687,28 +6681,91 @@
         <xs:documentation>Name of the listener</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="inputFolder" />
-    <xs:attribute ref="inProcessFolder" />
-    <xs:attribute ref="processedFolder" />
-    <xs:attribute ref="errorFolder" />
-    <xs:attribute ref="holdFolder" />
-    <xs:attribute ref="logFolder" />
-    <xs:attribute ref="createFolders" />
-    <xs:attribute ref="delete" />
-    <xs:attribute ref="numberOfBackups" />
-    <xs:attribute ref="overwrite" />
-    <xs:attribute name="messageType" type="xs:string">
+    <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used Default: path</xs:documentation>
+        <xs:documentation>Folder that is scanned for files. If not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="fileTimeSensitive" />
-    <xs:attribute ref="minStableTime" />
-    <xs:attribute ref="messageIdPropertyKey" />
-    <xs:attribute ref="disableMessageBrowsers" />
-    <xs:attribute ref="wildcard" />
-    <xs:attribute ref="excludeWildcard" />
-    <xs:attribute ref="storeMetadataInSessionKey" />
+    <xs:attribute name="inProcessFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where files are stored &lt;i&gt;while&lt;/i&gt; being processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="processedFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where files are stored &lt;i&gt;after&lt;/i&gt; being processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="errorFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where files are stored &lt;i&gt;after&lt;/i&gt; being processed, in case the exit-state was not equal to &lt;code&gt;success&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="holdFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where messages from the error folder can be put on Hold, temporarily</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="logFolder" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Folder where a copy of every file that is received is stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="createFolders" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="delete" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will be deleted after being processed, and not stored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberOfBackups" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="overwrite" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fileTimeSensitive" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen before Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="minStableTime" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Minimal age of file &lt;i&gt;in milliseconds&lt;/i&gt;, to avoid receiving a file while it is still being written Default: 1000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageIdPropertyKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId Default: for MailFileSystems: Message-ID</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="disableMessageBrowsers" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, no browsers for process folders are generated Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="wildcard" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="excludeWildcard" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeMetadataInSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, an XML with all message properties is provided under this key</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
         <xs:documentation>Charset to be used for extracting the contents</xs:documentation>
@@ -7009,58 +7066,25 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="storeEmailAsStreamInSessionKey" type="xs:string" />
-    <xs:attribute name="messageType" type="xs:string">
+    <xs:attribute name="messageType">
       <xs:annotation>
         <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
  &lt;ul&gt;
- &lt;li&gt;&lt;code&gt;email&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;contents&lt;/code&gt;, for the body of the message&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;mime&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;name&lt;/code&gt; or &lt;code&gt;path&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
- &lt;li&gt;the key of any header present in the message context&lt;/li&gt;
- &lt;/ul&gt; Default: email</xs:documentation>
+ &lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
+ &lt;/ul&gt; Default: EMAIL</xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="MailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="MailListenerDeclaredAttributeGroup" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the listener</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="inputFolder" />
-    <xs:attribute ref="inProcessFolder" />
-    <xs:attribute ref="processedFolder" />
-    <xs:attribute ref="errorFolder" />
-    <xs:attribute ref="holdFolder" />
-    <xs:attribute ref="logFolder" />
-    <xs:attribute ref="createFolders" />
-    <xs:attribute ref="delete" />
-    <xs:attribute ref="numberOfBackups" />
-    <xs:attribute ref="overwrite" />
-    <xs:attribute ref="fileTimeSensitive" />
-    <xs:attribute ref="minStableTime" />
-    <xs:attribute ref="messageIdPropertyKey" />
-    <xs:attribute ref="disableMessageBrowsers" />
-    <xs:attribute ref="wildcard" />
-    <xs:attribute ref="excludeWildcard" />
-    <xs:attribute ref="storeMetadataInSessionKey" />
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Charset to be used for extracting the contents</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="outputFormat">
-      <xs:annotation>
-        <xs:documentation>OutputFormat of message for messageType=info Default: XML</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
+    <xs:attributeGroup ref="FileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
     <xs:attributeGroup ref="FrankListenerDeclaredAttributeGroup" />
@@ -7082,6 +7106,14 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FtpFileSystemListener" />
   </xs:complexType>
   <xs:attributeGroup name="FtpFileSystemListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using &lt;code&gt;ATTRIBUTE&lt;/code&gt; Default: PATH</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
         <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
@@ -7799,6 +7831,14 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Samba2Listener" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2ListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using &lt;code&gt;ATTRIBUTE&lt;/code&gt; Default: PATH</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="hostname" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Hostname of the SMB share.</xs:documentation>
@@ -7909,6 +7949,14 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SftpFileSystemListener" />
   </xs:complexType>
   <xs:attributeGroup name="SftpFileSystemListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using &lt;code&gt;ATTRIBUTE&lt;/code&gt; Default: PATH</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
         <xs:documentation>Path of the file or directory to start working. Default: Home folder of the sftp user</xs:documentation>
@@ -9192,11 +9240,7 @@
     <xs:attribute ref="reasonSessionKey" />
     <xs:attribute ref="xmlReasonSessionKey" />
     <xs:attribute ref="validateFile" />
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="charset" />
     <xs:attribute ref="addNamespaceToSchema" />
     <xs:attribute ref="importedSchemaLocationsToIgnore" />
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
@@ -9270,11 +9314,7 @@
     <xs:attribute ref="reasonSessionKey" />
     <xs:attribute ref="xmlReasonSessionKey" />
     <xs:attribute ref="validateFile" />
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="charset" />
     <xs:attribute ref="addNamespaceToSchema" />
     <xs:attribute ref="importedSchemaLocationsToIgnore" />
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
@@ -9432,11 +9472,7 @@
     <xs:attribute ref="reasonSessionKey" />
     <xs:attribute ref="xmlReasonSessionKey" />
     <xs:attribute ref="validateFile" />
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="charset" />
     <xs:attribute ref="addNamespaceToSchema" />
     <xs:attribute ref="importedSchemaLocationsToIgnore" />
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
@@ -16871,10 +16907,27 @@
       <xs:pattern value="[cC][aA][cC][hH][eE][__][cC][oO][nN][sS][uU][mM][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[nN][aA][mM][eE]" />
+      <xs:pattern value="[pP][aA][tT][hH]" />
+      <xs:pattern value="[cC][oO][nN][tT][eE][nN][tT][sS]" />
+      <xs:pattern value="[iI][nN][fF][oO]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="MessageProtocolAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[fF][fF]" />
       <xs:pattern value="[rR][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MessageTypeAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[eE][mM][aA][iI][lL]" />
+      <xs:pattern value="[cC][oO][nN][tT][eE][nN][tT][sS]" />
+      <xs:pattern value="[mM][iI][mM][eE]" />
+      <xs:pattern value="[nN][aA][mM][eE]" />
+      <xs:pattern value="[pP][aA][tT][hH]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageFieldTypeAttributeValuesType">
@@ -17526,6 +17579,14 @@
       <xs:documentation>If true and scalar=false, multiline indented XML is produced Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="outputFormat">
+    <xs:annotation>
+      <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+    </xs:simpleType>
+  </xs:attribute>
   <xs:attribute name="batchSize" type="frankInt">
     <xs:annotation>
       <xs:documentation>When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other. Default: 0</xs:documentation>
@@ -18004,91 +18065,6 @@
       <xs:documentation>sessionKey to store the SOAP header of the incoming message Default: soapHeader</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="inputFolder" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Folder that is scanned for files. If not set, the root is scanned</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="inProcessFolder" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Folder where files are stored &lt;i&gt;while&lt;/i&gt; being processed</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="processedFolder" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Folder where files are stored &lt;i&gt;after&lt;/i&gt; being processed</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="errorFolder" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Folder where files are stored &lt;i&gt;after&lt;/i&gt; being processed, in case the exit-state was not equal to &lt;code&gt;success&lt;/code&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="holdFolder" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Folder where messages from the error folder can be put on Hold, temporarily</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="logFolder" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Folder where a copy of every file that is received is stored</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="createFolders" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="delete" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will be deleted after being processed, and not stored Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="numberOfBackups" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 0</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="overwrite" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="fileTimeSensitive" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen before Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="minStableTime" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Minimal age of file &lt;i&gt;in milliseconds&lt;/i&gt;, to avoid receiving a file while it is still being written Default: 1000</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="messageIdPropertyKey" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId Default: for MailFileSystems: Message-ID</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="disableMessageBrowsers" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, no browsers for process folders are generated Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="wildcard" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="excludeWildcard" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Filter of files to be excluded when looking in inputFolder.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="storeMetadataInSessionKey" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>If set, an XML with all message properties is provided under this key</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="peekUntransacted" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server Default: true</xs:documentation>
@@ -18342,6 +18318,11 @@
   <xs:attribute name="validateFile" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="charset" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="addNamespaceToSchema" type="frankBoolean">

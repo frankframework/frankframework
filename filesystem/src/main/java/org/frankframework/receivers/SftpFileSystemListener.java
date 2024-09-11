@@ -27,4 +27,12 @@ public class SftpFileSystemListener extends FileSystemListener<SftpFileRef, Sftp
 		return SftpFileSystemDelegator.super.createFileSystem();
 	}
 
+	/**
+	 * Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using <code>ATTRIBUTE</code>
+	 * @ff.default PATH
+	 */
+	public void setMessageType(MessageType messageType) {
+		super.setMessageType(messageType);
+	}
+
 }

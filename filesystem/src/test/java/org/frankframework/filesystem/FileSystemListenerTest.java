@@ -425,7 +425,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String contents="Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType("contents");
+		fileSystemListener.setMessageType(FileSystemListener.MessageType.CONTENTS);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
@@ -470,7 +470,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String contents="Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType("name");
+		fileSystemListener.setMessageType(FileSystemListener.MessageType.NAME);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
