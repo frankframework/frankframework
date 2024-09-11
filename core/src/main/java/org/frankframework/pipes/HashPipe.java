@@ -79,7 +79,7 @@ public class HashPipe extends FixedForwardPipe {
 
 		super.configure();
 
-		if (algorithm.isRequiresSecret() && (secret == null && !getParameterList().hasParameter("secret"))) {
+		if (algorithm.isSecretRequired() && (secret == null && !getParameterList().hasParameter("secret"))) {
 			throw new ConfigurationException("When using a (h)mac based Algorithm, using a secret is mandatory");
 		}
 	}
@@ -109,7 +109,7 @@ public class HashPipe extends FixedForwardPipe {
 	}
 
 	private SecretKeySpec getSecretKeySpec(Message message, PipeLineSession session) throws PipeRunException, UnsupportedEncodingException {
-		if (!algorithm.isRequiresSecret()) {
+		if (!algorithm.isSecretRequired()) {
 			return null;
 		}
 

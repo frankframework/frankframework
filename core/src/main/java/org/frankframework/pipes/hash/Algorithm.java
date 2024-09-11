@@ -34,15 +34,15 @@ public enum Algorithm {
 
 	private final String algorithm;
 
-	private final boolean requiresSecret;
+	private final boolean secretRequired;
 
-	Algorithm(String algorithm, boolean requiresSecret) {
+	Algorithm(String algorithm, boolean secretRequired) {
 		this.algorithm = algorithm;
-		this.requiresSecret = requiresSecret;
+		this.secretRequired = secretRequired;
 	}
 
-	Algorithm(boolean requiresSecret) {
-		this(null, requiresSecret);
+	Algorithm(boolean secretRequired) {
+		this(null, secretRequired);
 	}
 
 	Algorithm(String algorithm) {
@@ -57,7 +57,7 @@ public enum Algorithm {
 		return algorithm != null ? algorithm : name();
 	}
 
-	public boolean isRequiresSecret() {
-		return requiresSecret;
+	public boolean isSecretRequired() {
+		return secretRequired;
 	}
 }
