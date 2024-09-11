@@ -27,6 +27,7 @@ import java.util.Map;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -53,6 +54,7 @@ import org.frankframework.util.StreamUtil;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 @ElementType(ElementTypes.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 

@@ -18,6 +18,7 @@ package org.frankframework.batch;
 import java.util.List;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;
@@ -34,6 +35,7 @@ import org.frankframework.util.ClassUtils;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class RecordXml2Sender extends RecordXmlTransformer {
 
 	private @Getter ISender sender = null;

@@ -23,8 +23,9 @@ import java.io.InputStream;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.PipeLineSession;
+
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
@@ -44,6 +45,7 @@ import org.frankframework.util.FileUtils;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	private @Getter String move2dirAfterTransform;

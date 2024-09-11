@@ -19,9 +19,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.ParameterList;
@@ -35,10 +35,10 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
  *
- *
  * @author  John Dekker / Gerrit van Brakel
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";

@@ -18,6 +18,7 @@ import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 
+
 public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@Override

@@ -53,7 +53,7 @@ public class TestDirectWrapperPipePipeLine {
 		pipeline.addPipe(echoPipe);
 
 		PipeLineExit exit = configuration.createBean(PipeLineExit.class);
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 

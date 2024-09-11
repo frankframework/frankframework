@@ -18,8 +18,12 @@ package org.frankframework.batch;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IWithParameters;
@@ -30,10 +34,6 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Abstract class that contains functionality for parsing the field values from a
@@ -43,6 +43,7 @@ import lombok.Setter;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

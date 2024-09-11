@@ -19,9 +19,9 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;
@@ -39,6 +39,7 @@ import org.frankframework.util.ClassUtils;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class ResultBlock2Sender extends Result2StringWriter {
 
 	private @Getter ISender sender = null;

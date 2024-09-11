@@ -17,14 +17,14 @@ package org.frankframework.batch;
 
 import java.util.Map;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
-
-import lombok.Getter;
 
 /**
  * The flow contains the handlers to handle records of a specific type.
@@ -34,6 +34,7 @@ import lombok.Getter;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 @FrankDocGroup(FrankDocGroupValue.BATCH)
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);

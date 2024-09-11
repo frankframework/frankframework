@@ -16,6 +16,7 @@
 package org.frankframework.batch;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 
 /**
@@ -23,10 +24,10 @@ import org.frankframework.core.PipeLineSession;
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
  *
- *
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int fieldNr;

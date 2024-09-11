@@ -28,6 +28,7 @@ import org.frankframework.core.PipeLineSession;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class Result2StringWriter extends ResultWriter {
 
 	@Override

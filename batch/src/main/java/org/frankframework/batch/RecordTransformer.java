@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.StringUtil;
@@ -57,6 +58,7 @@ import org.frankframework.util.StringUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class RecordTransformer extends AbstractRecordHandler {
 
 	private String outputSeparator;

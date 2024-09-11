@@ -18,6 +18,7 @@ package org.frankframework.batch;
 import java.util.Map;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 
 /**
@@ -29,6 +30,7 @@ import org.frankframework.core.PipeLineSession;
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;
