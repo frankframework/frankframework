@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Note, StorageService } from '../storage.service';
+import { MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { getProcessStateIcon } from 'src/app/utils';
+import { AppService } from '../../../app.service';
+import { DataTableColumn } from '../../../components/datatable/datatable.component';
 
 type DisplayColumn = {
   id: boolean;
@@ -23,8 +25,6 @@ type DisplayColumn = {
   styleUrls: ['./storage-list.component.scss'],
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
-  // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
-  // @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
   @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
@@ -53,8 +53,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     expiryDate: true,
     label: true,
   };
-  // protected dtOptions: ADTSettings = {};
-  // protected dtTrigger = new Subject<ADTSettings>();
 
   // service bindings
   protected storageParams = this.storageService.storageParams;
@@ -65,21 +63,43 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     return getProcessStateIcon(processState);
   };
 
-  constructor(
-    private webStorageService: WebStorageService,
-    private Session: SessionService,
-    private SweetAlert: SweetalertService,
-    protected storageService: StorageService,
-  ) {}
-
-  ngOnInit(): void {
-    null;
-  }
-
-  ngAfterViewInit(): void {
-    null;
-  }
-
+  protected displayedColumns: DataTableColumn<MessageStore['messages'][number]>[] = [
+    {
+      name: 'actions',
+      property: null,
+      displayName: '',
+      html: true,
+    },
+    {
+      name: 'pos',
+      property: 'position',
+      displayName: 'No.',
+    },
+    { name: 'id', property: 'id', displayName: 'Storage ID' },
+    {
+      name: 'insertDate',
+      property: 'insertDate',
+      displayName: 'Timestamp',
+    },
+    { name: 'host', property: 'host', displayName: 'Host' },
+    {
+      name: 'originalId',
+      property: 'originalId',
+      displayName: 'Original ID',
+    },
+    {
+      name: 'correlationId',
+      property: 'correlationId',
+      displayName: 'Correlation ID',
+    },
+    { name: 'comment', property: 'comment', displayName: 'Comment' },
+    {
+      name: 'expiryDate',
+      property: 'expiryDate',
+      displayName: 'Expires',
+    },
+    { name: 'label', property: 'label', displayName: 'Label' },
+  ];
   /*private initialColumns: ADTColumns[] = [
     {
       data: null,
@@ -117,13 +137,13 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       defaultContent: '',
     },
     { name: 'label', data: 'label', orderable: false, defaultContent: '' },
-  ];
+  ];*/
 
   constructor(
     private webStorageService: WebStorageService,
     private Session: SessionService,
     private SweetAlert: SweetalertService,
-    public storageService: StorageService,
+    protected storageService: StorageService,
     private appService: AppService,
   ) {}
 
@@ -137,6 +157,76 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     );
     // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
 
+    const searchSession = this.Session.get<Record<string, string>>('search');
+
+    this.search = searchSession
+      ? {
+          id: searchSession['id'],
+          startDate: searchSession['startDate'],
+          endDate: searchSession['endDate'],
+          host: searchSession['host'],
+          messageId: searchSession['messageId'],
+          correlationId: searchSession['correlationId'],
+          comment: searchSession['comment'],
+          label: searchSession['label'],
+          message: searchSession['message'],
+        }
+      : {
+          id: '',
+          startDate: '',
+          endDate: '',
+          host: '',
+          messageId: '',
+          correlationId: '',
+          comment: '',
+          label: '',
+          message: '',
+        };
+
+    const search = this.search;
+    if (search) {
+      for (const column in search) {
+        const value = search[column as keyof typeof search];
+        if (value && value != '') {
+          this.filterBoxExpanded = true;
+        }
+      }
+    }
+  }
+
+  ngAfterViewInit(): void {
+    const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
+    if (filterCookie) {
+      /*for (const column of columns) {
+        if (column.name && filterCookie[column.name as keyof DisplayColumn] === false) {
+          column.visible = false;
+        }
+      }*/
+      this.displayColumn = filterCookie;
+    } else {
+      this.displayColumn = {
+        id: true,
+        insertDate: true,
+        host: true,
+        originalId: true,
+        correlationId: true,
+        comment: true,
+        expiryDate: true,
+        label: true,
+      };
+    }
+  }
+
+  /*
+  constructor(
+    private webStorageService: WebStorageService,
+    private Session: SessionService,
+    private SweetAlert: SweetalertService,
+    public storageService: StorageService,
+    private appService: AppService,
+  ) {}
+
+  ngOnInit(): void {
     this.dtOptions = {
       searching: false,
       scrollX: true,
@@ -198,30 +288,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         });
       },
     };
-
-    const searchSession = this.Session.get<Record<string, string>>('search');
-
-    this.search = {
-      id: searchSession ? searchSession['id'] : '',
-      startDate: searchSession ? searchSession['startDate'] : '',
-      endDate: searchSession ? searchSession['endDate'] : '',
-      host: searchSession ? searchSession['host'] : '',
-      messageId: searchSession ? searchSession['messageId'] : '',
-      correlationId: searchSession ? searchSession['correlationId'] : '',
-      comment: searchSession ? searchSession['comment'] : '',
-      label: searchSession ? searchSession['label'] : '',
-      message: searchSession ? searchSession['message'] : '',
-    };
-
-    const search = this.search;
-    if (search) {
-      for (const column in search) {
-        const value = search[column as keyof typeof search];
-        if (value && value != '') {
-          this.filterBoxExpanded = true;
-        }
-      }
-    }
   }
 
   ngAfterViewInit(): void {
@@ -279,27 +345,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         },
       ],
     };
-
-    const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
-    if (filterCookie) {
-      for (const column of columns) {
-        if (column.name && filterCookie[column.name as keyof DisplayColumn] === false) {
-          column.visible = false;
-        }
-      }
-      this.displayColumn = filterCookie;
-    } else {
-      this.displayColumn = {
-        id: true,
-        insertDate: true,
-        host: true,
-        originalId: true,
-        correlationId: true,
-        comment: true,
-        expiryDate: true,
-        label: true,
-      };
-    }
 
     this.dtTrigger.next(this.dtOptions);
   }*/

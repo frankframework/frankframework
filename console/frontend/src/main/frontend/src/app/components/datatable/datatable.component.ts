@@ -13,7 +13,7 @@ export type TableOptions = {
 export type DataTableColumn<T> = {
   name: string;
   displayName: string;
-  property: keyof T;
+  property: keyof T | null;
   html?: boolean;
 };
 
@@ -24,6 +24,18 @@ export type DataTableEntryInfo = {
   totalEntries: number;
 };
 
+export type DataTableServerRequestInfo = {
+  size: number;
+  offset: number;
+  sort: 'asc' | 'desc';
+};
+
+export type DataTableServerResponseInfo<T> = {
+  totalEntries: number;
+  filteredEntries: number;
+  data: T;
+};
+
 @Component({
   selector: 'app-datatable',
   standalone: true,
@@ -31,7 +43,7 @@ export type DataTableEntryInfo = {
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',
 })
-export class DatatableComponent<T> implements AfterViewInit, OnDestroy /*, OnChanges*/ {
+export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   @Input({ required: true }) public datasource!: DataTableDataSource<T>;
   @Input({ required: true }) public displayColumns: DataTableColumn<T>[] = [];
 
@@ -145,7 +157,24 @@ export class DataTableDataSource<T> extends DataSource<T> {
     this.updateRenderedData(this.data);
   }
 
+  setServerRequest(
+    requestFunction: (info: Promise<DataTableServerRequestInfo>) => Promise<DataTableServerResponseInfo<T>>,
+  ): void {
+    if (!this.options.serverSide) return;
+    const request: Promise<DataTableServerRequestInfo> = new Promise(() => ({
+      size: this.options.size,
+      offset: (this._currentPage - 1) * this.options.size,
+      sort: 'asc',
+    }));
+    request.then();
+  }
+
   private updateRenderedData(data: T[]): void {
+    if (this.options.serverSide) {
+      this.updateDataFromEndpoint();
+      return;
+    }
+
     const filteredData = this.filterData(data);
     this.paginateData(filteredData);
 

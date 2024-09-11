@@ -62,7 +62,6 @@ export class StorageService {
     messageId: null,
   };
   selectedMessages: Record<string, boolean> = {};
-  // dtElement?: DataTableDirective | null;
 
   constructor(
     private http: HttpClient,
