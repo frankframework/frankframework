@@ -28,6 +28,8 @@ import org.frankframework.util.EnumUtils;
 
 /**
  * Job which can stop/start adapters and receivers.
+ * 
+ * {@inheritDoc}
  */
 public class ActionJob extends JobDef {
 	private @Getter @Setter AdapterManager adapterManager;

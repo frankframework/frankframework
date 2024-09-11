@@ -33,6 +33,8 @@ import lombok.Getter;
 
 /**
  * Scheduled job to execute JDBC Queries using a {@link FixedQuerySender}.
+ * 
+ * {@inheritDoc}
  */
 public class ExecuteQueryJob extends JobDef {
 	private FixedQuerySender qs = null;

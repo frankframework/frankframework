@@ -23,6 +23,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.doc.Optional;
 import org.frankframework.receivers.FrankListener;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.senders.IbisLocalSender;
@@ -35,6 +36,9 @@ import lombok.Setter;
 
 /**
  * Scheduled job to send messages to a {@link FrankListener}.
+ * Message may be {@literal null} (or empty).
+ * 
+ * {@inheritDoc}
  */
 public class SendMessageJob extends JobDef {
 	private @Setter IbisLocalSender localSender = null;
@@ -88,6 +92,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	/** message to be sent into the pipeline */
+	@Optional
 	public void setMessage(String message) {
 		if(StringUtils.isNotEmpty(message)) {
 			this.message = message;
