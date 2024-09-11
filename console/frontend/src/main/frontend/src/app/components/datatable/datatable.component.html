@@ -3,14 +3,18 @@
     <div class="dt-length">
       <label
         >Show
-        <select name="datatable-length">
+        <select
+          name="datatable-length"
+          [ngModel]="datasource.options.size"
+          (ngModelChange)="applyPaginationSize($event)"
+        >
           <option *ngFor="let size of datasource.options.sizeOptions" [value]="size">{{ size }}</option>
         </select>
         entries</label
       >
     </div>
     <div class="dt-search">
-      <label>Search: <input type="text" [(ngModel)]="searchQuery" /></label>
+      <label>Search: <input type="text" (keyup)="applyFilter($event)" /></label>
     </div>
   </div>
 
@@ -30,4 +34,28 @@
     <tr cdk-header-row *cdkHeaderRowDef="displayedColumns"></tr>
     <tr cdk-row *cdkRowDef="let row; columns: displayedColumns"></tr>
   </table>
+
+  <div class="dt-pagination">
+    <div>
+      Showing {{ minPageEntry }} to {{ maxPageEntry }} of {{ totalFilteredEntries }} entries
+      <ng-container *ngIf="totalFilteredEntries !== totalEntries">(of {{ totalEntries }} in total)</ng-container>
+    </div>
+    <div class="dt-pagination-control">
+      <button
+        class="btn btn-secondary"
+        [disabled]="datasource.currentPage <= 1"
+        (click)="updatePage(datasource.currentPage - 1)"
+      >
+        Previous
+      </button>
+      <span class="btn">{{ datasource.currentPage }}</span>
+      <button
+        class="btn btn-secondary"
+        [disabled]="datasource.currentPage >= datasource.totalPages"
+        (click)="updatePage(datasource.currentPage + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
 </div>

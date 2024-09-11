@@ -1,11 +1,12 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { CdkTableModule, DataSource } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
 export type TableOptions = {
   sizeOptions: number[];
+  size: number;
   serverSide: boolean;
 };
 
@@ -16,6 +17,13 @@ export type DataTableColumn<T> = {
   html?: boolean;
 };
 
+export type DataTableEntryInfo = {
+  minPageEntry: number;
+  maxPageEntry: number;
+  totalFilteredEntries: number;
+  totalEntries: number;
+};
+
 @Component({
   selector: 'app-datatable',
   standalone: true,
@@ -23,27 +31,47 @@ export type DataTableColumn<T> = {
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',
 })
-export class DatatableComponent<T> implements OnInit /*, OnChanges*/ {
+export class DatatableComponent<T> implements AfterViewInit, OnDestroy /*, OnChanges*/ {
   @Input({ required: true }) public datasource!: DataTableDataSource<T>;
   @Input({ required: true }) public displayColumns: DataTableColumn<T>[] = [];
 
-  protected searchQuery = '';
+  protected totalFilteredEntries: number = 0;
+  protected totalEntries: number = 0;
+  protected minPageEntry: number = 0;
+  protected maxPageEntry: number = 0;
 
   protected get displayedColumns(): string[] {
     return this.displayColumns.map((column) => column.name);
   }
 
-  ngOnInit(): void {
-    console.log(this.displayColumns);
-    console.log(this.displayedColumns);
-    console.log(this.datasource);
+  private datasourceSubscription: Subscription = new Subscription();
+
+  ngAfterViewInit(): void {
+    const subscription = this.datasource.getEntriesInfo().subscribe((entriesInfo) => {
+      this.totalEntries = entriesInfo.totalEntries;
+      this.totalFilteredEntries = entriesInfo.totalFilteredEntries;
+      this.minPageEntry = entriesInfo.minPageEntry;
+      this.maxPageEntry = entriesInfo.maxPageEntry;
+    });
+    this.datasourceSubscription.add(subscription);
   }
 
-  /*ngOnChanges(changes: SimpleChanges): void {
-    if (changes['displayColumns']) {
-      this.displayedColumns = this.displayColumns.map((column) => column.name);
-    }
-  }*/
+  ngOnDestroy(): void {
+    this.datasourceSubscription.unsubscribe();
+  }
+
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.datasource.filter = filterValue.trim().toLowerCase();
+  }
+
+  applyPaginationSize(sizeValue: string): void {
+    this.datasource.options = { size: Number.parseInt(sizeValue, 10) };
+  }
+
+  updatePage(pageNumber: number): void {
+    this.datasource.updatePage(pageNumber);
+  }
 }
 
 export class DataTableDataSource<T> extends DataSource<T> {
@@ -51,11 +79,21 @@ export class DataTableDataSource<T> extends DataSource<T> {
   private _filter = new BehaviorSubject<string>('');
   private _renderData = new BehaviorSubject<T[]>([]);
   private _options = new BehaviorSubject<TableOptions>({
-    sizeOptions: [50, 100, 250, 500],
+    sizeOptions: [10, 50, 100, 250, 500],
+    size: 50,
     serverSide: false,
   });
+  private _entriesInfo = new BehaviorSubject<DataTableEntryInfo>({
+    minPageEntry: 0,
+    maxPageEntry: 0,
+    totalFilteredEntries: 0,
+    totalEntries: 0,
+  });
+  private _entriesInfo$ = this._entriesInfo.asObservable();
 
   private filteredData: T[] = [];
+  private _currentPage: number = 1;
+  private _totalPages: number = 0;
 
   get data(): T[] {
     return this._data.value;
@@ -63,7 +101,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   set data(value: T[]) {
     this._data.next(value);
-    this.filterData(value);
+    this.updateRenderedData(value);
   }
 
   get options(): TableOptions {
@@ -72,6 +110,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   set options(value: Partial<TableOptions>) {
     this._options.next({ ...this._options.value, ...value });
+    this.updateRenderedData(this.data);
   }
 
   get filter(): string {
@@ -80,19 +119,75 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   set filter(value: string) {
     this._filter.next(value);
-    this.filterData(this.data);
+    this.updateRenderedData(this.data);
+  }
+
+  get totalPages(): number {
+    return this._totalPages;
+  }
+
+  get currentPage(): number {
+    return this._currentPage;
   }
 
   connect(): Observable<T[]> {
-    return this._data;
+    return this._renderData;
   }
 
-  disconnect(): void {
-    this._data.complete();
+  disconnect(): void {}
+
+  getEntriesInfo(): Observable<DataTableEntryInfo> {
+    return this._entriesInfo$;
   }
 
-  private filterData(data: T[]): void {
-    this.filteredData = this.filter === '' ? data : data.filter((row) => JSON.stringify(row).includes(this.filter));
+  updatePage(page: number): void {
+    this._currentPage = page;
+    this.updateRenderedData(this.data);
+  }
+
+  private updateRenderedData(data: T[]): void {
+    const filteredData = this.filterData(data);
+    this.paginateData(filteredData);
+
+    this._entriesInfo.next({
+      minPageEntry: (this.currentPage - 1) * this.options.size + 1,
+      maxPageEntry: Math.min(this.currentPage * this.options.size, this.filteredData.length),
+      totalFilteredEntries: this.filteredData.length,
+      totalEntries: this.data.length,
+    });
+  }
+
+  private paginateData(data: T[]): T[] {
+    const currentStart = (this._currentPage - 1) * this.options.size;
+    const paginatedData = data.slice(currentStart, currentStart + this.options.size);
+    this._renderData.next(paginatedData);
+    return paginatedData;
+  }
+
+  private filterData(data: T[]): T[] {
+    this.filteredData = this.filter === '' ? data : data.filter((row) => this.filterPredicate(row, this.filter));
+    this._totalPages = Math.ceil(this.filteredData.length / this.options.size);
     this._renderData.next(this.filteredData);
+    return this.filteredData;
+  }
+
+  // from https://github.com/angular/components/blob/main/src/material/table/table-data-source.ts#L231
+  private filterPredicate(data: T, filter: string): boolean {
+    // Transform the data into a lowercase string of all property values.
+    const dataString = Object.keys(data as unknown as Record<string, unknown>)
+      .reduce((currentTerm: string, key: string) => {
+        // Use an obscure Unicode character to delimit the words in the concatenated string.
+        // This avoids matches where the values of two columns combined will match the user's query
+        // (e.g. `Flute` and `Stop` will match `Test`). The character is intended to be something
+        // that has a very low chance of being typed in by somebody in a text field. This one in
+        // particular is "White up-pointing triangle with dot" from
+        // https://en.wikipedia.org/wiki/List_of_Unicode_characters
+        return `${currentTerm + (data as unknown as Record<string, unknown>)[key]}◬`;
+      }, '')
+      .toLowerCase();
+
+    // Transform the filter by converting it to lowercase and removing whitespace.
+    const transformedFilter = filter.trim().toLowerCase();
+    return dataString.includes(transformedFilter);
   }
 }
