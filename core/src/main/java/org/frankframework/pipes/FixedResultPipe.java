@@ -31,6 +31,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -215,12 +216,11 @@ import lombok.Getter;
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
- * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
- *
  * @author Johan Verrips
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
+@Forward(name = "filenotfound", description = "the configured file was not found (when this forward isn't specified an exception will be thrown)")
 public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
