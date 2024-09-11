@@ -1460,7 +1460,7 @@
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
 								<additionalOption>-digesterRulesPath</additionalOption>
 								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
-								<additionalOption>-appConstantsPropertiesPath</additionalOption>
+								<additionalOption>-propertyFilePath</additionalOption>
 								<additionalOption>${project.basedir}/core/src/main/resources/AppConstants.properties</additionalOption>
 								<additionalOption>-rootClass</additionalOption>
 								<additionalOption>org.frankframework.configuration.Configuration</additionalOption>
