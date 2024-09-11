@@ -48,6 +48,8 @@ import org.quartz.impl.matchers.GroupMatcher;
  *    If it is not present it add the job to the scheduler.
  * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
  *    Since they have been removed from the database, remove them from the Quartz Scheduler
+ * 
+ * {@inheritDoc}
  *
  * @author Niels Meijer
  */

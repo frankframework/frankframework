@@ -19,11 +19,11 @@ import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.TransactionAttributes;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -35,25 +35,7 @@ import org.quartz.JobDetail;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Definition / configuration of scheduler jobs.
- *
- * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
- * be a direct child of configuration, not of adapter.
- * <br/>
- * All registered jobs are displayed in the IbisConsole under 'Scheduler'.
- * <p>
- * <br/>
- * Operation of scheduling:
- * <ul>
- *   <li>at configuration time {@link Configuration#registerScheduledJob(IJob) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link SchedulerHelper#scheduleJob(IJob) SchedulerHelper.scheduleJob()};</li>
- *   <li>this creates a Quartz JobDetail object, and copies adapterName, receiverName, function and a reference to the configuration to jobdetail's datamap;</li>
- *   <li>it sets the class to execute to AdapterJob</li>
- *   <li>this job is scheduled using the cron expression</li>
- * </ul>
- * </p>
- *
- * <b>CronExpressions</b>
+ * <h3>Possible cron expressions:</h3>
  * <p>
  * A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  * white space. The 6 mandatory and 1 optional fields are as follows:<br/>
@@ -123,7 +105,7 @@ import org.springframework.context.ApplicationContext;
  *
  * <p>The '?' character is allowed for the day-of-month and day-of-week fields.
  * It is used to specify 'no specific value'. This is useful when you need
- * to specify something in one of the two fileds, but not the other. See the
+ * to specify something in one of the two fields, but not the other. See the
  * examples below for clarification.</p>
  *
  * <p>The '-' character is used to specify ranges For example "10-12" in the
@@ -146,7 +128,7 @@ import org.springframework.context.ApplicationContext;
  * non-leap years.  If used in the day-of-week field by itself, it simply
  * means "7" or "SAT". But if used in the day-of-week field after another value,
  * it means "the last xxx day of the month" - for example "6L" means
- * "the last friday of the month".  When using the 'L' option, it is
+ * "the last Friday of the month".  When using the 'L' option, it is
  * important not to specify lists, or ranges of values, as you'll get confusing
  * results.</p>
  *
@@ -164,7 +146,7 @@ import org.springframework.context.ApplicationContext;
  * associated, then it is equivalent to having an all-inclusive calendar.
  * A value of "5C" in the day-of-month field means "the first day included by
  * the calendar on or after the 5th".  A value of "1C" in the day-of-week field
- * means "the first day included by the calendar on or after sunday".</p>
+ * means "the first day included by the calendar on or after Sunday".</p>
  *
  * <p>The legal characters and the names of months and days of the week are not
  * case sensitive.</p>
@@ -282,6 +264,10 @@ import org.springframework.context.ApplicationContext;
  *       "daylight savings" can cause a skip or a repeat depending on whether
  *       the time moves back or jumps forward.
  *   </li>
+ *   <li>All registered jobs are displayed in the Frank!Console under 'Scheduler'.</li>
+ *   <li>Specified in the Configuration.xml inside a {@code <scheduler>} element. 
+ *       The scheduler element must be a direct child of configuration, not of adapter.
+ *   </li>
  * </ul>
  * </p>
  *
@@ -303,8 +289,8 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter int numThreads = 1;
 	private int countThreads = 0;
 
-	private MessageKeeper messageKeeper; //instantiated in configure()
-	private int messageKeeperSize = 10; //default length
+	private MessageKeeper messageKeeper; // instantiated in configure()
+	private int messageKeeperSize = 10; // default length
 
 	private DistributionSummary summary;
 
@@ -315,7 +301,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			throw new ConfigurationException("a name must be specified");
 		}
 
-		if(StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
+		if(StringUtils.isEmpty(getJobGroup())) { // If not explicitly set, configure this JobDef under the config it's specified in
 			setJobGroup(applicationContext.getId());
 		}
 
@@ -440,14 +426,17 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return builder.toString();
 	}
 
+	/**
+	 * Group in which to sort multiple jobs.
+	 * @ff.default Name of the Configuration this job has been specified in.
+	 */
 	public void setJobGroup(String jobGroup) {
 		this.jobGroup = jobGroup;
 	}
 
-	/** Name of the job
-	 * @ff.mandatory
-	 */
+	/** Name of the job */
 	@Override
+	@Mandatory
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -482,8 +471,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public synchronized MessageKeeper getMessageKeeper() {
-		if (messageKeeper == null)
+		if (messageKeeper == null) {
 			messageKeeper = new MessageKeeper(messageKeeperSize < 1 ? 1 : messageKeeperSize);
+		}
+
 		return messageKeeper;
 	}
 
