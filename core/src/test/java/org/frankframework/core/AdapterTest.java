@@ -103,7 +103,7 @@ class AdapterTest {
 		adapter.setName("Adapter");
 		buildDummyPipeLine(adapter);
 		MetricsInitializer configurationMetrics = mock();
-		when(configurationMetrics.createCounter(any(), any())).then( (ignored)-> mock(Counter.class));
+		when(configurationMetrics.createCounter(any(), any())).then( ignored -> mock(Counter.class));
 		when(configurationMetrics.createDistributionSummary(any(), any())).then( (ignored)-> mock(DistributionSummary.class));
 		adapter.setConfigurationMetrics(configurationMetrics);
 		adapter.setExpectsSessionKeys("k1, k2,k3");
