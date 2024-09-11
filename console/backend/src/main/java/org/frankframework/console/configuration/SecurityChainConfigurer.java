@@ -51,8 +51,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
 
 @Configuration
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
+@EnableWebSecurity // Enables Spring Security
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private @Setter ApplicationContext applicationContext;
@@ -69,7 +69,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	private IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.console.authentication.";
-		String type = environment.getProperty(properyPrefix+"type", "NONE");
+		String type = environment.getProperty(properyPrefix + "type", "NONE");
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
@@ -79,13 +79,14 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
 		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
 
-		for(Method method: clazz.getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+		for (Method method : clazz.getMethods()) {
+			if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
 				continue;
+			}
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isNotEmpty(value)) {
+			String value = environment.getProperty(properyPrefix + setter);
+			if (StringUtils.isNotEmpty(value)) {
 				ClassUtils.invokeSetter(authenticator, method, value);
 			}
 		}
@@ -94,10 +95,10 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	}
 
 	private SecurityFilterChain configureHttpSecurity(IAuthenticator authenticator, HttpSecurity http) throws Exception {
-		//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
-		if(csrfEnabled) {
-			//HttpOnly needs to be false for Angular to read it
+		// Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
+		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
+		if (csrfEnabled) {
+			// HttpOnly needs to be false for Angular to read it
 			CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 			if(!StringUtils.isEmpty(csrfCookiePath)) {
 				csrfTokenRepository.setCookiePath(csrfCookiePath);
@@ -110,9 +111,9 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		} else {
 			http.csrf(CsrfConfigurer::disable);
 		}
-		http.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
+		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 
-		//logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
+		// logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
 		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
@@ -135,7 +136,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		// redirect the client to the servlet root
 		private String determineTargetUrl(HttpServletRequest request) {
 			String path = request.getServletPath();
-			if(!path.endsWith("/")) path += "/";
+			if (!path.endsWith("/")) path += "/";
 			return path;
 		}
 	}

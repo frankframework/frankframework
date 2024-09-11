@@ -12,7 +12,7 @@
 				minStableTime ="${mfh.flow1.minstabletime}"
 				fileTimeSensitive="true"
 				name="MFHIn"
-				messageType="info"
+				messageType="INFO"
 				root="${mfh.flow1.rootdir}"
 				inputFolder="in"
 				inProcessFolder="inProcess"

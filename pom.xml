@@ -29,8 +29,8 @@
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
 		<narayana.version>7.0.2.Final</narayana.version>
-		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.13.3</micrometer.version>
+		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
+		<micrometer.version>1.13.4</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>

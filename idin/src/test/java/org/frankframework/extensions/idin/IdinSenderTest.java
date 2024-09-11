@@ -88,7 +88,7 @@ public class IdinSenderTest {
 				assertNotNull(expected, "did not find [/messages/"+expectedFile+"-request.xml]");
 				String expectedString = StreamUtil.resourceToString(expected);
 
-				//Complex regex, but ensures the correct format: `2024-08-22T11:49:01.760Z` is used.
+				// Complex regex, but ensures the correct format: `2024-08-22T11:49:01.760Z` is used.
 				request = request.replaceAll("<createDateTimestamp>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z<\\/createDateTimestamp>", "<createDateTimestamp/>");
 				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthnRequest xmlns:ns3=\"http://dummy\" signature=\"here\">");
 				request = request.replaceAll("<Signature[\\s\\S]*?<\\/Signature>", "");
@@ -150,7 +150,7 @@ public class IdinSenderTest {
 	public void testPropertiesLoadedFromAttributes() throws Exception {
 		String message = "<idin><transactionID>1111111111111111</transactionID></idin>";
 
-		sender.setConfigurationXML("configs/minimal-config.xml"); //A minimal config with log setting is required
+		sender.setConfigurationXML("configs/minimal-config.xml"); // A minimal config with log setting is required
 
 		// These were never set
 		sender.setMerchantID("1234567890");
