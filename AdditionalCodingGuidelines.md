@@ -111,7 +111,7 @@ final String x = (condition) ? "value" : null;
 	when not using an IDE.
 9. Java Optionals.
 
-	You can use Java `Optional` to indicatej that the return value of a method can be `null`.
+	You can use Java `Optional` to indicate that the return value of a method can be `null`.
 	It is not custom to use this for parameters, only for return-values.
 	However I find that code is not necessarily more readable when using `Optional` so use
 	them at your own discretion, and see if you find the code calling your methods becomes
