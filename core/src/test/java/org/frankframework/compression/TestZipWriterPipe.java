@@ -12,6 +12,11 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import org.springframework.util.MimeType;
+
 import org.frankframework.collection.Collection;
 import org.frankframework.collection.CollectorPipeBase.Action;
 import org.frankframework.collection.TestCollector;
@@ -25,9 +30,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.util.MimeType;
 
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
@@ -60,7 +62,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 	@Test
 	void testChangeCollectionName() throws Exception {
-		pipe.setZipWriterHandle("test123");
+		pipe.setCollectionName("test123");
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 		assertEquals("test123", pipe.getCollectionName());

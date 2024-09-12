@@ -6,16 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.hamcrest.core.StringEndsWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
-import org.hamcrest.core.StringEndsWith;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("deprecation") //Part of the tests!
 public class PipeLineTest {
@@ -38,7 +39,7 @@ public class PipeLineTest {
 		PipeLine pipeline = new PipeLine();
 		pipeline.setApplicationContext(configuration);
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("success");
+		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.registerPipeLineExit(exit);
@@ -66,7 +67,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -96,15 +97,15 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit errorExit = new PipeLineExit();
-		errorExit.setPath("error");
+		errorExit.setName("error");
 		errorExit.setState(ExitState.ERROR);
 		pipeline.registerPipeLineExit(errorExit);
 		PipeLineExit successExit = new PipeLineExit();
-		successExit.setPath("exit");
+		successExit.setName("exit");
 		successExit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(successExit);
 		PipeLineExit successExit2 = new PipeLineExit();
-		successExit2.setPath("exit2");
+		successExit2.setName("exit2");
 		successExit2.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(successExit2);
 
@@ -138,7 +139,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -173,7 +174,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -204,7 +205,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("special exit name");
+		exit.setName("special exit name");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -243,7 +244,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();

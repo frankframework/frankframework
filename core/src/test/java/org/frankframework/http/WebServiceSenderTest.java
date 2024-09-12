@@ -20,12 +20,13 @@ import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
 
 public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 
@@ -149,7 +150,6 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -181,7 +181,6 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("file");
 			sender.setPostType(HttpSender.PostType.FORMDATA);
 			sender.setAllowSelfSignedCertificates(true);

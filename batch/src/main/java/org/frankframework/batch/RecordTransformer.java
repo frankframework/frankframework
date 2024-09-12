@@ -29,13 +29,13 @@ import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.StringUtil;
 
 /**
  * Translate a record using an outputFields description.
- *
  *
  * The {@link #setOutputFields(String) outputFields} description can contain the following functions:
  *
