@@ -35,7 +35,6 @@ import org.frankframework.util.ClassUtils;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class RecordXml2Sender extends RecordXmlTransformer {
 
 	private @Getter ISender sender = null;

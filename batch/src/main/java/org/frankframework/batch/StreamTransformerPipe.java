@@ -54,7 +54,6 @@ import org.frankframework.util.StreamUtil;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 @ElementType(ElementTypes.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 

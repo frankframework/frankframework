@@ -43,7 +43,6 @@ import org.frankframework.util.StringUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

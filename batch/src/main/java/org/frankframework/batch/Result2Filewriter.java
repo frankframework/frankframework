@@ -34,7 +34,6 @@ import org.frankframework.util.FileUtils;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class Result2Filewriter extends ResultWriter {
 
 	private @Getter String outputDirectory;

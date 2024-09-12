@@ -37,7 +37,6 @@ import org.frankframework.util.StringUtil;
 /**
  * Translate a record using an outputFields description.
  *
- *
  * The {@link #setOutputFields(String) outputFields} description can contain the following functions:
  *
  * <table border="1">
@@ -58,7 +57,6 @@ import org.frankframework.util.StringUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class RecordTransformer extends AbstractRecordHandler {
 
 	private String outputSeparator;

@@ -45,7 +45,6 @@ import org.frankframework.util.FileUtils;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	private @Getter String move2dirAfterTransform;

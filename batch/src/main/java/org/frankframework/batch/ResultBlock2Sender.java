@@ -39,7 +39,6 @@ import org.frankframework.util.ClassUtils;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class ResultBlock2Sender extends Result2StringWriter {
 
 	private @Getter ISender sender = null;

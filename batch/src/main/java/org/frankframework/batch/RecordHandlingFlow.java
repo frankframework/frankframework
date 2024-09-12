@@ -30,11 +30,9 @@ import org.frankframework.util.LogUtil;
  * The flow contains the handlers to handle records of a specific type.
  * Each flow is registered to a manager using the recordHandlerManagerRef.
  *
- *
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 @FrankDocGroup(FrankDocGroupValue.BATCH)
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);

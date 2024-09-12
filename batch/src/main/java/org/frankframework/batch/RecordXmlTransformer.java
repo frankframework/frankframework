@@ -38,7 +38,6 @@ import org.frankframework.util.XmlBuilder;
  * @author  John Dekker / Gerrit van Brakel
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";

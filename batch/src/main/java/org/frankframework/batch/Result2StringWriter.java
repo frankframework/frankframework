@@ -20,7 +20,6 @@ import java.io.Writer;
 
 import org.frankframework.core.PipeLineSession;
 
-
 /**
  * Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.
  *
@@ -28,7 +27,6 @@ import org.frankframework.core.PipeLineSession;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class Result2StringWriter extends ResultWriter {
 
 	@Override

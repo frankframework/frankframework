@@ -27,7 +27,6 @@ import org.frankframework.core.PipeLineSession;
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int fieldNr;
