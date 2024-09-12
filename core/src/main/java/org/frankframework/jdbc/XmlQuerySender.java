@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -44,8 +47,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * QuerySender that transforms the input message to a query.
@@ -73,6 +74,7 @@ import org.w3c.dom.Node;
  * }</pre>
  * <br/>
  *
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {

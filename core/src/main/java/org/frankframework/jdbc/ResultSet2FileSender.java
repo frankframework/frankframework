@@ -27,7 +27,9 @@ import java.util.Date;
 
 import jakarta.annotation.Nonnull;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -37,11 +39,10 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
-import lombok.Getter;
-
 /**
  * QuerySender that writes each row in a ResultSet to a file.
  *
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -34,6 +35,7 @@ import org.frankframework.util.DB2XMLWriter;
  *
  * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
  *
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
  * @author  Gerrit van Brakel
