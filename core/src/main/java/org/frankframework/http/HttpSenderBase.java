@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,7 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.CanUseSharedResource;
@@ -78,14 +80,15 @@ import org.frankframework.util.XmlUtils;
  *   another_param_name=another_param_value
  * </pre>
  *
- * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
+ * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code>
+ * as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
  *
  * @author	Niels Meijer
  * @since	7.0
+ *
+ * TODO: Fix javadoc!
  */
-//TODO: Fix javadoc!
-
 public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
@@ -381,7 +384,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
-			//Set all headers
+			// Set all headers
 			if (appendMessageidHeader && StringUtils.isNotEmpty(session.getMessageId())) {
 				httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
 			}
@@ -404,13 +407,12 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		String reasonPhrase;
 
 		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
-
 			@Override
 			protected void abort() {
 				httpRequestBase.abort();
 			}
-
 		};
+
 		try {
 			log.debug("executing method [{}]", httpRequestBase::getRequestLine);
 			HttpResponse httpResponse = execute(targetUri, httpRequestBase, session);
@@ -427,7 +429,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			}
 
 			// Only give warnings for 4xx (client errors) and 5xx (server errors)
-			if (statusCode >= 400 && statusCode < 600) {
+			if (isErrorStatus(statusCode)) {
 				log.warn("status [{}]", statusline);
 			} else {
 				log.debug("status [{}]", statusCode);
@@ -489,7 +491,12 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		log.debug("Storing [{}]=[{}], [{}]=[{}]", CONTEXT_KEY_STATUS_CODE, statusCode, CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
 		result.getContext().put(CONTEXT_KEY_STATUS_CODE, statusCode);
 		result.getContext().put(CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
-		return new SenderResult(success, result, reasonPhrase, Integer.toString(statusCode));
+
+		return new SenderResult(success, result, isErrorStatus(statusCode) ? reasonPhrase : "", Integer.toString(statusCode));
+	}
+
+	private boolean isErrorStatus(int statusCode) {
+		return statusCode >= 400 && statusCode < 600;
 	}
 
 	@Override
