@@ -9,6 +9,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -112,5 +115,60 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 
 		session.close();
 		assertEquals("paramValue", ThreadContext.get("paramName"));
+	}
+
+	@Test
+	public void testAutoCloseableThreadContext() {
+		try (final CloseableThreadContext.Instance ctc1 = CloseableThreadContext.put("outer", "one")) {
+			try (final CloseableThreadContext.Instance ctc2 = CloseableThreadContext.put("outer", "two")) {
+				assertEquals("two", ThreadContext.get("outer"));
+
+				try (final CloseableThreadContext.Instance ctc3 = CloseableThreadContext.put("inner", "one")) {
+					assertEquals("one", ThreadContext.get("inner"));
+
+					ThreadContext.put("not-in-closeable", "true");
+					assertEquals("two", ThreadContext.get("outer"));
+				}
+
+				assertEquals("two", ThreadContext.get("outer"));
+				assertNull(ThreadContext.get("inner"));
+			}
+
+			assertEquals("one", ThreadContext.get("outer"));
+			assertNull(ThreadContext.get("inner"));
+		}
+		assertEquals("true", ThreadContext.get("not-in-closeable"));
+
+		assertNull(ThreadContext.get("inner"));
+		assertNull(ThreadContext.get("outer"));
+	}
+
+	@Test
+	public void testAutoCloseableThreadContextPutAll() {
+		try (final CloseableThreadContext.Instance ctc1 = CloseableThreadContext.put("outer", "one")) {
+			try (final CloseableThreadContext.Instance ctc2 = CloseableThreadContext.put("outer", "two")) {
+				assertEquals("two", ThreadContext.get("outer"));
+
+				try (final CloseableThreadContext.Instance ctc3 = CloseableThreadContext.put("inner", "one")) {
+					assertEquals("one", ThreadContext.get("inner"));
+
+					ThreadContext.put("not-in-closeable", "true");
+					ThreadContext.putAll(Collections.singletonMap("inner", "two"));
+					System.err.println(ThreadContext.getContext());
+					assertEquals("two", ThreadContext.get("inner"));
+					assertEquals("two", ThreadContext.get("outer"));
+				}
+
+				assertEquals("two", ThreadContext.get("outer"));
+				assertNull(ThreadContext.get("inner"));
+			}
+
+			assertEquals("one", ThreadContext.get("outer"));
+			assertNull(ThreadContext.get("inner"));
+		}
+		assertEquals("true", ThreadContext.get("not-in-closeable"));
+
+		assertNull(ThreadContext.get("inner"));
+		assertNull(ThreadContext.get("outer"));
 	}
 }
