@@ -11,14 +11,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
-import org.junit.jupiter.api.Test;
 
 public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 
@@ -35,7 +37,23 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 		String input = "fakeInput";
 		ThreadContext.clearMap();
 
-		PipeRunResult prr = doPipe(input);
+		PipeRunResult prr;
+		try (CloseableThreadContext.Instance outer = CloseableThreadContext.put("pipe", "Dummy Outer Value")) {
+			try (CloseableThreadContext.Instance inner = CloseableThreadContext.put("pipe", "LogContextPipe")) {
+				assertEquals("LogContextPipe", ThreadContext.get("pipe"));
+
+				prr = doPipe(input);
+
+				assertEquals("LogContextPipe", ThreadContext.get("pipe"));
+
+				ThreadContext.put("test", "value");
+				assertEquals("value", ThreadContext.get("test"));
+			}
+			assertEquals("value", ThreadContext.get("test"));
+		}
+		assertEquals("value", ThreadContext.get("test"));
+
+		assertNull(ThreadContext.get("pipe"));
 
 		assertEquals(input, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
@@ -107,8 +125,15 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 		String input = "fakeInput";
 		ThreadContext.clearMap();
 
-		PipeRunResult prr = doPipe(input);
+		PipeRunResult prr;
+		try (CloseableThreadContext.Instance inner = CloseableThreadContext.put("pipe", "LogContextPipe")) {
+			assertEquals("LogContextPipe", ThreadContext.get("pipe"));
 
+			prr = doPipe(input);
+
+			assertEquals("LogContextPipe", ThreadContext.get("pipe"));
+		}
+		assertNull(ThreadContext.get("pipe"));
 		assertEquals(input, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals("paramValue", ThreadContext.get("paramName"));
