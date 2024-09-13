@@ -154,8 +154,8 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Constructor for Message using a {@link SerializableFileReference}.
 	 *
-	 * @param request Request as {@link SerializableFileReference}
-	 * @param context {@link MessageContext}
+	 * @param request      Request as {@link SerializableFileReference}
+	 * @param context      {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
 	protected Message(SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
@@ -285,7 +285,8 @@ public class Message implements Serializable, Closeable {
 		}
 
 		long requestSize = size();
-		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance()
+				.getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
 			preserveToDisk(deepPreserve);
 		} else {
 			preserveToMemory(deepPreserve);
@@ -811,6 +812,7 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Returns the message identifier and which resource class it represents
+	 *
 	 * @return Message[1234abcd:ByteArrayInputStream]
 	 */
 	public String getObjectId() {
@@ -868,12 +870,10 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @param message Message to check. May be {@code null}.
 	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
-	 * Returns {@code true} if {@link Message#size()} returns a positive value.
-	 * If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
-	 * be read via {@link Message#getMagic(int)}.
-	 *
+	 * 		Returns {@code true} if {@link Message#size()} returns a positive value.
+	 * 		If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
+	 * 		be read via {@link Message#getMagic(int)}.
 	 * @throws IOException Throws an IOException if checking for data in the message throws an IOException.
-	 *
 	 */
 	public static boolean hasDataAvailable(Message message) throws IOException {
 		if (Message.isNull(message)) {
@@ -929,7 +929,7 @@ public class Message implements Serializable, Closeable {
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
-			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", ()->requestClass, ()->ClassUtils.nameOf(e),  e::getMessage);
+			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", () -> requestClass, () -> ClassUtils.nameOf(e), e::getMessage);
 		}
 		MessageContext contextFromStream;
 		try {
@@ -988,13 +988,13 @@ public class Message implements Serializable, Closeable {
 			try {
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
-				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) ()->ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
+				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) () -> ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
 			}
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
-			LOG.debug("unable to determine size of Message [{}]", ()->ClassUtils.nameOf(request));
+			LOG.debug("unable to determine size of Message [{}]", () -> ClassUtils.nameOf(request));
 		}
 
 		return MESSAGE_SIZE_UNKNOWN;
@@ -1045,7 +1045,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		LOG.debug("creating capture of {}", ()->ClassUtils.nameOf(request));
+		LOG.debug("creating capture of {}", () -> ClassUtils.nameOf(request));
 		if (isRepeatable()) {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
@@ -1061,29 +1061,27 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Creates a copy of this Message object.
 	 * <p>
-	 *     <b>NB:</b> To copy the underlying value of the message object, the message
-	 *     may be preserved if it was not repeatable.
+	 * <b>NB:</b> To copy the underlying value of the message object, the message
+	 * may be preserved if it was not repeatable.
 	 * </p>
+	 *
 	 * @return A new Message object that is a copy of this Message.
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
-		final Message newMessage;
 		if (!isRepeatable()) {
 			preserve();
 		}
-		if (request instanceof SerializableFileReference) {
-			final SerializableFileReference newRef;
-			if (isBinary()) {
-				newRef = SerializableFileReference.of(asInputStream());
-			} else {
-				newRef = SerializableFileReference.of(asReader(), getCharset());
-			}
-			newMessage = new Message(copyContext(), newRef);
-		} else {
-			newMessage = new Message(copyContext(), request);
+		if (!(request instanceof SerializableFileReference)) {
+			return new Message(copyContext(), request);
 		}
-		return newMessage;
+		final SerializableFileReference newRef;
+		if (isBinary()) {
+			newRef = SerializableFileReference.of(asInputStream());
+		} else {
+			newRef = SerializableFileReference.of(asReader(), getCharset());
+		}
+		return new Message(copyContext(), newRef);
 	}
 }
