@@ -107,7 +107,7 @@ final String x = (condition) ? "value" : null;
 	Since Java 9, the usage of `var` is supported. This is still strongly typed, but notation is less verbose:
 	`String string = new String()` can become `var string = new String()`.
 	This can become less readable when using the return type of a method. To keep code as readable as possible, we only use 
-	this 'locally'. This means, a local value. Try to avoid using var for method return types, this makes code less readable 
+	this when the type is clear, such as a direct assignment of a string or scalar value or constructor. Try to avoid using `var` for variables assigned from method return values, this makes code less readable
 	when not using an IDE.
 9. Java Optionals.
 
