@@ -324,5 +324,6 @@ Since javadoc is used for generating documentation in the Frank!Doc, it's import
 * Please provide documentation in the javadoc if there's been a (breaking) change and offer an example in the documentation. See [FixedResultPipe.java](https://github.com/frankframework/frankframework/blob/master/core/src/main/java/org/frankframework/pipes/FixedResultPipe.java) for instance.  
 * When using multiline Code examples, please use `<pre>{@code ... }</pre>` blocks.
 * When referring to classes, please use `{@link ClassName}`
-* When referring to a class value, please use `{@value #VALUE}`
-* When referring to a value (of a parameter, variable, etc), please use `{@literal null}`
+* Frank!Doc treats {@value} and {@literal} differently, please use them like this:
+  * When referring to a class value, please use `{@value #VALUE}`
+  * When referring to a value (of a parameter, variable, etc), please use `{@literal null}`
