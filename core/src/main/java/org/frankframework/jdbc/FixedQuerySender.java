@@ -33,8 +33,7 @@ import org.frankframework.util.DB2XMLWriter;
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  *
- * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
- *
+ * @ff.info See {@link DB2XMLWriter} for ResultSet!
  * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
