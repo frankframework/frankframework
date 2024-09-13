@@ -55,6 +55,8 @@ import org.frankframework.util.SpringUtils;
  * entries which have surpassed their corresponding {@link JdbcTransactionalStorage#getExpiryDateField() MessageLog's ExpiryDateField}. 
  * 
  * {@inheritDoc}
+ * 
+ * @ff.info This is a default job that can be controlled with the property {@literal cleanup.database.active} and {@literal cleanup.database.cron}.
  */
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
