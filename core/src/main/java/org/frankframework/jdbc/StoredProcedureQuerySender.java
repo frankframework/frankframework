@@ -30,7 +30,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.jms.JMSException;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -45,8 +48,6 @@ import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
-
-import jakarta.jms.JMSException;
 
 /**
  * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
@@ -141,9 +142,8 @@ import jakarta.jms.JMSException;
  * 	</resultset>
  * }</pre>
  * </p>
- * <p><em>NOTE:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
- * are expected.</p>
- *
+ * @ff.info Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
  * @since 7.9

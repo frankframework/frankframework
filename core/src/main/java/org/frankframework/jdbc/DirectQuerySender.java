@@ -36,6 +36,7 @@ import org.frankframework.util.ClassUtils;
  * QuerySender that interprets the input message as a query, possibly with attributes.
  * Messages are expected to contain sql-text.
  *
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
  * @author  Gerrit van Brakel
