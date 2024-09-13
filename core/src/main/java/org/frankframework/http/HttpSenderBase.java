@@ -67,19 +67,24 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
+ * Sender for the HTTP protocol using {@link HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
+ * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
+ * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
+ * are returned by this sender, so they are available to the SenderPipe.
  *
  * <p><b>Expected message format:</b></p>
- * <p>GET methods expect a message looking like this</p>
+ * <p>GET methods expect a message looking like this:
  * <pre>
- *   param_name=param_value&another_param_name=another_param_value
+ *    param_name=param_value&another_param_name=another_param_value
  * </pre>
- * <p>POST AND PUT methods expect a message similar as GET, or looking like this</p>
+ * <p>POST AND PUT methods expect a message similar as GET, or looking like this:
  * <pre>
  *   param_name=param_value
  *   another_param_name=another_param_value
  * </pre>
  *
+ * @ff.info When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
+ * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code>
  * as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
@@ -87,7 +92,6 @@ import org.frankframework.util.XmlUtils;
  * @author	Niels Meijer
  * @since	7.0
  *
- * TODO: Fix javadoc!
  */
 public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
