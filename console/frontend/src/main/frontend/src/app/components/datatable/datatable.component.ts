@@ -9,6 +9,7 @@ export type TableOptions = {
   sizeOptions: number[];
   size: number;
   serverSide: boolean;
+  filter: boolean;
 };
 
 export type DataTableColumn<T> = {
@@ -17,6 +18,7 @@ export type DataTableColumn<T> = {
   property: keyof T | null;
   html?: boolean;
   className?: string;
+  hidden?: boolean;
 };
 
 export type DataTableEntryInfo = {
@@ -98,6 +100,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
   private _options = new BehaviorSubject<TableOptions>({
     sizeOptions: [10, 50, 100, 250, 500],
     size: 50,
+    filter: true,
     serverSide: false,
   });
   private _entriesInfo = new BehaviorSubject<DataTableEntryInfo>({
@@ -165,6 +168,10 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   updatePage(page: number): void {
     this._currentPage = page;
+    this.updateRenderedData(this.data);
+  }
+
+  updateTable(): void {
     this.updateRenderedData(this.data);
   }
 

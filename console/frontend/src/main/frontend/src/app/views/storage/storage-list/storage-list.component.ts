@@ -9,6 +9,7 @@ import { AppService } from '../../../app.service';
 import { DataTableColumn, DataTableDataSource } from '../../../components/datatable/datatable.component';
 
 type DisplayColumn = {
+  actions: boolean;
   id: boolean;
   insertDate: boolean;
   host: boolean;
@@ -46,6 +47,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   protected clearSearchLadda = false;
   protected messagesDownloading = false;
   protected displayColumn: DisplayColumn = {
+    actions: true,
     id: true,
     insertDate: true,
     host: true,
@@ -106,44 +108,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     },
     { name: 'label', property: 'label', displayName: 'Label' },
   ];
-  /*private initialColumns: ADTColumns[] = [
-    {
-      data: null,
-      defaultContent: '',
-      className: 'm-b-xxs storage-actions',
-      orderable: false,
-    },
-    { name: 'pos', data: 'position', orderable: false, defaultContent: '' },
-    { name: 'id', data: 'id', orderable: false, defaultContent: '' },
-    {
-      name: 'insertDate',
-      data: 'insertDate',
-      className: 'date',
-      defaultContent: '',
-    },
-    { name: 'host', data: 'host', orderable: false, defaultContent: '' },
-    {
-      name: 'originalId',
-      data: 'originalId',
-      orderable: false,
-      defaultContent: '',
-    },
-    {
-      name: 'correlationId',
-      data: 'correlationId',
-      orderable: false,
-      defaultContent: '',
-    },
-    { name: 'comment', data: 'comment', orderable: false, defaultContent: '' },
-    {
-      name: 'expiryDate',
-      data: 'expiryDate',
-      className: 'date',
-      orderable: false,
-      defaultContent: '',
-    },
-    { name: 'label', data: 'label', orderable: false, defaultContent: '' },
-  ];*/
 
   constructor(
     private webStorageService: WebStorageService,
@@ -164,12 +128,23 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
 
     this.datasource.options = {
+      filter: false,
       serverSide: true,
     };
     this.datasource.setServerRequest(
       (requestInfo) =>
         new Promise((resolve, reject) => {
-          const queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
+          let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
+          const search = this.search;
+          const searchSession: Record<keyof typeof search, string> = {};
+          for (const column in search) {
+            const text = search[column as keyof typeof search];
+            if (text) {
+              queryParameters += `&${column}=${text}`;
+              searchSession[column as keyof typeof search] = text;
+            }
+          }
+          this.Session.set('search', searchSession);
 
           this.storageService.getStorageList(queryParameters).subscribe({
             next: (response) => {
@@ -244,14 +219,15 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
     if (filterCookie) {
-      /*for (const column of columns) {
+      for (const column of this.displayedColumns) {
         if (column.name && filterCookie[column.name as keyof DisplayColumn] === false) {
-          column.visible = false;
+          column.hidden = true;
         }
-      }*/
+      }
       this.displayColumn = filterCookie;
     } else {
       this.displayColumn = {
+        actions: true,
         id: true,
         insertDate: true,
         host: true,
@@ -265,101 +241,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
 
   /*
-  constructor(
-    private webStorageService: WebStorageService,
-    private Session: SessionService,
-    private SweetAlert: SweetalertService,
-    public storageService: StorageService,
-    private appService: AppService,
-  ) {}
-
-  ngOnInit(): void {
-    this.dtOptions = {
-      searching: false,
-      scrollX: true,
-      // bAutoWidth: false,
-      autoWidth: false,
-      orderCellsTop: true,
-      serverSide: true,
-      processing: true,
-      paging: true,
-      lengthMenu: [10, 25, 50, 100, 500, 999],
-      order: [[3, 'asc']],
-      columns: this.initialColumns,
-      // sAjaxDataProp: 'messages',
-      ajax: (data, callback): void => {
-        const dataRecord = data as Record<string, NonNullable<unknown>>;
-        const start = dataRecord['start'];
-        const length = dataRecord['length'];
-        const order = (dataRecord['order'] as unknown[])[0] as { dir: 'asc' } | { dir: 'desc' };
-        const direction = order.dir;
-
-        let queryParameters = `?max=${length}&skip=${start}&sort=${direction}`;
-        const search = this.search;
-        const searchSession: Record<keyof typeof search, string> = {};
-        for (const column in search) {
-          const text = search[column as keyof typeof search];
-          if (text) {
-            queryParameters += `&${column}=${text}`;
-            searchSession[column as keyof typeof search] = text;
-          }
-        }
-        this.Session.set('search', searchSession);
-        this.storageService.getStorageList(queryParameters).subscribe({
-          next: (response) => {
-            this.targetStates = response.targetStates ?? {};
-            callback({
-              draw: dataRecord['draw'],
-              recordsTotal: response.totalMessages,
-              recordsFiltered: response.recordsFiltered,
-              data: response.messages,
-            });
-            this.searching = false;
-            this.clearSearchLadda = false;
-            for (const message of response.messages) {
-              if (!(message.id in this.storageService.selectedMessages)) {
-                this.storageService.selectedMessages[message.id] = false;
-              }
-            }
-            for (const messageId in this.storageService.selectedMessages) {
-              const messageExists = response.messages.some((message) => message.id === messageId);
-              if (!messageExists) {
-                delete this.storageService.selectedMessages[messageId];
-              }
-            }
-          },
-          error: () => {
-            this.searching = false;
-            this.clearSearchLadda = false;
-          },
-        });
-      },
-    };
-  }
 
   ngAfterViewInit(): void {
-    this.storageService.dtElement = this.dataTable;
-    const columns: ADTColumns[] = [...this.initialColumns];
-
-    for (const column of columns) {
-      if (column.data === null) {
-        column['ngTemplateRef'] = {
-          ref: this.storageListDt,
-        };
-      }
-      if (column.className === 'date') {
-        column['ngTemplateRef'] = {
-          ref: this.dateDt,
-          context: {
-            captureEvents: (): void => {}, // required for some weird reason
-            userData: {
-              column: column.data,
-            },
-          },
-        };
-      }
-    }
-
     this.dtOptions = {
       ...this.dtOptions,
       stateSave: true,
@@ -416,31 +299,29 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
   searchUpdated(): void {
     this.searching = true;
-    this.storageService.updateTable();
+    this.updateTable();
   }
 
   truncate(): void {
     this.truncated = !this.truncated;
     this.truncateButtonText = this.truncated ? 'Show original' : 'Truncate displayed data';
-    this.storageService.updateTable();
+    this.updateTable();
   }
 
   clearSearch(): void {
     this.clearSearchLadda = true;
     this.Session.remove('search');
     this.search = {};
-    this.storageService.updateTable();
+    this.updateTable();
   }
 
   updateFilter(column: string): void {
     this.webStorageService.set(`${this.storageParams.processState}Filter`, this.displayColumn);
 
-    /*this.dataTable.dtInstance.then((table) => {
-      const tableColumn = table.column(`${column}:name`);
-      if (tableColumn && tableColumn.length == 1)
-        tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
-      table.draw();
-    });*/
+    const tableColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
+    if (tableColumn) {
+      tableColumn.hidden = this.displayColumn[column as keyof typeof this.displayColumn] === false;
+    }
   }
 
   selectAll(): void {
@@ -455,6 +336,11 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
+  updateTable(): void {
+    this.datasource.updateTable();
+    this.storageService.updateTable();
+  }
+
   resendMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
@@ -463,12 +349,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.messagesResending = false;
           this.storageService.addNote('success', 'Selected messages will be reprocessed');
-          this.storageService.updateTable();
+          this.updateTable();
         },
         error: () => {
           this.messagesResending = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
-          this.storageService.updateTable();
+          this.updateTable();
         },
       });
     }
@@ -482,12 +368,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.messagesDeleting = false;
           this.storageService.addNote('success', 'Successfully deleted messages');
-          this.storageService.updateTable();
+          this.updateTable();
         },
         error: () => {
           this.messagesDeleting = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
-          this.storageService.updateTable();
+          this.updateTable();
         },
       });
     }
@@ -527,12 +413,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.changingProcessState = false;
           this.storageService.addNote('success', `Successfully changed the state of messages to ${targetState}`);
-          this.storageService.updateTable();
+          this.updateTable();
         },
         error: () => {
           this.changingProcessState = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to move selected messages!');
-          this.storageService.updateTable();
+          this.updateTable();
         },
       });
     }
