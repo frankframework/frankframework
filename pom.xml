@@ -1132,6 +1132,13 @@
 										</excludes>
 										<message>use the newer 'org.bouncycastle:*-jdk18on' version of org.bouncycastle</message>
 									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>com.sun.xml.bind:jaxb-core</exclude>
+											<exclude>com.sun.xml.bind:jaxb-impl</exclude>
+										</excludes>
+										<message>Dont use com.sun but glassfish instead</message>
+									</bannedDependencies>
 								</rules>
 							</configuration>
 						</execution>
