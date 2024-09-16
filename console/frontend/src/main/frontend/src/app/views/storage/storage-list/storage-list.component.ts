@@ -240,45 +240,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /*
-
-  ngAfterViewInit(): void {
-    this.dtOptions = {
-      ...this.dtOptions,
-      stateSave: true,
-      stateSaveCallback: (settings, data): void => {
-        this.Session.set(`DataTable${this.storageParams.processState}`, data);
-      },
-      stateLoadCallback: (): void => {
-        return this.Session.get(`DataTable${this.storageParams.processState}`);
-      },
-      columns: columns,
-      columnDefs: [
-        {
-          targets: 0,
-          // Targets is index 0 but render function goes over every column
-          render: (data, type): unknown => {
-            if (type === 'display' && this.truncated) {
-              for (const index in data) {
-                if (index == 'id') continue;
-                const columnData = data[index];
-                if (typeof columnData == 'string' && columnData.length > 30) {
-                  const title = columnData.replaceAll('"', '&quot;');
-                  const leftTrancate = columnData.slice(0, 15);
-                  const rightTrancate = columnData.slice(-15);
-                  data[index] = `<span title="${title}">${leftTrancate}&#8230;${rightTrancate}</span>`;
-                }
-              }
-            }
-            return data;
-          },
-        },
-      ],
-    };
-
-    this.dtTrigger.next(this.dtOptions);
-  }*/
-
   getNotes(): Note[] {
     return this.storageService.notes;
   }
