@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -22,10 +23,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
@@ -705,11 +708,43 @@ public class DbmsSupportTest {
 		log.debug("executing translated query [{}]", translatedQuery);
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
-				return  connection.prepareStatement(translatedQuery);
+				return connection.prepareStatement(translatedQuery);
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
 		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
+	}
+
+	@DatabaseTest
+	public void testRowVersionTimestamp() throws SQLException, JdbcException, IOException {
+		if (Objects.requireNonNull(dbmsSupport.getDbms()) == Dbms.MSSQL) {
+			testRowVersionTimestampMssql();
+		} else {
+			assertFalse(dbmsSupport.supportsRowVersionTimeStamp());
+		}
+	}
+
+	private void testRowVersionTimestampMssql() throws SQLException, JdbcException, IOException {
+		assertTrue(dbmsSupport.supportsRowVersionTimeStamp());
+
+		try (Connection connection = env.getConnection()) {
+			int i = JdbcTestUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM sysobjects WHERE name='MyTest' AND xtype='U'");
+			if (i < 1) {
+				JdbcTestUtil.executeStatement(connection, "CREATE TABLE MyTest (myKey int, myValue int, RV rowversion)");
+			}
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO MyTest (myKey, myValue) VALUES (1, 0)");
+
+			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM MyTest" , QueryType.SELECT)) {
+				try (ResultSet resultSet = stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = resultSet.getMetaData();
+					resultSet.next();
+					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+
+					assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
+					assertNotNull(actual2);
+				}
+			}
+		}
 	}
 }

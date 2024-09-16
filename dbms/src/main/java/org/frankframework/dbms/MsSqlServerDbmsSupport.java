@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.util.DateFormatUtils;
 
 
@@ -76,7 +77,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return "CONVERT(VARCHAR(10), " + columnName + ", 120)";
 	}
 
-
 	@Override
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
@@ -86,7 +86,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return (rsmeta.getColumnType(colNum) == Types.VARCHAR || rsmeta.getColumnType(colNum) == Types.NVARCHAR) && rsmeta.getPrecision(colNum) > CLOB_SIZE_THRESHOLD;
 	}
-
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
@@ -185,5 +184,19 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getBooleanValue(boolean value) {
 		return value ? "1" : "0";
+	}
+
+	@Override
+	public boolean supportsRowVersionTimeStamp() {
+		return true;
+	}
+
+	@Override
+	public boolean isRowVersionTimestamp(ResultSetMetaData resultSetMetaData, int colNum) throws SQLException {
+		if (supportsRowVersionTimeStamp()) {
+			// MSSQL timestamp is a binary type, containing the rowversion as a binary number.
+			return resultSetMetaData.getColumnTypeName(colNum).equals("timestamp");
+		}
+		return false;
 	}
 }

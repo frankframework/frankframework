@@ -48,9 +48,12 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
@@ -69,7 +72,6 @@ import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 /**
  * Database-oriented utility functions.
@@ -185,16 +187,17 @@ public class JdbcUtil {
 		}
 	}
 
-
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
+				return rs.getString(3);
+			}
 			try {
 				return JdbcUtil.getBlobAsString(dbmsSupport, rs, colNum, blobCharset, decompressBlobs, getBlobSmart, encodeBlobBase64);
 			} catch (JdbcException e) {
 				log.debug("Caught JdbcException, assuming no blob found", e);
 				return nullValue;
 			}
-
 		}
 		if (dbmsSupport.isClobType(rsmeta, colNum)) {
 			try {

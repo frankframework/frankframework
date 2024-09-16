@@ -190,4 +190,12 @@ public interface IDbmsSupport {
 	default boolean canFetchStatementParameterMetaData() {
 		return true;
 	}
+
+	default boolean isRowVersionTimestamp(ResultSetMetaData rsmeta, int colNum) throws SQLException {
+		return false;
+	}
+
+	default boolean supportsRowVersionTimeStamp() {
+		return false;
+	}
 }

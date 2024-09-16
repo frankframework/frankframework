@@ -4,4 +4,5 @@
 	<Include ref="./ConfigurationResultSetIteratingPipe.xml"/>
 	<Include ref="./ConfigurationManageDatabaseWrapper.xml"/>
 	<Include ref="./ConfigurationStoredProcedureSender.xml"/>
+	<Include ref="./MssqlTest.xml"/>
 </Configuration>
