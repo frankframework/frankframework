@@ -192,10 +192,10 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isRowVersionTimestamp(ResultSetMetaData resultSetMetaData, int colNum) throws SQLException {
+	public boolean isRowVersionTimestamp(ResultSetMetaData resultSetMetaData, int columnNumber) throws SQLException {
 		if (supportsRowVersionTimeStamp()) {
 			// MSSQL timestamp is a binary type, containing the rowversion as a binary number.
-			return resultSetMetaData.getColumnTypeName(colNum).equals("timestamp");
+			return resultSetMetaData.getColumnTypeName(columnNumber).equals("timestamp");
 		}
 		return false;
 	}

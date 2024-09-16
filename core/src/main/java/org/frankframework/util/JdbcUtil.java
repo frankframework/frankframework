@@ -233,10 +233,10 @@ public class JdbcUtil {
 					else if (columnType == Types.DATE && !DATEFORMAT.isEmpty())
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				} catch (Exception e) {
-					//Do nothing, the default: will handle it
+					// Do nothing, the default: will handle it
 				}
 			}
-			//$FALL-THROUGH$
+			// $FALL-THROUGH$
 			default: {
 				Object value = rs.getObject(colNum);
 				if (value == null) {
@@ -626,7 +626,7 @@ public class JdbcUtil {
 					statement.setBoolean(parameterIndex, (Boolean) value);
 				}
 				break;
-			//noinspection deprecation
+			// noinspection deprecation
 			case INPUTSTREAM:
 			case BINARY: {
 				Message message = Message.asMessage(value);
@@ -648,7 +648,7 @@ public class JdbcUtil {
 				}
 				break;
 			}
-			//noinspection deprecation
+			// noinspection deprecation
 			case BYTES: {
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session, "JDBC BYTES Parameter");
@@ -693,7 +693,7 @@ public class JdbcUtil {
 					break;
 				default:
 					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
-					//$FALL-THROUGH$
+					// $FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:
 					statement.setString(parameterIndex, value);
