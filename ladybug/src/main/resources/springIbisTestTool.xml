@@ -43,33 +43,22 @@
 
 	<bean class="org.frankframework.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
 
-	<bean name="maxCheckpoints" class="java.lang.Integer">
-		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
-	</bean>
-
-	<bean name="maxMemoryUsage" class="java.lang.Long">
-		<constructor-arg value="${ibistesttool.maxMemoryUsage}"/>
-	</bean>
-
+	<!-- used by multiple beans -->
 	<bean name="maxMessageLength" class="java.lang.Integer">
 		<constructor-arg value="${ibistesttool.maxMessageLength}"/>
 	</bean>
 
-	<bean name="regexFilter" class="java.lang.String">
-		<constructor-arg value="${ibistesttool.regexFilter}"/>
-	</bean>
-
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
-		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
-		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
-		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
-		<property name="regexFilter"><ref bean="regexFilter"/></property>
-		<property name="securityLoggerName" value="SEC"/>
+		<property name="maxCheckpoints" value="${ibistesttool.maxCheckpoints}" />
+		<property name="maxMemoryUsage" value="${ibistesttool.maxMemoryUsage}" />
+		<property name="maxMessageLength"><ref bean="maxMessageLength" /></property>
+		<property name="regexFilter" value="${ibistesttool.regexFilter}" />
+		<property name="securityLoggerName" value="SEC" />
 		<!-- Prevent threads that didn't start and aren't cancelled from keeping reports in progress -->
-		<property name="closeThreads" value="true"/>
-		<property name="closeNewThreadsOnly" value="true"/>
+		<property name="closeThreads" value="true" />
+		<property name="closeNewThreadsOnly" value="true" />
 		<!-- See comment on closeReportsTask -->
-		<property name="closeMessageCapturers" value="false"/>
+		<property name="closeMessageCapturers" value="false" />
 	</bean>
 
 	<!--
@@ -78,7 +67,7 @@
 	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
 	empty string while test a pipeline would show the correct result).
 	-->
-	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask">
+	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask" autowire="byName">
 		<property name="messageCapturersTime" value="60000"/>
 		<property name="threadsTime" value="-1"/>
 	</bean>
@@ -86,7 +75,7 @@
 	<task:scheduler id="closeReportsScheduler"/>
 
 	<task:scheduled-tasks scheduler="closeReportsScheduler">
-		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000"/>
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="1"/>
 	</task:scheduled-tasks>
 
 	<bean name="dataSourceName" class="java.lang.String">
