@@ -1,0 +1,32 @@
+<module>
+	<Adapter name="Test Expects Session Keys">
+		<Pipeline>
+			<Exits>
+				<Exit name="SUCCESS" state="SUCCESS"/>
+				<Exit name="ERROR" state="ERROR"/>
+			</Exits>
+			<XmlSwitchPipe name="SenderSelector" xpathExpression="/select-sender">
+				<forward name="Sender with All Keys" path="Sender With All Expected Keys"/>
+				<forward name="Sender with Missing Keys" path="Sender With Expected Keys Missing"/>
+			</XmlSwitchPipe>
+			<SenderPipe name="Sender With All Expected Keys">
+				<FrankSender scope="ADAPTER" target="Pipeline with Expected Session Keys">
+					<Param name="k1" value="1"/>
+					<Param name="k2" value="2"/>
+				</FrankSender>
+
+				<Forward name="success" path="SUCCESS"/>
+			</SenderPipe>
+			<SenderPipe name="Sender With Expected Keys Missing">
+				<FrankSender scope="ADAPTER" target="Pipeline with Expected Session Keys" />
+				<Forward name="exception" path="SUCCESS"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="Pipeline with Expected Session Keys">
+		<Pipeline expectsSessionKeys="k1,k2">
+			<!-- It would be nice to return value of the session keys for validation, but we're not testing the FrankSender  -->
+			<EchoPipe name="echo"/>
+		</Pipeline>
+	</Adapter>
+</module>
