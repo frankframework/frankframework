@@ -1,6 +1,6 @@
 version: ''
 
-name: tomcat
+name: tomcat-members-debug
 
 services:
   ff-test:

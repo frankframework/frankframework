@@ -35,6 +35,8 @@ export type DataTableServerRequestInfo = {
 export type DataTableServerResponseInfo<T> = {
   totalEntries: number;
   filteredEntries: number;
+  size: number;
+  offset: number;
   data: T[];
 };
 
@@ -129,7 +131,6 @@ export class DataTableDataSource<T> extends DataSource<T> {
   set options(value: Partial<TableOptions>) {
     this._options.next({ ...this._options.value, ...value });
     this.updatePage(1);
-    this.updateRenderedData(this.data);
   }
 
   get filter(): string {
@@ -196,8 +197,8 @@ export class DataTableDataSource<T> extends DataSource<T> {
         this._totalPages = response.totalEntries / this.options.size;
         this._renderData.next(this.data);
         this._entriesInfo.next({
-          minPageEntry: 1,
-          maxPageEntry: 1,
+          minPageEntry: response.offset + 1,
+          maxPageEntry: response.offset + response.size,
           totalFilteredEntries: response.filteredEntries,
           totalEntries: response.totalEntries,
         });

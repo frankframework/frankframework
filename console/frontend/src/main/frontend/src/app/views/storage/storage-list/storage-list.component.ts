@@ -71,7 +71,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       name: 'actions',
       property: null,
       displayName: '',
-      className: 'm-b-xxs storageActions',
+      className: 'm-b-xxs storage-actions',
       html: true,
     },
     {
@@ -110,7 +110,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     {
       data: null,
       defaultContent: '',
-      className: 'm-b-xxs storageActions',
+      className: 'm-b-xxs storage-actions',
       orderable: false,
     },
     { name: 'pos', data: 'position', orderable: false, defaultContent: '' },
@@ -178,6 +178,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
                 data: response.messages,
                 totalEntries: response.totalMessages,
                 filteredEntries: response.recordsFiltered,
+                offset: response.skipMessages,
+                size: response.messages.length,
               });
               this.searching = false;
               this.clearSearchLadda = false;
