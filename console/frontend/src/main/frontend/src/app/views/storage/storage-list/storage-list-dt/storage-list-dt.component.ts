@@ -7,7 +7,7 @@ import { PartialMessage, StorageService } from '../../storage.service';
   styleUrls: ['./storage-list-dt.component.scss'],
 })
 export class StorageListDtComponent {
-  @Input({ required: true }) public message!: PartialMessage;
+  @Input({ required: true }) message!: PartialMessage;
 
   constructor(public storageService: StorageService) {}
 }

@@ -25,7 +25,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
 
   // protected dtOptions: ADTSettings = {};
   protected datasource: DataTableDataSource<ConnectionsData> = new DataTableDataSource();
-  protected displayedColumns: DataTableColumn<Connections['data'][number]>[] = [
+  protected displayedColumns: DataTableColumn<ConnectionsData>[] = [
     { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName' },
     { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName' },
     { name: 'domain', displayName: 'Domain', property: 'domain' },

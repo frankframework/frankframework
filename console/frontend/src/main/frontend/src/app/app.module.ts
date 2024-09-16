@@ -87,6 +87,7 @@ import { AdapterStatusComponent } from './views/status/adapter-status/adapter-st
 import { ConfigurationMessagesComponent } from './views/status/configuration-messages/configuration-messages.component';
 import { ConfigurationSummaryComponent } from './views/status/configuration-summary/configuration-summary.component';
 import { DatatableComponent } from './components/datatable/datatable.component';
+import { DtContentDirective } from './components/datatable/dt-content.directive';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -191,6 +192,7 @@ const windowProvider: ValueProvider = {
     HumanFileSizePipe,
     MonacoEditorComponent,
     DatatableComponent,
+    DtContentDirective,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],

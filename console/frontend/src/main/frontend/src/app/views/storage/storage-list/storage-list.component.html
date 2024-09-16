@@ -274,7 +274,9 @@
             <span *ngIf="data[columnId]" appToDate [time]="data[columnId]">{{ data[columnId] }}</span>
           </ng-template>
           <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns">
-            <app-storage-list-dt></app-storage-list-dt>
+            <ng-template appDtContent let-element="rowElement">
+              <app-storage-list-dt [message]="element"></app-storage-list-dt>
+            </ng-template>
           </app-datatable>
           <!--<table
             id="datatable"

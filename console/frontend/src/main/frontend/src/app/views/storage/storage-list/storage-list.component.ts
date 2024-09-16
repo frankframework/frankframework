@@ -6,7 +6,7 @@ import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { getProcessStateIcon } from 'src/app/utils';
 import { AppService } from '../../../app.service';
-import { DataTableColumn } from '../../../components/datatable/datatable.component';
+import { DataTableColumn, DataTableDataSource } from '../../../components/datatable/datatable.component';
 
 type DisplayColumn = {
   id: boolean;
@@ -18,6 +18,8 @@ type DisplayColumn = {
   expiryDate: boolean;
   label: boolean;
 };
+
+type MessageData = MessageStore['messages'][number];
 
 @Component({
   selector: 'app-storage-list',
@@ -63,11 +65,13 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     return getProcessStateIcon(processState);
   };
 
-  protected displayedColumns: DataTableColumn<MessageStore['messages'][number]>[] = [
+  protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
+  protected displayedColumns: DataTableColumn<MessageData>[] = [
     {
       name: 'actions',
       property: null,
       displayName: '',
+      className: 'm-b-xxs storageActions',
       html: true,
     },
     {
@@ -80,6 +84,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       name: 'insertDate',
       property: 'insertDate',
       displayName: 'Timestamp',
+      className: 'date',
     },
     { name: 'host', property: 'host', displayName: 'Host' },
     {
@@ -97,6 +102,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       name: 'expiryDate',
       property: 'expiryDate',
       displayName: 'Expires',
+      className: 'date',
     },
     { name: 'label', property: 'label', displayName: 'Label' },
   ];
@@ -156,6 +162,45 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       }${this.storageParams['processState']} List`,
     );
     // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
+
+    this.datasource.options = {
+      serverSide: true,
+    };
+    this.datasource.setServerRequest(
+      (requestInfo) =>
+        new Promise((resolve, reject) => {
+          const queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
+
+          this.storageService.getStorageList(queryParameters).subscribe({
+            next: (response) => {
+              this.targetStates = response.targetStates ?? {};
+              resolve({
+                data: response.messages,
+                totalEntries: response.totalMessages,
+                filteredEntries: response.recordsFiltered,
+              });
+              this.searching = false;
+              this.clearSearchLadda = false;
+              for (const message of response.messages) {
+                if (!(message.id in this.storageService.selectedMessages)) {
+                  this.storageService.selectedMessages[message.id] = false;
+                }
+              }
+              for (const messageId in this.storageService.selectedMessages) {
+                const messageExists = response.messages.some((message) => message.id === messageId);
+                if (!messageExists) {
+                  delete this.storageService.selectedMessages[messageId];
+                }
+              }
+            },
+            error: (error: unknown) => {
+              this.searching = false;
+              this.clearSearchLadda = false;
+              reject(error);
+            },
+          });
+        }),
+    );
 
     const searchSession = this.Session.get<Record<string, string>>('search');
 

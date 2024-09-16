@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, ContentChild, Input, OnDestroy } from '@angular/core';
 import { CdkTableModule, DataSource } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { DtContentDirective } from './dt-content.directive';
 
 export type TableOptions = {
   sizeOptions: number[];
@@ -15,6 +16,7 @@ export type DataTableColumn<T> = {
   displayName: string;
   property: keyof T | null;
   html?: boolean;
+  className?: string;
 };
 
 export type DataTableEntryInfo = {
@@ -33,7 +35,7 @@ export type DataTableServerRequestInfo = {
 export type DataTableServerResponseInfo<T> = {
   totalEntries: number;
   filteredEntries: number;
-  data: T;
+  data: T[];
 };
 
 @Component({
@@ -47,6 +49,7 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   @Input({ required: true }) public datasource!: DataTableDataSource<T>;
   @Input({ required: true }) public displayColumns: DataTableColumn<T>[] = [];
 
+  @ContentChild(DtContentDirective) protected content!: DtContentDirective<T>;
   protected totalFilteredEntries: number = 0;
   protected totalEntries: number = 0;
   protected minPageEntry: number = 0;
@@ -106,6 +109,8 @@ export class DataTableDataSource<T> extends DataSource<T> {
   private filteredData: T[] = [];
   private _currentPage: number = 1;
   private _totalPages: number = 0;
+  private serverRequestId: number = -1;
+  private serverRequestFn?: (value: DataTableServerRequestInfo) => PromiseLike<DataTableServerResponseInfo<T>>;
 
   get data(): T[] {
     return this._data.value;
@@ -113,7 +118,8 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   set data(value: T[]) {
     this._data.next(value);
-    this.updateRenderedData(value);
+
+    if (!this.options.serverSide) this.updateRenderedData(value);
   }
 
   get options(): TableOptions {
@@ -122,6 +128,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   set options(value: Partial<TableOptions>) {
     this._options.next({ ...this._options.value, ...value });
+    this.updatePage(1);
     this.updateRenderedData(this.data);
   }
 
@@ -143,6 +150,9 @@ export class DataTableDataSource<T> extends DataSource<T> {
   }
 
   connect(): Observable<T[]> {
+    if (this.options.serverSide) {
+      this.updateDataFromEndpoint();
+    }
     return this._renderData;
   }
 
@@ -158,15 +168,10 @@ export class DataTableDataSource<T> extends DataSource<T> {
   }
 
   setServerRequest(
-    requestFunction: (info: Promise<DataTableServerRequestInfo>) => Promise<DataTableServerResponseInfo<T>>,
+    requestFunction: (value: DataTableServerRequestInfo) => PromiseLike<DataTableServerResponseInfo<T>>,
   ): void {
     if (!this.options.serverSide) return;
-    const request: Promise<DataTableServerRequestInfo> = new Promise(() => ({
-      size: this.options.size,
-      offset: (this._currentPage - 1) * this.options.size,
-      sort: 'asc',
-    }));
-    request.then();
+    this.serverRequestFn = requestFunction;
   }
 
   private updateRenderedData(data: T[]): void {
@@ -177,19 +182,42 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
     const filteredData = this.filterData(data);
     this.paginateData(filteredData);
+  }
 
-    this._entriesInfo.next({
-      minPageEntry: (this.currentPage - 1) * this.options.size + 1,
-      maxPageEntry: Math.min(this.currentPage * this.options.size, this.filteredData.length),
-      totalFilteredEntries: this.filteredData.length,
-      totalEntries: this.data.length,
-    });
+  private updateDataFromEndpoint(): void {
+    Promise.resolve<DataTableServerRequestInfo>({
+      size: this.options.size,
+      offset: (this._currentPage - 1) * this.options.size,
+      sort: 'asc',
+    })
+      .then(this.serverRequestFn)
+      .then((response) => {
+        this.data = response.data;
+        this._totalPages = response.totalEntries / this.options.size;
+        this._renderData.next(this.data);
+        this._entriesInfo.next({
+          minPageEntry: 1,
+          maxPageEntry: 1,
+          totalFilteredEntries: response.filteredEntries,
+          totalEntries: response.totalEntries,
+        });
+      })
+      .catch((error) => {
+        this.data = [];
+        console.error(error);
+      });
   }
 
   private paginateData(data: T[]): T[] {
     const currentStart = (this._currentPage - 1) * this.options.size;
     const paginatedData = data.slice(currentStart, currentStart + this.options.size);
     this._renderData.next(paginatedData);
+    this._entriesInfo.next({
+      minPageEntry: (this.currentPage - 1) * this.options.size + 1,
+      maxPageEntry: Math.min(this.currentPage * this.options.size, this.filteredData.length),
+      totalFilteredEntries: this.filteredData.length,
+      totalEntries: this.data.length,
+    });
     return paginatedData;
   }
 
