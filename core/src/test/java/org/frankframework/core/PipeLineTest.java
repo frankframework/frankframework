@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -18,8 +15,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.DistributionSummary;
 import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -310,19 +305,19 @@ public class PipeLineTest {
 		};
 		adapter.setName("Adapter");
 		buildDummyPipeLine(adapter);
-		MetricsInitializer configurationMetrics = mock();
-		when(configurationMetrics.createCounter(any(), any())).then( ignored -> mock(Counter.class));
-		when(configurationMetrics.createDistributionSummary(any(), any())).then( ignored -> mock(DistributionSummary.class));
-		adapter.setConfigurationMetrics(configurationMetrics);
+		adapter.setConfiguration(configuration);
+		adapter.setApplicationContext(configuration);
+		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
 		adapter.configure();
 		return adapter;
 	}
 
 	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
 		PipeLine pipeLine = new PipeLine();
-		pipeLine.setConfigurationMetrics(mock());
-		CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
-		pipeLineProcessor.setPipeProcessor(new CorePipeProcessor());
+		pipeLine.setApplicationContext(configuration);
+		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
+		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
+		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));
 		pipeLine.setPipeLineProcessor(pipeLineProcessor);
 		EchoPipe pipe = buildTestPipe(pipeLine);
 		pipeLine.setFirstPipe(pipe.getName());
