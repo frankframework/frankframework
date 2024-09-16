@@ -148,7 +148,6 @@ const windowProvider: ValueProvider = {
     DropLastCharPipe,
     OrderByPipe,
     SearchFilterPipe,
-    TruncatePipe,
     VariablesFilterPipe,
     FormatStatisticsPipe,
     FormatStatKeysPipe,
@@ -193,8 +192,12 @@ const windowProvider: ValueProvider = {
     MonacoEditorComponent,
     DatatableComponent,
     DtContentDirective,
+
+    // standalone pipes
+    TruncatePipe,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],
+  exports: [TruncatePipe],
 })
 export class AppModule {}

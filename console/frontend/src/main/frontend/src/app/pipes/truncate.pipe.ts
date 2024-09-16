@@ -3,6 +3,7 @@ import { copyToClipboard } from '../utils';
 
 @Pipe({
   name: 'truncate',
+  standalone: true,
 })
 export class TruncatePipe implements PipeTransform {
   constructor() {}

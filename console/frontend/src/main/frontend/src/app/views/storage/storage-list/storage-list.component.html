@@ -273,7 +273,7 @@
           <ng-template #dateDt let-data="adtData" let-columnId="userData.column">
             <span *ngIf="data[columnId]" appToDate [time]="data[columnId]">{{ data[columnId] }}</span>
           </ng-template>
-          <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns">
+          <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns" [truncate]="truncated">
             <ng-template appDtContent let-element="rowElement">
               <app-storage-list-dt [message]="element"></app-storage-list-dt>
             </ng-template>

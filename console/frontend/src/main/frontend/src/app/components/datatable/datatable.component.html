@@ -24,8 +24,20 @@
         <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
           {{ column.displayName }}
         </th>
-        <td cdk-cell *cdkCellDef="let element" [hidden]="column.hidden">
-          <ng-container *ngIf="!column.html; else htmlBody">{{ element[column.property] }}</ng-container>
+        <td
+          cdk-cell
+          *cdkCellDef="let element"
+          [hidden]="column.hidden"
+          [title]="truncate ? element[column.property] : ''"
+        >
+          <ng-container *ngIf="!column.html; else htmlBody"
+            ><ng-container *ngIf="checkIfNotDate(column); else dateFormatted">{{
+              truncate ? (element[column.property] | truncate: 15) : element[column.property]
+            }}</ng-container>
+            <ng-template #dateFormatted
+              ><span appToDate [time]="element[column.property]">{{ element[column.property] }}</span></ng-template
+            >
+          </ng-container>
           <ng-template #htmlBody>
             <ng-container
               [ngTemplateOutlet]="content.templateReference"

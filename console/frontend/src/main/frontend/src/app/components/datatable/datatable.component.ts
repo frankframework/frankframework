@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { DtContentDirective } from './dt-content.directive';
+import { TruncatePipe } from '../../pipes/truncate.pipe';
+import { ToDateDirective } from '../to-date.directive';
 
 export type TableOptions = {
   sizeOptions: number[];
@@ -16,6 +18,7 @@ export type DataTableColumn<T> = {
   name: string;
   displayName: string;
   property: keyof T | null;
+
   html?: boolean;
   className?: string;
   hidden?: boolean;
@@ -45,13 +48,14 @@ export type DataTableServerResponseInfo<T> = {
 @Component({
   selector: 'app-datatable',
   standalone: true,
-  imports: [CommonModule, FormsModule, CdkTableModule],
+  imports: [CommonModule, FormsModule, CdkTableModule, TruncatePipe, ToDateDirective, ToDateDirective],
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',
 })
 export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   @Input({ required: true }) public datasource!: DataTableDataSource<T>;
   @Input({ required: true }) public displayColumns: DataTableColumn<T>[] = [];
+  @Input() public truncate: boolean = false;
 
   @ContentChild(DtContentDirective) protected content!: DtContentDirective<T>;
   protected totalFilteredEntries: number = 0;
@@ -90,6 +94,10 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
 
   updatePage(pageNumber: number): void {
     this.datasource.updatePage(pageNumber);
+  }
+
+  checkIfNotDate(column: DataTableColumn<T>): boolean {
+    return !column.className?.includes('date');
   }
 }
 
