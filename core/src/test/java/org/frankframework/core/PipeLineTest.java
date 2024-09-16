@@ -8,14 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
@@ -50,7 +48,7 @@ public class PipeLineTest {
 		PipeLine pipeline = new PipeLine();
 		pipeline.setApplicationContext(configuration);
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("success");
+		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.registerPipeLineExit(exit);
@@ -78,7 +76,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -108,15 +106,15 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit errorExit = new PipeLineExit();
-		errorExit.setPath("error");
+		errorExit.setName("error");
 		errorExit.setState(ExitState.ERROR);
 		pipeline.registerPipeLineExit(errorExit);
 		PipeLineExit successExit = new PipeLineExit();
-		successExit.setPath("exit");
+		successExit.setName("exit");
 		successExit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(successExit);
 		PipeLineExit successExit2 = new PipeLineExit();
-		successExit2.setPath("exit2");
+		successExit2.setName("exit2");
 		successExit2.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(successExit2);
 
@@ -150,7 +148,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -185,7 +183,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -216,7 +214,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("special exit name");
+		exit.setName("special exit name");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -255,7 +253,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -296,7 +294,7 @@ public class PipeLineTest {
 		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
 	}
 
-	private @NotNull Adapter buildTestAdapter() throws ConfigurationException {
+	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {
 		Adapter adapter = new Adapter() {
 			@Override
 			public RunState getRunState() {

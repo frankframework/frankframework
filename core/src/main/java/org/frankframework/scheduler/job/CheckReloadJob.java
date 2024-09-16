@@ -33,6 +33,11 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
 
+/**
+ * Frank!Framework job which periodically looks in the {@code IBISCONFIG} table to see if a new {@link Configuration} should be loaded.
+ * 
+ * @ff.info This is a default job that can be controlled with the property {@literal checkReload.active} and {@literal checkReload.interval}.
+ */
 public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
 	private static final String DATABASE_CLASSLOADER = "DatabaseClassLoader";

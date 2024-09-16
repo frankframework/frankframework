@@ -35,6 +35,7 @@ import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.TransactionAttributes;
+import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
@@ -73,13 +74,12 @@ import org.springframework.context.ApplicationContextAware;
  * However, your documentation should say if and how parameters are used!<p>
  * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself
  *
- * @ff.forward success successful processing of the message of the pipe
- * @ff.forward exception some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.
- *
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see PipeLineSession
  */
+@Forward(name = "success", description = "successful processing of the message of the pipe")
+@Forward(name = "exception", description = "some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.")
 public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasStatistics {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;

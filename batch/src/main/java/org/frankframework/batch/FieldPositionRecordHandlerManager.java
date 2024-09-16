@@ -16,13 +16,13 @@
 package org.frankframework.batch;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
- *
  *
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.

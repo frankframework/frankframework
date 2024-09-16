@@ -20,7 +20,10 @@ import java.net.URL;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -31,6 +34,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -40,9 +44,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
@@ -80,7 +81,7 @@ import lombok.Getter;
  * <pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
  *     returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
  *     <param name="MID" sessionKey="mid" />
- * 	   <param name="ACTION" xpathExpression="request/@action" />
+ *     <param name="ACTION" xpathExpression="request/@action" />
  * </pipe>
  * }
  * </pre>
@@ -90,8 +91,8 @@ import lombok.Getter;
  * {@code
  * <pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
  *     getInputFromFixedValue="&lt;msg mid=&quot;?{MID}&quot; action=&quot;?{ACTION}&quot; /&gt;">
- * 	   <param name="MID" sessionKey="mid" />
- * 	   <param name="ACTION" xpathExpression="request/@action" />
+ *     <param name="MID" sessionKey="mid" />
+ *     <param name="ACTION" xpathExpression="request/@action" />
  * </pipe>
  * }
  * </pre>
@@ -128,59 +129,59 @@ import lombok.Getter;
  * was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
  * <pre>
  * {@code
- * 	<CompareStringPipe name="compareIdAndCid" >
- * 		<param name="operand1" sessionKey="id"/>
- * 		<param name="operand2" sessionKey="cid"/>
- * 		<forward name="equals" path="IdAndCidSame" />
- * 		<forward name="lessthan" path="IdAndCidDifferent" />
- * 		<forward name="greaterthan" path="IdAndCidDifferent" />
- * 	</CompareStringPipe>
- * 	<FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame">
- * 		<forward name="success" path="displayKeys" />
- * 	</FixedResultPipe>
- * 	<FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame">
- * 		<forward name="success" path="displayKeys" />
- * 	</FixedResultPipe>
+ * <CompareStringPipe name="compareIdAndCid" >
+ *     <param name="operand1" sessionKey="id"/>
+ *     <param name="operand2" sessionKey="cid"/>
+ *     <forward name="equals" path="IdAndCidSame" />
+ *     <forward name="lessthan" path="IdAndCidDifferent" />
+ *     <forward name="greaterthan" path="IdAndCidDifferent" />
+ * </CompareStringPipe>
+ * <FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame">
+ *     <forward name="success" path="displayKeys" />
+ * </FixedResultPipe>
+ * <FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame">
+ *     <forward name="success" path="displayKeys" />
+ * </FixedResultPipe>
  *
- *  <pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
- * 		returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
- * 		<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
- * 		<param name="MID" sessionKey="id" />
- * 		<param name="CID" sessionKey="cid" />
- * 		<param name="SAME" sessionKey="IdAndCidSame" />
- * 		<forward name="success" path="EXIT" />
- * 	</pipe>
+ * <pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
+ *     returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
+ *     <param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
+ *     <param name="MID" sessionKey="id" />
+ *     <param name="CID" sessionKey="cid" />
+ *     <param name="SAME" sessionKey="IdAndCidSame" />
+ *     <forward name="success" path="EXIT" />
+ * </pipe>
  * }
  * </pre>
  *
  * Was rewritten to the following:
  * <pre>
  * {@code
- * 	<CompareStringPipe name="compareIdAndCid" >
- * 		<param name="operand1" sessionKey="id"/>
- * 		<param name="operand2" sessionKey="cid"/>
- * 		<forward name="equals" path="IdAndCidSame" />
- * 		<forward name="lessthan" path="IdAndCidDifferent" />
- * 		<forward name="greaterthan" path="IdAndCidDifferent" />
- * 	</CompareStringPipe>
+ * <CompareStringPipe name="compareIdAndCid" >
+ *     <param name="operand1" sessionKey="id"/>
+ *     <param name="operand2" sessionKey="cid"/>
+ *     <forward name="equals" path="IdAndCidSame" />
+ *     <forward name="lessthan" path="IdAndCidDifferent" />
+ *     <forward name="greaterthan" path="IdAndCidDifferent" />
+ * </CompareStringPipe>
  *
- * 	<PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
- * 		<forward name="success" path="putOriginalMessageInSession" />
- * 	</PutInSessionPipe>
- * 	<PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
- * 		<forward name="success" path="putOriginalMessageInSession" />
- * 	</PutInSessionPipe>
+ * <PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame">
+ *     <forward name="success" path="putOriginalMessageInSession" />
+ * </PutInSessionPipe>
+ * <PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame">
+ *     <forward name="success" path="putOriginalMessageInSession" />
+ * </PutInSessionPipe>
  *
- * 	<PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/>
+ * <PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/>
  *
- * 	<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
- * 		getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
- * 		<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
- * 		<param name="MID" sessionKey="id" />
- * 		<param name="CID" sessionKey="cid" />
- * 		<param name="SAME" sessionKey="IdAndCidSame" />
- * 		<forward name="success" path="EXIT" />
- * 	</pipe>
+ * <pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
+ *     getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
+ *     <param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
+ *     <param name="MID" sessionKey="id" />
+ *     <param name="CID" sessionKey="cid" />
+ *     <param name="SAME" sessionKey="IdAndCidSame" />
+ *     <forward name="success" path="EXIT" />
+ * </pipe>
  * }
  * </pre>
  * <p>
@@ -215,12 +216,11 @@ import lombok.Getter;
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
  *
- * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
- *
  * @author Johan Verrips
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
+@Forward(name = "filenotfound", description = "the configured file was not found (when this forward isn't specified an exception will be thrown)")
 public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
@@ -246,6 +246,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
 	 * <code>returnString</code>, so that the <code>returnString</code>
 	 * may always be returned.
+	 *
 	 * @throws ConfigurationException
 	 */
 	@Override

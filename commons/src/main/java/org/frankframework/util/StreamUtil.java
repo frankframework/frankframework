@@ -16,7 +16,7 @@
 package org.frankframework.util;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
@@ -125,12 +126,7 @@ public class StreamUtil {
 	}
 
 	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
-		return streamToByteArray(inputStream, skipBOM, 0);
-	}
-
-	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM, int initialCapacity) throws IOException {
-		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
-		return streamToBytes(bOMInputStream, initialCapacity);
+		return skipBOM ? streamToBytes(new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)) : streamToBytes(inputStream);
 	}
 
 	/**
@@ -171,12 +167,17 @@ public class StreamUtil {
 		}
 		byte[] buffer = new byte[chunkSize];
 		long totalBytesCopied = 0L;
-		int bytesRead = 1;
-		try (InputStream is = in) {
-			while (bytesRead > 0) {
-				bytesRead = is.read(buffer, 0, chunkSize);
-				if (bytesRead > 0) {
-					out.write(buffer, 0, bytesRead);
+		int bytesRead=1;
+		try (InputStream is = in){
+			if (is instanceof ByteArrayInputStream bis) {
+				// Optimise the from-memory reading case
+				return bis.transferTo(out);
+			}
+			// Could also use `is.transferTo(Out);` here but that uses small default buffer size
+			while (bytesRead>0) {
+				bytesRead=is.read(buffer,0,chunkSize);
+				if (bytesRead>0) {
+					out.write(buffer,0,bytesRead);
 					totalBytesCopied += bytesRead;
 				}
 			}
@@ -221,7 +222,13 @@ public class StreamUtil {
 		char[] buffer = new char[chunkSize];
 
 		int charsRead;
-		try (Reader r = reader) {
+		try (Reader r = reader){
+			if (reader instanceof StringReader sr) {
+				// Optimise the from-memory reading case
+				sr.transferTo(writer);
+				return;
+			}
+			// Could also use `is.transferTo(Out);` here but that uses small default buffer size
 			while (true) {
 				charsRead = r.read(buffer, 0, chunkSize);
 				if (charsRead <= 0) {
@@ -274,12 +281,8 @@ public class StreamUtil {
 	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
 		if (input != null) {
 			try (InputStream is = input) {
-				byte[] buffer = new byte[BUFFER_SIZE];
-				int bytesRead;
-				while ((bytesRead = is.read(buffer, 0, BUFFER_SIZE)) > -1) {
-					output.write(buffer, 0, bytesRead);
-				}
-				if (eof != null) {
+				is.transferTo(output);
+				if(eof != null) {
 					output.write(eof);
 				}
 			}
@@ -318,22 +321,8 @@ public class StreamUtil {
 	 * </p>
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
-		return streamToBytes(inputStream, 0);
-	}
-
-	public static byte[] streamToBytes(InputStream inputStream, int initialCapacity) throws IOException {
 		try (InputStream is = inputStream) {
-			ByteArrayOutputStream out = new ByteArrayOutputStream(initialCapacity > 0 ? initialCapacity : 8192);
-			byte[] buffer = new byte[8192];
-			while (true) {
-				int r = is.read(buffer);
-				if (r == -1) {
-					break;
-				}
-				out.write(buffer, 0, r);
-			}
-
-			return out.toByteArray();
+			return is.readAllBytes();
 		}
 	}
 

@@ -26,6 +26,9 @@ import static org.mockito.Mockito.spy;
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -38,8 +41,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
@@ -700,7 +701,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = """
@@ -722,7 +722,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
-	public void multipartithoutFirstBodyPartName() throws Throwable {
+	public void multipartWithoutFirstBodyPartName() throws Throwable {
 		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -756,7 +756,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
 
 		String xmlMultipart = """
 				<parts><part type="file" name="document.pdf" \
@@ -817,7 +816,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 		sender.setPostType(PostType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
@@ -887,7 +885,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 		sender.setPostType(PostType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
@@ -954,7 +951,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = """
@@ -987,7 +983,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 		sender.setParametersToSkipWhenEmpty("empty-param");
 

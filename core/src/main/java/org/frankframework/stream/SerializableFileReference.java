@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.lang.ref.Cleaner;
@@ -30,15 +31,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
-
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * A reference to a file {@link Path} that can be serialized. When serialized it will write all the file data to
@@ -222,6 +223,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		}
 	}
 
+	@Serial
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(customSerializationVersion);
@@ -241,6 +243,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @param in ObjectInputStream to create object from
 	 * @throws IOException if there is a problem reading from the stream
 	 */
+	@Serial
 	private void readObject(ObjectInputStream in) throws IOException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
 		size = in.readLong();

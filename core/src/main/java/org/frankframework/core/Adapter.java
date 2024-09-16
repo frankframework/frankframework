@@ -441,7 +441,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	public long[] getNumOfMessagesStartProcessingByHour() {
 		log.trace("Get Adapter hourly statistics, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statisticsLock) { //help, why is this synchronized
+			synchronized (statisticsLock) { // help, why is this synchronized
 				return numOfMessagesStartProcessingByHour;
 			}
 		} finally {
@@ -526,35 +526,33 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 */
 	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
-		try {
-			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
-				 IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
-			) {
-				PipeLineResult result = new PipeLineResult();
-				boolean success = false;
-				try {
-					result = processMessageWithExceptions(messageId, message, pipeLineSession);
-					success = true;
-				} catch (Throwable t) {
-					result.setState(ExitState.ERROR);
-					String msg = "Illegal exception ["+t.getClass().getName()+"]";
-					INamedObject objectInError = null;
-					if (t instanceof ListenerException) {
-						Throwable cause = t.getCause();
-						if  (cause instanceof PipeRunException pre) {
-							msg = "error during pipeline processing";
-							objectInError = pre.getPipeInError();
-						} else if (cause instanceof ManagedStateException) {
-							msg = "illegal state";
-							objectInError = this;
-						}
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
+			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
+		) {
+			PipeLineResult result = new PipeLineResult();
+			boolean success = false;
+			try {
+				result = processMessageWithExceptions(messageId, message, pipeLineSession);
+				success = true;
+			} catch (Throwable t) {
+				result.setState(ExitState.ERROR);
+				String msg = "Illegal exception ["+t.getClass().getName()+"]";
+				INamedObject objectInError = null;
+				if (t instanceof ListenerException) {
+					Throwable cause = t.getCause();
+					if  (cause instanceof PipeRunException pre) {
+						msg = "error during pipeline processing";
+						objectInError = pre.getPipeInError();
+					} else if (cause instanceof ManagedStateException) {
+						msg = "illegal state";
+						objectInError = this;
 					}
-					result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
-				} finally {
-					logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline "+(success ? "Success" : "Error"), "result", result.getResult());
 				}
-				return result;
+				result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+			} finally {
+				logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline "+(success ? "Success" : "Error"), "result", result.getResult());
 			}
+			return result;
 		} finally {
 			if (ThreadContext.getDepth() == 0) {
 				ThreadContext.clearAll();
@@ -626,7 +624,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		} finally {
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
-			//reset the InProcess fields, and increase processedMessagesCount
+			// Reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
 			Objects.requireNonNull(result, "'result' should never be NULL here, programming error.");
 			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
