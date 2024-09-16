@@ -17,20 +17,26 @@ package org.frankframework.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -47,7 +53,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Locker;
 import org.frankframework.util.Misc;
-import org.springframework.context.ApplicationContext;
+import org.frankframework.util.StringUtil;
 
 /**
  * Required in each {@link Adapter} to transform incoming messages. A pipeline
@@ -139,6 +145,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
+
+	private @Getter String expectsSessionKeys;
+	private Set<String> expectsSessionKeysSet;
 
 	public enum ExitState {
 		SUCCESS,
@@ -263,6 +272,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		inputMessageConsumedMultipleTimes |= pipes.stream()
 				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 
+		if (StringUtils.isNotBlank(expectsSessionKeys)) {
+			expectsSessionKeysSet = new HashSet<>(StringUtil.split(expectsSessionKeys));
+		} else {
+			expectsSessionKeysSet = Collections.emptySet();
+		}
+
 		super.configure();
 		log.debug("successfully configured");
 		configurationSucceeded = true;
@@ -386,7 +401,18 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 		}
+		if (!expectsSessionKeysSet.isEmpty()) {
+			verifyExpectedSessionKeysPresent(pipeLineSession);
+		}
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
+	}
+
+	private void verifyExpectedSessionKeysPresent(PipeLineSession session) throws PipeRunException {
+		Set<String> missing = new HashSet<>(expectsSessionKeysSet);
+		missing.removeAll(session.keySet());
+		if (!missing.isEmpty()) {
+			throw new PipeRunException(null, "Adapter [" + getAdapter().getName() + "] called without expected session keys " + missing);
+		}
 	}
 
 
@@ -672,6 +698,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
+	}
+
+	/**
+	 * The pipeline of this adapter expects to use the following session keys to be set on call. This
+	 * is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
+	 * so callers can see what session keys to set on call, and for verification that those session keys are present.
+	 *
+	 * @param expectsSessionKeys Session keys to set on call of the adapter, comma-separated.
+	 */
+	public void setExpectsSessionKeys(String expectsSessionKeys) {
+		this.expectsSessionKeys = expectsSessionKeys;
 	}
 
 }

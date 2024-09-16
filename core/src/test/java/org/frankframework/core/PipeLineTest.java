@@ -1,24 +1,41 @@
 package org.frankframework.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLine.ExitState;
-import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.pipes.EchoPipe;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestConfiguration;
+import jakarta.annotation.Nonnull;
+
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import org.jetbrains.annotations.NotNull;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.pipes.AbstractPipe;
+import org.frankframework.pipes.EchoPipe;
+import org.frankframework.processors.CorePipeLineProcessor;
+import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.RunState;
+
 @SuppressWarnings("deprecation") //Part of the tests!
 public class PipeLineTest {
+	private int pipeNr = 0;
 
 	TestConfiguration configuration;
 
@@ -253,5 +270,70 @@ public class PipeLineTest {
 		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
 		assertTrue(pipe2.getForwards().isEmpty(), "pipe2 should not have a pipe-forward");
+	}
+
+	@Test
+	public void testAdapterExpectedSessionKeysAllPresent() throws ConfigurationException {
+		// Arrange
+		Adapter adapter = buildTestAdapter();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("k1", "v1");
+		session.put("k2", "v2");
+		session.put("k3", "v3");
+
+		// Act // Assert
+		assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+	}
+
+	@Test
+	public void testAdapterExpectedSessionKeysMissingKey() throws ConfigurationException {
+		// Arrange
+		Adapter adapter = buildTestAdapter();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("k1", "v1");
+
+		// Act // Assert
+		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+
+		// Assert
+		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+	}
+
+	private @NotNull Adapter buildTestAdapter() throws ConfigurationException {
+		Adapter adapter = new Adapter() {
+			@Override
+			public RunState getRunState() {
+				return RunState.STARTED;
+			}
+		};
+		adapter.setName("Adapter");
+		buildDummyPipeLine(adapter);
+		MetricsInitializer configurationMetrics = mock();
+		when(configurationMetrics.createCounter(any(), any())).then( ignored -> mock(Counter.class));
+		when(configurationMetrics.createDistributionSummary(any(), any())).then( ignored -> mock(DistributionSummary.class));
+		adapter.setConfigurationMetrics(configurationMetrics);
+		adapter.configure();
+		return adapter;
+	}
+
+	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
+		PipeLine pipeLine = new PipeLine();
+		pipeLine.setConfigurationMetrics(mock());
+		CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
+		pipeLineProcessor.setPipeProcessor(new CorePipeProcessor());
+		pipeLine.setPipeLineProcessor(pipeLineProcessor);
+		EchoPipe pipe = buildTestPipe(pipeLine);
+		pipeLine.setFirstPipe(pipe.getName());
+		pipeLine.setExpectsSessionKeys("k1, k2,k3");
+		adapter.setPipeLine(pipeLine);
+	}
+
+	private @Nonnull EchoPipe buildTestPipe(@Nonnull PipeLine pipeLine) throws ConfigurationException {
+		EchoPipe pipe = new EchoPipe();
+		pipe.setName("Pipe" + ++pipeNr);
+		pipeLine.addPipe(pipe);
+		return pipe;
 	}
 }
