@@ -705,7 +705,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
 	 * so callers can see what session keys to set on call, and for verification that those session keys are present.
 	 *
-	 * @param expectsSessionKeys Session keys to set on call of the adapter, comma-separated.
+	 * @param expectsSessionKeys Session keys to set on call of the pipeline, comma-separated.
 	 */
 	public void setExpectsSessionKeys(String expectsSessionKeys) {
 		this.expectsSessionKeys = expectsSessionKeys;
