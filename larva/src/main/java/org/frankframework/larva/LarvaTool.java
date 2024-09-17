@@ -1886,7 +1886,7 @@ public class LarvaTool {
 				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
 				i++;
 			} else if (key1 != null || key2 != null) {
-				throw new IllegalArgumentException("Error in Larva scenario file: key1 or key2 of [" + key + i + "] is missing: key1=[" + key1 + "], key2=[" + key2 + "]");
+				throw new IllegalArgumentException("Error in Larva scenario file: Spec for [" + key + i + "] is incomplete; key1=[" + key1 + "], key2=[" + key2 + "]");
 			} else {
 				lastKeyIndexProcessed = true;
 			}
@@ -1901,7 +1901,7 @@ public class LarvaTool {
 				String key2 = keyPair.get("key2");
 
 				if (key1 == null || key2 == null) {
-					throw new IllegalArgumentException("Error in Larva scenario file: key1 or key2 of [" + key + "." + spec.getKey() + "] is missing: key1=[" + key1 + "], key2=[" + key2 + "]");
+					throw new IllegalArgumentException("Error in Larva scenario file: Spec [" + key + "." + spec.getKey() + "] is incomplete; key1=[" + key1 + "], key2=[" + key2 + "]");
 				}
 
 				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
