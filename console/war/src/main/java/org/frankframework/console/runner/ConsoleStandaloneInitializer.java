@@ -48,6 +48,7 @@ public class ConsoleStandaloneInitializer {
 	// Should start a XmlServletWebServerApplicationContext.
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication();
+		app.setAdditionalProfiles("storage.file");
 		app.setAllowBeanDefinitionOverriding(true);
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();

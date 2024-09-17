@@ -15,7 +15,16 @@
 */
 package org.frankframework.console.configuration;
 
-import java.util.Collection;
+import jakarta.servlet.Filter;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import org.frankframework.console.filters.CacheControlFilter;
 import org.frankframework.console.filters.CorsFilter;
@@ -24,15 +33,6 @@ import org.frankframework.console.filters.CsrfCookieFilter;
 import org.frankframework.console.filters.SecurityLogFilter;
 import org.frankframework.console.filters.WeakShallowEtagHeaderFilter;
 import org.frankframework.util.SpringUtils;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import jakarta.servlet.Filter;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Configuration class (without annotation so it's not picked up automatically) to register all Filters.
@@ -91,10 +91,7 @@ public class RegisterServletFilters implements ApplicationContextAware {
 		Class<? extends Filter> filter = df.getFilterClass();
 
 		Filter filterInstance = SpringUtils.createBean(applicationContext, filter);
-		FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filterInstance);
-		Collection<?> urls = applicationContext.getBean(df.getServletBeanName(), ServletRegistration.class).getUrlMappings();
-		registration.addUrlPatterns(urls.toArray(String[]::new));
-
-		return registration;
+		ServletRegistrationBean<?> servletInstance = applicationContext.getBean(df.getServletBeanName(), ServletRegistration.class);
+		return new FilterRegistrationBean<>(filterInstance, servletInstance);
 	}
 }

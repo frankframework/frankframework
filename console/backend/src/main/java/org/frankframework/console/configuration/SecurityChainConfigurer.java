@@ -16,15 +16,15 @@
 package org.frankframework.console.configuration;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.lifecycle.servlets.AuthenticationType;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
-import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -46,14 +46,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Setter;
+import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 
 @Configuration
 @EnableWebSecurity // Enables Spring Security
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private @Setter ApplicationContext applicationContext;
 	private Environment environment;

@@ -14,60 +14,61 @@
 	default-lazy-init="true"
 	>
 
-	<!-- enable the use of (application) properties -->
-	<context:property-placeholder/>
+	<!-- enable the use of (testtool) properties -->
+	<context:property-placeholder location="classpath:testtool.properties"/>
 
-	<context:component-scan base-package="nl.nn.testtool,org.frankframework.ladybug" />
+	<context:component-scan base-package="org.frankframework.ladybug" />
+	<context:component-scan base-package="nl.nn.testtool" />
 
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
-	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean">
-		<property name="filter" ref="springSecurityFilterChain" />
-		<property name="enabled" value="false" />
-	</bean>
+<!-- 	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean"> -->
+<!-- 		<property name="filter" ref="springSecurityFilterChain" /> -->
+<!-- 		<property name="enabled" value="false" /> -->
+<!-- 	</bean> -->
 
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
 		<property name="configName" value="Ladybug"/>
 
-		<property name="maxCheckpoints" value="${ibistesttool.maxCheckpoints}" />
-		<property name="maxMemoryUsage" value="${ibistesttool.maxMemoryUsage}" />
-		<property name="maxMessageLength" value="${ibistesttool.maxMessageLength}" />
-		<property name="regexFilter" value="${ibistesttool.regexFilter}" />
+		<property name="maxCheckpoints" value="${testtool.maxCheckpoints}" />
+		<property name="maxMemoryUsage" value="${testtool.maxMemoryUsage}" />
+		<property name="maxMessageLength" value="${testtool.maxMessageLength}" />
+		<property name="regexFilter" value="${testtool.regexFilter}" />
 	</bean>
 
 	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" autowire="byName">
 		<property name="name" value="White box"/>
 	</bean>
 
-	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
-		<property name="name" value="Gray box"/>
-		<property name="checkpointMatchers">
-			<list>
-				<bean class="org.frankframework.ibistesttool.filter.GrayBox"/>
-			</list>
-		</property>
-	</bean>
+<!-- 	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName"> -->
+<!-- 		<property name="name" value="Gray box"/> -->
+<!-- 		<property name="checkpointMatchers"> -->
+<!-- 			<list> -->
+<!-- 				<bean class="org.frankframework.ladybug.filter.GrayBox"/> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
 
-	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
-		<property name="name" value="Black box"/>
-		<property name="checkpointMatchers">
-			<list>
-				<bean class="org.frankframework.ibistesttool.filter.BlackBox"/>
-			</list>
-		</property>
-	</bean>
+<!-- 	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName"> -->
+<!-- 		<property name="name" value="Black box"/> -->
+<!-- 		<property name="checkpointMatchers"> -->
+<!-- 			<list> -->
+<!-- 				<bean class="org.frankframework.ladybug.filter.BlackBox"/> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
 
 	<bean name="views" class="nl.nn.testtool.filter.Views">
 		<property name="views">
 			<list>
 				<ref bean="whiteBoxView"/>
-				<ref bean="grayBoxView"/>
-				<ref bean="blackBoxView"/>
+<!-- 				<ref bean="grayBoxView"/> -->
+<!-- 				<ref bean="blackBoxView"/> -->
 			</list>
 		</property>
 	</bean>
 
 	<bean name="xsltResource" class="java.lang.String">
-		<constructor-arg value="${ibistesttool.reportTransformation}"/>
+		<constructor-arg value="${testtool.reportTransformation}"/>
 	</bean>
 
 	<util:list id="observerRoles">
@@ -92,13 +93,13 @@
 	<beans profile="storage.file">
 		<bean name="debugStorage,fileStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 			<property name="name" value="Debug"/>
-			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/file-storage/ladybug.ttm"/>
+			<property name="reportsFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.ttm"/>
 		</bean>
 		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
 			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${ladybug.dir:ladybug}/data/file-storage/ladybug.ttm"/>
+			<property name="reportsFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.ttm"/>
 		</bean>
 	</beans>
 
@@ -123,13 +124,19 @@
 		<!--
 		Without connection pooling (considerably slows down GUI performance). E.g. when using:
 		<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
-			<property name="URL" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+			<property name="URL" value="jdbc:h2:../${testtool.directory:ladybug}/data/database-storage/ladybug"/>
 		</bean>
 		-->
 		<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 			<property name="driverClassName" value="org.h2.Driver"/>
-			<property name="url" value="jdbc:h2:../${ladybug.dir:ladybug}/data/database-storage/ladybug"/>
+			<property name="url" value="jdbc:h2:../${testtool.directory:ladybug}/data/database-storage/ladybug"/>
 		</bean>
+<!-- 		<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
+<!-- 			<property name="driverClassName" value="${jdbc.driverClassName}" /> -->
+<!-- 			<property name="url" value="${jdbc.url}" /> -->
+<!-- 			<property name="username" value="${jdbc.username}" /> -->
+<!-- 			<property name="password" value="${jdbc.password}" /> -->
+<!-- 		</bean> -->
 
 		<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
 			<property name="dataSource" ref="ladybugDataSource" />

@@ -14,4 +14,8 @@
 	</bean>
 
 	<import resource="FrankConsoleContext.xml" />
+
+	<beans profile="storage.file,storage.database">
+		<import resource="springTestToolStandalone.xml" />
+	</beans>
 </beans>

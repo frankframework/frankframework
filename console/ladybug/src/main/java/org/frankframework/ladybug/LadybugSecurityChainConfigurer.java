@@ -13,24 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ibistesttool.config;
+package org.frankframework.ladybug;
 
 import java.lang.reflect.Method;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.ServletContext;
+
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.servlets.AuthenticationType;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -48,10 +47,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.context.ServletContextAware;
 
-import jakarta.servlet.Filter;
-import jakarta.servlet.ServletContext;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 
 /**
  * Enables WebSecurity, still depends on the existence of the {@link AbstractSecurityWebApplicationInitializer#DEFAULT_FILTER_NAME}.
@@ -70,12 +73,12 @@ import lombok.extern.log4j.Log4j2;
  * }
  * }</pre>
  */
-@Log4j2
 @Configuration
-@EnableWebSecurity // Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
+@EnableWebSecurity //Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurity>, ApplicationContextAware, EnvironmentAware, ServletContextAware {
+public class LadybugSecurityChainConfigurer implements WebSecurityConfigurer<WebSecurity>, ApplicationContextAware, EnvironmentAware, ServletContextAware {
+	private static final Logger log = LoggerFactory.getLogger("ladybug");
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private @Setter ApplicationContext applicationContext;
@@ -117,9 +120,14 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 	public void configure(WebSecurity webSecurity) throws Exception {
 		webSecurity.debug(log.isTraceEnabled());
 
-		SecurityFilterChain chain = configureChain();
-		log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
-		webSecurity.addSecurityFilterChainBuilder(() -> chain);
+//		SecurityFilterChain chain = configureChain();
+//		log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
+//		webSecurity.addSecurityFilterChainBuilder(() -> chain);
+	}
+
+	@Bean
+	public SecurityFilterChain createSecurityChain(HttpSecurity http) throws Exception {
+		return configureChain();
 	}
 
 	private SecurityFilterChain configureChain() throws Exception {
@@ -131,10 +139,10 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
 
-		httpSecurity.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
-		httpSecurity.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
-		httpSecurity.logout(LogoutConfigurer::disable); // Disable the logout filter
-		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
+		httpSecurity.csrf(CsrfConfigurer::disable); //Disable CSRF, should be configured in the Ladybug
+		httpSecurity.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
+		httpSecurity.logout(LogoutConfigurer::disable); //Disable the logout filter
+		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
 		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 
