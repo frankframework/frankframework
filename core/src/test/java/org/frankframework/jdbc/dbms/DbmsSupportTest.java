@@ -49,6 +49,7 @@ public class DbmsSupportTest {
 	private IDbmsSupport dbmsSupport;
 
 	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
+	private static final String TABLE_NAME= "TestTable";
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
@@ -714,8 +715,6 @@ public class DbmsSupportTest {
 		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
 	}
-
-	private static final String TABLE_NAME= "TestTable";
 
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/AddTableForDatabaseContext.xml", tableName = TABLE_NAME)
