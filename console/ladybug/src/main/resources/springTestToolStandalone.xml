@@ -17,12 +17,6 @@
 	<context:component-scan base-package="org.frankframework.ladybug" />
 	<context:component-scan base-package="nl.nn.testtool" />
 
-	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
-<!-- 	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean"> -->
-<!-- 		<property name="filter" ref="springSecurityFilterChain" /> -->
-<!-- 		<property name="enabled" value="false" /> -->
-<!-- 	</bean> -->
-
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
 		<property name="configName" value="Ladybug"/>
 
@@ -36,23 +30,23 @@
 		<property name="name" value="White box"/>
 	</bean>
 
-<!-- 	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName"> -->
-<!-- 		<property name="name" value="Gray box"/> -->
-<!-- 		<property name="checkpointMatchers"> -->
-<!-- 			<list> -->
-<!-- 				<bean class="org.frankframework.ladybug.filter.GrayBox"/> -->
-<!-- 			</list> -->
-<!-- 		</property> -->
-<!-- 	</bean> -->
+	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
+		<property name="name" value="Gray box"/>
+		<property name="checkpointMatchers">
+			<list>
+				<bean class="org.frankframework.ladybug.filter.GrayBox"/>
+			</list>
+		</property>
+	</bean>
 
-<!-- 	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName"> -->
-<!-- 		<property name="name" value="Black box"/> -->
-<!-- 		<property name="checkpointMatchers"> -->
-<!-- 			<list> -->
-<!-- 				<bean class="org.frankframework.ladybug.filter.BlackBox"/> -->
-<!-- 			</list> -->
-<!-- 		</property> -->
-<!-- 	</bean> -->
+	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
+		<property name="name" value="Black box"/>
+		<property name="checkpointMatchers">
+			<list>
+				<bean class="org.frankframework.ladybug.filter.BlackBox"/>
+			</list>
+		</property>
+	</bean>
 
 	<bean name="views" class="nl.nn.testtool.filter.Views">
 		<property name="views">
@@ -102,7 +96,7 @@
 
 	<beans profile="storage.database">
 		<bean
-			name="databaseStorage"
+			name="debugStorage"
 			class="nl.nn.testtool.storage.database.DatabaseStorage"
 			autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
@@ -124,9 +118,12 @@
 			<property name="URL" value="jdbc:h2:../${testtool.directory:ladybug}/data/database-storage/ladybug"/>
 		</bean>
 		-->
-		<bean name="ladybugDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-			<property name="driverClassName" value="org.h2.Driver"/>
-			<property name="url" value="jdbc:h2:../${testtool.directory:ladybug}/data/database-storage/ladybug"/>
+		<bean id="ladybugDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+<!-- 		<bean name="ladybugDataSource" class="org.apache.tomcat.dbcp.dbcp2.BasicDataSource" destroy-method="close"> -->
+			<property name="driverClassName" value="${testtool.jdbc.driver}"/>
+			<property name="url" value="${testtool.jdbc.url}"/>
+			<property name="username" value="${testtool.jdbc.username}" />
+			<property name="password" value="${testtool.jdbc.password}" />
 		</bean>
 <!-- 		<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
 <!-- 			<property name="driverClassName" value="${jdbc.driverClassName}" /> -->
