@@ -32,7 +32,7 @@
         >
           <ng-container *ngIf="!column.html; else htmlBody"
             ><ng-container *ngIf="checkIfNotDate(column); else dateFormatted">{{
-              truncate ? (element[column.property] | truncate: 15) : element[column.property]
+              truncate ? (element[column.property] | truncate: truncateLength) : element[column.property]
             }}</ng-container>
             <ng-template #dateFormatted
               ><span appToDate [time]="element[column.property]">{{ element[column.property] }}</span></ng-template
