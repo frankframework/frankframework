@@ -200,8 +200,4 @@ public interface IDbmsSupport {
 	default boolean isRowVersionTimestamp(ResultSetMetaData resultSetMetaData, int columnNumber) throws SQLException {
 		return false;
 	}
-
-	default boolean supportsRowVersionTimeStamp() {
-		return false;
-	}
 }
