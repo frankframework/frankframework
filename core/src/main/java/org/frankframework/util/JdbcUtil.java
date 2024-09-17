@@ -190,7 +190,7 @@ public class JdbcUtil {
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
 			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
-				return rs.getString(3);
+				return rs.getString(colNum);
 			}
 			try {
 				return JdbcUtil.getBlobAsString(dbmsSupport, rs, colNum, blobCharset, decompressBlobs, getBlobSmart, encodeBlobBase64);
