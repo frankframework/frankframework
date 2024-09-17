@@ -53,26 +53,37 @@
   </table>
 
   <div class="dt-pagination">
-    <div>
+    <div class="dt-pagination-info">
       Showing {{ minPageEntry }} to {{ maxPageEntry }} of {{ totalFilteredEntries }} entries
       <ng-container *ngIf="totalFilteredEntries !== totalEntries">(of {{ totalEntries }} in total)</ng-container>
     </div>
     <div class="dt-pagination-control">
-      <button
-        class="btn btn-secondary"
-        [disabled]="datasource.currentPage <= 1"
-        (click)="updatePage(datasource.currentPage - 1)"
-      >
-        Previous
-      </button>
-      <span class="btn">{{ datasource.currentPage }}</span>
-      <button
-        class="btn btn-secondary"
-        [disabled]="datasource.currentPage >= datasource.totalPages"
-        (click)="updatePage(datasource.currentPage + 1)"
-      >
-        Next
-      </button>
+      <div class="dt-control-wrapper">
+        <button
+          class="dt-btn"
+          [disabled]="datasource.currentPage <= 1"
+          (click)="updatePage(datasource.currentPage - 1)"
+        >
+          Previous
+        </button>
+        <span class="dt-btn first-page" (click)="updatePage(1)" *ngIf="datasource.currentPage > 1">1</span>
+        <span class="dt-btn fill" *ngIf="datasource.currentPage > 2">...</span>
+        <span class="dt-btn current-page">{{ datasource.currentPage }}</span>
+        <span class="dt-btn fill" *ngIf="datasource.currentPage < datasource.totalPages - 1">...</span>
+        <span
+          class="dt-btn last-page"
+          (click)="updatePage(datasource.totalPages)"
+          *ngIf="datasource.currentPage < datasource.totalPages"
+          >{{ datasource.totalPages }}</span
+        >
+        <button
+          class="dt-btn"
+          [disabled]="datasource.currentPage >= datasource.totalPages"
+          (click)="updatePage(datasource.currentPage + 1)"
+        >
+          Next
+        </button>
+      </div>
     </div>
   </div>
 </div>
