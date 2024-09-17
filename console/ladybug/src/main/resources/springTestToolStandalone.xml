@@ -14,9 +14,6 @@
 	default-lazy-init="true"
 	>
 
-	<!-- enable the use of (testtool) properties -->
-	<context:property-placeholder location="classpath:testtool.properties"/>
-
 	<context:component-scan base-package="org.frankframework.ladybug" />
 	<context:component-scan base-package="nl.nn.testtool" />
 
