@@ -49,7 +49,7 @@ public class DbmsSupportTest {
 	private IDbmsSupport dbmsSupport;
 
 	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
-	private static final String TABLE_NAME= "TestTable";
+	private static final String ROW_VERSION_TEST_TABLE_NAME = "TestTable";
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
@@ -717,12 +717,12 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	@WithLiquibase(file = "Migrator/AddTableForDatabaseContext.xml", tableName = TABLE_NAME)
+	@WithLiquibase(file = "Migrator/AddTableForDatabaseContext.xml", tableName = ROW_VERSION_TEST_TABLE_NAME)
 	public void testRowVersionTimestamp() throws SQLException, JdbcException, IOException {
 		assumeTrue(dbmsSupport.getDbms() == Dbms.MSSQL, "This test is only relevant for MSSQL");
 
 		try (Connection connection = env.getConnection()) {
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + TABLE_NAME, QueryType.SELECT)) {
+			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + ROW_VERSION_TEST_TABLE_NAME, QueryType.SELECT)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = resultSet.getMetaData();
 					resultSet.next();
