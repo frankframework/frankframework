@@ -75,7 +75,7 @@
 	<task:scheduler id="closeReportsScheduler"/>
 
 	<task:scheduled-tasks scheduler="closeReportsScheduler">
-		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="1"/>
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000"/>
 	</task:scheduled-tasks>
 
 	<bean name="dataSourceName" class="java.lang.String">
