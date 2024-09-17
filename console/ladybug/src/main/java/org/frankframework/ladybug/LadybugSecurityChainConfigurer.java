@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,9 +35,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
@@ -77,7 +75,7 @@ import org.frankframework.util.StringUtil;
 @EnableWebSecurity //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class LadybugSecurityChainConfigurer implements WebSecurityConfigurer<WebSecurity>, ApplicationContextAware, EnvironmentAware, ServletContextAware {
+public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware, ServletContextAware {
 	private static final Logger log = LoggerFactory.getLogger("ladybug");
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
@@ -111,22 +109,8 @@ public class LadybugSecurityChainConfigurer implements WebSecurityConfigurer<Web
 		return authenticator;
 	}
 
-	@Override
-	public void init(WebSecurity webSecurity) {
-		if(servletContext != null) servletContext.log("Enabling Ladybug Security");
-	}
-
-	@Override
-	public void configure(WebSecurity webSecurity) throws Exception {
-		webSecurity.debug(log.isTraceEnabled());
-
-//		SecurityFilterChain chain = configureChain();
-//		log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
-//		webSecurity.addSecurityFilterChainBuilder(() -> chain);
-	}
-
 	@Bean
-	public SecurityFilterChain createSecurityChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http) throws Exception {
 		return configureChain();
 	}
 

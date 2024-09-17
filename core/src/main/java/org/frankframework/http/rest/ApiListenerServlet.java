@@ -749,7 +749,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	 */
 	@Override
 	public String getUrlMapping() {
-		return "/api,/api/*";
+		return "/api/*";
 	}
 
 	private String createAbortMessage(String remoteUser, int statusCode) {

@@ -74,7 +74,7 @@ import lombok.extern.log4j.Log4j2;
 @Configuration
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurity>, ApplicationContextAware, EnvironmentAware, ServletContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 

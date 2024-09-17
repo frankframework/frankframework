@@ -16,15 +16,12 @@
 package org.frankframework.console.configuration;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -146,7 +143,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	}
 
 	@Bean
-	public SecurityFilterChain createSecurityChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
