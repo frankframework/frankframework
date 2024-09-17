@@ -48,9 +48,12 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
@@ -69,7 +72,6 @@ import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 /**
  * Database-oriented utility functions.
@@ -185,16 +187,17 @@ public class JdbcUtil {
 		}
 	}
 
-
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
+				return rs.getString(colNum);
+			}
 			try {
 				return JdbcUtil.getBlobAsString(dbmsSupport, rs, colNum, blobCharset, decompressBlobs, getBlobSmart, encodeBlobBase64);
 			} catch (JdbcException e) {
 				log.debug("Caught JdbcException, assuming no blob found", e);
 				return nullValue;
 			}
-
 		}
 		if (dbmsSupport.isClobType(rsmeta, colNum)) {
 			try {
@@ -230,10 +233,10 @@ public class JdbcUtil {
 					else if (columnType == Types.DATE && !DATEFORMAT.isEmpty())
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				} catch (Exception e) {
-					//Do nothing, the default: will handle it
+					// Do nothing, the default: will handle it
 				}
 			}
-			//$FALL-THROUGH$
+			// $FALL-THROUGH$
 			default: {
 				Object value = rs.getObject(colNum);
 				if (value == null) {
@@ -623,7 +626,7 @@ public class JdbcUtil {
 					statement.setBoolean(parameterIndex, (Boolean) value);
 				}
 				break;
-			//noinspection deprecation
+			// noinspection deprecation
 			case INPUTSTREAM:
 			case BINARY: {
 				Message message = Message.asMessage(value);
@@ -645,7 +648,7 @@ public class JdbcUtil {
 				}
 				break;
 			}
-			//noinspection deprecation
+			// noinspection deprecation
 			case BYTES: {
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session, "JDBC BYTES Parameter");
@@ -690,7 +693,7 @@ public class JdbcUtil {
 					break;
 				default:
 					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
-					//$FALL-THROUGH$
+					// $FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:
 					statement.setString(parameterIndex, value);
