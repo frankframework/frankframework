@@ -23,7 +23,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
 
@@ -721,18 +720,17 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/AddTableForDatabaseContext.xml", tableName = TABLE_NAME)
 	public void testRowVersionTimestamp() throws SQLException, JdbcException, IOException {
-		// Only relevant for MSSQL
-		if (Objects.requireNonNull(dbmsSupport.getDbms()) == Dbms.MSSQL) {
-			try (Connection connection = env.getConnection()) {
-				try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + TABLE_NAME, QueryType.SELECT)) {
-					try (ResultSet resultSet = stmt.executeQuery()) {
-						ResultSetMetaData rsmeta = resultSet.getMetaData();
-						resultSet.next();
-						String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+		assumeTrue(dbmsSupport.getDbms() == Dbms.MSSQL, "This test is only relevant for MSSQL");
 
-						assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
-						assertNotNull(actual2);
-					}
+		try (Connection connection = env.getConnection()) {
+			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + TABLE_NAME, QueryType.SELECT)) {
+				try (ResultSet resultSet = stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = resultSet.getMetaData();
+					resultSet.next();
+					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+
+					assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
+					assertNotNull(actual2);
 				}
 			}
 		}
