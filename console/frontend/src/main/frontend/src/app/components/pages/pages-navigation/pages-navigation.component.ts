@@ -7,6 +7,7 @@ import { CustomViewsComponent } from '../../custom-views/custom-views.component'
 import { SideNavigationDirective } from '../side-navigation.directive';
 import { InformationModalComponent } from '../information-modal/information-modal.component';
 import { ServerInfoService } from '../../../services/server-info.service';
+import { CdkAccordionModule } from '@angular/cdk/accordion';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -16,6 +17,7 @@ import { ServerInfoService } from '../../../services/server-info.service';
   imports: [
     CommonModule,
     RouterModule,
+    CdkAccordionModule,
     CustomViewsComponent,
     MinimalizaSidebarComponent,
     ScrollToTopComponent,

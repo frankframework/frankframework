@@ -86,7 +86,7 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.datasource.filter = filterValue.trim().toLowerCase();
+    this.datasource.filter = filterValue.trim();
   }
 
   applyPaginationSize(sizeValue: string): void {
@@ -151,6 +151,10 @@ export class DataTableDataSource<T> extends DataSource<T> {
 
   set filter(value: string) {
     this._filter.next(value);
+    if (this.currentPage !== 1) {
+      this.updatePage(1);
+      return;
+    }
     this.updateRenderedData(this.data);
   }
 
