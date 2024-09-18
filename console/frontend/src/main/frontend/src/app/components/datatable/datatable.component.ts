@@ -214,7 +214,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
       .then(this.serverRequestFn)
       .then((response) => {
         this.data = response.data;
-        this._totalPages = response.totalEntries / this.options.size;
+        this._totalPages = Math.ceil(response.totalEntries / this.options.size);
         this._renderData.next(this.data);
         this._entriesInfo.next({
           minPageEntry: response.offset + 1,
