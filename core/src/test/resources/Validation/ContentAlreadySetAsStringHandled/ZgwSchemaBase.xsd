@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:zgw="http://google.com/zgw" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://google.com/zgw">
+    <xs:simpleType name="Kenmerk">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="40" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Bron">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="40" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="AN0_40">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="40" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN0_255">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="255" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Taal">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="3" />
+            <xs:maxLength value="3" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Bestandsomvang">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0" />
+            <xs:maxInclusive value="9223372036854776000" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN0_80">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="80" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN0_128">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="128" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN1_40">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="40" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN1_128">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="128" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Lock">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN0_200">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="200" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN1_200">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="200" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AN1000">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="1000" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Rsin">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{9}" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Uri1_1000">
+        <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="1000" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Uri0_200">
+        <xs:restriction base="xs:anyURI">
+            <xs:minLength value="0" />
+            <xs:maxLength value="200" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Uri1_200">
+        <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="200" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Date">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([0-9]{4})-(1[0-2]|0[1-9])" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Datetime">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(([Zz])|([\+|\-]([01][0-9]|2[0-3]):[0-5][0-9]))" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Vertrouwelijkheidaanduiding">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="openbaar"/>
+            <xs:enumeration value="beperkt_openbaar"/>
+            <xs:enumeration value="intern"/>
+            <xs:enumeration value="zaakvertrouwelijk"/>
+            <xs:enumeration value="vertrouwelijk"/>
+            <xs:enumeration value="confidentieel"/>
+            <xs:enumeration value="geheim"/>
+            <xs:enumeration value="zeer_geheim"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Betalingsindicatie">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="nvt"/>
+            <xs:enumeration value="nog_niet"/>
+            <xs:enumeration value="gedeeltelijk"/>
+            <xs:enumeration value="geheel"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Verlenging">
+        <xs:sequence>
+            <xs:element name="reden" type="zgw:AN1_200"/>
+            <xs:element name="duur" type="xs:duration"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Opschorting">
+        <xs:sequence>
+            <xs:element name="indicatie" type="xs:boolean"/>
+            <xs:element name="reden" type="zgw:AN1_200"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="AardRelatie">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="vervolg"/>
+            <xs:enumeration value="onderwerp"/>
+            <xs:enumeration value="bijdrage"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Archiefnominatie">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="blijvend_bewaren"/>
+            <xs:enumeration value="vernietigen"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Archiefstatus">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="nog_te_archiveren"/>
+            <xs:enumeration value="gearchiveerd"/>
+            <xs:enumeration value="gearchiveerd_procestermijn_onbekend"/>
+            <xs:enumeration value="overgedragen"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="RelevanteAndereZaken">
+        <xs:sequence>
+            <xs:element name="url" type="zgw:Uri1_1000"/>
+            <xs:element name="aardRelatie" type="zgw:AardRelatie"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Kenmerken">
+        <xs:sequence>
+            <xs:element name="kenmerk" type="zgw:AN1_40"/>
+            <xs:element name="bron" type="zgw:AN1_40"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema> 

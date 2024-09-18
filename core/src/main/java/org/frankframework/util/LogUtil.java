@@ -80,7 +80,7 @@ public class LogUtil {
 	}
 
 	public static CloseableThreadContext.Instance getThreadContext(Adapter adapter, String messageId, PipeLineSession session) {
-		String lastAdapter= ThreadContext.get(MDC_ADAPTER_KEY);
+		String lastAdapter = ThreadContext.get(MDC_ADAPTER_KEY);
 		String currentAdapter= adapter.getName();
 		CloseableThreadContext.Instance ctc = CloseableThreadContext.put(MDC_ADAPTER_KEY, currentAdapter);
 		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {

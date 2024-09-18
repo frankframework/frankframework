@@ -19,10 +19,26 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.core.Adapter;
@@ -41,21 +57,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.Lifecycle;
-import org.springframework.context.LifecycleProcessor;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
@@ -96,7 +97,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 		setParent(applicationContext);
 	}
 

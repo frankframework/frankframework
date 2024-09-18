@@ -31,6 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.ParameterException;
@@ -52,8 +55,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 public class ParameterTest {
 
@@ -1066,7 +1067,7 @@ public class ParameterTest {
 			pipeline.addPipe(pipe2);
 
 			PipeLineExit exit = new PipeLineExit();
-			exit.setPath("exit");
+			exit.setName("exit");
 			exit.setState(ExitState.SUCCESS);
 			pipeline.registerPipeLineExit(exit);
 			pipeline.configure();

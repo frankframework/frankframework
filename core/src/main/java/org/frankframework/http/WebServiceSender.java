@@ -18,8 +18,10 @@ package org.frankframework.http;
 import java.io.IOException;
 import java.net.URI;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -31,11 +33,8 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 
-import lombok.Getter;
-
 /**
  * Sender that sends a message via a WebService.
- *
  *
  * @author Gerrit van Brakel
  * @author Niels Meijer

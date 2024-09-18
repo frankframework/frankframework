@@ -190,4 +190,14 @@ public interface IDbmsSupport {
 	default boolean canFetchStatementParameterMetaData() {
 		return true;
 	}
+
+	/**
+	 * @param resultSetMetaData
+	 * @param columnNumber
+	 * @return whether the columnNumber metadata is defined as a RowVersion/Timestamp (MSSQL - specific, see {@link MsSqlServerDbmsSupport}).
+	 * @throws SQLException
+	 */
+	default boolean isRowVersionTimestamp(ResultSetMetaData resultSetMetaData, int columnNumber) throws SQLException {
+		return false;
+	}
 }

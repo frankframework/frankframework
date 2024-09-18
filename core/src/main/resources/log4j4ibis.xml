@@ -85,6 +85,8 @@
 		<Logger name="org.frankframework.larva" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
+		<Logger name="org.springframework" level="WARN" />
+		<Logger name="org.springframework.aop.framework.CglibAopProxy" level="ERROR" />
 		<Logger name="org.apache.cxf" level="WARN" />
 		<Logger name="org.apache.cxf.interceptor" level="WARN" />
 		<Logger name="org.apache.http.headers" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
