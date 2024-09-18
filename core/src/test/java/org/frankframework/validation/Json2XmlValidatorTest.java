@@ -1,5 +1,6 @@
 package org.frankframework.validation;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,6 +15,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -269,5 +271,45 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		} finally {
 			Thread.currentThread().setContextClassLoader(appClassLoader);
 		}
+	}
+
+	@MethodSource("data")
+	@ParameterizedTest
+	void testContentAlreadySetAsStringHandled(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		initJson2XmlValidatorTest(implementation);
+		TestConfiguration config = new TestConfiguration();
+
+		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
+		json2xml.setDeepSearch(true);
+		json2xml.setOutputFormat(DocumentFormat.JSON);
+		json2xml.setSchema(BASE_DIR_VALIDATION + "/ContentAlreadySetAsStringHandled/PostZgwZaak.xsd");
+		json2xml.setThrowException(true);
+
+		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.configure();
+		json2xml.start();
+
+		PipeLineSession pipeLineSession = new PipeLineSession();
+
+		Message message = new Message("""
+				<xml version="1.0" encoding="UTF-8">
+				<ZgwZaak>
+					<url>http://host.docker.internal:9000/zaken/api/v1/zaken/ac1a0008-25ff7b7a_18afa2810c2_-7fff</url>
+					<identificatie>5</identificatie>
+					<bronorganisatie>002220647</bronorganisatie>
+					<omschrijving>Zaak naar aanleiding van ingezonden formulier</omschrijving>
+					<toelichting>Aangemaakt door Open Formulieren</toelichting>
+					<zaaktype>http://host.docker.internal:9000/catalogi/api/v1/zaaktypen/363039fd-4700-4f9b-b00f-7c9e8bf2a142</zaaktype>
+					<registratiedatum>2023-09-22</registratiedatum>
+					<verantwoordelijkeOrganisatie>002220647</verantwoordelijkeOrganisatie>
+					<startdatum>2023-09-22</startdatum>
+					<vertrouwelijkheidaanduiding>zaakvertrouwelijk</vertrouwelijkheidaanduiding>
+					<betalingsindicatie>nog_niet</betalingsindicatie>
+					<archiefnominatie>blijvend_bewaren</archiefnominatie>
+				</ZgwZaak>
+				""");
+
+		PipeRunException thrown = assertThrows(PipeRunException.class, () -> json2xml.doPipe(message, pipeLineSession));
+		assertThat(thrown.getMessage(), containsString("You might have an unrecognized element"));
 	}
 }
