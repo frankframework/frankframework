@@ -98,7 +98,7 @@
 
 	<bean
 		name="debugStorageDatabase"
-		class="nl.nn.testtool.storage.database.DatabaseStorage"
+		class="org.frankframework.ibistesttool.DatabaseStorage"
 		autowire="byName"
 		depends-on="ladybugDatabaseChangelog"
 		>
@@ -233,7 +233,7 @@
 		depends-on="databaseStartupValidator"
 		>
 		<property name="dataSource" ref="ladybugDataSource"/>
-		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
+		<property name="changeLog" value="classpath:DatabaseChangelog_Debug.xml"/>
 		<property name="uiService">
 			<!-- Show "Running Changeset: ..." in System.out -->
 			<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
