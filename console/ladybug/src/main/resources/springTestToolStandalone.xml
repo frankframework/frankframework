@@ -52,8 +52,8 @@
 		<property name="views">
 			<list>
 				<ref bean="whiteBoxView"/>
-<!-- 				<ref bean="grayBoxView"/> -->
-<!-- 				<ref bean="blackBoxView"/> -->
+				<ref bean="grayBoxView"/>
+				<ref bean="blackBoxView"/>
 			</list>
 		</property>
 	</bean>

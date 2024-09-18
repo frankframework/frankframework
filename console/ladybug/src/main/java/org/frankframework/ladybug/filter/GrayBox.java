@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,27 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ladybug.views;
-
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.filter.CheckpointMatcher;
+package org.frankframework.ladybug.filter;
 
 import java.util.List;
 import java.util.ListIterator;
 
-public abstract class AbstractBox implements CheckpointMatcher {
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+
+/**
+ * Only show senders and pipelines (within these senders) (show only the pipeline checkpoints, not it's children)
+ *
+ * @author Jaco de Groot
+ */
+public class GrayBox extends AbstractBox {
+	@Override
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
+			if (hasStartPointOnLevel(report, checkpoint)) {
+				return false;
+			}
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			while (iterator.hasPrevious()) {
@@ -40,31 +48,27 @@ public abstract class AbstractBox implements CheckpointMatcher {
 		}
 	}
 
-	protected boolean isSender(Checkpoint checkpoint) {
-		return checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ");
-	}
-
-	protected boolean isPipeline(Checkpoint checkpoint) {
-		return checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline ");
-	}
-
-	protected boolean isSenderOrPipelineOrFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
-		return isSenderOrPipeline(checkpoint) || isFirstOrLastCheckpoint(report, checkpoint);
-	}
-
-	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
-		return isSender(checkpoint) || isPipeline(checkpoint);
-	}
-
-	protected boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
+	public boolean hasStartPointOnLevel(Report report, Checkpoint checkpoint) {
 		List<Checkpoint> checkpoints = report.getCheckpoints();
-		if (!checkpoints.isEmpty()) {
-			Checkpoint firstCheckpoint = checkpoints.get(0);
-			if (checkpoint.equals(firstCheckpoint)) {
+		ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
+		int currentLevel = checkpoint.getLevel();
+		while (iterator.hasNext()) {
+			Checkpoint nextCheckpoint = iterator.next();
+			if (nextCheckpoint.getLevel() < currentLevel || nextCheckpoint.getType() == Checkpoint.TYPE_ENDPOINT) {
+				break;
+			}
+			if (nextCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
 				return true;
 			}
-			Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
-            return checkpoint.equals(lastCheckpoint);
+		}
+		while (iterator.hasPrevious()) {
+			Checkpoint previousCheckpoint = iterator.previous();
+			if (previousCheckpoint.getLevel() < currentLevel) {
+				break;
+			}
+			if (previousCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
+				return true;
+			}
 		}
 		return false;
 	}
