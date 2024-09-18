@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
@@ -25,12 +25,14 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.router.events.pipe(filter((event) => event instanceof ActivationEnd)).subscribe(() => {
+      this.popoutUrl = null;
+    });
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       const childRoute = this.route.children.pop()!;
       if (!childRoute.snapshot.data['breadcrumbIsCustom']) {
         this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
       }
-      this.popoutUrl = null;
     });
 
     const loadingSubscription = this.appService.loading$.subscribe((loading) => (this.loading = loading));
