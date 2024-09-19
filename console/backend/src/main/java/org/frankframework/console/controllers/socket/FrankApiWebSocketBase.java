@@ -52,7 +52,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class FrankApiWebSocketBase implements InitializingBean, ApplicationListener<ClusterMemberEvent> {
 
-	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
+	private static final String ROLE_PREFIX = "ROLE_"; // see AuthorityAuthorizationManager#ROLE_PREFIX
 	private static final List<GrantedAuthority> READ_ONLY_AUTHORITY = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + "IbisObserver"));
 	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 
@@ -92,7 +92,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		final Message<?> response;
 		try {
 			response = gateway.sendSyncMessage(builder.build(target));
-		} catch (Exception e) { //BusException
+		} catch (Exception e) { // BusException
 			log.error("exception while sending synchronous bus request", e);
 			return null;
 		}

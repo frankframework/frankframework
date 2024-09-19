@@ -1,24 +1,34 @@
 package org.frankframework.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLine.ExitState;
-import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.pipes.EchoPipe;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestConfiguration;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import jakarta.annotation.Nonnull;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.pipes.AbstractPipe;
+import org.frankframework.pipes.EchoPipe;
+import org.frankframework.processors.CorePipeLineProcessor;
+import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.RunState;
+
 @SuppressWarnings("deprecation") //Part of the tests!
 public class PipeLineTest {
+	private int pipeNr = 0;
 
 	TestConfiguration configuration;
 
@@ -38,7 +48,7 @@ public class PipeLineTest {
 		PipeLine pipeline = new PipeLine();
 		pipeline.setApplicationContext(configuration);
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("success");
+		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.registerPipeLineExit(exit);
@@ -66,7 +76,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -96,15 +106,15 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit errorExit = new PipeLineExit();
-		errorExit.setPath("error");
+		errorExit.setName("error");
 		errorExit.setState(ExitState.ERROR);
 		pipeline.registerPipeLineExit(errorExit);
 		PipeLineExit successExit = new PipeLineExit();
-		successExit.setPath("exit");
+		successExit.setName("exit");
 		successExit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(successExit);
 		PipeLineExit successExit2 = new PipeLineExit();
-		successExit2.setPath("exit2");
+		successExit2.setName("exit2");
 		successExit2.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(successExit2);
 
@@ -138,7 +148,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -173,7 +183,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -204,7 +214,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("special exit name");
+		exit.setName("special exit name");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -243,7 +253,7 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
@@ -253,5 +263,70 @@ public class PipeLineTest {
 		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
 		assertTrue(pipe2.getForwards().isEmpty(), "pipe2 should not have a pipe-forward");
+	}
+
+	@Test
+	public void testAdapterExpectedSessionKeysAllPresent() throws ConfigurationException {
+		// Arrange
+		Adapter adapter = buildTestAdapter();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("k1", "v1");
+		session.put("k2", "v2");
+		session.put("k3", "v3");
+
+		// Act // Assert
+		assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+	}
+
+	@Test
+	public void testAdapterExpectedSessionKeysMissingKey() throws ConfigurationException {
+		// Arrange
+		Adapter adapter = buildTestAdapter();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("k1", "v1");
+
+		// Act // Assert
+		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+
+		// Assert
+		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+	}
+
+	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {
+		Adapter adapter = new Adapter() {
+			@Override
+			public RunState getRunState() {
+				return RunState.STARTED;
+			}
+		};
+		adapter.setName("Adapter");
+		buildDummyPipeLine(adapter);
+		adapter.setConfiguration(configuration);
+		adapter.setApplicationContext(configuration);
+		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
+		adapter.configure();
+		return adapter;
+	}
+
+	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
+		PipeLine pipeLine = new PipeLine();
+		pipeLine.setApplicationContext(configuration);
+		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
+		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
+		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));
+		pipeLine.setPipeLineProcessor(pipeLineProcessor);
+		EchoPipe pipe = buildTestPipe(pipeLine);
+		pipeLine.setFirstPipe(pipe.getName());
+		pipeLine.setExpectsSessionKeys("k1, k2,k3");
+		adapter.setPipeLine(pipeLine);
+	}
+
+	private @Nonnull EchoPipe buildTestPipe(@Nonnull PipeLine pipeLine) throws ConfigurationException {
+		EchoPipe pipe = new EchoPipe();
+		pipe.setName("Pipe" + ++pipeNr);
+		pipeLine.addPipe(pipe);
+		return pipe;
 	}
 }

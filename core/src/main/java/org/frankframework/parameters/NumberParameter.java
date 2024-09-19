@@ -100,7 +100,7 @@ public class NumberParameter extends AbstractParameter {
 			}
 		}
 
-		//This turns the result type into a String
+		// This turns the result type into a String
 		if (getMinLength()>=0 && (result+"").length() < getMinLength()) {
 			log.debug("Adding leading zeros to parameter [{}]", this::getName);
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
@@ -110,13 +110,12 @@ public class NumberParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
-		final Message requestMessage = Message.asMessage(request);
-
+	protected Number getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
-			if (request instanceof Number) {
-				return request;
+			if (request instanceof Number number) {
+				return number;
 			}
+			final Message requestMessage = Message.asMessage(request);
 			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->requestMessage, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
 			DecimalFormat decimalFormat = new DecimalFormat();
 			decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
@@ -127,9 +126,10 @@ public class NumberParameter extends AbstractParameter {
 			}
 		}
 		if(getType() == ParameterType.INTEGER) {
-			if (request instanceof Integer) {
-				return request;
+			if (request instanceof Integer integer) {
+				return integer;
 			}
+			final Message requestMessage = Message.asMessage(request);
 			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->requestMessage);
 			try {
 				return Integer.parseInt(requestMessage.asString());

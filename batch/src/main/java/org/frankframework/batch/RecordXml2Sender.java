@@ -18,6 +18,7 @@ package org.frankframework.batch;
 import java.util.List;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;

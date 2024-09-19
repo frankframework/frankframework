@@ -20,11 +20,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +35,10 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.task.TaskExecutor;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -56,9 +62,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
 import org.frankframework.util.StringUtil;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.task.TaskExecutor;
 
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
@@ -438,7 +441,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	public long[] getNumOfMessagesStartProcessingByHour() {
 		log.trace("Get Adapter hourly statistics, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statisticsLock) { //help, why is this synchronized
+			synchronized (statisticsLock) { // help, why is this synchronized
 				return numOfMessagesStartProcessingByHour;
 			}
 		} finally {
@@ -523,35 +526,33 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 */
 	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
-		try {
-			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
-				 IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
-			) {
-				PipeLineResult result = new PipeLineResult();
-				boolean success = false;
-				try {
-					result = processMessageWithExceptions(messageId, message, pipeLineSession);
-					success = true;
-				} catch (Throwable t) {
-					result.setState(ExitState.ERROR);
-					String msg = "Illegal exception ["+t.getClass().getName()+"]";
-					INamedObject objectInError = null;
-					if (t instanceof ListenerException) {
-						Throwable cause = t.getCause();
-						if  (cause instanceof PipeRunException pre) {
-							msg = "error during pipeline processing";
-							objectInError = pre.getPipeInError();
-						} else if (cause instanceof ManagedStateException) {
-							msg = "illegal state";
-							objectInError = this;
-						}
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
+			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
+		) {
+			PipeLineResult result = new PipeLineResult();
+			boolean success = false;
+			try {
+				result = processMessageWithExceptions(messageId, message, pipeLineSession);
+				success = true;
+			} catch (Throwable t) {
+				result.setState(ExitState.ERROR);
+				String msg = "Illegal exception ["+t.getClass().getName()+"]";
+				INamedObject objectInError = null;
+				if (t instanceof ListenerException) {
+					Throwable cause = t.getCause();
+					if  (cause instanceof PipeRunException pre) {
+						msg = "error during pipeline processing";
+						objectInError = pre.getPipeInError();
+					} else if (cause instanceof ManagedStateException) {
+						msg = "illegal state";
+						objectInError = this;
 					}
-					result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
-				} finally {
-					logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline "+(success ? "Success" : "Error"), "result", result.getResult());
 				}
-				return result;
+				result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+			} finally {
+				logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline "+(success ? "Success" : "Error"), "result", result.getResult());
 			}
+			return result;
 		} finally {
 			if (ThreadContext.getDepth() == 0) {
 				ThreadContext.clearAll();
@@ -623,8 +624,9 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		} finally {
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
-			//reset the InProcess fields, and increase processedMessagesCount
+			// Reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
+			Objects.requireNonNull(result, "'result' should never be NULL here, programming error.");
 			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
 			if (result.getExitCode() != 0) {
 				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
@@ -1014,5 +1016,4 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
 	}
-
 }

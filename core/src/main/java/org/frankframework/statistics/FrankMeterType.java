@@ -39,11 +39,11 @@ public enum FrankMeterType {
 	RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
 	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER),
 
-	SENDER_HTTP("frank.sender.http", Meter.Type.TIMER),
-	SENDER_HTTP_CLIENT_MAX("frank.sender.httpClient.max", Meter.Type.GAUGE),
-	SENDER_HTTP_CLIENT_AVAILABLE("frank.sender.httpClient.available", Meter.Type.GAUGE),
-	SENDER_HTTP_CLIENT_LEASED("frank.sender.httpClient.leased", Meter.Type.GAUGE),
-	SENDER_HTTP_CLIENT_PENDING("frank.sender.httpClient.pending", Meter.Type.GAUGE),
+	SENDER_HTTP("frank.http.requests", Meter.Type.TIMER),
+	SENDER_HTTP_POOL_MAX("frank.http.pool.max", Meter.Type.GAUGE),
+	SENDER_HTTP_POOL_AVAILABLE("frank.http.pool.available", Meter.Type.GAUGE),
+	SENDER_HTTP_POOL_LEASED("frank.http.pool.leased", Meter.Type.GAUGE),
+	SENDER_HTTP_POOL_PENDING("frank.http.pool.pending", Meter.Type.GAUGE),
 
 	LISTENER_MESSAGE_PEEKING("frank.listener.messagePeeking", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	LISTENER_MESSAGE_RECEIVING("frank.listener.messageReceiving", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT);

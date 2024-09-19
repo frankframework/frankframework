@@ -13,5 +13,5 @@
 		<property name="port" value="${server.port}"/>
 	</bean>
 
-	<import resource="FrankConsoleContext.xml"/>
+	<import resource="FrankConsoleContext.xml" />
 </beans>

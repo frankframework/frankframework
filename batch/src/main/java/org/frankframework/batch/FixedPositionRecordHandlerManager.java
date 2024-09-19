@@ -18,6 +18,7 @@ package org.frankframework.batch;
 import java.util.Map;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 
 /**

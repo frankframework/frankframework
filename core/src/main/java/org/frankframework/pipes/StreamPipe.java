@@ -199,7 +199,7 @@ public class StreamPipe extends FixedForwardPipe {
 							} else {
 								addSessionKey(session, sessionKeyName, null);
 							}
-							MimeType mimeType = (MimeType) bodyPartMessage.getContext().get(MessageContext.METADATA_MIMETYPE);
+							MimeType mimeType = bodyPartMessage.getContext().getMimeType();
 							partsString.append("<part type=\"file\" name=\"").append(fileName).append("\" sessionKey=\"").append(sessionKeyName).append("\" size=\"").append(size).append("\" mimeType=\"").append(mimeType).append("\"/>");
 							lastFoundFileName = fileName;
 						}

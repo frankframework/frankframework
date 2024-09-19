@@ -29,6 +29,7 @@ import java.util.List;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
+
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +51,11 @@ import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -65,32 +71,9 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
- * Sender for the HTTP protocol using {@link HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
- * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
- * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
- * are returned by this sender, so they are available to the SenderPipe.
- *
- * <p><b>Expected message format:</b></p>
- * <p>GET methods expect a message looking like this:
- * <pre>
- *    param_name=param_value&another_param_name=another_param_value
- * </pre>
- * <p>POST AND PUT methods expect a message similar as GET, or looking like this:
- * <pre>
- *   param_name=param_value
- *   another_param_name=another_param_value
- * </pre>
- *
- * Note:
- * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
- * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
- * </p>
+ * {@inheritDoc}
  *
  * @author Niels Meijer
  * @since 7.0

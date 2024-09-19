@@ -2,15 +2,15 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-
 import jakarta.annotation.Nonnull;
+
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.pipes.EchoPipe;
 
 class AdapterTest {
-	int pipeNr = 0;
+	private int pipeNr = 0;
 
 	@Test
 	void testComputeCombinedHideRegex() throws ConfigurationException {

@@ -421,10 +421,10 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	 * @param connPoolControl
 	 */
 	private void registerConnectionMetrics(IConfigurationAware frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
-		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_MAX, () -> connPoolControl.getTotalStats().getMax());
-		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_AVAILABLE, () -> connPoolControl.getTotalStats().getAvailable());
-		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_LEASED, () -> connPoolControl.getTotalStats().getLeased());
-		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_CLIENT_PENDING, () -> connPoolControl.getTotalStats().getPending());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_MAX, () -> connPoolControl.getTotalStats().getMax());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_AVAILABLE, () -> connPoolControl.getTotalStats().getAvailable());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_LEASED, () -> connPoolControl.getTotalStats().getLeased());
+		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_PENDING, () -> connPoolControl.getTotalStats().getPending());
 	}
 
 	protected void setHttpClient(CloseableHttpClient httpClient) {

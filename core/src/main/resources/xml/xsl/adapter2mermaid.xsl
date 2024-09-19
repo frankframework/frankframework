@@ -252,7 +252,7 @@
 			<xsl:call-template name="createForwardIfNecessary">
 				<xsl:with-param name="forwards" select="forward"/>
 				<xsl:with-param name="name" select="'success'"/>
-				<xsl:with-param name="path" select="(following-sibling::pipe/@name,../exits/exit[@state='success']/@name,'READY')[1]"/>
+				<xsl:with-param name="path" select="(following-sibling::pipe/@name,../exits/exit[lower-case(@state)='success']/@name,'READY')[1]"/>
 			</xsl:call-template>
 		</xsl:copy>
 	</xsl:template>

@@ -21,16 +21,16 @@
 
 		<jackson.version>2.17.2</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
-		<spring.version>6.1.12</spring.version>
+		<spring.version>6.1.13</spring.version>
 		<spring-security.version>6.3.3</spring-security.version>
-		<spring-integration.version>6.3.3</spring-integration.version>
+		<spring-integration.version>6.3.4</spring-integration.version>
 		<spring.boot.version>3.3.3</spring.boot.version>
-		<tomcat.version>10.1.28</tomcat.version>
+		<tomcat.version>10.1.30</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
 		<narayana.version>7.0.2.Final</narayana.version>
-		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
-		<micrometer.version>1.13.3</micrometer.version>
+		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
+		<micrometer.version>1.13.4</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2-SNAPSHOT</frankdoc.version>
@@ -46,13 +46,13 @@
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>3.4.1</mariadb.driver.version>
 		<postgresql.driver.version>42.7.4</postgresql.driver.version>
-		<mongodb.driver.version>4.11.3</mongodb.driver.version>
+		<mongodb.driver.version>5.0.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.3</activemq.driver.version>
 		<artemis.driver.version>2.37.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.27.2</aws.java.sdk.version>
+		<aws.java.sdk.version>2.28.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.13.0</mockito.version>
@@ -135,7 +135,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.28.0</version>
+				<version>4.28.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -150,7 +150,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.40</version>
+				<version>9.41.1</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -369,7 +369,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.1.112.Final</version>
+				<version>4.1.113.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -425,29 +425,11 @@
 
 			<!-- Jackson dependencies -->
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-				<artifactId>jackson-jakarta-rs-json-provider</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-cbor</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<dependency>
@@ -1149,6 +1131,13 @@
 											<exclude>bouncycastle:*</exclude>
 										</excludes>
 										<message>use the newer 'org.bouncycastle:*-jdk18on' version of org.bouncycastle</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>com.sun.xml.bind:jaxb-core</exclude>
+											<exclude>com.sun.xml.bind:jaxb-impl</exclude>
+										</excludes>
+										<message>Dont use com.sun but glassfish instead</message>
 									</bannedDependencies>
 								</rules>
 							</configuration>

@@ -27,6 +27,7 @@ import org.frankframework.util.DateFormatUtils;
  *
  * @author Johan Verrips IOS
  */
+@Deprecated
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	private final String applicationName = AppConstants.getInstance().getProperty("application.name");
 	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");

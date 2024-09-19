@@ -85,6 +85,7 @@ import { ServerWarningsComponent } from './views/status/server-warnings/server-w
 import { AdapterStatusComponent } from './views/status/adapter-status/adapter-status.component';
 import { ConfigurationMessagesComponent } from './views/status/configuration-messages/configuration-messages.component';
 import { ConfigurationSummaryComponent } from './views/status/configuration-summary/configuration-summary.component';
+import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
 import { DatatableComponent } from './components/datatable/datatable.component';
 import { DtContentDirective } from './components/datatable/dt-content.directive';
 
@@ -138,6 +139,7 @@ const windowProvider: ValueProvider = {
     LoginComponent,
     ServerWarningsComponent,
     AdapterStatusComponent,
+    LoggingAddComponent,
 
     //modals
     FlowModalComponent,

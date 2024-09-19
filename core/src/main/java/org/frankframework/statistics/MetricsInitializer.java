@@ -20,6 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.DistributionSummary.Builder;
@@ -29,11 +32,14 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.search.Search;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.INamedObject;
@@ -46,12 +52,9 @@ import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 public class MetricsInitializer implements InitializingBean, DisposableBean, ApplicationContextAware {
+	public static final String PARENT_CHILD_NAME_FORMAT = "%s -> %s";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 
@@ -65,7 +68,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private @Setter MeterRegistry meterRegistry;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(meterRegistry == null) {
 			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set");
 		}
@@ -103,7 +106,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
-		List<Tag> tags = getTags(parentFrankElement, findName(parentFrankElement) + " -> " + subFrankElement, null);
+		List<Tag> tags = getTags(parentFrankElement, String.format(PARENT_CHILD_NAME_FORMAT, findName(parentFrankElement), subFrankElement), null);
 		return createDistributionSummary(type, tags);
 	}
 

@@ -30,10 +30,11 @@ public class BooleanParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
-		if (request instanceof Boolean) {
-			return request;
+	protected Boolean getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+		if (request instanceof Boolean bool) {
+			return bool;
 		}
+
 		Message requestMessage = Message.asMessage(request);
 		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->requestMessage);
 		return Boolean.parseBoolean(requestMessage.asString());

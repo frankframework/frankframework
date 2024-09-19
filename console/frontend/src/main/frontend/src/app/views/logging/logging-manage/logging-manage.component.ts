@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-logging-manage',
@@ -25,6 +26,8 @@ export class LoggingManageComponent implements OnInit {
   constructor(
     private loggingService: LoggingService,
     private toastService: ToastService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +53,10 @@ export class LoggingManageComponent implements OnInit {
       this.toastService.success(`Updated logger [${logger}] to [${level}]`);
       this.updateLogInformation();
     });
+  }
+
+  addLogger(): void {
+    this.router.navigate(['add'], { relativeTo: this.route });
   }
 
   //Reconfigure Log4j2
