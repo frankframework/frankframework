@@ -6,7 +6,7 @@
 	<property name="BLOB_FIELD_TYPE" value="bytea" dbms="postgresql"/>
 	<property name="BLOB_FIELD_TYPE" value="blob" dbms="!postgresql"/>
 
-	<changeSet id="Ladybug:1" author="Jaco de Groot">
+	<changeSet id="Ladybug:1" author="Jaco de Groot" failOnError="false">
 		<comment>Add table LADYBUG</comment>
 		<createTable tableName="LADYBUG">
 			<column name="STORAGEID" type="INTEGER" autoIncrement="true">

@@ -275,19 +275,21 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 		log.debug("Get report query: " + query);
 		System.err.println(query);
 		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
-				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
+				(resultSet, rowNum) -> getReport(storageId, resultSet.getBytes(1)));
+//				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
 		return result.get(0);
 	}
 
 	// StorageException is allowed by Storage.getReport(), hence no need to handle it in the lambda expression that will
 	// call this method
 	@SneakyThrows
-	@Transactional
 	private static Report getReport(Integer storageId, Blob blob) {
-		int len = (int) blob.length();
-		byte[] tralala = blob.getBytes(0, len);
-		return Import.getReport(new ByteArrayInputStream(tralala), storageId, blob.length(), log);
-//		return Import.getReport(blob.getBinaryStream(), storageId, blob.length(), log);
+		return Import.getReport(blob.getBinaryStream(), storageId, blob.length(), log);
+	}
+
+	@SneakyThrows
+	private static Report getReport(Integer storageId, byte[] blob) {
+		return Import.getReport(new ByteArrayInputStream(blob), storageId, (long) blob.length, log);
 	}
 
 	@Override
@@ -438,7 +440,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 			List<String> rangeSearchValues, StringBuilder query, List<Object> args, List<Integer> argTypes)
 			throws StorageException {
 		query.append("select" + dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords));
-		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
+		String rowNumber = "";//dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			query.append(" * from (select");
 		}

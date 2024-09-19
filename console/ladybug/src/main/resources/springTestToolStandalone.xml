@@ -17,8 +17,11 @@
 	<context:component-scan base-package="org.frankframework.ladybug" />
 	<context:component-scan base-package="nl.nn.testtool" />
 
+	<bean name="rerunner" class="org.frankframework.ladybug.SpringBusRerunner" autowire="byType" />
+
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
 		<property name="configName" value="Ladybug"/>
+		<property name="rerunner" ref="rerunner"/>
 
 		<property name="maxCheckpoints" value="${testtool.maxCheckpoints}" />
 		<property name="maxMemoryUsage" value="${testtool.maxMemoryUsage}" />

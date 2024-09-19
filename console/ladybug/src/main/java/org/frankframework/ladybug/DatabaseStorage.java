@@ -56,7 +56,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -232,7 +231,8 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 								i++;
 							}
 						}
-						ps.setBlob(i, new ByteArrayInputStream(reportBytes));
+//						ps.setBlob(i, new ByteArrayInputStream(reportBytes));
+						ps.setBytes(i, reportBytes);
 						i++;
 						if (isStoreReportXml()) {
 							ps.setClob(i, new StringReader(reportXml));
@@ -284,10 +284,7 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	// call this method
 	@SneakyThrows
 	private static Report getReport(Integer storageId, Blob blob) {
-		int len = (int) blob.length();
-		byte[] tralala = blob.getBytes(0, len);
-		return Import.getReport(new ByteArrayInputStream(tralala), storageId, blob.length(), log);
-//		return Import.getReport(blob.getBinaryStream(), storageId, blob.length(), log);
+		return Import.getReport(blob.getBinaryStream(), storageId, blob.length(), log);
 	}
 
 	@SneakyThrows

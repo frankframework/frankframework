@@ -64,7 +64,7 @@ public abstract class AbstractBox implements CheckpointMatcher {
 				return true;
 			}
 			Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
-            return checkpoint.equals(lastCheckpoint);
+			return checkpoint.equals(lastCheckpoint);
 		}
 		return false;
 	}
