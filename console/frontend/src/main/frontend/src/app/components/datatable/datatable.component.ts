@@ -71,13 +71,15 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   private datasourceSubscription: Subscription = new Subscription();
 
   ngAfterViewInit(): void {
-    const subscription = this.datasource.getEntriesInfo().subscribe((entriesInfo) => {
-      this.totalEntries = entriesInfo.totalEntries;
-      this.totalFilteredEntries = entriesInfo.totalFilteredEntries;
-      this.minPageEntry = entriesInfo.minPageEntry;
-      this.maxPageEntry = entriesInfo.maxPageEntry;
-    });
-    this.datasourceSubscription.add(subscription);
+    if (this.datasource) {
+      const subscription = this.datasource.getEntriesInfo().subscribe((entriesInfo) => {
+        this.totalEntries = entriesInfo.totalEntries;
+        this.totalFilteredEntries = entriesInfo.totalFilteredEntries;
+        this.minPageEntry = entriesInfo.minPageEntry;
+        this.maxPageEntry = entriesInfo.maxPageEntry;
+      });
+      this.datasourceSubscription.add(subscription);
+    }
   }
 
   ngOnDestroy(): void {
