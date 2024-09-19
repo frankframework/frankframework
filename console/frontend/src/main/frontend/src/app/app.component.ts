@@ -455,11 +455,10 @@ export class AppComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      adapter.status = existingAdapter?.status ?? 'started';
       adapter.hasSender = false;
       adapter.sendersMessageLogCount = 0;
       adapter.senderTransactionalStorageMessageCount = 0;
-      if (!adapter.state) adapter.state = existingAdapter.state ?? 'error';
+      adapter.state ??= existingAdapter.state ?? 'error';
 
       this.processAdapterReceivers(adapter, existingAdapter);
       this.processAdapterPipes(adapter, existingAdapter);
@@ -476,6 +475,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (adapter.state != 'started') {
         adapter.status = 'stopped';
       }
+      adapter.status ??= 'started';
       if (!reloadedAdapters) reloadedAdapters = this.hasAdapterReloaded(adapter);
 
       updatedAdapters[adapterIndex] = adapter;
