@@ -149,18 +149,22 @@
           </ul>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/webservices"
+          <a routerLink="/webservices" (click)="accordion.closeAll()"
             ><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a
           >
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/scheduler"><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a>
+          <a routerLink="/scheduler" (click)="accordion.closeAll()"
+            ><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a
+          >
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
+          <a routerLink="/monitors" (click)="accordion.closeAll()"
+            ><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a
+          >
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/environment-variables"
+          <a routerLink="/environment-variables" (click)="accordion.closeAll()"
             ><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a
           >
         </li>
@@ -191,7 +195,9 @@
           </ul>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/security-items"><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a>
+          <a routerLink="/security-items" (click)="accordion.closeAll()"
+            ><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a
+          >
         </li>
         <li>
           <a (click)="openInfo()" class="pointer"
