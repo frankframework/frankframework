@@ -44,15 +44,11 @@
               "src/styles.scss"
             ],
             "scripts": [
-              "node_modules/jquery/dist/jquery.js",
               "node_modules/chart.js/dist/chart.js",
-              "node_modules/metismenu/dist/metisMenu.js",
               "node_modules/sockjs-client/dist/sockjs.min.js"
             ],
             "allowedCommonJsDependencies": [
               "sweetalert2",
-              "angular-datatables/dist/angular-datatables",
-              "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
               "pace-js",
               "lodash.merge"
             ]
@@ -127,10 +123,7 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.js",
-              "node_modules/metismenu/dist/metisMenu.js"
-            ]
+            "scripts": []
           }
         }
       }

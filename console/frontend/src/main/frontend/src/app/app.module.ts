@@ -53,7 +53,6 @@ import { WebservicesComponent } from './views/webservices/webservices.component'
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
-import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
 import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
@@ -173,7 +172,6 @@ const windowProvider: ValueProvider = {
     TimeSinceDirective,
     ToDateDirective,
     ThSortableDirective,
-    SideNavigationDirective,
     QuickSubmitFormDirective,
 
     // standalone components

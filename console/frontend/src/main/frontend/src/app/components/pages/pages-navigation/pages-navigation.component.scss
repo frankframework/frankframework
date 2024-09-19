@@ -1,0 +1,11 @@
+.collapse {
+  display: block;
+  height: 0;
+  z-index: -1;
+  overflow: hidden;
+  transition: height .35s ease;
+
+  &.in {
+    height: auto;
+  }
+}
