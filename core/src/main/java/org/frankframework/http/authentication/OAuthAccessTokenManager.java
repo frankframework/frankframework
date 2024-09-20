@@ -142,7 +142,7 @@ public class OAuthAccessTokenManager {
 	}
 
 	private ClientAuthentication getClientAuthentication(ClientID clientID, Secret clientSecret) {
-		if(authenticationType == AuthenticationType.REQUEST_PARAMETER) {
+		if (authenticationType == AuthenticationType.REQUEST_PARAMETER) {
 			// When using request parameter, we need to use ClientSecretPost which will convert the secret to a queryString
 			return new ClientSecretPost(clientID, clientSecret);
 		} else if (authenticationType == AuthenticationType.AUTHENTICATION_HEADER) {
@@ -204,7 +204,7 @@ public class OAuthAccessTokenManager {
 		return apacheHttpRequest;
 	}
 
-	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
+	protected HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
 		StatusLine statusLine = apacheHttpResponse.getStatusLine();
 
 		String responseBody = null;

@@ -23,13 +23,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Transformer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.messaging.Message;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -46,7 +49,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.TEST_PIPELINE)
@@ -98,7 +100,7 @@ public class TestPipeline extends BusEndpointBase {
 			}
 
 			String correlationId = null;
-			if(!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
+			if (!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
 				correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 			}
 

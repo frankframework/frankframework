@@ -27,6 +27,8 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
@@ -38,9 +40,6 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
 * <h1>PDF Utility</h1>
@@ -378,7 +377,7 @@ public class PDFUtil {
 	}
 
    /**
-   * This method saves each page of the pdf as image
+	* This method saves each page of the pdf as image
    */
 	private List<String> saveAsImage(String file, int startPage, int endPage) throws IOException{
 
@@ -459,7 +458,7 @@ public class PDFUtil {
 		double result = 0d;
 
 		try (PDDocument doc1 = Loader.loadPDF(new File(file1));
-			PDDocument doc2 = Loader.loadPDF(new File(file2))) {
+			 PDDocument doc2 = Loader.loadPDF(new File(file2))) {
 
 			PDFRenderer pdfRenderer1 = new PDFRenderer(doc1);
 			PDFRenderer pdfRenderer2 = new PDFRenderer(doc2);

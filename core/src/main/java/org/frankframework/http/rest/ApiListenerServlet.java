@@ -44,6 +44,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.MimeType;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.http.HttpServletBase;
@@ -65,8 +68,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
-import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.MimeType;
 
 /**
  *
