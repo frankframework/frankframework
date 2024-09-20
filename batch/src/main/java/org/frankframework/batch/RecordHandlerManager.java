@@ -20,6 +20,7 @@ import java.util.Map;
 
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;

@@ -63,6 +63,7 @@ import jakarta.annotation.Nullable;
 import jakarta.json.JsonException;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +71,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+
 import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
@@ -1872,7 +1874,7 @@ public class LarvaTool {
 
 	public String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
-		debugMessage("Check "+key+" properties");
+		debugMessage("Check " + key + " properties");
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -1883,20 +1885,24 @@ public class LarvaTool {
 				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
 				i++;
+			} else if (key1 != null || key2 != null) {
+				throw new IllegalArgumentException("Error in Larva scenario file: Spec for [" + key + i + "] is incomplete; key1=[" + key1 + "], key2=[" + key2 + "]");
 			} else {
 				lastKeyIndexProcessed = true;
 			}
 		}
 
 		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(key);
-		if (keySpecMap!=null) {
-			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
-			while (keySpecIt.hasNext()) {
-				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
+		if (keySpecMap != null) {
+			for (Entry<String, HashMap<String, String>> spec : keySpecMap.entrySet()) {
 				HashMap<String, String> keyPair = spec.getValue();
 
 				String key1 = keyPair.get("key1");
 				String key2 = keyPair.get("key2");
+
+				if (key1 == null || key2 == null) {
+					throw new IllegalArgumentException("Error in Larva scenario file: Spec [" + key + "." + spec.getKey() + "] is incomplete; key1=[" + key1 + "], key2=[" + key2 + "]");
+				}
 
 				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				result = action.format(result, keyPair::get, key1, key2);
@@ -1908,13 +1914,13 @@ public class LarvaTool {
 
 	public String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
-		debugMessage("Check "+keyName+" properties");
+		debugMessage("Check " + keyName + " properties");
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
 			String keyPrefix = keyName + i;
 			String key = properties.getProperty(keyPrefix);
-			if (key==null) {
+			if (key == null) {
 				key = properties.getProperty(keyPrefix + ".key");
 			}
 			if (key != null) {
@@ -1927,7 +1933,7 @@ public class LarvaTool {
 		}
 
 		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(keyName);
-		if (keySpecMap!=null) {
+		if (keySpecMap != null) {
 			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
 			while (keySpecIt.hasNext()) {
 				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
