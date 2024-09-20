@@ -72,9 +72,9 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 @Configuration
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@EnableWebSecurity // Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
+@Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurity>, ApplicationContextAware, EnvironmentAware, ServletContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
@@ -131,10 +131,10 @@ public class SecurityChainConfigurer implements WebSecurityConfigurer<WebSecurit
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
 
-		httpSecurity.csrf(CsrfConfigurer::disable); //Disable CSRF, should be configured in the Ladybug
-		httpSecurity.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
-		httpSecurity.logout(LogoutConfigurer::disable); //Disable the logout filter
-		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+		httpSecurity.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
+		httpSecurity.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
+		httpSecurity.logout(LogoutConfigurer::disable); // Disable the logout filter
+		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
 		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 

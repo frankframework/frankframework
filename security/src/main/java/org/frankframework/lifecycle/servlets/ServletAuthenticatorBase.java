@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -47,9 +50,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
@@ -143,7 +143,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		if(applicationContext == null) {
 			throw new IllegalStateException("Authenticator is not wired through local BeanFactory");
 		}
-		if(privateEndpoints.isEmpty()) { // No servlets registered so no need to build/enable this Authenticator
+		if (privateEndpoints.isEmpty()) { // No servlets registered so no need to build/enable this Authenticator
 			log.info("no url matchers found, ignoring Authenticator [{}]", this::getClass);
 			return;
 		}
@@ -180,7 +180,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		http.securityMatcher(securityRequestMatcher); // Triggers the SecurityFilterChain, also for OPTIONS requests!
 		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Prevent session from leaking over multiple servlets.
 
-		if(!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
+		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
 			http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
 			http.anonymous(withDefaults());
 		} else {

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
+	"
+	default-lazy-init="true"
+	>
+
+	<context:component-scan base-package="org.frankframework.ladybug" />
+	<context:component-scan base-package="nl.nn.testtool" />
+
+	<bean name="rerunner" class="org.frankframework.ladybug.SpringBusRerunner" autowire="byType" />
+
+	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
+		<property name="configName" value="Ladybug"/>
+		<property name="rerunner" ref="rerunner"/>
+
+		<property name="maxCheckpoints" value="${testtool.maxCheckpoints}" />
+		<property name="maxMemoryUsage" value="${testtool.maxMemoryUsage}" />
+		<property name="maxMessageLength" value="${testtool.maxMessageLength}" />
+		<property name="regexFilter" value="${testtool.regexFilter}" />
+	</bean>
+
+	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" autowire="byName">
+		<property name="name" value="White box"/>
+	</bean>
+
+	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
+		<property name="name" value="Gray box"/>
+		<property name="checkpointMatchers">
+			<list>
+				<bean class="org.frankframework.ladybug.filter.GrayBox"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
+		<property name="name" value="Black box"/>
+		<property name="checkpointMatchers">
+			<list>
+				<bean class="org.frankframework.ladybug.filter.BlackBox"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="views" class="nl.nn.testtool.filter.Views">
+		<property name="views">
+			<list>
+				<ref bean="whiteBoxView"/>
+				<ref bean="grayBoxView"/>
+				<ref bean="blackBoxView"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="xsltResource" class="java.lang.String">
+		<constructor-arg value="${testtool.reportTransformation}"/>
+	</bean>
+
+	<util:list id="observerRoles">
+		<value>IbisObserver</value>
+		<value>IbisDataAdmin</value>
+		<value>IbisAdmin</value>
+		<value>IbisTester</value>
+	</util:list>
+
+	<util:list id="dataAdminRoles">
+		<value>IbisDataAdmin</value>
+		<value>IbisAdmin</value>
+		<value>IbisTester</value>
+	</util:list>
+
+	<util:list id="testerRoles">
+		<value>IbisTester</value>
+	</util:list>
+
+	<!-- Profiles -->
+
+	<beans profile="ladybug.file">
+		<bean name="debugStorage,fileStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
+			<property name="name" value="Debug"/>
+			<property name="reportsFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.ttm"/>
+		</bean>
+		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+			<property name="name" value="Test"/>
+			<property name="reportsFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.ttm"/>
+		</bean>
+	</beans>
+
+	<beans profile="ladybug.database">
+		<bean
+			name="debugStorage"
+			class="org.frankframework.ladybug.DatabaseStorage"
+			autowire="byName"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="databaseStorage"/>
+		</bean>
+<!-- 		todo, add this (test storage) to the ibis testtool as well  -->
+<!-- 		<bean -->
+<!-- 			name="testStorage" -->
+<!-- 			class="nl.nn.testtool.storage.database.DatabaseTestStorage" -->
+<!-- 			autowire="byName" -->
+<!-- 			depends-on="ladybugDatabaseChangelog" -->
+<!-- 			> -->
+<!-- 			<property name="name" value="Test"/> -->
+<!-- 		</bean> -->
+		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+			<property name="name" value="Test"/>
+			<property name="reportsFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.ttm"/>
+		</bean>
+
+		<!--
+		Without connection pooling (considerably slows down GUI performance). E.g. when using:
+		<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
+			<property name="URL" value="jdbc:h2:../${testtool.directory:ladybug}/data/database-storage/ladybug"/>
+		</bean>
+		-->
+		<bean id="ladybugDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+<!-- 		<bean name="ladybugDataSource" class="org.apache.tomcat.dbcp.dbcp2.BasicDataSource" destroy-method="close"> -->
+			<property name="driverClassName" value="${testtool.jdbc.driver}"/>
+			<property name="url" value="${testtool.jdbc.url}"/>
+			<property name="username" value="${testtool.jdbc.username}" />
+			<property name="password" value="${testtool.jdbc.password}" />
+		</bean>
+<!-- 		<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
+<!-- 			<property name="driverClassName" value="${jdbc.driverClassName}" /> -->
+<!-- 			<property name="url" value="${jdbc.url}" /> -->
+<!-- 			<property name="username" value="${jdbc.username}" /> -->
+<!-- 			<property name="password" value="${jdbc.password}" /> -->
+<!-- 		</bean> -->
+
+		<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
+			<property name="dataSource" ref="ladybugDataSource" />
+			<property name="changeLog" value="classpath:DatabaseChangelog_Debug.xml" />
+		</bean>
+	</beans>
+
+</beans>

@@ -22,7 +22,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.run.ReportRunner;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationListener;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -41,17 +52,6 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.UUIDUtil;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationListener;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
 
 /**
  * @author Jaco de Groot
@@ -281,10 +281,10 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	/** Best effort attempt to locate the adapter. */
 	private Adapter getRegisteredAdapter(String name) {
 		int i = name.indexOf('/');
-		if(i > 0) {
+		if (i > 0) {
 			String configName = name.substring(0, i);
 			Configuration config = ibisManager.getConfiguration(configName);
-			String adapterName = name.substring(i+1);
+			String adapterName = name.substring(i + 1);
 			return config.getRegisteredAdapter(adapterName);
 		}
 
