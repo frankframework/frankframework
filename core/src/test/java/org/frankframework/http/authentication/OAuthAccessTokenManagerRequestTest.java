@@ -44,15 +44,14 @@ public class OAuthAccessTokenManagerRequestTest {
 
 		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
 		assertEquals("POST", httpRequest.getMethod().name());
-		assertEquals("grant_type=client_credentials&scope=email", httpRequest.getQuery());
-		assertEquals("{Authorization=[" + BASE_64 + "], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
+		assertEquals("grant_type=client_credentials&scope=email&client_secret=fakeClientSecret&client_id=fakeClientId", httpRequest.getQuery());
+		assertEquals("{Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
 				.toString());
 
 		HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
 		assertEquals("POST", apacheRequest.getMethod());
-		assertHeaderPresent(apacheRequest, "Authorization", BASE_64);
 		assertHeaderPresent(apacheRequest, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		assertEquals("grant_type=client_credentials&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity()
+		assertEquals("grant_type=client_credentials&scope=email&client_secret=fakeClientSecret&client_id=fakeClientId", StreamUtil.streamToString(apacheRequest.getEntity()
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 95,Chunked: false]", apacheRequest.getEntity()
 				.toString());
@@ -87,15 +86,14 @@ public class OAuthAccessTokenManagerRequestTest {
 
 		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
 		assertEquals("POST", httpRequest.getMethod().name());
-		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email", httpRequest.getQuery());
-		assertEquals("{Authorization=[" + BASE_64 + "], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
+		assertEquals("password=fakeCredentialPassword&grant_type=password&scope=email&client_secret=fakeClientSecret&client_id=fakeClientId&username=fakeCredentialUserName", httpRequest.getQuery());
+		assertEquals("{Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
 				.toString());
 
 		HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
 		assertEquals("POST", apacheRequest.getMethod());
-		assertHeaderPresent(apacheRequest, "Authorization", BASE_64);
 		assertHeaderPresent(apacheRequest, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity()
+		assertEquals("password=fakeCredentialPassword&grant_type=password&scope=email&client_secret=fakeClientSecret&client_id=fakeClientId&username=fakeCredentialUserName", StreamUtil.streamToString(apacheRequest.getEntity()
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 149,Chunked: false]", apacheRequest.getEntity()
 				.toString());
