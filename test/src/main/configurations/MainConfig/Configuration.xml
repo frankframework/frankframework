@@ -9,6 +9,7 @@
 	<Include ref="ConfigurationExceptionPipe.xml"/>
 	<Include ref="ConfigurationExchangeMail.xml"/>
 	<Include ref="ConfigurationExits.xml"/>
+	<Include ref="ConfigurationExpectedSessionKeys.xml"/>
 	<Include ref="ConfigurationReplacerPipe.xml"/>
 	<Include ref="ConfigurationReplaceInputAndPreserve.xml"/>
 	<Include ref="ConfigurationForwardNameProvidingSenders.xml"/>
