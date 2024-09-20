@@ -89,13 +89,17 @@ public class TestPipeline extends BusEndpointBase {
 		return processMessage(adapter, payload, threadContext, expectsReply);
 	}
 
-	//Does not support async requests because receiver requests are synchronous
+	// Does not support async requests because receiver requests are synchronous
 	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
-		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			if(threadContext != null) {
 				pls.putAll(threadContext);
+			}
+
+			String correlationId = null;
+			if(!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
+				correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 			}
 
 			PipeLineSession.updateListenerParameters(pls, messageId, correlationId);
@@ -111,7 +115,7 @@ public class TestPipeline extends BusEndpointBase {
 				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
 
 				if(!expectsReply) {
-					return null; //Abort here, we do not need a reply.
+					return null; // Abort here, we do not need a reply.
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);

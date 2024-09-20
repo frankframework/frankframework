@@ -30,6 +30,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+
 import org.frankframework.align.ScalarType;
 import org.frankframework.util.LogUtil;
 
@@ -161,12 +162,18 @@ public class JsonElementContainer implements ElementContainer {
 	 * connects child to parent
 	 */
 	public void addContent(JsonElementContainer content) {
-		String childName=content.getName();
-		if (log.isTraceEnabled())
+		String childName = content.getName();
+		if (log.isTraceEnabled()) {
 			log.trace("addContent for parent [{}] name [{}] array container [{}] content.isRepeatedElement [{}] skipArrayElementContainers [{}] content [{}]", getName(), childName, isXmlArrayContainer(), content.isRepeatedElement(), skipArrayElementContainers, content);
-		if (stringContent!=null) {
-			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
 		}
+
+		if (stringContent != null) {
+			String error = String.format("Could not add child element '%s' to element '%s' because it already has text content (%s). You might have an " +
+							"unrecognized element in your input which was added as text content", childName, this.name, stringContent.trim());
+
+			throw new IllegalStateException(error);
+		}
+
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new ArrayList<>();
@@ -253,7 +260,6 @@ public class JsonElementContainer implements ElementContainer {
 		return content == null ? "<null>" : content.toString();
 	}
 
-
 	public String getName() {
 		return name;
 	}
@@ -270,5 +276,4 @@ public class JsonElementContainer implements ElementContainer {
 	public void setType(ScalarType type) {
 		this.type = type;
 	}
-
 }

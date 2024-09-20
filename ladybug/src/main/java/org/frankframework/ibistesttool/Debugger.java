@@ -59,6 +59,7 @@ import nl.nn.testtool.run.ReportRunner;
 @Log4j2
 public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
+	private static final String REPORT_ROOT_PREFIX = "Pipeline ";
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 
@@ -91,9 +92,16 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		this.testerRoles = testerRoles;
 	}
 
+	// combines the config and adapter-names so each report is unique and can be 'rerun'.
+	private String getName(PipeLine pipeLine) {
+		String adapterName = pipeLine.getAdapter().getName();
+		String configName = pipeLine.getAdapter().getConfiguration().getName();
+		return REPORT_ROOT_PREFIX + configName + "/" + adapterName;
+	}
+
 	@Override
 	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input);
+		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), input);
 	}
 
 	@Override
@@ -103,17 +111,17 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.endpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), output);
+		return testTool.endpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
 	}
 
 	@Override
 	public Message pipelineAbort(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.abortpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), output);
+		return testTool.abortpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
 	}
 
 	@Override
 	public Throwable pipelineAbort(PipeLine pipeLine, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), throwable);
+		testTool.abortpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), throwable);
 		return throwable;
 	}
 
@@ -272,6 +280,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	/** Best effort attempt to locate the adapter. */
 	private Adapter getRegisteredAdapter(String name) {
+		int i = name.indexOf('/');
+		if(i > 0) {
+			String configName = name.substring(0, i);
+			Configuration config = ibisManager.getConfiguration(configName);
+			String adapterName = name.substring(i+1);
+			return config.getRegisteredAdapter(adapterName);
+		}
+
 		List<Adapter> adapters = getRegisteredAdapters();
 		for (Adapter adapter : adapters) {
 			if (name.equals(adapter.getName())) {
@@ -288,8 +304,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
 			Checkpoint checkpoint = checkpoints.get(i);
 			String checkpointName = checkpoint.getName();
-			if (checkpointName.startsWith("Pipeline ")) {
-				String pipelineName = checkpointName.substring("Pipeline ".length());
+			if (checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
+				String pipelineName = checkpointName.substring(REPORT_ROOT_PREFIX.length());
 				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
 				Adapter adapter = getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
