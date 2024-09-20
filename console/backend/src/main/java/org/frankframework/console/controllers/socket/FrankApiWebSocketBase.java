@@ -28,7 +28,6 @@ import jakarta.json.JsonValue;
 
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
-import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
