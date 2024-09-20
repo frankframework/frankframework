@@ -39,9 +39,13 @@ public class OAuthAccessTokenKeycloakTest {
 
 	@Container
 	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json");
+
 	private static final String CLIENT_ID = "testiaf-client";
+
 	private static final String CLIENT_SECRET = "testiaf-client-pwd";
+
 	private static final String TOKEN_ENDPOINT_FORMAT = "http://localhost:%s/realms/iaf-test/protocol/openid-connect/token";
+
 	private final Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 	public static Stream<Arguments> parameters() {
@@ -85,6 +89,6 @@ public class OAuthAccessTokenKeycloakTest {
 	}
 
 	private String getTestEndpoint() {
-		return String.format(TOKEN_ENDPOINT_FORMAT, this.keycloak.getHttpPort());
+		return String.format(TOKEN_ENDPOINT_FORMAT, keycloak.getHttpPort());
 	}
 }
