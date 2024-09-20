@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 public class URLRequestMatcherTest {
@@ -119,5 +121,24 @@ public class URLRequestMatcherTest {
 		request.setServletPath("/");
 		request.setPathInfo("foo/bar");
 		assertTrue(matcher.matches(request));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "/api", "/api/" })
+	public void absolutePathEndingWithAsterisk(String path) {
+		Set<String> endpoints = new HashSet<>();
+		endpoints.add("/api/*");
+		URLRequestMatcher matcher = new URLRequestMatcher(endpoints);
+
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+		request.setServletPath("/");
+		request.setPathInfo("api");
+		assertTrue(matcher.matches(request));
+
+		request.setPathInfo("api/");
+		assertTrue(matcher.matches(request));
+
+		request.setPathInfo("monkey/");
+		assertFalse(matcher.matches(request));
 	}
 }
