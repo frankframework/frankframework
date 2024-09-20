@@ -1,0 +1,4 @@
+jdbc:
+  - name: "H2"
+    type: "org.h2.jdbcx.JdbcDataSource"
+    url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;TRACE_LEVEL_FILE=0;"
