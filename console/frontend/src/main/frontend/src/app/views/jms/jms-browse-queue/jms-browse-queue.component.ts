@@ -57,7 +57,7 @@ export class JmsBrowseQueueComponent implements OnInit {
       },
       error: (errorData: HttpErrorResponse) => {
         try {
-          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          const errorResponse = errorData.error as ServerErrorResponse | undefined;
           this.error = errorResponse ? errorResponse.error : errorData.message;
         } catch {
           this.error = errorData.message;

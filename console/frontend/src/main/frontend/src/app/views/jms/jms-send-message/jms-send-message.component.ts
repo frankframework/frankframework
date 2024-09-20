@@ -68,13 +68,13 @@ export class JmsSendMessageComponent implements OnInit {
     if (formData.connectionFactory && formData.connectionFactory != '')
       fd.append('connectionFactory', formData.connectionFactory);
     else fd.append('connectionFactory', this.connectionFactories[0]);
-    if (formData.destination && formData.destination != '') fd.append('destination', formData.destination);
+    fd.append('destination', formData.destination);
     if (formData.type && formData.type != '') fd.append('type', formData.type);
     else fd.append('type', this.destinationTypes[0]);
-    if (formData.replyTo && formData.replyTo != '') fd.append('replyTo', formData.replyTo);
-    if (formData.persistent) fd.append('persistent', formData.persistent.toString());
-    if (formData.synchronous) fd.append('synchronous', formData.synchronous.toString());
-    if (formData.lookupDestination) fd.append('lookupDestination', formData.lookupDestination.toString());
+    fd.append('replyTo', formData.replyTo);
+    fd.append('persistent', formData.persistent.toString());
+    fd.append('synchronous', formData.synchronous.toString());
+    fd.append('lookupDestination', formData.lookupDestination.toString());
 
     if (formData.propertyKey && formData.propertyKey != '' && formData.propertyValue && formData.propertyValue != '')
       fd.append('property', `${formData.propertyKey},${formData.propertyValue}`);
@@ -100,7 +100,7 @@ export class JmsSendMessageComponent implements OnInit {
       error: (errorData: HttpErrorResponse) => {
         this.processing = false;
         try {
-          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          const errorResponse = errorData.error as ServerErrorResponse | undefined;
           this.error = errorResponse ? errorResponse.error : 'An unknown error occured, check the logs for more info.';
         } catch {
           this.error = errorData.message;
