@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -26,6 +27,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
@@ -47,6 +49,7 @@ public class DbmsSupportTest {
 	private IDbmsSupport dbmsSupport;
 
 	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
+	private static final String ROW_VERSION_TEST_TABLE_NAME = "TestTable";
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
@@ -705,11 +708,30 @@ public class DbmsSupportTest {
 		log.debug("executing translated query [{}]", translatedQuery);
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
-				return  connection.prepareStatement(translatedQuery);
+				return connection.prepareStatement(translatedQuery);
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
 		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
+	}
+
+	@DatabaseTest
+	@WithLiquibase(file = "Migrator/AddTableForDatabaseContext.xml", tableName = ROW_VERSION_TEST_TABLE_NAME)
+	public void testRowVersionTimestamp() throws SQLException, JdbcException, IOException {
+		assumeTrue(dbmsSupport.getDbms() == Dbms.MSSQL, "This test is only relevant for MSSQL");
+
+		try (Connection connection = env.getConnection()) {
+			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + ROW_VERSION_TEST_TABLE_NAME, QueryType.SELECT)) {
+				try (ResultSet resultSet = stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = resultSet.getMetaData();
+					resultSet.next();
+					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+
+					assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
+					assertNotNull(actual2);
+				}
+			}
+		}
 	}
 }

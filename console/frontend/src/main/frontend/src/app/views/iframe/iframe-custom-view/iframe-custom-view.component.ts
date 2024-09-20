@@ -51,7 +51,10 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
     }
 
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
-    this.appService.setIframePopoutUrl(this.url);
+    setTimeout(() => {
+      // run after router events have passed
+      this.appService.setIframePopoutUrl(this.url);
+    }, 50);
   }
 
   ngOnDestroy(): void {

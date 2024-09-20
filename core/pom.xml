@@ -12,7 +12,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<graalvm.version>24.0.2</graalvm.version>
+		<graalvm.version>24.1.0</graalvm.version>
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
@@ -391,7 +391,7 @@
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
-			<version>4.10.2</version>
+			<version>4.10.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
@@ -611,7 +611,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>6.7.0</version>
+			<version>7.0.0</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
