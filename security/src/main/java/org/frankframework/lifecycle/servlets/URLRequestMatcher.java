@@ -37,6 +37,9 @@ public class URLRequestMatcher implements RequestMatcher {
 			}
 			if(endpoint.charAt(endpoint.length()-1) == '*') {
 				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
+				if(endpoint.charAt(endpoint.length()-2) == '/') { // add endpoint without `/*` to absolute path (ApiListenerServlet, IAF-API etc)
+					absoluteEndpoints.add(endpoint.substring(0, endpoint.length()-2));
+				}
 			} else {
 				absoluteEndpoints.add(endpoint);
 			}
@@ -51,13 +54,13 @@ public class URLRequestMatcher implements RequestMatcher {
 	public boolean matches(HttpServletRequest request) {
 		String path = getRequestPath(request);
 
-		if(absoluteEndpoints.contains(path)) { //absolute match
+		if(absoluteEndpoints.contains(path)) { // absolute match
 			log.trace("absolute match with path [{}]", path);
 			return true;
 		}
 
 		for(String url : wildcardEndpoints) {
-			if(path.startsWith(url)) { //wildcard match
+			if(path.startsWith(url)) { // wildcard match
 				log.trace("relative match with url [{}] and path [{}]", url, path);
 				return true;
 			}
