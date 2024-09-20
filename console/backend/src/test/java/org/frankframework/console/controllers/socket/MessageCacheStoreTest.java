@@ -17,8 +17,9 @@ public class MessageCacheStoreTest {
 		UUID uuid = isNull ? null : UUID.randomUUID();
 
 		MessageCacheStore cache = new MessageCacheStore();
-		cache.put(uuid, BusTopic.ADAPTER, "dummy");
-		assertEquals("dummy", cache.get(uuid, BusTopic.ADAPTER));
+		String topic = BusTopic.ADAPTER.toString();
+		cache.put(uuid, topic, "dummy");
+		assertEquals("dummy", cache.get(uuid, topic));
 	}
 
 	@ParameterizedTest
@@ -27,9 +28,10 @@ public class MessageCacheStoreTest {
 		UUID uuid = isNull ? null : UUID.randomUUID();
 
 		MessageCacheStore cache = new MessageCacheStore();
-		cache.put(uuid, BusTopic.ADAPTER, "old");
-		assertEquals("old", cache.getAndUpdate(uuid, BusTopic.ADAPTER, "new"));
-		assertEquals("new", cache.get(uuid, BusTopic.ADAPTER));
+		String topic = BusTopic.ADAPTER.toString();
+		cache.put(uuid, topic, "old");
+		assertEquals("old", cache.getAndUpdate(uuid, topic, "new"));
+		assertEquals("new", cache.get(uuid, topic));
 	}
 
 	@ParameterizedTest
@@ -38,7 +40,7 @@ public class MessageCacheStoreTest {
 		UUID uuid = isNull ? null : UUID.randomUUID();
 
 		MessageCacheStore cache = new MessageCacheStore();
-		assertNull(cache.get(uuid, BusTopic.ADAPTER));
+		assertNull(cache.get(uuid, BusTopic.ADAPTER.toString()));
 	}
 
 	@ParameterizedTest
@@ -47,6 +49,6 @@ public class MessageCacheStoreTest {
 		UUID uuid = isNull ? null : UUID.randomUUID();
 
 		MessageCacheStore cache = new MessageCacheStore();
-		assertEquals("{}", cache.getAndUpdate(uuid, BusTopic.ADAPTER, "new"));
+		assertEquals("{}", cache.getAndUpdate(uuid, BusTopic.ADAPTER.toString(), "new"));
 	}
 }

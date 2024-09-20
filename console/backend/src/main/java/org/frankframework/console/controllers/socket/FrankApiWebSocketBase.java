@@ -88,7 +88,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 	}
 
 	@Nullable
-	protected String compareAndUpdateResponse(RequestMessageBuilder builder, UUID target) {
+	protected String compareAndUpdateResponse(RequestMessageBuilder builder, UUID target, @Nullable String customTopic) {
 		final Message<?> response;
 		try {
 			response = gateway.sendSyncMessage(builder.build(target));
@@ -98,12 +98,13 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
-		return convertMessageToDiff(target, builder.getTopic(), stringResponse);
+		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().toString();
+		return convertMessageToDiff(target, cacheTopic, stringResponse);
 	}
 
 	/** we can assume that all messages stored in the cache are JSON messages */
 	@Nullable
-	private String convertMessageToDiff(@Nullable UUID uuid, BusTopic topic, @Nonnull String latestJsonMessage) {
+	private String convertMessageToDiff(@Nullable UUID uuid, String topic, @Nonnull String latestJsonMessage) {
 		String cachedJsonMessage = messageCacheStore.getAndUpdate(uuid, topic, latestJsonMessage);
 		return findJsonDiff(cachedJsonMessage, latestJsonMessage);
 	}

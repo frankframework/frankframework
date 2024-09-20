@@ -52,23 +52,27 @@ public class EventHandler extends FrankApiWebSocketBase {
 		propagateAuthenticationContext("adapter-info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("expanded", "messages");
-		convertAndSendToMembers(builder, "adapters"); // somehow cache in seperate id/topic
+		convertAndSendToMembers(builder, "adapters", "ADAPTER_MESSAGES");
 	}
 
 	private void convertAndSendToMembers(RequestMessageBuilder builder, String eventEndpoint) {
+		convertAndSendToMembers(builder, eventEndpoint, null);
+	}
+
+	private void convertAndSendToMembers(RequestMessageBuilder builder, String eventEndpoint, @Nullable String customTopic) {
 		List<ClusterMember> members = getClusterMembers();
 		if(members.isEmpty()) {
-			convertAndSend(builder, "/event/"+eventEndpoint, null);
+			convertAndSend(builder, "/event/"+eventEndpoint, null, customTopic);
 		} else {
 			for (ClusterMember clusterMember : members) {
 				UUID id = clusterMember.getId();
-				convertAndSend(builder, "/event/"+id.toString()+"/"+eventEndpoint, id);
+				convertAndSend(builder, "/event/"+id.toString()+"/"+eventEndpoint, id, customTopic);
 			}
 		}
 	}
 
-	private void convertAndSend(RequestMessageBuilder builder, String destination, @Nullable UUID uuid) {
-		String jsonResponse = compareAndUpdateResponse(builder, uuid);
+	private void convertAndSend(RequestMessageBuilder builder, String destination, @Nullable UUID uuid, @Nullable String customTopic) {
+		String jsonResponse = compareAndUpdateResponse(builder, uuid, customTopic);
 
 		if (jsonResponse != null) {
 			this.messagingTemplate.convertAndSend(destination, jsonResponse);
