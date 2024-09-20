@@ -55,6 +55,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.http.HttpSessionBase;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.CredentialFactory;
@@ -200,7 +201,7 @@ public class OAuthAccessTokenManager {
 		return apacheHttpRequest;
 	}
 
-	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
+	protected HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
 		StatusLine statusLine = apacheHttpResponse.getStatusLine();
 
 		String responseBody = null;
