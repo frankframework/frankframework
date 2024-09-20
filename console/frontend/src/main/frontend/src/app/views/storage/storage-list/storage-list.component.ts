@@ -29,7 +29,6 @@ type MessageData = MessageStore['messages'][number];
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
-  @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
   protected targetStates: Record<string, { name: string }> = {};
 
@@ -125,7 +124,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         this.storageParams['storageSource'] == 'pipes' ? `Pipes > ${this.storageParams['storageSourceName']} > ` : ''
       }${this.storageParams['processState']} List`,
     );
-    // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
 
     this.datasource.options = {
       filter: false,
