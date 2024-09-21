@@ -23,24 +23,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
 
-/*
-	<authentication-manager alias="inMemoryAuthManager">
-		<security:authentication-provider>
-			<security:user-service>
-				<security:user name="IbisTester123" password="IbisTester" authorities="IbisTester"/>
-			</security:user-service>
-			<security:password-encoder ref="passwordEncoder" />
-		</security:authentication-provider>
-	</authentication-manager>
-	<beans:bean id="passwordEncoder" class = "org.springframework.security.crypto.password.NoOpPasswordEncoder" factory-method = "getInstance"/>
- */
 public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 	private @Setter String username = null;
 	private @Setter String password = null;
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.httpBasic(basic -> basic.realmName("Frank")); //BasicAuthenticationEntryPoint
+		http.httpBasic(basic -> basic.realmName("Frank")); // BasicAuthenticationEntryPoint
 
 		UserDetails user = User.builder()
 				.username(username)

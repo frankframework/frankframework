@@ -16,10 +16,8 @@
 package org.frankframework.ladybug;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.annotation.Nullable;
@@ -43,7 +41,6 @@ import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.UUIDUtil;
 
 public class SpringBusRerunner implements Rerunner {
-	private Set<String> inRerun = new HashSet<>();
 
 	private static final String ORIGINAL_MESSAGE_KEY = "originalMessage";
 	private static final String MESSAGE_ID_KEY       = "mid";
@@ -81,43 +78,34 @@ public class SpringBusRerunner implements Rerunner {
 		String configName = adapterWithConfigName.substring(0, index);
 		String adapterName = adapterWithConfigName.substring(index+1);
 
-		synchronized(inRerun) {
-			inRerun.add(correlationId);
-		}
-		try {
-			Map<String, String> threadContext = new HashMap<>();
-			// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
-			// streams are also closed and the generated report will not remain in progress
-			while (checkpoints.size() > i + 1) {
-				i++;
-				checkpoint = checkpoints.get(i);
-				checkpointName = checkpoint.getName();
-				if (checkpointName.startsWith("SessionKey ")) {
-					String sessionKey = checkpointName.substring("SessionKey ".length());
-					if (shouldCopySessionKey(sessionKey)) {
-						threadContext.put(sessionKey, checkpoint.getMessage());
-					}
-				} else {
-					i = checkpoints.size();
+		Map<String, String> threadContext = new HashMap<>();
+		// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
+		// streams are also closed and the generated report will not remain in progress
+		while (checkpoints.size() > i + 1) {
+			i++;
+			checkpoint = checkpoints.get(i);
+			checkpointName = checkpoint.getName();
+			if (checkpointName.startsWith("SessionKey ")) {
+				String sessionKey = checkpointName.substring("SessionKey ".length());
+				if (shouldCopySessionKey(sessionKey)) {
+					threadContext.put(sessionKey, checkpoint.getMessage());
 				}
-			}
-
-			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-			String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
-			threadContext.put(MESSAGE_ID_KEY, messageId);
-			threadContext.put(CORRELATION_ID_KEY, correlationId);
-
-			MessageBuilder<String> builder = createRequestMessage(BusTopic.TEST_PIPELINE, BusAction.UPLOAD, inputMessage, null);
-			builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-			builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-			builder.setHeader(BusMessageUtils.HEADER_PREFIX+"sessionKeys", toJson(threadContext));
-
-			return processRequest(builder.build()); //null implies success
-		} finally {
-			synchronized(inRerun) {
-				inRerun.remove(correlationId);
+			} else {
+				i = checkpoints.size();
 			}
 		}
+
+		// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
+		String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
+		threadContext.put(MESSAGE_ID_KEY, messageId);
+		threadContext.put(CORRELATION_ID_KEY, correlationId);
+
+		MessageBuilder<String> builder = createRequestMessage(BusTopic.TEST_PIPELINE, BusAction.UPLOAD, inputMessage, null);
+		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.setHeader(BusMessageUtils.HEADER_PREFIX+"sessionKeys", toJson(threadContext));
+
+		return processRequest(builder.build()); //null implies success
 	}
 
 	protected String toJson(Map<String, String> threadContext) {
