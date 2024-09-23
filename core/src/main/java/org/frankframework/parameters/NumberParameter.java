@@ -62,7 +62,7 @@ public class NumberParameter extends AbstractParameter {
 
 		if (StringUtils.isNotEmpty(getMinInclusiveString()) || StringUtils.isNotEmpty(getMaxInclusiveString())) {
 			setType(ParameterType.NUMBER);
-			if (getMinInclusiveString()!=null) {
+			if (getMinInclusiveString() != null) {
 				DecimalFormat df = new DecimalFormat();
 				df.setDecimalFormatSymbols(decimalFormatSymbols);
 				try {
@@ -71,7 +71,7 @@ public class NumberParameter extends AbstractParameter {
 					throw new ConfigurationException("Attribute [minInclusive] could not parse result ["+getMinInclusiveString()+"] to number; decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 				}
 			}
-			if (getMaxInclusiveString()!=null) {
+			if (getMaxInclusiveString() != null) {
 				DecimalFormat df = new DecimalFormat();
 				df.setDecimalFormatSymbols(decimalFormatSymbols);
 				try {
@@ -90,18 +90,18 @@ public class NumberParameter extends AbstractParameter {
 		Object result = super.getValue(alreadyResolvedParameters, message, session, namespaceAware);
 
 		if (result instanceof Number number) {
-			if (getMinInclusiveString()!=null && number.floatValue() < minInclusive.floatValue()) {
+			if (getMinInclusiveString() != null && number.floatValue() < minInclusive.floatValue()) {
 				log.debug("Replacing parameter [{}] because value [{}] falls short of minInclusive [{}]", this::getName, logValue(result), this::getMinInclusiveString);
 				result = minInclusive;
 			}
-			if (getMaxInclusiveString()!=null && number.floatValue() > maxInclusive.floatValue()) {
+			if (getMaxInclusiveString() != null && number.floatValue() > maxInclusive.floatValue()) {
 				log.debug("Replacing parameter [{}] because value [{}] exceeds maxInclusive [{}]", this::getName, logValue(result), this::getMaxInclusiveString);
 				result = maxInclusive;
 			}
 		}
 
 		// This turns the result type into a String
-		if (getMinLength()>=0 && (result+"").length() < getMinLength()) {
+		if (getMinLength() >= 0 && (result+"").length() < getMinLength()) {
 			log.debug("Adding leading zeros to parameter [{}]", this::getName);
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
@@ -118,7 +118,8 @@ public class NumberParameter extends AbstractParameter {
 			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->request, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
 			DecimalFormat decimalFormat = new DecimalFormat();
 			decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-			try (Message requestMessage = Message.asMessage(request)) {
+			Message requestMessage = Message.asMessage(request);
+			try {
 				return decimalFormat.parse(requestMessage.asString());
 			} catch (ParseException e) {
 				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
@@ -129,7 +130,8 @@ public class NumberParameter extends AbstractParameter {
 				return integer;
 			}
 			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->request);
-			try (Message requestMessage = Message.asMessage(request)) {
+			Message requestMessage = Message.asMessage(request);
+			try {
 				return Integer.parseInt(requestMessage.asString());
 			} catch (NumberFormatException e) {
 				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);

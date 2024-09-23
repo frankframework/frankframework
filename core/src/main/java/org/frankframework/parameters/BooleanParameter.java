@@ -38,10 +38,6 @@ public class BooleanParameter extends AbstractParameter {
 			return parseFromMessage(message);
 		}
 
-		if (request instanceof AutoCloseable) {
-			return parseFromMessage(Message.asMessage(request));
-		}
-
 		try (Message requestMessage = Message.asMessage(request)) {
 			return parseFromMessage(requestMessage);
 		}

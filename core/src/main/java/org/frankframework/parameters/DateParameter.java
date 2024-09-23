@@ -79,10 +79,6 @@ public class DateParameter extends AbstractParameter {
 			return parseFromMessage(message);
 		}
 
-		if (request instanceof AutoCloseable) {
-			return parseFromMessage(Message.asMessage(request));
-		}
-
 		try (Message requestMessage = Message.asMessage(request)) {
 			return parseFromMessage(requestMessage);
 		}

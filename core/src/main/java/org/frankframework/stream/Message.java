@@ -592,7 +592,7 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
-		char[] chars = new char[readLimit];
+		var chars = new char[readLimit];
 		int charsRead = reader.read(chars);
 		if (charsRead <= 0) {
 			return new byte[0];
@@ -602,10 +602,11 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
+		assert request instanceof InputStream;
 		if (!((InputStream) request).markSupported()) {
 			request = new BufferedInputStream((InputStream) request, readLimit);
 		}
-		InputStream stream = (InputStream) request;
+		var stream = (InputStream) request;
 		stream.mark(readLimit);
 
 		try {
@@ -617,7 +618,7 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
-		byte[] bytes = new byte[readLimit];
+		var bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);
 		if (numRead <= 0) {
 			return new byte[0];
@@ -797,7 +798,7 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		var result = new StringBuilder();
 
 		toStringPrefix(result);
 		result.append(getObjectId());
@@ -894,6 +895,7 @@ public class Message implements Serializable, Closeable {
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
+	@Serial
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		preserve(true);
 
@@ -913,8 +915,9 @@ public class Message implements Serializable, Closeable {
 	/*
 	 * this method is used by Serializable, to deserialize objects from a stream.
 	 */
+	@Serial
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		String charset = (String) stream.readObject();
+		var charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {
 			Object requestClassFromStream = stream.readObject();
@@ -1005,7 +1008,7 @@ public class Message implements Serializable, Closeable {
 	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
 	public ByteArrayOutputStream captureBinaryStream() throws IOException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		var result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
 		return result;
 	}
@@ -1035,7 +1038,7 @@ public class Message implements Serializable, Closeable {
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
 	public StringWriter captureCharacterStream() throws IOException {
-		StringWriter result = new StringWriter();
+		var result = new StringWriter();
 		captureCharacterStream(result);
 		return result;
 	}
