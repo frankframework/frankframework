@@ -22,6 +22,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -55,6 +57,7 @@ import org.frankframework.util.StringUtil;
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private @Setter ApplicationContext applicationContext;
 	private Environment environment;
 	private boolean csrfEnabled;
@@ -143,6 +146,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	@Bean
 	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
+		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		authenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());

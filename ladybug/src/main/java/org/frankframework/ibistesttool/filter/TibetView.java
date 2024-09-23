@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
 package org.frankframework.ibistesttool.filter;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import nl.nn.testtool.echo2.BeanParent;
+import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
+import nl.nn.testtool.filter.View;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -24,13 +30,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.ibistesttool.IbisDebugger;
 import org.frankframework.ibistesttool.tibet2.Storage;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 
-import nl.nn.testtool.echo2.BeanParent;
-import nl.nn.testtool.echo2.Echo2Application;
-import nl.nn.testtool.echo2.reports.ReportsComponent;
-import nl.nn.testtool.filter.View;
-
+@Log4j2
 public class TibetView extends View {
 	private static final String AUTHORISATION_CHECK_ADAPTER_NAME = "AuthorisationCheck";
 	private static final String AUTHORISATION_CHECK_ADAPTER_CONFIG = "main";
@@ -46,7 +47,7 @@ public class TibetView extends View {
 		try {
 			storage.configure();
 		} catch (ConfigurationException e) {
-			System.out.println("Could not configure storage: ("+ClassUtils.nameOf(e)+")"+ e.getMessage());
+			log.fatal("Could not configure TibetView storage", e);
 		}
 		storage.setSecurityContext(getEcho2Application());
 	}

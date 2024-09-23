@@ -178,7 +178,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) throws Exception {
 		RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 		http.securityMatcher(securityRequestMatcher); // Triggers the SecurityFilterChain, also for OPTIONS requests!
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Prevent session from leaking over multiple servlets.
+
+		// STATELESS prevents session from leaking over multiple servlets.
+		// The Ladybug (echo2) however requires cookie persistence. Hence it's set to NEVER
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.NEVER));
 
 		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
 			http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());

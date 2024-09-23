@@ -23,8 +23,8 @@ import jakarta.servlet.ServletContext;
 
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -72,11 +72,11 @@ import org.frankframework.util.StringUtil;
  * }</pre>
  */
 @Configuration
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
+@EnableWebSecurity // Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware, ServletContextAware {
-	private static final Logger log = LoggerFactory.getLogger("ladybug");
+	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private @Setter ApplicationContext applicationContext;
@@ -116,6 +116,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 
 	private SecurityFilterChain configureChain() throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
+		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(authenticator));
 
 		authenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
 		authenticator.registerServlet(createServletConfig("ladybugFrontendServletBean"));
@@ -123,10 +124,10 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
 
-		httpSecurity.csrf(CsrfConfigurer::disable); //Disable CSRF, should be configured in the Ladybug
-		httpSecurity.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
-		httpSecurity.logout(LogoutConfigurer::disable); //Disable the logout filter
-		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+		httpSecurity.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
+		httpSecurity.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
+		httpSecurity.logout(LogoutConfigurer::disable); // Disable the logout filter
+		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
 		return authenticator.configureHttpSecurity(httpSecurity);
 	}
 

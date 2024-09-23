@@ -15,17 +15,16 @@
 */
 package org.frankframework.ladybug;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.testtool.web.ApiServlet;
 import nl.nn.testtool.web.FrontendServlet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Log4j2
 @Configuration
 public class LadybugConfiguration {
-	private static final Logger log = LoggerFactory.getLogger("ladybug");
 
 	@Bean
 	public ServletRegistrationBean<ApiServlet> ladybugApiServletBean() {
