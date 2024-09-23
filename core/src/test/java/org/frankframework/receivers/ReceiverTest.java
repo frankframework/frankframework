@@ -552,24 +552,12 @@ public class ReceiverTest {
 		doNothing().when(listener).open();
 		doNothing().when(listener).configure();
 
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
-
 		createMessagingSource(listener);
 
 		@SuppressWarnings("unchecked")
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		receiver.setErrorStorage(errorStorage);
-		receiver.setMessageLog(messageLog);
-
-		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
-		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
-		retryIntervalField.setAccessible(true);
-		retryIntervalField.set(receiver, 2);
 
 		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 
@@ -596,16 +584,10 @@ public class ReceiverTest {
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
 			@Override
 			public void run() {
-				try {
-						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, messageWrapper, session, false);
-						} catch (Exception e) {
-							LOG.warn("Caught exception in Receiver:", e);
-						} finally {
-							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
-						}
-				} catch (IllegalAccessException| IllegalArgumentException e) {
-					throw Lombok.sneakyThrow(e);
+				try (PipeLineSession session = new PipeLineSession()) {
+					receiver.processRawMessage(listener, messageWrapper, session, false);
+				} catch (Exception e) {
+					LOG.warn("Caught exception in Receiver:", e);
 				} finally {
 					semaphore.release();
 				}
@@ -616,6 +598,7 @@ public class ReceiverTest {
 		mockListenerThread.start();
 		semaphore.acquire(); // Wait until thread is finished.
 
+		// Assert
 		verify(jmsMessage, atLeastOnce()).acknowledge();
 	}
 
