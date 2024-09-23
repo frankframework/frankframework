@@ -1,24 +1,30 @@
 package org.frankframework.receivers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public abstract class MockListenerBase implements IListener<String> {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 	private final AtomicBoolean isOpen = new AtomicBoolean(false);
+	private final List<PipeLine.ExitState> exitStates = Collections.synchronizedList(new ArrayList<>());
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -47,7 +53,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<String> rawMessage, @NotNull Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
 		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);
@@ -56,7 +62,11 @@ public abstract class MockListenerBase implements IListener<String> {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
-		// No-op
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) {
+		exitStates.add(processResult.getState());
+	}
+
+	public PipeLine.ExitState getLastExitState() {
+		return exitStates.get(exitStates.size() - 1);
 	}
 }

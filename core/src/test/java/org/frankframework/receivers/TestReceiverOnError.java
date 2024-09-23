@@ -29,6 +29,17 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -44,16 +55,6 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Tag("slow")
@@ -243,6 +244,7 @@ public class TestReceiverOnError {
 		// Assert the Receiver state
 		assertEquals(RunState.STARTED, receiver.getRunState());
 		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+		assertEquals(ExitState.ERROR, listener.getLastExitState());
 	}
 
 	@Test
@@ -258,5 +260,6 @@ public class TestReceiverOnError {
 		waitWhileInState(receiver, RunState.STARTED);
 		waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
 		assertEquals(RunState.STOPPED, receiver.getRunState());
+		assertEquals(ExitState.ERROR, listener.getLastExitState());
 	}
 }
