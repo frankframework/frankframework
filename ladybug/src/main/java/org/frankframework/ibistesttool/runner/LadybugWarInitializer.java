@@ -68,7 +68,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 		try {
 			super.onStartup(servletContext);
-			APPLICATION_LOG.fatal("Created Ladybug TestTool in {} ms", () -> (System.currentTimeMillis() - start));
+			APPLICATION_LOG.fatal("Started Ladybug TestTool in {} ms", () -> (System.currentTimeMillis() - start));
 		} catch (Exception e) {
 			APPLICATION_LOG.fatal("Unable to start Ladybug TestTool", e);
 			throw e;

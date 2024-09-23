@@ -249,21 +249,23 @@ export class AppService {
   private databaseSchedulesEnabledSubject = new Subject<boolean>();
   private summariesSubject = new Subject<void>();
   private iframePopoutUrlSubject = new Subject<string>();
+  private toggleSidebarSubject = new Subject<void>();
 
-  loading$ = this.loadingSubject.asObservable();
-  reload$ = this.reloadSubject.asObservable();
-  customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
-  appConstants$ = this.appConstantsSubject.asObservable();
-  adapters$ = this.adaptersSubject.asObservable();
-  alerts$ = this.alertsSubject.asObservable();
-  startupError$ = this.startupErrorSubject.asObservable();
-  configurations$ = this.configurationsSubject.asObservable();
-  messageLog$ = this.messageLogSubject.asObservable();
-  instanceName$ = this.instanceNameSubject.asObservable();
-  dtapStage$ = this.dtapStageSubject.asObservable();
-  databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
-  summaries$ = this.summariesSubject.asObservable();
-  iframePopoutUrl$ = this.iframePopoutUrlSubject.asObservable();
+  public loading$ = this.loadingSubject.asObservable();
+  public reload$ = this.reloadSubject.asObservable();
+  public customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
+  public appConstants$ = this.appConstantsSubject.asObservable();
+  public adapters$ = this.adaptersSubject.asObservable();
+  public alerts$ = this.alertsSubject.asObservable();
+  public startupError$ = this.startupErrorSubject.asObservable();
+  public configurations$ = this.configurationsSubject.asObservable();
+  public messageLog$ = this.messageLogSubject.asObservable();
+  public instanceName$ = this.instanceNameSubject.asObservable();
+  public dtapStage$ = this.dtapStageSubject.asObservable();
+  public databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
+  public summaries$ = this.summariesSubject.asObservable();
+  public iframePopoutUrl$ = this.iframePopoutUrlSubject.asObservable();
+  public toggleSidebar$ = this.toggleSidebarSubject.asObservable();
 
   adapters: Record<string, Adapter> = {};
   alerts: Alert[] = [];
@@ -422,6 +424,10 @@ export class AppService {
 
   setIframePopoutUrl(url: string): void {
     this.iframePopoutUrlSubject.next(url);
+  }
+
+  toggleSidebar(): void {
+    this.toggleSidebarSubject.next();
   }
 
   addAlert(type: string, configuration: string, message: string): void {

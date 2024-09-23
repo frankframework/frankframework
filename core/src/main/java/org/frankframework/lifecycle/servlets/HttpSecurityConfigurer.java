@@ -52,8 +52,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Configuration
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
+@EnableWebSecurity // Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity>, InitializingBean {
 
 	private @Setter @Autowired ServletManager servletManager;

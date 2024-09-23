@@ -139,7 +139,7 @@ public class LarvaServlet extends HttpServletBase {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		String realPath = getServletContext().getRealPath("/jsp/"); //Points to a folder in the webapp project
+		String realPath = getServletContext().getRealPath("/jsp/"); // Points to a folder in the webapp project
 
 		LarvaTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");

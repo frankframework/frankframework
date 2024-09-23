@@ -4,9 +4,10 @@ import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
 import { ScrollToTopComponent } from './scroll-to-top.component';
 import { CommonModule } from '@angular/common';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
-import { SideNavigationDirective } from '../side-navigation.directive';
 import { InformationModalComponent } from '../information-modal/information-modal.component';
 import { ServerInfoService } from '../../../services/server-info.service';
+import { CdkAccordionModule } from '@angular/cdk/accordion';
+import { SidebarDirective } from './sidebar.directive';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -16,11 +17,12 @@ import { ServerInfoService } from '../../../services/server-info.service';
   imports: [
     CommonModule,
     RouterModule,
+    CdkAccordionModule,
     CustomViewsComponent,
     MinimalizaSidebarComponent,
     ScrollToTopComponent,
-    SideNavigationDirective,
     InformationModalComponent,
+    SidebarDirective,
   ],
 })
 export class PagesNavigationComponent implements OnChanges, OnInit {
@@ -54,18 +56,25 @@ export class PagesNavigationComponent implements OnChanges, OnInit {
     this.shouldOpenInfo.emit();
   }
 
-  getClassByRoute(className: string, routeState: string | string[]): Record<string, boolean> {
-    if (Array.isArray(routeState)) {
-      return {
-        [className]: routeState.some((routePartial) => this.router.url.split('?')[0].includes(routePartial)),
-      };
-    }
+  getClassByRoute(className: string, routeState: string | string[], isExpanded?: boolean): Record<string, boolean> {
     return {
-      [className]: this.router.url.split('?')[0].includes(routeState),
+      [className]: isExpanded || this.getExpandedByRoute(routeState),
     };
+  }
+
+  getExpandedByRoute(routeState: string | string[]): boolean {
+    if (Array.isArray(routeState)) {
+      return routeState.some((routePartial) => this.router.url.split('?')[0].includes(routePartial));
+    }
+    return this.router.url.split('?')[0].includes(routeState);
   }
 
   getConfigurationsQueryParam(): string | null {
     return this.queryParams.get('configuration');
   }
+
+  /*expandCollapse(accordionItem: CdkAccordionItem, element: HTMLUListElement): void {
+    accordionItem.toggle();
+    element.style.height = accordionItem.expanded ? `${element.clientHeight}px` : '';
+  }*/
 }

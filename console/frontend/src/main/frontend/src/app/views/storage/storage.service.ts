@@ -1,6 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import type { DataTableDirective } from 'angular-datatables';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -63,7 +62,6 @@ export class StorageService {
     messageId: null,
   };
   selectedMessages: Record<string, boolean> = {};
-  dtElement?: DataTableDirective | null;
 
   constructor(
     private http: HttpClient,
@@ -136,7 +134,6 @@ export class StorageService {
   }
 
   updateTable(): void {
-    this.dtElement?.dtInstance.then((table) => table.draw());
     for (const index in this.selectedMessages) {
       this.selectedMessages[index] = false;
     }

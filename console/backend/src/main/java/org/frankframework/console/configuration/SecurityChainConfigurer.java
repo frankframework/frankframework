@@ -17,14 +17,13 @@ package org.frankframework.console.configuration;
 
 import java.lang.reflect.Method;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.lifecycle.servlets.AuthenticationType;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
-import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -40,21 +39,25 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Setter;
+import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 
 @Configuration
 @EnableWebSecurity // Enables Spring Security
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private @Setter ApplicationContext applicationContext;
 	private Environment environment;
 	private boolean csrfEnabled;
@@ -115,7 +118,6 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 		// logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
 		return authenticator.configureHttpSecurity(http);
 	}
@@ -142,8 +144,9 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	}
 
 	@Bean
-	public SecurityFilterChain createSecurityChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
 		IAuthenticator authenticator = createAuthenticator();
+		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		authenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());

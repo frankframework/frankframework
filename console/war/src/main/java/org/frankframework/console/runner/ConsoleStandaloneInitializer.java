@@ -46,8 +46,11 @@ public class ConsoleStandaloneInitializer {
 	}
 
 	// Should start a XmlServletWebServerApplicationContext.
+	// Optionally, in order to enable the ladybug the profile ladybug.file or ladybug.database can be enabled.
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication();
+//		app.setAdditionalProfiles("ladybug.file");
+//		app.setAdditionalProfiles("ladybug.database");
 		app.setAllowBeanDefinitionOverriding(true);
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();

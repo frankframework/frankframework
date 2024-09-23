@@ -43,33 +43,22 @@
 
 	<bean class="org.frankframework.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
 
-	<bean name="maxCheckpoints" class="java.lang.Integer">
-		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
-	</bean>
-
-	<bean name="maxMemoryUsage" class="java.lang.Long">
-		<constructor-arg value="${ibistesttool.maxMemoryUsage}"/>
-	</bean>
-
+	<!-- used by multiple beans -->
 	<bean name="maxMessageLength" class="java.lang.Integer">
 		<constructor-arg value="${ibistesttool.maxMessageLength}"/>
 	</bean>
 
-	<bean name="regexFilter" class="java.lang.String">
-		<constructor-arg value="${ibistesttool.regexFilter}"/>
-	</bean>
-
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
-		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
-		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
-		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
-		<property name="regexFilter"><ref bean="regexFilter"/></property>
-		<property name="securityLoggerName" value="SEC"/>
+		<property name="maxCheckpoints" value="${ibistesttool.maxCheckpoints}" />
+		<property name="maxMemoryUsage" value="${ibistesttool.maxMemoryUsage}" />
+		<property name="maxMessageLength"><ref bean="maxMessageLength" /></property>
+		<property name="regexFilter" value="${ibistesttool.regexFilter}" />
+		<property name="securityLoggerName" value="SEC" />
 		<!-- Prevent threads that didn't start and aren't cancelled from keeping reports in progress -->
-		<property name="closeThreads" value="true"/>
-		<property name="closeNewThreadsOnly" value="true"/>
+		<property name="closeThreads" value="true" />
+		<property name="closeNewThreadsOnly" value="true" />
 		<!-- See comment on closeReportsTask -->
-		<property name="closeMessageCapturers" value="false"/>
+		<property name="closeMessageCapturers" value="false" />
 	</bean>
 
 	<!--
@@ -109,7 +98,7 @@
 
 	<bean
 		name="debugStorageDatabase"
-		class="nl.nn.testtool.storage.database.DatabaseStorage"
+		class="org.frankframework.ibistesttool.DatabaseStorage"
 		autowire="byName"
 		depends-on="ladybugDatabaseChangelog"
 		>
@@ -244,7 +233,7 @@
 		depends-on="databaseStartupValidator"
 		>
 		<property name="dataSource" ref="ladybugDataSource"/>
-		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
+		<property name="changeLog" value="classpath:DatabaseChangelog_Debug.xml"/>
 		<property name="uiService">
 			<!-- Show "Running Changeset: ..." in System.out -->
 			<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
