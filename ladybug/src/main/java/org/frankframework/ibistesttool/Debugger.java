@@ -105,11 +105,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object pipelineSessionKey(String correlationId, String sessionKey, Object sessionValue) {
-		return testTool.inputpoint(correlationId, null, "SessionKey " + sessionKey, sessionValue);
-	}
-
-	@Override
 	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {
 		return testTool.endpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
 	}
@@ -248,8 +243,22 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object storeInSessionKey(String correlationId, String sessionKey, Object result) {
-		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey, result);
+	public Object sessionOutputPoint(String correlationId, String sessionKey, Object result) {
+		String name = "SessionKey " + sessionKey;
+		if(sessionKey.startsWith(PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX)) {
+			name = "SystemKey " + sessionKey;
+		}
+
+		return testTool.outputpoint(correlationId, null, name, result);
+	}
+
+	@Override
+	public Object sessionInputPoint(String correlationId, String sessionKey, Object result) {
+		String name = "SessionKey " + sessionKey;
+		if(sessionKey.startsWith(PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX)) {
+			name = "SystemKey " + sessionKey;
+		}
+		return testTool.inputpoint(correlationId, null, name, result);
 	}
 
 	@Override

@@ -108,7 +108,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		while (iterator.hasNext()) {
 			String sessionKey = iterator.next();
 			Object sessionValue = session.get(sessionKey);
-			sessionValue = ibisDebugger.pipelineSessionKey(correlationId, sessionKey, sessionValue);
+			sessionValue = ibisDebugger.sessionInputPoint(correlationId, sessionKey, sessionValue);
 			session.put(sessionKey, sessionValue);
 		}
 		PipeLineResult pipeLineResult = null;
@@ -121,7 +121,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			throw ibisDebugger.pipelineAbort(pipeLine, correlationId, throwable);
 		}
 		ibisDebugger.showOutputValue(correlationId, "exitState", pipeLineResult.getState().name());
-		if (pipeLineResult.getExitCode()!=0) {
+		if (pipeLineResult.getExitCode() != null) {
 			ibisDebugger.showOutputValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
 		}
 

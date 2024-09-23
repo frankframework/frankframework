@@ -39,8 +39,6 @@ public interface IbisDebugger {
 	public Message pipelineAbort(PipeLine pipeLine, String correlationId, Message output);
 	public Throwable pipelineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
-	public Object pipelineSessionKey(String correlationId, String sessionKey, Object sessionValue);
-
 	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input);
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output);
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
@@ -62,7 +60,10 @@ public interface IbisDebugger {
 	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue);
 	public Object getInputFromFixedValue(String correlationId, Object fixedValue);
 	public Object getEmptyInputReplacement(String correlationId, Object replacementValue);
-	public Object storeInSessionKey(String correlationId, String sessionKey, Object result);
+
+	public Object sessionOutputPoint(String correlationId, String sessionKey, Object result);
+	public Object sessionInputPoint(String correlationId, String sessionKey, Object result);
+
 	public Message preserveInput(String correlationId, Message input);
 
 	public Object parameterResolvedTo(IParameter parameter, String correlationId, Object value);

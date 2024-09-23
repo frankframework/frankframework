@@ -94,9 +94,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
-	public void setExitState(PipeLine.ExitState state, int code) {
+	public void setExitState(PipeLine.ExitState state, Integer code) {
 		put(EXIT_STATE_CONTEXT_KEY, state);
-		put(EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
+		if(code != null) {
+			put(EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
+		}
 	}
 
 	public void setExitState(PipeLineResult pipeLineResult) {
