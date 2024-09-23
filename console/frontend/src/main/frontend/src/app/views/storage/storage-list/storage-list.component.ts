@@ -129,53 +129,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       filter: false,
       serverSide: true,
     };
-    this.datasource.setServerRequest(
-      (requestInfo) =>
-        new Promise((resolve, reject) => {
-          let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
-          const search = this.search;
-          const searchSession: Record<keyof typeof search, string> = {};
-          for (const column in search) {
-            const text = search[column as keyof typeof search];
-            if (text) {
-              queryParameters += `&${column}=${text}`;
-              searchSession[column as keyof typeof search] = text;
-            }
-          }
-          this.Session.set('search', searchSession);
 
-          this.storageService.getStorageList(queryParameters).subscribe({
-            next: (response) => {
-              this.targetStates = response.targetStates ?? {};
-              resolve({
-                data: response.messages,
-                totalEntries: response.totalMessages,
-                filteredEntries: response.recordsFiltered,
-                offset: response.skipMessages,
-                size: response.messages.length,
-              });
-              this.searching = false;
-              this.clearSearchLadda = false;
-              for (const message of response.messages) {
-                if (!(message.id in this.storageService.selectedMessages)) {
-                  this.storageService.selectedMessages[message.id] = false;
-                }
-              }
-              for (const messageId in this.storageService.selectedMessages) {
-                const messageExists = response.messages.some((message) => message.id === messageId);
-                if (!messageExists) {
-                  delete this.storageService.selectedMessages[messageId];
-                }
-              }
-            },
-            error: (error: unknown) => {
-              this.searching = false;
-              this.clearSearchLadda = false;
-              reject(error);
-            },
-          });
-        }),
-    );
+    this.setupMessagesRequest();
 
     const searchSession = this.Session.get<Record<string, string>>('search');
 
@@ -236,6 +191,56 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         label: true,
       };
     }
+  }
+
+  setupMessagesRequest(): void {
+    this.datasource.setServerRequest(
+      (requestInfo) =>
+        new Promise((resolve, reject) => {
+          let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
+          const search = this.search;
+          const searchSession: Record<keyof typeof search, string> = {};
+          for (const column in search) {
+            const text = search[column as keyof typeof search];
+            if (text) {
+              queryParameters += `&${column}=${text}`;
+              searchSession[column as keyof typeof search] = text;
+            }
+          }
+          this.Session.set('search', searchSession);
+
+          this.storageService.getStorageList(queryParameters).subscribe({
+            next: (response) => {
+              this.targetStates = response.targetStates ?? {};
+              resolve({
+                data: response.messages,
+                totalEntries: response.totalMessages,
+                filteredEntries: response.recordsFiltered,
+                offset: response.skipMessages,
+                size: response.messages.length,
+              });
+              this.searching = false;
+              this.clearSearchLadda = false;
+              for (const message of response.messages) {
+                if (!(message.id in this.storageService.selectedMessages)) {
+                  this.storageService.selectedMessages[message.id] = false;
+                }
+              }
+              for (const messageId in this.storageService.selectedMessages) {
+                const messageExists = response.messages.some((message) => message.id === messageId);
+                if (!messageExists) {
+                  delete this.storageService.selectedMessages[messageId];
+                }
+              }
+            },
+            error: (error: unknown) => {
+              this.searching = false;
+              this.clearSearchLadda = false;
+              reject(error);
+            },
+          });
+        }),
+    );
   }
 
   getNotes(): Note[] {
