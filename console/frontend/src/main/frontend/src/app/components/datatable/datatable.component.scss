@@ -1,0 +1,75 @@
+table {
+  margin-bottom: 10px;
+}
+
+.dt-options {
+  display: flex;
+
+  .dt-length,
+  .dt-search {
+    flex: 1;
+  }
+
+  .dt-search label {
+    float: right;
+  }
+
+  label {
+    font-weight: 400;
+  }
+
+  select,
+  input {
+    border: 1px solid #bdbfc2;
+    border-radius: 4px;
+    outline: none;
+  }
+}
+
+.dt-pagination {
+  display: flex;
+
+  .dt-pagination-info,
+  .dt-pagination-control {
+    flex: 1;
+  }
+
+  .dt-pagination-info {
+    align-content: center;
+  }
+
+  .dt-pagination-control .dt-control-wrapper {
+    float: right;
+    border: 1px solid #bdbfc2;
+    border-radius: 4px;
+
+    .dt-btn {
+      display: inline-block;
+      padding: 4px 10px;
+      border: none;
+      outline: none;
+      background: inherit;
+
+      &.current-page {
+        background: #e0e0e0;
+      }
+
+      &.first-page,
+      &.last-page {
+        cursor: pointer;
+      }
+
+      & + .dt-btn {
+        border-left: 1px solid #bdbfc2;
+      }
+
+      &:hover:not(.fill) {
+        background: #e0e0e0;
+      }
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
+    }
+  }
+}

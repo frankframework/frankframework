@@ -28,6 +28,7 @@ export class ToDateDirective implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(): void {
+    if (this.time === undefined || Number.isNaN(this.time)) return;
     if (Number.isNaN(Number(this.time))) this.time = new Date(this.time).getTime();
 
     const toDate = new Date((this.time as number) - this.consoleState.timeOffset);
