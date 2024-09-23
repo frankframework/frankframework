@@ -92,7 +92,7 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   }
 
   applyPaginationSize(sizeValue: string): void {
-    this.datasource.options = { size: Number.parseInt(sizeValue, 10) };
+    this.datasource.options = { size: +sizeValue };
   }
 
   updatePage(pageNumber: number): void {

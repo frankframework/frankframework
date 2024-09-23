@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
-import { SidebarService } from '../sidebar.service';
+import { AppService } from '../../../app.service';
 
 @Component({
   selector: 'app-minimaliza-sidebar',
   template:
-    '<a class="navbar-minimalize minimalize" (click)="toggleSidebar()"><i class="fa left fa-angle-double-left"></i><i class="fa right fa-angle-double-right"></i></a>',
+    '<a class="navbar-minimalize minimalize" (click)="toggle()"><i class="fa left fa-angle-double-left"></i><i class="fa right fa-angle-double-right"></i></a>',
   standalone: true,
 })
 export class MinimalizaSidebarComponent {
-  constructor(private Sidebar: SidebarService) {}
-  toggleSidebar(): void {
-    this.Sidebar.toggle();
+  constructor(private appService: AppService) {}
+
+  toggle(): void {
+    this.appService.toggleSidebar();
   }
 }

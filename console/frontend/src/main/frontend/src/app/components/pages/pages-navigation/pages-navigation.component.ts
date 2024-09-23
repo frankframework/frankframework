@@ -7,6 +7,7 @@ import { CustomViewsComponent } from '../../custom-views/custom-views.component'
 import { InformationModalComponent } from '../information-modal/information-modal.component';
 import { ServerInfoService } from '../../../services/server-info.service';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
+import { SidebarDirective } from './sidebar.directive';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -21,6 +22,7 @@ import { CdkAccordionModule } from '@angular/cdk/accordion';
     MinimalizaSidebarComponent,
     ScrollToTopComponent,
     InformationModalComponent,
+    SidebarDirective,
   ],
 })
 export class PagesNavigationComponent implements OnChanges, OnInit {
