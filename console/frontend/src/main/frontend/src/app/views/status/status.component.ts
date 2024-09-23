@@ -318,11 +318,9 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private getCompiledAdapterList() {
     const compiledAdapterList: string[] = [];
-    // let adapters = $filter('configurationFilter')($scope.adapters, $scope);
     const adapters = ConfigurationFilter(this.adapters, this.selectedConfiguration, this.filter);
     for (const adapter in adapters) {
-      const configuration = adapters[adapter].configuration;
-      compiledAdapterList.push(configuration + "/" + adapter);
+      compiledAdapterList.push(adapter);
     }
     return compiledAdapterList;
   }
