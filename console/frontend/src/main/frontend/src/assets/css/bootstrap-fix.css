@@ -5,6 +5,7 @@ html {
 #wrapper {
   display: flex;
   overflow-x: initial;
+  min-height: 100%;
 }
 
 app-pages-navigation {

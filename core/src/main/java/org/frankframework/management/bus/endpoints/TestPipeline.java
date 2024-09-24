@@ -23,13 +23,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Transformer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.messaging.Message;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -46,7 +49,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.TEST_PIPELINE)
@@ -89,13 +91,17 @@ public class TestPipeline extends BusEndpointBase {
 		return processMessage(adapter, payload, threadContext, expectsReply);
 	}
 
-	//Does not support async requests because receiver requests are synchronous
+	// Does not support async requests because receiver requests are synchronous
 	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
-		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			if(threadContext != null) {
 				pls.putAll(threadContext);
+			}
+
+			String correlationId = null;
+			if (!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
+				correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 			}
 
 			PipeLineSession.updateListenerParameters(pls, messageId, correlationId);
@@ -111,7 +117,7 @@ public class TestPipeline extends BusEndpointBase {
 				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
 
 				if(!expectsReply) {
-					return null; //Abort here, we do not need a reply.
+					return null; // Abort here, we do not need a reply.
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);

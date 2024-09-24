@@ -18,6 +18,9 @@ package org.frankframework.console.runner;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
@@ -34,13 +37,28 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * @author Niels Meijer
  */
-@Order(500)
+@Order(400)
 public class ConsoleWarInitializer extends SpringBootServletInitializer {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	@Configuration
 	public static class WarConfiguration {
 		// NO OP required for Spring Boot. Used when running an Annotation Based config, which we are not, see setSources(...) in run(SpringApplication).
+	}
+
+	// Purely here for some debug info
+	@Override
+	public void onStartup(ServletContext servletContext) throws ServletException {
+		APPLICATION_LOG.debug("Starting Frank!Framework Console");
+		final long start = System.currentTimeMillis();
+
+		try {
+			super.onStartup(servletContext);
+			APPLICATION_LOG.fatal("Started Frank!Framework Console in {} ms", () -> (System.currentTimeMillis() - start));
+		} catch (Exception e) {
+			APPLICATION_LOG.fatal("Unable to start Frank!Framework Console", e);
+			throw e;
+		}
 	}
 
 	@Override
@@ -53,7 +71,6 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 	@Override
 	protected WebApplicationContext run(SpringApplication application) {
-		APPLICATION_LOG.debug("Starting Frank!Framework Console");
 		Set<String> set = new HashSet<>();
 		set.add("FrankConsoleContext.xml");
 		application.setWebApplicationType(WebApplicationType.NONE);

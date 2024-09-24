@@ -7,7 +7,6 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
 import { LaddaModule } from 'angular2-ladda';
-import { DataTablesModule } from 'angular-datatables';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -54,7 +53,6 @@ import { WebservicesComponent } from './views/webservices/webservices.component'
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
-import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
 import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
@@ -88,6 +86,8 @@ import { AdapterStatusComponent } from './views/status/adapter-status/adapter-st
 import { ConfigurationMessagesComponent } from './views/status/configuration-messages/configuration-messages.component';
 import { ConfigurationSummaryComponent } from './views/status/configuration-summary/configuration-summary.component';
 import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
+import { DatatableComponent } from './components/datatable/datatable.component';
+import { DtContentDirective } from './components/datatable/dt-content.directive';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -149,7 +149,6 @@ const windowProvider: ValueProvider = {
     DropLastCharPipe,
     OrderByPipe,
     SearchFilterPipe,
-    TruncatePipe,
     VariablesFilterPipe,
     FormatStatisticsPipe,
     FormatStatKeysPipe,
@@ -170,13 +169,11 @@ const windowProvider: ValueProvider = {
     AppRoutingModule,
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
-    DataTablesModule,
 
     // standalone directives
     TimeSinceDirective,
     ToDateDirective,
     ThSortableDirective,
-    SideNavigationDirective,
     QuickSubmitFormDirective,
 
     // standalone components
@@ -193,8 +190,14 @@ const windowProvider: ValueProvider = {
     PagesTopnavbarComponent,
     HumanFileSizePipe,
     MonacoEditorComponent,
+    DatatableComponent,
+    DtContentDirective,
+
+    // standalone pipes
+    TruncatePipe,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],
+  exports: [TruncatePipe],
 })
 export class AppModule {}

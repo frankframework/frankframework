@@ -20,30 +20,33 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.Properties;
 
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StreamUtil;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.InitializingBean;
 import org.yaml.snakeyaml.Yaml;
 
-import lombok.extern.log4j.Log4j2;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
 
 @Log4j2
 public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
-	public static final String DEFAULT_RESOURCE_FILE = "resources.yml";
 	private FrankResources resources = null;
+	private @Setter String resourceFile = "resources.yml";
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		URL url = ClassUtils.getResourceURL(DEFAULT_RESOURCE_FILE);
+		URL url = ClassUtils.getResourceURL(resourceFile);
 		if(url == null) {
-			log.info("did not find [{}] skipping resource based object lookups", DEFAULT_RESOURCE_FILE);
+			log.info("did not find [{}] skipping resource based object lookups", resourceFile);
 			return;
 		}
 
 		try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			Yaml yaml = new Yaml();
 			resources = yaml.loadAs(reader, FrankResources.class);
+		} catch (Exception e) {
+			throw new IllegalStateException("unable to parse [" + resourceFile + "]", e);
 		}
 	}
 

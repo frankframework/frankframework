@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 WeAreFrank!
+ * Copyright 2021 - 2024 WeAreFrank!
  * Copyright 2017 Nationale-Nederlanden
  * Copyright 2014 Akamai Technologies http://developer.akamai.com.
  *
@@ -41,7 +41,7 @@ public class NetStorageUtils {
 	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, NetStorageUtils.KeyedHashAlgorithm)}
 	 * Currently supported hashes include HMAC-MD5; HMAC-SHA1; HMAC-SHA256
 	 *
-	 * The string representation matches the java {@link javax.crypto.Mac#getInstance(String)}} cononical names.
+	 * The string representation matches the java {@link javax.crypto.Mac#getInstance(String)} cononical names.
 	 */
 	public enum KeyedHashAlgorithm {
 
