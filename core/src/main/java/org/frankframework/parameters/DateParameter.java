@@ -21,10 +21,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -71,7 +72,7 @@ public class DateParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Date getValueAsType(@NotNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Date getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if (request.asObject() instanceof Date date) {
 			return date;
 		}

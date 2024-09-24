@@ -22,10 +22,11 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -111,7 +112,7 @@ public class NumberParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Number getValueAsType(@NotNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Number getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
 			if (request.asObject() instanceof Number number) {
 				return number;

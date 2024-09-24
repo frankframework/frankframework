@@ -17,8 +17,9 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.extern.log4j.Log4j2;
-import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.stream.Message;
 
@@ -30,7 +31,7 @@ public class BooleanParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Boolean getValueAsType(@NotNull Message request, boolean namespaceAware) throws IOException {
+	protected Boolean getValueAsType(@Nonnull Message request, boolean namespaceAware) throws IOException {
 		if (request.asObject() instanceof Boolean bool) {
 			return bool;
 		}
