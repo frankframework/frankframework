@@ -25,6 +25,7 @@ import java.text.ParseException;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -110,29 +111,27 @@ public class NumberParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Number getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Number getValueAsType(@NotNull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
-			if (request instanceof Number number) {
+			if (request.asObject() instanceof Number number) {
 				return number;
 			}
 			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->request, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
 			DecimalFormat decimalFormat = new DecimalFormat();
 			decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-			Message requestMessage = Message.asMessage(request);
 			try {
-				return decimalFormat.parse(requestMessage.asString());
+				return decimalFormat.parse(request.asString());
 			} catch (ParseException e) {
 				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
 			}
 		}
 		if(getType() == ParameterType.INTEGER) {
-			if (request instanceof Integer integer) {
+			if (request.asObject() instanceof Integer integer) {
 				return integer;
 			}
 			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->request);
-			Message requestMessage = Message.asMessage(request);
 			try {
-				return Integer.parseInt(requestMessage.asString());
+				return Integer.parseInt(request.asString());
 			} catch (NumberFormatException e) {
 				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
 			}

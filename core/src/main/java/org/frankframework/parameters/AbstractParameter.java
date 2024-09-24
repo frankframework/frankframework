@@ -33,6 +33,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -448,7 +450,13 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 		if(result != null && getType().requiresTypeConversion) {
 			try {
-				return getValueAsType(result, namespaceAware);
+				if (result instanceof Message message1) {
+					return getValueAsType(message1, namespaceAware);
+				} else {
+					try (Message message1 = Message.asMessage(result)) {
+						return getValueAsType(message1, namespaceAware);
+					}
+				}
 			} catch(IOException e) {
 				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
 			}
@@ -491,47 +499,50 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	/** Converts raw data to configured parameter type */
-	protected Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
-		Message requestMessage = Message.asMessage(request);
-		Object result = request;
+	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
+		Object result;
 		switch(getType()) {
 			case NODE:
 				try {
-					if (isRemoveNamespaces()) {
-						requestMessage = XmlUtils.removeNamespaces(requestMessage);
-					}
-					if(request instanceof Document document) {
+					if(request.asObject() instanceof Document document) {
 						return document.getDocumentElement();
 					}
-					if(request instanceof Node) {
-						return request;
+					if(request.asObject() instanceof Node node) {
+						return node;
 					}
-					result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
-					final Object finalResult = result;
-					LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
+					Message requestToUse;
+					if (isRemoveNamespaces()) {
+						requestToUse = XmlUtils.removeNamespaces(request);
+					} else {
+						requestToUse = request;
+					}
+					result = XmlUtils.buildDomDocument(requestToUse.asInputSource(), namespaceAware).getDocumentElement();
 				} catch (DomBuilderException | IOException | XmlException e) {
-					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
+					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
 				}
 				break;
 			case DOMDOC:
 				try {
+					if(request.asObject() instanceof Document document) {
+						return document;
+					}
+					Message requestToUse;
 					if (isRemoveNamespaces()) {
-						requestMessage = XmlUtils.removeNamespaces(requestMessage);
+						requestToUse = XmlUtils.removeNamespaces(request);
+					} else {
+						requestToUse = request;
 					}
-					if(request instanceof Document) {
-						return request;
-					}
-					result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
-					final Object finalResult = result;
-					LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
+					result = XmlUtils.buildDomDocument(requestToUse.asInputSource(), namespaceAware);
 				} catch (DomBuilderException | IOException | XmlException e) {
-					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
+					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
 				}
 				break;
 			default:
+				result = request.asObject();
 				break;
 		}
 
+		LOG.debug("final result [{}][{}]", ()->result != null ? result.getClass().getName() : null, ()-> result);
 		return result;
 	}
 

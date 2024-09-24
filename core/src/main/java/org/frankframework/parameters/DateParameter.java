@@ -24,6 +24,7 @@ import java.util.Date;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -70,32 +71,22 @@ public class DateParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Date getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
-		if (request instanceof Date date) {
+	protected Date getValueAsType(@NotNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+		if (request.asObject() instanceof Date date) {
 			return date;
 		}
 
-		if (request instanceof Message message) {
-			return parseFromMessage(message);
-		}
-
-		try (Message requestMessage = Message.asMessage(request)) {
-			return parseFromMessage(requestMessage);
-		}
-	}
-
-	private Date parseFromMessage(Message requestMessage) throws IOException, ParameterException {
 		if(formatType == DateFormatType.XMLDATETIME) {
-			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> requestMessage);
-			return XmlUtils.parseXmlDateTime(requestMessage.asString());
+			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> request);
+			return XmlUtils.parseXmlDateTime(request.asString());
 		}
 
-		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> requestMessage, this::getFormatString);
+		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);
 		DateFormat df = new SimpleDateFormat(getFormatString());
 		try {
-			return df.parse(requestMessage.asString());
+			return df.parse(request.asString());
 		} catch (ParseException e) {
-			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
+			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to Date using formatString [" + getFormatString() + "]", e);
 		}
 	}
 
