@@ -185,7 +185,7 @@ h5 {
   border-left: 4px solid #19aa8d;
 }
 .nav.nav-second-level.collapse[style] {
-  height: auto !important;
+  height: auto;
 }
 .nav-header a {
   color: #dfe4ed;

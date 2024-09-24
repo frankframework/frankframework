@@ -28,7 +28,7 @@
           [expanded]="getExpandedByRoute('configuration')"
           [ngClass]="getClassByRoute('active', 'configuration', accordionItemConfiguration.expanded)"
         >
-          <a (click)="accordionItemConfiguration.toggle()"
+          <a (click)="expandCollapse(accordionItemConfiguration, $event)"
             ><i class="fa fa-cogs"></i>
             <span class="nav-label">Configurations</span>
             <span class="fa arrow"></span
@@ -53,7 +53,7 @@
           [expanded]="getExpandedByRoute('logging')"
           [ngClass]="getClassByRoute('active', 'logging', accordionItemLogging.expanded)"
         >
-          <a (click)="accordionItemLogging.toggle()"
+          <a (click)="expandCollapse(accordionItemLogging, $event)"
             ><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemLogging.expanded }">
@@ -63,7 +63,7 @@
                 paths: 'exact',
                 queryParams: 'ignored',
                 matrixParams: 'exact',
-                fragment: 'ignored'
+                fragment: 'ignored',
               }"
             >
               <a routerLink="/logging">Log Files</a>
@@ -82,7 +82,7 @@
           [expanded]="getExpandedByRoute(['testing', 'test-'])"
           [ngClass]="getClassByRoute('active', ['testing', 'test-'], accordionItemTesting.expanded)"
         >
-          <a data-cy-nav="testing" (click)="accordionItemTesting.toggle()"
+          <a data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
             ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemTesting.expanded }">
@@ -112,7 +112,7 @@
           [expanded]="getExpandedByRoute(['jdbc', 'liquibase'])"
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
         >
-          <a (click)="accordionItemJdbc.toggle()"
+          <a (click)="expandCollapse(accordionItemJdbc, $event)"
             ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
@@ -136,7 +136,7 @@
           [expanded]="getExpandedByRoute('jms')"
           [ngClass]="getClassByRoute('active', 'jms', accordionItemJms.expanded)"
         >
-          <a (click)="accordionItemJms.toggle()"
+          <a (click)="expandCollapse(accordionItemJms, $event)"
             ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJms.expanded }">
@@ -179,7 +179,7 @@
             getClassByRoute('active', ['connection-', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
           "
         >
-          <a (click)="accordionItemOverview.toggle()"
+          <a (click)="expandCollapse(accordionItemOverview, $event)"
             ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemOverview.expanded }">

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
 import { InformationModalComponent } from '../information-modal/information-modal.component';
 import { ServerInfoService } from '../../../services/server-info.service';
-import { CdkAccordionModule } from '@angular/cdk/accordion';
+import { CdkAccordionItem, CdkAccordionModule } from '@angular/cdk/accordion';
 import { SidebarDirective } from './sidebar.directive';
 
 @Component({
@@ -73,8 +73,28 @@ export class PagesNavigationComponent implements OnChanges, OnInit {
     return this.queryParams.get('configuration');
   }
 
-  /*expandCollapse(accordionItem: CdkAccordionItem, element: HTMLUListElement): void {
-    accordionItem.toggle();
-    element.style.height = accordionItem.expanded ? `${element.clientHeight}px` : '';
-  }*/
+  expandCollapse(accordionItem: CdkAccordionItem, event: MouseEvent): void {
+    const toBeExpanded = !accordionItem.expanded;
+    const eventElement = event.target as HTMLElement;
+    const parentElement =
+      eventElement.tagName === 'A' ? eventElement.parentElement! : eventElement.parentElement!.parentElement!;
+    const element = parentElement.children[1] as HTMLElement;
+    const height = [...element.children].reduce((total, child) => total + child.clientHeight, 0);
+
+    if (toBeExpanded) {
+      element.style.opacity = '0';
+      element.style.height = '0';
+      accordionItem.toggle();
+      element.animate({ opacity: 1, height: `${height}px` }, 150).finished.then(() => {
+        element.removeAttribute('style');
+      });
+    } else {
+      element.style.opacity = '1';
+      element.style.height = `${height}px`;
+      accordionItem.toggle();
+      element.animate({ opacity: 0, height: `0px` }, 150).finished.then(() => {
+        element.removeAttribute('style');
+      });
+    }
+  }
 }
