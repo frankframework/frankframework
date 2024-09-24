@@ -455,37 +455,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-
-	<adapter name="JmsClientAckSender" description="Sender to Test acknowledgeMode=client" active="${active.jms}">
-		<pipeline>
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-			<pipe name="CallListener"
-				className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
-					replyToName="${jms.destination.i4testiaf_out}">
-					<param name="SOURCE" value="${hostname}_ClientAck" />
-				</sender>
-				<forward name="success" path="EXIT" />
-			</pipe>
-		</pipeline>
-	</adapter>
-
-	<adapter name="JmsClientAckListener" description="Listener to Test acknowledgeMode=client" active="${active.jms}">
-		<receiver name="JmsClientAckListener" transactionAttribute="NotSupported"
-			maxRetries="0">
-			<listener className="org.frankframework.jms.JmsListener" acknowledgeMode="client"
-				destinationName="${jms.destination.i4testiaf_ff}" useReplyTo="false" jmsRealm="qcf"
-				messageSelector="SOURCE='${hostname}_ClientAck'" />
-			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/JmsClientAckListener" />
-			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/JmsClientAckListener" />
-		</receiver>
-		<pipeline>
-			<ExceptionPipe name="oeps" />
-		</pipeline>
-	</adapter>
 </module>
