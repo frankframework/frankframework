@@ -264,7 +264,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-ladybug</artifactId>
+					<artifactId>frankframework-ladybug-debugger</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
