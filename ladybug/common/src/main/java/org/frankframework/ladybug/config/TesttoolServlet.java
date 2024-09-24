@@ -13,13 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ladybug.web;
+package org.frankframework.ladybug.config;
+
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import nl.nn.testtool.echo2.Echo2Application;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * @author Jaco de Groot

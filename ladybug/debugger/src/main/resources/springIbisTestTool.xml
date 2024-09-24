@@ -23,8 +23,8 @@
 
 	<!-- scan both the original and overridden configuration -->
 	<context:component-scan base-package="org.frankframework.ladybug">
-		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\.runner\..*"/>
-		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\.web\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\.runner\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\.web\..*"/>
 	</context:component-scan>
 
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->

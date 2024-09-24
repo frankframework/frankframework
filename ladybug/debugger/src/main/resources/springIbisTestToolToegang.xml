@@ -64,7 +64,7 @@
 	<bean name="messageTransformer" class="nl.nn.testtool.transform.LinkingMessageTransformer">
 		<property name="messageTransformers">
 			<list>
-				<bean class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
+				<bean class="org.frankframework.ladybug.transform.HideRegexMessageTransformer"/>
 				<bean class="nl.nn.testtool.transform.HideMessageTransformer">
 					<property name="nameEquals" value="SessionKey Temp:Password"/>
 				</bean>
