@@ -38,7 +38,7 @@ public class DateParameter extends AbstractParameter {
 	private DateFormatType formatType;
 
 	public DateParameter() {
-		setType(ParameterType.DATE); // Defaults to Date
+		setFormatType(DateFormatType.DATE); // Defaults to Date
 	}
 
 	public enum DateFormatType {
