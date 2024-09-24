@@ -1230,8 +1230,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						}
 						errorMessage += "]";
 
-						int status = pipeLineResult.getExitCode();
-						if(status > 0) {
+						Integer status = pipeLineResult.getExitCode();
+						if(status != null) {
 							errorMessage += ", exitcode ["+status+"]";
 						}
 

@@ -273,7 +273,6 @@ public class DatabaseStorage implements LogStorage, CrudStorage {
 	public Report getReport(Integer storageId) throws StorageException {
 		String query = "select report from " + getTable() + " where " + getStorageIdColumn() + " = ?";
 		log.debug("Get report query: " + query);
-		System.err.println(query);
 		List<Report> result = ladybugJdbcTemplate.query(query, new Object[]{storageId}, new int[] {Types.INTEGER},
 				(resultSet, rowNum) -> getReport(storageId, resultSet.getBytes(1)));
 //				(resultSet, rowNum) -> getReport(storageId, resultSet.getBlob(1)));
