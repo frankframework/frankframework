@@ -38,7 +38,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	private @Getter String name;
 	private @Getter ExitState state;
-	private @Getter int exitCode = 0; // this should be NULL
+	private @Getter int exitCode = 0; // TODO this should become NULL
 	private @Getter String responseRoot;
 	private @Getter boolean emptyResult = false;
 	private @Getter boolean skipValidation = false;
