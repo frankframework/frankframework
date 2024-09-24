@@ -28,6 +28,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
@@ -42,11 +43,11 @@ import lombok.Getter;
  *
  * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  * </p>
- * @ff.forward notInRole user may not assume role
  *
  * @author  Gerrit van Brakel
  * @since   4.4.3
  */
+@Forward(name = "notInRole", description = "user may not assume role")
 @Category("Advanced")
 @ElementType(ElementTypes.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {

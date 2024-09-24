@@ -40,6 +40,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -266,9 +267,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @ff.parameter code Determine scope dynamically at runtime. If the parameter value is empty, fall back to the scope configured via the attribute, or the default scope {@code ADAPTER}.
  * @ff.parameter target Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
- * @ff.forward "{@code <Exit.code>}" default
- *
  */
+@Forward(name = "&lt;Exit.code&gt;", description = "default")
 @Category("Basic")
 public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 

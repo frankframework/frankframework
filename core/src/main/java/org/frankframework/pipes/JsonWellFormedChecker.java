@@ -25,15 +25,15 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
  *
- * @ff.forward failure if a validation error occurred, probably caused by non-well-formed JSON
- *
  * @author  Tom van der Heijden
  */
+@Forward(name = "failure", description = "a validation error occurred, probably caused by non-well-formed JSON")
 @ElementType(ElementTypes.VALIDATOR)
 public class JsonWellFormedChecker extends FixedForwardPipe {
 

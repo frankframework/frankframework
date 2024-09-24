@@ -28,6 +28,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.XmlValidatorException;
@@ -36,15 +37,14 @@ import org.frankframework.validation.XmlValidatorException;
 /**
  * Pipe that validates the input message against a Schema.
  *
- * @ff.forward parserError a parser exception occurred, probably caused by a non-well-formed document. If not specified, <code>failure</code> is used in such a case.
- * @ff.forward failure The document is not valid according to the configured schema.
- * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
- * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
- * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
- * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
- *
  * @author Gerrit van Brakel
  */
+@Forward(name = "parserError", description = "a parser exception occurred, probably caused by a non-well-formed document. If not specified, <code>failure</code> is used in such a case.")
+@Forward(name = "failure", description = "the document is not valid according to the configured schema.")
+@Forward(name = "warnings", description = "warnings occurred. If not specified, <code>success</code> is used.")
+@Forward(name = "outputParserError", description = "a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.")
+@Forward(name = "outputFailure", description = "a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.")
+@Forward(name = "outputWarnings", description = "warnings occurred when validating a response. If not specified, <code>warnings</code> is used.")
 public abstract class ValidatorBase extends FixedForwardPipe implements IDualModeValidator {
 
 	private @Getter String schemaSessionKey;

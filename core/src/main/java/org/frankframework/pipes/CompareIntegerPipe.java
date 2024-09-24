@@ -23,6 +23,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -36,12 +37,11 @@ import org.frankframework.stream.Message;
  * @ff.parameter operand1 The first operand, holds v1.
  * @ff.parameter operand2 The second operand, holds v2.
  *
- * @ff.forward lessthan operand1 &lt; operand2
- * @ff.forward greaterthan operand1 &gt; operand2
- * @ff.forward equals operand1 = operand2
- *
  * @author     Richard Punt / Gerrit van Brakel
  */
+@Forward(name = "lessthan", description = "operand1 &lt; operand2")
+@Forward(name = "greaterthan", description = "operand1 &gt; operand2")
+@Forward(name = "equals", description = "operand1 = operand2")
 @Category("Basic")
 @ElementType(ElementTypes.ROUTER)
 public class CompareIntegerPipe extends AbstractPipe {

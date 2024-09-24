@@ -29,6 +29,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.stream.Message;
@@ -37,12 +38,11 @@ import org.frankframework.util.AppConstants;
 /**
  * Call Larva Test Tool
  *
- * @ff.forward success no errors and all tests passed
- * @ff.forward failure errors or failed tests
- *
  * @author Jaco de Groot
  *
  */
+@Forward(name = "success", description = "no errors and all tests passed")
+@Forward(name = "failure", description = "errors or failed tests")
 public class LarvaPipe extends FixedForwardPipe {
 
 	public static final LarvaLogLevel DEFAULT_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;

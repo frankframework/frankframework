@@ -27,6 +27,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.ParameterValueList;
@@ -46,14 +47,13 @@ import org.frankframework.util.SpringUtils;
  * @ff.parameter inputFolder Folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
  * @ff.parameter typeFilter Filter for action <code>list</code>. Specify <code>FILES_ONLY</code>, <code>FOLDERS_ONLY</code> or <code>FILES_AND_FOLDERS</code>. By default, only files are listed.
  *
- * @ff.forward fileNotFound If the input file was expected to exist, but was not found
- * @ff.forward folderNotFound If the folder does not exist
- * @ff.forward fileAlreadyExists If a file that should have been created as new already exists, or if a file already exists when it should have been created as folder
- * @ff.forward folderAlreadyExists If a folder is to be created that already exists.
- *
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.ENDPOINT)
+@Forward(name = "fileNotFound", description = "if the input file was expected to exist, but was not found")
+@Forward(name = "folderNotFound", description = "if the folder does not exist")
+@Forward(name = "fileAlreadyExists", description = "if a file that should have been created as new already exists, or if a file already exists when it should have been created as folder")
+@Forward(name = "folderAlreadyExists", description = "if a folder is to be created that already exists")
 public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private S fileSystem;
