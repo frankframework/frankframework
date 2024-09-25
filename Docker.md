@@ -102,7 +102,7 @@ In some cases you might want to change the log appenders, for example to log to 
 Environment variables can be used to set properties. Environment variables have the highest precedence and override
 application properties set in .property files supplied by Tomcat, resources and configurations.
 
-Environment variables can also be used to replace properties set inside Tomcat configuration files such as `resources.yml` and `server.xml`.
+Though you probably do not need to touch these file, because of the CredentialProvider, environment variables can also be used to replace properties set inside Tomcat specific configuration files such as `server.xml` and `context.xml`.
 
 Do not use environment variables for secrets! See [Secrets](#Secrets) for more information.
 
