@@ -16,7 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.StringWriter;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -26,7 +26,9 @@ import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -82,12 +84,12 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 
 		try {
-			String stringResult=null;
+			String stringResult;
 
 			switch (getDirection()) {
 			case JSON2XML:
 				try(JsonReader jr = Json.createReader(message.asReader())) {
-					JsonValue jValue=null;
+					JsonValue jValue;
 					try {
 						jValue = jr.read();
 					} catch (JsonException e) {
@@ -126,8 +128,7 @@ public class JsonPipe extends FixedForwardPipe {
 				}
 				break;
 			case XML2JSON:
-				Map<String, Object> parameterValues = new HashMap<>(1);
-				parameterValues.put("includeRootElement", addXmlRootElement);
+				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", addXmlRootElement);
 				stringResult = tpXml2Json.transform(message.asSource(), parameterValues);
 				break;
 			default:

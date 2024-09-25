@@ -1,4 +1,6 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -8,98 +10,17 @@
 	</parent>
 
 	<artifactId>frankframework-ladybug</artifactId>
-	<name>Frank!Framework Ladybug</name>
+	<name>Frank Ladybug</name>
+	<packaging>pom</packaging>
 
 	<properties>
 		<ladybug.version>3.0-20240806.151958</ladybug.version>
 	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-ladybug</artifactId>
-			<version>${ladybug.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>woodstox-core-asl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjweaver</artifactId>
-			<version>1.9.22.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjlib</artifactId>
-			<version>1.6.2</version>
-			<scope>runtime</scope>
-		</dependency>
+	<modules>
+		<module>common</module>
+		<module>rerunner</module>
+		<module>debugger</module>
+	</modules>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-
-		<!-- Provided scoped dependencies -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency><!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
-			<groupId>jakarta.enterprise</groupId>
-			<artifactId>jakarta.enterprise.cdi-api</artifactId>
-			<version>4.1.0</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- Test scoped dependencies -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>frankframework</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<repositories>
-				<repository>
-					<id>central</id>
-					<name>Central Repository</name>
-					<url>https://repo.maven.apache.org/maven2/</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-				<repository>
-					<id>frankframework</id>
-					<url>https://nexus.frankframework.org/content/groups/public</url>
-				</repository>
-			</repositories>
-		</profile>
-	</profiles>
 </project>

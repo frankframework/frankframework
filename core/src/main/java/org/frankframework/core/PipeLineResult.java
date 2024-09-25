@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class PipeLineResult {
 
 	private @Setter Message result;
 	private @Setter ExitState state;
-	private @Getter @Setter int exitCode;
+	private @Getter Integer exitCode;
 
 	public boolean isSuccessful() {
 		return getState()==ExitState.SUCCESS;
@@ -51,6 +51,12 @@ public class PipeLineResult {
 
 	public @Nonnull ExitState getState() {
 		return state;
+	}
+
+	public void setExitCode(int exitCode) {
+		if(exitCode > 0) {
+			this.exitCode = exitCode;
+		}
 	}
 
 	@Override

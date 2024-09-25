@@ -22,14 +22,16 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
+import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class NumberParameter extends AbstractParameter {
@@ -62,7 +64,7 @@ public class NumberParameter extends AbstractParameter {
 
 		if (StringUtils.isNotEmpty(getMinInclusiveString()) || StringUtils.isNotEmpty(getMaxInclusiveString())) {
 			setType(ParameterType.NUMBER);
-			if (getMinInclusiveString()!=null) {
+			if (getMinInclusiveString() != null) {
 				DecimalFormat df = new DecimalFormat();
 				df.setDecimalFormatSymbols(decimalFormatSymbols);
 				try {
@@ -71,7 +73,7 @@ public class NumberParameter extends AbstractParameter {
 					throw new ConfigurationException("Attribute [minInclusive] could not parse result ["+getMinInclusiveString()+"] to number; decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 				}
 			}
-			if (getMaxInclusiveString()!=null) {
+			if (getMaxInclusiveString() != null) {
 				DecimalFormat df = new DecimalFormat();
 				df.setDecimalFormatSymbols(decimalFormatSymbols);
 				try {
@@ -90,18 +92,18 @@ public class NumberParameter extends AbstractParameter {
 		Object result = super.getValue(alreadyResolvedParameters, message, session, namespaceAware);
 
 		if (result instanceof Number number) {
-			if (getMinInclusiveString()!=null && number.floatValue() < minInclusive.floatValue()) {
+			if (getMinInclusiveString() != null && number.floatValue() < minInclusive.floatValue()) {
 				log.debug("Replacing parameter [{}] because value [{}] falls short of minInclusive [{}]", this::getName, logValue(result), this::getMinInclusiveString);
 				result = minInclusive;
 			}
-			if (getMaxInclusiveString()!=null && number.floatValue() > maxInclusive.floatValue()) {
+			if (getMaxInclusiveString() != null && number.floatValue() > maxInclusive.floatValue()) {
 				log.debug("Replacing parameter [{}] because value [{}] exceeds maxInclusive [{}]", this::getName, logValue(result), this::getMaxInclusiveString);
 				result = maxInclusive;
 			}
 		}
 
 		// This turns the result type into a String
-		if (getMinLength()>=0 && (result+"").length() < getMinLength()) {
+		if (getMinLength() >= 0 && (result+"").length() < getMinLength()) {
 			log.debug("Adding leading zeros to parameter [{}]", this::getName);
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
@@ -110,31 +112,29 @@ public class NumberParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Number getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Number getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
-			if (request instanceof Number number) {
+			if (request.asObject() instanceof Number number) {
 				return number;
 			}
-			final Message requestMessage = Message.asMessage(request);
-			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->requestMessage, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
+			log.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->request, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
 			DecimalFormat decimalFormat = new DecimalFormat();
 			decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
 			try {
-				return decimalFormat.parse(requestMessage.asString());
+				return decimalFormat.parse(request.asString());
 			} catch (ParseException e) {
-				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
 			}
 		}
 		if(getType() == ParameterType.INTEGER) {
-			if (request instanceof Integer integer) {
+			if (request.asObject() instanceof Integer integer) {
 				return integer;
 			}
-			final Message requestMessage = Message.asMessage(request);
-			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->requestMessage);
+			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->request);
 			try {
-				return Integer.parseInt(requestMessage.asString());
+				return Integer.parseInt(request.asString());
 			} catch (NumberFormatException e) {
-				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to integer", e);
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
 			}
 		}
 		throw new ParameterException("unexpected type");

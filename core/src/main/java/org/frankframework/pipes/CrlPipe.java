@@ -24,15 +24,16 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
-import java.util.Iterator;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -85,11 +86,9 @@ public class CrlPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "Could not read CRL", e);
 		}
 		Message result = null;
-		if (isCRLOK(crl, Message.asMessage(session.get(getIssuerSessionKey())))) {
+		if (isCRLOK(crl, session.getMessage(getIssuerSessionKey()))) {
 			XmlBuilder root = new XmlBuilder("SerialNumbers");
-			Iterator <? extends X509CRLEntry> it = crl.getRevokedCertificates().iterator();
-			while (it.hasNext()) {
-				X509CRLEntry e = it.next();
+			for (X509CRLEntry e : crl.getRevokedCertificates()) {
 				XmlBuilder serialNumber = new XmlBuilder("SerialNumber");
 				serialNumber.setValue(e.getSerialNumber().toString(16));
 				root.addSubElement(serialNumber);
@@ -109,13 +108,7 @@ public class CrlPipe extends FixedForwardPipe {
 		} catch (CertificateException | IOException e) {
 			throw new PipeRunException(this, "Could not read issuer certificate", e);
 		} finally {
-			if (issuer != null) {
-				try {
-					issuer.close();
-				} catch (IOException e) {
-					log.warn("Could not close issuer input stream", e);
-				}
-			}
+			CloseUtils.closeSilently(issuer);
 		}
 		return false;
 	}

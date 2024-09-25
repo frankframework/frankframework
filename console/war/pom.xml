@@ -39,7 +39,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-console-ladybug</artifactId>
+			<artifactId>frankframework-ladybug-rerunner</artifactId>
 		</dependency>
 
 		<dependency>
