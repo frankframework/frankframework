@@ -1,6 +1,6 @@
 <nav #navElem class="navbar-default navbar-static-side" role="navigation">
   <div class="sidebar-collapse">
-    <cdk-accordion #accordion="cdkAccordion">
+    <cdk-accordion>
       <ul class="nav metismenu" id="side-menu" appSidebar>
         <li class="nav-header">
           <div class="profile-element">
@@ -14,21 +14,24 @@
         <app-custom-views></app-custom-views>
 
         <li routerLinkActive="active">
-          <a data-cy-nav="adapterStatus" routerLink="/status" (click)="accordion.closeAll()"
+          <a data-cy-nav="adapterStatus" routerLink="/status" (click)="closeExpandedItem()"
             ><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a
           >
         </li>
 
         <li
           cdkAccordionItem
+          #configuration
           #accordionItemConfiguration="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemConfiguration.expanded"
-          [expanded]="getExpandedByRoute('configuration')"
+          [expanded]="
+            getExpandedByRoute('configuration', { element: configuration, accordionItem: accordionItemConfiguration })
+          "
           [ngClass]="getClassByRoute('active', 'configuration', accordionItemConfiguration.expanded)"
         >
-          <a (click)="accordionItemConfiguration.toggle()"
+          <a (click)="expandCollapse(accordionItemConfiguration, $event)"
             ><i class="fa fa-cogs"></i>
             <span class="nav-label">Configurations</span>
             <span class="fa arrow"></span
@@ -46,14 +49,15 @@
         </li>
         <li
           cdkAccordionItem
+          #logging
           #accordionItemLogging="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemLogging.expanded"
-          [expanded]="getExpandedByRoute('logging')"
+          [expanded]="getExpandedByRoute('logging', { element: logging, accordionItem: accordionItemLogging })"
           [ngClass]="getClassByRoute('active', 'logging', accordionItemLogging.expanded)"
         >
-          <a (click)="accordionItemLogging.toggle()"
+          <a (click)="expandCollapse(accordionItemLogging, $event)"
             ><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemLogging.expanded }">
@@ -75,14 +79,17 @@
         </li>
         <li
           cdkAccordionItem
+          #testing
           #accordionItemTesting="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemTesting.expanded"
-          [expanded]="getExpandedByRoute(['testing', 'test-'])"
+          [expanded]="
+            getExpandedByRoute(['testing', 'test-'], { element: testing, accordionItem: accordionItemTesting })
+          "
           [ngClass]="getClassByRoute('active', ['testing', 'test-'], accordionItemTesting.expanded)"
         >
-          <a data-cy-nav="testing" (click)="accordionItemTesting.toggle()"
+          <a data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
             ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemTesting.expanded }">
@@ -105,14 +112,15 @@
         </li>
         <li
           cdkAccordionItem
+          #jdbc
           #accordionItemJdbc="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemJdbc.expanded"
-          [expanded]="getExpandedByRoute(['jdbc', 'liquibase'])"
+          [expanded]="getExpandedByRoute(['jdbc', 'liquibase'], { element: jdbc, accordionItem: accordionItemJdbc })"
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
         >
-          <a (click)="accordionItemJdbc.toggle()"
+          <a (click)="expandCollapse(accordionItemJdbc, $event)"
             ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
@@ -129,14 +137,15 @@
         </li>
         <li
           cdkAccordionItem
+          #jms
           #accordionItemJms="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemJms.expanded"
-          [expanded]="getExpandedByRoute('jms')"
+          [expanded]="getExpandedByRoute('jms', { element: jms, accordionItem: accordionItemJms })"
           [ngClass]="getClassByRoute('active', 'jms', accordionItemJms.expanded)"
         >
-          <a (click)="accordionItemJms.toggle()"
+          <a (click)="expandCollapse(accordionItemJms, $event)"
             ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJms.expanded }">
@@ -149,37 +158,43 @@
           </ul>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/webservices" (click)="accordion.closeAll()"
+          <a routerLink="/webservices" (click)="closeExpandedItem()"
             ><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a
           >
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/scheduler" (click)="accordion.closeAll()"
+          <a routerLink="/scheduler" (click)="closeExpandedItem()"
             ><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a
           >
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/monitors" (click)="accordion.closeAll()"
+          <a routerLink="/monitors" (click)="closeExpandedItem()"
             ><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a
           >
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/environment-variables" (click)="accordion.closeAll()"
+          <a routerLink="/environment-variables" (click)="closeExpandedItem()"
             ><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a
           >
         </li>
         <li
           cdkAccordionItem
+          #overview
           #accordionItemOverview="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemOverview.expanded"
-          [expanded]="getExpandedByRoute(['connection-', 'ibisstore-', 'inlinestores'])"
+          [expanded]="
+            getExpandedByRoute(['connection-', 'ibisstore-', 'inlinestores'], {
+              element: overview,
+              accordionItem: accordionItemOverview
+            })
+          "
           [ngClass]="
             getClassByRoute('active', ['connection-', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
           "
         >
-          <a (click)="accordionItemOverview.toggle()"
+          <a (click)="expandCollapse(accordionItemOverview, $event)"
             ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemOverview.expanded }">
@@ -195,7 +210,7 @@
           </ul>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/security-items" (click)="accordion.closeAll()"
+          <a routerLink="/security-items" (click)="closeExpandedItem()"
             ><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a
           >
         </li>

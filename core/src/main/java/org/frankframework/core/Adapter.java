@@ -628,7 +628,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			decNumOfMessagesInProcess(duration, processingSuccess);
 			Objects.requireNonNull(result, "'result' should never be NULL here, programming error.");
 			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
-			if (result.getExitCode() != 0) {
+			if (result.getExitCode() != null) {
 				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
 			}
 			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));

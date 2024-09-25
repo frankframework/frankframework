@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
 import lombok.Getter;
@@ -140,7 +141,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			}
 			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			String forwardName = exitCode != null ? exitCode.toString() : null;
+			String forwardName = Objects.toString(exitCode, null);
 			return new SenderResult(exitState == null || exitState == ExitState.SUCCESS, new Message(result), "exitState=" + exitState, forwardName);
 		}
 	}

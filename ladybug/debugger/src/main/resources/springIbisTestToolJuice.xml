@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+	>
+
+	<import resource="springIbisTestTool.xml"/>
+
+	<bean name="configName" class="java.lang.String">
+		<constructor-arg value="Ibis Test Tool Juice"/>
+	</bean>
+
+	<bean name="serviceTypeExtractor" class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+		<property name="name" value="serviceType"/>
+		<property name="label" value="Service Type"/>
+		<property name="shortLabel" value="ServiceType"/>
+		<property name="xpath" value="//serviceType"/>
+	</bean>
+
+	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
+		<property name="extraMetadataFieldExtractors">
+			<list>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="policy"/>
+					<property name="label" value="Policy"/>
+					<property name="xpath" value="//proposalRef"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="policy"/>
+					<property name="label" value="Policy"/>
+					<property name="xpath" value="//*[starts-with(local-name(), 'Xds') and ends-with(local-name(), 'Policy')]/ref"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="user"/>
+					<property name="label" value="User"/>
+					<property name="xpath" value="//userReference"/>
+				</bean>
+				<ref bean="serviceTypeExtractor"/>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="cbt"/>
+					<property name="label" value="CBT"/>
+					<property name="xpath" value="//activityReference"/>
+					<property name="defaultValue" value="Online Processing"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="serviceName"/>
+					<property name="xpath" value="//iceProcessRef"/>
+				</bean>
+				<bean class="org.frankframework.ladybug.metadata.JuiceServiceName">
+					<property name="serviceTypeExtractor">
+						<ref bean="serviceTypeExtractor"/>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="testerView" parent="blackBoxView">
+		<property name="name" value="Tester"/>
+		<property name="metadataNames">
+			<list>
+				<value>storageId</value>
+				<value>endTime</value>
+				<value>name</value>
+				<value>policy</value>
+				<value>user</value>
+				<value>serviceType</value>
+				<value>serviceName</value>
+				<value>cbt</value>
+				<value>status</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="views" class="nl.nn.testtool.filter.Views">
+		<property name="views">
+			<list>
+				<ref bean="whiteBoxView"/>
+				<ref bean="grayBoxView"/>
+				<ref bean="blackBoxView"/>
+				<ref bean="testerView"/>
+			</list>
+		</property>
+	</bean>
+
+</beans>
