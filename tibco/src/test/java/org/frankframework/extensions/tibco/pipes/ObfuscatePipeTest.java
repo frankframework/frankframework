@@ -43,7 +43,7 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 		message.close();
 		in.close();
 
-		assertEquals(ObfuscationEngine.decrypt(messageContent), PLAIN_TEXT);
+		assertEquals(PLAIN_TEXT, ObfuscationEngine.decrypt(messageContent));
 	}
 
 	@Test
