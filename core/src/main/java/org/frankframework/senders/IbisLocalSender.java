@@ -36,6 +36,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Forward;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
@@ -98,11 +99,11 @@ import org.frankframework.threading.ThreadLifeCycleEventListener;
  * </ul>
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
- * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author Gerrit van Brakel
  * @since  4.2
  */
+@Forward(name = "*", description = "Exit code")
 @Category("Basic")
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 

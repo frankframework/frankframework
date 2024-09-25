@@ -27,6 +27,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.util.PasswordHash;
 
@@ -39,10 +40,9 @@ import org.frankframework.util.PasswordHash;
  * the forward to be used (success or failure).
  *
  *
- * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
- *
  * @author Jaco de Groot
  */
+@Forward(name = "failure", description = "when hashSessionKey is used and password doesn't validate against the hash")
 @ElementType(ElementTypes.TRANSLATOR)
 public class PasswordHashPipe extends FixedForwardPipe {
 	private static final String FAILURE_FORWARD_NAME = "failure";

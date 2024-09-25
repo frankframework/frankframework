@@ -60,6 +60,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.HasKeystore;
@@ -188,11 +189,11 @@ import org.w3c.dom.Node;
  * @ff.parameter authAlias overrides authAlias specified by the attribute <code>authAlias</code>
  * @ff.parameter username overrides username specified by the attribute <code>username</code>
  * @ff.parameter password overrides password specified by the attribute <code>password</code>
- * @ff.forward   notFound if the requested object could not be found for actions GET, UPDATE and DELETE
  *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
+@Forward(name = "notFound", description = "if the requested object could not be found for actions GET, UPDATE and DELETE")
 public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
 	private static final String NOT_FOUND_FORWARD_NAME="notFound";

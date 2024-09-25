@@ -52,6 +52,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Forward;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
@@ -87,12 +88,12 @@ import org.frankframework.util.XmlUtils;
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code>
  * as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
- * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
  *
  * @author	Niels Meijer
  * @since	7.0
  *
  */
+@Forward(name = "*", description = "statuscode of the HTTP response")
 public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";

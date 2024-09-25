@@ -24,6 +24,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -54,12 +55,11 @@ import org.w3c.dom.NodeList;
  * <br/>
  * Substrings between "after" and "before" are ignored
  *
- * @ff.forward lessthan operand1 &lt; operand2
- * @ff.forward greaterthan operand1 &gt; operand2
- * @ff.forward equals operand1 = operand2
- *
  * @author  Peter Leeuwenburgh
  */
+@Forward(name = "lessthan", description = "operand1 &lt; operand2")
+@Forward(name = "greaterthan", description = "operand1 &gt; operand2")
+@Forward(name = "equals", description = "operand1 = operand2")
 @Category("Basic")
 @ElementType(ElementTypes.ROUTER)
 public class CompareStringPipe extends AbstractPipe {

@@ -30,6 +30,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
@@ -47,12 +48,11 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
  *
- * @ff.forward success no errors and all tests passed
- * @ff.forward failure errors or failed tests
- *
  * @author Jaco de Groot
  *
  */
+@Forward(name = "success", description = "no errors and all tests passed")
+@Forward(name = "failure", description = "errors or failed tests")
 public class LadybugPipe extends FixedForwardPipe {
 	private static final String FAILURE_FORWARD_NAME = "failure";
 	private PipeForward failureForward;

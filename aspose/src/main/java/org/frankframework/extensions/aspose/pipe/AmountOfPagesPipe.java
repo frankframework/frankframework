@@ -21,6 +21,7 @@ import java.io.InputStream;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 
@@ -30,12 +31,11 @@ import com.aspose.pdf.exceptions.InvalidPasswordException;
 /**
  * Returns the amount of pages of a PDF file.
  *
- * @ff.forward passwordProtected the File is password protected
- *
  * @author Laurens Mäkel
  * @since  7.6
  *
  */
+@Forward(name = "passwordProtected", description = "the File is password protected")
 public class AmountOfPagesPipe extends FixedForwardPipe {
 	private String charset = null;
 
