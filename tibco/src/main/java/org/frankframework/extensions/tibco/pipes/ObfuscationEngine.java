@@ -94,7 +94,7 @@ public class ObfuscationEngine {
 	/**
 	 * @return a configured Cipher instance
 	 */
-	@SuppressWarnings("java:S5542")
+	@SuppressWarnings({ "java:S5542", "java:S5547" })
 	private static Cipher getCipher(int cipherMode) throws Exception {
 		Cipher cipher = Cipher.getInstance(ALGORITHM);
 
