@@ -3,7 +3,7 @@
   height: 0;
   z-index: -1;
   overflow: hidden;
-  transition: height .35s ease;
+  //transition: height .15s ease;
 
   &.in {
     height: auto;
