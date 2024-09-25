@@ -227,11 +227,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-console-ladybug</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-console-webapp</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -265,6 +260,21 @@
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-ladybug</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-ladybug-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-ladybug-rerunner</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-ladybug-debugger</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
