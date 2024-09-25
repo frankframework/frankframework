@@ -19,13 +19,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * Uses a Cipher algorithm similar to the one used in com.tibco.security.ObfuscationEngine used before.
@@ -50,14 +52,7 @@ public class ObfuscationEngine {
 	}
 
 	public static String encrypt(String plainString) throws Exception {
-		Cipher cipher = Cipher.getInstance(ALGORITHM);
-
-		//Setting up the IV for Cipher Block Chaining (CBC)
-		byte[] ivSetup = new byte[cipher.getBlockSize()];
-		SecretKey key = new SecretKeySpec(SECRET, SECRET_KEY_SPEC);
-
-		//Initialising the cipher object for encryption with the key and IV setup
-		cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(ivSetup));
+		Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
 
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(plainString.getBytes(StandardCharsets.UTF_16LE));
 
@@ -66,36 +61,25 @@ public class ObfuscationEngine {
 			byte[] buffer = new byte[1024];
 			int bytesRead;
 
-			outputStream.write(ivSetup);
+			outputStream.write(cipher.getIV());
 
 			while ((bytesRead = cipherInputStream.read(buffer)) != -1) {
 				outputStream.write(buffer, 0, bytesRead);
 			}
 
-			byte[] byteArray = outputStream.toByteArray();
-
-			return PREFIX_TWO_CHARS + new String(Base64.getEncoder().encode(byteArray));
+			return PREFIX_TWO_CHARS + new String(Base64.encodeBase64(outputStream.toByteArray()));
 		}
 	}
 
 	public static String decrypt(String encryptedText) throws Exception {
+		Cipher cipher = getCipher(Cipher.DECRYPT_MODE);
+
 		String toDecode = removePrefix(encryptedText);
-
-		byte[] message = Base64.getDecoder().decode(toDecode);
-		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
-
-		// Initialising the cipher object for Triple Des Algorithm
-		Cipher cipher = Cipher.getInstance(ALGORITHM);
-
-		// Setting up the IV for Cipher Block Chaining (CBC)
-		byte[] ivSetup = new byte[cipher.getBlockSize()];
-		byteArrayInputStream.read(ivSetup);
-		SecretKey key = new SecretKeySpec(SECRET, SECRET_KEY_SPEC);
-
-		// Initialising the cipher object for encryption with the key and IV setup
-		cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(ivSetup));
+		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(Base64.decodeBase64(toDecode));
 
 		try (InputStream cipherInputStream = new CipherInputStream(byteArrayInputStream, cipher)) {
+			cipherInputStream.read(cipher.getIV());
+
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			byte[] buffer = new byte[1024];
 			int bytesRead;
@@ -103,9 +87,28 @@ public class ObfuscationEngine {
 			while ((bytesRead = cipherInputStream.read(buffer)) != -1) {
 				outputStream.write(buffer, 0, bytesRead);
 			}
-			// return outputStream.toString(StandardCharsets.UTF_16LE);
-			return outputStream.toString(StandardCharsets.UTF_16LE.name());
+			return outputStream.toString(StandardCharsets.UTF_16LE);
 		}
+	}
+
+	/**
+	 * @return a configured Cipher instance
+	 */
+	@SuppressWarnings("java:S5542")
+	private static Cipher getCipher(int cipherMode) throws Exception {
+		Cipher cipher = Cipher.getInstance(ALGORITHM);
+
+		// Setting up the IV for Cipher Block Chaining (CBC)
+		byte[] ivSetup = new byte[cipher.getBlockSize()];
+		SecureRandom random = new SecureRandom();
+		random.nextBytes(ivSetup);
+
+		SecretKey key = new SecretKeySpec(SECRET, SECRET_KEY_SPEC);
+
+		// Initialising the cipher object for encryption with the key and IV setup
+		cipher.init(cipherMode, key, new IvParameterSpec(ivSetup));
+
+		return cipher;
 	}
 
 	private static String removePrefix(String encryptedText) {

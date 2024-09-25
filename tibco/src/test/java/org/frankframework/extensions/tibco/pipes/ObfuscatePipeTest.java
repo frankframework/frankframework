@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +28,7 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 	void testEncryption() throws Exception {
 		// Arrange
 		configureAndStartPipe();
-		byte[] inputString = PLAIN_TEXT.getBytes(StandardCharsets.UTF_8);
-		Message in = new Message(inputString);
+		Message in = new Message(PLAIN_TEXT);
 
 		// Act
 		PipeRunResult encodeResult = doPipe(pipe, in, session);
@@ -39,14 +37,13 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 		Message message = encodeResult.getResult();
 		assertFalse(message.isBinary());
 		String messageContent = message.asString();
-		System.out.println(messageContent);
 
 		// The actual generated string differs. The length doesn't
 		assertEquals(110, messageContent.length());
 		message.close();
 		in.close();
 
-		assertEquals(ObfuscationEngine.encrypt(PLAIN_TEXT), messageContent);
+		assertEquals(ObfuscationEngine.decrypt(messageContent), PLAIN_TEXT);
 	}
 
 	@Test
