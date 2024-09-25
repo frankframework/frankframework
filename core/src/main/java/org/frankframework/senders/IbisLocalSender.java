@@ -103,7 +103,7 @@ import org.frankframework.threading.ThreadLifeCycleEventListener;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-@Forward(name = "&lt;Exit.code&gt;", description = "default")
+@Forward(name = "*", description = "Exit code")
 @Category("Basic")
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 

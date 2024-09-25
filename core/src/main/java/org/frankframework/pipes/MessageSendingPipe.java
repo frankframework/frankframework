@@ -103,7 +103,7 @@ import org.xml.sax.SAXException;
 @Forward(name = "illegalResult")
 @Forward(name = "presumedTimeout")
 @Forward(name = "interrupt")
-@Forward(name = "&lt;defined-by-sender&gt;", description = "any forward, as returned by name by {@link ISender sender}")
+@Forward(name = "*", description = "any forward, as returned by name by {@link ISender sender}")
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
