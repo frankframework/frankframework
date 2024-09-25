@@ -5,13 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import com.tibco.security.AXSecurityException;
-import com.tibco.security.ObfuscationEngine;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
@@ -22,7 +17,7 @@ import org.frankframework.stream.Message;
 
 class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 
-	private final String plainText = "Bacon ipsum dolor amet chuck pork.";
+	private static final String PLAIN_TEXT = "Bacon ipsum dolor amet chuck pork.";
 
 	@Override
 	public ObfuscatePipe createPipe() {
@@ -30,11 +25,10 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 	}
 
 	@Test
-	void testEncryption() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void testEncryption() throws Exception {
 		// Arrange
 		configureAndStartPipe();
-		byte[] inputString = plainText.getBytes(StandardCharsets.UTF_8);
-		Message in = new Message(inputString);
+		Message in = new Message(PLAIN_TEXT);
 
 		// Act
 		PipeRunResult encodeResult = doPipe(pipe, in, session);
@@ -42,10 +36,14 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 		// Assert
 		Message message = encodeResult.getResult();
 		assertFalse(message.isBinary());
-		System.out.println(message.asString());
-		assertEquals(110, message.asString().length());
+		String messageContent = message.asString();
+
+		// The actual generated string differs. The length doesn't
+		assertEquals(110, messageContent.length());
 		message.close();
 		in.close();
+
+		assertEquals(PLAIN_TEXT, ObfuscationEngine.decrypt(messageContent));
 	}
 
 	@Test
@@ -63,28 +61,31 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 	}
 
 	@Test
-	@Disabled("This test is not always working somehow, but it works in production at customer site.")
-	void testLibraryDoesWork() throws AXSecurityException {
-		String result = ObfuscationEngine.encrypt(plainText.toCharArray());
-		char[] decrypted = ObfuscationEngine.decrypt(result);
+	void testObfuscationEngine() throws Exception {
+		String encrypted = ObfuscationEngine.encrypt(PLAIN_TEXT);
 
-		assertEquals(plainText, new String(decrypted));
+		assertEquals(PLAIN_TEXT, ObfuscationEngine.decrypt(encrypted));
+
+		// Test from the site we based the ObfuscationEngine off
+		String password = "Amadeus@123";
+		String encryptedPassword = ObfuscationEngine.encrypt(password);
+
+		assertEquals(password, ObfuscationEngine.decrypt(encryptedPassword));
 	}
 
 	@Test
-	@Disabled("This test is not always working somehow, but it works in production at customer site.")
 	void testDecryption() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(ObfuscatePipe.Direction.DEOBFUSCATE);
 		configureAndStartPipe();
-		byte[] inputString = "#!IE4R9xiIP+k4jLhPT1m4wubEcOfiMsq7eB6K93utkaqyrsMem/8uPWf7Ktq4JllwjsedkKsrMcYbmP0dvR5GzfnrrO1/MhVvPbWJLV0oxdI=".getBytes(StandardCharsets.UTF_8);
-		Message in = new Message(inputString);
+
+		String input = "#!ghmoEO0lRMwnSi7AoRkMx5w1UuoWGU9Z9uM2mK1Nl7jw0rpQRPaInL725oe0NlCo+skzv8rBb+JCBR6d4qvbTWh68raP58uP+6iw+HI7t7c=";
+		Message in = new Message(input);
 
 		// Act
 		PipeRunResult encodeResult = doPipe(pipe, in, session);
 
 		// Assert
-		assertEquals(53, encodeResult.getResult().asString().length());
+		assertEquals(PLAIN_TEXT, encodeResult.getResult().asString());
 	}
-
 }
