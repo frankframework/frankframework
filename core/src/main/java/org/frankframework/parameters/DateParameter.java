@@ -21,7 +21,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -29,16 +34,13 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-
 @Log4j2
 public class DateParameter extends AbstractParameter {
 	private @Getter String formatString = null;
 	private DateFormatType formatType;
 
 	public DateParameter() {
-		setType(ParameterType.DATE); // Defaults to Date
+		setFormatType(DateFormatType.DATE); // Defaults to Date
 	}
 
 	public enum DateFormatType {
@@ -70,23 +72,22 @@ public class DateParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Date getValueAsType(Object request, boolean namespaceAware) throws ParameterException, IOException {
-		if (request instanceof Date date) {
+	protected Date getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
+		if (request.asObject() instanceof Date date) {
 			return date;
 		}
-		Message requestMessage = Message.asMessage(request);
 
 		if(formatType == DateFormatType.XMLDATETIME) {
-			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> requestMessage);
-			return XmlUtils.parseXmlDateTime(requestMessage.asString());
+			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> request);
+			return XmlUtils.parseXmlDateTime(request.asString());
 		}
 
-		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> requestMessage, this::getFormatString);
+		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);
 		DateFormat df = new SimpleDateFormat(getFormatString());
 		try {
-			return df.parse(requestMessage.asString());
+			return df.parse(request.asString());
 		} catch (ParseException e) {
-			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
+			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to Date using formatString [" + getFormatString() + "]", e);
 		}
 	}
 

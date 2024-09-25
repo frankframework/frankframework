@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -65,7 +66,6 @@ import org.xml.sax.SAXException;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
-import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -85,7 +85,7 @@ public class Message implements Serializable, Closeable {
 
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
-	private static final long serialVersionUID = 437863352486501445L;
+	private static final @Serial long serialVersionUID = 437863352486501445L;
 	private transient Cleaner.Cleanable cleanable;
 	private transient MessageNotClosedAction messageNotClosedAction;
 
@@ -154,8 +154,8 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Constructor for Message using a {@link SerializableFileReference}.
 	 *
-	 * @param request Request as {@link SerializableFileReference}
-	 * @param context {@link MessageContext}
+	 * @param request      Request as {@link SerializableFileReference}
+	 * @param context      {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
 	protected Message(SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
@@ -285,7 +285,8 @@ public class Message implements Serializable, Closeable {
 		}
 
 		long requestSize = size();
-		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance()
+				.getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
 			preserveToDisk(deepPreserve);
 		} else {
 			preserveToMemory(deepPreserve);
@@ -591,7 +592,7 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
-		char[] chars = new char[readLimit];
+		var chars = new char[readLimit];
 		int charsRead = reader.read(chars);
 		if (charsRead <= 0) {
 			return new byte[0];
@@ -601,10 +602,11 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
+		assert request instanceof InputStream;
 		if (!((InputStream) request).markSupported()) {
 			request = new BufferedInputStream((InputStream) request, readLimit);
 		}
-		InputStream stream = (InputStream) request;
+		var stream = (InputStream) request;
 		stream.mark(readLimit);
 
 		try {
@@ -616,7 +618,7 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
-		byte[] bytes = new byte[readLimit];
+		var bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);
 		if (numRead <= 0) {
 			return new byte[0];
@@ -770,7 +772,7 @@ public class Message implements Serializable, Closeable {
 	 * Check if a message is empty. If message size cannot be determined, return {@code false} to be on the safe side although this
 	 * might not be strictly correct.
 	 *
-	 * @return {@code true} if the message is empty, {@false} if message is not empty or if the size cannot be determined up-front.
+	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
 	 */
 	public boolean isEmpty() {
 		return size() == 0;
@@ -796,7 +798,7 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		var result = new StringBuilder();
 
 		toStringPrefix(result);
 		result.append(getObjectId());
@@ -811,6 +813,7 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Returns the message identifier and which resource class it represents
+	 *
 	 * @return Message[1234abcd:ByteArrayInputStream]
 	 */
 	public String getObjectId() {
@@ -828,6 +831,7 @@ public class Message implements Serializable, Closeable {
 			return nullMessage();
 		}
 		if (object instanceof Message message) {
+			// NB: This case can lead to hard-to-debug issues with messages either not being closed, or closed too early. Should ideally be avoided.
 			message.assertNotClosed();
 			return message;
 		}
@@ -839,10 +843,6 @@ public class Message implements Serializable, Closeable {
 		}
 		if (object instanceof Path path) {
 			return new PathMessage(path);
-		}
-		if (object instanceof MessageWrapper wrapper) {
-			wrapper.getMessage().assertNotClosed();
-			return wrapper.getMessage();
 		}
 		if (object instanceof RawMessageWrapper) {
 			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
@@ -871,12 +871,10 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @param message Message to check. May be {@code null}.
 	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
-	 * Returns {@code true} if {@link Message#size()} returns a positive value.
-	 * If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
-	 * be read via {@link Message#getMagic(int)}.
-	 *
+	 * 		Returns {@code true} if {@link Message#size()} returns a positive value.
+	 * 		If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
+	 * 		be read via {@link Message#getMagic(int)}.
 	 * @throws IOException Throws an IOException if checking for data in the message throws an IOException.
-	 *
 	 */
 	public static boolean hasDataAvailable(Message message) throws IOException {
 		if (Message.isNull(message)) {
@@ -897,6 +895,7 @@ public class Message implements Serializable, Closeable {
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
+	@Serial
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		preserve(true);
 
@@ -916,8 +915,9 @@ public class Message implements Serializable, Closeable {
 	/*
 	 * this method is used by Serializable, to deserialize objects from a stream.
 	 */
+	@Serial
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		String charset = (String) stream.readObject();
+		var charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {
 			Object requestClassFromStream = stream.readObject();
@@ -932,7 +932,7 @@ public class Message implements Serializable, Closeable {
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
-			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", ()->requestClass, ()->ClassUtils.nameOf(e),  e::getMessage);
+			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", () -> requestClass, () -> ClassUtils.nameOf(e), e::getMessage);
 		}
 		MessageContext contextFromStream;
 		try {
@@ -991,13 +991,13 @@ public class Message implements Serializable, Closeable {
 			try {
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
-				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) ()->ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
+				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) () -> ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
 			}
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
-			LOG.debug("unable to determine size of Message [{}]", ()->ClassUtils.nameOf(request));
+			LOG.debug("unable to determine size of Message [{}]", () -> ClassUtils.nameOf(request));
 		}
 
 		return MESSAGE_SIZE_UNKNOWN;
@@ -1008,7 +1008,7 @@ public class Message implements Serializable, Closeable {
 	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
 	public ByteArrayOutputStream captureBinaryStream() throws IOException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		var result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
 		return result;
 	}
@@ -1038,7 +1038,7 @@ public class Message implements Serializable, Closeable {
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
 	public StringWriter captureCharacterStream() throws IOException {
-		StringWriter result = new StringWriter();
+		var result = new StringWriter();
 		captureCharacterStream(result);
 		return result;
 	}
@@ -1048,7 +1048,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		LOG.debug("creating capture of {}", ()->ClassUtils.nameOf(request));
+		LOG.debug("creating capture of {}", () -> ClassUtils.nameOf(request));
 		if (isRepeatable()) {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
@@ -1064,30 +1064,27 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Creates a copy of this Message object.
 	 * <p>
-	 *     <b>NB:</b> To copy the underlying value of the message object, the message
-	 *     may be preserved if it was not repeatable.
+	 * <b>NB:</b> To copy the underlying value of the message object, the message
+	 * may be preserved if it was not repeatable.
 	 * </p>
+	 *
 	 * @return A new Message object that is a copy of this Message.
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
-		final Message newMessage;
 		if (!isRepeatable()) {
 			preserve();
 		}
-		if (request instanceof SerializableFileReference) {
-			final SerializableFileReference newRef;
-			if (isBinary()) {
-				newRef = SerializableFileReference.of(asInputStream());
-			} else {
-				newRef = SerializableFileReference.of(asReader(), getCharset());
-			}
-			newMessage = Message.asMessage(newRef);
-		} else {
-			newMessage = Message.asMessage(request);
+		if (!(request instanceof SerializableFileReference)) {
+			return new Message(copyContext(), request);
 		}
-		newMessage.context = copyContext();
-		return newMessage;
+		final SerializableFileReference newRef;
+		if (isBinary()) {
+			newRef = SerializableFileReference.of(asInputStream());
+		} else {
+			newRef = SerializableFileReference.of(asReader(), getCharset());
+		}
+		return new Message(copyContext(), newRef);
 	}
 }

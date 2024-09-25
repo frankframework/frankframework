@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
@@ -26,7 +28,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Baseclass for caching.
@@ -103,7 +104,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	@Override
 	public V transformValue(Message value, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
-			value=Message.asMessage(session.get(getValueInputSessionKey()));
+			value=session.getMessage(getValueInputSessionKey());
 		}
 		if (valueTp!=null) {
 			try{
