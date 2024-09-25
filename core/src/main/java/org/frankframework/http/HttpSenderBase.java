@@ -93,7 +93,7 @@ import org.frankframework.util.XmlUtils;
  * @since	7.0
  *
  */
-@Forward(name = "&lt;statusCode of the HTTP response&gt;", description = "default")
+@Forward(name = "*", description = "statuscode of the HTTP response")
 public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
