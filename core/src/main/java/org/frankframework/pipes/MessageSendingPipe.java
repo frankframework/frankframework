@@ -103,7 +103,7 @@ import org.xml.sax.SAXException;
 @Forward(name = "illegalResult")
 @Forward(name = "presumedTimeout")
 @Forward(name = "interrupt")
-@Forward(name = "*", description = "{@link ISender sender} provided forward, such as the http statuscode or exit name (or code) of a sub-adapter.")
+@Forward(name = "*", description = "{@link ISender sender} provided forward, such as the http statuscode or exit name (or code) of a sub-adapter.", wildcard = true)
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 

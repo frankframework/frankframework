@@ -125,4 +125,53 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertEquals(0, ApplicationWarnings.getSize());
 	}
 
+	@Test
+	public void testRegisterUnknownForward() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		pipe.registerForward(new PipeForward("success", null));
+		pipe.registerForward(new PipeForward("thisForwardDoesntExist", null));
+
+		assertEquals(1, getConfigurationWarnings().getWarnings().size());
+	}
+
+	@Test
+	public void testRegisterKnownForward() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		pipe.registerForward(new PipeForward("success", null));
+
+		assertEquals(0, getConfigurationWarnings().getWarnings().size());
+	}
+
+	@Test
+	public void testRegisterUnknownWildcardForward() throws ConfigurationException {
+		var pipe = new XmlIf();
+		pipe.setName("Xml If");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		pipe.registerForward(new PipeForward("thisForwardDoesntExist", null));
+
+		assertEquals(0, getConfigurationWarnings().getWarnings().size());
+	}
+
+	@Test
+	public void testRegisterKnownWildcardForward() throws ConfigurationException {
+		var pipe = new XmlIf();
+		pipe.setName("Xml If");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		pipe.registerForward(new PipeForward("success", null));
+
+		assertEquals(0, getConfigurationWarnings().getWarnings().size());
+	}
+
 }

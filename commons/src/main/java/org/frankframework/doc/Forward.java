@@ -32,4 +32,5 @@ import static java.lang.annotation.ElementType.TYPE;
 public @interface Forward {
 	String name();
 	String description() default "";
+	boolean wildcard() default false;
 }

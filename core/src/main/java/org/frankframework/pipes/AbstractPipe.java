@@ -16,7 +16,10 @@
 package org.frankframework.pipes;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -196,28 +199,36 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public void registerForward(PipeForward forward) throws ConfigurationException {
 		String forwardName = forward.getName();
-		if(forwardName != null) {
-			PipeForward current = pipeForwards.get(forwardName);
-			if (current==null){
-				pipeForwards.put(forwardName, forward);
-			} else {
-				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
-				} else {
-					log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
-				}
-			}
-		} else {
+
+		if (forwardName == null) {
 			throw new ConfigurationException("forward without a name");
+		}
+
+		final Set<Forward> allowedForwards = getAllowedForwards();
+		if (allowedForwards.stream().noneMatch(Forward::wildcard)) {
+			if (!allowedForwards.stream().map(Forward::name).toList().contains(forwardName)) {
+				ConfigurationWarnings.add(this, log, "The forward [" + forwardName + "] does not exist and cannot be used in this pipe");
+			}
+		}
+
+		PipeForward current = pipeForwards.get(forwardName);
+		if (current==null){
+			pipeForwards.put(forwardName, forward);
+		} else {
+			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+				ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
+			} else {
+				log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
+			}
 		}
 	}
 
 	/**
 	 * Looks up a key in the pipeForward hashtable. <br/>
 	 * A typical use would be on return from a Pipe: <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * return new PipeRunResult(findForward("success"), result);
-	 * </pre></code>
+	 * }</pre>
 	 * findForward searches:<ul>
 	 * <li>All forwards defined in xml under the pipe element of this pipe</li>
 	 * <li>All global forwards defined in xml under the PipeLine element</li>
@@ -266,6 +277,20 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		//Omit global pipeline-forwards and only return local pipe-forwards
 		pipeline.getPipes()
 				.forEach(pipe -> forwards.remove(pipe.getName()));
+		return forwards;
+	}
+
+	@Nonnull
+	private Set<Forward> getAllowedForwards() {
+		Class<?> clazz = getClass();
+
+		Set<Forward> forwards = new HashSet<>();
+		while (clazz != null) {
+			forwards.addAll(List.of(clazz.getAnnotationsByType(Forward.class)));
+
+			clazz = clazz.getSuperclass();
+		}
+
 		return forwards;
 	}
 
