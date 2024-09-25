@@ -393,7 +393,7 @@ public class ReceiverTest {
 		);
 	}
 
-	private static void createMessagingSource(PushingJmsListener listener) throws NoSuchFieldException, IllegalAccessException {
+	private void createMessagingSource(PushingJmsListener listener) throws NoSuchFieldException, IllegalAccessException {
 		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
 		messagingSourceField.setAccessible(true);
 		MessagingSource messagingSource = mock(MessagingSource.class);
@@ -431,6 +431,11 @@ public class ReceiverTest {
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
+		final int TEST_MAX_RETRIES = 2;
+		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 1;
+		receiver.setMaxRetries(TEST_MAX_RETRIES);
+		receiver.setMaxDeliveries(TEST_MAX_RETRIES);
+
 		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
 		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
 		retryIntervalField.setAccessible(true);
@@ -447,11 +452,6 @@ public class ReceiverTest {
 
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
-
-		final int TEST_MAX_RETRIES = 2;
-		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 1;
-		receiver.setMaxRetries(TEST_MAX_RETRIES);
-		receiver.setMaxDeliveries(TEST_MAX_RETRIES);
 
 		final AtomicInteger rolledBackTXCounter = new AtomicInteger();
 		final AtomicInteger txRollbackOnlyInErrorStorage = new AtomicInteger();
@@ -558,6 +558,7 @@ public class ReceiverTest {
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
+		receiver.setMaxDeliveries(1);
 
 		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 
@@ -570,8 +571,6 @@ public class ReceiverTest {
 
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
-
-		receiver.setMaxDeliveries(1);
 
 		TextMessage jmsMessage = mock(TextMessage.class);
 		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
