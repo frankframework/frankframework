@@ -20,14 +20,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
+
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -294,12 +297,43 @@ public class ApiServiceDispatcher {
 
 	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
 		IPipe validator = forOutputValidation ? pipeline.getOutputValidator() : pipeline.getInputValidator();
-		if(validator == null) {
-			validator = pipeline.getPipe(pipeline.getFirstPipe());
+
+		if (validator == null) {
+			validator = determineValidator(pipeline, forOutputValidation);
 		}
-		if(validator instanceof Json2XmlValidator xmlValidator) {
+
+		if (validator instanceof Json2XmlValidator xmlValidator) {
 			return xmlValidator;
 		}
+		return null;
+	}
+
+	private static IPipe determineValidator(PipeLine pipeline, boolean forOutputValidation) {
+		IPipe firstPipe = pipeline.getPipe(pipeline.getFirstPipe());
+
+		if (!forOutputValidation) {
+			// Only use the first pipe if this is for _input_ validation
+			return firstPipe;
+		} else {
+			// Find the optional last pipe of type Json2XmlValidator
+			Optional<Json2XmlValidator> optionalLastPipe = pipeline.getPipes().stream()
+					.filter(pipe -> !pipe.equals(firstPipe))
+					.filter(Json2XmlValidator.class::isInstance)
+					.map(Json2XmlValidator.class::cast)
+					.findFirst();
+
+			// If there's no last pipe and the first pipe is an XmlValidator with a response root, use the first pipe
+			if (optionalLastPipe.isEmpty() && firstPipe instanceof Json2XmlValidator isXmlValidator
+					&& isXmlValidator.getResponseRoot() != null) {
+				return firstPipe;
+			}
+
+			// If the validator is still  null, and the optional last pipe is present, use that
+			if (optionalLastPipe.isPresent()) {
+				return optionalLastPipe.get();
+			}
+		}
+
 		return null;
 	}
 
