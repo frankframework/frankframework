@@ -15,7 +15,7 @@
 */
 package org.frankframework.scheduler.job;
 
-import java.io.IOException;
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -28,8 +28,6 @@ import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
-
-import lombok.Getter;
 
 /**
  * Scheduled job to execute JDBC Queries using a {@link FixedQuerySender}.
@@ -63,7 +61,7 @@ public class ExecuteQueryJob extends JobDef {
 			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 				log.info("result [{}]", result);
 			}
-		} catch (SenderException | IOException e) {
+		} catch (SenderException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
 		} finally {
 			qs.close();

@@ -381,7 +381,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		messageNotClosedAction.calledByClose = true;
 		cleanable.clean();
 		if (request instanceof AutoCloseable closeable) {
