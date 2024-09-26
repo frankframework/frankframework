@@ -45,8 +45,8 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Johan Verrips
  */
-@Forward(name = "*", description = "name of the root-element", wildcard = true)
-@Forward(name = "*", description = "result of transformation, when <code>styleSheetName</code> or <code>xpathExpression</code> is specified", wildcard = true)
+@Forward(name = "*", description = "name of the root-element")
+@Forward(name = "*", description = "result of transformation, when <code>styleSheetName</code> or <code>xpathExpression</code> is specified")
 @Category("Basic")
 @ElementType(ElementTypes.ROUTER)
 public class XmlSwitch extends AbstractPipe {

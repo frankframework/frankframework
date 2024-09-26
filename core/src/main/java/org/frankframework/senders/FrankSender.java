@@ -268,7 +268,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @ff.parameter target Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  */
-@Forward(name = "*", description = "Exit code", wildcard = true)
+@Forward(name = "*", description = "Exit code")
 @Category("Basic")
 public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 

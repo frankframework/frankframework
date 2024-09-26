@@ -30,7 +30,9 @@ import static java.lang.annotation.ElementType.TYPE;
 @Inherited
 @Repeatable(Forwards.class)
 public @interface Forward {
+	/**
+	 *
+	 */
 	String name();
 	String description() default "";
-	boolean wildcard() default false;
 }

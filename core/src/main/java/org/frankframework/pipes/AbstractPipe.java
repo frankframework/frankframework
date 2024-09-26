@@ -51,6 +51,7 @@ import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -205,7 +206,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		final Set<Forward> allowedForwards = getAllowedForwards();
-		if (allowedForwards.stream().noneMatch(Forward::wildcard)) {
+		if (allowedForwards.stream().noneMatch(f -> f.name().equals("*"))) {
 			if (!allowedForwards.stream().map(Forward::name).toList().contains(forwardName)) {
 				ConfigurationWarnings.add(this, log, "The forward [" + forwardName + "] does not exist and cannot be used in this pipe");
 			}
@@ -283,6 +284,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Nonnull
 	private Set<Forward> getAllowedForwards() {
 		Class<?> clazz = getClass();
+
+		var x = AnnotationUtils.findAnnotation(clazz, Forward.class);
 
 		Set<Forward> forwards = new HashSet<>();
 		while (clazz != null) {
