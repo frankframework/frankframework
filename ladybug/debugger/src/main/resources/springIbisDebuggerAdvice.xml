@@ -10,12 +10,12 @@
 		"
 	>
 
-	<bean name="ibisDebugger" class="org.frankframework.ladybug.Debugger" autowire="byName"/>
+	<bean name="ibisDebugger" class="org.frankframework.ladybug.LadybugDebugger"/>
 
 	<bean
 		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="org.frankframework.ladybug.IbisDebuggerAdvice"
-		autowire="byName"
+		autowire="byType"
 	/>
 
 	<aop:config proxy-target-class="true">

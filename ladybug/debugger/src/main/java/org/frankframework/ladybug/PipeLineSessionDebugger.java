@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ import org.frankframework.stream.Message;
 public class PipeLineSessionDebugger implements MethodHandler {
 
 	private final PipeLineSession pipeLineSession;
-	private final IbisDebugger ibisDebugger;
+	private final LadybugReportGenerator reportGenerator;
 
-	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) {
+	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, LadybugReportGenerator ibisDebugger) {
 		this.pipeLineSession = pipeLineSession;
-		this.ibisDebugger = ibisDebugger;
+		this.reportGenerator = ibisDebugger;
 	}
 
-	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, LadybugReportGenerator ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setSuperclass(PipeLineSession.class);
 		PipeLineSessionDebugger handler = new PipeLineSessionDebugger(pipeLineSession, ibisDebugger);
@@ -63,12 +63,12 @@ public class PipeLineSessionDebugger implements MethodHandler {
 
 	private Object getMessage(String name) {
 		Message value = pipeLineSession.getMessage(name);
-		ibisDebugger.sessionInputPoint(pipeLineSession.getCorrelationId(), name, value);
+		reportGenerator.sessionInputPoint(pipeLineSession.getCorrelationId(), name, value);
 		return value;
 	}
 
 	private Object put(final String name, final Object originalValue) {
-		Object newValue = ibisDebugger.sessionOutputPoint(pipeLineSession.getCorrelationId(), name, originalValue);
+		Object newValue = reportGenerator.sessionOutputPoint(pipeLineSession.getCorrelationId(), name, originalValue);
 		if (newValue != originalValue && newValue instanceof Message message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).

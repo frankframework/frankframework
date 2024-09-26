@@ -29,13 +29,14 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.ladybug.LadybugDebugger;
 import org.frankframework.stream.Message;
 import org.frankframework.util.UUIDUtil;
 
 /**
  * @author Jaco de Groot
  */
-public class Debugger extends org.frankframework.ladybug.Debugger {
+public class Tibet2Debugger extends LadybugDebugger {
 	private static final String RESEND_ADAPTER_NAME = "ResendFromExceptionLog";
 	private static final String RESEND_ADAPTER_CONFIG = "main";
 

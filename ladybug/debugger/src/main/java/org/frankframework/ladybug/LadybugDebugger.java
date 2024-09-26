@@ -18,7 +18,6 @@ package org.frankframework.ladybug;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -26,12 +25,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Debugger;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 
 import org.frankframework.configuration.Configuration;
@@ -39,241 +42,48 @@ import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.INamedObject;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
-import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
-import org.frankframework.util.StringUtil;
 import org.frankframework.util.UUIDUtil;
 
 /**
  * @author Jaco de Groot
  */
 @Log4j2
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean {
+public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private static final String REPORT_ROOT_PREFIX = "Pipeline ";
+	private static final String LADYBUG_TESTTOOL_NAME = "testTool";
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 
 	private TestTool testTool;
 	protected @Setter @Getter IbisManager ibisManager;
-	private PipeDescriptionProvider pipeDescriptionProvider;
-	private List<String> testerRoles;
+	private @Setter @Autowired List<String> testerRoles;
+	private @Setter ApplicationContext applicationContext;
 
 	protected Set<String> inRerun = new HashSet<>();
 
-	public void setTestTool(TestTool testTool) {
-		testTool.setDebugger(this);
-		this.testTool = testTool;
-		log.info("configuring debugger on TestTool [{}]", testTool);
+	@Autowired
+	public void setTesttool(TestTool testtool) {
+		this.testTool = testtool;
 	}
 
 	@Override
 	public void afterPropertiesSet() {
-		if(testTool == null) {
-			log.info("no TestTool found on classpath, skipping testtool wireing.");
-			APPLICATION_LOG.info("No TestTool found on classpath, skipping testtool wireing.");
+		if(applicationContext.containsBean(LADYBUG_TESTTOOL_NAME)) {
+			testTool = applicationContext.getBean(LADYBUG_TESTTOOL_NAME, TestTool.class);
+			testTool.setDebugger(this);
+			log.info("configuring debugger on TestTool [{}]", testTool);
+		} else {
+			log.info("no Ladybug found on classpath, skipping testtool wireing.");
+			APPLICATION_LOG.info("No Ladybug found on classpath, skipping testtool wireing.");
 		}
-	}
-
-	public void setPipeDescriptionProvider(PipeDescriptionProvider pipeDescriptionProvider) {
-		this.pipeDescriptionProvider = pipeDescriptionProvider;
-	}
-
-	public void setTesterRoles(List<String> testerRoles) {
-		this.testerRoles = testerRoles;
-	}
-
-	// combines the config and adapter-names so each report is unique and can be 'rerun'.
-	private String getName(PipeLine pipeLine) {
-		String adapterName = pipeLine.getAdapter().getName();
-		String configName = pipeLine.getAdapter().getConfiguration().getName();
-		return REPORT_ROOT_PREFIX + configName + "/" + adapterName;
-	}
-
-	@Override
-	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), input);
-	}
-
-	@Override
-	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.endpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
-	}
-
-	@Override
-	public Message pipelineAbort(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.abortpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
-	}
-
-	@Override
-	public Throwable pipelineAbort(PipeLine pipeLine, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), throwable);
-		return throwable;
-	}
-
-	@Override
-	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input) {
-		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		T result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input);
-		if (pipeDescription.getDescription() != null) {
-			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
-			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
-			while (iterator.hasNext()) {
-				String resourceName = iterator.next();
-				testTool.infopoint(correlationId, pipe.getClass().getName(), resourceName, pipeDescriptionProvider.getResource(pipeLine, resourceName));
-			}
-		}
-		return result;
-	}
-
-	@Override
-	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output) {
-		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		return testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output);
-	}
-
-	@Override
-	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable) {
-		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		testTool.abortpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), throwable);
-		return throwable;
-	}
-
-	@Override
-	public <T> T senderInput(ISender sender, String correlationId, T input) {
-		return testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input);
-	}
-
-	@Override
-	public <T> T senderOutput(ISender sender, String correlationId, T output) {
-		return testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output);
-	}
-
-	@Override
-	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable){
-		testTool.abortpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), throwable);
-		return throwable;
-	}
-
-	@Override
-	public String replyListenerInput(IListener<?> listener, String correlationId, String input) {
-		return testTool.startpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), input);
-	}
-
-	@Override
-	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output) {
-		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
-	}
-
-	@Override
-	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable){
-		testTool.abortpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), throwable);
-		return throwable;
-	}
-
-	@Override
-	public void createThread(Object sourceObject, String threadId, String correlationId) {
-		testTool.threadCreatepoint(correlationId, threadId);
-	}
-
-	@Override
-	public void cancelThread(Object sourceObject, String threadId, String correlationId) {
-		testTool.close(correlationId, threadId);
-	}
-
-	@Override
-	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input) {
-		return testTool.threadStartpoint(correlationId, threadId, sourceObject.getClass().getName(), getCheckpointNameForThread(), input);
-	}
-
-	@Override
-	public Object endThread(Object sourceObject, String correlationId, Object output) {
-		return testTool.threadEndpoint(correlationId, sourceObject.getClass().getName(), getCheckpointNameForThread(), output);
-	}
-
-	@Override
-	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, null, getCheckpointNameForThread(), throwable);
-		return throwable;
-	}
-
-	@Override
-	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue) {
-		return testTool.inputpoint(correlationId, null, "GetInputFromSessionKey " + sessionKey, sessionValue);
-	}
-
-	@Override
-	public Object getInputFromFixedValue(String correlationId, Object fixedValue) {
-		return testTool.inputpoint(correlationId, null, "GetInputFromFixedValue", fixedValue);
-	}
-
-	@Override
-	public Object getEmptyInputReplacement(String correlationId, Object replacementValue) {
-		return testTool.inputpoint(correlationId, null, "getEmptyInputReplacement", replacementValue);
-	}
-
-	public Object capturedInput(String correlationId, String value) {
-		return testTool.inputpoint(correlationId, null, "Captured input ", value);
-	}
-
-	@Override
-	public Object parameterResolvedTo(IParameter parameter, String correlationId, Object value) {
-		if (parameter.isHidden()) {
-			log.debug("hiding parameter [{}] value", parameter::getName);
-			String hiddenValue;
-			try {
-				hiddenValue = StringUtil.hide(MessageUtils.asString(value));
-			} catch (IOException e) {
-				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
-				log.warn(hiddenValue, e);
-			}
-			testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), hiddenValue);
-			return value;
-		}
-		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
-	}
-
-	@Override
-	public Object sessionOutputPoint(String correlationId, String sessionKey, Object result) {
-		String name = "SessionKey " + sessionKey;
-		if(sessionKey.startsWith(PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX)) {
-			name = "SystemKey " + sessionKey;
-		}
-
-		return testTool.outputpoint(correlationId, null, name, result);
-	}
-
-	@Override
-	public Object sessionInputPoint(String correlationId, String sessionKey, Object result) {
-		String name = "SessionKey " + sessionKey;
-		if(sessionKey.startsWith(PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX)) {
-			name = "SystemKey " + sessionKey;
-		}
-		return testTool.inputpoint(correlationId, null, name, result);
-	}
-
-	@Override
-	public <T> T showInputValue(String correlationId, String label, T value) {
-		return testTool.inputpoint(correlationId, null, label, value);
-	}
-
-	@Override
-	public <T> T showOutputValue(String correlationId, String label, T value) {
-		return testTool.outputpoint(correlationId, null, label, value);
-	}
-
-	@Override
-	public Message preserveInput(String correlationId, Message input) {
-		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
 
 	/** Get all configurations */
@@ -393,14 +203,18 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return stub(checkpoint.getName(), checkpoint.getType() == Checkpoint.TYPE_ENDPOINT, strategy);
 	}
 
-	// Called by IbisDebuggerAdvice
-	@Override
+	/**
+	 * Called by IbisDebuggerAdvice.
+	 * Verifies if the specified {@link ISender sender} should be stubbed or not.
+	 */
 	public boolean stubSender(ISender sender, String correlationId) {
 		return stubINamedObject("Sender ", sender, correlationId);
 	}
 
-	// Called by IbisDebuggerAdvice
-	@Override
+	/**
+	 * Called by IbisDebuggerAdvice.
+	 * Verifies if the specified {@link IListener listener} should be stubbed or not.
+	 */
 	public boolean stubReplyListener(IListener<?> listener, String correlationId) {
 		return stubINamedObject("Listener ", listener, correlationId);
 	}
@@ -457,19 +271,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			name = name.substring(name.lastIndexOf('.') + 1);
 		}
 		return checkpointNamePrefix + name;
-	}
-
-	private static String getCheckpointNameForThread() {
-		// The checkpoint name for threads should not be unique, otherwise the
-		// Test Tool isn't able to match those checkpoints when executed by
-		// different threads (for example when comparing reports or determining
-		// whether a checkpoint needs to be stubbed).
-		String name = "Thread";
-		String threadName = Thread.currentThread().getName();
-		if (threadName != null && threadName.startsWith("SimpleAsyncTaskExecutor-")) {
-			name = "Thread SimpleAsyncTaskExecutor";
-		}
-		return name;
 	}
 
 	// Contract for testtool state:

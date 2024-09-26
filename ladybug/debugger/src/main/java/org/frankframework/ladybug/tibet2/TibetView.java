@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ladybug.filter;
+package org.frankframework.ladybug.tibet2;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -27,15 +27,14 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.ladybug.IbisDebugger;
-import org.frankframework.ladybug.tibet2.Storage;
+import org.frankframework.ladybug.LadybugDebugger;
 import org.frankframework.stream.Message;
 
 @Log4j2
 public class TibetView extends View {
 	private static final String AUTHORISATION_CHECK_ADAPTER_NAME = "AuthorisationCheck";
 	private static final String AUTHORISATION_CHECK_ADAPTER_CONFIG = "main";
-	protected @Setter IbisDebugger ibisDebugger;
+	protected @Setter LadybugDebugger ibisDebugger;
 
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
@@ -43,7 +42,7 @@ public class TibetView extends View {
 	@Override
 	public void initBean(BeanParent beanParent) {
 		super.initBean(beanParent);
-		Storage storage = (Storage)getDebugStorage();
+		Tibet2DatabaseStorage storage = (Tibet2DatabaseStorage) getDebugStorage();
 		try {
 			storage.configure();
 		} catch (ConfigurationException e) {
