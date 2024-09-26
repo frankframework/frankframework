@@ -285,8 +285,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private Set<Forward> getAllowedForwards() {
 		Class<?> clazz = getClass();
 
-		var x = AnnotationUtils.findAnnotation(clazz, Forward.class);
-
 		Set<Forward> forwards = new HashSet<>();
 		while (clazz != null) {
 			forwards.addAll(List.of(clazz.getAnnotationsByType(Forward.class)));
