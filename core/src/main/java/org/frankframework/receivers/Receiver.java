@@ -1092,12 +1092,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 
 			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, duplicatesAlreadyChecked);
-			try { //Only catch IOExceptions on Message#close, processMessageInAdapter throws Exceptions, which should not be caught!!
-				output.close();
-				log.debug("Closing result message [{}]", output);
-			} catch (IOException e) {
-				log.warn("Could not close result message", e);
-			}
+			output.close();
+			log.debug("Closing result message [{}]", output);
 
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		}
