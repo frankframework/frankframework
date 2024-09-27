@@ -15,7 +15,6 @@
 */
 package org.frankframework.ladybug;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,28 +57,23 @@ import org.frankframework.util.UUIDUtil;
 public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private static final String REPORT_ROOT_PREFIX = "Pipeline ";
-	private static final String LADYBUG_TESTTOOL_NAME = "testTool";
+	private static final String LADYBUG_TESTTOOL_NAME = "testtool";
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 
-	private TestTool testTool;
+	private @Setter @Autowired TestTool testtool;
 	protected @Setter @Getter IbisManager ibisManager;
 	private @Setter @Autowired List<String> testerRoles;
 	private @Setter ApplicationContext applicationContext;
 
 	protected Set<String> inRerun = new HashSet<>();
 
-	@Autowired
-	public void setTesttool(TestTool testtool) {
-		this.testTool = testtool;
-	}
-
 	@Override
 	public void afterPropertiesSet() {
 		if(applicationContext.containsBean(LADYBUG_TESTTOOL_NAME)) {
-			testTool = applicationContext.getBean(LADYBUG_TESTTOOL_NAME, TestTool.class);
-			testTool.setDebugger(this);
-			log.info("configuring debugger on TestTool [{}]", testTool);
+			testtool = applicationContext.getBean(LADYBUG_TESTTOOL_NAME, TestTool.class);
+			testtool.setDebugger(this);
+			log.info("configuring debugger on TestTool [{}]", testtool);
 		} else {
 			log.info("no Ladybug found on classpath, skipping testtool wireing.");
 			APPLICATION_LOG.info("No Ladybug found on classpath, skipping testtool wireing.");
@@ -221,11 +215,11 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 			rerun = inRerun.contains(correlationId);
 		}
 		if (rerun) {
-			Checkpoint originalEndpoint = testTool.getOriginalEndpointOrAbortpointForCurrentLevel(correlationId);
+			Checkpoint originalEndpoint = testtool.getOriginalEndpointOrAbortpointForCurrentLevel(correlationId);
 			if (originalEndpoint == null) {
 //				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
-				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testTool doen?
-				Report reportInProgress = testTool.getReportInProgress(correlationId);
+				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testtool doen?
+				Report reportInProgress = testtool.getReportInProgress(correlationId);
 				return stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
 			} else {
 				if (originalEndpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
@@ -285,9 +279,9 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		if (testTool != null && event.getSource() != this) {
+		if (testtool != null && event.getSource() != this) {
 			log.debug("received DebuggerStatusChangedEvent [{}]", event);
-			testTool.setReportGeneratorEnabled(event.isEnabled());
+			testtool.setReportGeneratorEnabled(event.isEnabled());
 		}
 	}
 }

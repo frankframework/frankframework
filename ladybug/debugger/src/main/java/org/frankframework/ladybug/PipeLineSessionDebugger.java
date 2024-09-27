@@ -34,9 +34,9 @@ public class PipeLineSessionDebugger implements MethodHandler {
 	private final PipeLineSession pipeLineSession;
 	private final LadybugReportGenerator reportGenerator;
 
-	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, LadybugReportGenerator ibisDebugger) {
+	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, LadybugReportGenerator reportGenerator) {
 		this.pipeLineSession = pipeLineSession;
-		this.reportGenerator = ibisDebugger;
+		this.reportGenerator = reportGenerator;
 	}
 
 	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, LadybugReportGenerator ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
