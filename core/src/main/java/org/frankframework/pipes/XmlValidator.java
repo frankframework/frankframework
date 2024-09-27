@@ -74,13 +74,6 @@ import org.xml.sax.helpers.XMLFilterImpl;
 /**
  * Pipe that validates the input message against an XML Schema.
  *
- * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
- * @ff.forward failure The document is not valid according to the configured schema.
- * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
- * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
- * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
- * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
- *
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */

@@ -45,6 +45,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
@@ -80,12 +81,11 @@ import org.xml.sax.SAXException;
  *	&lt;param name="value-of-current-item"         xpathExpression="/*" /&gt;
  * </pre>
  *
- * @ff.forward maxItemsReached The iteration stopped when the configured maximum number of items was processed.
- * @ff.forward stopConditionMet The iteration stopped when the configured condition expression became true.
- *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Forward(name = "maxItemsReached", description = "the iteration stopped when the configured maximum number of items was processed")
+@Forward(name = "stopConditionMet", description = "the iteration stopped when the configured condition expression became true")
 @ElementType(ElementTypes.ITERATOR)
 public abstract class IteratingPipe<I> extends MessageSendingPipe {
 

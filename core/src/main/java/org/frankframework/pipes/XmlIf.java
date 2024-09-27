@@ -30,6 +30,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
@@ -40,12 +41,11 @@ import org.frankframework.util.XmlUtils;
 /**
  * Selects a forward, based on XPath evaluation
  *
- * @ff.forward then The configured condition is met
- * @ff.forward else The configured condition is not met
- *
  * @author Peter Leeuwenburgh
  * @since 4.3
  */
+@Forward(name = "then", description = "the configured condition is met")
+@Forward(name = "else", description = "the configured condition is not met")
 @ElementType(ElementTypes.ROUTER)
 public class XmlIf extends AbstractPipe {
 

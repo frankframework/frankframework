@@ -32,12 +32,14 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Reader;
@@ -56,6 +58,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.jms.Destination;
+import jakarta.jms.TextMessage;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,10 +74,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 
-import jakarta.jms.Destination;
-import jakarta.jms.TextMessage;
 import lombok.Lombok;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.jta.JtaTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
@@ -102,12 +112,6 @@ import org.frankframework.testutil.mock.DataSourceFactoryMock;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.jta.JtaTransactionManager;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Tag("slow")
 public class ReceiverTest {
@@ -279,10 +283,7 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
 
-		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
-		messagingSourceField.setAccessible(true);
-		MessagingSource messagingSource = mock(MessagingSource.class);
-		messagingSourceField.set(listener, messagingSource);
+		createMessagingSource(listener);
 
 		@SuppressWarnings("unchecked")
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
@@ -392,6 +393,13 @@ public class ReceiverTest {
 		);
 	}
 
+	private void createMessagingSource(PushingJmsListener listener) throws NoSuchFieldException, IllegalAccessException {
+		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
+		messagingSourceField.setAccessible(true);
+		MessagingSource messagingSource = mock(MessagingSource.class);
+		messagingSourceField.set(listener, messagingSource);
+	}
+
 	@ParameterizedTest
 	@MethodSource("transactionManagers")
 	void testJmsMessageWithException(Supplier<TestConfiguration> configurationSupplier) throws Exception {
@@ -407,10 +415,7 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
-		messagingSourceField.setAccessible(true);
-		MessagingSource messagingSource = mock(MessagingSource.class);
-		messagingSourceField.set(listener, messagingSource);
+		createMessagingSource(listener);
 
 		@SuppressWarnings("unchecked")
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
@@ -425,6 +430,11 @@ public class ReceiverTest {
 
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
+
+		final int TEST_MAX_RETRIES = 2;
+		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 1;
+		receiver.setMaxRetries(TEST_MAX_RETRIES);
+		receiver.setMaxDeliveries(TEST_MAX_RETRIES);
 
 		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
 		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
@@ -442,11 +452,6 @@ public class ReceiverTest {
 
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
-
-		final int TEST_MAX_RETRIES = 2;
-		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 1;
-		receiver.setMaxRetries(TEST_MAX_RETRIES);
-		receiver.setMaxDeliveries(TEST_MAX_RETRIES);
 
 		final AtomicInteger rolledBackTXCounter = new AtomicInteger();
 		final AtomicInteger txRollbackOnlyInErrorStorage = new AtomicInteger();
@@ -533,6 +538,69 @@ public class ReceiverTest {
 		);
 	}
 
+
+	@Test
+	void testJmsMessageWithExceptionUntransactedAckModeClientShouldAckMsgWhenRejected() throws Exception {
+		// Arrange
+		configuration = buildConfiguration(null);
+		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
+		listener.setTransacted(false);
+		//noinspection removal
+		listener.setJmsTransacted(false);
+		listener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE);
+		doReturn(mock(Destination.class)).when(listener).getDestination();
+		doNothing().when(listener).open();
+		doNothing().when(listener).configure();
+
+		createMessagingSource(listener);
+
+		@SuppressWarnings("unchecked")
+		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
+		listener.setJmsConnector(jmsConnectorMock);
+		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
+		receiver.setMaxDeliveries(1);
+
+		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		TextMessage jmsMessage = mock(TextMessage.class);
+		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
+		doAnswer(invocation -> receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
+		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
+
+		final Semaphore semaphore = new Semaphore(0);
+		Thread mockListenerThread = new Thread("mock-listener-thread") {
+			@Override
+			public void run() {
+				try (PipeLineSession session = new PipeLineSession()) {
+					receiver.processRawMessage(listener, messageWrapper, session, false);
+				} catch (Exception e) {
+					LOG.warn("Caught exception in Receiver:", e);
+				} finally {
+					semaphore.release();
+				}
+			}
+		};
+
+		// Act
+		mockListenerThread.start();
+		semaphore.acquire(); // Wait until thread is finished.
+
+		// Assert
+		verify(jmsMessage, atLeastOnce()).acknowledge();
+	}
+
 	@Test
 	void testGetDeliveryCountWithJmsListener() throws Exception {
 		// Arrange
@@ -546,10 +614,7 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
-		messagingSourceField.setAccessible(true);
-		MessagingSource messagingSource = mock(MessagingSource.class);
-		messagingSourceField.set(listener, messagingSource);
+		createMessagingSource(listener);
 
 		@SuppressWarnings("unchecked")
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);

@@ -157,11 +157,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 								String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
 								pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 								PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
-								try {
-									result.getResult().close();
-								} catch (IOException e) {
-									return "IOException': unable to close response message";
-								}
+								result.getResult().close();
 							}
 						} finally {
 							synchronized(inRerun) {

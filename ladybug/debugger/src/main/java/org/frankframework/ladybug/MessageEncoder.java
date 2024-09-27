@@ -21,15 +21,14 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MessageEncoderImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
-import org.frankframework.stream.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import lombok.SneakyThrows;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.MessageEncoderImpl;
+import org.frankframework.stream.Message;
 
 public class MessageEncoder extends MessageEncoderImpl {
 
@@ -80,7 +79,6 @@ public class MessageEncoder extends MessageEncoderImpl {
 	}
 
 	@Override
-	@SneakyThrows(IOException.class)
 	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
 		if (messageToStub instanceof Message message) {
 			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the

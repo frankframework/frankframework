@@ -34,6 +34,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
 import org.frankframework.http.mime.MultipartUtils;
@@ -55,10 +56,9 @@ import org.springframework.util.MimeType;
  * @ff.parameter contentDisposition	the Content-Disposition header to set in case httpResponse was specified
  * @ff.parameter redirectLocation	the redirect location to set in case httpResponse was specified
  *
- * @ff.forward antiVirusFailed the virus checking indicates a problem with the message
- *
  * @author Jaco de Groot
  */
+@Forward(name = "antiVirusFailed", description = "virus checking indicates a problem with the message")
 public class StreamPipe extends FixedForwardPipe {
 	public static final String ANTIVIRUS_FAILED_FORWARD = "antiVirusFailed";
 

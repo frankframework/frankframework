@@ -33,6 +33,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
@@ -65,10 +66,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * If sub-records exist, they are present with a 'sub' prefix to all attributes.
  * </p>
  *
- * @ff.forward noConversionForwardName when successful, but no conversion took place
- *
  * @author Gerrit van Brakel
  */
+@Forward(name = "noConversionForwardName", description = "when successful, but no conversion took place")
 @Category("NN-Special")
 public class Adios2XmlPipe extends FixedForwardPipe {
 

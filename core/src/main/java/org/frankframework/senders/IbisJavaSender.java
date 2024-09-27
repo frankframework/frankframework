@@ -30,6 +30,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Forward;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 
@@ -59,11 +60,11 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
- * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
+@Forward(name = "*", description = "Exit code")
 @Category("Advanced")
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 

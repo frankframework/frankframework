@@ -17,11 +17,9 @@ package org.frankframework.extensions.tibco.pipes;
 
 import java.io.IOException;
 
-import com.tibco.security.AXSecurityException;
-import com.tibco.security.ObfuscationEngine;
-
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -63,29 +61,25 @@ public class ObfuscatePipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(input)) {
 			return new PipeRunResult(getSuccessForward(), message);
 		}
-		String result;
-		if (getDirection() == Direction.DEOBFUSCATE) {
-			try {
-				result = new String(ObfuscationEngine.decrypt(input));
-			} catch (AXSecurityException e) {
-				throw new PipeRunException(this, e.getMessage());
-			}
-		} else {
-			try {
-				result = ObfuscationEngine.encrypt(input.toCharArray());
-			} catch (AXSecurityException e) {
-				throw new PipeRunException(this, e.getMessage());
-			}
-		}
 
-		return new PipeRunResult(getSuccessForward(), result);
+		return new PipeRunResult(getSuccessForward(), getResult(input));
 	}
 
+	private String getResult(String input) throws PipeRunException {
+		try {
+			if (getDirection() == Direction.DEOBFUSCATE) {
+				return ObfuscationEngine.decrypt(input);
+			} else {
+				return ObfuscationEngine.encrypt(input);
+			}
+		} catch (Exception e) {
+			throw new PipeRunException(this, e.getMessage());
+		}
+	}
 	/**
 	 * @ff.default OBFUSCATE
 	 */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
-
 }

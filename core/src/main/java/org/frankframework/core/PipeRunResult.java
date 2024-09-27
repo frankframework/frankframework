@@ -18,6 +18,7 @@ package org.frankframework.core;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.stream.Message;
 
@@ -46,13 +47,26 @@ public class PipeRunResult implements AutoCloseable {
 		super();
 	}
 
+	public PipeRunResult(PipeForward forward, Message result) {
+		this.pipeForward = forward;
+		this.result = result;
+	}
+
 	public PipeRunResult(PipeForward forward, Object result) {
 		this.pipeForward = forward;
-		this.result = Message.asMessage(result);
+		setResult(result);
 	}
 
 	public void setResult(Object result) {
-		this.result = Message.asMessage(result);
+		if (result instanceof Message message) {
+			this.result = message;
+		} else {
+			this.result = Message.asMessage(result);
+		}
+	}
+
+	public void setResult(Message result) {
+		this.result = result;
 	}
 
 	public Message getResult() {

@@ -31,6 +31,7 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
@@ -42,11 +43,10 @@ import org.frankframework.util.XmlUtils;
  * Selects an exitState, based on either the content of the input message, by means
  * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
  *
- * @ff.forward "&lt;name of the root-element&gt;" default
- * @ff.forward "&lt;result of transformation&gt;" when <code>styleSheetName</code> or <code>xpathExpression</code> is specified
- *
  * @author Johan Verrips
  */
+@Forward(name = "*", description = "name of the root-element")
+@Forward(name = "*", description = "result of transformation, when <code>styleSheetName</code> or <code>xpathExpression</code> is specified")
 @Category("Basic")
 @ElementType(ElementTypes.ROUTER)
 public class XmlSwitch extends AbstractPipe {

@@ -63,6 +63,7 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Forward;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.MessageStoreSender;
@@ -95,15 +96,14 @@ import org.xml.sax.SAXException;
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the
  * file for this stubFilename will be done at runtime, while the file for the stubFilename specified
  * as an attribute will be done at configuration time.
-
- * @ff.forward timeout
- * @ff.forward illegalResult
- * @ff.forward presumedTimeout
- * @ff.forward interrupt
- * @ff.forward "&lt;defined-by-sender&gt;" any forward, as returned by name by {@link ISender sender}
  *
  * @author  Gerrit van Brakel
  */
+@Forward(name = "timeout")
+@Forward(name = "illegalResult")
+@Forward(name = "presumedTimeout")
+@Forward(name = "interrupt")
+@Forward(name = "*", description = "{@link ISender sender} provided forward, such as the http statuscode or exit name (or code) of a sub-adapter.")
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 

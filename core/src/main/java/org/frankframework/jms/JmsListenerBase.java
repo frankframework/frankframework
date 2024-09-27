@@ -27,8 +27,10 @@ import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
+
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -185,7 +187,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + tsSent!=null ? DateFormatUtils.format(tsSent) : null
+				+ "] \n  Timestamp Sent=[" + (tsSent!=null ? DateFormatUtils.format(tsSent) : null)
 				+ "] \n  ReplyTo=[" + (replyTo==null?"none" : replyTo.toString())
 				+ "] \n Message=[" + rawMessage
 				+ "]");
