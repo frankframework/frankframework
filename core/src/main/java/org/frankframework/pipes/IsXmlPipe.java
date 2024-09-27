@@ -24,6 +24,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
@@ -34,6 +35,7 @@ import org.frankframework.stream.Message;
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
+@Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @ElementType(ElementTypes.ROUTER)
 public class IsXmlPipe extends AbstractPipe {
 
