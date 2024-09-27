@@ -42,7 +42,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 	@Test
 	void doTestSuccess() throws Exception {
 		PipeForward fw = new PipeForward();
-		fw.setName("test");
+		fw.setName("exception");
 		pipe.registerForward(fw);
 		pipe.setCharset("/");
 		pipe.setDirectory(sourceFolderPath);
@@ -60,7 +60,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 	@Test
 	void doTestFailAsEncodingNotSupportedBase64() throws Exception {
 		PipeForward fw = new PipeForward();
-		fw.setName("test");
+		fw.setName("success");
 		pipe.registerForward(fw);
 		pipe.setCharset("/");
 		pipe.setDirectory(sourceFolderPath);

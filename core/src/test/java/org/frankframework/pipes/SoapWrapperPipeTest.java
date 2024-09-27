@@ -82,7 +82,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	@Test
 	public void testShouldKeepPipeSoapConfigurationSoap11VersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.registerForward(new PipeForward("pipe2", "READY"));
 		pipe.setRemoveOutputNamespaces(true);
 		configureAndStartPipe();
 
@@ -107,7 +106,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	@Test
 	public void testShouldKeepPipeSoapConfigurationSoap12VersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.registerForward(new PipeForward("pipe2", "READY"));
 		pipe.setRemoveOutputNamespaces(true);
 		pipe.configure();
 		pipe.start();

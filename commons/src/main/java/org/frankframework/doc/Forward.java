@@ -30,6 +30,10 @@ import static java.lang.annotation.ElementType.TYPE;
 @Inherited
 @Repeatable(Forwards.class)
 public @interface Forward {
+	/**
+	 * The validity of a forward with "*" as the name will not be checked during the creation of a configuration. This can be used to create so-called "wildcard"
+	 * forwards, which don't have a pre-predetermined name. An example of this is the status code of HTTP requests. The status code can be used as the name.
+	 */
 	String name();
 	String description() default "";
 }

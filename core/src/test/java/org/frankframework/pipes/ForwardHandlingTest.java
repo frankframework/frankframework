@@ -1,6 +1,8 @@
 package org.frankframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
@@ -123,6 +125,47 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertEquals("READY", forward.getPath());
 		assertEquals(0, getConfigurationWarnings().size());
 		assertEquals(0, ApplicationWarnings.getSize());
+	}
+
+	@Test
+	public void testRegisterUnknownForward() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+		assertThrows(ConfigurationException.class, () -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
+	}
+
+	@Test
+	public void testRegisterKnownForward() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+	}
+
+	@Test
+	public void testRegisterUnknownWildcardForward() throws ConfigurationException {
+		var pipe = new XmlIf();
+		pipe.setName("Xml If");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
+	}
+
+	@Test
+	public void testRegisterKnownWildcardForward() throws ConfigurationException {
+		var pipe = new XmlIf();
+		pipe.setName("Xml If");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
 	}
 
 }
