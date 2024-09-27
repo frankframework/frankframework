@@ -60,7 +60,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 	@Test
 	void doTestFailAsEncodingNotSupportedBase64() throws Exception {
 		PipeForward fw = new PipeForward();
-		fw.setName("exception");
+		fw.setName("success");
 		pipe.registerForward(fw);
 		pipe.setCharset("/");
 		pipe.setDirectory(sourceFolderPath);
