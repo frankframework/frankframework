@@ -295,46 +295,53 @@ public class ApiServiceDispatcher {
 		return OpenApiGenerator.generateOpenApiJsonSchema(clientList, endpoint);
 	}
 
-	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
-		IPipe validator = forOutputValidation ? pipeline.getOutputValidator() : pipeline.getInputValidator();
+	public static Optional<Json2XmlValidator> getJsonInputValidator(PipeLine pipeLine) {
+		IPipe inputValidator = pipeLine.getInputValidator();
+
+		if (inputValidator == null) {
+			inputValidator = pipeLine.getPipe(pipeLine.getFirstPipe());
+		}
+
+		if (inputValidator instanceof Json2XmlValidator json2XmlValidator) {
+			return Optional.of(json2XmlValidator);
+		}
+
+		return Optional.empty();
+	}
+
+	public static Optional<Json2XmlValidator> getJsonOutputValidator(PipeLine pipeline, String exit) {
+		IPipe validator = pipeline.getOutputValidator();
 
 		if (validator == null) {
-			validator = determineValidator(pipeline, forOutputValidation);
+			validator = determineValidator(pipeline, exit);
 		}
 
 		if (validator instanceof Json2XmlValidator xmlValidator) {
-			return xmlValidator;
+			return Optional.of(xmlValidator);
 		}
-		return null;
+
+		return Optional.empty();
 	}
 
-	private static IPipe determineValidator(PipeLine pipeline, boolean forOutputValidation) {
+	private static IPipe determineValidator(PipeLine pipeline, String exit) {
 		IPipe firstPipe = pipeline.getPipe(pipeline.getFirstPipe());
 
-		if (!forOutputValidation) {
-			// Only use the first pipe if this is for _input_ validation
+		// Find the optional last pipe of type Json2XmlValidator
+		Optional<Json2XmlValidator> optionalLastPipe = pipeline.getPipes().stream()
+				.filter(pipe -> pipe.getForwards().containsKey(exit))
+				.filter(Json2XmlValidator.class::isInstance)
+				.map(Json2XmlValidator.class::cast)
+				.reduce((first, second) -> second);
+
+		// If there's no last pipe and the first pipe is an XmlValidator with a response root, use the first pipe
+		if (optionalLastPipe.isEmpty() && firstPipe instanceof Json2XmlValidator isXmlValidator
+				&& isXmlValidator.getResponseRoot() != null) {
 			return firstPipe;
-		} else {
-			// Find the optional last pipe of type Json2XmlValidator
-			Optional<Json2XmlValidator> optionalLastPipe = pipeline.getPipes().stream()
-					.filter(pipe -> !pipe.equals(firstPipe))
-					.filter(Json2XmlValidator.class::isInstance)
-					.map(Json2XmlValidator.class::cast)
-					.findFirst();
-
-			// If there's no last pipe and the first pipe is an XmlValidator with a response root, use the first pipe
-			if (optionalLastPipe.isEmpty() && firstPipe instanceof Json2XmlValidator isXmlValidator
-					&& isXmlValidator.getResponseRoot() != null) {
-				return firstPipe;
-			}
-
-			// If the validator is still  null, and the optional last pipe is present, use that
-			if (optionalLastPipe.isPresent()) {
-				return optionalLastPipe.get();
-			}
 		}
 
-		return null;
+		// If the validator is still null, and the optional last pipe is present, use that - or else return null
+		return optionalLastPipe.orElse(null);
+
 	}
 
 	public void clear() {

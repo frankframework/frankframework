@@ -4,9 +4,11 @@ import static org.frankframework.http.rest.ApiListener.HttpMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -217,14 +219,14 @@ public class ApiServiceDispatcherTest {
 		pipeline.setPipeLineExits(getPipeLineExits());
 
 		// There's only an input validator without responseRoot in this configuration, so this should return null;
-		Json2XmlValidator outputValidator = ApiServiceDispatcher.getJsonValidator(pipeline, true);
-		assertNull(outputValidator);
+		Optional<Json2XmlValidator> optionalValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, "success");
+		assertTrue(optionalValidator.isEmpty());
 
 		// There's an input validator "json2xml" defined, which should be returned here
-		Json2XmlValidator inputValidator = ApiServiceDispatcher.getJsonValidator(pipeline, false);
+		Optional<Json2XmlValidator> inputValidator = ApiServiceDispatcher.getJsonInputValidator(pipeline);
 
-		assertNotNull(inputValidator);
-		assertEquals("json2xml", inputValidator.getName());
+		assertTrue(inputValidator.isPresent());
+		assertEquals("json2xml", inputValidator.get().getName());
 	}
 
 	@Test
@@ -237,9 +239,10 @@ public class ApiServiceDispatcherTest {
 		pipeline.setPipeLineExits(getPipeLineExits());
 
 		// There's an input validator "json2xml" defined, with a responseRoot, expect that validator here
-		Json2XmlValidator validator = ApiServiceDispatcher.getJsonValidator(pipeline, true);
+		Optional<Json2XmlValidator> optionalValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, "success");
 
-		assertNotNull(validator);
+		assertTrue(optionalValidator.isPresent());
+		Json2XmlValidator validator = optionalValidator.get();
 		assertEquals("json2xml", validator.getName());
 		assertEquals("GetDocument_Response", validator.getResponseRoot());
 	}
@@ -255,9 +258,10 @@ public class ApiServiceDispatcherTest {
 		pipeline.setPipeLineExits(getPipeLineExits());
 
 		// There's an output validator "output" defined, expect that validator here
-		Json2XmlValidator validator = ApiServiceDispatcher.getJsonValidator(pipeline, true);
+		Optional<Json2XmlValidator> optionalValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, "success");
 
-		assertNotNull(validator);
+		assertTrue(optionalValidator.isPresent());
+		Json2XmlValidator validator = optionalValidator.get();
 		assertEquals("output", validator.getName());
 		assertEquals("GetDocument_Response", validator.getRoot());
 	}
