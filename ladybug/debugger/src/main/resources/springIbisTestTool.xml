@@ -24,7 +24,6 @@
 	<!-- scan both the original and overridden configuration -->
 	<context:component-scan base-package="org.frankframework.ladybug">
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\.runner\..*"/>
-		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\.web\..*"/>
 	</context:component-scan>
 
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
@@ -42,6 +41,9 @@
 	/>
 
 	<bean class="org.frankframework.ladybug.DeploymentSpecificsBeanPostProcessor"/>
+
+	<bean name="reportGenerator" class="org.frankframework.ladybug.LadybugReportGenerator" />
+	<bean name="pipeDescriptionProvider" class="org.frankframework.ladybug.PipeDescriptionProvider" />
 
 	<!-- used by multiple beans -->
 	<bean name="maxMessageLength" class="java.lang.Integer">
@@ -185,12 +187,6 @@
 	<bean name="xsltResource" class="java.lang.String">
 		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
-
-	<bean
-		name="pipeDescriptionProvider"
-		class="org.frankframework.ladybug.PipeDescriptionProvider"
-		autowire="byName"
-	/>
 
 	<util:list id="observerRoles">
 		<value>IbisObserver</value>
