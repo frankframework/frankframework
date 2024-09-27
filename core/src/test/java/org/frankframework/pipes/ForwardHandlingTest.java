@@ -1,6 +1,8 @@
 package org.frankframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
@@ -132,10 +134,8 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		pipe.registerForward(new PipeForward("success", null));
-		pipe.registerForward(new PipeForward("thisForwardDoesntExist", null));
-
-		assertEquals(1, getConfigurationWarnings().getWarnings().size());
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+		assertThrows(ConfigurationException.class, () -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
 	}
 
 	@Test
@@ -145,9 +145,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		pipe.registerForward(new PipeForward("success", null));
-
-		assertEquals(0, getConfigurationWarnings().getWarnings().size());
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
 	}
 
 	@Test
@@ -157,9 +155,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		pipe.registerForward(new PipeForward("thisForwardDoesntExist", null));
-
-		assertEquals(0, getConfigurationWarnings().getWarnings().size());
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
 	}
 
 	@Test
@@ -169,9 +165,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		pipe.registerForward(new PipeForward("success", null));
-
-		assertEquals(0, getConfigurationWarnings().getWarnings().size());
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
 	}
 
 }
