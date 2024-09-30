@@ -22,7 +22,7 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 	@Test
 	public void testConsecutiveXsltPipes() throws ConfigurationException, PipeRunException, IOException, PipeStartException {
-		XsltPipe first = createPipe();
+		XsltPipe first = new XsltPipe();
 		first.setName("XsltPipe");
 		first.setStyleSheetName("/Xslt/extract.xslt");
 		first.registerForward(new PipeForward("success", "nextPipe"));

@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IWithParameters;
@@ -162,12 +163,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		String forwardName = forward.getName();
 
 		if (StringUtils.isBlank(forwardName)) {
-			throw new ConfigurationException("forward without a name");
+			ConfigurationWarnings.add(this, log, "Pipe contains a forward without a name");
+			return;
 		}
 
 		final List<String> allowedForwards = getAllowedForwards();
 		if (!allowedForwards.contains("*") && !allowedForwards.contains(forwardName)) {
-			throw new ConfigurationException("The forward [" + forwardName + "] does not exist and cannot be used in this pipe");
+			ConfigurationWarnings.add(this, log, "The forward [" + forwardName + "] does not exist and cannot be used in this pipe");
 		}
 
 		PipeForward current = configuredForwards.get(forwardName);
@@ -175,7 +177,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			configuredForwards.put(forwardName, forward);
 		} else {
 			if (StringUtils.isNotBlank(forward.getPath()) && forward.getPath().equals(current.getPath())) {
-				throw new ConfigurationException("The forward [" + forwardName + "] is already registered on this pipe");
+				ConfigurationWarnings.add(this, log, "The forward [" + forwardName + "] is already registered on this pipe");
 			} else {
 				log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
 			}
@@ -249,6 +251,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		registeredForwards.add(forward);
 	}
 
+	public boolean hasRegisteredForward(@Nullable String forward) {
+		if (StringUtils.isEmpty(forward)) {
+			return false;
+		}
+
+		return registeredForwards.stream().anyMatch(f -> forward.equals(f.getName()));
+	}
+
 	/**
 	 * Looks up a key in the pipeForward hashtable. <br/>
 	 * A typical use would be on return from a Pipe: <br/>
@@ -262,7 +272,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * </ul>
 	 */
 	@Nullable
-	public PipeForward findForward(@Nullable String forward){
+	public PipeForward findForward(@Nullable String forward) {
 		if (StringUtils.isEmpty(forward)) {
 			return null;
 		}
@@ -300,7 +310,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			return forwards;
 		}
 
-		//Omit global pipeline-forwards and only return local pipe-forwards
+		// Omit global pipeline-forwards and only return local pipe-forwards
 		pipeline.getPipes()
 				.forEach(pipe -> forwards.remove(pipe.getName()));
 		return forwards;

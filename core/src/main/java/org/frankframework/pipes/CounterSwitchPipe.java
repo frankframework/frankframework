@@ -49,7 +49,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		super.configure();
 
 		if (getDivisor() < 2) {
-			throw new ConfigurationException("mod [" + getDivisor() + "] should be greater than or equal to 2");
+			throw new ConfigurationException("divisor [" + getDivisor() + "] should be greater than or equal to 2");
 		}
 
 		for (int i = 1; i <= getDivisor(); i++) {

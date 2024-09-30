@@ -194,7 +194,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			log.debug("configuring Pipe [{}]", pipe::getName);
 			if (pipe instanceof FixedForwardPipe ffPipe) {
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)
-				if (ffPipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
+				if (!ffPipe.hasRegisteredForward(PipeForward.SUCCESS_FORWARD_NAME)) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
 						// Forward to Next Pipe
@@ -224,7 +224,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			}
 		}
 		if (pipes.isEmpty()) {
-			throw new ConfigurationException("no Pipes in PipeLine");
+			throw new ConfigurationException("no Pipes in Pipeline");
 		}
 		if (this.firstPipe == null) {
 			firstPipe=pipes.get(0).getName();
@@ -313,7 +313,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	public void configure(IPipe pipe) throws ConfigurationException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-			pipe.setPipeLine(this); //Temporary here because of validators and wrappers
+			pipe.setPipeLine(this); // Temporary here because of validators and wrappers
 
 			if (pipe.getDurationThreshold() >= 0) {
 				pipe.registerEvent(IPipe.LONG_DURATION_MONITORING_EVENT);

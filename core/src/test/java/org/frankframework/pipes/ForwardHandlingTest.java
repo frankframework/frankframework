@@ -2,8 +2,9 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
@@ -142,8 +143,10 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
 		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
 
-		ConfigurationException ex = assertThrows(ConfigurationException.class, pipe::configure);
-		assertEquals("The forward [thisForwardDoesntExist] does not exist and cannot be used in this pipe", ex.getMessage());
+		assertDoesNotThrow(pipe::configure);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("The forward [thisForwardDoesntExist] does not exist and cannot be used in this pipe"));
 	}
 
 	@ParameterizedTest
@@ -155,9 +158,13 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward(forwardName, null))); // FixedForwardPipe requires a SUCCESS forward
-		ConfigurationException ex = assertThrows(ConfigurationException.class, pipe::configure);
-		assertEquals("forward without a name", ex.getMessage());
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null))); // FixedForwardPipe requires a SUCCESS forward
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward(forwardName, null)));
+
+		assertDoesNotThrow(pipe::configure);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("Pipe contains a forward without a name"));
 	}
 
 	@Test
@@ -170,8 +177,10 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi")));
 		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi")));
 
-		ConfigurationException ex = assertThrows(ConfigurationException.class, pipe::configure);
-		assertEquals("The forward [success] is already registered on this pipe", ex.getMessage());
+		assertDoesNotThrow(pipe::configure);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("The forward [success] is already registered on this pipe"));
 	}
 
 	@Test

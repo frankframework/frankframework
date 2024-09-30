@@ -486,6 +486,13 @@
         <xs:documentation>when specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="expectsSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The pipeline of this adapter expects to use the following session keys to be set on call. This
+ is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
+ so callers can see what session keys to set on call, and for verification that those session keys are present.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="transactionTimeout" />
     <xs:attribute ref="transactionAttribute" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeLine" use="prohibited" />
@@ -3913,7 +3920,7 @@
       <xs:element name="DirectQuerySender">
         <xs:annotation>
           <xs:documentation>QuerySender that interprets the input message as a query, possibly with attributes.
- Messages are expected to contain sql-text.</xs:documentation>
+ Messages are expected to contain sql-text.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3973,9 +3980,7 @@
       </xs:element>
       <xs:element name="FixedQuerySender">
         <xs:annotation>
-          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.
-
- &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
+          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;See DB2XMLWriter for ResultSet!&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4231,12 +4236,8 @@
  &lt;pre&gt;
    param_name=param_value
    another_param_name=another_param_value
- &lt;/pre&gt;
-
- Note:
- When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
- This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
- &lt;/p&gt;</xs:documentation>
+ &lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
+ This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4749,7 +4750,7 @@
       </xs:element>
       <xs:element name="ResultSet2FileSender">
         <xs:annotation>
-          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.</xs:documentation>
+          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4961,9 +4962,7 @@
  			&amp;lt;/rowset&amp;gt;
  		&amp;lt;/result&amp;gt;
  	&amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
- &lt;/p&gt;
- &lt;p&gt;&lt;em&gt;NOTE:&lt;/em&gt; Support for stored procedures is currently experimental and changes in the currently produced output-format
- are expected.&lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -5115,7 +5114,7 @@
 
   sql   - type [0..1] one of {select;ddl;other}, other by default
         - query&lt;/code&gt;&lt;/pre&gt;
- &lt;br/&gt;</xs:documentation>
+ &lt;br/&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8924,7 +8923,7 @@
       <xs:element name="DirectQueryErrorSender">
         <xs:annotation>
           <xs:documentation>QuerySender that interprets the input message as a query, possibly with attributes.
- Messages are expected to contain sql-text.</xs:documentation>
+ Messages are expected to contain sql-text.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8984,9 +8983,7 @@
       </xs:element>
       <xs:element name="FixedQueryErrorSender">
         <xs:annotation>
-          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.
-
- &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
+          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;See DB2XMLWriter for ResultSet!&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9242,12 +9239,8 @@
  &lt;pre&gt;
    param_name=param_value
    another_param_name=another_param_value
- &lt;/pre&gt;
-
- Note:
- When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
- This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
- &lt;/p&gt;</xs:documentation>
+ &lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
+ This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9760,7 +9753,7 @@
       </xs:element>
       <xs:element name="ResultSet2FileErrorSender">
         <xs:annotation>
-          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.</xs:documentation>
+          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9972,9 +9965,7 @@
  			&amp;lt;/rowset&amp;gt;
  		&amp;lt;/result&amp;gt;
  	&amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
- &lt;/p&gt;
- &lt;p&gt;&lt;em&gt;NOTE:&lt;/em&gt; Support for stored procedures is currently experimental and changes in the currently produced output-format
- are expected.&lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10126,7 +10117,7 @@
 
   sql   - type [0..1] one of {select;ddl;other}, other by default
         - query&lt;/code&gt;&lt;/pre&gt;
- &lt;br/&gt;</xs:documentation>
+ &lt;br/&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10537,18 +10528,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="Y01ErrorMessageFormatter">
-        <xs:annotation>
-          <xs:documentation>ErrorMessageFormatter for JUICE, introduced with the Y01-project.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="Y01ErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
     </xs:choice>
   </xs:group>
   <xs:complexType name="FixedErrorMessageFormatterType">
@@ -10601,11 +10580,6 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
-  <xs:complexType name="Y01ErrorMessageFormatterType">
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.Y01ErrorMessageFormatter" use="prohibited" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
   <xs:group name="InputValidatorElementGroup">
     <xs:choice>
       <xs:element name="InputValidator">
@@ -12622,7 +12596,6 @@
         <xs:annotation>
           <xs:documentation>Translate a record using an outputFields description.
 
-
  The outputFields description can contain the following functions:
 
  &lt;table border="1"&gt;
@@ -13305,18 +13278,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="ChecksumPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe to calculate checksum on input.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ChecksumPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="ClobLineIteratingPipe">
         <xs:annotation>
           <xs:documentation>Pipe that iterates over the lines in a CLOB.</xs:documentation>
@@ -13819,7 +13780,7 @@
  &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
      returnString=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;MID&amp;amp;quot; action=&amp;amp;quot;ACTION&amp;amp;quot; /&amp;amp;gt;&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
      &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
- 	   &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
  &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
@@ -13827,8 +13788,8 @@
  &lt;pre&gt;
  &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
      getInputFromFixedValue=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;?{MID}&amp;amp;quot; action=&amp;amp;quot;?{ACTION}&amp;amp;quot; /&amp;amp;gt;&amp;quot;&amp;gt;
- 	   &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
- 	   &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
  &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
@@ -13860,56 +13821,56 @@
  was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
  &lt;pre&gt;
  &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
- 		&amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
- 		&amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
- 		&amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
- 		&amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
- 		&amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
- 	&amp;lt;/CompareStringPipe&amp;gt;
- 	&amp;lt;FixedResultPipe name=&amp;quot;IdAndCidSame&amp;quot; returnString=&amp;quot;true&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
- 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
- 	&amp;lt;/FixedResultPipe&amp;gt;
- 	&amp;lt;FixedResultPipe name=&amp;quot;IdAndCidDifferent&amp;quot; returnString=&amp;quot;false&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
- 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
- 	&amp;lt;/FixedResultPipe&amp;gt;
+     &amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
+     &amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
+     &amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+     &amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+     &amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ &amp;lt;/CompareStringPipe&amp;gt;
+ &amp;lt;FixedResultPipe name=&amp;quot;IdAndCidSame&amp;quot; returnString=&amp;quot;true&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
+ &amp;lt;/FixedResultPipe&amp;gt;
+ &amp;lt;FixedResultPipe name=&amp;quot;IdAndCidDifferent&amp;quot; returnString=&amp;quot;false&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
+ &amp;lt;/FixedResultPipe&amp;gt;
 
-  &amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
- 		returnString=&amp;quot;branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
- 		&amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
- 		&amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
- 		&amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
- 		&amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
- 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
- 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;
+ &amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
+     returnString=&amp;quot;branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
+     &amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  Was rewritten to the following:
  &lt;pre&gt;
  &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
- 		&amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
- 		&amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
- 		&amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
- 		&amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
- 		&amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
- 	&amp;lt;/CompareStringPipe&amp;gt;
+     &amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
+     &amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
+     &amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+     &amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+     &amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ &amp;lt;/CompareStringPipe&amp;gt;
 
- 	&amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidSame&amp;quot; value=&amp;quot;true&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
- 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
- 	&amp;lt;/PutInSessionPipe&amp;gt;
- 	&amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidDifferent&amp;quot; value=&amp;quot;false&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
- 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
- 	&amp;lt;/PutInSessionPipe&amp;gt;
+ &amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidSame&amp;quot; value=&amp;quot;true&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
+ &amp;lt;/PutInSessionPipe&amp;gt;
+ &amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidDifferent&amp;quot; value=&amp;quot;false&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
+ &amp;lt;/PutInSessionPipe&amp;gt;
 
- 	&amp;lt;PutInSessionPipe name=&amp;quot;putOriginalMessageInSession&amp;quot; sessionKey=&amp;quot;incomingMessage&amp;quot;/&amp;gt;
+ &amp;lt;PutInSessionPipe name=&amp;quot;putOriginalMessageInSession&amp;quot; sessionKey=&amp;quot;incomingMessage&amp;quot;/&amp;gt;
 
- 	&amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
- 		getInputFromFixedValue=&amp;quot;branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]&amp;quot;&amp;gt;
- 		&amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
- 		&amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
- 		&amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
- 		&amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
- 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
- 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;
+ &amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
+     getInputFromFixedValue=&amp;quot;branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]&amp;quot;&amp;gt;
+     &amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
+     &amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  &lt;p&gt;
 
@@ -14053,7 +14014,11 @@
       </xs:element>
       <xs:element name="HashPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that hashes the input message.</xs:documentation>
+          <xs:documentation>This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
+ If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm
+ to create a 'hash' of a message. Only sources which have this secret are able to generate the same hash for the given message.
+ With this, you can prove integrity and authenticity of a message.
+ &lt;p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15563,30 +15528,6 @@
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.BytesOutputPipe" use="prohibited" />
   </xs:complexType>
-  <xs:complexType name="ChecksumPipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="ChecksumPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ChecksumPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="ChecksumPipeDeclaredAttributeGroup">
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Character encoding to be used to encode message before calculating checksum.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="type">
-      <xs:annotation>
-        <xs:documentation>Type of checksum to be calculated Default: MD5</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="ChecksumTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ChecksumPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ChecksumPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="ClobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
@@ -16057,7 +15998,7 @@
         <xs:documentation>Hash Algorithm to use Default: HmacSHA256</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="HashAlgorithmAttributeValuesType_2 variableRef" />
+        <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -16412,7 +16353,7 @@
   <xs:complexType name="LadybugPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LadybugPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ibistesttool.LadybugPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ladybug.LadybugPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LadybugPipeDeclaredAttributeGroup">
     <xs:attribute name="writeToLog" type="frankBoolean">
@@ -17998,6 +17939,227 @@
   <xs:group name="JobElementGroupBase">
     <xs:choice>
       <xs:element name="ActionJob">
+        <xs:annotation>
+          <xs:documentation>Job which can stop/start adapters and receivers.
+ 
+ &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+ &lt;p&gt;
+ A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
+ &lt;/p&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Field Name&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Values&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Special Characters&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Seconds&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Minutes&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Hours&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-23&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-31&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-12 or JAN-DEC&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-Week&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-7 or SUN-SAT&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C #&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Year (Optional)&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&gt;empty, 1970-2099&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;The '*' character is used to specify all values. For example, "*" in
+ the minute field means "every minute".&lt;/p&gt;
+
+ &lt;p&gt;The '?' character is allowed for the day-of-month and day-of-week fields.
+ It is used to specify 'no specific value'. This is useful when you need
+ to specify something in one of the two fields, but not the other. See the
+ examples below for clarification.&lt;/p&gt;
+
+ &lt;p&gt;The '-' character is used to specify ranges For example "10-12" in the
+ hour field means "the hours 10, 11 and 12".&lt;/p&gt;
+
+ &lt;p&gt;The ',' character is used to specify additional values. For example
+ "MON,WED,FRI" in the day-of-week field means "the days Monday,
+ Wednesday, and Friday".&lt;/p&gt;
+
+ &lt;p&gt;The '/' character is used to specify increments. For example "0/15" in
+ the seconds field means "the seconds 0, 15, 30, and 45".  And "5/15" in
+ the seconds field means "the seconds 5, 20, 35, and 50".  You can also
+ specify '/' after the '*' character - in this case '*' is equivalent to
+ having '0' before the '/'.&lt;/p&gt;
+
+ &lt;p&gt;The 'L' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "last", but it has different meaning in each of
+ the two fields.  For example, the value "L" in the  day-of-month field means
+ "the last day of the month" - day 31 for  January, day 28 for February on
+ non-leap years.  If used in the day-of-week field by itself, it simply
+ means "7" or "SAT". But if used in the day-of-week field after another value,
+ it means "the last xxx day of the month" - for example "6L" means
+ "the last Friday of the month".  When using the 'L' option, it is
+ important not to specify lists, or ranges of values, as you'll get confusing
+ results.&lt;/p&gt;
+
+ &lt;p&gt;The '#' character is allowed for the day-of-week field.  This character
+ is used to specify "the nth" XX day of the month.  For example, the value
+ of "6#3" in the day-of-week field means the third Friday of the month
+ (day 6 = Friday and "#3" = the 3rd one in the month). Other
+ examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
+ Wednesday of the month.  Note that if you specify "#5" and there is not 5 of
+ the given day-of-week in the month, then no firing will occur that month.&lt;/p&gt;
+
+ &lt;p&gt;The 'C' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "calendar".  This means values are
+ calculated against the associated calendar, if any.  If no calendar is
+ associated, then it is equivalent to having an all-inclusive calendar.
+ A value of "5C" in the day-of-month field means "the first day included by
+ the calendar on or after the 5th".  A value of "1C" in the day-of-week field
+ means "the first day included by the calendar on or after Sunday".&lt;/p&gt;
+
+ &lt;p&gt;The legal characters and the names of months and days of the week are not
+ case sensitive.&lt;/p&gt;
+
+ &lt;p&gt;Here are some full examples:&lt;br/&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Expression&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Meaning&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0 12 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 12pm (noon) every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? 2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day during the year 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 * 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:59pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14,18 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0-5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:05pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 10,44 14 ? 3 WED"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * MON-FRI"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 15 * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the 15th day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 L * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L 2002-2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6#3"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the third Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;Pay attention to the effects of '?' and '*' in the day-of-week and
+ day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
+          value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
+          "daylight savings" can cause a skip or a repeat depending on whether
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ActionJobType">
@@ -18007,6 +18169,9 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="CheckReloadJob">
+        <xs:annotation>
+          <xs:documentation>Frank!Framework job which periodically looks in the &lt;code&gt;IBISCONFIG&lt;/code&gt; table to see if a new Configuration should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property checkReload.active and checkReload.interval.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CheckReloadJobType">
@@ -18016,6 +18181,229 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="CleanupDatabaseJob">
+        <xs:annotation>
+          <xs:documentation>Frank!Framework job to cleanup the &lt;code&gt;IBISSTORE&lt;/code&gt; and &lt;code&gt;IBISLOCK&lt;/code&gt; tables.
+ Find all MessageLogs and Lockers in the current configuration and removes database
+ entries which have surpassed their corresponding ExpiryDateField. 
+ 
+ &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+ &lt;p&gt;
+ A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
+ &lt;/p&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Field Name&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Values&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Special Characters&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Seconds&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Minutes&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Hours&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-23&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-31&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-12 or JAN-DEC&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-Week&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-7 or SUN-SAT&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C #&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Year (Optional)&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&gt;empty, 1970-2099&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;The '*' character is used to specify all values. For example, "*" in
+ the minute field means "every minute".&lt;/p&gt;
+
+ &lt;p&gt;The '?' character is allowed for the day-of-month and day-of-week fields.
+ It is used to specify 'no specific value'. This is useful when you need
+ to specify something in one of the two fields, but not the other. See the
+ examples below for clarification.&lt;/p&gt;
+
+ &lt;p&gt;The '-' character is used to specify ranges For example "10-12" in the
+ hour field means "the hours 10, 11 and 12".&lt;/p&gt;
+
+ &lt;p&gt;The ',' character is used to specify additional values. For example
+ "MON,WED,FRI" in the day-of-week field means "the days Monday,
+ Wednesday, and Friday".&lt;/p&gt;
+
+ &lt;p&gt;The '/' character is used to specify increments. For example "0/15" in
+ the seconds field means "the seconds 0, 15, 30, and 45".  And "5/15" in
+ the seconds field means "the seconds 5, 20, 35, and 50".  You can also
+ specify '/' after the '*' character - in this case '*' is equivalent to
+ having '0' before the '/'.&lt;/p&gt;
+
+ &lt;p&gt;The 'L' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "last", but it has different meaning in each of
+ the two fields.  For example, the value "L" in the  day-of-month field means
+ "the last day of the month" - day 31 for  January, day 28 for February on
+ non-leap years.  If used in the day-of-week field by itself, it simply
+ means "7" or "SAT". But if used in the day-of-week field after another value,
+ it means "the last xxx day of the month" - for example "6L" means
+ "the last Friday of the month".  When using the 'L' option, it is
+ important not to specify lists, or ranges of values, as you'll get confusing
+ results.&lt;/p&gt;
+
+ &lt;p&gt;The '#' character is allowed for the day-of-week field.  This character
+ is used to specify "the nth" XX day of the month.  For example, the value
+ of "6#3" in the day-of-week field means the third Friday of the month
+ (day 6 = Friday and "#3" = the 3rd one in the month). Other
+ examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
+ Wednesday of the month.  Note that if you specify "#5" and there is not 5 of
+ the given day-of-week in the month, then no firing will occur that month.&lt;/p&gt;
+
+ &lt;p&gt;The 'C' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "calendar".  This means values are
+ calculated against the associated calendar, if any.  If no calendar is
+ associated, then it is equivalent to having an all-inclusive calendar.
+ A value of "5C" in the day-of-month field means "the first day included by
+ the calendar on or after the 5th".  A value of "1C" in the day-of-week field
+ means "the first day included by the calendar on or after Sunday".&lt;/p&gt;
+
+ &lt;p&gt;The legal characters and the names of months and days of the week are not
+ case sensitive.&lt;/p&gt;
+
+ &lt;p&gt;Here are some full examples:&lt;br/&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Expression&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Meaning&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0 12 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 12pm (noon) every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? 2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day during the year 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 * 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:59pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14,18 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0-5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:05pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 10,44 14 ? 3 WED"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * MON-FRI"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 15 * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the 15th day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 L * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L 2002-2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6#3"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the third Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;Pay attention to the effects of '?' and '*' in the day-of-week and
+ day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property cleanup.database.active and cleanup.database.cron.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
+          value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
+          "daylight savings" can cause a skip or a repeat depending on whether
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CleanupDatabaseJobType">
@@ -18025,6 +18413,229 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="CleanupFileSystemJob">
+        <xs:annotation>
+          <xs:documentation>Frank!Framework job to empty files in a given directory that have been
+ stale (untouched) for the given &lt;code&gt;retention&lt;/code&gt; duration.
+ See DirectoryCleaner for more info.
+ 
+ &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+ &lt;p&gt;
+ A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
+ &lt;/p&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Field Name&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Values&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Special Characters&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Seconds&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Minutes&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Hours&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-23&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-31&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-12 or JAN-DEC&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-Week&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-7 or SUN-SAT&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C #&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Year (Optional)&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&gt;empty, 1970-2099&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;The '*' character is used to specify all values. For example, "*" in
+ the minute field means "every minute".&lt;/p&gt;
+
+ &lt;p&gt;The '?' character is allowed for the day-of-month and day-of-week fields.
+ It is used to specify 'no specific value'. This is useful when you need
+ to specify something in one of the two fields, but not the other. See the
+ examples below for clarification.&lt;/p&gt;
+
+ &lt;p&gt;The '-' character is used to specify ranges For example "10-12" in the
+ hour field means "the hours 10, 11 and 12".&lt;/p&gt;
+
+ &lt;p&gt;The ',' character is used to specify additional values. For example
+ "MON,WED,FRI" in the day-of-week field means "the days Monday,
+ Wednesday, and Friday".&lt;/p&gt;
+
+ &lt;p&gt;The '/' character is used to specify increments. For example "0/15" in
+ the seconds field means "the seconds 0, 15, 30, and 45".  And "5/15" in
+ the seconds field means "the seconds 5, 20, 35, and 50".  You can also
+ specify '/' after the '*' character - in this case '*' is equivalent to
+ having '0' before the '/'.&lt;/p&gt;
+
+ &lt;p&gt;The 'L' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "last", but it has different meaning in each of
+ the two fields.  For example, the value "L" in the  day-of-month field means
+ "the last day of the month" - day 31 for  January, day 28 for February on
+ non-leap years.  If used in the day-of-week field by itself, it simply
+ means "7" or "SAT". But if used in the day-of-week field after another value,
+ it means "the last xxx day of the month" - for example "6L" means
+ "the last Friday of the month".  When using the 'L' option, it is
+ important not to specify lists, or ranges of values, as you'll get confusing
+ results.&lt;/p&gt;
+
+ &lt;p&gt;The '#' character is allowed for the day-of-week field.  This character
+ is used to specify "the nth" XX day of the month.  For example, the value
+ of "6#3" in the day-of-week field means the third Friday of the month
+ (day 6 = Friday and "#3" = the 3rd one in the month). Other
+ examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
+ Wednesday of the month.  Note that if you specify "#5" and there is not 5 of
+ the given day-of-week in the month, then no firing will occur that month.&lt;/p&gt;
+
+ &lt;p&gt;The 'C' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "calendar".  This means values are
+ calculated against the associated calendar, if any.  If no calendar is
+ associated, then it is equivalent to having an all-inclusive calendar.
+ A value of "5C" in the day-of-month field means "the first day included by
+ the calendar on or after the 5th".  A value of "1C" in the day-of-week field
+ means "the first day included by the calendar on or after Sunday".&lt;/p&gt;
+
+ &lt;p&gt;The legal characters and the names of months and days of the week are not
+ case sensitive.&lt;/p&gt;
+
+ &lt;p&gt;Here are some full examples:&lt;br/&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Expression&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Meaning&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0 12 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 12pm (noon) every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? 2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day during the year 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 * 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:59pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14,18 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0-5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:05pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 10,44 14 ? 3 WED"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * MON-FRI"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 15 * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the 15th day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 L * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L 2002-2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6#3"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the third Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;Pay attention to the effects of '?' and '*' in the day-of-week and
+ day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
+          value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
+          "daylight savings" can cause a skip or a repeat depending on whether
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CleanupFileSystemJobType">
@@ -18034,6 +18645,227 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="ExecuteQueryJob">
+        <xs:annotation>
+          <xs:documentation>Scheduled job to execute JDBC Queries using a FixedQuerySender.
+ 
+ &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+ &lt;p&gt;
+ A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
+ &lt;/p&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Field Name&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Values&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Special Characters&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Seconds&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Minutes&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Hours&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-23&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-31&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-12 or JAN-DEC&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-Week&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-7 or SUN-SAT&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C #&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Year (Optional)&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&gt;empty, 1970-2099&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;The '*' character is used to specify all values. For example, "*" in
+ the minute field means "every minute".&lt;/p&gt;
+
+ &lt;p&gt;The '?' character is allowed for the day-of-month and day-of-week fields.
+ It is used to specify 'no specific value'. This is useful when you need
+ to specify something in one of the two fields, but not the other. See the
+ examples below for clarification.&lt;/p&gt;
+
+ &lt;p&gt;The '-' character is used to specify ranges For example "10-12" in the
+ hour field means "the hours 10, 11 and 12".&lt;/p&gt;
+
+ &lt;p&gt;The ',' character is used to specify additional values. For example
+ "MON,WED,FRI" in the day-of-week field means "the days Monday,
+ Wednesday, and Friday".&lt;/p&gt;
+
+ &lt;p&gt;The '/' character is used to specify increments. For example "0/15" in
+ the seconds field means "the seconds 0, 15, 30, and 45".  And "5/15" in
+ the seconds field means "the seconds 5, 20, 35, and 50".  You can also
+ specify '/' after the '*' character - in this case '*' is equivalent to
+ having '0' before the '/'.&lt;/p&gt;
+
+ &lt;p&gt;The 'L' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "last", but it has different meaning in each of
+ the two fields.  For example, the value "L" in the  day-of-month field means
+ "the last day of the month" - day 31 for  January, day 28 for February on
+ non-leap years.  If used in the day-of-week field by itself, it simply
+ means "7" or "SAT". But if used in the day-of-week field after another value,
+ it means "the last xxx day of the month" - for example "6L" means
+ "the last Friday of the month".  When using the 'L' option, it is
+ important not to specify lists, or ranges of values, as you'll get confusing
+ results.&lt;/p&gt;
+
+ &lt;p&gt;The '#' character is allowed for the day-of-week field.  This character
+ is used to specify "the nth" XX day of the month.  For example, the value
+ of "6#3" in the day-of-week field means the third Friday of the month
+ (day 6 = Friday and "#3" = the 3rd one in the month). Other
+ examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
+ Wednesday of the month.  Note that if you specify "#5" and there is not 5 of
+ the given day-of-week in the month, then no firing will occur that month.&lt;/p&gt;
+
+ &lt;p&gt;The 'C' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "calendar".  This means values are
+ calculated against the associated calendar, if any.  If no calendar is
+ associated, then it is equivalent to having an all-inclusive calendar.
+ A value of "5C" in the day-of-month field means "the first day included by
+ the calendar on or after the 5th".  A value of "1C" in the day-of-week field
+ means "the first day included by the calendar on or after Sunday".&lt;/p&gt;
+
+ &lt;p&gt;The legal characters and the names of months and days of the week are not
+ case sensitive.&lt;/p&gt;
+
+ &lt;p&gt;Here are some full examples:&lt;br/&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Expression&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Meaning&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0 12 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 12pm (noon) every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? 2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day during the year 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 * 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:59pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14,18 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0-5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:05pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 10,44 14 ? 3 WED"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * MON-FRI"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 15 * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the 15th day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 L * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L 2002-2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6#3"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the third Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;Pay attention to the effects of '?' and '*' in the day-of-week and
+ day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
+          value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
+          "daylight savings" can cause a skip or a repeat depending on whether
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ExecuteQueryJobType">
@@ -18050,7 +18882,10 @@
     Only if they differ, it overwrites the current job.
     If it is not present it add the job to the scheduler.
  4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
-    Since they have been removed from the database, remove them from the Quartz Scheduler</xs:documentation>
+    Since they have been removed from the database, remove them from the Quartz Scheduler
+ 
+ 
+ Frank!Framework job which periodically looks in the IBISSCHEDULES table to see if a new DatabaseJob should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property loadDatabaseSchedules.active and loadDatabaseSchedules.interval.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -18061,6 +18896,10 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="RecoverAdaptersJob">
+        <xs:annotation>
+          <xs:documentation>Frank!Framework Adapter recovery-job, which monitors all adapter states, attempts to recover them if required,
+ and logs this information to the &lt;code&gt;HEARTBEAT&lt;/code&gt; log appender.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property recover.adapters.interval.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="RecoverAdaptersJobType">
@@ -18070,6 +18909,228 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="SendMessageJob">
+        <xs:annotation>
+          <xs:documentation>Scheduled job to send messages to a FrankListener.
+ Message may be null (or empty).
+ 
+ &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+ &lt;p&gt;
+ A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
+ &lt;/p&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Field Name&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Values&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Allowed Special Characters&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Seconds&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Minutes&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-59&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Hours&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;0-23&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-31&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Month&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-12 or JAN-DEC&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Day-of-Week&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;1-7 or SUN-SAT&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * ? / L C #&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;Year (Optional)&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&gt;empty, 1970-2099&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;&lt;code&gt;, - * /&lt;/code&gt;&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;The '*' character is used to specify all values. For example, "*" in
+ the minute field means "every minute".&lt;/p&gt;
+
+ &lt;p&gt;The '?' character is allowed for the day-of-month and day-of-week fields.
+ It is used to specify 'no specific value'. This is useful when you need
+ to specify something in one of the two fields, but not the other. See the
+ examples below for clarification.&lt;/p&gt;
+
+ &lt;p&gt;The '-' character is used to specify ranges For example "10-12" in the
+ hour field means "the hours 10, 11 and 12".&lt;/p&gt;
+
+ &lt;p&gt;The ',' character is used to specify additional values. For example
+ "MON,WED,FRI" in the day-of-week field means "the days Monday,
+ Wednesday, and Friday".&lt;/p&gt;
+
+ &lt;p&gt;The '/' character is used to specify increments. For example "0/15" in
+ the seconds field means "the seconds 0, 15, 30, and 45".  And "5/15" in
+ the seconds field means "the seconds 5, 20, 35, and 50".  You can also
+ specify '/' after the '*' character - in this case '*' is equivalent to
+ having '0' before the '/'.&lt;/p&gt;
+
+ &lt;p&gt;The 'L' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "last", but it has different meaning in each of
+ the two fields.  For example, the value "L" in the  day-of-month field means
+ "the last day of the month" - day 31 for  January, day 28 for February on
+ non-leap years.  If used in the day-of-week field by itself, it simply
+ means "7" or "SAT". But if used in the day-of-week field after another value,
+ it means "the last xxx day of the month" - for example "6L" means
+ "the last Friday of the month".  When using the 'L' option, it is
+ important not to specify lists, or ranges of values, as you'll get confusing
+ results.&lt;/p&gt;
+
+ &lt;p&gt;The '#' character is allowed for the day-of-week field.  This character
+ is used to specify "the nth" XX day of the month.  For example, the value
+ of "6#3" in the day-of-week field means the third Friday of the month
+ (day 6 = Friday and "#3" = the 3rd one in the month). Other
+ examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
+ Wednesday of the month.  Note that if you specify "#5" and there is not 5 of
+ the given day-of-week in the month, then no firing will occur that month.&lt;/p&gt;
+
+ &lt;p&gt;The 'C' character is allowed for the day-of-month and day-of-week fields.
+ This character is short-hand for "calendar".  This means values are
+ calculated against the associated calendar, if any.  If no calendar is
+ associated, then it is equivalent to having an all-inclusive calendar.
+ A value of "5C" in the day-of-month field means "the first day included by
+ the calendar on or after the 5th".  A value of "1C" in the day-of-week field
+ means "the first day included by the calendar on or after Sunday".&lt;/p&gt;
+
+ &lt;p&gt;The legal characters and the names of months and days of the week are not
+ case sensitive.&lt;/p&gt;
+
+ &lt;p&gt;Here are some full examples:&lt;br/&gt;
+ &lt;table cellspacing="8"&gt;
+   &lt;tr&gt;
+     &lt;th align="left"&gt;Expression&lt;/th&gt;
+     &lt;th align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;th align="left"&gt;Meaning&lt;/th&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0 12 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 12pm (noon) every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? *"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 * * ? 2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every day during the year 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 * 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:59pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0/5 14,18 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every 5 minutes starting at 2pm and ending at 2:55pm, AND fire every 5 minutes starting at 6pm and ending at 6:55pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 0-5 14 * * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire every minute starting at 2pm and ending at 2:05pm, every day&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 10,44 14 ? 3 WED"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 2:10pm and at 2:44pm every Wednesday in the month of March.&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * MON-FRI"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 15 * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the 15th day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 L * ?"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last day of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the last Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6L 2002-2005"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on every last friday of every month during the years 2002, 2003, 2004 and 2005&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+     &lt;td align="left"&gt;&lt;code&gt;"0 15 10 ? * 6#3"&lt;/code&gt;&lt;/td&gt;
+     &lt;td align="left"&gt;&amp;nbsp;&lt;/th&gt;
+     &lt;td align="left"&gt;Fire at 10:15am on the third Friday of every month&lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/p&gt;
+
+ &lt;p&gt;Pay attention to the effects of '?' and '*' in the day-of-week and
+ day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
+          value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
+          "daylight savings" can cause a skip or a repeat depending on whether
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SendMessageJobType">
@@ -18117,7 +19178,11 @@
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JobDefDeclaredAttributeGroup">
-    <xs:attribute name="jobGroup" type="xs:string" />
+    <xs:attribute name="jobGroup" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Group in which to sort multiple jobs. Default: Name of the Configuration this job has been specified in.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Name of the job</xs:documentation>
@@ -18199,14 +19264,14 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.ExecuteQueryJob" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ExecuteQueryJobDeclaredAttributeGroup">
-    <xs:attribute name="query" type="xs:string">
+    <xs:attribute name="query" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>The SQL query text to be executed</xs:documentation>
+        <xs:documentation>The SQL query text to be executed.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used. Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -19525,16 +20590,6 @@
       <xs:enumeration value="CORRELATIONID" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ChecksumTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="MD5" />
-      <xs:enumeration value="SHA" />
-      <xs:enumeration value="SHA256" />
-      <xs:enumeration value="SHA512" />
-      <xs:enumeration value="CRC32" />
-      <xs:enumeration value="ADLER32" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="FileFormatAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="GZ">
@@ -19572,8 +20627,15 @@
       <xs:enumeration value="CDATA2TEXT" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="HashAlgorithmAttributeValuesType_2">
+  <xs:simpleType name="AlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="MD5" />
+      <xs:enumeration value="SHA" />
+      <xs:enumeration value="SHA256" />
+      <xs:enumeration value="SHA384" />
+      <xs:enumeration value="SHA512" />
+      <xs:enumeration value="CRC32" />
+      <xs:enumeration value="ADLER32" />
       <xs:enumeration value="HmacMD5" />
       <xs:enumeration value="HmacSHA1" />
       <xs:enumeration value="HmacSHA256" />
