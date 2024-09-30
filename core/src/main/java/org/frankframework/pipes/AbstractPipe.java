@@ -22,7 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -46,13 +54,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -136,9 +137,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
 		}
 
-		for(PipeForward forward : registeredForwards) {
-			configureForward(forward);
-		}
+		registeredForwards.forEach(this::configureForward);
 
 		ParameterList params = getParameterList();
 		if (params!=null) {
@@ -159,7 +158,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 	}
 
-	private void configureForward(PipeForward forward) throws ConfigurationException {
+	private void configureForward(PipeForward forward) {
 		String forwardName = forward.getName();
 
 		if (StringUtils.isBlank(forwardName)) {
