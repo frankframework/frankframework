@@ -163,13 +163,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		String forwardName = forward.getName();
 
 		if (StringUtils.isBlank(forwardName)) {
-			ConfigurationWarnings.add(this, log, "Pipe contains a forward without a name");
+			ConfigurationWarnings.add(this, log, "pipe contains a forward without a name");
 			return;
 		}
 
 		final List<String> allowedForwards = getAllowedForwards();
 		if (!allowedForwards.contains("*") && !allowedForwards.contains(forwardName)) {
-			ConfigurationWarnings.add(this, log, "The forward [" + forwardName + "] does not exist and cannot be used in this pipe");
+			ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] does not exist and cannot be used in this pipe");
 		}
 
 		PipeForward current = configuredForwards.get(forwardName);
@@ -177,7 +177,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			configuredForwards.put(forwardName, forward);
 		} else {
 			if (StringUtils.isNotBlank(forward.getPath()) && forward.getPath().equals(current.getPath())) {
-				ConfigurationWarnings.add(this, log, "The forward [" + forwardName + "] is already registered on this pipe");
+				ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] is already registered on this pipe");
 			} else {
 				log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
 			}

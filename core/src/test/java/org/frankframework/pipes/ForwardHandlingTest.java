@@ -146,7 +146,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertDoesNotThrow(pipe::configure);
 		List<String> warnings = getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("The forward [thisForwardDoesntExist] does not exist and cannot be used in this pipe"));
+		assertTrue(warnings.get(0).contains("the forward [thisForwardDoesntExist] does not exist and cannot be used in this pipe"));
 	}
 
 	@ParameterizedTest
@@ -164,7 +164,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertDoesNotThrow(pipe::configure);
 		List<String> warnings = getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("Pipe contains a forward without a name"));
+		assertTrue(warnings.get(0).contains("pipe contains a forward without a name"));
 	}
 
 	@Test
@@ -180,7 +180,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertDoesNotThrow(pipe::configure);
 		List<String> warnings = getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("The forward [success] is already registered on this pipe"));
+		assertTrue(warnings.get(0).contains("the forward [success] is already registered on this pipe"));
 	}
 
 	@Test
