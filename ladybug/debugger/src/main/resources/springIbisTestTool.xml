@@ -10,29 +10,20 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
 		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
-	"
-	default-lazy-init="true"
-	>
-	<!--
-	default-lazy-init="true" will prevent init of database related beans when ladybug.jdbc.datasource is empty (in which
-	case file storage will be used instead of database storage)
-	-->
+	">
+
+	<!-- scan both the original and overridden configuration -->
+	<context:component-scan base-package="org.frankframework.ladybug" />
+	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>
-
-	<!-- scan both the original and overridden configuration -->
-	<context:component-scan base-package="org.frankframework.ladybug">
-		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\.runner\..*"/>
-	</context:component-scan>
 
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
 	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean">
 		<property name="filter" ref="springSecurityFilterChain" />
 		<property name="enabled" value="false" />
 	</bean>
-
-	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
@@ -63,6 +54,17 @@
 		<property name="closeMessageCapturers" value="false" />
 	</bean>
 
+	<import resource="springTestToolCommon.xml"/>
+
+	<bean name="xsltResource" class="java.lang.String">
+		<constructor-arg value="${ibistesttool.reportTransformation}"/>
+	</bean>
+
+	<bean name="messageEncoder" class="org.frankframework.ladybug.MessageEncoder" autowire="byName"/>
+	<bean name="messageCapturer" class="org.frankframework.ladybug.MessageCapturer" autowire="byName"/>
+	<bean name="messageTransformer" class="org.frankframework.ladybug.transform.HideRegexMessageTransformer"/>
+
+
 	<!--
 	Prevent streams for which close method isn't invoked from keeping reports in progress. It would be possible to set
 	closeMessageCapturers to true on the testTool bean but in some cases that would close the report too soon as a
@@ -80,168 +82,83 @@
 		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000"/>
 	</task:scheduled-tasks>
 
-	<bean name="dataSourceName" class="java.lang.String">
-		<constructor-arg value="${ladybug.jdbc.datasource:}"/>
-	</bean>
 
-	<bean name="debugStoragePreferred" class="java.lang.String">
-		<constructor-arg value="#{dataSourceName != '' ? 'debugStorageDatabase' : 'debugStorageFile'}"/>
-	</bean>
+	<!-- Storage Profiles -->
+	<beans profile="ladybug.file">
+		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
+			<property name="name" value="FileDebugStorage"/>
+			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
+			<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
+		</bean>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
-		<property name="name" value="Debug"/>
-		<property name="destination">
-			<ref bean="#{debugStoragePreferred}"/>
-		</property>
-		<property name="alternativeDestination">
-			<ref bean="debugStorageFile"/><!-- When Ladybug table not available use file storage -->
-		</property>
-	</bean>
+		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+			<property name="name" value="FileTestStorage"/>
+			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
+			<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
+		</bean>
+	</beans>
 
-	<bean
-		name="debugStorageDatabase"
-		class="org.frankframework.ladybug.DatabaseStorage"
-		autowire="byName"
-		depends-on="ladybugDatabaseChangelog"
-		>
-		<property name="name" value="DatabaseDebugStorage"/>
-	</bean>
+	<!-- XML only for the test-tab storage -->
+	<beans profile="ladybug.xml">
+		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
+			<property name="name" value="XmlTestStorage"/>
+			<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
+			<property name="reportsFolder" value="${ibistesttool.directory}"/>
+		</bean>
+	</beans>
 
-	<bean name="debugStorageFile" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
-		<property name="name" value="FileDebugStorage"/>
-		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
-		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-	</bean>
+	<beans profile="ladybug.database">
+		<bean name="dataSourceName" class="java.lang.String">
+			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
+		</bean>
 
-	<bean name="testStoragePreferred" class="java.lang.String">
-		<constructor-arg value="#{
-				'${dtap.stage}' == 'LOC' ||
-				'${dtap.stage}' == 'xxx' ||
-				'${dtap.stage}' == ''
-				?
-				'testStorageXml' : (dataSourceName != '' ? 'testStorageDatabase' : 'testStorageFile')
-				}"
-		/>
-	</bean>
+		<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
-		<property name="name" value="Test"/>
-		<property name="destination">
-			<ref bean="#{testStoragePreferred}"/>
-		</property>
-		<property name="alternativeDestination">
-			<ref bean="testStorageFile"/><!-- When Ladybug table not available use file storage -->
-		</property>
-	</bean>
+		<!-- Find DataSources in resources.yml and JNDI -->
+		<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
+		<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
+		<bean name="dataSourceFactory" class="org.frankframework.ladybug.jdbc.LadyBugDataSourceFactory" autowire="byType" />
 
-	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
-		<property name="name" value="XmlTestStorage"/>
-		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
-		<property name="reportsFolder" value="${ibistesttool.directory}"/>
-	</bean>
+		<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
+		<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
+		</bean>
 
-	<bean name="testStorageDatabase" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
-		depends-on="ladybugDatabaseChangelog"
-		>
-		<property name="name" value="Test"/>
-	</bean>
+		<bean
+			name="debugStorage"
+			class="org.frankframework.ladybug.DatabaseStorage"
+			autowire="byName"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="DatabaseDebugStorage"/>
+		</bean>
+		<bean name="testStorage" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="Test"/>
+		</bean>
 
-	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
-		<property name="name" value="FileTestStorage"/>
-		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
-		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-	</bean>
+		<bean
+			name="ladybugDatabaseChangelog"
+			class="liquibase.integration.spring.SpringLiquibase"
+			depends-on="databaseStartupValidator"
+			>
+			<property name="dataSource" ref="ladybugDataSource"/>
+			<property name="changeLog" value="classpath:Ladybug_DatabaseChangelog.xml"/>
+			<property name="uiService">
+				<!-- Show "Running Changeset: ..." in System.out -->
+				<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
+			</property>
+			<property name="showSummaryOutput">
+				<!-- Don't show "UPDATE SUMMARY" in System.out -->
+				<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
+			</property>
+		</bean>
 
-	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" autowire="byName">
-		<property name="name" value="White box"/>
-	</bean>
-
-	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
-		<property name="name" value="Gray box"/>
-		<property name="checkpointMatchers">
-			<list>
-				<bean class="org.frankframework.ladybug.filter.GrayBox"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
-		<property name="name" value="Black box"/>
-		<property name="checkpointMatchers">
-			<list>
-				<bean class="org.frankframework.ladybug.filter.BlackBox"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean name="views" class="nl.nn.testtool.filter.Views">
-		<property name="views">
-			<list>
-				<ref bean="whiteBoxView"/>
-				<ref bean="grayBoxView"/>
-				<ref bean="blackBoxView"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean name="xsltResource" class="java.lang.String">
-		<constructor-arg value="${ibistesttool.reportTransformation}"/>
-	</bean>
-
-	<util:list id="observerRoles">
-		<value>IbisObserver</value>
-		<value>IbisDataAdmin</value>
-		<value>IbisAdmin</value>
-		<value>IbisTester</value>
-	</util:list>
-
-	<util:list id="dataAdminRoles">
-		<value>IbisDataAdmin</value>
-		<value>IbisAdmin</value>
-		<value>IbisTester</value>
-	</util:list>
-
-	<util:list id="testerRoles">
-		<value>IbisTester</value>
-	</util:list>
-
-	<bean name="messageEncoder" class="org.frankframework.ladybug.MessageEncoder" autowire="byName"/>
-
-	<bean name="messageCapturer" class="org.frankframework.ladybug.MessageCapturer" autowire="byName"/>
-
-	<bean name="messageTransformer" class="org.frankframework.ladybug.transform.HideRegexMessageTransformer"/>
-
-	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-
-	<!-- Find DataSources in resources.yml and JNDI -->
-	<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
-	<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
-	<bean name="dataSourceFactory" class="org.frankframework.ladybug.jdbc.LadyBugDataSourceFactory" autowire="byType" />
-
-	<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
-	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
-		<constructor-arg value="#{dataSourceName}"/>
-	</bean>
-
-	<bean
-		name="ladybugDatabaseChangelog"
-		class="liquibase.integration.spring.SpringLiquibase"
-		depends-on="databaseStartupValidator"
-		>
-		<property name="dataSource" ref="ladybugDataSource"/>
-		<property name="changeLog" value="classpath:DatabaseChangelog_Debug.xml"/>
-		<property name="uiService">
-			<!-- Show "Running Changeset: ..." in System.out -->
-			<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
-		</property>
-		<property name="showSummaryOutput">
-			<!-- Don't show "UPDATE SUMMARY" in System.out -->
-			<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
-		</property>
-	</bean>
-
-	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
-		<property name="dataSource" ref="ladybugDataSource"/>
-	</bean>
-
+		<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
+			<property name="timeout" value="60"/>
+			<property name="interval" value="5"/>
+			<property name="dataSource" ref="ladybugDataSource"/>
+		</bean>
+	</beans>
 </beans>

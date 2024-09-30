@@ -61,13 +61,16 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 
-	private @Setter @Autowired TestTool testtool;
+	private TestTool testtool;
 	protected @Setter @Getter IbisManager ibisManager;
 	private @Setter @Autowired List<String> testerRoles;
 	private @Setter ApplicationContext applicationContext;
 
 	protected Set<String> inRerun = new HashSet<>();
 
+	/**
+	 * TestTool can't be wired by name or type. We must fetch it from a parent (SpringBoot) context.
+	 */
 	@Override
 	public void afterPropertiesSet() {
 		if(applicationContext.containsBean(LADYBUG_TESTTOOL_NAME)) {
@@ -75,8 +78,9 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 			testtool.setDebugger(this);
 			log.info("configuring debugger on TestTool [{}]", testtool);
 		} else {
-			log.info("no Ladybug found on classpath, skipping testtool wireing.");
-			APPLICATION_LOG.info("No Ladybug found on classpath, skipping testtool wireing.");
+			String message = "No Ladybug found on classpath, unable to load Ladybug debugger";
+			log.info(message);
+			APPLICATION_LOG.info(message);
 		}
 	}
 

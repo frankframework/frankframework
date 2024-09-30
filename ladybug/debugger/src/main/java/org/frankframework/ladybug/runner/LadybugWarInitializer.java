@@ -16,12 +16,15 @@
 package org.frankframework.ladybug.runner;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
@@ -81,7 +84,10 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		AppConstants properties = AppConstants.getInstance();
 		String file = properties.getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
 
-		// Only allow this (by default) for this context, application.propeties may be overwritten.
+		List<String> profiles = determineStorageProfiles(properties);
+		application.setAdditionalProfiles(profiles.toArray(new String[0]));
+
+		// Only allow this (by default) for this context, application.properties may be overwritten.
 		application.setAllowBeanDefinitionOverriding(true);
 		Set<String> set = new HashSet<>();
 		set.add(getConfigFile(file));
@@ -89,6 +95,27 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		application.setWebApplicationType(WebApplicationType.NONE);
 		application.setDefaultProperties(properties);
 		return super.run(application);
+	}
+
+	private List<String> determineStorageProfiles(AppConstants properties) {
+		String dataSourceName = properties.getProperty("ladybug.jdbc.datasource");
+
+		List<String> profiles = new ArrayList<>(2);
+		if(StringUtils.isBlank(dataSourceName)) {
+			profiles.add("ladybug.file");
+			if(dtapIsLoc(properties)) {
+				profiles.add("ladybug.xml");
+			}
+		} else {
+			profiles.add("ladybug.database");
+		}
+		APPLICATION_LOG.debug("Using Ladybug profiles {}", profiles);
+		return profiles;
+	}
+
+	private boolean dtapIsLoc(AppConstants properties) {
+		String dtapStage = properties.getProperty("dtap.stage", "").toLowerCase();
+		return dtapStage == "loc" || dtapStage == "xxx" || dtapStage == "";
 	}
 
 	private String getConfigFile(String file) {
