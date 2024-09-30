@@ -87,7 +87,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		List<String> profiles = determineStorageProfiles(properties);
 		application.setAdditionalProfiles(profiles.toArray(new String[0]));
 
-		// Only allow this (by default) for this context, application.propeties may be overwritten.
+		// Only allow this (by default) for this context, application.properties may be overwritten.
 		application.setAllowBeanDefinitionOverriding(true);
 		Set<String> set = new HashSet<>();
 		set.add(getConfigFile(file));

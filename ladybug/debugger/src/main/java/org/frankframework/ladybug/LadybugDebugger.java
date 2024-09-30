@@ -78,8 +78,9 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 			testtool.setDebugger(this);
 			log.info("configuring debugger on TestTool [{}]", testtool);
 		} else {
-			log.info("no Ladybug found on classpath, unable to load Ladybug debugger");
-			APPLICATION_LOG.info("No Ladybug found on classpath, unable to load Ladybug debugger.");
+			String message = "No Ladybug found on classpath, unable to load Ladybug debugger";
+			log.info(message);
+			APPLICATION_LOG.info(message);
 		}
 	}
 
