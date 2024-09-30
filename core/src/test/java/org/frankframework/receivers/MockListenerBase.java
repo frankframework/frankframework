@@ -6,11 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationContext;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.ListenerException;
@@ -18,6 +13,11 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.springframework.context.ApplicationContext;
+
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
 
 public abstract class MockListenerBase implements IListener<String> {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -53,7 +53,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<String> rawMessage, @NotNull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
 		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);

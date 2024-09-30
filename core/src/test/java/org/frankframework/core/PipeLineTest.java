@@ -178,7 +178,7 @@ public class PipeLineTest {
 		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit"));//Surprisingly this doesn't cause any warnings
+		pipe.registerForward(new PipeForward("success", "exit")); // Surprisingly this doesn't cause any warnings
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
@@ -189,7 +189,7 @@ public class PipeLineTest {
 		pipeline.configure();
 
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
-		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] forward [success] is already registered"));
+		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] the forward [success] is already registered on this pipe"));
 		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
 		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 

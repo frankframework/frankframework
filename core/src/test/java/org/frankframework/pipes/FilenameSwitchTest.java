@@ -53,6 +53,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 
 	@Test
 	public void testValidForwardName() throws Exception {
+		pipe.configure();
 		PipeRunResult res = doPipe(pipe, "CreateHelloWorld/success", session);
 		assertEquals("success", res.getPipeForward().getName());
 	}
@@ -60,6 +61,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 	@Test
 	public void testValidForwardNameToLowerCase() throws Exception {
 		pipe.setToLowercase(true);
+		pipe.configure();
 		String input = "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS";
 		PipeRunResult res = doPipe(pipe, input, session);
 		assertEquals("success", res.getPipeForward().getName());
@@ -68,6 +70,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 	@Test
 	public void testValidForwardNameToLowerCaseFalse() throws Exception {
 		pipe.setToLowercase(false);
+		pipe.configure();
 		String input = "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS";
 
 		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, input, session));

@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,9 +24,13 @@ import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -49,8 +54,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -111,7 +114,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter String logIntermediaryResults = null;
 	private @Getter String hideRegex = null;
 
-	private final Map<String, PipeForward> pipeForwards = new HashMap<>();
+	private final List<PipeForward> registeredForwards = new ArrayList<>();
+	private final Map<String, PipeForward> configuredForwards = new HashMap<>();
 	private final ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
@@ -125,13 +129,16 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */
-	//For testing purposes the configure method should not require the PipeLine to be present.
+	// For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
 		}
+
+		registeredForwards.forEach(this::configureForward);
+
 		ParameterList params = getParameterList();
 		if (params!=null) {
 			try {
@@ -149,6 +156,48 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		if (getLocker() != null) {
 			getLocker().configure();
 		}
+	}
+
+	private void configureForward(PipeForward forward) {
+		String forwardName = forward.getName();
+
+		if (StringUtils.isBlank(forwardName)) {
+			ConfigurationWarnings.add(this, log, "pipe contains a forward without a name");
+			return;
+		}
+
+		final List<String> allowedForwards = getAllowedForwards();
+		if (!allowedForwards.contains("*") && !allowedForwards.contains(forwardName)) {
+			ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] does not exist and cannot be used in this pipe");
+		}
+
+		PipeForward current = configuredForwards.get(forwardName);
+		if (current==null){
+			configuredForwards.put(forwardName, forward);
+		} else {
+			if (StringUtils.isNotBlank(forward.getPath()) && forward.getPath().equals(current.getPath())) {
+				ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] is already registered on this pipe");
+			} else {
+				log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
+			}
+		}
+	}
+
+	/**
+	 * Hierarchical list of forwards that may be present on this {@link AbstractPipe pipe}.
+	 */
+	@Nonnull
+	private List<String> getAllowedForwards() {
+		Class<?> clazz = getClass();
+
+		Set<Forward> forwards = new HashSet<>();
+		while (clazz != null) {
+			forwards.addAll(List.of(clazz.getAnnotationsByType(Forward.class)));
+
+			clazz = clazz.getSuperclass();
+		}
+
+		return forwards.stream().map(Forward::name).toList();
 	}
 
 	/**
@@ -197,30 +246,16 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
 	@Override
-	public void registerForward(PipeForward forward) throws ConfigurationException {
-		String forwardName = forward.getName();
+	public void registerForward(PipeForward forward) {
+		registeredForwards.add(forward);
+	}
 
-		if (forwardName == null) {
-			throw new ConfigurationException("forward without a name");
+	public boolean hasRegisteredForward(@Nullable String forward) {
+		if (StringUtils.isEmpty(forward)) {
+			return false;
 		}
 
-		final Set<Forward> allowedForwards = getAllowedForwards();
-		if (allowedForwards.stream().noneMatch(f -> f.name().equals("*"))) {
-			if (!allowedForwards.stream().map(Forward::name).toList().contains(forwardName)) {
-				throw new ConfigurationException("The forward [" + forwardName + "] does not exist and cannot be used in this pipe");
-			}
-		}
-
-		PipeForward current = pipeForwards.get(forwardName);
-		if (current==null){
-			pipeForwards.put(forwardName, forward);
-		} else {
-			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-				ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
-			} else {
-				log.info("PipeForward [{}] already registered, pointing to [{}]. Ignoring new one, that points to [{}]", forwardName, current.getPath(), forward.getPath());
-			}
-		}
+		return registeredForwards.stream().anyMatch(f -> forward.equals(f.getName()));
 	}
 
 	/**
@@ -236,12 +271,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * </ul>
 	 */
 	@Nullable
-	public PipeForward findForward(@Nullable String forward){
+	public PipeForward findForward(@Nullable String forward) {
 		if (StringUtils.isEmpty(forward)) {
 			return null;
 		}
-		if (pipeForwards.containsKey(forward)) {
-			return pipeForwards.get(forward);
+		if (configuredForwards.containsKey(forward)) {
+			return configuredForwards.get(forward);
 		}
 		if (pipeLine == null) {
 			return null;
@@ -260,7 +295,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			}
 		}
 		if (result != null) {
-			pipeForwards.put(forward, result);
+			configuredForwards.put(forward, result);
 		}
 		return result;
 	}
@@ -268,29 +303,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	@Nonnull
 	public Map<String, PipeForward> getForwards() {
-		Map<String, PipeForward> forwards = new HashMap<>(pipeForwards);
+		Map<String, PipeForward> forwards = new HashMap<>(configuredForwards);
 		PipeLine pipeline = getPipeLine();
 		if (pipeline == null) {
 			return forwards;
 		}
 
-		//Omit global pipeline-forwards and only return local pipe-forwards
+		// Omit global pipeline-forwards and only return local pipe-forwards
 		pipeline.getPipes()
 				.forEach(pipe -> forwards.remove(pipe.getName()));
-		return forwards;
-	}
-
-	@Nonnull
-	private Set<Forward> getAllowedForwards() {
-		Class<?> clazz = getClass();
-
-		Set<Forward> forwards = new HashSet<>();
-		while (clazz != null) {
-			forwards.addAll(List.of(clazz.getAnnotationsByType(Forward.class)));
-
-			clazz = clazz.getSuperclass();
-		}
-
 		return forwards;
 	}
 

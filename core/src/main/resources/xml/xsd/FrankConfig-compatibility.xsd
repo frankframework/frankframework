@@ -400,6 +400,13 @@
         <xs:documentation>when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="expectsSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The pipeline of this adapter expects to use the following session keys to be set on call. This
+ is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
+ so callers can see what session keys to set on call, and for verification that those session keys are present.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="transacted" type="frankBoolean" />
     <xs:attribute ref="transactionTimeout" />
     <xs:attribute ref="transactionAttribute" />
@@ -12810,9 +12817,9 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ChecksumPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ChecksumPipeDeclaredAttributeGroup">
-    <xs:attribute name="charset" type="xs:string">
+    <xs:attribute name="inputIsFile" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Character encoding to be used to encode message before calculating checksum.</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input is assumed to be a filename; otherwise the input itself is used in the calculations. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type">
@@ -12820,17 +12827,64 @@
         <xs:documentation>Type of checksum to be calculated Default: MD5</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ChecksumTypeAttributeValuesType variableRef" />
+        <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="inputIsFile" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input is assumed to be a filename; otherwise the input itself is used in the calculations. Default: false</xs:documentation>
-      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ChecksumPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ChecksumPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="HashPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="HashPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="HashPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.HashPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="HashPipeDeclaredAttributeGroup">
+    <xs:attribute name="algorithm">
+      <xs:annotation>
+        <xs:documentation>Hash Algorithm to use Default: HmacSHA256</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="encoding" type="xs:string" />
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Character set to use for converting the secret from String to bytes Default: UTF-8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hashEncoding">
+      <xs:annotation>
+        <xs:documentation>Method to use for converting the hash from bytes to String Default: Base64</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HashEncodingAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="binaryToTextEncoding">
+      <xs:simpleType>
+        <xs:union memberTypes="HashEncodingAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="secret" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="HashPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="HashPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ClobLineIteratingPipeType">
@@ -13570,58 +13624,6 @@
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
     <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="HashPipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="HashPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.HashPipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="HashPipeDeclaredAttributeGroup">
-    <xs:attribute name="algorithm">
-      <xs:annotation>
-        <xs:documentation>Hash Algorithm to use Default: HmacSHA256</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="HashAlgorithmAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="encoding" type="xs:string" />
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Character set to use for converting the secret from String to bytes Default: UTF-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="hashEncoding">
-      <xs:annotation>
-        <xs:documentation>Method to use for converting the hash from bytes to String Default: Base64</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="HashEncodingAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="binaryToTextEncoding">
-      <xs:simpleType>
-        <xs:union memberTypes="HashEncodingAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="secret" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="HashPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="HashPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -14002,7 +14004,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="LadybugPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ibistesttool.LadybugPipe" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ladybug.LadybugPipe" />
   </xs:complexType>
   <xs:attributeGroup name="LadybugPipeDeclaredAttributeGroup">
     <xs:attribute name="writeToLog" type="frankBoolean">
@@ -16031,7 +16033,11 @@
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JobDefDeclaredAttributeGroup">
-    <xs:attribute name="jobGroup" type="xs:string" />
+    <xs:attribute name="jobGroup" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Group in which to sort multiple jobs. Default: Name of the Configuration this job has been specified in.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Name of the job</xs:documentation>
@@ -16129,14 +16135,14 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.ExecuteQueryJob" />
   </xs:complexType>
   <xs:attributeGroup name="ExecuteQueryJobDeclaredAttributeGroup">
-    <xs:attribute name="query" type="xs:string">
+    <xs:attribute name="query" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>The SQL query text to be executed</xs:documentation>
+        <xs:documentation>The SQL query text to be executed.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used. Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -17025,14 +17031,26 @@
       <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ChecksumTypeAttributeValuesType">
+  <xs:simpleType name="AlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[mM][dD][55]" />
       <xs:pattern value="[sS][hH][aA]" />
       <xs:pattern value="[sS][hH][aA][22][55][66]" />
+      <xs:pattern value="[sS][hH][aA][33][88][44]" />
       <xs:pattern value="[sS][hH][aA][55][11][22]" />
       <xs:pattern value="[cC][rR][cC][33][22]" />
       <xs:pattern value="[aA][dD][lL][eE][rR][33][22]" />
+      <xs:pattern value="[hH][mM][aA][cC][mM][dD][55]" />
+      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][11]" />
+      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][22][55][66]" />
+      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][33][88][44]" />
+      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][55][11][22]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="HashEncodingAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[bB][aA][sS][eE][66][44]" />
+      <xs:pattern value="[hH][eE][xX]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="FileFormatAttributeValuesType">
@@ -17070,21 +17088,6 @@
       <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
       <xs:pattern value="[fF][lL][uU][sS][hH]" />
       <xs:pattern value="[cC][lL][eE][aA][rR]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="HashAlgorithmAttributeValuesType_2">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[hH][mM][aA][cC][mM][dD][55]" />
-      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][11]" />
-      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][22][55][66]" />
-      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][33][88][44]" />
-      <xs:pattern value="[hH][mM][aA][cC][sS][hH][aA][55][11][22]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="HashEncodingAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[bB][aA][sS][eE][66][44]" />
-      <xs:pattern value="[hH][eE][xX]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_8">
