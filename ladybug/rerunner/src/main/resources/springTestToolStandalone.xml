@@ -33,40 +33,28 @@
 
 	<!-- Profiles -->
 	<beans profile="ladybug.file">
-		<bean name="debugStorage,fileStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
+		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 			<property name="name" value="Debug"/>
 			<property name="reportsFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.tts"/>
 			<property name="metadataFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.ttm"/>
 		</bean>
 		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
 			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.ttm"/>
+			<property name="reportsFilename" value="../${testtool.directory:ladybug}/file-storage/test/ladybug.tts"/>
+			<property name="metadataFilename" value="../${testtool.directory:ladybug}/file-storage/test/ladybug.ttm"/>
 		</bean>
 	</beans>
 
 	<beans profile="ladybug.database">
-		<bean
-			name="debugStorage"
-			class="org.frankframework.ladybug.DatabaseStorage"
-			autowire="byName"
+		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="databaseStorage"/>
 		</bean>
-<!-- 		todo, add this (test storage) to the ibis testtool as well  -->
-<!-- 		<bean -->
-<!-- 			name="testStorage" -->
-<!-- 			class="nl.nn.testtool.storage.database.DatabaseTestStorage" -->
-<!-- 			autowire="byName" -->
-<!-- 			depends-on="ladybugDatabaseChangelog" -->
-<!-- 			> -->
-<!-- 			<property name="name" value="Test"/> -->
-<!-- 		</bean> -->
-		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+		<bean name="testStorage" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
+			depends-on="ladybugDatabaseChangelog"
+			>
 			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${testtool.directory:ladybug}/data/file-storage/ladybug.ttm"/>
 		</bean>
 
 		<!--
@@ -85,7 +73,7 @@
 
 		<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
 			<property name="dataSource" ref="ladybugDataSource" />
-			<property name="changeLog" value="classpath:Ladybug_DatabaseChangelog.xml" />
+			<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 		</bean>
 	</beans>
 
