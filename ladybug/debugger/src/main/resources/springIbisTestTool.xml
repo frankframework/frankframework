@@ -130,10 +130,7 @@
 			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
 		</bean>
 
-		<bean
-			name="debugStorage"
-			class="org.frankframework.ladybug.DatabaseStorage"
-			autowire="byName"
+		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="DatabaseDebugStorage"/>
@@ -150,7 +147,7 @@
 			depends-on="databaseStartupValidator"
 			>
 			<property name="dataSource" ref="ladybugDataSource"/>
-			<property name="changeLog" value="classpath:Ladybug_DatabaseChangelog.xml"/>
+			<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 			<property name="uiService">
 				<!-- Show "Running Changeset: ..." in System.out -->
 				<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
