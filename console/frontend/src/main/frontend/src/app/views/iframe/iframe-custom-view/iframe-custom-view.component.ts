@@ -25,7 +25,8 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
     super(sanitizer, appService);
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    super.ngOnInit();
     this.routeSubscription = this.route.url.subscribe((url) => {
       if (url[0].path == 'customView') {
         this.loadPage();
@@ -57,7 +58,8 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
     }, 50);
   }
 
-  ngOnDestroy(): void {
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
     this.routeSubscription?.unsubscribe();
   }
 }
