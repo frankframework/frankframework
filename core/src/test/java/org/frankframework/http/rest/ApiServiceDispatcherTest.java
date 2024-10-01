@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -266,7 +265,7 @@ public class ApiServiceDispatcherTest {
 		assertEquals("GetDocument_Response", validator.getRoot());
 	}
 
-	private EchoPipe getEchoPipe(String forwardName) throws ConfigurationException {
+	private EchoPipe getEchoPipe(String forwardName) {
 		EchoPipe echoPipe = new EchoPipe();
 		echoPipe.setName("echo");
 
@@ -279,7 +278,7 @@ public class ApiServiceDispatcherTest {
 		return echoPipe;
 	}
 
-	private Json2XmlValidator getJson2XmlValidator(String name, String root, String responseRoot, String forwardName) throws ConfigurationException {
+	private Json2XmlValidator getJson2XmlValidator(String name, String root, String responseRoot, String forwardName) {
 		Json2XmlValidator json2xmlInput = new Json2XmlValidator();
 		json2xmlInput.setSchema("/Validation/IncludeNonExistingResource/main.xsd");
 		json2xmlInput.setRoot(root);

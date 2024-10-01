@@ -328,9 +328,9 @@ public class ApiServiceDispatcher {
 
 		// Find the optional last pipe of type Json2XmlValidator
 		Optional<Json2XmlValidator> optionalLastPipe = pipeline.getPipes().stream()
-				.filter(pipe -> pipe.getForwards().containsKey(exit))
 				.filter(Json2XmlValidator.class::isInstance)
 				.map(Json2XmlValidator.class::cast)
+				.filter(pipe -> pipe.hasRegisteredForward(exit))
 				.reduce((first, second) -> second);
 
 		// If there's no last pipe and the first pipe is an XmlValidator with a response root, use the first pipe
