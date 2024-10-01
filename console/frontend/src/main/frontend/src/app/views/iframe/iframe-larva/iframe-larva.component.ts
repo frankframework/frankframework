@@ -12,7 +12,8 @@ export class IframeLarvaComponent extends BaseIframeComponent implements OnInit 
     super(sanitizer, appService);
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    super.ngOnInit();
     this.setIframeSource('larva');
   }
 }
