@@ -103,7 +103,7 @@
 					and
 					args(message, session)
 					"
-				method="debugSenderWithForwardInputOutputAbort"
+				method="debugSenderSendMessage"
 				arg-names="message, session"
 			/>
 			<aop:around
@@ -119,7 +119,7 @@
 					and
 					args(message, session)
 					"
-				method="debugSenderInputOutputAbort"
+				method="debugSenderSendMessageOrThrow"
 				arg-names="message, session"
 			/>
 			<aop:around
