@@ -79,8 +79,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Boolean autoStart = null;
 	private final boolean enabledAutowiredPostProcessing = false;
 
-	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
-	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
+	private @Getter @Setter AdapterManager adapterManager; // We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter ScheduleManager scheduleManager; // We have to manually inject the ScheduleManager bean! See refresh();
 
 	private @Getter RunState state = RunState.STOPPED;
 
@@ -93,7 +93,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter ConfigurationException configurationException = null;
 
 	public Configuration() {
-		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); // Don't call the super(..), it will trigger a refresh.
 	}
 
 	@Override
@@ -112,33 +112,33 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
+		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
 			throw new IllegalStateException("No IConfigurationClassLoader set");
 		}
-		if(ibisManager == null) {
+		if (ibisManager == null) {
 			throw new IllegalStateException("No IbisManager set");
 		}
-		if(StringUtils.isEmpty(getVersion())) {
+		if (StringUtils.isEmpty(getVersion())) {
 			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
-		if(StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug.version"))) {
-			this.getEnvironment().addActiveProfile("aop"); //Makes this configurable depending on if the ladybug is present on the classpath.
+		if (StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug-debugger.version"))) {
+			this.getEnvironment().addActiveProfile("aop"); // Makes this configurable depending on if the ladybug is present on the classpath.
 		}
 
-		super.afterPropertiesSet(); //Triggers a context refresh
+		super.afterPropertiesSet(); // Triggers a context refresh
 
-		if(enabledAutowiredPostProcessing) {
-			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		if (enabledAutowiredPostProcessing) {
+			// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
 			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
 			postProcessor.setAutowiredAnnotationType(Autowired.class);
 			postProcessor.setBeanFactory(getBeanFactory());
 			getBeanFactory().addBeanPostProcessor(postProcessor);
 		}
 
-		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
+		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
 	}
 
@@ -178,7 +178,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void start() {
 		log.info("starting configuration [{}]", this::getName);
-		if(!isConfigured()) {
+		if (!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 
@@ -187,8 +187,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/*
-	 * Opposed to close you do not need to reconfigure the configuration.
-	 * Allows you to stop and start Configurations.
+	 * Opposed to close you do not need to reconfigure the configuration. Allows you to stop and start Configurations.
 	 */
 	@Override
 	public void stop() {
@@ -207,8 +206,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
-		if(getName().contains("/")) {
-			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
+		if (getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name [" + getName() + "]");
 		}
 		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
@@ -217,16 +216,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
-			//Trigger a configure on all (Configurable) Lifecycle beans
+			// Trigger a configure on all (Configurable) Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+			if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
 				throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 			}
 
 			configurableLifecycle.configure();
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
-			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
 			applicationLog.info("Configuration [{}] [{}] was not able to startup", getName(), getVersion());
 			throw e;
 		}
@@ -236,8 +235,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if (isAutoStartup()) {
 			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
-		}
-		else {
+		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
@@ -259,7 +257,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
 	@Override
 	public void publishEvent(ApplicationEvent event) {
-		if(event instanceof ContextClosedEvent) {
+		if (event instanceof ContextClosedEvent) {
 			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
@@ -308,14 +306,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	@Override
 	public boolean isAutoStartup() {
-		if(autoStart == null && getClassLoader() != null) {
+		if (autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("configurations.autoStart", true);
 		}
 		return autoStart;
 	}
 
 	public boolean isStubbed() {
-		if(getClassLoader() instanceof IConfigurationClassLoader) {
+		if (getClassLoader() instanceof IConfigurationClassLoader) {
 			return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 		}
 
@@ -328,7 +326,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @return Adapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
-		if(adapterManager == null || !isActive()) {
+		if (adapterManager == null || !isActive()) {
 			return null;
 		}
 
@@ -336,7 +334,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
-		if(adapterManager == null || !isActive()) {
+		if (adapterManager == null || !isActive()) {
 			return Collections.emptyList();
 		}
 		return adapterManager.getAdapterList();
@@ -448,7 +446,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			return null;
 		}
 
-		if(getClassLoader() == null) {
+		if (getClassLoader() == null) {
 			return null;
 		}
 

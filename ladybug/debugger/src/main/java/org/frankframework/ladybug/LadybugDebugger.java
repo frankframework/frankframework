@@ -57,7 +57,7 @@ import org.frankframework.util.UUIDUtil;
 public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private static final String REPORT_ROOT_PREFIX = "Pipeline ";
-	private static final String LADYBUG_TESTTOOL_NAME = "testtool";
+	private static final String LADYBUG_TESTTOOL_NAME = "testTool";
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 
