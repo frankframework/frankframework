@@ -10,13 +10,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Stream;
 
-import jakarta.xml.soap.SOAPConstants;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IWrapperPipe.Direction;
 import org.frankframework.core.PipeForward;
@@ -33,6 +26,12 @@ import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestAssertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import jakarta.xml.soap.SOAPConstants;
 
 public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 
@@ -48,7 +47,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 			""";
 	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP11.namespace + "\">" + messageBody;
 	private final String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP12.namespace + "\">" + messageBody;
-
 
 	@Override
 	public SoapWrapperPipe createPipe() {
@@ -82,7 +80,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	@Test
 	public void testShouldKeepPipeSoapConfigurationSoap11VersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.registerForward(new PipeForward("pipe2", "READY"));
 		pipe.setRemoveOutputNamespaces(true);
 		configureAndStartPipe();
 
@@ -107,7 +104,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	@Test
 	public void testShouldKeepPipeSoapConfigurationSoap12VersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.registerForward(new PipeForward("pipe2", "READY"));
 		pipe.setRemoveOutputNamespaces(true);
 		pipe.configure();
 		pipe.start();
@@ -233,7 +229,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	public void testWrap() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -255,7 +257,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setSoapVersion(SoapVersion.SOAP12);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -294,7 +302,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
 		pipe.setOmitXmlDeclaration(false);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -317,6 +331,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	static Stream<Arguments> testReadMessageAsInputSourceWithISO_8859_1_Charset() throws IOException, URISyntaxException {
 		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/iso-8859-1.xml");
 	}
+
 	@ParameterizedTest
 	@MethodSource
 	void testReadMessageAsInputSourceWithISO_8859_1_Charset(Message message) throws Exception {
@@ -324,7 +339,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
 		pipe.setOmitXmlDeclaration(false);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		// Act

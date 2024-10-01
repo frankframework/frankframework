@@ -44,6 +44,7 @@ import org.frankframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  * @since 4.3
  */
+@Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
 @Forward(name = "else", description = "the configured condition is not met")
 @ElementType(ElementTypes.ROUTER)

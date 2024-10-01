@@ -3,6 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd"
 	>
+
 	<property name="BLOB_FIELD_TYPE" value="bytea" dbms="postgresql"/>
 	<property name="BLOB_FIELD_TYPE" value="blob" dbms="!postgresql"/>
 
@@ -24,5 +25,19 @@
 			<column name="REPORTXML"  type="CLOB"/>
 		</createTable>
 		<createSequence sequenceName="SEQ_LADYBUG"/><!-- To auto increment STORAGEID on Oracle -->
+	</changeSet>
+
+	<changeSet id="LadybugTest:1" author="Jaco de Groot">
+		<comment>Add table LADYBUGTEST</comment>
+		<createTable tableName="LADYBUGTEST">
+			<column name="STORAGEID" type="INTEGER" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_LADYBUGTEST"/>
+			</column>
+			<column name="PATH"  type="VARCHAR(4000)"/><!-- 4000 is the maximum VARCHAR length for Oracle. Linux has a maximum path of 4096 characters for most filesystems (https://unix.stackexchange.com/questions/32795/what-is-the-maximum-allowed-filename-and-folder-size-with-ecryptfs) -->
+			<column name="NAME" type="VARCHAR(256)"/>
+			<column name="REPORT" type="BLOB"/>
+			<column name="DESCRIPTION"  type="CLOB"/>
+		</createTable>
+		<createSequence sequenceName="SEQ_LADYBUGTEST"/><!-- To auto increment STORAGEID on Oracle -->
 	</changeSet>
 </databaseChangeLog>

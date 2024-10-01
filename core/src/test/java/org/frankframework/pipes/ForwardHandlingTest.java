@@ -1,13 +1,21 @@
 package org.frankframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.PipeForward;
+import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 
 class ForwardHandlingTest extends ConfiguredTestBase {
 
@@ -123,6 +131,106 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		assertEquals("READY", forward.getPath());
 		assertEquals(0, getConfigurationWarnings().size());
 		assertEquals(0, ApplicationWarnings.getSize());
+	}
+
+	@Test
+	public void testRegisterUnknownForward() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
+
+		assertDoesNotThrow(pipe::configure);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("the forward [thisForwardDoesntExist] does not exist and cannot be used in this pipe"));
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@EmptySource
+	public void testForwardWithoutName(String forwardName) throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null))); // FixedForwardPipe requires a SUCCESS forward
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward(forwardName, null)));
+
+		assertDoesNotThrow(pipe::configure);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("pipe contains a forward without a name"));
+	}
+
+	@Test
+	public void testRegisterSameForwardTwice() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi")));
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi")));
+
+		assertDoesNotThrow(pipe::configure);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("the forward [success] is already registered on this pipe"));
+	}
+
+	@Test
+	public void testRegisterSameForwardDifferentPath() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
+
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			assertDoesNotThrow(pipe::configure);
+		} finally {
+			TestAppender.removeAppender(appender);
+		}
+		assertTrue(appender.contains("INFO - PipeForward [success] already registered, pointing to [Sergi1]. Ignoring new one, that points to [Sergi2]"), "Log messages: "+appender.getLogLines());
+	}
+
+	@Test
+	public void testRegisterKnownForward() throws ConfigurationException {
+		var pipe = new EchoPipe();
+		pipe.setName("Echo Pipe");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+	}
+
+	@Test
+	public void testRegisterUnknownWildcardForward() throws ConfigurationException {
+		var pipe = new XmlIf();
+		pipe.setName("Xml If");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
+	}
+
+	@Test
+	public void testRegisterKnownWildcardForward() throws ConfigurationException {
+		var pipe = new XmlIf();
+		pipe.setName("Xml If");
+		pipeline.addPipe(pipe);
+		autowireByType(pipe);
+
+		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
 	}
 
 }

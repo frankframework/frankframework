@@ -1254,7 +1254,7 @@ public class LarvaTool {
 			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e);
-		} catch(SenderException | IOException e) {
+		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e);
 		}
 

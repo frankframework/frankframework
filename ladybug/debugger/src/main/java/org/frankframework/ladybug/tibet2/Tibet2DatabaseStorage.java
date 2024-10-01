@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcFacade;
-import org.frankframework.ladybug.IbisDebugger;
+import org.frankframework.ladybug.LadybugDebugger;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
@@ -62,7 +62,7 @@ import org.frankframework.util.StreamUtil;
  */
 // LogStorage needs to be implemented because View.setDebugStorage() requires a LogStorage
 // Reports can be deleted in the debug tab when a debug storage also implements CrudStorage
-public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
+public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
 	private static final String DELETE_ADAPTER_CONFIG = "main";
@@ -76,7 +76,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	private Map<String, String> fixedStringTables;
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
-	private IbisDebugger ibisDebugger;
+	private LadybugDebugger ibisDebugger;
 	private SecurityContext securityContext;
 
 	@Override
@@ -141,7 +141,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		this.testTool = testTool;
 	}
 
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+	public void setIbisDebugger(LadybugDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
 
@@ -357,7 +357,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 								String value = getValue(rs, i + 1);
 								Checkpoint checkpoint = new Checkpoint(report,
 										Thread.currentThread().getName(),
-										Storage.class.getName(),
+										Tibet2DatabaseStorage.class.getName(),
 										"Column " + reportColumnNames.get(i),
 										Checkpoint.TYPE_INPUTPOINT, 0);
 								checkpoint.setMessage(value);

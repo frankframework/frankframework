@@ -15,9 +15,10 @@
 */
 package org.frankframework.scheduler.job;
 
-import java.io.IOException;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -30,9 +31,6 @@ import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.UUIDUtil;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Scheduled job to send messages to a {@link FrankListener}.
@@ -72,7 +70,7 @@ public class SendMessageJob extends JobDef {
 
 			localSender.open();
 			localSender.sendMessageOrThrow(toSendMessage, session).close();
-		} catch (SenderException | IOException e) {
+		} catch (SenderException e) {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {

@@ -23,6 +23,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -38,6 +39,7 @@ import io.micrometer.core.instrument.DistributionSummary;
  * @author  Peter Leeuwenburgh
  */
 
+@Forward(name = "*", description = "the exitState, based on the number of received messages")
 @ElementType(ElementTypes.ROUTER)
 public class CounterSwitchPipe extends FixedForwardPipe {
 	private int divisor = 2;
@@ -47,7 +49,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		super.configure();
 
 		if (getDivisor() < 2) {
-			throw new ConfigurationException("mod [" + getDivisor() + "] should be greater than or equal to 2");
+			throw new ConfigurationException("divisor [" + getDivisor() + "] should be greater than or equal to 2");
 		}
 
 		for (int i = 1; i <= getDivisor(); i++) {

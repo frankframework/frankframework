@@ -19,7 +19,7 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.17.2</jackson.version>
+		<jackson.version>2.18.0</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
 		<spring.version>6.1.13</spring.version>
 		<spring-security.version>6.3.3</spring-security.version>
@@ -55,8 +55,8 @@
 		<aws.java.sdk.version>2.28.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.13.0</mockito.version>
-		<junit.version>5.11.0</junit.version>
+		<mockito.version>5.14.0</mockito.version>
+		<junit.version>5.11.1</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -980,7 +980,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.18.1</version>
+							<version>10.18.2</version>
 						</dependency>
 					</dependencies>
 				</plugin>

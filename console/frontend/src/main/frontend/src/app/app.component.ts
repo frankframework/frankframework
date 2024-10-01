@@ -420,6 +420,8 @@ export class AppComponent implements OnInit, OnDestroy {
         for (const warning of configuration.warnings) {
           this.appService.addWarning(index, warning);
         }
+      } else if (configuration.warnings === null) {
+        this.appService.removeAlerts(index);
       }
 
       if (existingConfiguration && configuration.messages) {

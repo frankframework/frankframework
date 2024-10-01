@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject, catchError, of } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
-import { computeServerPath, deepMerge, findIndexOfAll } from './utils';
+import { computeServerPath, deepMerge } from './utils';
 
 export type RunState =
   | 'ERROR'
@@ -450,12 +450,7 @@ export class AppService {
   }
 
   removeAlerts(configuration: string): void {
-    const indicesToRemove = findIndexOfAll(this.alerts, (alert) => alert.configuration === configuration);
-    const updatedAlerts = [...this.alerts];
-
-    for (const index of indicesToRemove) {
-      updatedAlerts.splice(index, 1);
-    }
+    const updatedAlerts = this.alerts.filter((alert) => alert.configuration !== configuration);
     this.updateAlerts(updatedAlerts);
   }
 
