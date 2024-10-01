@@ -49,6 +49,7 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.StringUtil;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class OpenApiGenerator {
@@ -262,7 +263,7 @@ public class OpenApiGenerator {
 		if (StringUtils.isNotEmpty(pipeLineExit.getResponseRoot()) && !outputValidatorPresent) {
 			return pipeLineExit.getResponseRoot();
 		} else {
-			List<String> references = List.of(schemaReferenceElement.split(","));
+			List<String> references = StringUtil.split(schemaReferenceElement);
 
 			if (pipeLineExit.isSuccessExit()) {
 				return references.get(0);

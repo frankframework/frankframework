@@ -323,7 +323,7 @@ public class ApiServiceDispatcher {
 		return Optional.empty();
 	}
 
-	private static IPipe determineValidator(PipeLine pipeline, String exit) {
+	private static Json2XmlValidator determineValidator(PipeLine pipeline, String exit) {
 		IPipe firstPipe = pipeline.getPipe(pipeline.getFirstPipe());
 
 		// Find the optional last pipe of type Json2XmlValidator
@@ -336,7 +336,7 @@ public class ApiServiceDispatcher {
 		// If there's no last pipe and the first pipe is an XmlValidator with a response root, use the first pipe
 		if (optionalLastPipe.isEmpty() && firstPipe instanceof Json2XmlValidator isXmlValidator
 				&& isXmlValidator.getResponseRoot() != null) {
-			return firstPipe;
+			return isXmlValidator;
 		}
 
 		// If the validator is still null, and the optional last pipe is present, use that - or else return null
