@@ -4,18 +4,29 @@ import static org.frankframework.http.rest.ApiListener.HttpMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLineExit;
+import org.frankframework.core.PipeLineExits;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.pipes.EchoPipe;
+import org.frankframework.pipes.Json2XmlValidator;
 
 public class ApiServiceDispatcherTest {
 
@@ -180,7 +191,6 @@ public class ApiServiceDispatcherTest {
 		}
 	}
 
-
 	private void testMultipleMethods(String uri){
 		ApiDispatchConfig config = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNotNull(config);
@@ -196,5 +206,107 @@ public class ApiServiceDispatcherTest {
 		dispatcher.unregisterServiceClient(createServiceClient(HttpMethod.GET, uri));
 		ApiDispatchConfig config3 = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNull(config3);
+	}
+
+	@Test
+	@DisplayName("There should not be an output validator returned if there's none")
+	void testGetJsonValidatorWithInputValidator() throws Exception {
+		PipeLine pipeline = new PipeLine();
+		pipeline.setFirstPipe("json2xml");
+		pipeline.addPipe(getJson2XmlValidator("json2xml", "GetDocument_Request", null, "echo"));
+		pipeline.addPipe(getEchoPipe("success"));
+		pipeline.setPipeLineExits(getPipeLineExits());
+
+		// There's only an input validator without responseRoot in this configuration, so this should return null;
+		Optional<Json2XmlValidator> optionalValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, "success");
+		assertTrue(optionalValidator.isEmpty());
+
+		// There's an input validator "json2xml" defined, which should be returned here
+		Optional<Json2XmlValidator> inputValidator = ApiServiceDispatcher.getJsonInputValidator(pipeline);
+
+		assertTrue(inputValidator.isPresent());
+		assertEquals("json2xml", inputValidator.get().getName());
+	}
+
+	@Test
+	@DisplayName("Return the input validator as output validator returned if it has an responseRoot set")
+	void testGetJsonValidatorWithOutputRoot() throws Exception {
+		PipeLine pipeline = new PipeLine();
+		pipeline.setFirstPipe("json2xml");
+		pipeline.addPipe(getJson2XmlValidator("json2xml", "GetDocument_Request", "GetDocument_Response", "echo"));
+		pipeline.addPipe(getEchoPipe("success"));
+		pipeline.setPipeLineExits(getPipeLineExits());
+
+		// There's an input validator "json2xml" defined, with a responseRoot, expect that validator here
+		Optional<Json2XmlValidator> optionalValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, "success");
+
+		assertTrue(optionalValidator.isPresent());
+		Json2XmlValidator validator = optionalValidator.get();
+		assertEquals("json2xml", validator.getName());
+		assertEquals("GetDocument_Response", validator.getResponseRoot());
+	}
+
+	@Test
+	@DisplayName("Return the output validator if there is one in the pipeline, besides the input validator")
+	void testGetJsonValidatorWithInputAndOutputValidator() throws Exception {
+		PipeLine pipeline = new PipeLine();
+		pipeline.setFirstPipe("json2xml");
+		pipeline.addPipe(getJson2XmlValidator("json2xml", "GetDocument_Request", null, "echo"));
+		pipeline.addPipe(getEchoPipe("output"));
+		pipeline.addPipe(getJson2XmlValidator("output", "GetDocument_Response", null, "success"));
+		pipeline.setPipeLineExits(getPipeLineExits());
+
+		// There's an output validator "output" defined, expect that validator here
+		Optional<Json2XmlValidator> optionalValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, "success");
+
+		assertTrue(optionalValidator.isPresent());
+		Json2XmlValidator validator = optionalValidator.get();
+		assertEquals("output", validator.getName());
+		assertEquals("GetDocument_Response", validator.getRoot());
+	}
+
+	private EchoPipe getEchoPipe(String forwardName) {
+		EchoPipe echoPipe = new EchoPipe();
+		echoPipe.setName("echo");
+
+		PipeForward successForward = new PipeForward();
+		successForward.setName(forwardName);
+		successForward.setPath(forwardName);
+
+		echoPipe.registerForward(successForward);
+
+		return echoPipe;
+	}
+
+	private Json2XmlValidator getJson2XmlValidator(String name, String root, String responseRoot, String forwardName) {
+		Json2XmlValidator json2xmlInput = new Json2XmlValidator();
+		json2xmlInput.setSchema("/Validation/IncludeNonExistingResource/main.xsd");
+		json2xmlInput.setRoot(root);
+		json2xmlInput.setResponseRoot(responseRoot);
+		json2xmlInput.setName(name);
+		json2xmlInput.setOutputFormat(DocumentFormat.JSON);
+		json2xmlInput.setDeepSearch(true);
+		json2xmlInput.setProduceNamespacelessXml(true);
+
+		PipeForward pipeForward = new PipeForward();
+		pipeForward.setName(forwardName);
+
+		json2xmlInput.registerForward(pipeForward);
+		return json2xmlInput;
+	}
+
+	private PipeLineExits getPipeLineExits() {
+		PipeLineExit success = new PipeLineExit();
+		success.setName(PipeForward.SUCCESS_FORWARD_NAME);
+		success.setState(PipeLine.ExitState.SUCCESS);
+
+		PipeLineExit failure = new PipeLineExit();
+		failure.setName(PipeForward.EXCEPTION_FORWARD_NAME);
+		failure.setState(PipeLine.ExitState.ERROR);
+
+		PipeLineExits exits = new PipeLineExits();
+		exits.registerPipeLineExit(success);
+		exits.registerPipeLineExit(failure);
+		return exits;
 	}
 }
