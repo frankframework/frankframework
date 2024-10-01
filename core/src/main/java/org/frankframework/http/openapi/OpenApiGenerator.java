@@ -15,7 +15,6 @@ limitations under the License.
 */
 package org.frankframework.http.openapi;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -149,7 +148,7 @@ public class OpenApiGenerator {
 
 	private static List<String> getParamsFromHeader(ApiListener listener) {
 		if (StringUtils.isNotEmpty(listener.getHeaderParams())) {
-			return Arrays.stream(listener.getHeaderParams().split(",")).toList();
+			return StringUtil.split(listener.getHeaderParams());
 		}
 
 		return Collections.emptyList();
