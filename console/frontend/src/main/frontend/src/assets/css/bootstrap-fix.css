@@ -83,6 +83,7 @@ body.mini-navbar .navbar-static-side {
 #page-wrapper {
   margin: 0 !important;
   flex: 1 1 auto;
+  min-height: 100vh;
 }
 
 .fade {
