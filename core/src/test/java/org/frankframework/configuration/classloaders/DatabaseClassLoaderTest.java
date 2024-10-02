@@ -165,10 +165,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingDEBUG() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
 		boolean makeSureNoExceptionIsThrown = false;
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
 			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "DEBUG");
@@ -177,19 +175,17 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
-		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
-		assertTrue(makeSureNoExceptionIsThrown);
 
-		List<LogEvent> log = appender.getLogEvents();
-		LogEvent firstLogEntry = log.get(log.size()-1);
-		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
-		assertEquals(Level.DEBUG, firstLogEntry.getLevel());
-		String msg = firstLogEntry.getMessage().getFormattedMessage();
-		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
-		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
+			assertTrue(makeSureNoExceptionIsThrown);
+
+			List<LogEvent> log = appender.getLogEvents();
+			LogEvent firstLogEntry = log.get(log.size()-1);
+			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(Level.DEBUG, firstLogEntry.getLevel());
+			String msg = firstLogEntry.getMessage().getFormattedMessage();
+			assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
+			assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
+		}
 	}
 
 	/**
@@ -198,10 +194,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
 		boolean makeSureNoExceptionIsThrown = false;
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
 			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "INFO");
@@ -210,20 +204,18 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
-		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
-		assertTrue(makeSureNoExceptionIsThrown);
 
-		List<LogEvent> log = appender.getLogEvents();
-		LogEvent firstLogEntry = log.get(log.size()-1);
-		assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
-		assertEquals(Level.INFO, firstLogEntry.getLevel());
+			assertTrue(makeSureNoExceptionIsThrown);
 
-		String msg = firstLogEntry.getMessage().getFormattedMessage();
-		assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
-		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
+			List<LogEvent> log = appender.getLogEvents();
+			LogEvent firstLogEntry = log.get(log.size()-1);
+			assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(Level.INFO, firstLogEntry.getLevel());
+
+			String msg = firstLogEntry.getMessage().getFormattedMessage();
+			assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
+			assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
+		}
 	}
 
 	/**
@@ -232,10 +224,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingWARN() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
 		boolean makeSureNoExceptionIsThrown = false;
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
 			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "WARN");
@@ -244,18 +234,17 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
+
+			List<LogEvent> log = appender.getLogEvents();
+			LogEvent firstLogEntry = log.get(log.size()-1);
+			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(Level.WARN, firstLogEntry.getLevel());
+			String msg = firstLogEntry.getMessage().getFormattedMessage();
+			assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
+			assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 		}
 		finally {
-			TestAppender.removeAppender(appender);
 			assertTrue(makeSureNoExceptionIsThrown);
 		}
-
-		List<LogEvent> log = appender.getLogEvents();
-		LogEvent firstLogEntry = log.get(log.size()-1);
-		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
-		assertEquals(Level.WARN, firstLogEntry.getLevel());
-		String msg = firstLogEntry.getMessage().getFormattedMessage();
-		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
-		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
 }

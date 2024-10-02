@@ -44,6 +44,8 @@ import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.UUIDUtil;
 
+import org.springframework.security.core.parameters.P;
+
 public class AdapterHideRegexTest {
 
 	public static final String MAIN_ADAPTER_SECRET = "A1";
@@ -52,19 +54,20 @@ public class AdapterHideRegexTest {
 	public static final String SUB_RECEIVER_SECRET = "R2";
 
 	private TestConfiguration configuration;
-	private TestAppender appender;
 	private PipeLineSession pipeLineSession;
+
+	private TestAppender getAppender() {
+		return TestAppender.newBuilder().useIbisPatternLayout("[%level] - [%class] - %m").build();
+	}
 
 	@BeforeEach
 	public void setUp() {
 		configuration = TransactionManagerType.DATASOURCE.create(false);
-		appender = TestAppender.newBuilder().useIbisPatternLayout("[%level] - [%class] - %m").build();
 		pipeLineSession = new PipeLineSession();
 	}
 
 	@AfterEach
 	public void tearDown() {
-		TestAppender.removeAppender(appender);
 		CloseUtils.closeSilently(pipeLineSession, configuration);
 	}
 
@@ -204,7 +207,7 @@ public class AdapterHideRegexTest {
 		return adapter;
 	}
 
-	private void verifyLoglinesBasicScenario() {
+	private void verifyLoglinesBasicScenario(TestAppender appender) {
 		List<String> logLines = appender.getLogLines();
 		assertThat(logLines, not(hasItem(containsString(MAIN_ADAPTER_SECRET))));
 	}
@@ -216,17 +219,17 @@ public class AdapterHideRegexTest {
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
+		try (TestAppender appender = getAppender()) {
 
-		// Act
-		PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+			// Act
+			PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
 
-		// Assert
-		assertEquals(inputMessage.asString(), result.getResult().asString());
+			// Assert
+			assertEquals(inputMessage.asString(), result.getResult().asString());
 
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-		verifyLoglinesBasicScenario();
+			// Stop capturing logs
+			verifyLoglinesBasicScenario(appender);
+		}
 	}
 
 	@Test
@@ -236,17 +239,17 @@ public class AdapterHideRegexTest {
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
+		try (TestAppender appender = getAppender()) {
 
-		// Act
-		PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+			// Act
+			PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
 
-		// Assert
-		assertEquals(inputMessage.asString(), result.getResult().asString());
+			// Assert
+			assertEquals(inputMessage.asString(), result.getResult().asString());
 
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-		verifyLoglinesBasicScenario();
+			// Stop capturing logs
+			verifyLoglinesBasicScenario(appender);
+		}
 	}
 
 	@Test
@@ -256,17 +259,16 @@ public class AdapterHideRegexTest {
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
+		try (TestAppender appender = getAppender()) {
+			// Act
+			PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
 
-		// Act
-		PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+			// Assert
+			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
 
-		// Assert
-		assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
-
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-		verifyLoglinesBasicScenario();
+			// Stop capturing logs
+			verifyLoglinesBasicScenario(appender);
+		}
 	}
 
 	private JavaListener<String> setupNestedAdapters(PipeLine.ExitState exitState, boolean doThrowException, boolean subAdapterInSeparateThread) throws ConfigurationException {
@@ -315,20 +317,20 @@ public class AdapterHideRegexTest {
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
-		assertThreadLocalReplaceIsEmpty();
+		try (TestAppender appender = getAppender()) {
+			assertThreadLocalReplaceIsEmpty();
 
-		// Act
-		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
+			// Act
+			String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
 
-		// Assert
-		assertThreadLocalReplaceIsEmpty();
-		assertEquals(inputMessage, result);
+			// Assert
+			assertThreadLocalReplaceIsEmpty();
+			assertEquals(inputMessage, result);
 
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-		List<String> logLines = appender.getLogLines();
-		verifyLoglinesNestedAdapterScenario(logLines);
+			// Stop capturing logs
+			List<String> logLines = appender.getLogLines();
+			verifyLoglinesNestedAdapterScenario(logLines);
+		}
 	}
 
 	@Test
@@ -339,21 +341,20 @@ public class AdapterHideRegexTest {
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
-		assertThreadLocalReplaceIsEmpty();
+		try (TestAppender appender = getAppender()) {
+			assertThreadLocalReplaceIsEmpty();
 
-		// Act
-		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
+			// Act
+			String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
 
-		// Assert
-		assertThreadLocalReplaceIsEmpty();
-		assertEquals(inputMessage, result);
+			// Assert
+			assertThreadLocalReplaceIsEmpty();
+			assertEquals(inputMessage, result);
 
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-
-		List<String> logLines = appender.getLogLines();
-		verifyLoglinesNestedAdapterScenario(logLines);
+			// Stop capturing logs
+			List<String> logLines = appender.getLogLines();
+			verifyLoglinesNestedAdapterScenario(logLines);
+		}
 	}
 
 	@Test
@@ -364,20 +365,19 @@ public class AdapterHideRegexTest {
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
-		assertThreadLocalReplaceIsEmpty();
+		try (TestAppender appender = getAppender()) {
+			assertThreadLocalReplaceIsEmpty();
 
-		// Act
-		assertThrows(ListenerException.class, ()->mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>()));
+			// Act
+			assertThrows(ListenerException.class, () -> mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>()));
 
-		// Assert
-		assertThreadLocalReplaceIsEmpty();
+			// Assert
+			assertThreadLocalReplaceIsEmpty();
 
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-
-		List<String> logLines = appender.getLogLines();
-		verifyLoglinesNestedAdapterScenario(logLines);
+			// Stop capturing logs
+			List<String> logLines = appender.getLogLines();
+			verifyLoglinesNestedAdapterScenario(logLines);
+		}
 	}
 
 	@Test
@@ -388,19 +388,19 @@ public class AdapterHideRegexTest {
 		String inputMessage = "Message to hide: [%s]-[%s]".formatted(MAIN_RECEIVER_SECRET, MAIN_ADAPTER_SECRET);
 
 		// Start capturing logs
-		TestAppender.addToRootLogger(appender);
-		assertThreadLocalReplaceIsEmpty();
+		try (TestAppender appender = getAppender()) {
+			assertThreadLocalReplaceIsEmpty();
 
-		// Act
-		String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
+			// Act
+			String result = mainAdapterListener.processRequest(UUIDUtil.createRandomUUID(), inputMessage, new HashMap<>());
 
-		// Assert
-		assertThreadLocalReplaceIsEmpty();
-		assertEquals(inputMessage, result);
+			// Assert
+			assertThreadLocalReplaceIsEmpty();
+			assertEquals(inputMessage, result);
 
-		// Stop capturing logs
-		TestAppender.removeAppender(appender);
-		List<String> logLines = appender.getLogLines();
-		verifyLoglinesNestedAdapterScenario(logLines);
+			// Stop capturing logs
+			List<String> logLines = appender.getLogLines();
+			verifyLoglinesNestedAdapterScenario(logLines);
+		}
 	}
 }

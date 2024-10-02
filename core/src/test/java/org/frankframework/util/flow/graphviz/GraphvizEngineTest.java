@@ -162,9 +162,7 @@ public class GraphvizEngineTest {
 		// Arrange: use FakeEngine, which works on every hardware architecture and is faster
 		AppConstants.getInstance().setProperty("flow.javascript.engines", "org.frankframework.javascript.FakeEngine");
 
-		TestAppender appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			// Act
 			performCleanerTestScoped();
 
@@ -175,8 +173,6 @@ public class GraphvizEngineTest {
 			await().pollInterval(50, TimeUnit.MILLISECONDS)
 					.atMost(2, TimeUnit.SECONDS)
 					.until(() -> appender.contains("Closing Javascript Engine"));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 

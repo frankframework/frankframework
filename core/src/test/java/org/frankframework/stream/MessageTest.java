@@ -1182,10 +1182,7 @@ public class MessageTest {
 
 		};
 
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			message.asString("auto"); //calls asReader();
 			message.asString(); //calls asReader();
 			message.asString("auto"); //calls asReader();
@@ -1202,8 +1199,6 @@ public class MessageTest {
 				}
 			}
 			assertEquals(1, i, "charset should be determined only once");
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 		message.close();
 	}
@@ -1286,10 +1281,8 @@ public class MessageTest {
 
 	@Test
 	void testMessageNotClosedByUser() {
-		TestAppender appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
-		appender.setLeakDetectionFilter(false);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			appender.setLeakDetectionFilter(false);
 			createMessageInShortLivedScope();
 			// GC should clean up the message object
 			System.gc();
@@ -1298,8 +1291,6 @@ public class MessageTest {
 			await().pollInterval(50, TimeUnit.MILLISECONDS)
 					.atMost(2, TimeUnit.SECONDS)
 					.until(() -> appender.contains("Message was not closed properly"));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 

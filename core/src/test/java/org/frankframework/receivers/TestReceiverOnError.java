@@ -60,7 +60,6 @@ import org.frankframework.util.RunState;
 @Tag("slow")
 public class TestReceiverOnError {
 	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
-	private TestAppender appender;
 	private String adapterName;
 
 	@BeforeEach
@@ -71,10 +70,6 @@ public class TestReceiverOnError {
 	@AfterEach
 	void tearDown() throws Exception {
 		log.info("!> tearing down test");
-		if (appender != null) {
-			TestAppender.removeAppender(appender);
-			appender = null;
-		}
 		configuration.stop();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
@@ -190,19 +185,18 @@ public class TestReceiverOnError {
 		Receiver<String> receiver = startReceiver(listener);
 		receiver.setOnError(OnError.CONTINUE); //Luckily we can change this runtime...
 
-		appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			// Act
+			listener.offerMessage(message);
+			await()
+					.atMost(30, TimeUnit.SECONDS)
+					.pollInterval(100, TimeUnit.MILLISECONDS)
+					.until(() -> appender.contains(logMessage));
 
-		// Act
-		listener.offerMessage(message);
-		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> appender.contains(logMessage));
-
-		// Assert the Receiver state
-		assertEquals(RunState.STARTED, receiver.getRunState());
-		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+			// Assert the Receiver state
+			assertEquals(RunState.STARTED, receiver.getRunState());
+			assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+		}
 	}
 
 	@ParameterizedTest
@@ -212,24 +206,23 @@ public class TestReceiverOnError {
 		"processMessageException, Receiver [receiver] exception occurred while processing message, stopping receiver",
 	})
 	public void testPullingListenerWithExceptionAndOnErrorClose(final String message, final String logMessage) throws Exception {
-		MockListenerBase listener = createListener(MockPullingListener.class);
-		Receiver<String> receiver = startReceiver(listener);
-		receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			MockListenerBase listener = createListener(MockPullingListener.class);
+			Receiver<String> receiver = startReceiver(listener);
+			receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
 
-		appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
+			// Act
+			listener.offerMessage(message);
+			await()
+					.atMost(30, TimeUnit.SECONDS)
+					.pollInterval(100, TimeUnit.MILLISECONDS)
+					.until(() -> appender.contains(logMessage));
 
-		// Act
-		listener.offerMessage(message);
-		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> appender.contains(logMessage));
-
-		// Assert the Receiver state
-		waitWhileInState(receiver, RunState.STARTED);
-		waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
-		assertEquals(RunState.STOPPED, receiver.getRunState());
+			// Assert the Receiver state
+			waitWhileInState(receiver, RunState.STARTED);
+			waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
+			assertEquals(RunState.STOPPED, receiver.getRunState());
+		}
 	}
 
 	@Test

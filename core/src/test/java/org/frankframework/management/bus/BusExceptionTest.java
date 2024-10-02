@@ -27,9 +27,8 @@ class BusExceptionTest {
 	@ParameterizedTest
 	@MethodSource("data")
 	void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build(); //only log the first line of the exception
-		TestAppender.addToRootLogger(appender);
-		try {
+		//only log the first line of the exception
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build()) {
 			Exception ex = new BusException(BUS_EXCEPTION_MESSAGE, innerException);
 			assertEquals(BUS_EXCEPTION_MESSAGE + expectedLogMessage, ex.getMessage());
 
@@ -51,8 +50,6 @@ class BusExceptionTest {
 			if(exception != null) {
 				assertEquals("org.frankframework.configuration.ConfigurationException" + expectedLogMessage, exception);
 			}
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 }

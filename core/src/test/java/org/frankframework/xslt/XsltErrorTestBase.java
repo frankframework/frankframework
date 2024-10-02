@@ -25,7 +25,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS = 0;
 	private final String FILE_NOT_FOUND_EXCEPTION = "Cannot get resource for href [";
 	private final boolean testForEmptyOutputStream = false;
-	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
 
@@ -33,15 +32,15 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		return 1;
 	}
 
-	@BeforeEach
-	public void setup() {
-		// Force reconfigure to clean list appender.
-		testAppender = TestAppender.newBuilder()
+	private TestAppender getTestAppender() {
+		return TestAppender.newBuilder()
 				.useIbisPatternLayout("%level %m")
 				.minLogLevel(Level.WARN)
 				.build();
-		TestAppender.addToRootLogger(testAppender);
+	}
 
+	@BeforeEach
+	public void setup() {
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
 			prevStdErr = System.err;
@@ -52,7 +51,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	@Override
 	@AfterEach
 	public void tearDown() {
-		TestAppender.removeAppender(testAppender);
 		if (testForEmptyOutputStream) {
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);
@@ -63,9 +61,11 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		log.debug("Log Appender: {}", testAppender);
-		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(expectedSize));
-		if (expectedString != null) assertThat(testAppender.toString(), containsString(expectedString));
+		try (TestAppender appender = getTestAppender()) {
+			log.debug("Log Appender: {}", appender);
+			assertThat("number of alerts in logging " + appender.getLogLines(), appender.getNumberOfAlerts(), is(expectedSize));
+			if (expectedString != null) assertThat(appender.toString(), containsString(expectedString));
+		}
 	}
 
 	// detect duplicate imports in configure()
@@ -117,52 +117,56 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 
 	@Test
 	void documentIncludedInSourceNotFoundXslt1() throws Exception {
-		setStyleSheetName("/Xslt/importDocument/importNotFound1.xsl");
-		setXsltVersion(1);
-		setIndent(true);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
-		String errorMessage = null;
-		try {
-			doPipe(pipe, input, session);
-		} catch (Exception e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
-		}
-		assertThat(testAppender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION));
-		System.out.println("ErrorMessage: " + errorMessage);
-		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
-			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream = new ErrorOutputStream();
+		try (TestAppender appender = getTestAppender()) {
+			setStyleSheetName("/Xslt/importDocument/importNotFound1.xsl");
+			setXsltVersion(1);
+			setIndent(true);
+			pipe.configure();
+			pipe.start();
+			String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+			String errorMessage = null;
+			try {
+				doPipe(pipe, input, session);
+			} catch (Exception e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
+			}
+			assertThat(appender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION));
+			System.out.println("ErrorMessage: " + errorMessage);
+			if (testForEmptyOutputStream) {
+				System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
+				System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+				errorOutputStream = new ErrorOutputStream();
+			}
 		}
 	}
 
 	@Test
 	void documentIncludedInSourceNotFoundXslt2() throws Exception {
-		// error not during configure(), but during doPipe()
-		setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
-		setXsltVersion(2);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
-		String errorMessage = null;
-		try {
-			doPipe(pipe, input, session);
-		} catch (Exception e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
-		}
-		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
-		String FILE_NOT_FOUND_EXCEPTION_SAXON_10 = "WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
-		assertThat(testAppender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
+		try (TestAppender appender = getTestAppender()) {
+			// error not during configure(), but during doPipe()
+			setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
+			setXsltVersion(2);
+			pipe.configure();
+			pipe.start();
+			String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+			String errorMessage = null;
+			try {
+				doPipe(pipe, input, session);
+			} catch (Exception e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
+			}
+			// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
+			String FILE_NOT_FOUND_EXCEPTION_SAXON_10 = "WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
+			assertThat(appender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
-		System.out.println("ErrorMessage: " + errorMessage);
-		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
-			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream = new ErrorOutputStream();
+			System.out.println("ErrorMessage: " + errorMessage);
+			if (testForEmptyOutputStream) {
+				System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
+				System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+				errorOutputStream = new ErrorOutputStream();
+			}
 		}
 	}
 
@@ -198,19 +202,21 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 
 	@Test
 	void notifyXalanExtensionsIllegalForSaxon() {
-		setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
-		setXsltVersion(2);
-		String errorMessage;
-		try {
-			pipe.configure();
-			fail("expected configuration to fail");
-		} catch (ConfigurationException e) {
-			log.warn("final exception: " + e.getMessage());
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString("Cannot find a 2-argument function named Q{http://exslt.org/strings}tokenize()"));
-		}
+		try (TestAppender appender = getTestAppender()) {
+			setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
+			setXsltVersion(2);
+			String errorMessage;
+			try {
+				pipe.configure();
+				fail("expected configuration to fail");
+			} catch (ConfigurationException e) {
+				log.warn("final exception: " + e.getMessage());
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString("Cannot find a 2-argument function named Q{http://exslt.org/strings}tokenize()"));
+			}
 
-		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2 + EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
+			assertThat("number of alerts in logging " + appender.getLogLines(), appender.getNumberOfAlerts(), is(2 + EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
+		}
 	}
 
 	@Test
