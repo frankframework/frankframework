@@ -118,8 +118,8 @@ public class XmlSwitch extends AbstractPipe {
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.<br/>
-	 * As WebLogic has the problem that when an non-well formed XML stream is given to
-	 * weblogic.xerces the transformer gets corrupt, on an exception the configuration is done again, so that the
+	 * As WebLogic has the problem that when a not well-formed XML stream is given to
+	 * `weblogic.xerces` the transformer gets corrupt, on an exception the configuration is done again, so that the
 	 * transformer is re-initialized.
 	 */
 	@Override

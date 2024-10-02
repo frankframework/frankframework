@@ -23,7 +23,7 @@
                         }
                     },
                     {
-                        "name":" envelopeType",
+                        "name": "envelopeType",
                         "in":"header",
                         "schema":{
                             "type":"string"
