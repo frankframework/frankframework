@@ -100,15 +100,9 @@
 
 	<!-- XML only for the test-tab storage -->
 	<beans profile="ladybug.xml">
-		<bean name="debugStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
-			<property name="name" value="XmlStorage"/>
-			<property name="metadataFile" value="${ibistesttool.directory}/${instance.name.lc}/debug-metadata.xml"/>
-			<property name="reportsFolder" value="${ibistesttool.directory}/${instance.name.lc}"/>
-		</bean>
-
 		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
 			<property name="name" value="XmlTestStorage"/>
-			<property name="metadataFile" value="${ibistesttool.directory}/${instance.name.lc}/test-metadata.xml"/>
+			<property name="metadataFile" value="${ibistesttool.directory}/${instance.name.lc}/metadata.xml"/>
 			<property name="reportsFolder" value="${ibistesttool.directory}/${instance.name.lc}"/>
 		</bean>
 	</beans>

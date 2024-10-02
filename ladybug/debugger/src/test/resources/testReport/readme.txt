@@ -1,0 +1,2 @@
+When starting the Ladybug locally (dtap.stage=loc) it will store the test-tab results as files in a folder (C:/temp/testtool/ibis4test/).
+The files can manually be compared (via xml diff or) via the test-tab in the ladybug, to confirm all checkpoints are present.
