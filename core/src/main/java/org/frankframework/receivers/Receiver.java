@@ -204,6 +204,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
+	public static final TransactionDefinition TXSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	private TransactionDefinition newTransaction;
@@ -1186,7 +1187,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				return Message.nullMessage();
 			}
 
-			IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
+			// If the receiver is transacted, there should already be a transaction. We want to hook in to this existing
+			// transaction, so we can query the status.
+			// Therefore, we use here PROPAGATION_SUPPORTS
+			IbisTransaction itx = new IbisTransaction(txManager, TXSUPPORTED, "receiver [" + getName() + "]");
 
 			// update processing statistics
 			// count in processing statistics includes messages that are rolled back to input
