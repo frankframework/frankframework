@@ -1118,24 +1118,36 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MANUAL_RETRY_KEY, true);
-			if (getErrorStorage()==null) {
+
+			PlatformTransactionManager txManager = getTxManager();
+			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+			if (errorStorage == null) {
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
-				RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
-				//noinspection unchecked
-				processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
+				try {
+					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
+					//noinspection unchecked
+					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				} catch (Throwable t) {
+					itx.setRollbackOnly();
+					throw t;
+				} finally {
+					itx.complete();
+				}
 				return;
 			}
-			PlatformTransactionManager txManager = getTxManager();
-			IbisTransaction itx = new IbisTransaction(txManager, newTransaction, "receiver [" + getName() + "]");
 			RawMessageWrapper<Serializable> msg = null;
-			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {
+				IbisTransaction itx = new IbisTransaction(txManager, newTransaction, "receiver [" + getName() + "]");
 				try {
 					msg = errorStorage.getMessage(storageKey);
-					//noinspection ReassignedVariable
+					//noinspection unchecked
 					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				} catch (ListenerException e) {
+					itx.setRollbackOnly();
+					throw e;
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
 					throw new ListenerException(t);
