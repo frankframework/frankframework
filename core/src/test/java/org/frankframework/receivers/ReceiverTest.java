@@ -51,6 +51,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,12 +87,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
+import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
@@ -731,7 +734,7 @@ public class ReceiverTest {
 	}
 
 	@Test
-	public void testManualRetryWithMessageStoreListener() throws Exception {
+	public void testManualRetryWithErrorStorage() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
@@ -741,6 +744,47 @@ public class ReceiverTest {
 		Adapter adapter = setupAdapter(receiver);
 
 		when(errorStorage.getMessage(any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitForState(adapter, RunState.STARTED);
+		waitForState(receiver, RunState.STARTED);
+
+		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
+
+		PipeLineResult plr = new PipeLineResult();
+		plr.setState(ExitState.SUCCESS);
+		plr.setResult(new Message(testMessage));
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+
+		// Act
+		receiver.retryMessage("1");
+
+		// Assert
+		Message message = messageCaptor.getValue();
+		PipeLineSession pipeLineSession = sessionCaptor.getValue();
+		assertEquals("<msg attr=\"an attribute\"/>", message.asString());
+		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
+		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
+
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+	}
+	@Test
+	public void testManualRetryWithMessageStoreListener() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		Adapter adapter = setupAdapter(receiver);
+		IMessageBrowser<String> messageBrowser = mock();
+
+		when(messageBrowser.browseMessage(any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
+		when(listener.getMessageBrowser(ProcessState.ERROR)).thenReturn(messageBrowser);
+		when(listener.knownProcessStates()).thenReturn(Set.of(ProcessState.ERROR));
 
 		// start adapter
 		configuration.configure();
