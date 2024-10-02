@@ -151,15 +151,15 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public RawMessageWrapper<M> wrapRawMessage(M jcoFunction, PipeLineSession session) throws ListenerException {
-		if(jcoFunction instanceof JCoFunction) {
-			return wrapAsJcoFunction((JCoFunction) jcoFunction, session);
+	public RawMessageWrapper<M> wrapRawMessage(M message, PipeLineSession session) throws ListenerException {
+		if(message instanceof JCoFunction) {
+			return wrapAsJcoFunction((JCoFunction) message);
 		}
-		return new RawMessageWrapper<>(jcoFunction); //String
+		return new RawMessageWrapper<>(message); //String
 	}
 
-	private RawMessageWrapper wrapAsJcoFunction(JCoFunction jcoFunction, PipeLineSession session) {
-		return new RawMessageWrapper<>(jcoFunction, getCorrelationIdFromField((JCoFunction) jcoFunction), null);
+	private RawMessageWrapper<M> wrapAsJcoFunction(JCoFunction jcoFunction) {
+		return new RawMessageWrapper(jcoFunction, getCorrelationIdFromField((JCoFunction) jcoFunction), null);
 	}
 
 	/** 
@@ -195,7 +195,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try (PipeLineSession session = new PipeLineSession()) {
-			handler.processRawMessage(this, wrapAsJcoFunction(jcoFunction, session), session, false);
+			handler.processRawMessage(this, wrapAsJcoFunction(jcoFunction), session, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
