@@ -24,6 +24,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -33,6 +36,7 @@ import org.frankframework.util.LogUtil;
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
+@FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class JmsRealmFactory {
 	private final Logger log = LogUtil.getLogger(this);
 
