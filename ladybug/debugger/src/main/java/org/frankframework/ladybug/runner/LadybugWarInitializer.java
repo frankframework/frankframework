@@ -115,7 +115,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 	private boolean dtapIsLoc(AppConstants properties) {
 		String dtapStage = properties.getProperty("dtap.stage", "").toLowerCase();
-		return dtapStage == "loc" || dtapStage == "xxx" || dtapStage == "";
+		return "loc".equals(dtapStage) || "xxx".equals(dtapStage) || dtapStage.isEmpty();
 	}
 
 	private String getConfigFile(String file) {
