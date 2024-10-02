@@ -1035,11 +1035,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			boolean manualRetry = session.get(PipeLineSession.MANUAL_RETRY_KEY, false);
 
 			final Message result;
+			IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "Receiver ProcessRequest");
 			try {
 				result = processMessageInAdapter(messageWrapper, session, manualRetry, manualRetry); // If manual retry, history is checked by original caller
 			} catch (ListenerException e) {
 				exceptionThrown("exception processing message", e);
 				throw e;
+			} finally {
+				itx.complete();
 			}
 
 			if(!Message.isNull(result)) {
