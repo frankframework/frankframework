@@ -686,7 +686,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	/**
-	 * OutputFormat
+	 * Sets the outputFormat. This ignored when reading a file. Is applicable to actions which return information about file(s). Relevant for:
+	 * 'info', 'list', 'append', 'move', 'delete' and 'copy' actions.
 	 * @ff.default XML
 	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {
