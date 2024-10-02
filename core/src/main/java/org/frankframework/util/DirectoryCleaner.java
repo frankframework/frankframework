@@ -20,12 +20,16 @@ import java.io.File;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
 /**
  * Cleans up a directory.
  *
  *
  * @author Peter Leeuwenburgh
  */
+@FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class DirectoryCleaner {
 	protected Logger log = LogUtil.getLogger(this);
 
