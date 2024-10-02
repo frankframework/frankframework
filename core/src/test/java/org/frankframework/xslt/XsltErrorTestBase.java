@@ -60,32 +60,34 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		super.tearDown();
 	}
 
-	protected void checkTestAppender(int expectedSize, String expectedString) {
-		try (TestAppender appender = getTestAppender()) {
-			log.debug("Log Appender: {}", appender);
-			assertThat("number of alerts in logging " + appender.getLogLines(), appender.getNumberOfAlerts(), is(expectedSize));
-			if (expectedString != null) assertThat(appender.toString(), containsString(expectedString));
-		}
+	protected void checkTestAppender(int expectedSize, String expectedString, TestAppender appender) {
+		log.debug("Log Appender: {}", appender);
+		assertThat("number of alerts in logging " + appender.getLogLines(), appender.getNumberOfAlerts(), is(expectedSize));
+		if (expectedString != null) assertThat(appender.toString(), containsString(expectedString));
 	}
 
 	// detect duplicate imports in configure()
 	@Test
 	void duplicateImportErrorAlertsXslt1() throws Exception {
-		// this condition appears to result in a warning only for XSLT 2.0 using Saxon
-		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
-		setXsltVersion(1);
-		pipe.configure();
-		checkTestAppender(0, null);
+		try (TestAppender appender = getTestAppender()) {
+			// this condition appears to result in a warning only for XSLT 2.0 using Saxon
+			setStyleSheetName("/Xslt/duplicateImport/root.xsl");
+			setXsltVersion(1);
+			pipe.configure();
+			checkTestAppender(0, null, appender);
+		}
 	}
 
 	// detect duplicate imports in configure()
 	@Test
 	void duplicateImportErrorAlertsXslt2() throws Exception {
-		setStyleSheetName("/Xslt/duplicateImport/root2.xsl");
-		setXsltVersion(2);
-		pipe.configure();
-		pipe.start();
-		checkTestAppender(getMultiplicity(), "is included or imported more than once");
+		try (TestAppender appender = getTestAppender()) {
+			setStyleSheetName("/Xslt/duplicateImport/root2.xsl");
+			setXsltVersion(2);
+			pipe.configure();
+			pipe.start();
+			checkTestAppender(getMultiplicity(), "is included or imported more than once", appender);
+		}
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
@@ -172,32 +174,36 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 
 	@Test
 	void importNotFoundXslt1() {
-		setStyleSheetName("/Xslt/importNotFound/root.no-validate-xsl");
-		setXsltVersion(1);
-		String errorMessage;
-		try {
-			pipe.configure();
-			fail("Expected to run into an exception");
-		} catch (ConfigurationException e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
+		try (TestAppender appender = getTestAppender()) {
+			setStyleSheetName("/Xslt/importNotFound/root.no-validate-xsl");
+			setXsltVersion(1);
+			String errorMessage;
+			try {
+				pipe.configure();
+				fail("Expected to run into an exception");
+			} catch (ConfigurationException e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
+			}
+			checkTestAppender(1, FILE_NOT_FOUND_EXCEPTION, appender);
 		}
-		checkTestAppender(1, FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
 	void importNotFoundXslt2() {
-		setStyleSheetName("/Xslt/importNotFound/root2.no-validate-xsl");
-		setXsltVersion(2);
-		String errorMessage;
-		try {
-			pipe.configure();
-			fail("expected configuration to fail because an import could not be found");
-		} catch (ConfigurationException e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
+		try (TestAppender appender = getTestAppender()) {
+			setStyleSheetName("/Xslt/importNotFound/root2.no-validate-xsl");
+			setXsltVersion(2);
+			String errorMessage;
+			try {
+				pipe.configure();
+				fail("expected configuration to fail because an import could not be found");
+			} catch (ConfigurationException e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
+			}
+			checkTestAppender(1, FILE_NOT_FOUND_EXCEPTION, appender);
 		}
-		checkTestAppender(1, FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -221,69 +227,75 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 
 	@Test
 	void illegalXPathExpressionXslt2() {
-		// error not during configure(), but during doPipe()
-		setXpathExpression("position()='1'");
-		setXsltVersion(2);
-		String errorMessage = null;
-		try {
-			pipe.configure();
-			fail("Expected to run into an exception");
-		} catch (Exception e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString("cannot compare xs:integer to xs:string"));
-		}
-		checkTestAppender(1, null);
-		System.out.println("ErrorMessage: " + errorMessage);
-		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
-			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream = new ErrorOutputStream();
+		try (TestAppender appender = getTestAppender()) {
+			// error not during configure(), but during doPipe()
+			setXpathExpression("position()='1'");
+			setXsltVersion(2);
+			String errorMessage = null;
+			try {
+				pipe.configure();
+				fail("Expected to run into an exception");
+			} catch (Exception e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString("cannot compare xs:integer to xs:string"));
+			}
+			checkTestAppender(1, null, appender);
+			System.out.println("ErrorMessage: " + errorMessage);
+			if (testForEmptyOutputStream) {
+				System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
+				System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+				errorOutputStream = new ErrorOutputStream();
+			}
 		}
 	}
 
 	@Test
 	void illegalXPathExpression2Xslt1() {
-		// error not during configure(), but during doPipe()
-		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
-		setXsltVersion(1);
-		String errorMessage = null;
-		try {
-			pipe.configure();
-			fail("Expected to run into an exception");
-		} catch (Exception e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
-			assertThat(errorMessage, containsString("A location path was expected, but the following token was encountered:  <"));
-		}
-		checkTestAppender(2, null);
-		System.out.println("ErrorMessage: " + errorMessage);
-		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
-			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream = new ErrorOutputStream();
+		try (TestAppender appender = getTestAppender()) {
+			// error not during configure(), but during doPipe()
+			setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
+			setXsltVersion(1);
+			String errorMessage = null;
+			try {
+				pipe.configure();
+				fail("Expected to run into an exception");
+			} catch (Exception e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+				assertThat(errorMessage, containsString("A location path was expected, but the following token was encountered:  <"));
+			}
+			checkTestAppender(2, null, appender);
+			System.out.println("ErrorMessage: " + errorMessage);
+			if (testForEmptyOutputStream) {
+				System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
+				System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+				errorOutputStream = new ErrorOutputStream();
+			}
 		}
 	}
 
 	@Test
 	void illegalXPathExpression2Xslt2() {
-		// error not during configure(), but during doPipe()
-		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
-		setXsltVersion(2);
-		String errorMessage = null;
-		try {
-			pipe.configure();
-			fail("Expected to run into an exception");
-		} catch (Exception e) {
-			errorMessage = e.getMessage();
-			assertThat(errorMessage, containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
-			assertThat(errorMessage, containsString("Unexpected token \"<\" at start of expression"));
-		}
-		checkTestAppender(1, null);
-		System.out.println("ErrorMessage: " + errorMessage);
-		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
-			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream = new ErrorOutputStream();
+		try (TestAppender appender = getTestAppender()) {
+			// error not during configure(), but during doPipe()
+			setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
+			setXsltVersion(2);
+			String errorMessage = null;
+			try {
+				pipe.configure();
+				fail("Expected to run into an exception");
+			} catch (Exception e) {
+				errorMessage = e.getMessage();
+				assertThat(errorMessage, containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+				assertThat(errorMessage, containsString("Unexpected token \"<\" at start of expression"));
+			}
+			checkTestAppender(1, null, appender);
+			System.out.println("ErrorMessage: " + errorMessage);
+			if (testForEmptyOutputStream) {
+				System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
+				System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+				errorOutputStream = new ErrorOutputStream();
+			}
 		}
 	}
 
