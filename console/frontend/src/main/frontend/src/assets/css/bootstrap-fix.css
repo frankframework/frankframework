@@ -67,6 +67,10 @@ body.mini-navbar .navbar-static-side {
   overflow: initial;
 }
 
+body.no-scroll {
+  overflow-y: hidden;
+}
+
 .navbar-static-side::-webkit-scrollbar {
   /* display: none; */
   width: 8px;
@@ -83,6 +87,7 @@ body.mini-navbar .navbar-static-side {
 #page-wrapper {
   margin: 0 !important;
   flex: 1 1 auto;
+  min-height: 100vh;
 }
 
 .fade {

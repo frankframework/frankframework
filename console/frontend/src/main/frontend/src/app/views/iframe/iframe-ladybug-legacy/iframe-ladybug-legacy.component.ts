@@ -13,7 +13,8 @@ export class IframeLadybugLegacyComponent extends BaseIframeComponent implements
     super(sanitizer, appService);
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    super.ngOnInit();
     this.setIframeSource('testtool');
   }
 }

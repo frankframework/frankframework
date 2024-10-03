@@ -1,11 +1,11 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
 
 @Component({
   template: '',
 })
-export abstract class BaseIframeComponent {
+export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   protected url: string = '';
   protected iframeSrc?: SafeResourceUrl;
   protected redirectURL?: string;
@@ -16,6 +16,14 @@ export abstract class BaseIframeComponent {
     protected sanitizer: DomSanitizer,
     protected appService: AppService,
   ) {}
+
+  ngOnInit(): void {
+    document.body.classList.add('no-scroll');
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('no-scroll');
+  }
 
   @HostListener('window:resize', ['$event'])
   calcTopBarHeight(): void {
