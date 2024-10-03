@@ -18,7 +18,7 @@
 					serviceName="testtool-JsonPipe" />
 				<forward name="success" path="json2xml" />
 			</pipe>
-			<pipe name="json2xml" className="org.frankframework.pipes.JsonPipe"
+			<pipe name="json2xml" className="org.frankframework.pipes.JsonPipe" prettyPrint="true"
 				getInputFromSessionKey="json">
 				<forward name="success" path="EXIT" />
 			</pipe>

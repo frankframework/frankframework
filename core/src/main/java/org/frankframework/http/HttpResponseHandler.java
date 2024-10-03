@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,17 +22,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
+import org.springframework.util.MimeType;
 
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.util.StreamUtil;
+import org.frankframework.util.MessageUtils;
 
 public class HttpResponseHandler {
 	private final HttpResponse httpResponse;
@@ -44,15 +45,8 @@ public class HttpResponseHandler {
 		if(httpResponse.getEntity() != null) {
 			httpEntity = httpResponse.getEntity();
 
-			MessageContext context = new MessageContext();
-			Header[] headers = resp.getAllHeaders();
-			if (headers!=null) {
-				for(Header header:headers) {
-					context.put(header.getName(),header.getValue());
-				}
-			}
-			context.withCharset(getCharset());
-			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); //Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
+			MessageContext context = MessageUtils.getContext(httpResponse);
+			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); // Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
 			responseMessage = new Message(entityStream, context);
 		}
 	}
@@ -88,25 +82,6 @@ public class HttpResponseHandler {
 		return httpResponse.getFirstHeader(header).getValue();
 	}
 
-	public ContentType getContentType() {
-		Header contentTypeHeader = this.getFirstHeader(HttpHeaders.CONTENT_TYPE);
-		ContentType contentType;
-		if (contentTypeHeader != null) {
-			contentType = ContentType.parse(contentTypeHeader.getValue());
-		} else {
-			contentType = ContentType.getOrDefault(httpEntity);
-		}
-		return contentType;
-	}
-
-	public String getCharset() {
-		ContentType contentType = getContentType();
-		String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		if(contentType != null && contentType.getCharset() != null)
-			charSet = contentType.getCharset().displayName();
-		return charSet;
-	}
-
 	/**
 	 * Consumes the {@link HttpEntity} and will release the connection.
 	 */
@@ -114,10 +89,6 @@ public class HttpResponseHandler {
 		if(httpEntity != null) {
 			EntityUtils.consume(httpEntity);
 		}
-	}
-
-	public Header getFirstHeader(String string) {
-		return httpResponse.getFirstHeader(string);
 	}
 
 	public Map<String, List<String>> getHeaderFields() {
@@ -139,7 +110,16 @@ public class HttpResponseHandler {
 		return headerMap;
 	}
 
+	@Nullable
+	public MimeType getMimeType() {
+		if (responseMessage == null) {
+			return null;
+		}
+		return responseMessage.getContext().getMimeType();
+	}
+
 	public boolean isMultipart() {
-		return getContentType().getMimeType().startsWith("multipart/");
+		MimeType mType = getMimeType();
+		return mType != null && "multipart".equals(mType.getType());
 	}
 }

@@ -63,6 +63,24 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	}
 
 	@Test
+	public void computeMappingWithParams() throws Exception {
+		pipe.setComputeMimeType(true);
+		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
+		pipe.addParameter(ParameterBuilder.create("foo", "{\"bar\":123}")); // text, not interpreted as JSON
+		configureAndStartPipe();
+		Message input = new Message("{\"foo\":456}");
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertEquals("""
+				{"greetings":{"foo":456},"param-one":"{\\"bar\\":123}"}""", result.asString());
+	}
+
+	@Test
 	public void mappingWithMultipleParams() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/multiple-params.jsonnet");
 
