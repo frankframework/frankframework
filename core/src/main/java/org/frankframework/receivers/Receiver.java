@@ -1207,7 +1207,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 
 			// If the receiver is transacted, there should already be a transaction. We want to hook in to this existing
-			// transaction, so we can query the status.
+			// transaction, so we can query the status, but not create a new one if the transceiver shouldn't be transacted.
 			// Therefore, we use here PROPAGATION_SUPPORTS
 			IbisTransaction itx = new IbisTransaction(txManager, TXSUPPORTED, "receiver [" + getName() + "]");
 
