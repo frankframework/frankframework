@@ -185,7 +185,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	public void testRegisterSameForwardDifferentPath() throws ConfigurationException {
-		try (TestAppender appender = TestAppender.newBuilder().build()) {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			var pipe = new EchoPipe();
 			pipe.setName("Echo Pipe");
 			pipeline.addPipe(pipe);
