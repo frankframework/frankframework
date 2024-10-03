@@ -855,6 +855,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			String id = message.getId();
 			resetProblematicHistory(id);
 		}
+		//noinspection unchecked
 		return ((IHasProcessState<M>)getListener()).changeProcessState(message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
@@ -1130,9 +1131,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
 					//noinspection unchecked
 					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				} catch (ListenerException e) {
+					itx.setRollbackOnly();
+					throw e;
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
-					throw t;
+					throw new ListenerException(t);
 				} finally {
 					itx.complete();
 				}
