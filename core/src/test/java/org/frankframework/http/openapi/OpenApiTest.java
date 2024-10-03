@@ -601,7 +601,7 @@ class OpenApiTest extends OpenApiTestBase {
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
 
-		String expected = TestFileUtils.getTestFile("/OpenApi/multiplemethods.json");
+		String expected = TestFileUtils.getTestFile("/OpenApi/multipleMethods.json");
 		MatchUtils.assertJsonEquals(expected, result);
 	}
 }
