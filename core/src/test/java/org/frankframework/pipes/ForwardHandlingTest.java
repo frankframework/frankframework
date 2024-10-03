@@ -185,12 +185,12 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	public void testRegisterSameForwardDifferentPath() throws ConfigurationException {
-		var pipe = new EchoPipe();
-		pipe.setName("Echo Pipe");
-		pipeline.addPipe(pipe);
-		autowireByType(pipe);
-
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			var pipe = new EchoPipe();
+			pipe.setName("Echo Pipe");
+			pipeline.addPipe(pipe);
+			autowireByType(pipe);
+
 			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
 			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
 			assertDoesNotThrow(pipe::configure);
