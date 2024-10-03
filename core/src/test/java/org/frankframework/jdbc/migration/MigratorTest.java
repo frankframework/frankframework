@@ -187,8 +187,8 @@ public class MigratorTest {
 	@TxManagerTest
 	public void testScriptExecutionLogs(DatabaseTestEnvironment env) {
 		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
+		Configurator.reconfigure();
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
-			Configurator.reconfigure();
 			migrator.validate();
 			assertTrue(appender.contains("Successfully acquired change log lock")); //Validate Liquibase logs on INFO level
 

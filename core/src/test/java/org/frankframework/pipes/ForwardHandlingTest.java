@@ -190,10 +190,9 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
-
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
+			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
 			assertDoesNotThrow(pipe::configure);
 
 			assertTrue(appender.contains("INFO - PipeForward [success] already registered, pointing to [Sergi1]. Ignoring new one, that points to [Sergi2]"), "Log messages: "+appender.getLogLines());
