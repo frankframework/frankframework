@@ -181,12 +181,10 @@ public class ApiServiceDispatcher {
 	public static int scoreUriPattern(@Nonnull String uriPattern) {
 		int startValue = uriPattern.endsWith("/**") ? -10 : 0;
 		return uriPattern.chars()
-				.reduce(startValue, (cnt, chr) -> {
-					switch ((char)chr) {
-						case '/': return cnt + 1;
-						case '*': return cnt - 1;
-						default: return cnt;
-					}
+				.reduce(startValue, (cnt, chr) -> switch ((char) chr) {
+					case '/' -> cnt + 1;
+					case '*' -> cnt - 1;
+					default -> cnt;
 				});
 	}
 
@@ -247,38 +245,44 @@ public class ApiServiceDispatcher {
 		synchronized(patternClients) {
 			for(ApiListener.HttpMethod method : listener.getAllMethods()){
 				patternClients.computeIfAbsent(uriPattern, ApiDispatchConfig::new).register(method, listener);
-				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}]", uriPattern, method);
+
+				if (log.isTraceEnabled()) {
+					log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}]", uriPattern, method);
+				}
 			}
 		}
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
-		if(uriPattern == null) {
+		if (uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
+		} else {
+			listener.getAllMethods()
+					.forEach(method -> clearMethod(method, uriPattern));
 		}
-		else {
-			for(ApiListener.HttpMethod method : listener.getAllMethods()){
-				boolean success = false;
-				synchronized (patternClients) {
-					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-					if(dispatchConfig != null) {
-						if(dispatchConfig.getMethods().size() == 1) {
-							patternClients.remove(uriPattern); // Remove the entire config if there's only 1 ServiceClient registered
-						} else {
-							dispatchConfig.remove(method); // Only remove the ServiceClient as there are multiple registered
-						}
-						success = true;
-					}
-				}
+	}
 
-				// Keep log statements out of synchronized block
-				if(success) {
-					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}]", uriPattern, method);
+	private void clearMethod(ApiListener.HttpMethod httpMethod, String uriPattern) {
+		boolean success = false;
+
+		synchronized (patternClients) {
+			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+			if (dispatchConfig != null) {
+				if (dispatchConfig.getMethods().size() == 1) {
+					patternClients.remove(uriPattern); // Remove the entire config if there's only 1 ServiceClient registered
 				} else {
-					log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
+					dispatchConfig.remove(httpMethod); // Only remove the ServiceClient as there are multiple registered
 				}
+				success = true;
 			}
+		}
+
+		// Keep log statements out of synchronized block
+		if (success) {
+			if (log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}]", uriPattern, httpMethod);
+		} else {
+			log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
 		}
 	}
 
@@ -341,7 +345,6 @@ public class ApiServiceDispatcher {
 
 		// If the validator is still null, and the optional last pipe is present, use that - or else return null
 		return optionalLastPipe.orElse(null);
-
 	}
 
 	public void clear() {
