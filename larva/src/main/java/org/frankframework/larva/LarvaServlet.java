@@ -23,9 +23,11 @@ import java.net.URL;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.SenderException;
 import org.frankframework.http.HttpServletBase;
 import org.frankframework.lifecycle.IbisInitializer;
@@ -139,9 +141,8 @@ public class LarvaServlet extends HttpServletBase {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		String realPath = getServletContext().getRealPath("/jsp/"); // Points to a folder in the webapp project
+		LarvaTool.runScenarios(getServletContext(), req, writer);
 
-		LarvaTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");
 		resp.flushBuffer();
 	}
