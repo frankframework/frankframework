@@ -34,6 +34,7 @@ import com.ibm.icu.text.CharsetMatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
@@ -101,9 +102,18 @@ public abstract class MessageUtils {
 
 	public static MessageContext getContext(HttpResponse httpResponse) {
 		MessageContext result = new MessageContext();
-		Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
-		if(contentTypeHeader != null) {
-			result.withMimeType(contentTypeHeader.getValue());
+		HttpEntity entity = httpResponse.getEntity();
+		if(entity != null) {
+			result.withSize(entity.getContentLength());
+			Header contentType = entity.getContentType();
+			if(contentType != null) {
+				result.withMimeType(contentType.getValue());
+			}
+		} else {
+			Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+			if(contentTypeHeader != null) {
+				result.withMimeType(contentTypeHeader.getValue());
+			}
 		}
 
 		if (httpResponse.getAllHeaders() != null) {
