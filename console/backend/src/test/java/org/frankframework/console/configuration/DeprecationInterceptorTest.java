@@ -56,10 +56,8 @@ public class DeprecationInterceptorTest extends FrankApiTestBase {
 
 	@Test
 	public void testDeprecatedMethodNotAllowed() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.setRootLogLevel(Level.WARN);
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			request.setRequestURI("/request/path2");
 			request.setMethod("GET");
@@ -78,19 +76,16 @@ public class DeprecationInterceptorTest extends FrankApiTestBase {
 			handlerAdapter.handle(request, response, handlerExecutionChain.getHandler());
 
 			assertEquals(400, response.getStatus());
+			assertTrue(appender.contains("endpoint [/request/path2] has been deprecated"));
 		} finally {
-			TestAppender.removeAppender(appender);
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
-		assertTrue(appender.contains("endpoint [/request/path2] has been deprecated"));
 	}
 
 	@Test
 	public void testDeprecatedMethodAllowed() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.setRootLogLevel(Level.WARN);
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			request.setRequestURI("/request/path2");
 			request.setMethod("GET");
@@ -109,11 +104,10 @@ public class DeprecationInterceptorTest extends FrankApiTestBase {
 			handlerAdapter.handle(request, response, handlerExecutionChain.getHandler());
 
 			assertEquals(202, response.getStatus());
+			assertTrue(appender.getLogLines().isEmpty());
 		} finally {
-			TestAppender.removeAppender(appender);
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
-		assertTrue(appender.getLogLines().isEmpty());
 	}
 
 	@RestController("/")
