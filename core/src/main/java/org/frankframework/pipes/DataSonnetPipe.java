@@ -205,7 +205,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		private final MediaType mediaType;
 
 		public FrankMessageDocument(Message message, boolean computeMimeType) {
-			this(message, getMimeType(message, computeMimeType));
+			this(message, convertSpringToDataSonnetMediaType(getSpringMimeType(message, computeMimeType)));
 		}
 
 		private FrankMessageDocument(Message message, MediaType mediaType) {
@@ -217,11 +217,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 			}
 		}
 
-		private static MediaType getMimeType(Message message, boolean computeMimeType) {
-			MimeType springMime = message.getContext().getMimeType();
-			if(springMime == null && computeMimeType) {
-				springMime = MessageUtils.computeMimeType(message);
-			}
+		private static MediaType convertSpringToDataSonnetMediaType(MimeType springMime) {
 			if(springMime != null) {
 				try {
 					return MediaType.parseMediaType(springMime.toString());
@@ -230,6 +226,22 @@ public class DataSonnetPipe extends FixedForwardPipe {
 				}
 			}
 			return MediaTypes.TEXT_PLAIN;
+		}
+
+		private static MimeType getSpringMimeType(Message message, boolean computeMimeType) {
+			MimeType mimeType = message.getContext().getMimeType();
+			if (mimeType != null) {
+				return mimeType;
+			}
+
+			if(computeMimeType) {
+				MimeType computedType = MessageUtils.computeMimeType(message);
+				if(!"octet-stream".equals(computedType.getSubtype())) {
+					return computedType;
+				}
+			}
+
+			return null;
 		}
 
 		@Override
