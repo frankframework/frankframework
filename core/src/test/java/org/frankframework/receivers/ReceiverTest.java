@@ -118,7 +118,6 @@ public class ReceiverTest {
 	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	protected static final Logger LOG = LogUtil.getLogger(ReceiverTest.class);
 	private TestConfiguration configuration;
-	private TestAppender appender;
 	private String adapterName;
 
 	@BeforeAll
@@ -138,10 +137,6 @@ public class ReceiverTest {
 		if (configuration != null) {
 			configuration.close();
 			configuration = null;
-		}
-		if (appender != null) {
-			TestAppender.removeAppender(appender);
-			appender = null;
 		}
 	}
 
@@ -870,40 +865,39 @@ public class ReceiverTest {
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
-		appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			assertEquals(RunState.STOPPED, adapter.getRunState());
+			assertEquals(RunState.STOPPED, receiver.getRunState());
 
-		assertEquals(RunState.STOPPED, adapter.getRunState());
-		assertEquals(RunState.STOPPED, receiver.getRunState());
+			// start adapter
+			configuration.configure();
+			configuration.start();
 
-		// start adapter
-		configuration.configure();
-		configuration.start();
+			waitWhileInState(adapter, RunState.STOPPED);
+			waitWhileInState(adapter, RunState.STARTING);
 
-		waitWhileInState(adapter, RunState.STOPPED);
-		waitWhileInState(adapter, RunState.STARTING);
+			assertEquals(RunState.STARTED, adapter.getRunState());
+			assertEquals(RunState.STARTING, receiver.getRunState());
 
-		assertEquals(RunState.STARTED, adapter.getRunState());
-		assertEquals(RunState.STARTING, receiver.getRunState());
+			// Act
+			configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), null, null, true);
+			await()
+					.atMost(5, TimeUnit.SECONDS)
+					.pollInterval(1, TimeUnit.SECONDS)
+					.until(() -> {
+						LOG.info("<*> Receiver runstate: " + receiver.getRunState());
+						return adapter.getRunState() == RunState.STOPPED;
+					});
 
-		// Act
-		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), null, null, true);
-		await()
-				.atMost(5, TimeUnit.SECONDS)
-				.pollInterval(1, TimeUnit.SECONDS)
-				.until(() -> {
-					LOG.info("<*> Receiver runstate: " + receiver.getRunState());
-					return adapter.getRunState() == RunState.STOPPED;
-				});
+			// Assert
+			assertEquals(RunState.STOPPED, receiver.getRunState());
+			assertEquals(RunState.STOPPED, adapter.getRunState());
+			assertTrue(listener.isClosed());
 
-		// Assert
-		assertEquals(RunState.STOPPED, receiver.getRunState());
-		assertEquals(RunState.STOPPED, adapter.getRunState());
-		assertTrue(listener.isClosed());
-
-		// If logs do not contain these lines, then we did not actually test what we meant to test. Perhaps receiver start delay need to be increased.
-		assertThat(appender.getLogLines(), hasItem(containsString("receiver currently in state [STARTING], ignoring stop() command")));
-		assertThat(appender.getLogLines(), hasItem(containsString("which was still starting when stop() command was received")));
+			// If logs do not contain these lines, then we did not actually test what we meant to test. Perhaps receiver start delay need to be increased.
+			assertThat(appender.getLogLines(), hasItem(containsString("receiver currently in state [STARTING], ignoring stop() command")));
+			assertThat(appender.getLogLines(), hasItem(containsString("which was still starting when stop() command was received")));
+		}
 	}
 
 	@Test

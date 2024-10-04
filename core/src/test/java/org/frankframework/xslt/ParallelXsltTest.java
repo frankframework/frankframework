@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.frankframework.testutil.TestAppender;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -119,9 +121,9 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
-	protected void checkTestAppender(int expectedSize, String expectedString) {
-		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString);
-		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+	protected void checkTestAppender(int expectedSize, String expectedString, TestAppender appender) {
+		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString, appender);
+		if (expectExtraParamWarning) assertThat(appender.toString(),containsString("are not available for use by nested Senders"));
 	}
 
 	@Override

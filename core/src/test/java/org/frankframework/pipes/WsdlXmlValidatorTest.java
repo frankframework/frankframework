@@ -44,18 +44,6 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
 	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
 
-	TestAppender testAppender;
-	@BeforeEach
-	void before() {
-		testAppender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(testAppender);
-	}
-
-	@AfterEach
-	void after() {
-		TestAppender.removeAppender(testAppender);
-	}
-
 	@Override
 	public WsdlXmlValidator createPipe() {
 		return new WsdlXmlValidator();
@@ -106,35 +94,39 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 	@Test
 	public void wsdlValidateWithMultiImportOfXsdDifferentPaths() throws Exception {
-		// Arrange
-		WsdlXmlValidator validator = pipe;
-		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
-		validator.setSoapBody("A");
-		validator.setSoapVersion(SoapVersion.AUTO);
-		validator.setIgnoreUnknownNamespaces(true);
-		validator.setThrowException(true);
-		validator.registerForward(new PipeForward("success", null));
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			// Arrange
+			WsdlXmlValidator validator = pipe;
+			validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
+			validator.setSoapBody("A");
+			validator.setSoapVersion(SoapVersion.AUTO);
+			validator.setIgnoreUnknownNamespaces(true);
+			validator.setThrowException(true);
+			validator.registerForward(new PipeForward("success", null));
 
-		int nrOfWarningsBefore = getConfigurationWarnings().size();
+			int nrOfWarningsBefore = getConfigurationWarnings().size();
 
-		// Act
-		validator.configure();
+			// Act
+			validator.configure();
 
-		// Assert
-		assertTrue(testAppender.getLogLines()
-				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
-		assertTrue(getConfigurationWarnings().getWarnings()
-				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+			// Assert
+			assertTrue(appender.getLogLines()
+					.stream()
+					.anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+			assertTrue(getConfigurationWarnings().getWarnings()
+					.stream()
+					.anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
 
-		// Act pt2
-		validator.start();
-		Message soapMessage = MessageTestUtils.getMessage("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/soapInput.xml");
-		PipeRunResult prr = validator.doPipe(soapMessage, session);
+			// Act pt2
+			validator.start();
+			Message soapMessage = MessageTestUtils.getMessage("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/soapInput.xml");
+			PipeRunResult prr = validator.doPipe(soapMessage, session);
 
-		// Assert
-		assertTrue(prr.isSuccessful());
-		// TODO: This test should get more explicit configuration warnings
-		assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size(), "Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()));
+			// Assert
+			assertTrue(prr.isSuccessful());
+			// TODO: This test should get more explicit configuration warnings
+			assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size(), "Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()));
+		}
 	}
 
 	private String collectionToString(ConfigurationWarnings c) {

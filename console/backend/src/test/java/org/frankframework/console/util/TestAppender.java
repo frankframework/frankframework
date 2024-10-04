@@ -29,7 +29,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Configurator;
 
-public class TestAppender extends AbstractAppender {
+public class TestAppender extends AbstractAppender implements AutoCloseable {
 	private final List<String> logMessages = new ArrayList<>();
 	private final List<LogEvent> logEvents = new ArrayList<>();
 	private Level minLogLevel = Level.DEBUG;
@@ -60,6 +60,12 @@ public class TestAppender extends AbstractAppender {
 	private TestAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
 		super(name, filter, layout, false, null);
 		start();
+		addToRootLogger(this);
+	}
+
+	@Override
+	public void close() throws Exception {
+		removeAppender(this);
 	}
 
 	@Override
@@ -87,7 +93,7 @@ public class TestAppender extends AbstractAppender {
 		return (Logger) LogManager.getRootLogger();
 	}
 
-	public static void addToRootLogger(TestAppender appender) {
+	private void addToRootLogger(TestAppender appender) {
 		Logger logger = getRootLogger();
 		logger.addAppender(appender);
 	}
@@ -97,7 +103,7 @@ public class TestAppender extends AbstractAppender {
 		logger.addAppender(appender);
 	}
 
-	public static void removeAppender(TestAppender appender) {
+	private void removeAppender(TestAppender appender) {
 		Logger logger = getRootLogger();
 		logger.removeAppender(appender);
 	}

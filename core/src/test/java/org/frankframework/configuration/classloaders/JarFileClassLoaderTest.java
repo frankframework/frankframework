@@ -84,10 +84,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	@Test
 	public void testMyConfig() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
 
 			appConstants.put("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
@@ -100,8 +97,6 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			assertEquals(8, logEvents.size(), "Should find 8 log messages");
 			long warnMsgs = logEvents.stream().filter(k -> k.startsWith("WARN")).count();
 			assertEquals(1, warnMsgs, "Should find one warning message");
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 

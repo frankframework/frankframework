@@ -185,22 +185,18 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	public void testRegisterSameForwardDifferentPath() throws ConfigurationException {
-		var pipe = new EchoPipe();
-		pipe.setName("Echo Pipe");
-		pipeline.addPipe(pipe);
-		autowireByType(pipe);
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
+			var pipe = new EchoPipe();
+			pipe.setName("Echo Pipe");
+			pipeline.addPipe(pipe);
+			autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
-
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
-		TestAppender.addToRootLogger(appender);
-		try {
+			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
+			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
 			assertDoesNotThrow(pipe::configure);
-		} finally {
-			TestAppender.removeAppender(appender);
+
+			assertTrue(appender.contains("INFO - PipeForward [success] already registered, pointing to [Sergi1]. Ignoring new one, that points to [Sergi2]"), "Log messages: "+appender.getLogLines());
 		}
-		assertTrue(appender.contains("INFO - PipeForward [success] already registered, pointing to [Sergi1]. Ignoring new one, that points to [Sergi2]"), "Log messages: "+appender.getLogLines());
 	}
 
 	@Test
