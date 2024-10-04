@@ -278,9 +278,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
 	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
-		String charset = responseHandler.getCharset();
-		log.debug("response body uses charset [{}]", charset);
-
 		Message response = responseHandler.getResponseMessage();
 
 		try {

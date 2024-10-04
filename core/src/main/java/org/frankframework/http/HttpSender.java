@@ -449,16 +449,16 @@ public class HttpSender extends HttpSenderBase {
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
 	private static Message handleMultipartResponse(HttpResponseHandler httpHandler, PipeLineSession session) throws IOException {
-		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session);
+		return handleMultipartResponse(httpHandler.getMimeType(), httpHandler.getResponse(), session);
 	}
 
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	private static Message handleMultipartResponse(String mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(MimeType mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
 		Message result = null;
 		try {
-			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream); //the entire InputStream will be read here!
+			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType.toString(), inputStream); // The entire InputStream will be read here!
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);

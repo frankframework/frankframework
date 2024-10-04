@@ -81,6 +81,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		String expected = "<root><item>Wie</item><item>dit leest</item><item>is gek</item></root>";
+		assertEquals("application/xml", prr.getResult().getContext().getMimeType().toString());
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
@@ -110,6 +111,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		assertEquals(expected, result);
+		assertEquals("application/json", prr.getResult().getContext().getMimeType().toString());
 	}
 
 	@Test

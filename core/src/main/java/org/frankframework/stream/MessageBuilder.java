@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.frankframework.documentbuilder.json.JsonWriter;
@@ -38,7 +39,7 @@ public class MessageBuilder {
 
 	private final OutputStream outputStream;
 	private Path location;
-	private MimeType mimeType;
+	private @Setter MimeType mimeType;
 
 	/**
 	 * Stores the message in the {@code temp-messages} folder.

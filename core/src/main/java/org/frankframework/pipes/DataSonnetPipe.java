@@ -48,6 +48,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -95,6 +96,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	private String styleSheetName;
 	private Mapper mapper;
 	private DataSonnetOutputType outputType = DataSonnetOutputType.JSON;
+	private boolean computeMimeType = false;
 
 	public enum DataSonnetOutputType {
 		JSON(MediaTypes.APPLICATION_JSON),
@@ -136,7 +138,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		Map<String, Document<?>> parameters = getParameters(message, session);
 
 		try {
-			Document<String> document = mapper.transform(new FrankMessageDocument(message), parameters, outputType.mediaType);
+			Document<String> document = mapper.transform(new FrankMessageDocument(message, computeMimeType), parameters, outputType.mediaType);
 			Message output = new Message(document.getContent());
 			output.getContext().withMimeType(document.getMediaType().toString());
 
@@ -173,7 +175,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		if(pv.getDefinition() instanceof DateParameter) {
 			return new DefaultDocument<String>(pv.asStringValue());
 		} else if(pv.getDefinition() instanceof Parameter || pv.getValue() instanceof Message) {
-			return new FrankMessageDocument(pv.asMessage());
+			return new FrankMessageDocument(pv.asMessage(), computeMimeType);
 		}
 
 		return new DefaultDocument<Object>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
@@ -191,12 +193,19 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		this.outputType = outputType;
 	}
 
+	/**
+	 * Compute mimetype when unknown. Requires more compute
+	 */
+	public void setComputeMimeType(boolean computeMimeType) {
+		this.computeMimeType = computeMimeType;
+	}
+
 	private static class FrankMessageDocument implements Document<String> {
 		private final String message;
 		private final MediaType mediaType;
 
-		public FrankMessageDocument(Message message) {
-			this(message, getMimeType(message));
+		public FrankMessageDocument(Message message, boolean computeMimeType) {
+			this(message, convertSpringToDataSonnetMediaType(getSpringMimeType(message, computeMimeType)));
 		}
 
 		private FrankMessageDocument(Message message, MediaType mediaType) {
@@ -208,8 +217,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 			}
 		}
 
-		private static MediaType getMimeType(Message message) {
-			MimeType springMime = message.getContext().getMimeType();
+		private static MediaType convertSpringToDataSonnetMediaType(MimeType springMime) {
 			if(springMime != null) {
 				try {
 					return MediaType.parseMediaType(springMime.toString());
@@ -218,6 +226,22 @@ public class DataSonnetPipe extends FixedForwardPipe {
 				}
 			}
 			return MediaTypes.TEXT_PLAIN;
+		}
+
+		private static MimeType getSpringMimeType(Message message, boolean computeMimeType) {
+			MimeType mimeType = message.getContext().getMimeType();
+			if (mimeType != null) {
+				return mimeType;
+			}
+
+			if(computeMimeType) {
+				MimeType computedType = MessageUtils.computeMimeType(message);
+				if(!"octet-stream".equals(computedType.getSubtype())) {
+					return computedType;
+				}
+			}
+
+			return null;
 		}
 
 		@Override

@@ -24,25 +24,30 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPException;
+
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
+import org.springframework.util.DigestUtils;
+import org.springframework.util.MimeType;
+
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.springframework.util.DigestUtils;
-import org.springframework.util.MimeType;
 
 public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
@@ -86,12 +91,38 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Type".equals(name)) {
+			if(HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
 			}
 		}
+		return result;
+	}
+
+	public static MessageContext getContext(HttpResponse httpResponse) {
+		MessageContext result = new MessageContext();
+		HttpEntity entity = httpResponse.getEntity();
+		if(entity != null) {
+			result.withSize(entity.getContentLength());
+			Header contentType = entity.getContentType();
+			if(contentType != null) {
+				result.withMimeType(contentType.getValue());
+			}
+		} else {
+			Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+			if(contentTypeHeader != null) {
+				result.withMimeType(contentTypeHeader.getValue());
+			}
+		}
+
+		if (httpResponse.getAllHeaders() != null) {
+			for(Header header: httpResponse.getAllHeaders()) {
+				String name = header.getName();
+				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
+			}
+		}
+
 		return result;
 	}
 

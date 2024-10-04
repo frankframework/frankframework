@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import java.io.IOException;
 import jakarta.json.Json;
 import jakarta.json.JsonException;
 import jakarta.json.JsonReader;
+
+import org.springframework.http.MediaType;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -45,6 +48,7 @@ public class JsonWellFormedChecker extends FixedForwardPipe {
 
 		try(JsonReader jr = Json.createReader(message.asReader())) {
 			jr.read();
+			message.getContext().withMimeType(MediaType.APPLICATION_JSON);
 		} catch (JsonException e) {
 			return new PipeRunResult(findForward("failure"), message);
 		} catch (IOException e) {

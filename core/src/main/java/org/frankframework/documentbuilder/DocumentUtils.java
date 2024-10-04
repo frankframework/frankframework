@@ -98,7 +98,7 @@ public class DocumentUtils {
 		}
 	}
 
-	private static void jsonArray2Builder(JsonArray jArr, ArrayBuilder arrayBuilder) throws SAXException {
+	public static void jsonArray2Builder(JsonArray jArr, ArrayBuilder arrayBuilder) throws SAXException {
 		for (JsonValue jValue:jArr) {
 			switch (jValue.getValueType()) {
 			case ARRAY:

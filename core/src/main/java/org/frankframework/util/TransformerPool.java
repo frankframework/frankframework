@@ -42,6 +42,8 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IConfigurationAware;
@@ -441,11 +443,16 @@ public class TransformerPool {
 		try {
 			MessageContext context = new MessageContext();
 			for(Entry<String, String> entry : getConfigMap().entrySet()) {
-				context.put("Xslt."+entry.getKey(), entry.getValue());
+				String name = entry.getKey();
+				if("output-method".equals(name) && "xml".equals(entry.getValue())) {
+					context.withMimeType(MediaType.APPLICATION_XML);
+				}
+				context.put("Xslt."+name, entry.getValue());
 			}
+
 			return context;
 		} catch (TransformerException | IOException e) {
-			//ignore errors
+			// ignore errors
 			return new MessageContext();
 		}
 	}
