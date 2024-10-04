@@ -31,32 +31,28 @@ import org.frankframework.stream.Message;
  * ForPipe is a wrapper to use another pipe a fixed number of times. This can be accomplished by something like:
  *
  * <pre>{@code
- *		<ForPipe name="forPipe" incrementSessionKey="i" startAt="0" max="10">
+ * 		<ForPipe name="forPipe" incrementSessionKey="i" startAt="0" max="10">
  * 		 	<Forward name="stop" path="EXIT" />
  * 		 	<Forward name="continue" path="echoPipe"/>
- *		</ForPipe>
+ * 		</ForPipe>
  *
- *		<EchoPipe name="echoPipe" getInputFromSessionKey="i">
- *		 	<Forward name="success" path="forPipe"/>
- *		</EchoPipe>
+ * 		<EchoPipe name="echoPipe" getInputFromSessionKey="i">
+ * 		 	<Forward name="success" path="forPipe"/>
+ * 		</EchoPipe>
  * }</pre>
- *
- * This should call the echoPipe for i=0 untill i=10.
+ * <p>
+ * This should call the echoPipe for i=0 until i=10.
  *
  * @author evandongen
  */
 @ElementType(ElementTypes.ITERATOR)
 public class ForPipe extends FixedForwardPipe {
 
-	private @Getter String incrementSessionKey = "i";
-
-	private @Getter int startAt = 0;
-
-	private @Getter Integer max = null;
-
 	static final String STOP_FORWARD_NAME = "stop";
-
 	static final String CONTINUE_FORWARD_NAME = "continue";
+	private @Getter String incrementSessionKey = "i";
+	private @Getter int startAt = 0;
+	private @Getter Integer max = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,6 +97,7 @@ public class ForPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the session key which holds the value to be incremented.
+	 *
 	 * @ff.default i
 	 */
 	public void setIncrementSessionKey(String incrementSessionKey) {
@@ -109,6 +106,7 @@ public class ForPipe extends FixedForwardPipe {
 
 	/**
 	 * Starts counting at this value.
+	 *
 	 * @ff.default 0
 	 */
 	public void setStartAt(int startAt) {
