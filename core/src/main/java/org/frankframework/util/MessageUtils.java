@@ -91,7 +91,7 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Type".equalsIgnoreCase(name)) {
+			if(HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
