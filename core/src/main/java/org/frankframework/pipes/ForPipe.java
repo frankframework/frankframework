@@ -42,6 +42,8 @@ import org.frankframework.stream.Message;
  * }</pre>
  * <p>
  * This should call the echoPipe for i=0 until i=10.
+ * <p>
+ * After completing the for loop, the `incrementSessionKey` will be removed.
  *
  * @author evandongen
  */
@@ -52,14 +54,14 @@ public class ForPipe extends FixedForwardPipe {
 	static final String CONTINUE_FORWARD_NAME = "continue";
 	private @Getter String incrementSessionKey = "i";
 	private @Getter int startAt = 0;
-	private @Getter Integer max = null;
+	private @Getter Integer stopAt = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		// Mandatory parameters
-		if (max == null) {
+		if (stopAt == null) {
 			throw new ConfigurationException("Value for 'max' is mandatory to break out of the for loop pipe");
 		}
 
@@ -82,7 +84,7 @@ public class ForPipe extends FixedForwardPipe {
 		int i = session.get(incrementSessionKey, startAt);
 
 		// If i < max, increment and continue
-		if (i < max) {
+		if (i < stopAt) {
 			PipeForward continueForward = findForward(CONTINUE_FORWARD_NAME);
 
 			session.put(incrementSessionKey, ++i);
@@ -116,7 +118,7 @@ public class ForPipe extends FixedForwardPipe {
 	/**
 	 * Break from the loop when incrementSessionKey equals this value
 	 */
-	public void setMax(int max) {
-		this.max = max;
+	public void setStopAt(Integer stopAt) {
+		this.stopAt = stopAt;
 	}
 }

@@ -34,7 +34,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	void assertForwardsSet() throws ConfigurationException, PipeStartException {
 		pipe.registerForward(new PipeForward("continue", null));
 		pipe.registerForward(new PipeForward("stop", null));
-		pipe.setMax(10);
+		pipe.setStopAt(10);
 		configureAndStartPipe();
 
 		assertDoesNotThrow(this::configurePipe);
@@ -45,7 +45,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		String dummyInput = "dummyInput";
 
 		pipe.setStartAt(10);
-		pipe.setMax(10);
+		pipe.setStopAt(10);
 		pipe.registerForward(new PipeForward("continue", null));
 		pipe.registerForward(new PipeForward("stop", null));
 		configureAndStartPipe();
@@ -69,7 +69,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	void testIncrement() throws PipeRunException, IOException, ConfigurationException, PipeStartException {
 		String dummyInput = "dummyInput";
 
-		pipe.setMax(10);
+		pipe.setStopAt(10);
 		pipe.registerForward(new PipeForward("continue", null));
 		pipe.registerForward(new PipeForward("stop", null));
 		configureAndStartPipe();
