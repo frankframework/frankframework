@@ -1,0 +1,18 @@
+<module>
+	<Adapter name="ForPipe">
+		<Receiver name="ForPipe">
+			<JavaListener serviceName="ibis4test-ForPipe" />
+		</Receiver>
+		<Pipeline firstPipe="forPipe">
+			<Exit path="EXIT" state="success" />
+
+			<ForPipe name="forPipe" incrementSessionKey="i" startAt="0" max="10">
+				<Forward name="stop" path="EXIT" />
+				<Forward name="continue" path="echoPipe"/>
+			</ForPipe>
+			<EchoPipe name="echoPipe" getInputFromSessionKey="i">
+				<Forward name="success" path="forPipe"/>
+			</EchoPipe>
+		</Pipeline>
+	</Adapter>
+</module>
