@@ -1362,7 +1362,7 @@ public class ApiListenerServletTest {
 		final String uri = "/headerTest";
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put(headerName, headerValue);
+		headers.put(headerName.trim(), headerValue);
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).setMessageIdHeader(headerName).build();
 
 		HttpServletRequest request = createRequest(uri, HttpMethod.GET, null, headers);
@@ -1376,7 +1376,7 @@ public class ApiListenerServletTest {
 				+ "	<header name=\""+headerName.trim()+"\">"+headerValue.trim()+"</header>\n"
 				+ "</headers>", headersXml);
 		String contextHeaderValue = (String) requestMessage.getContext().get("Header."+headerName.trim());
-		assertEquals(headerValue.trim(), contextHeaderValue, "header is missing from MessageContext");
+		assertEquals(headerValue.trim(), contextHeaderValue, "header is incorrect or missing from MessageContext");
 		assertNull(result.getErrorMessage());
 	}
 

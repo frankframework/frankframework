@@ -67,6 +67,7 @@ import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -649,7 +650,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private String extractHeaderParamsAsXml(HttpServletRequest request, ApiListener listener) {
 		XmlBuilder headersXml = new XmlBuilder("headers");
-		String[] params = listener.getHeaderParams().split(",");
+		List<String> params = StringUtil.split(listener.getHeaderParams());
 		for (String headerParam : params) {
 			if(IGNORE_HEADERS.contains(headerParam)) {
 				continue;
@@ -658,7 +659,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			try {
 				XmlBuilder headerXml = new XmlBuilder("header");
 				headerXml.addAttribute("name", headerParam);
-				headerXml.setValue(headerValue);
+				headerXml.setValue(headerValue.trim());
 				headersXml.addSubElement(headerXml);
 			}
 			catch (Exception e) {
