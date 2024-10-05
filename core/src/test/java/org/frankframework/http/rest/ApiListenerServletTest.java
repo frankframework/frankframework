@@ -1359,7 +1359,6 @@ public class ApiListenerServletTest {
 	@ParameterizedTest
 	@MethodSource
 	public void testHeaders(String headerName, String headerValue) throws Exception {
-		System.err.println(">"+headerName+"<>"+headerValue+"<");
 		final String uri = "/headerTest";
 
 		Map<String, String> headers = new HashMap<>();
@@ -1376,6 +1375,8 @@ public class ApiListenerServletTest {
 		assertEquals("<headers>\n"
 				+ "	<header name=\""+headerName.trim()+"\">"+headerValue.trim()+"</header>\n"
 				+ "</headers>", headersXml);
+		String contextHeaderValue = (String) requestMessage.getContext().get("Header."+headerName.trim());
+		assertEquals(headerValue.trim(), contextHeaderValue, "header is missing from MessageContext");
 		assertNull(result.getErrorMessage());
 	}
 
