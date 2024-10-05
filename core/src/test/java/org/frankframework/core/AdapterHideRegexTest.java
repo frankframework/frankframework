@@ -44,8 +44,6 @@ import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.UUIDUtil;
 
-import org.springframework.security.core.parameters.P;
-
 public class AdapterHideRegexTest {
 
 	public static final String MAIN_ADAPTER_SECRET = "A1";

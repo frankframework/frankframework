@@ -19,29 +19,29 @@
 		<property name="configName" value="Ladybug"/>
 		<property name="rerunner" ref="rerunner"/>
 
-		<property name="maxCheckpoints" value="${testtool.maxCheckpoints}" />
-		<property name="maxMemoryUsage" value="${testtool.maxMemoryUsage}" />
-		<property name="maxMessageLength" value="${testtool.maxMessageLength}" />
-		<property name="regexFilter" value="${testtool.regexFilter}" />
+		<property name="maxCheckpoints" value="${ladybug.maxCheckpoints}" />
+		<property name="maxMemoryUsage" value="${ladybug.maxMemoryUsage}" />
+		<property name="maxMessageLength" value="${ladybug.maxMessageLength}" />
+		<property name="regexFilter" value="${ladybug.regexFilter}" />
 	</bean>
 
 	<import resource="springTestToolCommon.xml"/>
 
 	<bean name="xsltResource" class="java.lang.String">
-		<constructor-arg value="${testtool.reportTransformation}"/>
+		<constructor-arg value="${ladybug.reportTransformation}"/>
 	</bean>
 
 	<!-- Profiles -->
 	<beans profile="ladybug.file">
 		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 			<property name="name" value="Debug"/>
-			<property name="reportsFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.tts"/>
-			<property name="metadataFilename" value="../${testtool.directory:ladybug}/file-storage/ladybug.ttm"/>
+			<property name="reportsFilename" value="../${ladybug.directory:ladybug}/file-storage/ladybug.tts"/>
+			<property name="metadataFilename" value="../${ladybug.directory:ladybug}/file-storage/ladybug.ttm"/>
 		</bean>
 		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
 			<property name="name" value="Test"/>
-			<property name="reportsFilename" value="../${testtool.directory:ladybug}/file-storage/test/ladybug.tts"/>
-			<property name="metadataFilename" value="../${testtool.directory:ladybug}/file-storage/test/ladybug.ttm"/>
+			<property name="reportsFilename" value="../${ladybug.directory:ladybug}/file-storage/test/ladybug.tts"/>
+			<property name="metadataFilename" value="../${ladybug.directory:ladybug}/file-storage/test/ladybug.ttm"/>
 		</bean>
 	</beans>
 
@@ -60,15 +60,15 @@
 		<!--
 		Without connection pooling (considerably slows down GUI performance). E.g. when using:
 		<bean name="ladybugDataSource" class="org.h2.jdbcx.JdbcDataSource">
-			<property name="URL" value="jdbc:h2:../${testtool.directory:ladybug}/data/database-storage/ladybug"/>
+			<property name="URL" value="jdbc:h2:../${ladybug.directory:ladybug}/data/database-storage/ladybug"/>
 		</bean>
 		-->
 		<bean id="ladybugDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 <!-- 		<bean name="ladybugDataSource" class="org.apache.tomcat.dbcp.dbcp2.BasicDataSource" destroy-method="close"> -->
-			<property name="driverClassName" value="${testtool.jdbc.driver}"/>
-			<property name="url" value="${testtool.jdbc.url}"/>
-			<property name="username" value="${testtool.jdbc.username}" />
-			<property name="password" value="${testtool.jdbc.password}" />
+			<property name="driverClassName" value="${ladybug.jdbc.driver}"/>
+			<property name="url" value="${ladybug.jdbc.url}"/>
+			<property name="username" value="${ladybug.jdbc.username}" />
+			<property name="password" value="${ladybug.jdbc.password}" />
 		</bean>
 
 		<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
