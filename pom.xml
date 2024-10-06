@@ -18,7 +18,7 @@
 
 		<jackson.version>2.16.0</jackson.version>
 		<cxf.version>3.5.7</cxf.version>
-		<spring.version>5.3.34</spring.version>
+		<spring.version>5.3.39</spring.version>
 		<spring-security.version>5.8.11</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 
@@ -127,7 +127,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.25.1</version>
+				<version>3.25.5</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
