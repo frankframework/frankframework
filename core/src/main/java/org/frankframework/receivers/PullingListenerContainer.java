@@ -27,6 +27,13 @@ import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.SchedulingAwareRunnable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPeekableListener;
@@ -42,12 +49,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.SchedulingAwareRunnable;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 
 /**
@@ -285,7 +286,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
 								// This releases the lock on the record being processed.
-								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
+								// This is necessary for dbmses like older MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back.
+								// This also is needed for when processing multiple listener threads.
 								if (txStatus!=null) {
 									txManager.commit(txStatus);
 									if (receiver.isTransacted()) {

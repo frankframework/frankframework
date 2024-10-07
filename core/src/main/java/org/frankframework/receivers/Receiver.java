@@ -49,10 +49,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -96,8 +92,11 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
@@ -209,9 +208,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
+	public static final TransactionDefinition TXSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	private TransactionDefinition newTransaction;
+	private TransactionDefinition txNewWithTimeout;
 
 	public static final String THREAD_CONTEXT_KEY_NAME = "listener";
 	public static final String THREAD_CONTEXT_KEY_TYPE = "listener.type";
@@ -580,7 +580,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			registerEvent(RCV_RESUMED_MONITOR_EVENT);
 			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
-			newTransaction = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
+			txNewWithTimeout = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
 
 			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
@@ -858,6 +858,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			String id = message.getId();
 			resetProblematicHistory(id);
 		}
+		//noinspection unchecked
 		return ((IHasProcessState<M>)getListener()).changeProcessState(message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
@@ -1012,9 +1013,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(IListener, RawMessageWrapper, Message, PipeLineSession)}.
-	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
+	 * Process the received message with {@link IMessageHandler#processRequest(IListener, RawMessageWrapper, Message, PipeLineSession)}.
+	 * <br/>
+	 * A messageId is generated that is unique and consists of the name of this listener and a GUID.
+	 * <p>
+	 *     If the receiver is transactional, then this method will enforce the transactional requirements specified
+	 *     by {@link #setTransactionAttribute(TransactionAttribute)}.
+	 * </p>
+	 * <p>
 	 * N.B. callers of this method should clear the remaining ThreadContext if it's not to be returned to their callers.
+	 * </p>
 	 */
 	@Override
 	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
@@ -1038,11 +1046,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			boolean manualRetry = session.get(PipeLineSession.MANUAL_RETRY_KEY, false);
 
 			final Message result;
+			IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "Receiver ProcessRequest");
 			try {
 				result = processMessageInAdapter(messageWrapper, session, manualRetry, manualRetry); // If manual retry, history is checked by original caller
 			} catch (ListenerException e) {
 				exceptionThrown("exception processing message", e);
 				throw e;
+			} finally {
+				itx.complete();
 			}
 
 			if(!Message.isNull(result)) {
@@ -1052,6 +1063,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
+	/**
+	 * This method processes the raw message from the listener.
+	 * <br/>
+	 * The method assumes that a transaction has been started where necessary.
+	 */
 	@Override
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
@@ -1061,8 +1077,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/**
-	 * All messages that for this receiver are pumped down to this method, so it actually calls the {@link Adapter} to process the message.<br/>
-	 * Assumes that a transaction has been started where necessary.
+	 * This method processes the raw message from the listener, or in case of a manual retry, from the error storage.
+	 * <br/>
+	 * The method assumes that a transaction has been started where necessary.
 	 */
 	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
@@ -1118,24 +1135,39 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MANUAL_RETRY_KEY, true);
-			if (getErrorStorage()==null) {
+
+			PlatformTransactionManager txManager = getTxManager();
+			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+			if (errorStorage == null) {
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
-				RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
-				//noinspection unchecked
-				processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
+				try {
+					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
+					//noinspection unchecked
+					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				} catch (ListenerException e) {
+					itx.setRollbackOnly();
+					throw e;
+				} catch (Throwable t) {
+					itx.setRollbackOnly();
+					throw new ListenerException(t);
+				} finally {
+					itx.complete();
+				}
 				return;
 			}
-			PlatformTransactionManager txManager = getTxManager();
-			IbisTransaction itx = new IbisTransaction(txManager, newTransaction, "receiver [" + getName() + "]");
 			RawMessageWrapper<Serializable> msg = null;
-			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {
+				IbisTransaction itx = new IbisTransaction(txManager, txNewWithTimeout, "receiver [" + getName() + "]");
 				try {
 					msg = errorStorage.getMessage(storageKey);
-					//noinspection ReassignedVariable
+					//noinspection unchecked
 					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				} catch (ListenerException e) {
+					itx.setRollbackOnly();
+					throw e;
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
 					throw new ListenerException(t);
@@ -1145,6 +1177,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			} catch (ListenerException e) {
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 				try {
+					// TODO: I don't see how we can get a received-date in this place to update the existing message, but clearly we do want to. Need to fix that in message-retrieval.
 					String messageId = session.getMessageId();
 					String correlationId = session.getCorrelationId();
 					Instant receivedDate = session.getTsReceived();
@@ -1166,6 +1199,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/*
+	 * All messages for the receiver eventually go through this method, this is the method that calls the Aaapter.
+	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
@@ -1190,7 +1225,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				return Message.nullMessage();
 			}
 
-			IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
+			// If the receiver is transacted, there should already be a transaction. We want to hook in to this existing
+			// transaction, so we can query the status, but not create a new one if the transceiver shouldn't be transacted.
+			// Therefore, we use here PROPAGATION_SUPPORTS
+			IbisTransaction itx = new IbisTransaction(txManager, TXSUPPORTED, "receiver [" + getName() + "]");
 
 			// update processing statistics
 			// count in processing statistics includes messages that are rolled back to input

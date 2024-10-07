@@ -27,16 +27,20 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -51,6 +55,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,12 +91,15 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
+import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ITransactionalStorage;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
@@ -726,7 +734,7 @@ public class ReceiverTest {
 	}
 
 	@Test
-	public void testManualRetryWithMessageStoreListener() throws Exception {
+	public void testManualRetryWithErrorStorage() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
@@ -735,14 +743,14 @@ public class ReceiverTest {
 		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
-		when(errorStorage.getMessage(any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
+		when(errorStorage.getMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
 
 		// start adapter
 		configuration.configure();
-		configuration.start();
-
-		waitForState(adapter, RunState.STARTED);
-		waitForState(receiver, RunState.STARTED);
+//		configuration.start();
+//
+//		waitForState(adapter, RunState.STARTED);
+//		waitForState(receiver, RunState.STARTED);
 
 		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
 		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
@@ -761,6 +769,112 @@ public class ReceiverTest {
 		assertEquals("<msg attr=\"an attribute\"/>", message.asString());
 		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
 		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
+
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+	}
+
+	@Test
+	public void testManualRetryWithMessageStoreListener() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		Adapter adapter = setupAdapter(receiver);
+		IMessageBrowser<String> messageBrowser = mock();
+
+		when(messageBrowser.browseMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
+		when(listener.getMessageBrowser(ProcessState.ERROR)).thenReturn(messageBrowser);
+		when(listener.knownProcessStates()).thenReturn(Set.of(ProcessState.ERROR));
+
+		// start adapter
+		configuration.configure();
+//		configuration.start();
+//
+//		waitForState(adapter, RunState.STARTED);
+//		waitForState(receiver, RunState.STARTED);
+
+		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
+
+		PipeLineResult plr = new PipeLineResult();
+		plr.setState(ExitState.SUCCESS);
+		plr.setResult(new Message(testMessage));
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+
+		// Act
+		receiver.retryMessage("1");
+
+		// Assert
+		Message message = messageCaptor.getValue();
+		PipeLineSession pipeLineSession = sessionCaptor.getValue();
+		assertEquals("<msg attr=\"an attribute\"/>", message.asString());
+		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
+		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
+
+		verify(listener).changeProcessState(any(), eq(ProcessState.DONE), any());
+
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+	}
+
+	@Test
+	public void testManualRetryWithErrorStorageThrowsError() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(errorStorage).getMessage("1");
+		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
+
+		doReturn(false).when(listener).hasRawMessageAvailable();
+		doReturn(true).when(listener).isPeekUntransacted();
+
+		// start adapter
+		configuration.configure();
+
+		// Act
+		assertThrows(ListenerException.class, ()-> receiver.retryMessage("1"));
+
+		// Assert
+		// TODO: Figure out how to trigger the branch in code that would trigger these lines
+//		verify(errorStorage).deleteMessage("1");
+//		verify(errorStorage).storeMessage(eq("1"), any(), any(), any(), any(), any());
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+	}
+
+	@Test
+	public void testManualRetryWithMessageStoreListenerThrowsError() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		Adapter adapter = setupAdapter(receiver);
+		IMessageBrowser<String> messageBrowser = mock();
+
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+
+		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
+		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser).browseMessage(any());
+		doReturn(messageBrowser).when(listener).getMessageBrowser(ProcessState.ERROR);
+		doReturn(Set.of(ProcessState.ERROR)).when(listener).knownProcessStates();
+
+		doReturn(false).when(listener).hasRawMessageAvailable();
+		doReturn(true).when(listener).isPeekUntransacted();
+
+		// start adapter
+		configuration.configure();
+
+		// Act
+		assertThrows(ListenerException.class, ()-> receiver.retryMessage("1"));
+
+		// Assert
+		verify(listener, never()).changeProcessState(any(), eq(ProcessState.DONE), any());
 
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
