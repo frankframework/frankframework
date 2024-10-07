@@ -38,7 +38,7 @@ public class URLRequestMatcher implements RequestMatcher {
 			}
 			if(endpoint.charAt(endpoint.length()-1) == '*') {
 				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
-				if (endpoint.charAt(endpoint.length() - 2) == '/') { // add endpoint without `/*` to absolute path (ApiListenerServlet, IAF-API etc)
+				if (endpoint.charAt(endpoint.length() - 2) == '/') { // Add endpoint(s) without `/*` to absolute path (ApiListenerServlet, IAF-API etc)
 					absoluteEndpoints.add(endpoint.substring(0, endpoint.length() - 2));
 				}
 			} else {

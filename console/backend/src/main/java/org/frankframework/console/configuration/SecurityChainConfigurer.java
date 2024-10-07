@@ -72,7 +72,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	private IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.console.authentication.";
-		String type = environment.getProperty(properyPrefix + "type", "NONE");
+		String type = environment.getProperty(properyPrefix + "type", AuthenticationType.SEALED.name());
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);

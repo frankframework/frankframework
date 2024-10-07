@@ -52,7 +52,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 		return http.build();
 	}
 
-	//see AuthenticationManagerFactoryBean
+	// See AuthenticationManagerFactoryBean
 	private AuthenticationManager getAuthenticationManager(HttpSecurity http) {
 		AuthenticationProvider provider = getAuthenticationProvider(http);
 		return new ProviderManager(List.of(provider));
@@ -69,7 +69,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 		return authenticationProvider;
 	}
 
-	//When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403.
+	// When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403.
 	private AuthenticationEntryPoint getEntryPoint() {
 		return new Http403ForbiddenEntryPoint();
 	}

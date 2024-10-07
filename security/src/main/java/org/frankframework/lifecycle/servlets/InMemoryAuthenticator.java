@@ -29,7 +29,7 @@ public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.httpBasic(basic -> basic.realmName("Frank")); // BasicAuthenticationEntryPoint
+		http.httpBasic(basic -> basic.realmName("Frank")); // Uses a BasicAuthenticationEntryPoint to force users to log in
 
 		UserDetails user = User.builder()
 				.username(username)
