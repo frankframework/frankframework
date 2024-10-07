@@ -44,6 +44,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
@@ -116,7 +117,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
-		if (securityContext.isUserInRoles(testerRoles)) {
+		if (BusMessageUtils.hasAnyRole(testerRoles.toArray(new String[0]))) {
 			int i = 0;
 			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
 			Checkpoint checkpoint = checkpoints.get(i);
