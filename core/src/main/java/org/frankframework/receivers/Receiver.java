@@ -1178,6 +1178,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			} catch (ListenerException e) {
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 				try {
+					// TODO: I don't see how we can get a received-date in this place to update the existing message, but clearly we do want to. Need to fix that in message-retrieval.
 					String messageId = session.getMessageId();
 					String correlationId = session.getCorrelationId();
 					Instant receivedDate = session.getTsReceived();
