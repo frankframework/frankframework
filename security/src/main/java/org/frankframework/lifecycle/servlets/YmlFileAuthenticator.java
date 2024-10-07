@@ -96,7 +96,7 @@ public class YmlFileAuthenticator extends ServletAuthenticatorBase {
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		configure();
-		http.httpBasic(basic -> basic.realmName("Frank")); //BasicAuthenticationEntryPoint
+		http.httpBasic(basic -> basic.realmName("Frank")); // Uses a BasicAuthenticationEntryPoint
 
 		LocalUsers localUsers;
 		try (InputStream is = ymlFileURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {

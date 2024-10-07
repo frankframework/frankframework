@@ -17,7 +17,7 @@ package org.frankframework.lifecycle.servlets;
 
 import lombok.Getter;
 
-//LdapAuthenticationProvider
+// LdapAuthenticationProvider
 public enum AuthenticationType {
 	AD(ActiveDirectoryAuthenticator.class),
 	CONTAINER(JeeAuthenticator.class),
@@ -25,7 +25,8 @@ public enum AuthenticationType {
 	OAUTH2(OAuth2Authenticator.class),
 	YML(YmlFileAuthenticator.class),
 	YAML(YmlFileAuthenticator.class),
-	NONE(NoOpAuthenticator.class);
+	NONE(NoOpAuthenticator.class),
+	SEALED(SealedAuthenticator.class);
 
 	/**
 	 * NB. Should be initialized with a Spring AutoWired /Value enabled PostProcessor.

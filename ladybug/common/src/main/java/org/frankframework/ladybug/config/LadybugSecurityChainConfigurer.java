@@ -85,7 +85,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 
 	private IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.testtool.authentication.";
-		String type = environment.getProperty(properyPrefix+"type", "NONE");
+		String type = environment.getProperty(properyPrefix+"type", AuthenticationType.SEALED.name());
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);

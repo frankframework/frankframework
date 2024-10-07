@@ -101,7 +101,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
 		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties());
 		http.oauth2Login(login -> login
-				.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
+				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
 				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
 				.failureUrl(oauthBaseUrl + "/oauth2/failure/")
 				.authorizationEndpoint(endpoint -> endpoint.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
@@ -179,10 +179,10 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
 	private String computeBaseUrl() {
 		String baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
-		if(baseUrl.endsWith("*")) { //Strip the '*' if the url ends with it
+		if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}
-		if(baseUrl.endsWith("/")) { //Ensure the url does not end with a slash
+		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}
 

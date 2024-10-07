@@ -142,7 +142,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	private void configureServletSecurity(String propertyPrefix) {
 		String roleNames = environment.getProperty(propertyPrefix+"securityRoles");
-		if(environment.containsProperty(propertyPrefix+"securityroles")) { //Deprecated warning
+		if(environment.containsProperty(propertyPrefix+"securityroles")) { // Deprecated warning
 			log.warn("property [{}securityroles] has been replaced with [{}securityRoles]", propertyPrefix, propertyPrefix);
 			roleNames = environment.getProperty(propertyPrefix+"securityroles");
 		}
@@ -177,7 +177,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 			if(firstChar == '!' && (mapping.charAt(1) != SLASH || mapping.charAt(mapping.length()-1) == '*')) {
 				throw new IllegalStateException("when excluding an URL you it must start with '!/' and may not end with a wildcard");
 			}
-			if(firstChar != SLASH && firstChar != '*' && firstChar != '!') { //Add a conditional slash
+			if(firstChar != SLASH && firstChar != '*' && firstChar != '!') { // Add a conditional slash
 				mapping = "/"+mapping;
 			}
 			log.debug("converted raw mapping [{}] to [{}]", rawMapping, mapping);
