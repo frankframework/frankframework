@@ -310,7 +310,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private io.micrometer.core.instrument.Counter numRejected;
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
-	private final List<DistributionSummary> idleStatistics = new ArrayList<>();
 
 	// the adapter that handles the messages and initiates this listener
 	private @Getter @Setter Adapter adapter;

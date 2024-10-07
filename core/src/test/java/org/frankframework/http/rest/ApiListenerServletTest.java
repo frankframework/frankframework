@@ -43,16 +43,49 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.KeyOperation;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.ThreadContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
@@ -73,36 +106,6 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.KeyOperation;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-
-import jakarta.annotation.Nonnull;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class ApiListenerServletTest {
@@ -1342,6 +1345,41 @@ public class ApiListenerServletTest {
 		assertNotNull(result.getErrorMessage());
 	}
 
+	private static Stream<Arguments> testHeaders() {
+		return Stream.of(
+				Arguments.of("x-header-name", "value"),
+				Arguments.of(" x-header-name", "value"),
+				Arguments.of("x-header-name ", "value"),
+				Arguments.of("x-header-name", "value"),
+				Arguments.of("x-header-name", " value"),
+				Arguments.of("x-header-name", "value ")
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	public void testHeaders(String headerName, String headerValue) throws Exception {
+		final String uri = "/headerTest";
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put(headerName.trim(), headerValue);
+		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).setMessageIdHeader(headerName).build();
+
+		HttpServletRequest request = createRequest(uri, HttpMethod.GET, null, headers);
+		Response result = service(request);
+
+		assertEquals(200, result.getStatus());
+		assertTrue(result.containsHeader("Allow"));
+		String headersXml = (String) session.get("headers");
+		assertNotNull(headersXml);
+		assertEquals("<headers>\n"
+				+ "	<header name=\""+headerName.trim()+"\">"+headerValue.trim()+"</header>\n"
+				+ "</headers>", headersXml);
+		String contextHeaderValue = (String) requestMessage.getContext().get("Header."+headerName.trim());
+		assertEquals(headerValue.trim(), contextHeaderValue, "header is incorrect or missing from MessageContext");
+		assertNull(result.getErrorMessage());
+	}
+
 	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(HttpMethod.GET))
@@ -1870,6 +1908,7 @@ public class ApiListenerServletTest {
 
 		public ApiListenerBuilder setMessageIdHeader(String headerName) {
 			listener.setMessageIdHeader(headerName);
+			listener.setHeaderParams(headerName);
 			return this;
 		}
 

@@ -80,7 +80,10 @@ public abstract class MessageUtils {
 		Enumeration<String> names = request.getHeaderNames();
 		while(names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
+			// https://datatracker.ietf.org/doc/html/rfc7230
+			// Each header field consists of a case-insensitive field name followed by a colon (":"),
+			// optional leading whitespace, the field value, and optional trailing whitespace.
+			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name).trim());
 		}
 
 		return result;
