@@ -35,13 +35,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/server")
 public class ServerStatistics extends FrankApiBase {
 
-	@PermitAll
+	@AllowAllIbisUserRoles
 	@GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerInformation() {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET));
 	}
 
-	@PermitAll
+	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAllConfigurations() {
@@ -59,7 +59,8 @@ public class ServerStatistics extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@PermitAll
+	@AllowAllIbisUserRoles
+	@Description("view all configuration warnings")
 	@GetMapping(value = "/warnings", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerConfiguration() {
 		return callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
