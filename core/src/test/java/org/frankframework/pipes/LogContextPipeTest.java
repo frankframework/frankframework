@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -23,6 +25,18 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 
 public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		super.setUp();
+		ThreadContext.clearMap();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		super.tearDown();
+		ThreadContext.clearMap();
+	}
 
 	@Override
 	public LogContextPipe createPipe() throws ConfigurationException {
@@ -195,5 +209,48 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 
 		assertNull(ThreadContext.get("inner"));
 		assertNull(ThreadContext.get("outer"));
+	}
+
+	@Test
+	public void testCloseableThreadContextWithMultipleNestingLevels() {
+		try (CloseableThreadContext.Instance k1Outer = CloseableThreadContext.put("k1", "outer")) {
+			assertEquals("outer", ThreadContext.get("k1"));
+			try (CloseableThreadContext.Instance k1Inner = CloseableThreadContext.put("k1", "inner")) {
+				assertEquals("inner", ThreadContext.get("k1"));
+
+				try (CloseableThreadContext.Instance k2Outer = CloseableThreadContext.put("k2", "outer")) {
+					assertEquals("inner", ThreadContext.get("k1"));
+					assertEquals("outer", ThreadContext.get("k2"));
+					try (CloseableThreadContext.Instance k2Inner = CloseableThreadContext.put("k2", "inner")) {
+						k2Inner.put("k3", "inner");
+						assertEquals("inner", ThreadContext.get("k1"));
+						assertEquals("inner", ThreadContext.get("k2"));
+						assertEquals("inner", ThreadContext.get("k3"));
+					}
+					assertEquals("inner", ThreadContext.get("k1")); // Expect k1 to still exist but it has disappeared here
+					assertEquals("outer", ThreadContext.get("k2"));
+					assertNull(ThreadContext.get("k3"));
+				}
+				assertEquals("inner", ThreadContext.get("k1"));
+				assertNull(ThreadContext.get("k2"));
+			}
+			assertEquals("outer", ThreadContext.get("k1"));
+			assertNull(ThreadContext.get("k2"));
+		}
+		assertNull(ThreadContext.get("k1"));
+	}
+
+	@Test
+	public void testCloseableThreadContext2() {
+		try (CloseableThreadContext.Instance outer = CloseableThreadContext.put("k1", "outer")) {
+			assertEquals("outer", ThreadContext.get("k1"));
+			try (CloseableThreadContext.Instance inner = CloseableThreadContext.putAll(Collections.singletonMap("k2", "inner"))) {
+				assertEquals("inner", ThreadContext.get("k2"));
+				assertEquals("outer", ThreadContext.get("k1")); // Cannot find key "k1" anymore, but it should
+			}
+			assertNull(ThreadContext.get("k2"));
+			assertEquals("outer", ThreadContext.get("k1"));
+		}
+		assertNull(ThreadContext.get("k1"));
 	}
 }
