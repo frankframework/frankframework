@@ -29,7 +29,9 @@ import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -104,16 +106,18 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			throw new ConfigurationException("You must specify either an address or a serviceNamespaceURI");
+			String msg = "You must specify either an address or a serviceNamespaceURI";
+			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
-			throw new ConfigurationException("Please specify either an address or serviceNamespaceURI but not both");
+			String msg = "Please specify either an address or serviceNamespaceURI but not both";
+			ConfigurationWarnings.add(this, log, msg);
 		}
 
 		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
 		if(bus instanceof SpringBus springBus) {
 			cxfBus = springBus;
-			log.debug("found CXF SpringBus id [{}]", bus.getId());
+			log.debug("found CXF SpringBus id [{}]", bus::getId);
 		} else {
 			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 		}
@@ -122,23 +126,28 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public void open() throws ListenerException {
 		if (StringUtils.isNotEmpty(getAddress())) {
-			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", getName(), cxfBus.getId());
+			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
 			if(endpoint.isPublished()) {
-				log.debug("published listener [{}] on CXF endpoint [{}]", getName(), getAddress());
+				log.debug("published listener [{}] on CXF endpoint [{}]", this::getName, this::getAddress);
 			} else {
-				log.error("unable to publish listener [{}] on CXF endpoint [{}]", getName(), getAddress());
+				log.error("unable to publish listener [{}] on CXF endpoint [{}]", this::getName, this::getAddress);
 			}
 
-			log.debug("registering listener [{}] with ServiceDispatcher by name", getName());
-			ServiceDispatcher.getInstance().registerServiceClient(getAddress(), this); // Used by `Test a ServiceListener` console page.
+			// Register with dispatcher so it can be used on the console 'Test ServiceListener' page.
+			log.debug("registering listener [{}] with ServiceDispatcher by address [{}]", this::getName, this::getAddress);
+			ServiceDispatcher.getInstance().registerServiceClient(getAddress(), this);
 		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
+			log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+		}
+		else {
+			log.debug("registering listener [{}] with ServiceDispatcher by name", this::getName);
+			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); // Deprecated backwards compatibility
 		}
 
 		super.open();
@@ -152,15 +161,16 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			endpoint.stop();
 		}
 
-		if (StringUtils.isEmpty(getAddress())) {
-			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
-				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
-			}
-			else {
-				log.debug("unregistering listener [{}] from ServiceDispatcher", getName());
-				ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
-			}
+		if (StringUtils.isNotEmpty(getAddress())) {
+			log.debug("unregistering listener [{}] from ServiceDispatcher by address [{}]", this::getName, this::getAddress);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getAddress());
+		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+		}
+		else {
+			log.debug("unregistering listener [{}] from ServiceDispatcher", this::getName);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); // Deprecated backwards compatibility
 		}
 	}
 
