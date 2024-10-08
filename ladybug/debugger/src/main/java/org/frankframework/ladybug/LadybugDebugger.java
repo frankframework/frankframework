@@ -44,6 +44,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
@@ -116,65 +117,69 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
-		if (securityContext.isUserInRoles(testerRoles)) {
-			int i = 0;
-			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
-			Checkpoint checkpoint = checkpoints.get(i);
-			String checkpointName = checkpoint.getName();
-			if (checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
-				String pipelineName = checkpointName.substring(REPORT_ROOT_PREFIX.length());
-				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
-				Adapter adapter = getRegisteredAdapter(pipelineName);
-				if (adapter != null) {
-					RunState runState = adapter.getRunState();
-					if (runState == RunState.STARTED) {
-						synchronized(inRerun) {
-							inRerun.add(correlationId);
-						}
-						try {
-							// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
-							// streams are also closed and the generated report will not remain in progress
-							try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-								while (checkpoints.size() > i + 1) {
-									i++;
-									checkpoint = checkpoints.get(i);
-									checkpointName = checkpoint.getName();
-									if (checkpointName.startsWith("SessionKey ")) {
-										String sessionKey = checkpointName.substring("SessionKey ".length());
-										if (!sessionKey.equals(PipeLineSession.CORRELATION_ID_KEY) && !sessionKey.equals(PipeLineSession.MESSAGE_ID_KEY)
-												// messageId and id were used before 7.9
-												&& !"messageId".equals(sessionKey) && !"id".equals(sessionKey)
-												&& !sessionKey.equals(PipeLineSession.ORIGINAL_MESSAGE_KEY)) {
-											pipeLineSession.put(sessionKey, checkpoint.getMessage());
-										}
-									} else {
-										i = checkpoints.size();
-									}
-								}
-								// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-								String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
-								pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-								PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
-								result.getResult().close();
-							}
-						} finally {
-							synchronized(inRerun) {
-								inRerun.remove(correlationId);
-							}
-						}
-					} else {
-						return "Adapter in state '" + runState + "'";
-					}
-				} else {
-					return "Adapter '" + pipelineName + "' not found";
-				}
-			} else {
-				return "First checkpoint isn't a pipeline";
-			}
-		} else {
+		if (!isAllowed()) {
 			return "Not allowed";
 		}
-		return null;
+
+		List<Checkpoint> checkpoints = originalReport.getCheckpoints();
+		Checkpoint checkpoint = checkpoints.get(0);
+		String checkpointName = checkpoint.getName();
+		if (checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
+			String pipelineName = checkpointName.substring(REPORT_ROOT_PREFIX.length());
+			Adapter adapter = getRegisteredAdapter(pipelineName);
+			if (adapter != null) {
+				RunState runState = adapter.getRunState();
+				if (runState == RunState.STARTED) {
+					synchronized(inRerun) {
+						inRerun.add(correlationId);
+					}
+
+					try (Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner))) {
+						// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
+						// streams are also closed and the generated report will not remain in progress
+						try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+							int i = 0;
+							while (checkpoints.size() > i + 1) {
+								i++;
+								checkpoint = checkpoints.get(i);
+								checkpointName = checkpoint.getName();
+								if (checkpointName.startsWith("SessionKey ")) {
+									String sessionKey = checkpointName.substring("SessionKey ".length());
+									if (!sessionKey.equals(PipeLineSession.CORRELATION_ID_KEY) && !sessionKey.equals(PipeLineSession.MESSAGE_ID_KEY)
+											// messageId and id were used before 7.9
+											&& !"messageId".equals(sessionKey) && !"id".equals(sessionKey)
+											&& !sessionKey.equals(PipeLineSession.ORIGINAL_MESSAGE_KEY)) {
+										pipeLineSession.put(sessionKey, checkpoint.getMessage());
+									}
+								} else {
+									i = checkpoints.size();
+								}
+							}
+							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
+							String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
+							pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+							PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
+							result.getResult().close();
+						}
+						return null;
+					} finally {
+						synchronized(inRerun) {
+							inRerun.remove(correlationId);
+						}
+					}
+				} else {
+					return "Adapter in state '" + runState + "'";
+				}
+			} else {
+				return "Adapter '" + pipelineName + "' not found";
+			}
+		} else {
+			return "First checkpoint isn't a pipeline";
+		}
+	}
+
+	private boolean isAllowed() {
+		return testerRoles != null && BusMessageUtils.hasAnyRole(testerRoles.toArray(new String[0]));
 	}
 
 	@Override
