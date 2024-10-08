@@ -26,12 +26,14 @@ import org.frankframework.parameters.Parameter;
 
 public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 
+	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		ThreadContext.clearMap();
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() {
 		super.tearDown();
@@ -110,6 +112,7 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 		assertEquals("success", prr.getPipeForward().getName());
 		assertNull(ThreadContext.get("mock-param"));
 	}
+
 	@Test
 	public void testLogContextPipeWithContinueOnException2() throws Exception {
 		Parameter mockParam = mock(Parameter.class);
