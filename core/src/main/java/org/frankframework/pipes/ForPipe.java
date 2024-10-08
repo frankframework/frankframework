@@ -16,6 +16,8 @@
 
 package org.frankframework.pipes;
 
+import java.util.Optional;
+
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -115,26 +117,29 @@ public class ForPipe extends FixedForwardPipe {
 			return stopAt;
 		}
 
-		ParameterValueList parameterValueList = getParameterValueList(message, session);
-		ParameterValue stopAtParameter = parameterValueList.get(STOP_AT_PARAMETER_VALUE);
+		Optional<ParameterValueList> optionalParameterValueList = getParameterValueList(message, session);
 
-		if (stopAtParameter.getValue() == null || StringUtils.isBlank(stopAtParameter.asStringValue())) {
-			throw new PipeRunException(this, "Can't determine 'stopAt' value");
+		if (optionalParameterValueList.isPresent()) {
+			ParameterValue stopAtParameter = optionalParameterValueList.get().get(STOP_AT_PARAMETER_VALUE);
+
+			if (stopAtParameter.getValue() != null && StringUtils.isNotBlank(stopAtParameter.asStringValue())) {
+				return stopAtParameter.asIntegerValue(0);
+			}
 		}
 
-		return stopAtParameter.asIntegerValue(0);
+		throw new PipeRunException(this, "Can't determine 'stopAt' value");
 	}
 
-	private ParameterValueList getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
+	private Optional<ParameterValueList> getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
 		if (getParameterList() != null) {
 			try {
-				return getParameterList().getValues(message, session);
+				return Optional.of(getParameterList().getValues(message, session));
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	/**
