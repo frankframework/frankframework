@@ -161,7 +161,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			endpoint.stop();
 		}
 
-		if (StringUtils.isEmpty(getAddress())) {
+		if (StringUtils.isNotEmpty(getAddress())) {
+			ServiceDispatcher.getInstance().unregisterServiceClient(getAddress());
+		} else {
 			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 				log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
 				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
