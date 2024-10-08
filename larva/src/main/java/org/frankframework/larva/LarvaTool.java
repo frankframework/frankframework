@@ -93,6 +93,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.StreamUtil;
@@ -2288,14 +2289,14 @@ public class LarvaTool {
 				}
 				if ("node".equals(type)) {
 					try {
-						value = XmlUtils.buildNode(propertyValue, true);
-					} catch (DomBuilderException e) {
+						value = XmlUtils.buildNode(MessageUtils.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("domdoc".equals(type)) {
 					try {
-						value = XmlUtils.buildDomDocument(propertyValue, true);
-					} catch (DomBuilderException e) {
+						value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
 						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
