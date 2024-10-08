@@ -13189,17 +13189,12 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ForPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ForPipeDeclaredAttributeGroup">
-    <xs:attribute name="incrementSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets the session key which holds the value to be incremented. Default: i</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="startAt" type="frankInt">
       <xs:annotation>
         <xs:documentation>Starts counting at this value. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="max" type="frankInt">
+    <xs:attribute name="stopAt" type="frankInt" use="required">
       <xs:annotation>
         <xs:documentation>Break from the loop when incrementSessionKey equals this value</xs:documentation>
       </xs:annotation>

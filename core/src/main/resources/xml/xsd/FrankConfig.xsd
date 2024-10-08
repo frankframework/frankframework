@@ -3840,7 +3840,7 @@
       <xs:element name="DirectQuerySender">
         <xs:annotation>
           <xs:documentation>QuerySender that interprets the input message as a query, possibly with attributes.
- Messages are expected to contain sql-text.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+ Messages are expected to contain sql-text.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3900,7 +3900,7 @@
       </xs:element>
       <xs:element name="FixedQuerySender">
         <xs:annotation>
-          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;See DB2XMLWriter for ResultSet!&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;See DB2XMLWriter for ResultSet!&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4649,7 +4649,7 @@
       </xs:element>
       <xs:element name="ResultSet2FileSender">
         <xs:annotation>
-          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4852,7 +4852,7 @@
  			&amp;lt;/rowset&amp;gt;
  		&amp;lt;/result&amp;gt;
  	&amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
- &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -5004,7 +5004,7 @@
 
   sql   - type [0..1] one of {select;ddl;other}, other by default
         - query&lt;/code&gt;&lt;/pre&gt;
- &lt;br/&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+ &lt;br/&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8644,7 +8644,7 @@
       <xs:element name="DirectQueryErrorSender">
         <xs:annotation>
           <xs:documentation>QuerySender that interprets the input message as a query, possibly with attributes.
- Messages are expected to contain sql-text.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+ Messages are expected to contain sql-text.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8704,7 +8704,7 @@
       </xs:element>
       <xs:element name="FixedQueryErrorSender">
         <xs:annotation>
-          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;See DB2XMLWriter for ResultSet!&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+          <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;See DB2XMLWriter for ResultSet!&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9453,7 +9453,7 @@
       </xs:element>
       <xs:element name="ResultSet2FileErrorSender">
         <xs:annotation>
-          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+          <xs:documentation>QuerySender that writes each row in a ResultSet to a file.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9656,7 +9656,7 @@
  			&amp;lt;/rowset&amp;gt;
  		&amp;lt;/result&amp;gt;
  	&amp;lt;/resultset&amp;gt;&lt;/code&gt;&lt;/pre&gt;
- &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9808,7 +9808,7 @@
 
   sql   - type [0..1] one of {select;ddl;other}, other by default
         - query&lt;/code&gt;&lt;/pre&gt;
- &lt;br/&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is true&lt;/p&gt;</xs:documentation>
+ &lt;br/&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Please note that the default value of &lt;code&gt;trimSpaces&lt;/code&gt; is `true`&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13626,16 +13626,17 @@
         <xs:annotation>
           <xs:documentation>ForPipe is a wrapper to use another pipe a fixed number of times. This can be accomplished by something like:
 
- &lt;pre&gt;&lt;code&gt;&amp;lt;ForPipe name=&amp;quot;forPipe&amp;quot; incrementSessionKey=&amp;quot;i&amp;quot; startAt=&amp;quot;0&amp;quot; max=&amp;quot;10&amp;quot;&amp;gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;ForPipe name=&amp;quot;forPipe&amp;quot; startAt=&amp;quot;0&amp;quot; stopAt=&amp;quot;10&amp;quot;&amp;gt;
  		 	&amp;lt;Forward name=&amp;quot;stop&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
  		 	&amp;lt;Forward name=&amp;quot;continue&amp;quot; path=&amp;quot;echoPipe&amp;quot;/&amp;gt;
-		&amp;lt;/ForPipe&amp;gt;
+ 		&amp;lt;/ForPipe&amp;gt;
 
-		&amp;lt;EchoPipe name=&amp;quot;echoPipe&amp;quot; getInputFromSessionKey=&amp;quot;i&amp;quot;&amp;gt;
-		 	&amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;forPipe&amp;quot;/&amp;gt;
-		&amp;lt;/EchoPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
-
- This should call the echoPipe for i=0 untill i=10.</xs:documentation>
+ 		&amp;lt;EchoPipe name=&amp;quot;echoPipe&amp;quot; getInputFromSessionKey=&amp;quot;forPipe.iteration&amp;quot;&amp;gt;
+ 		 	&amp;lt;Forward name=&amp;quot;success&amp;quot; path=&amp;quot;forPipe&amp;quot;/&amp;gt;
+ 		&amp;lt;/EchoPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+ &lt;p&gt;
+ This should call the echoPipe for i=0 until i=10.
+ &lt;p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;After completing the for loop, the sessionKey containing the for loop iteration state, will be removed.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;The default format for the session key is "pipeName-iteration"&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15558,17 +15559,12 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ForPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ForPipeDeclaredAttributeGroup">
-    <xs:attribute name="incrementSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets the session key which holds the value to be incremented. Default: i</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="startAt" type="frankInt">
       <xs:annotation>
         <xs:documentation>Starts counting at this value. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="max" type="frankInt">
+    <xs:attribute name="stopAt" type="frankInt" use="required">
       <xs:annotation>
         <xs:documentation>Break from the loop when incrementSessionKey equals this value</xs:documentation>
       </xs:annotation>
@@ -17698,7 +17694,7 @@
       </xs:element>
       <xs:element name="CheckReloadJob">
         <xs:annotation>
-          <xs:documentation>Frank!Framework job which periodically looks in the &lt;code&gt;IBISCONFIG&lt;/code&gt; table to see if a new Configuration should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property checkReload.active and checkReload.interval.&lt;/p&gt;</xs:documentation>
+          <xs:documentation>Frank!Framework job which periodically looks in the &lt;code&gt;IBISCONFIG&lt;/code&gt; table to see if a new Configuration should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property `checkReload.active` and `checkReload.interval`.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -17926,7 +17922,7 @@
  &lt;/p&gt;
 
  &lt;p&gt;Pay attention to the effects of '?' and '*' in the day-of-week and
- day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property cleanup.database.active and cleanup.database.cron.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
+ day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property `cleanup.database.active` and `cleanup.database.cron`.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
           value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
           "daylight savings" can cause a skip or a repeat depending on whether
           the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
@@ -18413,7 +18409,7 @@
     Since they have been removed from the database, remove them from the Quartz Scheduler
  
  
- Frank!Framework job which periodically looks in the IBISSCHEDULES table to see if a new DatabaseJob should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property loadDatabaseSchedules.active and loadDatabaseSchedules.interval.&lt;/p&gt;</xs:documentation>
+ Frank!Framework job which periodically looks in the `IBISSCHEDULES` table to see if a new DatabaseJob should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property `loadDatabaseSchedules.active` and `loadDatabaseSchedules.interval`.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -18426,7 +18422,7 @@
       <xs:element name="RecoverAdaptersJob">
         <xs:annotation>
           <xs:documentation>Frank!Framework Adapter recovery-job, which monitors all adapter states, attempts to recover them if required,
- and logs this information to the &lt;code&gt;HEARTBEAT&lt;/code&gt; log appender.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property recover.adapters.interval.&lt;/p&gt;</xs:documentation>
+ and logs this information to the &lt;code&gt;HEARTBEAT&lt;/code&gt; log appender.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property `recover.adapters.interval`.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -18439,7 +18435,7 @@
       <xs:element name="SendMessageJob">
         <xs:annotation>
           <xs:documentation>Scheduled job to send messages to a FrankListener.
- Message may be null (or empty).
+ Message may be `null` (or empty).
  
  &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;

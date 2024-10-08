@@ -66,8 +66,7 @@ public class ForPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		// Mandatory parameters
-
+		// Mandatory stopAt attribute / parameter
 		if (stopAt == null && !getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
 			throw new ConfigurationException("Value for 'stopAt' is mandatory to break out of the for loop pipe");
 		}
