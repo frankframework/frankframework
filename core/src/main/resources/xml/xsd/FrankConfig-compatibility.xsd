@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.3">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.4">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -3560,7 +3560,7 @@
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="sAMLCertificateAlias" type="xs:string">
+    <xs:attribute name="samlCertificateAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
  The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
@@ -3583,7 +3583,7 @@
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
     <xs:attribute name="tls12Enabled" type="frankBoolean" />
     <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
-    <xs:attribute name="configurationXML" type="xs:string">
+    <xs:attribute name="configurationXML" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
       </xs:annotation>
