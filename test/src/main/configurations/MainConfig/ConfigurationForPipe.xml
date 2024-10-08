@@ -6,11 +6,11 @@
 		<Pipeline firstPipe="forPipe">
 			<Exit path="EXIT" state="success" />
 
-			<ForPipe name="forPipe" incrementSessionKey="i" startAt="0" max="10">
+			<ForPipe name="forPipe" startAt="0" stopAt="10">
 				<Forward name="stop" path="EXIT" />
 				<Forward name="continue" path="echoPipe"/>
 			</ForPipe>
-			<EchoPipe name="echoPipe" getInputFromSessionKey="i">
+			<EchoPipe name="echoPipe" getInputFromSessionKey="forPipe.iteration">
 				<Forward name="success" path="forPipe"/>
 			</EchoPipe>
 		</Pipeline>

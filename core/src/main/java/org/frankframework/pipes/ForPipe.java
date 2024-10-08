@@ -17,42 +17,48 @@
 package org.frankframework.pipes;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
 /**
  * ForPipe is a wrapper to use another pipe a fixed number of times. This can be accomplished by something like:
  *
  * <pre>{@code
- * 		<ForPipe name="forPipe" incrementSessionKey="i" startAt="0" max="10">
+ * 		<ForPipe name="forPipe" startAt="0" stopAt="10">
  * 		 	<Forward name="stop" path="EXIT" />
  * 		 	<Forward name="continue" path="echoPipe"/>
  * 		</ForPipe>
  *
- * 		<EchoPipe name="echoPipe" getInputFromSessionKey="i">
+ * 		<EchoPipe name="echoPipe" getInputFromSessionKey="forPipe.iteration">
  * 		 	<Forward name="success" path="forPipe"/>
  * 		</EchoPipe>
  * }</pre>
  * <p>
  * This should call the echoPipe for i=0 until i=10.
  * <p>
- * After completing the for loop, the `incrementSessionKey` will be removed.
  *
  * @author evandongen
+ * @ff.info After completing the for loop, the sessionKey containing the for loop iteration state, will be removed.
+ * @ff.info The default format for the session key is "pipeName-iteration"
  */
 @ElementType(ElementTypes.ITERATOR)
 public class ForPipe extends FixedForwardPipe {
 
 	static final String STOP_FORWARD_NAME = "stop";
 	static final String CONTINUE_FORWARD_NAME = "continue";
-	private @Getter String incrementSessionKey = "i";
+	static final String STOP_AT_PARAMETER_VALUE = "stopAt";
+	private static final String INCREMENT_SESSION_KEY_SUFFIX = "iteration";
 	private @Getter int startAt = 0;
 	private @Getter Integer stopAt = null;
 
@@ -61,8 +67,9 @@ public class ForPipe extends FixedForwardPipe {
 		super.configure();
 
 		// Mandatory parameters
-		if (stopAt == null) {
-			throw new ConfigurationException("Value for 'max' is mandatory to break out of the for loop pipe");
+
+		if (stopAt == null && !getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
+			throw new ConfigurationException("Value for 'stopAt' is mandatory to break out of the for loop pipe");
 		}
 
 		// Mandatory forwards
@@ -80,30 +87,55 @@ public class ForPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		// Get the value from the session, default to the startAt value
-		int i = session.get(incrementSessionKey, startAt);
+		Integer stopAtValue = determineStopAtValue(message, session);
+		String sessionKey = getIncrementSessionKey();
 
-		// If i < max, increment and continue
-		if (i < stopAt) {
+		// Get the value from the session, default to the startAt value
+		int i = session.get(sessionKey, startAt);
+
+		// If i < stopAtValue, increment and continue
+		if (i < stopAtValue) {
 			PipeForward continueForward = findForward(CONTINUE_FORWARD_NAME);
 
-			session.put(incrementSessionKey, ++i);
+			session.put(sessionKey, ++i);
 
 			return new PipeRunResult(continueForward, message);
 		}
 
 		// Else, remove the session key and forward to the stop forward
-		session.remove(incrementSessionKey);
+		session.remove(sessionKey);
 		return new PipeRunResult(findForward(STOP_FORWARD_NAME), message);
 	}
 
-	/**
-	 * Sets the session key which holds the value to be incremented.
-	 *
-	 * @ff.default i
-	 */
-	public void setIncrementSessionKey(String incrementSessionKey) {
-		this.incrementSessionKey = incrementSessionKey;
+	String getIncrementSessionKey() {
+		return String.format("%s.%s", getName(), INCREMENT_SESSION_KEY_SUFFIX);
+	}
+
+	private Integer determineStopAtValue(Message message, PipeLineSession session) throws PipeRunException {
+		if (stopAt != null) {
+			return stopAt;
+		}
+
+		ParameterValueList parameterValueList = getParameterValueList(message, session);
+		ParameterValue stopAtParameter = parameterValueList.get(STOP_AT_PARAMETER_VALUE);
+
+		if (stopAtParameter.getValue() == null || StringUtils.isBlank(stopAtParameter.asStringValue())) {
+			throw new PipeRunException(this, "Can't determine 'stopAt' value");
+		}
+
+		return stopAtParameter.asIntegerValue(0);
+	}
+
+	private ParameterValueList getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
+		if (getParameterList() != null) {
+			try {
+				return getParameterList().getValues(message, session);
+			} catch (ParameterException e) {
+				throw new PipeRunException(this, "exception extracting parameters", e);
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -117,6 +149,8 @@ public class ForPipe extends FixedForwardPipe {
 
 	/**
 	 * Break from the loop when incrementSessionKey equals this value
+	 *
+	 * @ff.mandatory
 	 */
 	public void setStopAt(Integer stopAt) {
 		this.stopAt = stopAt;

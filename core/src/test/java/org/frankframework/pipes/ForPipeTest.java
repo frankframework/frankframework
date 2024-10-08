@@ -10,12 +10,16 @@ import java.io.IOException;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.testutil.NumberParameterBuilder;
 
 public class ForPipeTest extends PipeTestBase<ForPipe> {
 
@@ -50,7 +54,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		pipe.registerForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
-		// Assert that we start at 0
+		// Assert that we start at 10
 		assertEquals(10, pipe.getStartAt());
 
 		PipeRunResult prr = doPipe(pipe, dummyInput, session);
@@ -65,11 +69,17 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		assertEquals(dummyInput, result);
 	}
 
-	@Test
-	void testIncrement() throws PipeRunException, IOException, ConfigurationException, PipeStartException {
+	@ParameterizedTest
+	@ValueSource(booleans = { true, false })
+	void testIncrement(boolean useParameter) throws PipeRunException, IOException, ConfigurationException, PipeStartException {
 		String dummyInput = "dummyInput";
 
-		pipe.setStopAt(10);
+		if (useParameter) {
+			pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
+		} else {
+			pipe.setStopAt(10);
+		}
+
 		pipe.registerForward(new PipeForward("continue", null));
 		pipe.registerForward(new PipeForward("stop", null));
 		configureAndStartPipe();
@@ -87,5 +97,18 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		assertEquals(ForPipe.CONTINUE_FORWARD_NAME, prr.getPipeForward().getName());
 
 		assertEquals(dummyInput, result);
+	}
+
+	@Test
+	void testFailOnEmptyParameter() throws Exception {
+		String dummyInput = "dummyInput";
+
+		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_VALUE, ""));
+		pipe.registerForward(new PipeForward("continue", null));
+		pipe.registerForward(new PipeForward("stop", null));
+
+		configureAndStartPipe();
+
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, dummyInput, session));
 	}
 }
