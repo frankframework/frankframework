@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.2.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -207,14 +207,14 @@
     <xs:attribute name="startTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
-  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+  aborted and all resources closed and the receiver will be in state &lt;code&gt;EXCEPTION_STARTING&lt;/code&gt;
   and a new start command may be issued again.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="stopTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
-  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+  and the receiver will be in state &lt;code&gt;EXCEPTION_STOPPING&lt;/code&gt;.
   The receiver will no longer be running but some resources might not have been cleaned up properly.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -317,7 +317,7 @@
     </xs:attribute>
     <xs:attribute name="forceRetryFlag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to retry. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to &lt;code&gt;retry&lt;/code&gt;. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
@@ -683,7 +683,7 @@
  &lt;br/&gt;&lt;br/&gt;
  &lt;b&gt;example:&lt;/b&gt; &lt;code&gt;&lt;pre&gt;
    &amp;lt;Exits&amp;gt;
-      &amp;lt;Exit name="READY" state="SUCCESS" /&amp;gt;
+      &amp;lt;Exit name="&lt;code&gt;READY&lt;/code&gt;" state="&lt;code&gt;SUCCESS&lt;/code&gt;" /&amp;gt;
       &amp;lt;Exit name="Created" state="ERROR" code="201" empty="true" /&amp;gt;
       &amp;lt;Exit name="NotModified" state="ERROR" code="304" empty="true" /&amp;gt;
       &amp;lt;Exit name="BadRequest" state="ERROR" code="400" empty="true" /&amp;gt;
@@ -708,21 +708,21 @@
  the optionally specified http status code. Each Exit should have a unique name. See Exits
  for examples.
  &lt;br/&gt;&lt;br/&gt;
- When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
- state SUCCESS.
+ When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name &lt;code&gt;READY&lt;/code&gt; and
+ state &lt;code&gt;SUCCESS&lt;/code&gt;.
  &lt;br/&gt;&lt;br/&gt;
  The name of an Exit can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a Forward within a Pipe.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The name of the Exit that can be referenced by a PipeForward's &lt;code&gt;path&lt;/code&gt; attribute. When a Pipeline doesn't have an Exits
- element configured it will be initialized with one Exit having name READY (and state SUCCESS)</xs:documentation>
+ element configured it will be initialized with one Exit having name &lt;code&gt;READY&lt;/code&gt; (and state SUCCESS)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="state" use="required">
       <xs:annotation>
         <xs:documentation>The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
- element configured it will be initialized with one Exit having state SUCCESS (and name READY)</xs:documentation>
+ element configured it will be initialized with one Exit having state SUCCESS (and name &lt;code&gt;READY&lt;/code&gt;)</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ExitStateAttributeValuesType variableRef" />
@@ -769,6 +769,87 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeForwards" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="globalForwards" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="FlowType">
+    <xs:annotation>
+      <xs:documentation>The flow contains the handlers to handle records of a specific type.
+ Each flow is registered to a manager using the recordHandlerManagerRef.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="recordKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key under which this flow is registered in the manager</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nextRecordHandlerManagerRef" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the manager to be used after handling this record</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="recordHandlerRef" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the recordHandler to be used to transform records of the type specified in the key (optional)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="recordHandlerManagerRef" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the manager to which this flow must be added</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resultHandlerRef" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the resultHandler to be used to handle the transformed result</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="openBlockBeforeLine" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Instructs the resultHandler to start a new block before the parsed line is processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="closeBlockBeforeLine" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Instructs the resultHandler to end the specified block before the parsed line is processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="openBlockAfterLine" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Instructs the resultHandler to start a new block after the parsed line is processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="closeBlockAfterLine" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Instructs the resultHandler to end the specified block after the parsed line is processed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="autoCloseBlock" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9) Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="openBlockBeforeLineNumber" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If &amp;gt;0 the &lt;code&gt;openBlockBeforeLine&lt;/code&gt; instruction is only performed when the current line number is a multiple of this value Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordHandlingFlow" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="flow" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="InputFieldsType">
+    <xs:attribute name="value" type="xs:string" />
+    <xs:attribute name="description" type="xs:string" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.InputfieldsPart" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="inputFields" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="OutputFieldsType">
+    <xs:attribute name="value" type="xs:string" />
+    <xs:attribute name="description" type="xs:string" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.OutputfieldsPart" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="outputFields" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="SchedulerType">
@@ -906,16 +987,14 @@
     <xs:annotation>
       <xs:documentation>&lt;p&gt;Example configuration:&lt;/p&gt;
  &lt;pre&gt;&lt;code&gt;
- {@literal
- &lt;monitor name="Receiver Shutdown" destinations="MONITOR_LOG"&gt;
-    &lt;trigger className="org.frankframework.monitoring.Alarm" severity="WARNING"&gt;
-        &lt;event&gt;Receiver Shutdown&lt;/event&gt;
-    &lt;/trigger&gt;
-    &lt;trigger className="org.frankframework.monitoring.Clearing" severity="WARNING"&gt;
-        &lt;event&gt;Receiver Shutdown&lt;/event&gt;
-    &lt;/trigger&gt;
- &lt;/monitor&gt;
- }
+ `&amp;lt;monitor name=&amp;quot;Receiver Shutdown&amp;quot; destinations=&amp;quot;MONITOR_LOG&amp;quot;&amp;gt;
+    &amp;lt;trigger className=&amp;quot;org.frankframework.monitoring.Alarm&amp;quot; severity=&amp;quot;WARNING&amp;quot;&amp;gt;
+        &amp;lt;event&amp;gt;Receiver Shutdown&amp;lt;/event&amp;gt;
+    &amp;lt;/trigger&amp;gt;
+    &amp;lt;trigger className=&amp;quot;org.frankframework.monitoring.Clearing&amp;quot; severity=&amp;quot;WARNING&amp;quot;&amp;gt;
+        &amp;lt;event&amp;gt;Receiver Shutdown&amp;lt;/event&amp;gt;
+    &amp;lt;/trigger&amp;gt;
+ &amp;lt;/monitor&amp;gt;`
 
  &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
@@ -2171,7 +2250,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -2595,7 +2674,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3580,7 +3659,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom user-metadata on S3 files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -4003,7 +4082,7 @@
  or an array of primitive types / strings, as the output of the sender will be of type String.
  &lt;/p&gt;
  &lt;p&gt;
- Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
+ Failure to ensure the output is a string may mean the result will look like &lt;code&gt;[Object object]&lt;/code&gt;.
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4140,7 +4219,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -4517,9 +4596,9 @@
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
-     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
-     have a corresponding IParameter entry. Output parameters should have {@code mode="OUTPUT"}, or
-     {@code mode="INOUT"} depending on how the stored procedure is defined.
+     All stored procedure parameters that are not fixed, so specified in the query with a &lt;code&gt;?&lt;/code&gt;, should
+     have a corresponding IParameter entry. Output parameters should have &lt;code&gt;mode=&amp;quot;OUTPUT&amp;quot;&lt;/code&gt;, or
+     &lt;code&gt;mode=&amp;quot;INOUT&amp;quot;&lt;/code&gt; depending on how the stored procedure is defined.
  &lt;/p&gt;
  &lt;p&gt;
 	&lt;h3&gt;Sample Output for queryType=OTHER&lt;/h3&gt;
@@ -4866,7 +4945,7 @@
     </xs:attribute>
     <xs:attribute name="bucketName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by |</xs:documentation>
+        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by &lt;code&gt;|&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -4911,7 +4990,7 @@
   <xs:attributeGroup name="FileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [&lt;code&gt;action&lt;/code&gt;] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -4919,17 +4998,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=&lt;code&gt;list&lt;/code&gt;. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -4939,32 +5018,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, write, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions &lt;code&gt;create&lt;/code&gt;, &lt;code&gt;write&lt;/code&gt;, &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt;, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -4974,17 +5053,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for read and write action</xs:documentation>
+        <xs:documentation>Charset to be used for &lt;code&gt;read&lt;/code&gt; and &lt;code&gt;write&lt;/code&gt; action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions &lt;code&gt;delete&lt;/code&gt;, &lt;code&gt;readDelete&lt;/code&gt; and &lt;code&gt;move&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -5588,7 +5667,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -6430,7 +6509,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: &lt;code&gt;replyTo,from,sender,Return-Path&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6959,7 +7038,7 @@
  by different JdbcTransactionalStorage instances.
  &lt;br/&gt;
  This field is optional, unless the attribute #onlyStoreWhenMessageIdUnique is
- set to {@code true}.</xs:documentation>
+ set to &lt;code&gt;true&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="type" />
@@ -7094,17 +7173,17 @@
   <xs:attributeGroup name="MongoDbSenderDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The MongoDB datasource Default: mongodb.datasource.default</xs:documentation>
+        <xs:documentation>The MongoDB datasource Default: &lt;code&gt;mongodb.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="database" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Database to connect to. Can be overridden by parameter database</xs:documentation>
+        <xs:documentation>Database to connect to. Can be overridden by parameter &lt;code&gt;database&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collection" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Collection to act upon. Can be overridden by parameter collection</xs:documentation>
+        <xs:documentation>Collection to act upon. Can be overridden by parameter &lt;code&gt;collection&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="action">
@@ -7117,12 +7196,12 @@
     </xs:attribute>
     <xs:attribute name="filter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter. Can contain references to parameters between ?{ and }. Can be overridden by parameter filter</xs:documentation>
+        <xs:documentation>Filter. Can contain references to parameters between &lt;code&gt;?{&lt;/code&gt; and &lt;code&gt;}&lt;/code&gt;. Can be overridden by parameter &lt;code&gt;filter&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="limit" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter limit. Default: 0</xs:documentation>
+        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter &lt;code&gt;limit&lt;/code&gt;. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="countOnly" type="frankBoolean">
@@ -8308,7 +8387,7 @@
     <xs:attribute name="warn" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
@@ -8389,7 +8468,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom user-metadata on S3 files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -8812,7 +8891,7 @@
  or an array of primitive types / strings, as the output of the sender will be of type String.
  &lt;/p&gt;
  &lt;p&gt;
- Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
+ Failure to ensure the output is a string may mean the result will look like &lt;code&gt;[Object object]&lt;/code&gt;.
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -8949,7 +9028,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -9326,9 +9405,9 @@
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
-     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
-     have a corresponding IParameter entry. Output parameters should have {@code mode="OUTPUT"}, or
-     {@code mode="INOUT"} depending on how the stored procedure is defined.
+     All stored procedure parameters that are not fixed, so specified in the query with a &lt;code&gt;?&lt;/code&gt;, should
+     have a corresponding IParameter entry. Output parameters should have &lt;code&gt;mode=&amp;quot;OUTPUT&amp;quot;&lt;/code&gt;, or
+     &lt;code&gt;mode=&amp;quot;INOUT&amp;quot;&lt;/code&gt; depending on how the stored procedure is defined.
  &lt;/p&gt;
  &lt;p&gt;
 	&lt;h3&gt;Sample Output for queryType=OTHER&lt;/h3&gt;
@@ -9980,6 +10059,18 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="Y01ErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>ErrorMessageFormatter for JUICE, introduced with the Y01-project.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Y01ErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
     </xs:choice>
   </xs:group>
   <xs:complexType name="FixedErrorMessageFormatterType">
@@ -10032,6 +10123,11 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:complexType name="Y01ErrorMessageFormatterType">
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.Y01ErrorMessageFormatter" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
   <xs:group name="InputValidatorElementGroup">
     <xs:choice>
       <xs:element name="InputValidator">
@@ -10435,7 +10531,7 @@
     </xs:attribute>
     <xs:attribute name="inputFormatSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: Json2XmlValidator.inputFormat &amp;lt;name of the pipe&amp;gt;</xs:documentation>
+        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: &lt;code&gt;Json2XmlValidator.inputFormat &lt;/code&gt;&amp;lt;name of the pipe&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
@@ -11265,12 +11361,12 @@
     </xs:attribute>
     <xs:attribute name="soapNamespaceSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store auto-detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: soapNamespace</xs:documentation>
+        <xs:documentation>Key of session variable to store auto-detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: &lt;code&gt;soapNamespace&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: soapHeader</xs:documentation>
+        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: &lt;code&gt;soapHeader&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyle" type="xs:string">
@@ -11793,10 +11889,14 @@
               <xs:group ref="InputWrapperElementGroup" />
               <xs:group ref="ListenerElementGroup_2" />
               <xs:element name="Locker" type="LockerType" />
+              <xs:group ref="ManagerElementGroup" />
               <xs:group ref="MessageLogElementGroup" />
               <xs:group ref="OutputValidatorElementGroup" />
               <xs:group ref="OutputWrapperElementGroup" />
               <xs:group ref="ParamElementGroup" />
+              <xs:group ref="ReaderFactoryElementGroup" />
+              <xs:group ref="RecordHandlerElementGroup" />
+              <xs:group ref="ResultHandlerElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -11878,6 +11978,621 @@
         </xs:complexType>
       </xs:element>
     </xs:choice>
+  </xs:group>
+  <xs:group name="ManagerElementGroup">
+    <xs:choice>
+      <xs:element name="Manager">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Flow" type="FlowType" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.batch.RecordHandlerManager" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="ManagerElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="ManagerElementGroupBase">
+    <xs:choice>
+      <xs:element name="FieldPositionManager">
+        <xs:annotation>
+          <xs:documentation>Manager that decides the handlers based on the content of a field in the specified
+ position in a record. The fields in the record are separated by a separator.
+ The value of the specified field is taken as key in the flow-table.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FieldPositionRecordHandlerManagerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="FixedPositionManager">
+        <xs:annotation>
+          <xs:documentation>Manager that decides the handlers based on the content of a field in the specified
+ position in a record. The fields in the record are of a fixed length.
+ The data beween the start position and end position is taken as key in the flow-table.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FixedPositionRecordHandlerManagerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="FieldPositionRecordHandlerManagerType">
+    <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
+    <xs:attributeGroup ref="FieldPositionRecordHandlerManagerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.FieldPositionRecordHandlerManager" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="FieldPositionRecordHandlerManagerDeclaredAttributeGroup">
+    <xs:attribute name="fieldNr" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>position of field that identifies the recordtype (position of first field is 1)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="separator" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>separator that separates the fields in the record</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FieldPositionRecordHandlerManagerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FieldPositionRecordHandlerManagerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="RecordHandlerManagerType">
+    <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
+    <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordHandlerManager" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="RecordHandlerManagerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Flow" minOccurs="0" maxOccurs="unbounded" type="FlowType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="RecordHandlerManagerDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the manager</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="initial" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>This manager is the initial manager, i.e. to be used for the first record Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="FixedPositionRecordHandlerManagerType">
+    <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
+    <xs:attributeGroup ref="FixedPositionRecordHandlerManagerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.FixedPositionRecordHandlerManager" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="FixedPositionRecordHandlerManagerDeclaredAttributeGroup">
+    <xs:attribute name="startPosition" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Start position of the field in the record that identifies the recordtype (first character is 0) Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="endPosition" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If endposition &amp;gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &amp;lt; 0 then it depends on the length of the recordkey in the flow Default: -1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FixedPositionRecordHandlerManagerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FixedPositionRecordHandlerManagerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:group name="ReaderFactoryElementGroup">
+    <xs:choice>
+      <xs:element name="ReaderFactory">
+        <xs:complexType>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="readerFactory" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="ReaderFactoryElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="ReaderFactoryElementGroupBase">
+    <xs:choice>
+      <xs:element name="InputStreamReaderFactory">
+        <xs:annotation>
+          <xs:documentation>Basic InputStreamReaderFactory.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="InputStreamReaderFactoryType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="readerFactory" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="InputStreamReaderFactoryType">
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.InputStreamReaderFactory" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:group name="RecordHandlerElementGroup">
+    <xs:choice>
+      <xs:element name="RecordHandler">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="InputFields" type="InputFieldsType" />
+              <xs:element name="OutputFields" type="OutputFieldsType" />
+              <xs:group ref="ParamElementGroup" />
+              <xs:group ref="SenderElementGroup" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="RecordHandlerElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="RecordHandlerElementGroupBase">
+    <xs:choice>
+      <xs:element name="RecordTransformerRecordHandler">
+        <xs:annotation>
+          <xs:documentation>Translate a record using an outputFields description.
+
+
+ The outputFields description can contain the following functions:
+
+ &lt;table border="1"&gt;
+ &lt;tr&gt;&lt;td&gt;string(value)&lt;/td&gt;&lt;td&gt;inserts the value between the braces&lt;/td&gt;&lt;td&gt;string( Dit wordt geinsert inclusief spaties ervoor en erna. )&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;align(value,size,align,fillchar)&lt;/td&gt;&lt;td&gt;inserts the value aligned&lt;/td&gt;&lt;td&gt;align(test~10~left~ )&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;fill(size,fillchar)&lt;/td&gt;&lt;td&gt;insert size fillchars&lt;/td&gt;&lt;td&gt;fill(2,0)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;now(outformat)&lt;/td&gt;&lt;td&gt;inserts the current date&lt;/td&gt;&lt;td&gt;now(dd MMM yyyy)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;incopy(fieldnr)&lt;/td&gt;&lt;td&gt;simply inserts the value of the field&lt;/td&gt;&lt;td&gt;incopy(2)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;substr(fieldnr,startindex,endindex)&lt;/td&gt;&lt;td&gt;insert part of the value of the field&lt;/td&gt;&lt;td&gt;substr(2,0,8)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;lookup(fieldnr,orgvval=newval,...)&lt;/td&gt;&lt;td&gt;replace original value using lookup table&lt;/td&gt;&lt;td&gt;lookup(3,Debit=+,Credit=-)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;indate(fieldnr,informat,outformat)&lt;/td&gt;&lt;td&gt;inserts an input datefield using a different format&lt;/td&gt;&lt;td&gt;indate(2~MMddYY~dd MMM yyyy)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;inalign(fieldnr,size,align,fillchar)&lt;/td&gt;&lt;td&gt;inserts an input field&lt;/td&gt;&lt;td&gt;inalign(3~5~left~0)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;if(fieldnr,comparator,compareval)&lt;/td&gt;&lt;td&gt;only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use "{..|..|..}" for multiple compareValues&lt;/td&gt;&lt;td&gt;if(1,eq,3)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;elseif(fieldnr,comparator,compareval)&lt;/td&gt;&lt;td&gt;only output the next fields if condition is true. Comparator is EQ, NE, SW or NS&lt;/td&gt;&lt;td&gt;elseif(1,ne,4)&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;endif()&lt;/td&gt;&lt;td&gt;endmarker for if&lt;/td&gt;&lt;td&gt;endif()&lt;/td&gt;&lt;/tr&gt;
+ &lt;/table&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="RecordTransformerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RecordXml2SenderRecordHandler">
+        <xs:annotation>
+          <xs:documentation>Translate a record into XML, then send it using a sender.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="RecordXml2SenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RecordXmlTransformerRecordHandler">
+        <xs:annotation>
+          <xs:documentation>Encapsulates a record in XML, optionally translates it using XSLT or XPath.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="RecordXmlTransformerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="RecordTransformerType">
+    <xs:group ref="RecordTransformerCumulativeChildGroup" />
+    <xs:attributeGroup ref="RecordTransformerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordTransformer" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="RecordTransformerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="OutputFields" minOccurs="0" maxOccurs="unbounded" type="OutputFieldsType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="RecordTransformerCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="RecordTransformerDeclaredChildGroup" />
+      <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="RecordTransformerDeclaredAttributeGroup">
+    <xs:attribute name="outputFields" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>semicolon separated list of output record field specifications (see table below)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputSeparator" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>optional separator to add between the fields</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="RecordTransformerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="RecordTransformerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractRecordHandlerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:group name="AbstractRecordHandlerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="InputFields" minOccurs="0" maxOccurs="unbounded" type="InputFieldsType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractRecordHandlerDeclaredAttributeGroup">
+    <xs:attribute name="recordIdentifyingFields" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the recordhandler</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="inputFields" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated specification of field lengths. if neither this attribute nor &lt;code&gt;inputSeparator&lt;/code&gt; is specified then the entire record is parsed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="inputSeparator" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Separator that separates the fields in the input record. If neither this attribute nor &lt;code&gt;inputFields&lt;/code&gt; is specified then the entire record is parsed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trim" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, trailing spaces are removed from each field Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="RecordXml2SenderType">
+    <xs:group ref="RecordXml2SenderCumulativeChildGroup" />
+    <xs:attributeGroup ref="RecordXmlTransformerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordXml2Sender" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="RecordXml2SenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="RecordXml2SenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="RecordXml2SenderDeclaredChildGroup" />
+      <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:complexType name="RecordXmlTransformerType">
+    <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
+    <xs:attributeGroup ref="RecordXmlTransformerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordXmlTransformer" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="RecordXmlTransformerDeclaredAttributeGroup">
+    <xs:attribute name="outputFields" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rootTag" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Root tag for the generated xml document that will be send to the Sender Default: record</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of stylesheet to transform an individual record</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputType">
+      <xs:annotation>
+        <xs:documentation>Only valid for &lt;code&gt;xpathExpression&lt;/code&gt; Default: text</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Force the transformer generated from the xpath-expression to omit the xml declaration Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="endOfRecord" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>String which ends the record and must be ignored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="RecordXmlTransformerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="RecordXmlTransformerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractRecordHandlerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:group name="ResultHandlerElementGroup">
+    <xs:choice>
+      <xs:element name="ResultHandler">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:group ref="ParamElementGroup" />
+              <xs:group ref="SenderElementGroup" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="ResultHandlerElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="ResultHandlerElementGroupBase">
+    <xs:choice>
+      <xs:element name="Result2BlobWriterResultHandler">
+        <xs:annotation>
+          <xs:documentation>ResultHandler that writes the transformed record to a BLOB.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Result2BlobWriterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Result2ClobWriterResultHandler">
+        <xs:annotation>
+          <xs:documentation>ResultHandler that writes the transformed record to a CLOB.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Result2ClobWriterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Result2FilewriterResultHandler">
+        <xs:annotation>
+          <xs:documentation>Resulthandler that writes the transformed record to a file.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Result2FilewriterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Result2StringWriterResultHandler">
+        <xs:annotation>
+          <xs:documentation>Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Result2StringWriterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ResultBlock2SenderResultHandler">
+        <xs:annotation>
+          <xs:documentation>ResultHandler that collects a number of records and sends them together to a sender.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ResultBlock2SenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="Result2BlobWriterType">
+    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
+    <xs:attributeGroup ref="Result2BlobWriterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.Result2BlobWriter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="Result2BlobWriterDeclaredAttributeGroup">
+    <xs:attribute name="blobColumn" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Column that contains the BLOB to be updated Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobCharset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data.
+ If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="Result2BlobWriterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="Result2BlobWriterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="Result2LobWriterBaseCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:group name="AbstractResultHandlerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractResultHandlerDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="default" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>if set &lt;code&gt;true&lt;/code&gt;, this resulthandler is the default for all flows that do not have a handler specified Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blockByRecordType" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;(default), every group of records, as indicated by RecordHandler.newRecordType is handled as a block. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="Result2LobWriterBaseDeclaredAttributeGroup">
+    <xs:attribute name="query" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The SQL query text</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jmsRealm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="Result2LobWriterBaseCumulativeAttributeGroup">
+    <xs:attributeGroup ref="Result2LobWriterBaseDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ResultWriterDeclaredAttributeGroup">
+    <xs:attribute name="onOpenDocument" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>string that is written before any data of results is written Default: &amp;lt;document name=&amp;quot;#name#&amp;quot;&amp;gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onCloseDocument" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>string that is written after all data of results is written Default: &amp;lt;/document&amp;gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onOpenBlock" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>string that is written before the start of each logical block, as defined in the flow Default: &amp;lt;#name#&amp;gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onCloseBlock" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>string that is written after the end of each logical block, as defined in the flow Default: &amp;lt;/#name#&amp;gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blockNamePattern" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>string that is replaced by name of block or name of stream in above strings Default: #name#</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ResultWriterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ResultWriterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractResultHandlerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="Result2ClobWriterType">
+    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
+    <xs:attributeGroup ref="Result2ClobWriterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.Result2ClobWriter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="Result2ClobWriterDeclaredAttributeGroup">
+    <xs:attribute name="clobColumn" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Column that contains the CLOB to be updated Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="Result2ClobWriterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="Result2ClobWriterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="Result2LobWriterBaseCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="Result2FilewriterType">
+    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
+    <xs:attributeGroup ref="Result2FilewriterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.Result2Filewriter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="Result2FilewriterDeclaredAttributeGroup">
+    <xs:attribute name="outputDirectory" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory in which the resultfile must be stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="move2dirAfterFinalize" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory to which the created file must be moved after finalization (is optional)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="filenamePattern" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="Result2FilewriterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="Result2FilewriterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="Result2StringWriterType">
+    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
+    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.Result2StringWriter" use="prohibited" />
+  </xs:complexType>
+  <xs:complexType name="ResultBlock2SenderType">
+    <xs:group ref="ResultBlock2SenderCumulativeChildGroup" />
+    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.ResultBlock2Sender" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="ResultBlock2SenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="ResultBlock2SenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="ResultBlock2SenderDeclaredChildGroup" />
+      <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
+    </xs:sequence>
   </xs:group>
   <xs:group name="PipeElementGroupBase">
     <xs:choice>
@@ -12002,6 +12717,26 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="Base64PipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="BatchFileTransformerPipe">
+        <xs:annotation>
+          <xs:documentation>Pipe for transforming a (batch)file with records. Records in the file must be separated
+ with new line characters.
+ You can use the &amp;lt;child&amp;gt; tag to register RecordHandlers, RecordHandlerManagers, ResultHandlers
+ and RecordHandlingFlow elements. This is deprecated, however. Since 4.7 one should use &amp;lt;manager&amp;gt;,
+ &amp;lt;recordHandler&amp;gt;, &amp;lt;resultHandler&amp;gt; and &amp;lt;flow&amp;gt;
+
+ For files containing only a single type of lines, a simpler configuration without managers and flows
+ can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
+ Each line will be handled by this recordHandler and resultHandler.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="BatchFileTransformerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -12569,69 +13304,57 @@
  You can use the EchoPipe for a static value. This looked like this before:
 
  &lt;pre&gt;
- {@code
- &lt;pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World"&gt;
-     &lt;forward name="success" path="EXIT"/&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResult&amp;quot; returnString=&amp;quot;Hello World&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot;/&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  Becomes:
  &lt;pre&gt;
- {@code
- &lt;pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World"&gt;
-     &lt;forward name="success" path="EXIT"/&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.EchoPipe&amp;quot; getInputFromFixedValue=&amp;quot;Hello World&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot;/&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  &lt;h3&gt;For replacing a value&lt;/h3&gt;
  You can use the ReplacerPipe to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
  This looked like:
  &lt;pre&gt;
- {@code
- &lt;pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
-     returnString="&amp;lt;msg mid=&amp;quot;MID&amp;quot; action=&amp;quot;ACTION&amp;quot; /&amp;gt;" replaceFixedParams="true"&gt;
-     &lt;param name="MID" sessionKey="mid" /&gt;
- 	   &lt;param name="ACTION" xpathExpression="request/@action" /&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
+     returnString=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;MID&amp;amp;quot; action=&amp;amp;quot;ACTION&amp;amp;quot; /&amp;amp;gt;&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
+     &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
+ 	   &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  And can now be written like this (note the ?{..} syntax):
  &lt;pre&gt;
- {@code
- &lt;pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
-     getInputFromFixedValue="&amp;lt;msg mid=&amp;quot;?{MID}&amp;quot; action=&amp;quot;?{ACTION}&amp;quot; /&amp;gt;"&gt;
- 	   &lt;param name="MID" sessionKey="mid" /&gt;
- 	   &lt;param name="ACTION" xpathExpression="request/@action" /&gt;
- &lt;/pipe&gt;
- }
+ &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
+     getInputFromFixedValue=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;?{MID}&amp;amp;quot; action=&amp;amp;quot;?{ACTION}&amp;amp;quot; /&amp;amp;gt;&amp;quot;&amp;gt;
+ 	   &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
+ 	   &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
  &lt;pre&gt;
- {@code
- &lt;FixedResultPipe name="InputValidateError"
-     filename="ManageFileSystem/xml/ErrorMessage.xml"
-     replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML"&gt;
-     &lt;forward name="success" path="EXIT" /&gt;
- &lt;/FixedResultPipe&gt;
- }
+ &lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
+     filename=&amp;quot;ManageFileSystem/xml/ErrorMessage.xml&amp;quot;
+     replaceFrom=&amp;quot;%reasonCode&amp;quot; replaceTo=&amp;quot;NOT_WELL_FORMED_XML&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ &amp;lt;/FixedResultPipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  And now should be solved like this:
  &lt;pre&gt;
- {@code
- &lt;FixedResultPipe name="InputValidateError"
-     filename="ManageFileSystem/xml/ErrorMessage.xml"&gt;
-     &lt;forward name="success" path="replaceReasonCode" /&gt;
- &lt;/FixedResultPipe&gt;
- &lt;ReplacerPipe name="replaceReasonCode"
-     find="%reasonCode"
-     replace="NOT_WELL_FORMED_XML"&gt;
-     &lt;forward name="success" path="EXIT" /&gt;
- &lt;/ReplacerPipe&gt;
- }
+ &lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
+     filename=&amp;quot;ManageFileSystem/xml/ErrorMessage.xml&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;replaceReasonCode&amp;quot; /&amp;gt;
+ &amp;lt;/FixedResultPipe&amp;gt;
+ &amp;lt;ReplacerPipe name=&amp;quot;replaceReasonCode&amp;quot;
+     find=&amp;quot;%reasonCode&amp;quot;
+     replace=&amp;quot;NOT_WELL_FORMED_XML&amp;quot;&amp;gt;
+     &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ &amp;lt;/ReplacerPipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
 
@@ -12639,61 +13362,57 @@
  In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
  was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
  &lt;pre&gt;
- {@code
- 	&lt;CompareStringPipe name="compareIdAndCid" &gt;
- 		&lt;param name="operand1" sessionKey="id"/&gt;
- 		&lt;param name="operand2" sessionKey="cid"/&gt;
- 		&lt;forward name="equals" path="IdAndCidSame" /&gt;
- 		&lt;forward name="lessthan" path="IdAndCidDifferent" /&gt;
- 		&lt;forward name="greaterthan" path="IdAndCidDifferent" /&gt;
- 	&lt;/CompareStringPipe&gt;
- 	&lt;FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="displayKeys" /&gt;
- 	&lt;/FixedResultPipe&gt;
- 	&lt;FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="displayKeys" /&gt;
- 	&lt;/FixedResultPipe&gt;
+ &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 	&amp;lt;/CompareStringPipe&amp;gt;
+ 	&amp;lt;FixedResultPipe name=&amp;quot;IdAndCidSame&amp;quot; returnString=&amp;quot;true&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
+ 	&amp;lt;/FixedResultPipe&amp;gt;
+ 	&amp;lt;FixedResultPipe name=&amp;quot;IdAndCidDifferent&amp;quot; returnString=&amp;quot;false&amp;quot; storeResultInSessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;displayKeys&amp;quot; /&amp;gt;
+ 	&amp;lt;/FixedResultPipe&amp;gt;
 
-  &lt;pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
- 		returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true"&gt;
- 		&lt;param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&amp;#47;@branch" /&gt;
- 		&lt;param name="MID" sessionKey="id" /&gt;
- 		&lt;param name="CID" sessionKey="cid" /&gt;
- 		&lt;param name="SAME" sessionKey="IdAndCidSame" /&gt;
- 		&lt;forward name="success" path="EXIT" /&gt;
- 	&lt;/pipe&gt;
- }
+  &amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
+ 		returnString=&amp;quot;branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
+ 		&amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
 
  Was rewritten to the following:
  &lt;pre&gt;
- {@code
- 	&lt;CompareStringPipe name="compareIdAndCid" &gt;
- 		&lt;param name="operand1" sessionKey="id"/&gt;
- 		&lt;param name="operand2" sessionKey="cid"/&gt;
- 		&lt;forward name="equals" path="IdAndCidSame" /&gt;
- 		&lt;forward name="lessthan" path="IdAndCidDifferent" /&gt;
- 		&lt;forward name="greaterthan" path="IdAndCidDifferent" /&gt;
- 	&lt;/CompareStringPipe&gt;
+ &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
+ 		&amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;lessthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;greaterthan&amp;quot; path=&amp;quot;IdAndCidDifferent&amp;quot; /&amp;gt;
+ 	&amp;lt;/CompareStringPipe&amp;gt;
 
- 	&lt;PutInSessionPipe name="IdAndCidSame" value="true" sessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="putOriginalMessageInSession" /&gt;
- 	&lt;/PutInSessionPipe&gt;
- 	&lt;PutInSessionPipe name="IdAndCidDifferent" value="false" sessionKey="IdAndCidSame"&gt;
- 		&lt;forward name="success" path="putOriginalMessageInSession" /&gt;
- 	&lt;/PutInSessionPipe&gt;
+ 	&amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidSame&amp;quot; value=&amp;quot;true&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
+ 	&amp;lt;/PutInSessionPipe&amp;gt;
+ 	&amp;lt;PutInSessionPipe name=&amp;quot;IdAndCidDifferent&amp;quot; value=&amp;quot;false&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot;&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;putOriginalMessageInSession&amp;quot; /&amp;gt;
+ 	&amp;lt;/PutInSessionPipe&amp;gt;
 
- 	&lt;PutInSessionPipe name="putOriginalMessageInSession" sessionKey="incomingMessage"/&gt;
+ 	&amp;lt;PutInSessionPipe name=&amp;quot;putOriginalMessageInSession&amp;quot; sessionKey=&amp;quot;incomingMessage&amp;quot;/&amp;gt;
 
- 	&lt;pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
- 		getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]"&gt;
- 		&lt;param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&amp;#47;@branch" /&gt;
- 		&lt;param name="MID" sessionKey="id" /&gt;
- 		&lt;param name="CID" sessionKey="cid" /&gt;
- 		&lt;param name="SAME" sessionKey="IdAndCidSame" /&gt;
- 		&lt;forward name="success" path="EXIT" /&gt;
- 	&lt;/pipe&gt;
- }
+ 	&amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
+ 		getInputFromFixedValue=&amp;quot;branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]&amp;quot;&amp;gt;
+ 		&amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
+ 		&amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
+ 		&amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
+ 	&amp;lt;/pipe&amp;gt;&lt;/code&gt;
  &lt;/pre&gt;
  &lt;p&gt;
 
@@ -13090,7 +13809,7 @@
  &lt;p&gt;
      In addition to regular parameters for filesystem senders, it is possible
      to set custom extended attributes on files by prefixing parameter names with
-     FileAttribute..
+     &lt;code&gt;FileAttribute.&lt;/code&gt;.
      This prefix will be not be part of the actual metadata property name.
  &lt;/p&gt;
  &lt;p&gt;
@@ -13520,6 +14239,22 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="StreamTransformerPipe">
+        <xs:annotation>
+          <xs:documentation>Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
+
+ For file containing only a single type of lines, a simpler configuration without managers and flows
+ can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
+ Each line will be handled by this recordHandler and resultHandler.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="StreamTransformerPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="Text2XmlPipe">
         <xs:annotation>
           <xs:documentation>Pipe for converting TEXT to XML.</xs:documentation>
@@ -13853,6 +14588,82 @@
     <xs:attributeGroup ref="Base64PipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="BatchFileTransformerPipeType">
+    <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
+    <xs:attributeGroup ref="BatchFileTransformerPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.BatchFileTransformerPipe" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="BatchFileTransformerPipeDeclaredAttributeGroup">
+    <xs:attribute name="move2dirAfterTransform" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory in which the transformed file(s) is stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="move2dirAfterError" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory to which the inputfile is moved in case an error occurs</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberOfBackups" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 5</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="overwrite" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="delete" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will deleted after being processed, and not stored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="BatchFileTransformerPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="BatchFileTransformerPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="StreamTransformerPipeType">
+    <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
+    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.StreamTransformerPipe" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="StreamTransformerPipeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ManagerElementGroup" minOccurs="1" maxOccurs="unbounded" />
+      <xs:group ref="RecordHandlerElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="ResultHandlerElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="ReaderFactoryElementGroup" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="StreamTransformerPipeCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="StreamTransformerPipeDeclaredChildGroup" />
+      <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="StreamTransformerPipeDeclaredAttributeGroup">
+    <xs:attribute name="storeOriginalBlock" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the original block is stored under the session key &lt;code&gt;originalBlock&lt;/code&gt;. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after it has been used. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Characterset used for reading file or inputstream" Default: UTF-8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="StreamTransformerPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StreamTransformerPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="BlobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
@@ -14113,12 +14924,12 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trimSpaces" type="frankBoolean">
@@ -14698,6 +15509,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queueRegex" type="xs:string" />
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="GetTibcoQueuesCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
@@ -15279,7 +16095,7 @@
   <xs:attributeGroup name="FileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [&lt;code&gt;action&lt;/code&gt;] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -15287,17 +16103,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=&lt;code&gt;list&lt;/code&gt;. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -15307,32 +16123,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, write, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions &lt;code&gt;create&lt;/code&gt;, &lt;code&gt;write&lt;/code&gt;, &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=&lt;code&gt;append&lt;/code&gt;: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt;, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt;, &lt;code&gt;delete&lt;/code&gt; and &lt;code&gt;list&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -15342,17 +16158,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions &lt;code&gt;write&lt;/code&gt; and &lt;code&gt;append&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for read and write action</xs:documentation>
+        <xs:documentation>Charset to be used for &lt;code&gt;read&lt;/code&gt; and &lt;code&gt;write&lt;/code&gt; action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions &lt;code&gt;delete&lt;/code&gt;, &lt;code&gt;readDelete&lt;/code&gt; and &lt;code&gt;move&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -15389,7 +16205,7 @@
     </xs:attribute>
     <xs:attribute name="continueOnError" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution. Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the pipe will never forward to the &lt;code&gt;ExceptionForward&lt;/code&gt; even if an error occurred during execution. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15564,18 +16380,18 @@
 
  &lt;p&gt;
  Conversion result files are stored as messages in the session, under keys numbered based
- on the value set here. If #isSaveSeparate() is {@code false} then only the main
- document is stored in the session, if it is {@code true} then each attachment is stored
+ on the value set here. If #isSaveSeparate() is &lt;code&gt;false&lt;/code&gt; then only the main
+ document is stored in the session, if it is &lt;code&gt;true&lt;/code&gt; then each attachment is stored
  separately.
  &lt;/p&gt;
  &lt;p&gt;
      For example, if a file is converted that has 2 attachments and #setSaveSeparate(boolean)
-     is set to {@code true} then there will be the following 3 session keys (assuming the default value
+     is set to &lt;code&gt;true&lt;/code&gt; then there will be the following 3 session keys (assuming the default value
      is unchanged):
      &lt;ol&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles1}&lt;/li&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles2}&lt;/li&gt;
-         &lt;li&gt;{@code pdfConversionResultFiles3}&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles1&lt;/code&gt;&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles2&lt;/code&gt;&lt;/li&gt;
+         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles3&lt;/code&gt;&lt;/li&gt;
      &lt;/ol&gt;
      Each session key will contain a FileMessage referencing the contents of that PDF.
  &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
@@ -15675,7 +16491,7 @@
     </xs:attribute>
     <xs:attribute name="returnFixedDate" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be 2001-12-17 09:30:47 (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be &lt;code&gt;2001-12-17 09:30:47&lt;/code&gt; (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getCurrentTimeStampInMillis" type="frankBoolean">
@@ -15842,7 +16658,7 @@
  &lt;p&gt;
  &lt;b&gt;NB:&lt;/b&gt; This will only replace or remove characters considered non-printable. This
  will not check if a given character is valid in the particular way it is used. Thus it will
- not remove or replace, for instance, a single {@code '&amp;'} character.
+ not remove or replace, for instance, a single &lt;code&gt;'&amp;amp;'&lt;/code&gt; character.
  &lt;/p&gt;
  &lt;p&gt;
  See also:
@@ -16085,6 +16901,11 @@
     <xs:attribute name="soapAction" type="xs:string">
       <xs:annotation>
         <xs:documentation>If empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emsPropertiesFile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location to a &lt;code&gt;jndi.properties&lt;/code&gt; file for additional EMS (SSL) properties</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16858,7 +17679,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: jdbc.datasource.default</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -18050,7 +18871,7 @@
       </xs:enumeration>
       <xs:enumeration value="LIST">
         <xs:annotation>
-          <xs:documentation>Used for StoredProcedure OUT parameters when the database type is a {@code CURSOR} or java.sql.JDBCType#REF_CURSOR.
+          <xs:documentation>Used for StoredProcedure OUT parameters when the database type is a &lt;code&gt;CURSOR&lt;/code&gt; or java.sql.JDBCType#REF_CURSOR.
  See also org.frankframework.jdbc.StoredProcedureQuerySender.
  &lt;br/&gt;
  DEPRECATED: Type LIST can also be used in larva test to Convert a List to an xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)</xs:documentation>
@@ -18609,7 +19430,7 @@
  MessageClass#BYTES for JMS BytesMessage, or MessageClass#AUTO for auto-determination
  based on whether the input Message is binary or character.
  &lt;p&gt;
- Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property {@code jms.messageClass.default}
+ Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property &lt;code&gt;jms.messageClass.default&lt;/code&gt;
  &lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
@@ -18742,7 +19563,7 @@
   <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
+      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="connectionsArePooled" type="frankBoolean">
@@ -18837,7 +19658,7 @@
   </xs:attribute>
   <xs:attribute name="useNamedParams" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="includeFieldDefinition" type="frankBoolean">
@@ -19192,7 +20013,7 @@
   </xs:attribute>
   <xs:attribute name="supportedCipherSuites" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
+      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
  See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
@@ -19426,9 +20247,9 @@
     <xs:annotation>
       <xs:documentation>Regular expression to mask strings in the log. For example, the regular expression &lt;code&gt;(?&amp;lt;=&amp;lt;password&amp;gt;).*?(?=&amp;lt;/password&amp;gt;)&lt;/code&gt;
  will replace every character between keys '&amp;lt;password&amp;gt;' and '&amp;lt;/password&amp;gt;'. &lt;b&gt;note:&lt;/b&gt; this feature is used at adapter level,
- so a {@code hideRegex} set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
+ so a &lt;code&gt;hideRegex&lt;/code&gt; set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
  The regular expressions are matched against part of the log lines. See int)
- with {@code mode = 0} for how regular expressions are matched and replaced.</xs:documentation>
+ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched and replaced.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="outputSoapBody" type="xs:string">
@@ -19538,7 +20359,7 @@
   <xs:attribute name="warn" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCaching" type="frankBoolean">
@@ -19573,12 +20394,12 @@
   </xs:attribute>
   <xs:attribute name="maxItems" type="frankInt">
     <xs:annotation>
-      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward maxItemsReached can be configured to follow Default: 0</xs:documentation>
+      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward &lt;code&gt;maxItemsReached&lt;/code&gt; can be configured to follow Default: 0</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="stopConditionXPathExpression" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Expression evaluated on each result and forwards to [stopConditionMet] forward if configured.
+      <xs:documentation>Expression evaluated on each result and forwards to [&lt;code&gt;stopConditionMet&lt;/code&gt;] forward if configured.
  Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used.
  This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.
  Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>
