@@ -90,6 +90,12 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
+			<name>Erik van Dongen</name>
+			<email>erik@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
 			<name>Ali Sihab Akcan</name>
 			<email>ali@ibissource.org</email>
 			<organization>Frank!Framework</organization>
