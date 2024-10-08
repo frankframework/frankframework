@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,14 @@ import java.util.Map;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.ws.soap.SOAPBinding;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
-import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -41,7 +39,6 @@ import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 
@@ -107,12 +104,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
-			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+			throw new ConfigurationException("You must specify either an address or a serviceNamespaceURI");
 		}
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
-			String msg = "Please specify either an address or serviceNamespaceURI but not both";
-			ConfigurationWarnings.add(this, log, msg);
+			throw new ConfigurationException("Please specify either an address or serviceNamespaceURI but not both");
 		}
 
 		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
@@ -129,7 +124,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (StringUtils.isNotEmpty(getAddress())) {
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", getName(), cxfBus.getId());
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
-			endpoint.publish("/"+getAddress()); //TODO: prepend with `local://` when used without application server
+			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
@@ -138,15 +133,12 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			} else {
 				log.error("unable to publish listener [{}] on CXF endpoint [{}]", getName(), getAddress());
 			}
-		} else {
-			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
-				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
-			}
-			else {
-				log.debug("registering listener [{}] with ServiceDispatcher", getName());
-				ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
-			}
+
+			log.debug("registering listener [{}] with ServiceDispatcher by name", getName());
+			ServiceDispatcher.getInstance().registerServiceClient(getAddress(), this); // Used by `Test a ServiceListener` console page.
+		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
+			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
 		}
 
 		super.open();
