@@ -72,7 +72,7 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 				while (it.hasNext()) {
 					Node node = (Node) it.next();
 
-					//Found first namespaceURI
+					// Found first namespaceURI
 					if(StringUtils.isNotEmpty(node.getNamespaceURI()))
 						return node.getNamespaceURI();
 				}

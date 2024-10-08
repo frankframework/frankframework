@@ -33,7 +33,7 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
 /**
- * Servlet that listens for HTTP GET or POSTS, and handles them over to the ServiceDispatcher
+ * Servlet that listens for HTTP GET or POSTS, and handles them over to the ServiceDispatcher.
  *
  * @author  Gerrit van Brakel
  */
@@ -103,5 +103,10 @@ public class HttpListenerServlet extends HttpServletBase {
 	@Override
 	public String getUrlMapping() {
 		return "/HttpListener";
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return false;
 	}
 }

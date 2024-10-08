@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import java.util.Map;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.ws.soap.SOAPBinding;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -41,7 +41,6 @@ import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 
@@ -107,7 +106,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
+			String msg = "You must specify either an address or a serviceNamespaceURI";
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
@@ -118,7 +117,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
 		if(bus instanceof SpringBus springBus) {
 			cxfBus = springBus;
-			log.debug("found CXF SpringBus id [{}]", bus.getId());
+			log.debug("found CXF SpringBus id [{}]", bus::getId);
 		} else {
 			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 		}
@@ -127,26 +126,28 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public void open() throws ListenerException {
 		if (StringUtils.isNotEmpty(getAddress())) {
-			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", getName(), cxfBus.getId());
+			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
-			endpoint.publish("/"+getAddress()); //TODO: prepend with `local://` when used without application server
+			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
 			if(endpoint.isPublished()) {
-				log.debug("published listener [{}] on CXF endpoint [{}]", getName(), getAddress());
+				log.debug("published listener [{}] on CXF endpoint [{}]", this::getName, this::getAddress);
 			} else {
-				log.error("unable to publish listener [{}] on CXF endpoint [{}]", getName(), getAddress());
+				log.error("unable to publish listener [{}] on CXF endpoint [{}]", this::getName, this::getAddress);
 			}
-		} else {
-			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
-				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
-			}
-			else {
-				log.debug("registering listener [{}] with ServiceDispatcher", getName());
-				ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
-			}
+
+			// Register with dispatcher so it can be used on the console 'Test ServiceListener' page.
+			log.debug("registering listener [{}] with ServiceDispatcher by address [{}]", this::getName, this::getAddress);
+			ServiceDispatcher.getInstance().registerServiceClient(getAddress(), this);
+		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
+			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+		}
+		else {
+			log.debug("registering listener [{}] with ServiceDispatcher by name", this::getName);
+			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); // Deprecated backwards compatibility
 		}
 
 		super.open();
@@ -160,15 +161,16 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			endpoint.stop();
 		}
 
-		if (StringUtils.isEmpty(getAddress())) {
-			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", getName(), getServiceNamespaceURI());
-				ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
-			}
-			else {
-				log.debug("unregistering listener [{}] from ServiceDispatcher", getName());
-				ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
-			}
+		if (StringUtils.isNotEmpty(getAddress())) {
+			log.debug("unregistering listener [{}] from ServiceDispatcher by address [{}]", this::getName, this::getAddress);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getAddress());
+		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+		}
+		else {
+			log.debug("unregistering listener [{}] from ServiceDispatcher", this::getName);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); // Deprecated backwards compatibility
 		}
 	}
 
