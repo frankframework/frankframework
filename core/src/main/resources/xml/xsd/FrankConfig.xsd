@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.4">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.5">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -4107,8 +4107,7 @@
       </xs:element>
       <xs:element name="IdinSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
- Compile with Java 1.8+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -6528,7 +6527,7 @@
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="sAMLCertificateAlias" type="xs:string">
+    <xs:attribute name="samlCertificateAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
  The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
@@ -6551,7 +6550,7 @@
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
     <xs:attribute name="tls12Enabled" type="frankBoolean" />
     <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
-    <xs:attribute name="configurationXML" type="xs:string">
+    <xs:attribute name="configurationXML" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
       </xs:annotation>
@@ -8910,8 +8909,7 @@
       </xs:element>
       <xs:element name="IdinErrorSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
- Compile with Java 1.8+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
