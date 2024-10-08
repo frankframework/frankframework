@@ -53,6 +53,7 @@ import org.frankframework.stream.Message;
  * @author evandongen
  * @ff.info After completing the for loop, the sessionKey containing the for loop iteration state, will be removed.
  * @ff.info The default format for the session key is "pipeName-iteration"
+ * @ff.note If both attribute and parameter are set for 'stopAt', the attribute value will be used.
  */
 @ElementType(ElementTypes.ITERATOR)
 public class ForPipe extends FixedForwardPipe {
