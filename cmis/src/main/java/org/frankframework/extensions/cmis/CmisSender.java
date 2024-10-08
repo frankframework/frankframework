@@ -231,7 +231,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private CloseableCmisSession globalSession;
 
-	private final @Getter CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
 	private @Getter String fileSessionKey;
 
