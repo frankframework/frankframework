@@ -140,16 +140,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 			// Register with dispatcher so it can be used on the console 'Test ServiceListener' page.
 			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by address ["+getAddress()+"]");
+			ServiceDispatcher.getInstance().registerServiceClient(getAddress(), this);
+		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
-		} else {
-			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
-				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
-			}
-			else {
-				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
-				ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
-			}
+		}
+		else {
+			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
 		}
 
 		super.open();
