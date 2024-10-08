@@ -45,6 +45,17 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	}
 
 	@Test
+	void assertFailOnDoubleStopAt() {
+		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
+		pipe.setStopAt(10);
+
+		pipe.registerForward(new PipeForward("continue", null));
+		pipe.registerForward(new PipeForward("stop", null));
+
+		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+	}
+
+	@Test
 	void testStop() throws PipeRunException, IOException, ConfigurationException, PipeStartException {
 		String dummyInput = "dummyInput";
 

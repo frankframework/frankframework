@@ -29,6 +29,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -53,8 +54,9 @@ import org.frankframework.stream.Message;
  * @author evandongen
  * @ff.info After completing the for loop, the sessionKey containing the for loop iteration state, will be removed.
  * @ff.info The default format for the session key is "pipeName-iteration"
- * @ff.note If both attribute and parameter are set for 'stopAt', the attribute value will be used.
  */
+@Forward(name = "stop", description = "exit for loop")
+@Forward(name = "continue", description = "continue in for loop")
 @ElementType(ElementTypes.ITERATOR)
 public class ForPipe extends FixedForwardPipe {
 
@@ -72,6 +74,10 @@ public class ForPipe extends FixedForwardPipe {
 		// Mandatory stopAt attribute / parameter
 		if (stopAt == null && !getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
 			throw new ConfigurationException("Value for 'stopAt' is mandatory to break out of the for loop pipe");
+		}
+
+		if (stopAt != null && getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
+			throw new ConfigurationException("Value for 'stopAt' is set both as attribute and Parameter, please use one of the two options");
 		}
 
 		// Mandatory forwards
