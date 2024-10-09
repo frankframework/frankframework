@@ -115,7 +115,7 @@ export class WebsocketService {
       if (!this.client.connected) {
         this.sweetalertService.Warning(
           "Can't connect to Frank!Framework websocket endpoint",
-          'Please make sure the Frank!Framework is running and set up correctly! The FF Console will be unable to retrieve updates of configuration & adapter information.',
+          'Please make sure the Frank!Framework is running and set up correctly! The FF! Console will be unable to retrieve updates of configuration & adapter information.',
         );
         this.client.deactivate();
       }
