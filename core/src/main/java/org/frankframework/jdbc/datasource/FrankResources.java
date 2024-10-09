@@ -68,7 +68,7 @@ public class FrankResources {
 
 		Resource resource = findResource(name);
 		if(resource == null) {
-			return null; //If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
+			return null; // If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
 		}
 		if(StringUtils.isEmpty(resource.getUrl())) {
 			throw new IllegalStateException("field url is required");
@@ -76,16 +76,17 @@ public class FrankResources {
 
 		Properties properties = getConnectionProperties(resource, environment);
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
-		Class<?> clazz = ClassUtils.loadClass(resource.getType());
+		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
+		Class<?> clazz = ClassUtils.loadClass(type);
 
-		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { //It's also possible to use the native drivers instead of the DataSources directly.
+		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { // It's also possible to use the native drivers instead of the DataSources directly.
 			return (O) loadDataSourceThroughDriver(clazz, url, properties);
 		}
 		if(lookupClass.isAssignableFrom(clazz)) {
 			return (O) createInstance(clazz, url, properties);
 		}
 
-		throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
+		throw new IllegalStateException("class is not of required type ["+type+"]");
 	}
 
 	/**
@@ -93,7 +94,7 @@ public class FrankResources {
 	 */
 	private DataSource loadDataSourceThroughDriver(Class<?> clazz, String url, Properties properties) {
 		DriverManagerDataSource dmds = new DriverManagerDataSource(url, properties);
-		dmds.setDriverClassName(clazz.getCanonicalName()); //Initialize the JDBC Driver
+		dmds.setDriverClassName(clazz.getCanonicalName()); // Initialize the JDBC Driver
 		return dmds;
 	}
 
