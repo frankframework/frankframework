@@ -19,12 +19,13 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.annotation.Nullable;
+
 import org.frankframework.core.IScopeProvider;
 
 /**
  * The representation of a XSD.
  */
-public interface IXSD extends Schema {
+public interface IXSD extends Schema, Comparable<IXSD> {
 
 	String getResourceTarget();
 	String getNamespace();			// the externally configured targetNamespace

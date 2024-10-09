@@ -64,7 +64,7 @@ import lombok.Setter;
  * @author Michiel Meeuwissen
  * @author  Jaco de Groot
  */
-public abstract class XSD implements IXSD, Comparable<XSD> {
+public abstract class XSD implements IXSD {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
 	private @Getter IScopeProvider scopeProvider;
@@ -235,17 +235,17 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	@Override
-	public int compareTo(XSD other) { // CompareTo is required for WSDL generation
+	public int compareTo(IXSD other) { // CompareTo is required for WSDL generation
 		if (other == null) return 1;
 		if (this == other) return 0;
-		if (namespace != null && other.namespace != null) {
-			int c = namespace.compareTo(other.namespace);
+		if (namespace != null && other.getNamespace() != null) {
+			int c = namespace.compareTo(other.getNamespace());
 			if (c != 0) return c;
 		}
 		return compareToByReferenceOrContents(other);
 	}
 
-	protected int compareToByReferenceOrContents(XSD x) {
+	protected int compareToByReferenceOrContents(IXSD x) {
 		return compareToByContents(x);
 	}
 

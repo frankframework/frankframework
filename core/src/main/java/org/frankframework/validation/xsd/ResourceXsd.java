@@ -22,6 +22,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.validation.IXSD;
 import org.frankframework.validation.XSD;
 
 /**
@@ -67,7 +68,7 @@ public class ResourceXsd extends XSD {
 	}
 
 	@Override
-	public int compareToByReferenceOrContents(XSD x) {
+	public int compareToByReferenceOrContents(IXSD x) {
 		if (x instanceof ResourceXsd) {
 			return getSystemId().compareTo(x.getSystemId());
 		}
