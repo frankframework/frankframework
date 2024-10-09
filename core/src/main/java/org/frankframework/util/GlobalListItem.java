@@ -102,6 +102,10 @@ public class GlobalListItem implements INamedObject {
 		log.debug("globalItemList registered item [{}]", this);
 	}
 
+	public static void clear() {
+		items.clear();
+	}
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
