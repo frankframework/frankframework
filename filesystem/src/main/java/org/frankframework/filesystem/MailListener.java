@@ -19,10 +19,11 @@ import java.io.IOException;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -75,7 +76,6 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		setMessageType(MessageType.EMAIL);
 		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
-
 
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
