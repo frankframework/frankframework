@@ -2,6 +2,7 @@ import { Injectable, isDevMode } from '@angular/core';
 import { Client, IFrame, IMessage, IStompSocket, StompSubscription } from '@stomp/stompjs';
 import { AppService, ClusterMember } from '../app.service';
 import { Subject } from 'rxjs';
+import { SweetalertService } from './sweetalert.service';
 
 type ChannelMessage = {
   channel: string;
@@ -65,7 +66,10 @@ export class WebsocketService {
   });
   private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
 
-  constructor(private appService: AppService) {}
+  constructor(
+    private appService: AppService,
+    private sweetalertService: SweetalertService,
+  ) {}
 
   activate(): void {
     if (!this.client.connected) {
@@ -107,6 +111,15 @@ export class WebsocketService {
   }
 
   private enableSockJs(): void {
+    setTimeout(() => {
+      if (!this.client.connected) {
+        this.sweetalertService.Warning(
+          "Can't connect to Frank!Framework websocket endpoint",
+          'Please make sure the Frank!Framework is running and set up correctly! The FF! Console will be unable to retrieve updates of configuration & adapter information.',
+        );
+        this.client.deactivate();
+      }
+    }, 20_000);
     this.client.webSocketFactory = (): IStompSocket => {
       return new window.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
         transports: [
