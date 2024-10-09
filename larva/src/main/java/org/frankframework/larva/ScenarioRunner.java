@@ -21,6 +21,7 @@ import static org.frankframework.larva.LarvaTool.RESULT_OK;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.queues.Queue;
 import org.frankframework.larva.queues.QueueCreator;
@@ -137,7 +139,9 @@ public class ScenarioRunner {
 			return;
 		}
 		try {
-			config.getOut().write("<br/><h2>Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios </h2>");
+			Writer out = (config.isSilent()) ? config.getSilentOut() : config.getOut();
+
+			out.write("<br/><h2>Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios </h2>");
 		} catch (IOException ignored) {
 			// ignore exception
 		}
