@@ -1,0 +1,8 @@
+# example file, same as resource.yml, used to test the ability to change the filename.
+jdbc:
+  - name: "ladybug"
+    type: "${ladybug.jdbc.driver}"
+    url: "${ladybug.jdbc.url}"
+    authalias: "${ladybug.jdbc.authalias}"
+    username: "${ladybug.jdbc.username}"
+    password: "${ladybug.jdbc.password}"
