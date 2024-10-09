@@ -42,21 +42,22 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import jakarta.annotation.Nullable;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
+import org.xml.sax.InputSource;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.ResourceXsd;
-import org.xml.sax.InputSource;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * The representation of a XSD.
@@ -258,7 +259,7 @@ public abstract class XSD implements IXSD {
 			if (diff.similar()) {
 				return 0;
 			}
-			// TODO: check necessity of this compare. If Diff says they are different, is it useful to check again for the plain contents?
+			// When "diff" says they're different we still need to order them for the "compareTo" result, so we make strings and compare the strings.
 			return StreamUtil.readerToString(getReader(), "\n", false).compareTo(StreamUtil.readerToString(x.getReader(), "\n", false));
 		} catch (Exception e) {
 			LOG.warn("Exception during XSD compare", e);
