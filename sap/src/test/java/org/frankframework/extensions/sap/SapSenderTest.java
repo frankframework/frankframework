@@ -4,10 +4,10 @@ import org.frankframework.configuration.ConfigurationException;
 
 import org.frankframework.parameters.Parameter;
 
+import org.frankframework.util.GlobalListItem;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import ujson.Null;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,6 +21,8 @@ public class SapSenderTest {
 
 	@BeforeEach
 	public void setUp() {
+		GlobalListItem.clear();
+
 		pipe = new SapSender();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		

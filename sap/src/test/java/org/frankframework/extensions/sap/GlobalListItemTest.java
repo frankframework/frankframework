@@ -2,11 +2,17 @@ package org.frankframework.extensions.sap;
 
 import org.frankframework.util.GlobalListItem;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GlobalListItemTest {
+
+	@BeforeEach
+	public void setUp() {
+		GlobalListItem.clear();
+	}
 
 	@Test
 	public void testSapSystemIsRegistered() {

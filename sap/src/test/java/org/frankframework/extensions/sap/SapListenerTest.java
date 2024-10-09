@@ -2,6 +2,8 @@ package org.frankframework.extensions.sap;
 
 import org.frankframework.configuration.ConfigurationException;
 
+import org.frankframework.util.GlobalListItem;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +19,8 @@ public class SapListenerTest {
 
 	@BeforeEach
 	public void setUp() {
+		GlobalListItem.clear();
+
 		pipe = new SapListener();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 
