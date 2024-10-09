@@ -58,5 +58,5 @@ public interface IXSD extends Schema, Comparable<IXSD> {
 
 	IScopeProvider getScopeProvider();
 
-	int compareToByContents(IXSD x);
+	int compareToByContents(IXSD other);
 }

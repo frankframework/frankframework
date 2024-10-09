@@ -68,10 +68,10 @@ public class ResourceXsd extends XSD {
 	}
 
 	@Override
-	public int compareToByReferenceOrContents(IXSD x) {
-		if (x instanceof ResourceXsd) {
-			return getSystemId().compareTo(x.getSystemId());
+	public int compareToByReferenceOrContents(IXSD other) {
+		if (other instanceof ResourceXsd) {
+			return getSystemId().compareTo(other.getSystemId());
 		}
-		return compareToByContents(x);
+		return compareToByContents(other);
 	}
 }

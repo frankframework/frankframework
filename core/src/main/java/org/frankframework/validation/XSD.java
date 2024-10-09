@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -67,6 +68,11 @@ import org.frankframework.validation.xsd.ResourceXsd;
  */
 public abstract class XSD implements IXSD {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
+
+	/**
+	 * See {@link #cacheCompareContentsResult(IXSD, int)} for explanation of what cache keys and values are.
+	 */
+	private final Map<Integer, Integer> compareByContentsCache = new HashMap<>();
 
 	private @Getter IScopeProvider scopeProvider;
 	private @Setter String resourceInternalReference;
@@ -246,25 +252,50 @@ public abstract class XSD implements IXSD {
 		return compareToByReferenceOrContents(other);
 	}
 
-	protected int compareToByReferenceOrContents(IXSD x) {
-		return compareToByContents(x);
+	protected int compareToByReferenceOrContents(IXSD other) {
+		return compareToByContents(other);
 	}
 
 	@Override
-	public int compareToByContents(IXSD x) {
+	public int compareToByContents(IXSD other) {
+		Integer cachedResult = compareByContentsCache.get(System.identityHashCode(other));
+		if (cachedResult != null) {
+			return cachedResult;
+		}
 		try {
 			InputSource control = new InputSource(getReader());
-			InputSource test = new InputSource(x.getReader());
+			InputSource test = new InputSource(other.getReader());
 			Diff diff = new Diff(control, test);
 			if (diff.similar()) {
-				return 0;
+				return cacheCompareContentsResult(other, 0);
 			}
 			// When "diff" says they're different we still need to order them for the "compareTo" result, so we make strings and compare the strings.
-			return StreamUtil.readerToString(getReader(), "\n", false).compareTo(StreamUtil.readerToString(x.getReader(), "\n", false));
+			int compareResult = StreamUtil.readerToString(getReader(), "\n", false).compareTo(StreamUtil.readerToString(other.getReader(), "\n", false));
+			return cacheCompareContentsResult(other, compareResult);
 		} catch (Exception e) {
 			LOG.warn("Exception during XSD compare", e);
 			return 1;
 		}
+	}
+
+	/**
+	 * The operation {@link #compareToByContents(IXSD)} is quite expensive, and sometimes we compare the very same XSD documents
+	 * multiple times. Caching the results gives a minor speedup on startup of the framework.
+	 * <br/>
+	 * The cache is keyed by the {@link System#identityHashCode} of the other XSD against which the comparison was made and stores the previous content-comparison result.
+	 * The corresponding cache of the other XSD is also updated, keyed by our own identityHashCode. The identityHashCode is chosen because it's fast, and because
+	 * it is guaranteed to be different for instances which might otherwise calculate the same {@link #hashCode()}.
+	 * <br/>
+	 * @param other The other XSD against which comparison has been made.
+	 * @param compareResult Result of the {@link #compareToByContents(IXSD)} operation
+	 * @return Returns the value of {@code compareResult} parameter for more fluent use of this method.
+	 */
+	private int cacheCompareContentsResult(IXSD other, int compareResult) {
+		compareByContentsCache.put(System.identityHashCode(other), compareResult);
+		if (other instanceof XSD xsd) {
+			xsd.compareByContentsCache.put(System.identityHashCode(this), compareResult);
+		}
+		return compareResult;
 	}
 
 	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds) throws ConfigurationException {
