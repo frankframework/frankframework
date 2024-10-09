@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * Tries to match the input against the provided regex.
  *
  * <pre>{@code
- * 	<RegExPipe name="regExPipe" regex="^(.*?)(name!)$">
+ * 	<RegExPipe name="regExPipe" regex="^(.*?)(name!)$" flags="CASE_INSENSITIVE">
  * 		<Forward name="then" path="EXIT" />
  * 		<Forward name="else" path="EXIT" />
  * 	</RegExPipe>
@@ -65,8 +65,8 @@ import java.util.regex.Pattern;
 @Forward(name = RegExPipe.ELSE_FORWARD, description = "When no match is found.")
 public class RegExPipe extends AbstractPipe {
 
-	protected final static String THEN_FORWARD = "then";
-	protected final static String ELSE_FORWARD = "else";
+	public static final String THEN_FORWARD = "then";
+	public static final String ELSE_FORWARD = "else";
 
 	enum RegExFlag {
 		CANON_EQ(Pattern.CANON_EQ),

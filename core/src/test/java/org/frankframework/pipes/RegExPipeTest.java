@@ -16,8 +16,6 @@ import java.util.regex.PatternSyntaxException;
 
 public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
-	private final String pipeForwardThen = "then";
-	private final String pipeForwardElse = "else";
 	private PipeRunResult pipeRunResult;
 
 	@Override
@@ -31,8 +29,8 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		RegExPipe pipe = new RegExPipe();
 
 		//Add default pipes
-		pipe.registerForward(new PipeForward(pipeForwardThen, null));
-		pipe.registerForward(new PipeForward(pipeForwardElse, null));
+		pipe.registerForward(new PipeForward(RegExPipe.THEN_FORWARD, null));
+		pipe.registerForward(new PipeForward(RegExPipe.ELSE_FORWARD, null));
 		return pipe;
 	}
 
@@ -70,7 +68,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "This is a string!", session);
 
 		//Assert
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
 				"\t<match index=\"1\" value=\"This is a string!\">\n" +
@@ -93,7 +91,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "hoi a hoi", session);
 
 		//Assert
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
 				"\t<match index=\"1\" value=\"hoi\"/>\n" +
@@ -115,7 +113,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "string\nstring\nstring", session);
 
 		//Assert
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
 				"\t<match index=\"1\" value=\"string\"/>\n" +
@@ -138,7 +136,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "stringA\nstringB\nstringC", session);
 
 		//Assert
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
 				"\t<match index=\"1\" value=\"stringA\"/>\n" +
@@ -161,7 +159,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "THIS IS A STRING", session);
 
 		//Assert
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
 				"\t<match index=\"1\" value=\"THIS IS A STRING\">\n" +
@@ -183,7 +181,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "string string", session);
 
 		//Assert
-		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
+		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
 		assertNull(pipeRunResult.getResult().asString());
 	}
 
