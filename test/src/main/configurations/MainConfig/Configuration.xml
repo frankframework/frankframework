@@ -12,6 +12,7 @@
 	<Include ref="ConfigurationExpectedSessionKeys.xml"/>
 	<Include ref="ConfigurationReplacerPipe.xml"/>
 	<Include ref="ConfigurationReplaceInputAndPreserve.xml"/>
+	<Include ref="ConfigurationRegExPipe.xml"/>
 	<Include ref="ConfigurationForwardNameProvidingSenders.xml"/>
 	<Include ref="ConfigurationCompareStringPipe.xml"/>
 	<Include ref="ConfigurationCompareXmlStringPipe.xml"/>
