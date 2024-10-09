@@ -764,12 +764,6 @@
 			<artifactId>testcontainers-keycloak</artifactId>
 			<version>3.5.1</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.activation</groupId>
-					<artifactId>javax.activation</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- DATABASE DRIVERS  -->
