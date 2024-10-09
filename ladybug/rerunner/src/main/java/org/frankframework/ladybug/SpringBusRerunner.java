@@ -61,15 +61,18 @@ public class SpringBusRerunner implements Rerunner {
 			return "No user found, action not permitted!";
 		}
 
-		int i = 0;
 		List<Checkpoint> checkpoints = originalReport.getCheckpoints();
-		Checkpoint checkpoint = checkpoints.get(i);
-		String checkpointName = checkpoint.getName();
+		Checkpoint firstCheckpoint = checkpoints.get(0);
+		String checkpointName = firstCheckpoint.getName();
 		if (!checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
 			return "First checkpoint isn't a pipeline, unable to rerun report!";
 		}
 
-		String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
+		String inputMessage = firstCheckpoint.getMessageWithResolvedVariables(reportRunner);
+		if(inputMessage == null) {
+			inputMessage = ""; // bus message may not be null
+		}
+
 		String adapterWithConfigName = checkpointName.substring(REPORT_ROOT_PREFIX.length());
 		int index = adapterWithConfigName.indexOf('/');
 		if(index < 0) {
@@ -81,6 +84,9 @@ public class SpringBusRerunner implements Rerunner {
 		Map<String, String> threadContext = new HashMap<>();
 		// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
 		// streams are also closed and the generated report will not remain in progress
+
+		int i = 0;
+		Checkpoint checkpoint;
 		while (checkpoints.size() > i + 1) {
 			i++;
 			checkpoint = checkpoints.get(i);
