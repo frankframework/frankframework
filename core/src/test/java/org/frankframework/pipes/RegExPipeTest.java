@@ -51,6 +51,14 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	}
 
 	@Test
+	void testInvalidFlags() {
+		pipe.setRegex("(.*?)");
+		pipe.setFlags("UNKNOWN_FLAG");
+
+		assertThrows(IllegalArgumentException.class, () -> pipe.configure());
+	}
+
+	@Test
 	void testMatchWildcard() throws Exception {
 		//Arrange
 		pipe.setRegex("^(.*?)(string!)$");

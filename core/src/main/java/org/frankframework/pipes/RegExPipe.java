@@ -103,7 +103,7 @@ public class RegExPipe extends AbstractPipe {
 				.reduce(0, (a, b) -> a | b);
 
 		if (this.regex == null || this.regex.isEmpty()) {
-			throw new ConfigurationException("Value for `regex is mandatory.`");
+			throw new ConfigurationException("Value for `regex` is mandatory.");
 		}
 
 		this.pattern = Pattern.compile(this.regex, flags);
