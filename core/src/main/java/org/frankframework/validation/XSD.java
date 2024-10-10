@@ -243,8 +243,7 @@ public abstract class XSD implements IXSD {
 	}
 
 	@Override
-	public int compareTo(IXSD other) { // CompareTo is required for WSDL generation
-		if (other == null) return 1;
+	public int compareTo(@Nonnull IXSD other) { // CompareTo is required for WSDL generation
 		if (this == other) return 0;
 		if (namespace != null && other.getNamespace() != null) {
 			int c = namespace.compareTo(other.getNamespace());
@@ -258,7 +257,7 @@ public abstract class XSD implements IXSD {
 	}
 
 	@Override
-	public int compareToByContents(IXSD other) {
+	public int compareToByContents(@Nonnull IXSD other) {
 		Integer cachedResult = compareByContentsCache.get(System.identityHashCode(other));
 		if (cachedResult != null) {
 			return cachedResult;
@@ -279,9 +278,8 @@ public abstract class XSD implements IXSD {
 		}
 	}
 
-	@Nonnull
 	@Override
-	public String asString() throws IOException {
+	public @Nonnull String asString() throws IOException {
 		return StreamUtil.readerToString(getReader(), "\n", false);
 	}
 
