@@ -34,7 +34,8 @@ import org.apache.logging.log4j.LogManager;
 public class StringUtil {
 
 	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
-	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
+	private static final String DEFAULT_DELIMITER = ",";
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*" + DEFAULT_DELIMITER + "+\\s*");
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
@@ -232,11 +233,11 @@ public class StringUtil {
 	}
 
 	/**
-	 * Splits a string into a list of substrings using default delimiter {@literal ','}.
+	 * Splits a string into a list of substrings using default delimiter {@value DEFAULT_DELIMITER}.
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
 	 *
 	 * @param input the string to split, can be {@literal null}.
-	 * @return a {@link List} of strings. An empty list if the input was {@literal null}.
+	 * @return a (modifiable) {@link List} of strings. An empty list if the input was {@literal null}.
 	 */
 	@Nonnull
 	public static List<String> split(@Nullable String input) {
@@ -245,7 +246,7 @@ public class StringUtil {
 	}
 
 	/**
-	 * Splits a string into a stream of substrings using default delimiter {@literal ','}.
+	 * Splits a string into a stream of substrings using default delimiter {@value DEFAULT_DELIMITER}.
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
 	 *
 	 * @param input the string to split, can be {@literal null}.
@@ -266,7 +267,7 @@ public class StringUtil {
 	 *
 	 * @param input the string to split, can be {@literal null}.
 	 * @param delim the delimiters to split the string by
-	 * @return a {@link List} of strings. An empty list if the input was {@literal null}.
+	 * @return a (modifiable) {@link List} of strings. An empty list if the input was {@literal null}.
 	 */
 	@Nonnull
 	public static List<String> split(@Nullable String input, @Nonnull String delim) {
@@ -284,6 +285,10 @@ public class StringUtil {
 	 */
 	@Nonnull
 	public static Stream<String> splitToStream(@Nullable final String input, @Nonnull final String delim) {
+		if (DEFAULT_DELIMITER.equals(delim)) {
+			// This version of the method uses a pre-compiled pattern, instead of compiling on every invocation.
+			return splitToStream(input);
+		}
 		if (input == null) {
 			return Stream.empty();
 		}

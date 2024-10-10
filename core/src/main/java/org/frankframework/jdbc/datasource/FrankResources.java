@@ -26,15 +26,17 @@ import javax.sql.DataSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 public class FrankResources {
 
@@ -99,9 +101,9 @@ public class FrankResources {
 	}
 
 	private @Nullable Resource findResource(@Nonnull String name) {
-		List<String> parts = StringUtil.split(name, "/");
-		String prefix = parts.remove(0);
-		String resourceName = String.join("/", parts);
+		int slashPos = name.indexOf('/');
+		String prefix = name.substring(0, slashPos);
+		String resourceName = name.substring(slashPos + 1);
 
 		return switch (prefix) {
 			case "jdbc" -> findResource(jdbc, resourceName);
