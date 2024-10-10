@@ -81,7 +81,7 @@ public class ScenarioRunner {
 		this.multipleThreads = config.isMultiThreaded();
 
 		String blackListDirs = AppConstants.getInstance().getProperty("larva.parallel.blacklistDirs", "");
-		parallelBlacklistDirs = new ArrayList<>(StringUtil.split(blackListDirs, ","));
+		parallelBlacklistDirs = StringUtil.split(blackListDirs);
 		log.info("Setting parallel blacklist dirs to: {}", parallelBlacklistDirs);
 
 		threads = AppConstants.getInstance().getInt("larva.parallel.threads", 4);

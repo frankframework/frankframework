@@ -52,9 +52,7 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 				.map(provider -> AnnotationConsumerInitializer.initialize(templateMethod, provider))
 				.flatMap(provider -> arguments(provider, context))
 				.map(Arguments::get)
-				.map(arguments -> {
-					return new DatabaseTestInvocationContext(templateMethod, arguments);
-				});
+				.map(arguments -> new DatabaseTestInvocationContext(templateMethod, arguments));
 	}
 
 	protected static Stream<? extends Arguments> arguments(ArgumentsProvider provider, ExtensionContext context) {

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -35,10 +36,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.cache.ICache;
@@ -47,6 +44,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
@@ -278,7 +277,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 
 		if (StringUtils.isNotBlank(expectsSessionKeys)) {
-			expectsSessionKeysSet = new HashSet<>(StringUtil.split(expectsSessionKeys));
+			expectsSessionKeysSet = StringUtil.splitToStream(expectsSessionKeys).collect(Collectors.toUnmodifiableSet());
 		} else {
 			expectsSessionKeysSet = Collections.emptySet();
 		}
