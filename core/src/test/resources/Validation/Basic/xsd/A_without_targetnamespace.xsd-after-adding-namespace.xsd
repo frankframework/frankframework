@@ -5,7 +5,7 @@
     >
   <!-- targetNamespace is missing, this is added by the validator configuration -->
 
-  <xs:import namespace="http://xmlns/b" schemaLocation="B.xsd" />
+  <xs:import namespace="http://xmlns/b"/>
   <xs:element name="A">
     <xs:complexType>
       <xs:sequence>
