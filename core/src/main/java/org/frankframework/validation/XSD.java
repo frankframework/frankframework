@@ -281,11 +281,13 @@ public abstract class XSD implements IXSD {
 	/**
 	 * The operation {@link #compareToByContents(IXSD)} is quite expensive, and sometimes we compare the very same XSD documents
 	 * multiple times. Caching the results gives a minor speedup on startup of the framework.
-	 * <br/>
+	 * <p>
 	 * The cache is keyed by the {@link System#identityHashCode} of the other XSD against which the comparison was made and stores the previous content-comparison result.
 	 * The corresponding cache of the other XSD is also updated, keyed by our own identityHashCode. The identityHashCode is chosen because it's fast, and because
 	 * it is guaranteed to be different for instances which might otherwise calculate the same {@link #hashCode()}.
 	 * <br/>
+	 * The cache is updated both for this instance, and for other.
+	 * </p>
 	 * @param other The other XSD against which comparison has been made.
 	 * @param compareResult Result of the {@link #compareToByContents(IXSD)} operation
 	 * @return Returns the value of {@code compareResult} parameter for more fluent use of this method.
