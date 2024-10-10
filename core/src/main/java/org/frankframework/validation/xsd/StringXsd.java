@@ -20,8 +20,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.validation.XSD;
 
@@ -40,7 +41,7 @@ public class StringXsd extends XSD {
 	}
 
 	@Override
-	public @NotNull String asString() throws IOException {
+	public @Nonnull String asString() throws IOException {
 		return schemaContentsWriter.toString();
 	}
 }
