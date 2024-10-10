@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -97,15 +99,21 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 	}
 
 	/** Best effort attempt to locate the adapter. */
+	@Nonnull
 	private Adapter getRegisteredAdapter(String name) {
 		int i = name.indexOf('/');
 		if (i > 0) {
 			String configName = name.substring(0, i);
 			Configuration config = ibisManager.getConfiguration(configName);
-			if (config != null) {
-				String adapterName = name.substring(i + 1);
-				return config.getRegisteredAdapter(adapterName);
+			if (config == null) {
+				throw new IllegalStateException("Configuration ["+configName+"] does not exist.");
 			}
+			String adapterName = name.substring(i + 1);
+			Adapter adapter = config.getRegisteredAdapter(adapterName);
+			if (adapter == null) {
+				throw new IllegalStateException("Adapter ["+adapterName+"] does not exist in configuration ["+configName+"].");
+			}
+			return adapter;
 		}
 
 		List<Adapter> adapters = getRegisteredAdapters();
@@ -114,7 +122,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 				return adapter;
 			}
 		}
-		return null;
+		throw new IllegalStateException("Adapter ["+name+"] not found.");
 	}
 
 	@Override
@@ -128,8 +136,8 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		String checkpointName = checkpoint.getName();
 		if (checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
 			String pipelineName = checkpointName.substring(REPORT_ROOT_PREFIX.length());
-			Adapter adapter = getRegisteredAdapter(pipelineName);
-			if (adapter != null) {
+			try {
+				Adapter adapter = getRegisteredAdapter(pipelineName);
 				RunState runState = adapter.getRunState();
 				if (runState == RunState.STARTED) {
 					synchronized(inRerun) {
@@ -172,8 +180,9 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 				} else {
 					return "Adapter in state '" + runState + "'";
 				}
-			} else {
-				return "Adapter '" + pipelineName + "' not found";
+			} catch(Exception e) {
+				log.info("an error occured while trying to rerun a ladybug report", e);
+				return e.getMessage();
 			}
 		} else {
 			return "First checkpoint isn't a pipeline";
