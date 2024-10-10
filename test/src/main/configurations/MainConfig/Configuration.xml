@@ -5,6 +5,7 @@
 	<Include ref="ConfigurationChecksum.xml"/>
 	<Include ref="ConfigurationZip.xml"/>
 	<Include ref="ConfigurationEcho.xml"/>
+	<Include ref="ConfigurationForPipe.xml"/>
 	<Include ref="ConfigurationErrorMessageFormatter.xml"/>
 	<Include ref="ConfigurationExceptionPipe.xml"/>
 	<Include ref="ConfigurationExchangeMail.xml"/>
