@@ -226,11 +226,11 @@ public class SchemaUtils {
 		}
 	}
 
-	public static void writeStandaloneXsd(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+	public static void writeStandaloneXsd(final @Nonnull IXSD xsd, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null);
 	}
 
-	private static void collectImportsAndAttributes(final IXSD xsd, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports) throws ConfigurationException {
+	private static void collectImportsAndAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws ConfigurationException {
 		try {
 			xsdToXmlStreamWriter(xsd, null, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
 		} catch (IOException e) {
