@@ -1199,7 +1199,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/*
-	 * All messages for the receiver eventually go through this method, this is the method that calls the Aaapter.
+	 * All messages for the receiver eventually go through this method, this is the method that calls the Adapter.
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */

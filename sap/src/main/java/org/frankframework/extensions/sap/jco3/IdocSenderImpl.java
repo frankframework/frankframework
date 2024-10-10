@@ -41,7 +41,7 @@ import org.frankframework.util.XmlUtils;
  */
 public abstract class IdocSenderImpl extends SapSenderBase {
 
-	protected IDocDocument parseIdoc(SapSystemImpl sapSystem, Message message) throws SenderException {
+	public IDocDocument parseIdoc(SapSystemImpl sapSystem, Message message) throws SenderException {
 
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 

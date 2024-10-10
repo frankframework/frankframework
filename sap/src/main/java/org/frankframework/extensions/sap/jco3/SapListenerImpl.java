@@ -29,7 +29,6 @@ import com.sap.conn.idoc.jco.JCoIDocHandler;
 import com.sap.conn.idoc.jco.JCoIDocHandlerFactory;
 import com.sap.conn.idoc.jco.JCoIDocServer;
 import com.sap.conn.idoc.jco.JCoIDocServerContext;
-import com.sap.conn.jco.AbapClassException;
 import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoFunction;
@@ -192,7 +191,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	 * M == JCoFunction
 	 */
 	@Override
-	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
+	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException {
 		try (PipeLineSession session = new PipeLineSession()) {
 			handler.processRawMessage(this, wrapAsJcoFunction(jcoFunction), session, false);
 		} catch (Throwable t) {
