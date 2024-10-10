@@ -237,7 +237,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		if (rerun) {
 			Checkpoint originalEndpoint = testtool.getOriginalEndpointOrAbortpointForCurrentLevel(correlationId);
 			if (originalEndpoint == null) {
-//				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
+				// stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
 				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testtool doen?
 				Report reportInProgress = testtool.getReportInProgress(correlationId);
 				return stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
