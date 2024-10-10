@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -1998,7 +1998,8 @@
     </xs:attribute>
     <xs:attribute name="outputFormat">
       <xs:annotation>
-        <xs:documentation>OutputFormat Default: XML</xs:documentation>
+        <xs:documentation>Sets the outputFormat. This ignored when reading a file. Is applicable to actions which return information about file(s). Relevant for:
+ 'info', 'list', 'append', 'move', 'delete' and 'copy' actions. Default: XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
@@ -13108,6 +13109,11 @@
         <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="computeMimeType" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Compute mimetype when unknown. Requires more compute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="DataSonnetPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="DataSonnetPipeDeclaredAttributeGroup" />
@@ -14338,7 +14344,8 @@
     </xs:attribute>
     <xs:attribute name="outputFormat">
       <xs:annotation>
-        <xs:documentation>OutputFormat Default: XML</xs:documentation>
+        <xs:documentation>Sets the outputFormat. This ignored when reading a file. Is applicable to actions which return information about file(s). Relevant for:
+ 'info', 'list', 'append', 'move', 'delete' and 'copy' actions. Default: XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
