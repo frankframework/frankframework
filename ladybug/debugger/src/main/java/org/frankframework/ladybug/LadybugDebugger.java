@@ -102,8 +102,10 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		if (i > 0) {
 			String configName = name.substring(0, i);
 			Configuration config = ibisManager.getConfiguration(configName);
-			String adapterName = name.substring(i + 1);
-			return config.getRegisteredAdapter(adapterName);
+			if (config != null) {
+				String adapterName = name.substring(i + 1);
+				return config.getRegisteredAdapter(adapterName);
+			}
 		}
 
 		List<Adapter> adapters = getRegisteredAdapters();
