@@ -21,6 +21,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+
 import org.frankframework.validation.XSD;
 
 /**
@@ -37,4 +39,8 @@ public class StringXsd extends XSD {
 		return new StringReader(schemaContentsWriter.toString());
 	}
 
+	@Override
+	public @NotNull String asString() throws IOException {
+		return schemaContentsWriter.toString();
+	}
 }

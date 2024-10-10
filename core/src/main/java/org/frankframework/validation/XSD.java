@@ -42,6 +42,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import lombok.Getter;
@@ -270,12 +271,18 @@ public abstract class XSD implements IXSD {
 				return cacheCompareContentsResult(other, 0);
 			}
 			// When "diff" says they're different we still need to order them for the "compareTo" result, so we make strings and compare the strings.
-			int compareResult = StreamUtil.readerToString(getReader(), "\n", false).compareTo(StreamUtil.readerToString(other.getReader(), "\n", false));
+			int compareResult = asString().compareTo(other.asString());
 			return cacheCompareContentsResult(other, compareResult);
 		} catch (Exception e) {
 			LOG.warn("Exception during XSD compare", e);
 			return 1;
 		}
+	}
+
+	@Nonnull
+	@Override
+	public String asString() throws IOException {
+		return StreamUtil.readerToString(getReader(), "\n", false);
 	}
 
 	/**
