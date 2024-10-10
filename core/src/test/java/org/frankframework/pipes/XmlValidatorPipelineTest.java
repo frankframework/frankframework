@@ -8,6 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -23,10 +28,6 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorTestBase;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Michiel Meeuwissen
@@ -93,12 +94,6 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// By checking both we prevent this in the future.
 		assertEquals(expectedNrOfWarnings, configuration.getConfigurationWarnings().size(), expectedNrOfWarnings + " ConfigurationWarnings expected, got " + configuration.getConfigurationWarnings().getWarnings());
 		assertEquals(0, ApplicationWarnings.getSize(), "No ApplicationWarnings expected, got " + ApplicationWarnings.getWarningsList());
-	}
-
-	public static XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-		XmlValidator validator=getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
-		validator.configure();
-		return validator;
 	}
 
 	public static XmlValidator getUnconfiguredValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
