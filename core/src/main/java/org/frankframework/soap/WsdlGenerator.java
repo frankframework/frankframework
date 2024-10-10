@@ -376,7 +376,8 @@ public class WsdlGenerator {
 					ZipEntry xsdEntry = new ZipEntry(zipName);
 					out.putNextEntry(xsdEntry);
 					XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
-					SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
+					SchemaUtils.writeStandaloneXsd(xsd, writer);
+					writer.flush();
 					out.closeEntry();
 				} else {
 					warn("Duplicate xsds in " + this + " " + xsd + " " + xsds);

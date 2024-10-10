@@ -21,7 +21,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,17 +44,21 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.IScopeProvider;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.StringXsd;
 
@@ -64,7 +67,7 @@ import org.frankframework.validation.xsd.StringXsd;
  * @author Jaco de Groot
  */
 public class SchemaUtils {
-	protected static final Logger LOG = LogUtil.getLogger(SchemaUtils.class);
+	protected static final Logger LOG = LogManager.getLogger(SchemaUtils.class);
 
 	public static final String XSD		  = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
 
@@ -103,7 +106,7 @@ public class SchemaUtils {
 	}
 
 	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<IXSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
-		// As the root XSD's are written as includes there's no need to change the imports and includes in the root XSD's.
+		// As the root XSDs are written as includes there's no need to change the imports and includes in the root XSDs.
 		for (Map.Entry<String, Set<IXSD>> entry: rootXsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
@@ -137,9 +140,9 @@ public class SchemaUtils {
 			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
 			List<XMLEvent> imports = new ArrayList<>();
 			for (IXSD xsd: xsds) {
-				xsdToXmlStreamWriter(xsd, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
+				collectImportsAndAttributes(xsd, rootAttributes, rootNamespaceAttributes, imports);
 			}
-			// Write XSD's with merged root element
+			// Write XSDs with merged root element
 			StringXsd resultXsd = null;
 			XMLStreamWriter w;
 			if (xmlStreamWriter == null) {
@@ -163,7 +166,7 @@ public class SchemaUtils {
 					skipRootElementStart = i != 1;
 					skipRootElementEnd = i < xsds.size();
 				}
-				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports, false);
+				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// TODO: After creating merged XSD, while we still know what the source files are, we should now validate for duplicate elements
 			if (resultXsd != null) {
@@ -223,34 +226,61 @@ public class SchemaUtils {
 		}
 	}
 
-	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
-		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null, false);
+	public static void writeStandaloneXsd(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null);
 	}
 
-	private static void xsdToXmlStreamWriter(final IXSD xsd, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports) throws IOException, ConfigurationException {
-		StringWriter dummySchemaContentsWriter = new StringWriter();
+	private static void collectImportsAndAttributes(final IXSD xsd, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports) throws ConfigurationException {
 		try {
-			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
-			xsdToXmlStreamWriter(xsd, w, standalone, stripSchemaLocationFromImport, skipRootStartElement, skipRootEndElement, rootAttributes, rootNamespaceAttributes, imports, true);
-		} catch (XMLStreamException e) {
-			throw new ConfigurationException("unable to create stream writer", e);
+			xsdToXmlStreamWriter(xsd, null, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
+		} catch (IOException e) {
+			throw new ConfigurationException("Unable to parse the XSD [" + xsd + "]", e);
 		}
 	}
 
 	/**
+	 * Internal method used for XSD merging and rewriting. The method has two modes: one to collect information from
+	 * all XSDs that need to be merged, and one to produce parts of the merged XSD.
+	 * <p>
 	 * Including a {@link IXSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
 	 * (using a low level {@link XMLEventReader}) so that certain things can be corrected on the fly.
+	 * </p>
+	 * <p>
+	 *     TODO: This method is still too complicated and multifunctional. It should probably be split up into simpler methods with fewer parameters.
+	 * </p>
 	 *
-	 * @param xsd
-	 * @param xmlStreamWriter
-	 * @param standalone When standalone the start and end document contants are ignored, hence the xml declaration is ignored.
+	 * @param xsd                           The XSD to write to the {@link XMLStreamWriter}.
+	 * @param xmlStreamWriter               The {@link XMLStreamWriter} to use for output. If {@code null}, then only parse the XSD collect information about imports and attributes.
+	 * @param standalone                    When standalone the start and end document constants are ignored, hence the xml declaration is ignored.
 	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
-	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
+	 *                                      The XSD might have an import with schemaLocation to make it valid on its own, when stripSchemaLocationFromImport is true it will be removed.
+	 * @param skipRootStartElement			When writing merged XSDs, only when writing the first XSD the root start element should be included.
+	 * @param skipRootEndElement 			When writing merged XSDs, only when writing the last XSD the root start element should be included.
+	 * @param rootAttributes				List to which to collect information on attributes on the XSD root element, or from which to write the XSD root element attributes, depending on the mode.
+	 * @param rootNamespaceAttributes		List to which to collect root namespace attributes, or from which to write the root namespace attributes, depending on the mode.
+	 * @param imports						List to which to collect XSD imports, or from which to write all XSD imports, depending on the mode.
 	 */
-	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
+	private static void xsdToXmlStreamWriter(final @Nonnull IXSD xsd, @Nullable XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, @Nullable List<Attribute> rootAttributes, @Nullable List<Namespace> rootNamespaceAttributes, @Nullable List<XMLEvent> imports) throws IOException, ConfigurationException {
+		boolean noOutput = xmlStreamWriter == null;
+		if (noOutput) {
+			if (skipRootStartElement || skipRootEndElement) {
+				throw new IllegalArgumentException("Cannot skip root start/end element when not producing output");
+			}
+			if (rootNamespaceAttributes == null || rootAttributes == null || imports == null) {
+				throw new IllegalArgumentException("When not producing output must provide rootAttributes, rootNamespaceAttributes and imports");
+			}
+		}
+		if ((rootNamespaceAttributes == null && rootAttributes != null) || (rootNamespaceAttributes != null && rootAttributes == null)) {
+			throw new IllegalArgumentException("rootAttributes and rootNamespaceAttributes most both be provided, or both be null");
+		}
 		Map<String, String> namespacesToCorrect = new HashMap<>();
-		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
-		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
+		final XMLStreamEventWriter streamEventWriter;
+		if (xmlStreamWriter != null) {
+			NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
+			streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
+		} else {
+			streamEventWriter = null;
+		}
 		XMLEvent event = null;
 		try (Reader reader = xsd.getReader()) {
 			if (reader == null) {
@@ -320,7 +350,7 @@ public class SchemaUtils {
 							// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
 							if (xsd.isAddNamespaceToSchema() && !"http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
 								event = XmlUtils.mergeAttributes(startElement,
-										Arrays.asList(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
+										List.of(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
 										Collections.singletonList(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
 										XmlUtils.EVENT_FACTORY
 									);
@@ -384,7 +414,7 @@ public class SchemaUtils {
 												startElement.getSchemaType());
 									} else {
 										String relativeTo = xsd.getParentLocation();
-										if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
+										if (!relativeTo.isEmpty() && location.startsWith(relativeTo)) {
 											location = location.substring(relativeTo.length());
 										}
 										event = XMLStreamUtils.mergeAttributes(startElement, Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
@@ -428,12 +458,13 @@ public class SchemaUtils {
 					streamEventWriter.add(event);
 				}
 			}
-			streamEventWriter.flush();
+			if (!noOutput) {
+				streamEventWriter.flush();
+			}
 		} catch (XMLStreamException e) {
-			throw new ConfigurationException(xsd + " (" + event.getLocation() + ")", e);
+			throw new ConfigurationException(xsd + " (" + (event != null ? event.getLocation() : "<no location>") + ")", e);
 		}
 	}
-
 
 	public static Reader toReader(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
 		return new StringReader(toString(wsdlDefinition, wsdlSchema));

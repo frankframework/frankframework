@@ -80,6 +80,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
@@ -124,7 +125,7 @@ import org.frankframework.xml.XmlWriter;
  * @author  Johan Verrips
  */
 public class XmlUtils {
-	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 

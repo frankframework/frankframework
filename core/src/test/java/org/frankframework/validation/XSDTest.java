@@ -2,10 +2,18 @@ package org.frankframework.validation;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
@@ -13,10 +21,8 @@ import org.frankframework.soap.WsdlGeneratorUtils;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.ResourceXsd;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 public class XSDTest {
 
@@ -52,7 +58,7 @@ public class XSDTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
-		SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
+		SchemaUtils.writeStandaloneXsd(xsd, writer);
 
 		String result = out.toString();
 		String expected = TestFileUtils.getTestFile("/XSDTest/test.xsd");
@@ -70,7 +76,11 @@ public class XSDTest {
 		XSD xsd = getXSD(schemaLocation);
 		xsd.setAddNamespaceToSchema(true);
 
-		String actual = xsd.addTargetNamespace();
+		StringWriter writer = new StringWriter();
+		XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
+		SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(mock(), Map.of(xsd.getNamespace(), Set.of(xsd)), w);
+		w.flush();
+		String actual = writer.toString();
 		MatchUtils.assertXmlEquals(expectedSchema, actual);
 	}
 
@@ -80,5 +90,4 @@ public class XSDTest {
 		xsd.initNamespace(split[0], scopeProvider, split[1]);
 		return xsd;
 	}
-
 }
