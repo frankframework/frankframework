@@ -143,14 +143,13 @@ public class SchemaUtils {
 				collectImportsAndAttributes(xsd, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// Write XSDs with merged root element
-			StringXsd resultXsd = null;
 			XMLStreamWriter w;
+			StringWriter schemaContentsWriter;
 			if (xmlStreamWriter == null) {
-				StringWriter schemaContentsWriter = new StringWriter();
-				resultXsd = new StringXsd();
-				resultXsd.setSchemaContentsWriter(schemaContentsWriter);
+				schemaContentsWriter = new StringWriter();
 				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(schemaContentsWriter);
 			} else {
+				schemaContentsWriter = null;
 				w = xmlStreamWriter;
 			}
 			int i = 0;
@@ -169,7 +168,9 @@ public class SchemaUtils {
 				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// TODO: After creating merged XSD, while we still know what the source files are, we should now validate for duplicate elements
-			if (resultXsd != null) {
+			if (xmlStreamWriter == null) {
+				w.close();
+				StringXsd resultXsd = new StringXsd(schemaContentsWriter.toString());
 				IXSD firstXsd = xsds.iterator().next();
 				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
 				resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
