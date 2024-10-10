@@ -63,7 +63,8 @@ public class ConsoleStandaloneInitializer {
 	}
 
 	/**
-	 * When the application fails to start up, trigger a shutdown, else Tomcat will work without any application deployed to it.
+	 * When the application fails to start up, trigger a shutdown.
+	 * If this is not done the SpringBoot Tomcat instance will continue to work without any application deployed to it.
 	 */
 	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
 

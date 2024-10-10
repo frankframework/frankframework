@@ -106,12 +106,12 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 			String configName = name.substring(0, i);
 			Configuration config = ibisManager.getConfiguration(configName);
 			if (config == null) {
-				throw new IllegalStateException("Configuration ["+configName+"] does not exist.");
+				throw new IllegalArgumentException("Configuration ["+configName+"] does not exist.");
 			}
 			String adapterName = name.substring(i + 1);
 			Adapter adapter = config.getRegisteredAdapter(adapterName);
 			if (adapter == null) {
-				throw new IllegalStateException("Adapter ["+adapterName+"] does not exist in configuration ["+configName+"].");
+				throw new IllegalArgumentException("Adapter ["+adapterName+"] does not exist in configuration ["+configName+"].");
 			}
 			return adapter;
 		}
@@ -122,7 +122,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 				return adapter;
 			}
 		}
-		throw new IllegalStateException("Adapter ["+name+"] not found.");
+		throw new IllegalArgumentException("Adapter ["+name+"] not found.");
 	}
 
 	@Override
