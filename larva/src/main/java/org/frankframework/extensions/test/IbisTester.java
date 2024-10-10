@@ -30,9 +30,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
@@ -46,11 +51,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockServletContext;
-
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class IbisTester {
@@ -88,7 +88,7 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			LarvaTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
+			LarvaTool.runScenarios(ibisContext, request, writer, silent);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer + "</body></html>";
 				return XmlUtils.toXhtml(new Message(htmlString));

@@ -142,12 +142,12 @@ public class LarvaTool {
 	}
 
 	// Invoked by LarvaServlet
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
-		runScenarios(getIbisContext(application), request, out, false, realPath);
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+		runScenarios(getIbisContext(application), request, out, false);
 	}
 
 	// Invoked by the IbisTester class
-	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent, String realPath) {
+	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramMultiThreaded = request.getParameter("multithreaded");
@@ -165,7 +165,7 @@ public class LarvaTool {
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		LarvaTool larvaTool = new LarvaTool();
 		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
-				realPath, paramScenariosRootDirectory, out, silent);
+				paramScenariosRootDirectory, out, silent);
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class LarvaTool {
 	 * 		   positive: number of scenarios that failed
 	 */
 	public int runScenarios(IbisContext ibisContext, String paramLogLevel, String paramAutoScroll, String paramMultithreaded, String paramExecute,
-							String paramWaitBeforeCleanUp, int timeout, String realPath, String paramScenariosRootDirectory, Writer out, boolean silent) {
+							String paramWaitBeforeCleanUp, int timeout, String paramScenariosRootDirectory, Writer out, boolean silent) {
 		config.setTimeout(timeout);
 		config.setSilent(silent);
 		AppConstants appConstants = AppConstants.getInstance();
@@ -205,7 +205,6 @@ public class LarvaTool {
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
-				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions);
 		if (scenariosRootDirectories.isEmpty()) {
@@ -810,9 +809,12 @@ public class LarvaTool {
 		}
 	}
 
-	public String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions) {
+	public String initScenariosRootDirectories(String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String currentScenariosRootDirectory = null;
+
+		String realPath = getParentOfWebappRoot();
+
 		if (realPath == null) {
 			errorMessage("Could not read webapp real path");
 			return null;
@@ -886,6 +888,12 @@ public class LarvaTool {
 			currentScenariosRootDirectory = paramScenariosRootDirectory;
 		}
 		return currentScenariosRootDirectory;
+	}
+
+	private String getParentOfWebappRoot() {
+		String realPath = this.getClass().getResource("/").getPath();
+
+		return new File(realPath).getParent();
 	}
 
 	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
@@ -1609,11 +1617,9 @@ public class LarvaTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
-			String realPath = application.getRealPath("/iaf/");
 			List<String> scenariosRootDirectories = new ArrayList<>();
 			List<String> scenariosRootDescriptions = new ArrayList<>();
 			String currentScenariosRootDirectory = initScenariosRootDirectories(
-					realPath,
 					null, scenariosRootDirectories,
 					scenariosRootDescriptions);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
