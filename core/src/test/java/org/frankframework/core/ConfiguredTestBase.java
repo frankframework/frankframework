@@ -20,7 +20,7 @@ public abstract class ConfiguredTestBase {
 
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private static  TestConfiguration configuration;
+	private static TestConfiguration configuration;
 
 	protected TestConfiguration getConfiguration() {
 		if(configuration == null) {
