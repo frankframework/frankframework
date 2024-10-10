@@ -12,8 +12,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.util.CloseUtils;
 
-import java.util.regex.PatternSyntaxException;
-
 public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	private PipeRunResult pipeRunResult;
@@ -45,15 +43,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	void testInvalidRegex() {
 		pipe.setRegex("[");
 
-		assertThrows(PatternSyntaxException.class, () -> pipe.configure());
-	}
-
-	@Test
-	void testInvalidFlags() {
-		pipe.setRegex("(.*?)");
-		pipe.setFlags("UNKNOWN_FLAG");
-
-		assertThrows(IllegalArgumentException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
@@ -104,7 +94,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	void testMultiline() throws Exception {
 		//Arrange
 		pipe.setRegex("string");
-		pipe.setFlags("MULTILINE");
+		pipe.setFlags(RegExPipe.RegExFlag.MULTILINE);
 
 		pipe.configure();
 		pipe.start();
@@ -127,7 +117,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	void testCaseInsensitive() throws Exception {
 		//Arrange
 		pipe.setRegex("STRING.");
-		pipe.setFlags("CASE_INSENSITIVE");
+		pipe.setFlags(RegExPipe.RegExFlag.CASE_INSENSITIVE);
 
 		pipe.configure();
 		pipe.start();
@@ -150,7 +140,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	void testMultilineAndCaseInsensitive() throws Exception {
 		//Arrange
 		pipe.setRegex("^This is a (.*?)$");
-		pipe.setFlags("MULTILINE,CASE_INSENSITIVE");
+		pipe.setFlags(RegExPipe.RegExFlag.MULTILINE, RegExPipe.RegExFlag.CASE_INSENSITIVE);
 
 		pipe.configure();
 		pipe.start();

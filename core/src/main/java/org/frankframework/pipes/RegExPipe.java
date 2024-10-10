@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 
 import lombok.Getter;
 
+import org.codehaus.plexus.util.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -29,9 +31,10 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Tries to match the input against the provided regex.
@@ -68,7 +71,7 @@ public class RegExPipe extends AbstractPipe {
 	protected final static String THEN_FORWARD = "then";
 	protected final static String ELSE_FORWARD = "else";
 
-	enum RegExFlag {
+	public enum RegExFlag {
 		CANON_EQ(Pattern.CANON_EQ),
 		CASE_INSENSITIVE(Pattern.CASE_INSENSITIVE),
 		COMMENTS(Pattern.COMMENTS),
@@ -87,7 +90,7 @@ public class RegExPipe extends AbstractPipe {
 	}
 
 	private String regex = "";
-	private String flags = "";
+	private List<RegExFlag> flags = List.of();
 
 	private Pattern pattern;
 
@@ -98,15 +101,19 @@ public class RegExPipe extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		final int flags = this.flags.isEmpty() ? 0 : Arrays.stream(this.flags.split(","))
-				.map(flag -> RegExFlag.valueOf(flag).getFlag())
+		final int flags = this.flags.isEmpty() ? 0 : this.flags.stream()
+				.map(RegExFlag::getFlag)
 				.reduce(0, (a, b) -> a | b);
 
 		if (this.regex == null || this.regex.isEmpty()) {
 			throw new ConfigurationException("Value for `regex` is mandatory.");
 		}
 
-		this.pattern = Pattern.compile(this.regex, flags);
+		try {
+			this.pattern = Pattern.compile(this.regex, flags);
+		} catch (PatternSyntaxException e) {
+			throw new ConfigurationException(e.getMessage());
+		}
 
 		this.thenForward = findForward(THEN_FORWARD);
 		this.elseForward = findForward(ELSE_FORWARD);
@@ -122,19 +129,20 @@ public class RegExPipe extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String sInput;
 		if (Message.isEmpty(message)) {
-			sInput = "";
-		} else {
-			try {
-				sInput = message.asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "cannot open stream", e);
-			}
-			if (sInput == null) {
-				throw new PipeRunException(this, "Input message is empty");
-			}
+			return new PipeRunResult(elseForward, null);
 		}
+
+		String sInput;
+		try {
+			sInput = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
+		}
+		if (StringUtils.isEmpty(sInput)) {
+			throw new PipeRunException(this, "Input message is empty");
+		}
+
 
 		Matcher matcher = this.pattern.matcher(sInput);
 		XmlBuilder matches = new XmlBuilder("matches");
@@ -183,13 +191,9 @@ public class RegExPipe extends AbstractPipe {
 
 	/**
 	 * Comma seperated list of flags, which changes the behavior of the regex expression.
-	 *
-	 * Possible values: CANON_EQ, CASE_INSENSITIVE, COMMENTS, DOT_ALL, LITERAL, MULTILINE, UNICODE_CASE, UNICODE_CHARACTER_CLASS and UNIX_LINES.
-	 *
-	 * Example: MULTILINE,DOT_ALL,CASE_INSENSITIVE
 	 */
-	public void setFlags(String flags) {
-		this.flags = flags;
+	public void setFlags(RegExFlag... flags) {
+		this.flags = List.of(flags);
 	}
 
 }
