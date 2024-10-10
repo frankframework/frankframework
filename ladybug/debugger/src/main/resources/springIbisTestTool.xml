@@ -98,15 +98,6 @@
 		</bean>
 	</beans>
 
-	<!-- XML only for the test-tab storage -->
-	<beans profile="ladybug.xml">
-		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
-			<property name="name" value="XmlTestStorage"/>
-			<property name="metadataFile" value="${ibistesttool.directory}/${instance.name.lc}/metadata.xml"/>
-			<property name="reportsFolder" value="${ibistesttool.directory}/${instance.name.lc}"/>
-		</bean>
-	</beans>
-
 	<beans profile="ladybug.database">
 		<bean name="dataSourceName" class="java.lang.String">
 			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
@@ -158,6 +149,15 @@
 			<property name="timeout" value="60"/>
 			<property name="interval" value="5"/>
 			<property name="dataSource" ref="ladybugDataSource"/>
+		</bean>
+	</beans>
+
+	<!-- XML only for the test-tab storage. Configured last so it can overwrite either the File or Database Storage. -->
+	<beans profile="ladybug.xml">
+		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
+			<property name="name" value="XmlTestStorage"/>
+			<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/><!-- cache file -->
+			<property name="reportsFolder" value="${ibistesttool.directory}"/><!-- contains the reports, may be stored in Git -->
 		</bean>
 	</beans>
 </beans>

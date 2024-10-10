@@ -103,16 +103,20 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		List<String> profiles = new ArrayList<>(2);
 		if(StringUtils.isBlank(dataSourceName)) {
 			profiles.add("ladybug.file");
-			if(dtapIsLoc(properties)) {
-				profiles.add("ladybug.xml");
-			}
 		} else {
 			profiles.add("ladybug.database");
+		}
+		if(dtapIsLoc(properties)) {
+			profiles.add("ladybug.xml");
 		}
 		APPLICATION_LOG.debug("Using Ladybug profiles {}", profiles);
 		return profiles;
 	}
 
+	/**
+	 * When using a local environment the Test-tab storage location can/should be read from the project.
+	 * This allows users to store their test results in Git for easy compares (rerun).
+	 */
 	private boolean dtapIsLoc(AppConstants properties) {
 		String dtapStage = properties.getProperty("dtap.stage", "").toLowerCase();
 		return "loc".equals(dtapStage) || "xxx".equals(dtapStage) || dtapStage.isEmpty();

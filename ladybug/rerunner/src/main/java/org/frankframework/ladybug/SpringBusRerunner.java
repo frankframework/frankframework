@@ -144,10 +144,8 @@ public class SpringBusRerunner implements Rerunner {
 
 	private String processRequest(Message<String> request) {
 		try {
-			Message<?> message = getGateway().sendSyncMessage(request);
-			if (message == null) {
-				return "did not receive a reply from backend node";
-			}
+			getGateway().sendSyncMessage(request);
+			// Nothing is done with the response at the moment
 		} catch (BusException e) {
 			return "Exception processing rerun: " + e.getMessage();
 		}
