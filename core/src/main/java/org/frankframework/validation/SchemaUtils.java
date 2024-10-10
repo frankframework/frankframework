@@ -21,7 +21,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -352,7 +351,7 @@ public class SchemaUtils {
 							if (xsd.isAddNamespaceToSchema() && !"http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
 								event = XmlUtils.mergeAttributes(startElement,
 										List.of(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
-										Collections.singletonList(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
+										List.of(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
 										XmlUtils.EVENT_FACTORY
 									);
 								if (!event.equals(startElement)) {
@@ -418,7 +417,7 @@ public class SchemaUtils {
 										if (!relativeTo.isEmpty() && location.startsWith(relativeTo)) {
 											location = location.substring(relativeTo.length());
 										}
-										event = XMLStreamUtils.mergeAttributes(startElement, Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+										event = XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 									}
 								}
 							}
