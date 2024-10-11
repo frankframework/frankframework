@@ -18,8 +18,6 @@ package org.frankframework.pipes;
 
 import lombok.Getter;
 
-import org.codehaus.plexus.util.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -127,10 +125,14 @@ public class RegExPipe extends AbstractPipe {
 		}
 	}
 
+	private PipeRunResult noMatchFound() {
+		return new PipeRunResult(elseForward, null);
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (Message.isEmpty(message)) {
-			return new PipeRunResult(elseForward, null);
+		if (Message.isNull(message)) {
+			return noMatchFound();
 		}
 
 		String sInput;
@@ -139,10 +141,9 @@ public class RegExPipe extends AbstractPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		if (StringUtils.isEmpty(sInput)) {
-			throw new PipeRunException(this, "Input message is empty");
+		if (sInput == null) {
+			return noMatchFound();
 		}
-
 
 		Matcher matcher = this.pattern.matcher(sInput);
 		XmlBuilder matches = new XmlBuilder("matches");
@@ -156,7 +157,7 @@ public class RegExPipe extends AbstractPipe {
 		}
 
 		if (!foundMatch) {
-			return new PipeRunResult(elseForward, null);
+			return noMatchFound();
 		}
 
 		Message result = matches.asMessage();

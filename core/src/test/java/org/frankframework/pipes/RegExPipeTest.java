@@ -1,8 +1,8 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +44,44 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipe.setRegex("[");
 
 		assertThrows(ConfigurationException.class, () -> pipe.configure());
+	}
+
+	@Test
+	void testEmptyInput() throws Exception {
+		//Arrange
+		pipe.setRegex("(.*?)");
+
+		pipe.configure();
+		pipe.start();
+
+		//Act
+		pipeRunResult = doPipe(pipe, "", session);
+
+		//Assert
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
+
+		final String expectedResult = "<matches>\n" +
+				"\t<match index=\"1\" value=\"\">\n" +
+				"\t\t<group index=\"1\"/>\n" +
+				"\t</match>\n" +
+				"</matches>";
+		assertEquals(expectedResult, pipeRunResult.getResult().asString());
+	}
+
+	@Test
+	void testNullInput() throws Exception {
+		//Arrange
+		pipe.setRegex("(.*?)");
+
+		pipe.configure();
+		pipe.start();
+
+		//Act
+		pipeRunResult = doPipe(pipe, null, session);
+
+		//Assert
+		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
+		assertTrue(pipeRunResult.getResult().isNull());
 	}
 
 	@Test
@@ -172,7 +210,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 		//Assert
 		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
-		assertNull(pipeRunResult.getResult().asString());
+		assertTrue(pipeRunResult.getResult().isNull());
 	}
 
 }
