@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 
 import lombok.Getter;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -131,7 +133,7 @@ public class RegExPipe extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (Message.isNull(message)) {
+		if (Message.isEmpty(message)) {
 			return noMatchFound();
 		}
 
@@ -141,7 +143,7 @@ public class RegExPipe extends AbstractPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		if (sInput == null) {
+		if (StringUtils.isEmpty(sInput)) {
 			return noMatchFound();
 		}
 

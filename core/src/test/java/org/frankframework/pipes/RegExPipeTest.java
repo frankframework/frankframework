@@ -58,14 +58,8 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		pipeRunResult = doPipe(pipe, "", session);
 
 		//Assert
-		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
-
-		final String expectedResult = "<matches>\n" +
-				"\t<match index=\"1\" value=\"\">\n" +
-				"\t\t<group index=\"1\"/>\n" +
-				"\t</match>\n" +
-				"</matches>";
-		assertEquals(expectedResult, pipeRunResult.getResult().asString());
+		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
+		assertTrue(pipeRunResult.getResult().isNull());
 	}
 
 	@Test
