@@ -16,10 +16,12 @@
 package org.frankframework.collection;
 
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -43,9 +45,9 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 	public enum Action {
 		/** To initiate a new collection */
 		OPEN,
-		/** Add an item to to an existing collection */
+		/** Add an item to an existing collection */
 		WRITE,
-		/** Combination of WRITE and CLOSE: Add an item to to an existing collection, then finalize the collection */
+		/** Combination of WRITE and CLOSE: Add an item to an existing collection, then finalize the collection */
 		LAST,
 		/** Finalize the collection */
 		CLOSE,

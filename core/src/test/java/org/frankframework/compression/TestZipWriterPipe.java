@@ -3,6 +3,7 @@ package org.frankframework.compression;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
@@ -58,6 +59,37 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 		assertEquals("zipwriterhandle", pipe.getCollectionName());
+	}
+
+	@Test
+	void testStreamMissingFilenameParameter() throws Exception {
+		pipe.setBackwardsCompatibility(true);
+		pipe.setAction(Action.STREAM);
+		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+	}
+
+	@Test
+	void testStreamEmptyFilenameParameter() throws Exception {
+		pipe.setBackwardsCompatibility(true);
+		pipe.setAction(Action.STREAM);
+		pipe.addParameter(new Parameter("filename", ""));
+		configureAndStartPipe();
+
+		assertThrows(PipeRunException.class, () -> pipe.doPipe(null, session));
+	}
+
+	@Test
+	void testStreamWithFilenameParameter() throws Exception {
+		createCollector();
+
+		pipe.setBackwardsCompatibility(true);
+		pipe.setAction(Action.STREAM);
+		pipe.addParameter(new Parameter("filename", "test.zip"));
+
+		configureAndStartPipe();
+
+		PipeRunResult pipeRunResult = pipe.doPipe(null, session);
+		assertTrue(pipeRunResult.getResult().asString().endsWith(".zip"));
 	}
 
 	@Test
