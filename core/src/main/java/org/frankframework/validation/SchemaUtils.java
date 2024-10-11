@@ -240,18 +240,22 @@ public class SchemaUtils {
 		}
 	}
 
+	private static @Nonnull Reader createXsdReader(@Nonnull IXSD xsd) throws IOException {
+		Reader reader = xsd.getReader();
+		if (reader == null) {
+			throw new IllegalArgumentException(xsd + " not found");
+		}
+		return reader;
+	}
+
 	public static void writeStandaloneXsd(final @Nonnull IXSD xsd, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		final Map<String, String> namespacesToCorrect = new HashMap<>();
 		final NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
 		XMLEvent event = null;
-		try (Reader reader = xsd.getReader()) {
-			if (reader == null) {
-				throw new IllegalStateException(xsd + " not found");
-			}
+		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
-			while (er.hasNext()) {
-				event = er.nextEvent();
+			for(event = er.nextEvent(); er.hasNext(); ) {
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
@@ -298,13 +302,9 @@ public class SchemaUtils {
 
 	private static void collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
-		try (Reader reader = xsd.getReader()) {
-			if (reader == null) {
-				throw new IllegalStateException(xsd + " not found");
-			}
+		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
-			while (er.hasNext()) {
-				event = er.nextEvent();
+			for(event = er.nextEvent(); er.hasNext(); ) {
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
@@ -391,24 +391,20 @@ public class SchemaUtils {
 		final NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
 		XMLEvent event = null;
-		try (Reader reader = xsd.getReader()) {
-			if (reader == null) {
-				throw new IllegalStateException(xsd + " not found");
-			}
+		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
-			while (er.hasNext()) {
-				event = er.nextEvent();
+			for(event = er.nextEvent(); er.hasNext(); ) {
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_DOCUMENT,
 						 XMLStreamConstants.END_DOCUMENT:
 						// Don't output
-						continue;
+						break;
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
 						if (SCHEMA.equals(startElement.getName())) {
 							if (skipRootStartElement) {
 								// Don't output
-								continue;
+								break;
 							}
 							// Second call to this method writing attributes from previous call.
 							writeXsdRootStartElement(xsd, rootAttributes, rootNamespaceAttributes, startElement, streamEventWriter, namespacesToCorrect);
