@@ -192,7 +192,7 @@ public class XmlIf extends AbstractPipe {
 	 * Regular expression to be applied to the input-message (ignored if <code>xpathExpression</code> is specified).
 	 * The input-message <b>fully</b> matching the given regular expression leads to the 'then'-forward
 	 */
-	@Deprecated(forRemoval = true, since = "10.0")
+@Deprecated(forRemoval = true, since = "9.0")
 	@ConfigurationWarning(value = "Use RegExPipe instead")
 	public void setRegex(String regex) {
 		this.regex = regex;
