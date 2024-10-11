@@ -349,7 +349,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	// So the IDocXMLProcessor can be mocked during testing.
-	public IDocXMLProcessor getIDocXMLProcessor() {
+	protected IDocXMLProcessor getIDocXMLProcessor() {
 		return JCoIDoc.getIDocFactory().getIDocXMLProcessor();
 	}
 

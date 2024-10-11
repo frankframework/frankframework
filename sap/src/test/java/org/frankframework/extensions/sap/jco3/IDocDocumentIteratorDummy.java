@@ -1,4 +1,4 @@
-package org.frankframework.extensions.sap;
+package org.frankframework.extensions.sap.jco3;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;

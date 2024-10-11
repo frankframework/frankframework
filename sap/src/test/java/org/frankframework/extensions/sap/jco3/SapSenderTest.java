@@ -1,4 +1,4 @@
-package org.frankframework.extensions.sap;
+package org.frankframework.extensions.sap.jco3;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoException;
@@ -10,7 +10,7 @@ import org.frankframework.configuration.ConfigurationException;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.extensions.sap.jco3.SapSystemDataProvider;
+import org.frankframework.extensions.sap.SapException;
 import org.frankframework.parameters.Parameter;
 
 import org.frankframework.stream.Message;
@@ -37,7 +37,7 @@ public class SapSenderTest {
 
 	private final String sapSystemName = "sap-system";
 	
-	private SapSender pipe;
+	private SapSender sender;
 	private SapSystem sapSystem;
 
 	private MockedStatic<SapSystemDataProvider> sapSystemDataProviderMockedStatic;
@@ -49,18 +49,18 @@ public class SapSenderTest {
 		sapSystemDataProviderMockedStatic = mockStatic(SapSystemDataProvider.class);
 		sapSystemDataProviderMockedStatic.when(SapSystemDataProvider::getInstance).thenReturn(mock(SapSystemDataProvider.class));
 
-		pipe = spy(SapSender.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		sender = spy(SapSender.class);
+		sender.setName(sender.getClass().getSimpleName()+" under test");
 
-		doReturn(mock(JCoFunction.class)).when(pipe).getFunction(any(), any());
-		doReturn(mock(JCoDestination.class)).when(pipe).getDestination(any(), any());
-		doReturn(mock(JCoFunctionTemplate.class)).when(pipe).getFunctionTemplate(any(), any());
+		doReturn(mock(JCoFunction.class)).when(sender).getFunction(any(), any());
+		doReturn(mock(JCoDestination.class)).when(sender).getDestination(any(), any());
+		doReturn(mock(JCoFunctionTemplate.class)).when(sender).getFunctionTemplate(any(), any());
 
 		sapSystem = spy(SapSystem.class);
 		doNothing().when(sapSystem).openSystem();
 
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(pipe);
+		sapSystem.registerItem(sender);
 	}
 
 	@AfterEach
@@ -70,46 +70,46 @@ public class SapSenderTest {
 
 	@Test
 	public void testNoFunctionName() {
-		pipe.setFunctionName(null);
-		pipe.setSapSystemName(sapSystemName);
+		sender.setFunctionName(null);
+		sender.setSapSystemName(sapSystemName);
 
-		assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, () -> sender.configure());
 	}
 
 	@Test
 	public void testFunctionNameAttributeAndParameter() {
-		pipe.setFunctionName("function-name");
-		pipe.setSapSystemName(sapSystemName);
-		pipe.addParameter(new Parameter("functionName", "function-name"));
+		sender.setFunctionName("function-name");
+		sender.setSapSystemName(sapSystemName);
+		sender.addParameter(new Parameter("functionName", "function-name"));
 
-		assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, () -> sender.configure());
 	}
 
 	@Test
 	public void testSapSystemDoesntExist() {
-		pipe.setFunctionName("function-name");
+		sender.setFunctionName("function-name");
 
-		assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, () -> sender.configure());
 	}
 
 	@Test
 	public void testSapSystemExists() {
-		pipe.setFunctionName("function-name");
-		pipe.setSapSystemName(sapSystemName);
+		sender.setFunctionName("function-name");
+		sender.setSapSystemName(sapSystemName);
 
-		assertDoesNotThrow(() -> pipe.configure());
+		assertDoesNotThrow(() -> sender.configure());
 	}
 
 	@Test
 	public void testSendMessage() throws IOException {
-		pipe.setFunctionName("function-name");
-		pipe.setSapSystemName(sapSystemName);
+		sender.setFunctionName("function-name");
+		sender.setSapSystemName(sapSystemName);
 
-		assertDoesNotThrow(() -> pipe.configure());
-		assertDoesNotThrow(() -> pipe.open());
+		assertDoesNotThrow(() -> sender.configure());
+		assertDoesNotThrow(() -> sender.open());
 
 		PipeLineSession session = new PipeLineSession();
-		Message message = assertDoesNotThrow(() -> pipe.sendMessageOrThrow(Message.asMessage(""), session));
+		Message message = assertDoesNotThrow(() -> sender.sendMessageOrThrow(Message.asMessage(""), session));
 
 		assertEquals("<response function=\"null\"></response>", message.asString());
 
