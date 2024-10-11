@@ -101,7 +101,7 @@ public class RegExPipe extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		final int flags = this.flags.isEmpty() ? 0 : this.flags.stream()
+		final int flags = this.flags.stream()
 				.map(RegExFlag::getFlag)
 				.reduce(0, (a, b) -> a | b);
 
