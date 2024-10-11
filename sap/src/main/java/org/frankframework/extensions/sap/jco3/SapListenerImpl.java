@@ -18,10 +18,11 @@ package org.frankframework.extensions.sap.jco3;
 import java.io.IOException;
 import java.util.Map;
 
+import com.sap.conn.idoc.IDocDocumentIterator;
+
 import jakarta.annotation.Nonnull;
 
 import com.sap.conn.idoc.IDocDocument;
-import com.sap.conn.idoc.IDocDocumentIterator;
 import com.sap.conn.idoc.IDocDocumentList;
 import com.sap.conn.idoc.IDocXMLProcessor;
 import com.sap.conn.idoc.jco.JCoIDoc;
@@ -208,7 +209,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	@Override
 	public void handleRequest(JCoServerContext serverCtx, IDocDocumentList documentList) {
 		if(log.isDebugEnabled()) log.debug("{}Incoming IDoc list request containing {} documents...", getLogPrefix(), documentList.getNumDocuments());
-		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
+		IDocXMLProcessor xmlProcessor = getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
 		while (iterator.hasNext()) {
 			IDocDocument doc = iterator.next();
@@ -346,4 +347,10 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	protected String getFunctionName() {
 		return null;
 	}
+
+	// So the IDocXMLProcessor can be mocked during testing.
+	public IDocXMLProcessor getIDocXMLProcessor() {
+		return JCoIDoc.getIDocFactory().getIDocXMLProcessor();
+	}
+
 }
