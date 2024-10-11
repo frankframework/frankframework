@@ -44,7 +44,6 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
@@ -164,7 +163,7 @@ public class SchemaUtils {
 					skipRootElementStart = i != 1;
 					skipRootElementEnd = i < xsds.size();
 				}
-				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports);
+				xsdToXmlStreamWriter(xsd, w, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// TODO: After creating merged XSD, while we still know what the source files are, we should now validate for duplicate elements
 			if (xmlStreamWriter == null) {
@@ -227,14 +226,146 @@ public class SchemaUtils {
 	}
 
 	public static void writeStandaloneXsd(final @Nonnull IXSD xsd, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
-		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null);
+		final Map<String, String> namespacesToCorrect = new HashMap<>();
+		final NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
+		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
+		XMLEvent event = null;
+		try (Reader reader = xsd.getReader()) {
+			if (reader == null) {
+				throw new IllegalStateException(xsd + " not found");
+			}
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
+			while (er.hasNext()) {
+				event = er.nextEvent();
+				switch (event.getEventType()) {
+					case XMLStreamConstants.START_ELEMENT:
+						StartElement startElement = event.asStartElement();
+						if (startElement.getName().equals(SCHEMA)) {
+							event = fixupXmlStartEvent(xsd, startElement, namespacesToCorrect);
+						} else if (startElement.getName().equals(INCLUDE)) {
+							// Don't output the includes
+							break;
+						} else if (startElement.getName().equals(IMPORT)) {
+							Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
+							if (schemaLocation != null) {
+								String location = schemaLocation.getValue();
+								String relativeTo = xsd.getParentLocation();
+								if (!relativeTo.isEmpty() && location.startsWith(relativeTo)) {
+									location = location.substring(relativeTo.length());
+								}
+								event = XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+							}
+						}
+						streamEventWriter.add(event);
+						break;
+					case XMLStreamConstants.END_ELEMENT:
+						EndElement endElement = event.asEndElement();
+						// Don't output the includes
+						if (!endElement.getName().equals(INCLUDE)) {
+							streamEventWriter.add(event);
+						}
+						break;
+					default:
+						// simply copy
+						streamEventWriter.add(event);
+				}
+			}
+			streamEventWriter.flush();
+		} catch (XMLStreamException e) {
+			throw new ConfigurationException(xsd + " (" + (event != null ? event.getLocation() : "<no location>") + ")", e);
+		}
 	}
 
-	private static void collectImportsAndAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws ConfigurationException {
-		try {
-			xsdToXmlStreamWriter(xsd, null, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
-		} catch (IOException e) {
-			throw new ConfigurationException("Unable to parse the XSD [" + xsd + "]", e);
+	private static void collectImportsAndAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
+		XMLEvent event = null;
+		try (Reader reader = xsd.getReader()) {
+			if (reader == null) {
+				throw new IllegalStateException(xsd + " not found");
+			}
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
+			while (er.hasNext()) {
+				event = er.nextEvent();
+				switch (event.getEventType()) {
+					case XMLStreamConstants.START_ELEMENT:
+						StartElement startElement = event.asStartElement();
+						if (SCHEMA.equals(startElement.getName())) {
+							// Collect or write attributes of schema element.
+							// First call to this method collecting
+							// schema attributes.
+							Iterator<Attribute> iterator = startElement.getAttributes();
+							while (iterator.hasNext()) {
+								Attribute attribute = iterator.next();
+								boolean add = true;
+								for (Attribute attribute2 : rootAttributes) {
+									if (XmlUtils.attributesEqual(attribute, attribute2)) {
+										add = false;
+									}
+								}
+								if (add) {
+									rootAttributes.add(attribute);
+								}
+							}
+							Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
+							while (namespaceIterator.hasNext()) {
+								Namespace attribute = namespaceIterator.next();
+								boolean add = true;
+								for (Namespace attribute2 : rootNamespaceAttributes) {
+									if (XmlUtils.attributesEqual(attribute, attribute2)) {
+										add = false;
+									}
+								}
+								if (add) {
+									rootNamespaceAttributes.add(attribute);
+								}
+							}
+							// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
+							if (xsd.isAddNamespaceToSchema() && !"http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
+								event = XmlUtils.mergeAttributes(startElement,
+										List.of(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
+										List.of(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
+										XmlUtils.EVENT_FACTORY
+									);
+							} else {
+								event = startElement;
+							}
+						} else if (startElement.getName().equals(IMPORT)) {
+							// Collecting import elements.
+							Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
+							if (schemaLocation != null) {
+								List<Attribute> attributes = new ArrayList<>();
+								Iterator<Attribute> iterator = startElement.getAttributes();
+								while (iterator.hasNext()) {
+										Attribute a = iterator.next();
+										if (!SCHEMALOCATION.equals(a.getName())) {
+											attributes.add(a);
+										}
+									}
+								event = new StartElementEvent(
+											startElement.getName(),
+											attributes.iterator(),
+											startElement.getNamespaces(),
+											startElement.getNamespaceContext(),
+											startElement.getLocation(),
+											startElement.getSchemaType());
+							}
+							// Collecting or writing import elements.
+							// First call to this method collecting
+							// imports.
+							imports.add(event);
+						}
+						break;
+					case XMLStreamConstants.END_ELEMENT:
+						EndElement endElement = event.asEndElement();
+						if (endElement.getName().equals(IMPORT)) {
+							imports.add(event);
+						}
+						break;
+					default:
+						// No-op
+				}
+			}
+		} catch (XMLStreamException e) {
+			throw new ConfigurationException(xsd + " (" + (event != null ? event.getLocation() : "<no location>") + ")", e);
 		}
 	}
 
@@ -245,42 +376,19 @@ public class SchemaUtils {
 	 * Including a {@link IXSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
 	 * (using a low level {@link XMLEventReader}) so that certain things can be corrected on the fly.
 	 * </p>
-	 * <p>
-	 *     TODO: This method is still too complicated and multifunctional. It should probably be split up into simpler methods with fewer parameters.
-	 * </p>
 	 *
-	 * @param xsd                           The XSD to write to the {@link XMLStreamWriter}.
-	 * @param xmlStreamWriter               The {@link XMLStreamWriter} to use for output. If {@code null}, then only parse the XSD collect information about imports and attributes.
-	 * @param standalone                    When standalone the start and end document constants are ignored, hence the xml declaration is ignored.
-	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
-	 *                                      The XSD might have an import with schemaLocation to make it valid on its own, when stripSchemaLocationFromImport is true it will be removed.
-	 * @param skipRootStartElement			When writing merged XSDs, only when writing the first XSD the root start element should be included.
-	 * @param skipRootEndElement 			When writing merged XSDs, only when writing the last XSD the root start element should be included.
-	 * @param rootAttributes				List to which to collect information on attributes on the XSD root element, or from which to write the XSD root element attributes, depending on the mode.
-	 * @param rootNamespaceAttributes		List to which to collect root namespace attributes, or from which to write the root namespace attributes, depending on the mode.
-	 * @param imports						List to which to collect XSD imports, or from which to write all XSD imports, depending on the mode.
+	 * @param xsd                     The XSD to write to the {@link XMLStreamWriter}.
+	 * @param xmlStreamWriter         The {@link XMLStreamWriter} to use for output. If {@code null}, then only parse the XSD collect information about imports and attributes.
+	 * @param skipRootStartElement    When writing merged XSDs, only when writing the first XSD the root start element should be included.
+	 * @param skipRootEndElement      When writing merged XSDs, only when writing the last XSD the root start element should be included.
+	 * @param rootAttributes          List to which to collect information on attributes on the XSD root element, or from which to write the XSD root element attributes, depending on the mode.
+	 * @param rootNamespaceAttributes List to which to collect root namespace attributes, or from which to write the root namespace attributes, depending on the mode.
+	 * @param imports                 List to which to collect XSD imports, or from which to write all XSD imports, depending on the mode.
 	 */
-	private static void xsdToXmlStreamWriter(final @Nonnull IXSD xsd, @Nullable XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, @Nullable List<Attribute> rootAttributes, @Nullable List<Namespace> rootNamespaceAttributes, @Nullable List<XMLEvent> imports) throws IOException, ConfigurationException {
-		boolean noOutput = xmlStreamWriter == null;
-		if (noOutput) {
-			if (skipRootStartElement || skipRootEndElement) {
-				throw new IllegalArgumentException("Cannot skip root start/end element when not producing output");
-			}
-			if (rootNamespaceAttributes == null || rootAttributes == null || imports == null) {
-				throw new IllegalArgumentException("When not producing output must provide rootAttributes, rootNamespaceAttributes and imports");
-			}
-		}
-		if ((rootNamespaceAttributes == null && rootAttributes != null) || (rootNamespaceAttributes != null && rootAttributes == null)) {
-			throw new IllegalArgumentException("rootAttributes and rootNamespaceAttributes most both be provided, or both be null");
-		}
-		Map<String, String> namespacesToCorrect = new HashMap<>();
-		final XMLStreamEventWriter streamEventWriter;
-		if (xmlStreamWriter != null) {
-			NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
-			streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
-		} else {
-			streamEventWriter = null;
-		}
+	private static void xsdToXmlStreamWriter(final @Nonnull IXSD xsd, @Nonnull XMLStreamWriter xmlStreamWriter, boolean skipRootStartElement, boolean skipRootEndElement, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
+		final Map<String, String> namespacesToCorrect = new HashMap<>();
+		final NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
+		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
 		XMLEvent event = null;
 		try (Reader reader = xsd.getReader()) {
 			if (reader == null) {
@@ -290,180 +398,101 @@ public class SchemaUtils {
 			while (er.hasNext()) {
 				event = er.nextEvent();
 				switch (event.getEventType()) {
-					case XMLStreamConstants.START_DOCUMENT:
-					case XMLStreamConstants.END_DOCUMENT:
-						if (! standalone) {
-							continue;
-						}
-					//$FALL-THROUGH$
-					case XMLStreamConstants.SPACE:
-					case XMLStreamConstants.COMMENT:
-						break;
+					case XMLStreamConstants.START_DOCUMENT,
+						 XMLStreamConstants.END_DOCUMENT:
+						// Don't output
+						continue;
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
 						if (SCHEMA.equals(startElement.getName())) {
 							if (skipRootStartElement) {
+								// Don't output
 								continue;
 							}
-							if (rootAttributes != null) {
-								// Collect or write attributes of schema element.
-								if (noOutput) {
-									// First call to this method collecting
-									// schema attributes.
-									Iterator<Attribute> iterator = startElement.getAttributes();
-									while (iterator.hasNext()) {
-										Attribute attribute = iterator.next();
-										boolean add = true;
-										for (Attribute attribute2 : rootAttributes) {
-											if (XmlUtils.attributesEqual(attribute, attribute2)) {
-												add = false;
-											}
-										}
-										if (add) {
-											rootAttributes.add(attribute);
-										}
-									}
-									Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
-									while (namespaceIterator.hasNext()) {
-										Namespace attribute = namespaceIterator.next();
-										boolean add = true;
-										for (Namespace attribute2 : rootNamespaceAttributes) {
-											if (XmlUtils.attributesEqual(attribute, attribute2)) {
-												add = false;
-											}
-										}
-										if (add) {
-											rootNamespaceAttributes.add(attribute);
-										}
-									}
-								} else {
-									// Second call to this method writing attributes from previous call.
-									startElement = XmlUtils.EVENT_FACTORY.createStartElement(
-											startElement.getName().getPrefix(),
-											startElement.getName().getNamespaceURI(),
-											startElement.getName().getLocalPart(),
-											rootAttributes.iterator(),
-											rootNamespaceAttributes.iterator(),
-											startElement.getNamespaceContext());
-								}
-							}
-							// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
-							if (xsd.isAddNamespaceToSchema() && !"http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
-								event = XmlUtils.mergeAttributes(startElement,
-										List.of(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
-										List.of(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
-										XmlUtils.EVENT_FACTORY
-									);
-								if (!event.equals(startElement)) {
-									Attribute tns = startElement.getAttributeByName(TNS);
-									if (tns != null) {
-										String s = tns.getValue();
-										if (!s.equals(xsd.getNamespace())) {
-											namespacesToCorrect.put(s, xsd.getNamespace());
-										}
-									}
-								}
-							} else {
-								event = startElement;
-							}
-							if (imports != null && !noOutput) {
-								// Second call to this method writing imports collected in previous call.
-								// List contains start and end elements, hence add 2 on every iteration.
-								for (int i = 0; i < imports.size(); i = i + 2) {
-									boolean skip = false;
-									for (int j = 0; j < i; j = j + 2) {
-										Attribute attribute1 = imports.get(i).asStartElement().getAttributeByName(NAMESPACE);
-										Attribute attribute2 = imports.get(j).asStartElement().getAttributeByName(NAMESPACE);
-										if (attribute1 != null && attribute2 != null && attribute1.getValue().equals(attribute2.getValue())) {
-											skip = true;
-										}
-									}
-									if (!skip) {
-										streamEventWriter.add(event);
-										event = imports.get(i);
-										streamEventWriter.add(event);
-										event = imports.get(i + 1);
-									}
-								}
-							}
-						} else if (startElement.getName().equals(INCLUDE)) {
-							continue;
-//						} else if (startElement.getName().equals(REDEFINE)) {
-//							continue;
-						} else if (startElement.getName().equals(IMPORT)) {
-							if (imports == null || noOutput) {
-								// Not collecting or writing import elements.
-								Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
-								if (schemaLocation != null) {
-									String location = schemaLocation.getValue();
-									if (stripSchemaLocationFromImport) {
-										List<Attribute> attributes = new ArrayList<>();
-										Iterator<Attribute> iterator = startElement.getAttributes();
-										while (iterator.hasNext()) {
-											Attribute a = iterator.next();
-											if (!SCHEMALOCATION.equals(a.getName())) {
-												attributes.add(a);
-											}
-										}
-										event = new StartElementEvent(
-												startElement.getName(),
-												attributes.iterator(),
-												startElement.getNamespaces(),
-												startElement.getNamespaceContext(),
-												startElement.getLocation(),
-												startElement.getSchemaType());
-									} else {
-										String relativeTo = xsd.getParentLocation();
-										if (!relativeTo.isEmpty() && location.startsWith(relativeTo)) {
-											location = location.substring(relativeTo.length());
-										}
-										event = XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
-									}
-								}
-							}
-							if (imports != null) {
-								// Collecting or writing import elements.
-								if (noOutput) {
-									// First call to this method collecting
-									// imports.
-									imports.add(event);
-								}
-								continue;
-							}
+							// Second call to this method writing attributes from previous call.
+							writeXsdRootStartElement(xsd, rootAttributes, rootNamespaceAttributes, startElement, streamEventWriter, namespacesToCorrect);
+
+							// Second call to this method writing imports collected in previous call.
+							writeImports(imports, streamEventWriter);
+						} else if (!startElement.getName().equals(INCLUDE) && !startElement.getName().equals(IMPORT)) {
+							streamEventWriter.add(event);
 						}
 						break;
 					case XMLStreamConstants.END_ELEMENT:
 						EndElement endElement = event.asEndElement();
 						if (endElement.getName().equals(SCHEMA)) {
 							if (skipRootEndElement) {
-								continue;
+								break;
 							}
-						} else if (endElement.getName().equals(INCLUDE)) {
-							continue;
-//						} else if (endElement.getName().equals(REDEFINE)) {
-//							continue;
-						} else if (imports != null) {
-							if (endElement.getName().equals(IMPORT)) {
-								if (noOutput) {
-									imports.add(event);
-								}
-								continue;
-							}
+							streamEventWriter.add(event);
+						} else if (!endElement.getName().equals(INCLUDE) && !endElement.getName().equals(IMPORT)) {
+							streamEventWriter.add(event);
 						}
 						break;
 					default:
 						// simply copy
-				}
-				if (!noOutput) {
-					streamEventWriter.add(event);
+						streamEventWriter.add(event);
 				}
 			}
-			if (!noOutput) {
-				streamEventWriter.flush();
-			}
+			streamEventWriter.flush();
 		} catch (XMLStreamException e) {
 			throw new ConfigurationException(xsd + " (" + (event != null ? event.getLocation() : "<no location>") + ")", e);
 		}
+	}
+
+	private static void writeImports(@Nonnull List<XMLEvent> imports, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
+		// List contains start and end elements, hence add 2 on every iteration.
+		for (int i = 0; i < imports.size(); i = i + 2) {
+			boolean skip = false;
+			for (int j = 0; j < i; j = j + 2) {
+				Attribute attribute1 = imports.get(i).asStartElement().getAttributeByName(NAMESPACE);
+				Attribute attribute2 = imports.get(j).asStartElement().getAttributeByName(NAMESPACE);
+				if (attribute1 != null && attribute2 != null && attribute1.getValue().equals(attribute2.getValue())) {
+					skip = true;
+					break;
+				}
+			}
+			if (!skip) {
+				XMLEvent importStart = imports.get(i);
+				streamEventWriter.add(importStart);
+				XMLEvent importEnd = imports.get(i + 1);
+				streamEventWriter.add(importEnd);
+			}
+		}
+	}
+
+	private static void writeXsdRootStartElement(@Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, StartElement startElement, XMLStreamEventWriter streamEventWriter, Map<String, String> namespacesToCorrect) throws XMLStreamException {
+		StartElement actualStartElement = XmlUtils.EVENT_FACTORY.createStartElement(
+				startElement.getName().getPrefix(),
+				startElement.getName().getNamespaceURI(),
+				startElement.getName().getLocalPart(),
+				rootAttributes.iterator(),
+				rootNamespaceAttributes.iterator(),
+				startElement.getNamespaceContext());
+		streamEventWriter.add(fixupXmlStartEvent(xsd, actualStartElement, namespacesToCorrect));
+	}
+
+	private static @Nonnull XMLEvent fixupXmlStartEvent(@Nonnull IXSD xsd, @Nonnull StartElement originalStartElement, @Nonnull Map<String, String> namespacesToCorrect) {
+		// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
+		if (!xsd.isAddNamespaceToSchema() || "http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
+			return originalStartElement;
+		}
+		XMLEvent event = XmlUtils.mergeAttributes(
+				originalStartElement,
+				List.of(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
+				List.of(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
+				XmlUtils.EVENT_FACTORY
+			);
+		if (!event.equals(originalStartElement)) {
+			Attribute tns = originalStartElement.getAttributeByName(TNS);
+			if (tns != null) {
+				String s = tns.getValue();
+				if (!s.equals(xsd.getNamespace())) {
+					namespacesToCorrect.put(s, xsd.getNamespace());
+				}
+			}
+		}
+		return event;
 	}
 
 	public static Reader toReader(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
