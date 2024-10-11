@@ -255,7 +255,8 @@ public class SchemaUtils {
 		XMLEvent event = null;
 		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
-			for(event = er.nextEvent(); er.hasNext(); ) {
+			while (er.hasNext()) {
+				event = er.nextEvent();
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
@@ -304,7 +305,8 @@ public class SchemaUtils {
 		XMLEvent event = null;
 		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
-			for(event = er.nextEvent(); er.hasNext(); ) {
+			while (er.hasNext()) {
+				event = er.nextEvent();
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
@@ -393,7 +395,8 @@ public class SchemaUtils {
 		XMLEvent event = null;
 		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
-			for(event = er.nextEvent(); er.hasNext(); ) {
+			while (er.hasNext()) {
+				event = er.nextEvent();
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_DOCUMENT,
 						 XMLStreamConstants.END_DOCUMENT:
