@@ -25,6 +25,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.ElementType;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
@@ -66,6 +67,7 @@ import java.util.regex.PatternSyntaxException;
  */
 @Forward(name = RegExPipe.THEN_FORWARD, description = "When a match is found.")
 @Forward(name = RegExPipe.ELSE_FORWARD, description = "When no match is found.")
+@ElementType(ElementType.ElementTypes.ROUTER)
 public class RegExPipe extends AbstractPipe {
 
 	protected final static String THEN_FORWARD = "then";
@@ -105,14 +107,10 @@ public class RegExPipe extends AbstractPipe {
 				.map(RegExFlag::getFlag)
 				.reduce(0, (a, b) -> a | b);
 
-		if (this.regex == null || this.regex.isEmpty()) {
-			throw new ConfigurationException("Value for `regex` is mandatory.");
-		}
-
 		try {
 			this.pattern = Pattern.compile(this.regex, flags);
 		} catch (PatternSyntaxException e) {
-			throw new ConfigurationException(e.getMessage());
+			throw new ConfigurationException("Pattern of regex is incorrect", e);
 		}
 
 		this.thenForward = findForward(THEN_FORWARD);

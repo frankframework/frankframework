@@ -33,13 +33,6 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	}
 
 	@Test
-	void testEmptyRegex() {
-		pipe.setRegex("");
-
-		assertThrows(ConfigurationException.class, () -> pipe.configure());
-	}
-
-	@Test
 	void testInvalidRegex() {
 		pipe.setRegex("[");
 
