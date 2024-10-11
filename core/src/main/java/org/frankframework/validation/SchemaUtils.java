@@ -241,20 +241,12 @@ public class SchemaUtils {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
 						if (startElement.getName().equals(SCHEMA)) {
-							event = fixupXmlStartEvent(xsd, startElement, namespacesToCorrect);
+							event = fixupSchemaStartEvent(xsd, startElement, namespacesToCorrect);
+						} else if (startElement.getName().equals(IMPORT)) {
+							event = fixupImportStartElement(xsd, startElement);
 						} else if (startElement.getName().equals(INCLUDE)) {
 							// Don't output the includes
 							break;
-						} else if (startElement.getName().equals(IMPORT)) {
-							Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
-							if (schemaLocation != null) {
-								String location = schemaLocation.getValue();
-								String relativeTo = xsd.getParentLocation();
-								if (!relativeTo.isEmpty() && location.startsWith(relativeTo)) {
-									location = location.substring(relativeTo.length());
-								}
-								event = XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
-							}
 						}
 						streamEventWriter.add(event);
 						break;
@@ -276,6 +268,19 @@ public class SchemaUtils {
 		}
 	}
 
+	private static XMLEvent fixupImportStartElement(@Nonnull IXSD xsd, @Nonnull StartElement startElement) {
+		Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
+		if (schemaLocation == null) {
+			return startElement;
+		}
+		String location = schemaLocation.getValue();
+		String relativeTo = xsd.getParentLocation();
+		if (!relativeTo.isEmpty() && location.startsWith(relativeTo)) {
+			location = location.substring(relativeTo.length());
+		}
+		return XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+	}
+
 	private static void collectImportsAndAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		try (Reader reader = xsd.getReader()) {
@@ -288,70 +293,16 @@ public class SchemaUtils {
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
-						if (SCHEMA.equals(startElement.getName())) {
+						if (startElement.getName().equals(SCHEMA)) {
 							// Collect or write attributes of schema element.
-							// First call to this method collecting
-							// schema attributes.
 							Iterator<Attribute> iterator = startElement.getAttributes();
-							while (iterator.hasNext()) {
-								Attribute attribute = iterator.next();
-								boolean add = true;
-								for (Attribute attribute2 : rootAttributes) {
-									if (XmlUtils.attributesEqual(attribute, attribute2)) {
-										add = false;
-									}
-								}
-								if (add) {
-									rootAttributes.add(attribute);
-								}
-							}
+							addUniqueAttributes(rootAttributes, iterator);
+
 							Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
-							while (namespaceIterator.hasNext()) {
-								Namespace attribute = namespaceIterator.next();
-								boolean add = true;
-								for (Namespace attribute2 : rootNamespaceAttributes) {
-									if (XmlUtils.attributesEqual(attribute, attribute2)) {
-										add = false;
-									}
-								}
-								if (add) {
-									rootNamespaceAttributes.add(attribute);
-								}
-							}
-							// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
-							if (xsd.isAddNamespaceToSchema() && !"http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
-								event = XmlUtils.mergeAttributes(startElement,
-										List.of(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
-										List.of(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
-										XmlUtils.EVENT_FACTORY
-									);
-							} else {
-								event = startElement;
-							}
+							addUniqueAttributes(rootNamespaceAttributes, namespaceIterator);
 						} else if (startElement.getName().equals(IMPORT)) {
 							// Collecting import elements.
-							Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
-							if (schemaLocation != null) {
-								List<Attribute> attributes = new ArrayList<>();
-								Iterator<Attribute> iterator = startElement.getAttributes();
-								while (iterator.hasNext()) {
-										Attribute a = iterator.next();
-										if (!SCHEMALOCATION.equals(a.getName())) {
-											attributes.add(a);
-										}
-									}
-								event = new StartElementEvent(
-											startElement.getName(),
-											attributes.iterator(),
-											startElement.getNamespaces(),
-											startElement.getNamespaceContext(),
-											startElement.getLocation(),
-											startElement.getSchemaType());
-							}
-							// Collecting or writing import elements.
-							// First call to this method collecting
-							// imports.
-							imports.add(event);
+							addImportStartElement(imports, startElement);
 						}
 						break;
 					case XMLStreamConstants.END_ELEMENT:
@@ -366,6 +317,42 @@ public class SchemaUtils {
 			}
 		} catch (XMLStreamException e) {
 			throw new ConfigurationException(xsd + " (" + (event != null ? event.getLocation() : "<no location>") + ")", e);
+		}
+	}
+
+	private static void addImportStartElement(@Nonnull List<XMLEvent> imports, StartElement startElement) {
+		Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
+		if (schemaLocation != null) {
+			List<Attribute> attributes = new ArrayList<>();
+			Iterator<Attribute> iterator = startElement.getAttributes();
+			while (iterator.hasNext()) {
+					Attribute a = iterator.next();
+					if (!SCHEMALOCATION.equals(a.getName())) {
+						attributes.add(a);
+					}
+				}
+			StartElementEvent startElementEvent = new StartElementEvent(
+						startElement.getName(),
+						attributes.iterator(),
+						startElement.getNamespaces(),
+						startElement.getNamespaceContext(),
+						startElement.getLocation(),
+						startElement.getSchemaType());
+			imports.add(startElementEvent);
+		} else {
+			imports.add(startElement);
+		}
+	}
+
+	private static <T extends Attribute> void addUniqueAttributes(@Nonnull List<T> rootAttributes, Iterator<T> iterator) {
+		while (iterator.hasNext()) {
+			T attribute = iterator.next();
+			for (Attribute attribute2 : rootAttributes) {
+				if (XmlUtils.attributesEqual(attribute, attribute2)) {
+					return;
+				}
+			}
+			rootAttributes.add(attribute);
 		}
 	}
 
@@ -469,10 +456,10 @@ public class SchemaUtils {
 				rootAttributes.iterator(),
 				rootNamespaceAttributes.iterator(),
 				startElement.getNamespaceContext());
-		streamEventWriter.add(fixupXmlStartEvent(xsd, actualStartElement, namespacesToCorrect));
+		streamEventWriter.add(fixupSchemaStartEvent(xsd, actualStartElement, namespacesToCorrect));
 	}
 
-	private static @Nonnull XMLEvent fixupXmlStartEvent(@Nonnull IXSD xsd, @Nonnull StartElement originalStartElement, @Nonnull Map<String, String> namespacesToCorrect) {
+	private static @Nonnull XMLEvent fixupSchemaStartEvent(@Nonnull IXSD xsd, @Nonnull StartElement originalStartElement, @Nonnull Map<String, String> namespacesToCorrect) {
 		// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
 		if (!xsd.isAddNamespaceToSchema() || "http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
 			return originalStartElement;
