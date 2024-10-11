@@ -48,13 +48,13 @@ public class WsdlXsd extends ResourceXsd {
 	}
 
 	@Override
-	public int compareToByReferenceOrContents(IXSD x) {
+	public int compareToByReferenceOrContents(IXSD other) {
 		// Compare XSD content to prevent copies of the same XSD showing up
 		// more than once in the WSDL. For example the
 		// CommonMessageHeader.xsd used by the EsbSoapValidator will
 		// normally also be imported by the XSD for the business response
 		// message (for the Result part).
-		return compareToByContents(x);
+		return compareToByContents(other);
 	}
 
 }

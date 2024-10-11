@@ -15,9 +15,11 @@
 */
 package org.frankframework.validation;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.frankframework.core.IScopeProvider;
@@ -33,6 +35,10 @@ public interface IXSD extends Schema, Comparable<IXSD> {
 	boolean isAddNamespaceToSchema();
 	List<String> getRootTags();
 	Set<String> getImportedNamespaces();
+
+	@Nonnull
+	String asString() throws IOException;
+
 	@Nullable
 	IXSD getImportParent();
 
@@ -58,5 +64,5 @@ public interface IXSD extends Schema, Comparable<IXSD> {
 
 	IScopeProvider getScopeProvider();
 
-	int compareToByContents(IXSD x);
+	int compareToByContents(IXSD other);
 }

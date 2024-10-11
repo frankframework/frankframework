@@ -20,7 +20,10 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Setter;
+
 import org.frankframework.validation.XSD;
 
 /**
@@ -37,4 +40,8 @@ public class StringXsd extends XSD {
 		return new StringReader(schemaContentsWriter.toString());
 	}
 
+	@Override
+	public @Nonnull String asString() throws IOException {
+		return schemaContentsWriter.toString();
+	}
 }
