@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -1605,12 +1606,9 @@ public class XmlUtils {
 				.getNamespaceContext());
 	}
 
-	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
-		if (!attribute1.getName().equals(attribute2.getName())) {
-			return false;
-		} else {
-			return attribute1.getValue().equals(attribute2.getValue());
-		}
+	public static boolean attributesEqual(@Nonnull Attribute attribute1, @Nonnull Attribute attribute2) {
+		return Objects.equals(attribute1.getName(), attribute2.getName())
+				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {

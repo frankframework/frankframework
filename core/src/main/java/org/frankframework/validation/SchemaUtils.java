@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -315,13 +316,13 @@ public class SchemaUtils {
 							addUniqueAttributes(rootNamespaceAttributes, namespaceIterator);
 						} else if (startElement.getName().equals(IMPORT)) {
 							// Collecting import elements.
-							addImportStartElement(imports, startElement);
+							imports.add(stripSchemaLocation(startElement));
 						}
 						break;
 					case XMLStreamConstants.END_ELEMENT:
 						EndElement endElement = event.asEndElement();
 						if (endElement.getName().equals(IMPORT)) {
-							imports.add(event);
+							imports.add(endElement);
 						}
 						break;
 					default:
@@ -333,37 +334,39 @@ public class SchemaUtils {
 		}
 	}
 
-	private static void addImportStartElement(@Nonnull List<XMLEvent> imports, StartElement startElement) {
+	private static StartElement stripSchemaLocation(@Nonnull StartElement startElement) {
 		Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
-		if (schemaLocation != null) {
-			List<Attribute> attributes = new ArrayList<>();
-			Iterator<Attribute> iterator = startElement.getAttributes();
-			while (iterator.hasNext()) {
-					Attribute a = iterator.next();
-					if (!SCHEMALOCATION.equals(a.getName())) {
-						attributes.add(a);
-					}
-				}
-			StartElementEvent startElementEvent = new StartElementEvent(
-						startElement.getName(),
-						attributes.iterator(),
-						startElement.getNamespaces(),
-						startElement.getNamespaceContext(),
-						startElement.getLocation(),
-						startElement.getSchemaType());
-			imports.add(startElementEvent);
-		} else {
-			imports.add(startElement);
+		if (schemaLocation == null) {
+			return startElement;
 		}
+		// Recreate the startElement but now without the schemaLocation attribute
+		Iterator<Attribute> iterator = startElement.getAttributes();
+		Iterator<Attribute> filteredIterator = Stream.generate(iterator::next)
+				.takeWhile(v -> iterator.hasNext())
+				.filter(a -> !a.getName().equals(SCHEMALOCATION))
+				.iterator();
+		return new StartElementEvent(
+					startElement.getName(),
+					filteredIterator,
+					startElement.getNamespaces(),
+					startElement.getNamespaceContext(),
+					startElement.getLocation(),
+					startElement.getSchemaType());
 	}
 
 	private static <T extends Attribute> void addUniqueAttributes(@Nonnull List<T> collectedAttributes, Iterator<T> newAttributes) {
 		while (newAttributes.hasNext()) {
 			T attribute = newAttributes.next();
-			if (collectedAttributes.stream().noneMatch(attribute2 -> XmlUtils.attributesEqual(attribute, attribute2))) {
+			if (doesNotContain(collectedAttributes, attribute)) {
 				collectedAttributes.add(attribute);
 			}
 		}
+	}
+
+	private static <T extends Attribute> boolean doesNotContain(@Nonnull List<T> collectedAttributes, @Nonnull T attribute) {
+		return collectedAttributes
+				.stream()
+				.noneMatch(attribute2 -> XmlUtils.attributesEqual(attribute, attribute2));
 	}
 
 	/**
