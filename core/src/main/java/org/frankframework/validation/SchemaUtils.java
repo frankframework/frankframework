@@ -248,6 +248,14 @@ public class SchemaUtils {
 		return reader;
 	}
 
+	/**
+	 * Write the XSD out to the XMLStreamWriter as a standalone XSD.
+	 *
+	 * @param xsd XSD to be written
+	 * @param xmlStreamWriter Target XMLStreamWriter
+	 * @throws IOException When reading or writing fails
+	 * @throws ConfigurationException When there was an exception in the XML
+	 */
 	public static void writeStandaloneXsd(final @Nonnull IXSD xsd, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		final Map<String, String> namespacesToCorrect = new HashMap<>();
 		final NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
@@ -301,6 +309,17 @@ public class SchemaUtils {
 		return XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 	}
 
+	/**
+	 * Internal method to collect information needed when merging XSDs: XSD Imports, Schema root attributes, and
+	 * Namespace declarations on the Schema root element.
+	 *
+	 * @param xsd An XSD from which to collect information
+	 * @param rootAttributes List to collect Schema root attributes into
+	 * @param rootNamespaceAttributes List to collect Schema root namespaces into
+	 * @param imports List to collect all XSD imports into
+	 * @throws IOException Thrown when there was an exception reading or writing the XSD
+	 * @throws ConfigurationException Thrown when there is an XML parsing or writing error
+	 */
 	private static void collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		try (Reader reader = createXsdReader(xsd)) {
@@ -373,8 +392,7 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Internal method used for XSD merging and rewriting. The method has two modes: one to collect information from
-	 * all XSDs that need to be merged, and one to produce parts of the merged XSD.
+	 * Internal method used for XSD merging.
 	 * <p>
 	 * Including a {@link IXSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
 	 * (using a low level {@link XMLEventReader}) so that certain things can be corrected on the fly.
@@ -404,7 +422,7 @@ public class SchemaUtils {
 						break;
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
-						if (SCHEMA.equals(startElement.getName())) {
+						if (startElement.getName().equals(SCHEMA)) {
 							if (skipRootStartElement) {
 								// Don't output
 								break;
