@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import org.frankframework.collection.CollectionException;
 import org.frankframework.collection.CollectorPipeBase;
 import org.frankframework.configuration.ConfigurationException;
@@ -114,7 +114,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file);
 			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
 
-			//We must return a file location, not the reference or file it self
+			//We must return a file location, not the reference or file itself
 			return new PipeRunResult(getSuccessForward(), new Message(file.toString()));
 		} catch (CollectionException e) {
 			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
