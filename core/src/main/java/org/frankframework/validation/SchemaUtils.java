@@ -118,66 +118,79 @@ public class SchemaUtils {
 		}
 	}
 
+	/**
+	 * Write merged XSDs to xmlStreamWriter.
+	 *
+	 */
+	public static void mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(@Nonnull IScopeProvider scopeProvider, @Nonnull Map<String, Set<IXSD>> xsdsGroupedByNamespace, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+		// iterate over the namespaces
+		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
+			String namespace = entry.getKey();
+			Set<IXSD> xsds = entry.getValue();
+
+			// Write XSDs with merged root element to the provided xmlStreamWriter
+			mergeXsds(scopeProvider, xsds, namespace, xmlStreamWriter);
+		}
+	}
 
 	/**
-	 * Returns XSDs when xmlStreamWriter is null, otherwise write to xmlStreamWriter.
+	 * Returns merged XSDs.
 	 *
-	 * @return XSDs when xmlStreamWriter is null, otherwise write to xmlStreamWriter
+	 * @return merged XSDs
 	 */
-	public static Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
+	public static @Nonnull Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace) throws XMLStreamException, IOException, ConfigurationException {
 		Set<IXSD> resultXsds = new LinkedHashSet<>();
 		// iterate over the namespaces
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
 
-			addXsdMergeWarnings(scopeProvider, xsds, namespace);
+			// Write XSDs with merged root element to new XMLStreamWriter
+			StringWriter contents = new StringWriter();
+			XMLStreamWriter xmlStreamWriter = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(contents);
 
-			// Get attributes of root elements and get import elements from all XSDs
-			List<Attribute> rootAttributes = new ArrayList<>();
-			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
-			List<XMLEvent> imports = new ArrayList<>();
-			for (IXSD xsd: xsds) {
-				collectImportsAndAttributes(xsd, rootAttributes, rootNamespaceAttributes, imports);
-			}
-			// Write XSDs with merged root element
-			XMLStreamWriter w;
-			StringWriter schemaContentsWriter;
-			if (xmlStreamWriter == null) {
-				schemaContentsWriter = new StringWriter();
-				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(schemaContentsWriter);
-			} else {
-				schemaContentsWriter = null;
-				w = xmlStreamWriter;
-			}
-			int i = 0;
-			// perform the merge
-			for (IXSD xsd: xsds) {
-				i++;
-				boolean skipRootElementStart;
-				boolean skipRootElementEnd;
-				if (xsds.size() == 1) {
-					skipRootElementStart = false;
-					skipRootElementEnd = false;
-				} else {
-					skipRootElementStart = i != 1;
-					skipRootElementEnd = i < xsds.size();
-				}
-				xsdToXmlStreamWriter(xsd, w, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports);
-			}
-			// TODO: After creating merged XSD, while we still know what the source files are, we should now validate for duplicate elements
-			if (xmlStreamWriter == null) {
-				w.close();
-				StringXsd resultXsd = new StringXsd(schemaContentsWriter.toString());
-				IXSD firstXsd = xsds.iterator().next();
-				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
-				resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
-				resultXsd.setImportedNamespacesToIgnore(firstXsd.getImportedNamespacesToIgnore());
-				resultXsd.initFromXsds(namespace, scopeProvider, xsds);
-				resultXsds.add(resultXsd);
-			}
+			mergeXsds(scopeProvider, xsds, namespace, xmlStreamWriter);
+
+			xmlStreamWriter.close();
+			StringXsd resultXsd = new StringXsd(contents.toString());
+			IXSD firstXsd = xsds.iterator().next();
+			resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
+			resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
+			resultXsd.setImportedNamespacesToIgnore(firstXsd.getImportedNamespacesToIgnore());
+			resultXsd.initFromXsds(namespace, scopeProvider, xsds);
+
+			resultXsds.add(resultXsd);
 		}
 		return resultXsds;
+	}
+
+	private static void mergeXsds(IScopeProvider scopeProvider, Set<IXSD> xsds, String namespace, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+		addXsdMergeWarnings(scopeProvider, xsds, namespace);
+
+		// Get attributes of root elements and get import elements from all XSDs
+		List<Attribute> rootAttributes = new ArrayList<>();
+		List<Namespace> rootNamespaceAttributes = new ArrayList<>();
+		List<XMLEvent> imports = new ArrayList<>();
+		for (IXSD xsd: xsds) {
+			collectImportsAndSchemaRootAttributes(xsd, rootAttributes, rootNamespaceAttributes, imports);
+		}
+		// TODO: After collecting all imports, while we still know what the source files are, we should now validate for duplicate elements
+
+		int i = 0;
+		// perform the merge
+		for (IXSD xsd: xsds) {
+			i++;
+			boolean skipRootElementStart;
+			boolean skipRootElementEnd;
+			if (xsds.size() == 1) {
+				skipRootElementStart = false;
+				skipRootElementEnd = false;
+			} else {
+				skipRootElementStart = i != 1;
+				skipRootElementEnd = i < xsds.size();
+			}
+			xsdToXmlStreamWriter(xsd, xmlStreamWriter, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports);
+		}
 	}
 
 	private static void addXsdMergeWarnings(final IScopeProvider scopeProvider, final Set<IXSD> xsds, final String namespace) {
@@ -281,7 +294,7 @@ public class SchemaUtils {
 		return XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 	}
 
-	private static void collectImportsAndAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
+	private static void collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull List<XMLEvent> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		try (Reader reader = xsd.getReader()) {
 			if (reader == null) {
@@ -344,15 +357,12 @@ public class SchemaUtils {
 		}
 	}
 
-	private static <T extends Attribute> void addUniqueAttributes(@Nonnull List<T> rootAttributes, Iterator<T> iterator) {
-		while (iterator.hasNext()) {
-			T attribute = iterator.next();
-			for (Attribute attribute2 : rootAttributes) {
-				if (XmlUtils.attributesEqual(attribute, attribute2)) {
-					return;
-				}
+	private static <T extends Attribute> void addUniqueAttributes(@Nonnull List<T> collectedAttributes, Iterator<T> newAttributes) {
+		while (newAttributes.hasNext()) {
+			T attribute = newAttributes.next();
+			if (collectedAttributes.stream().noneMatch(attribute2 -> XmlUtils.attributesEqual(attribute, attribute2))) {
+				collectedAttributes.add(attribute);
 			}
-			rootAttributes.add(attribute);
 		}
 	}
 
