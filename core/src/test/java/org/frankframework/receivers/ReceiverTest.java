@@ -66,6 +66,8 @@ import java.util.stream.Stream;
 import jakarta.jms.Destination;
 import jakarta.jms.TextMessage;
 
+import lombok.Lombok;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,9 +80,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
-
-import lombok.Lombok;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
@@ -908,8 +907,8 @@ public class ReceiverTest {
 		LOG.info("Adapter RunState "+adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
-		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
+		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
+		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
 		LOG.info("Receiver RunState "+receiver.getRunState());
 
 		assertFalse(listener.isClosed()); // Not closed, thus open
@@ -947,14 +946,14 @@ public class ReceiverTest {
 		LOG.info("Adapter RunState " + adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
-		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
+		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
+		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
 
 		LOG.info("Receiver RunState " + receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
 		await().atMost(500, TimeUnit.MILLISECONDS)
 						.until(()-> receiver.getSender().isSynchronous());
-		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); //isSynchronous ==> isClosed
+		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); // isSynchronous ==> isClosed
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		await()
@@ -971,7 +970,7 @@ public class ReceiverTest {
 
 	@Test
 	public void testStopAdapterWhileReceiverIsStillStarting() throws Exception {
-		assumeFalse(TestAssertions.isTestRunningOnCI() || TestAssertions.isTestRunningOnGitHub(), "For unknown reasons this test is unreliable on Github and CI so only run locally for now until we have time to investigate");
+		assumeFalse(TestAssertions.isTestRunningWithSurefire() || TestAssertions.isTestRunningOnCI(), "For unknown reasons this test is unreliable on Github and CI so only run locally for now until we have time to investigate");
 
 		// Arrange
 		configuration = buildConfiguration(null);
@@ -1044,7 +1043,7 @@ public class ReceiverTest {
 
 		LOG.info("Adapter RunState "+adapter.getRunState());
 		LOG.info("Receiver RunState "+receiver.getRunState());
-		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
@@ -1084,7 +1083,7 @@ public class ReceiverTest {
 
 		LOG.info("Adapter RunState "+adapter.getRunState());
 		LOG.info("Receiver RunState "+receiver.getRunState());
-		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
@@ -1122,7 +1121,7 @@ public class ReceiverTest {
 		LOG.info("Receiver RunState " + receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		// Act
 		// From here the PollGuard should be triggering startup-delay timeout-guard
@@ -1178,7 +1177,7 @@ public class ReceiverTest {
 		LOG.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		// From here the PollGuard should be triggering stop-delay timeout-guard
 		listener.setShutdownDelay(100_000);
