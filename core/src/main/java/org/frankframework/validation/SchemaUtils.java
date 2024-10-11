@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Stream;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -45,6 +44,8 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import jakarta.annotation.Nonnull;
+
+import com.google.common.collect.Streams;
 
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
@@ -340,14 +341,14 @@ public class SchemaUtils {
 			return startElement;
 		}
 		// Recreate the startElement but now without the schemaLocation attribute
-		Iterator<Attribute> iterator = startElement.getAttributes();
-		Iterator<Attribute> filteredIterator = Stream.generate(iterator::next)
-				.takeWhile(v -> iterator.hasNext())
+
+		// With a stream from the iterator we can lazily iterate over the elements while filtering.
+		Iterator<Attribute> filteredAttributes = Streams.stream(startElement.getAttributes())
 				.filter(a -> !a.getName().equals(SCHEMALOCATION))
 				.iterator();
 		return new StartElementEvent(
 					startElement.getName(),
-					filteredIterator,
+				filteredAttributes,
 					startElement.getNamespaces(),
 					startElement.getNamespaceContext(),
 					startElement.getLocation(),
