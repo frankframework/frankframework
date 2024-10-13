@@ -1606,7 +1606,9 @@ public class XmlUtils {
 				.getNamespaceContext());
 	}
 
-	public static boolean attributesEqual(@Nonnull Attribute attribute1, @Nonnull Attribute attribute2) {
+	public static boolean attributesEqual(@Nullable Attribute attribute1, @Nullable Attribute attribute2) {
+		if (attribute1 == null && attribute2 == null) return true;
+		if (attribute1 == null || attribute2 == null) return false;
 		return Objects.equals(attribute1.getName(), attribute2.getName())
 				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
