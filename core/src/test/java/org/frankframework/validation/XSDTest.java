@@ -81,7 +81,7 @@ public class XSDTest {
 		SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(mock(), Map.of(xsd.getNamespace(), Set.of(xsd)), w);
 		w.flush();
 		String actual = writer.toString();
-		MatchUtils.assertXmlEquals(expectedSchema, actual);
+		MatchUtils.assertXmlEquals("Schema Merge results do not match expected outcome", expectedSchema, actual, false, true);
 	}
 
 	public XSD getXSD(String schemaLocation) throws ConfigurationException {
