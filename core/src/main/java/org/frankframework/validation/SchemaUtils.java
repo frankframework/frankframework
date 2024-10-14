@@ -335,6 +335,14 @@ public class SchemaUtils {
 			Attribute attribute2 = other.startElement.getAttributeByName(NAMESPACE);
 			return XmlUtils.attributesEqual(attribute1, attribute2);
 		}
+
+		@Override
+		public int hashCode() {
+			Attribute nsAttribute = this.startElement.getAttributeByName(NAMESPACE);
+			if (nsAttribute == null) return 0;
+			return nsAttribute.getName().hashCode() +
+					31 * nsAttribute.getValue().hashCode();
+		}
 	}
 
 	/**

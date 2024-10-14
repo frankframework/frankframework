@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,14 +91,19 @@ public class XSDTest {
 		XSD xsd2 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema2.xsd");
 		xsd1.setAddNamespaceToSchema(true);
 
+		Set<IXSD> xsds = new LinkedHashSet<>();
+		xsds.add(xsd1);
+		xsds.add(xsd2);
+		Map<String, Set<IXSD>> xsdMap = Map.of(xsd1.getNamespace(), xsds);
+
 		String expectedOutput = TestFileUtils.getTestFile("/XSDTest/XsdMergingTest/merged_xsd_expected_output.xsd");
 
 		// Act
-		Set<IXSD> result = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, Map.of(xsd1.getNamespace(), Set.of(xsd1, xsd2)));
+		Set<IXSD> result = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, xsdMap);
 
 		// Assert
 		IXSD resultXsd = result.iterator().next();
-		MatchUtils.assertXmlEquals("Schema merge results do not match expected result", expectedOutput, resultXsd.asString());
+		MatchUtils.assertXmlEquals("Schema merge results do not match expected result", expectedOutput, resultXsd.asString(), false, true);
 	}
 
 
