@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:items/wsdl/" xmlns:ns2="urn:items" targetNamespace="urn:items/wsdl/">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:items/wsdl/" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:ns2="urn:items" targetNamespace="urn:items/wsdl/">
 	<wsdl:documentation>Generated at http://localhost:8080/iaf-test/rest/webservices/SoapValidator.wsdl as SoapValidator.wsdl on 2021-05-31 16:15:39.</wsdl:documentation>
 	<wsdl:types>
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1">
