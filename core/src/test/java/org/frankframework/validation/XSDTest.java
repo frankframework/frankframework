@@ -2,7 +2,6 @@ package org.frankframework.validation;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -78,11 +77,29 @@ public class XSDTest {
 
 		StringWriter writer = new StringWriter();
 		XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
-		SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(mock(), Map.of(xsd.getNamespace(), Set.of(xsd)), w);
+		SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, Map.of(xsd.getNamespace(), Set.of(xsd)), w);
 		w.flush();
 		String actual = writer.toString();
 		MatchUtils.assertXmlEquals("Schema Merge results do not match expected outcome", expectedSchema, actual, false, true);
 	}
+
+	@Test
+	public void testMergeXsds() throws Exception {
+		// Arrange
+		XSD xsd1 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema1.xsd");
+		XSD xsd2 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema2.xsd");
+		xsd1.setAddNamespaceToSchema(true);
+
+		String expectedOutput = TestFileUtils.getTestFile("/XSDTest/XsdMergingTest/merged_xsd_expected_output.xsd");
+
+		// Act
+		Set<IXSD> result = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, Map.of(xsd1.getNamespace(), Set.of(xsd1, xsd2)));
+
+		// Assert
+		IXSD resultXsd = result.iterator().next();
+		MatchUtils.assertXmlEquals("Schema merge results do not match expected result", expectedOutput, resultXsd.asString());
+	}
+
 
 	public XSD getXSD(String schemaLocation) throws ConfigurationException {
 		String[] split =  schemaLocation.trim().split("\\s+");
