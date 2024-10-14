@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -45,14 +47,17 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	}
 
 	@Test
-	void assertFailOnDoubleStopAt() {
+	void assertFailOnDoubleStopAt() throws ConfigurationException, PipeStartException {
 		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
 		pipe.setStopAt(10);
 
 		pipe.registerForward(new PipeForward("continue", null));
 		pipe.registerForward(new PipeForward("stop", null));
+		configureAndStartPipe();
 
-		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("both as attribute and Parameter"));
 	}
 
 	@Test

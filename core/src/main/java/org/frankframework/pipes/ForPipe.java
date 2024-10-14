@@ -19,9 +19,9 @@ package org.frankframework.pipes;
 import java.util.Optional;
 
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -30,7 +30,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.Forward;
-import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
@@ -77,7 +76,7 @@ public class ForPipe extends FixedForwardPipe {
 		}
 
 		if (stopAt != null && getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
-			throw new ConfigurationException("Value for 'stopAt' is set both as attribute and Parameter, please use one of the two options");
+			ConfigurationWarnings.add(this, log, "Value for 'stopAt' is set both as attribute and Parameter, please use one of the two options");
 		}
 
 		// Mandatory forwards
@@ -120,21 +119,21 @@ public class ForPipe extends FixedForwardPipe {
 	}
 
 	private Integer determineStopAtValue(Message message, PipeLineSession session) throws PipeRunException {
-		if (stopAt != null) {
-			return stopAt;
+		return getParameterValueList(message, session)
+				.map(this::getIntegerValue)
+				.or(() -> Optional.ofNullable(stopAt))
+				.orElseThrow(() -> new PipeRunException(this, "Can't determine 'stopAt' value"));
+
+	}
+
+	private Integer getIntegerValue(ParameterValueList list) {
+		int defaultValue = (stopAt != null) ? stopAt : 0;
+
+		if (list.contains(STOP_AT_PARAMETER_VALUE) && !list.get(STOP_AT_PARAMETER_VALUE).asStringValue().isBlank()) {
+			return list.get(STOP_AT_PARAMETER_VALUE).asIntegerValue(defaultValue);
 		}
 
-		Optional<ParameterValueList> optionalParameterValueList = getParameterValueList(message, session);
-
-		if (optionalParameterValueList.isPresent()) {
-			ParameterValue stopAtParameter = optionalParameterValueList.get().get(STOP_AT_PARAMETER_VALUE);
-
-			if (stopAtParameter.getValue() != null && StringUtils.isNotBlank(stopAtParameter.asStringValue())) {
-				return stopAtParameter.asIntegerValue(0);
-			}
-		}
-
-		throw new PipeRunException(this, "Can't determine 'stopAt' value");
+		return null;
 	}
 
 	private Optional<ParameterValueList> getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
