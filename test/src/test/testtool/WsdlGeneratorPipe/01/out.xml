@@ -169,8 +169,8 @@
 		</xsd:sequence>
 	</xsd:complexType>
 </xsd:schema>
-		<!-- v0.1.2 -->
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1">
+		<!-- v0.1.2 -->
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">

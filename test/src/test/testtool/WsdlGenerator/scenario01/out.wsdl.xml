@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1" xmlns:ns1="http://ibis4userandofficedetails.nn.nl" xmlns:ns2="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:ns3="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1" targetNamespace="http://nn.nl/WSDL/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS"
+	xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1"
+	xmlns:ns2="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:ns3="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1"
+	targetNamespace="http://nn.nl/WSDL/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1">
 	<wsdl:documentation>Generated at http://localhost/ibis4test/rest/webservices/WsdlGenerator.wsdl as HumanResources_AccessRightsManagement_AccessRightsManagement_1_GetUserAndOfficeDataIntermediary_1_concrete.wsdl on 2017-01-27T23:38:27CET.</wsdl:documentation>
 	<wsdl:types>
 		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ibis4userandofficedetails.nn.nl">
@@ -71,8 +74,8 @@
 		</xs:restriction>
 	</xs:simpleType>
 </xs:schema>
-		<!-- v0.1.2 -->
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
+		<!-- v0.1.2 -->
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">
