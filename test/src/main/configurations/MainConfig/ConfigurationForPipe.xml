@@ -1,0 +1,36 @@
+<module>
+	<Adapter name="ForPipe">
+		<Receiver name="ForPipe">
+			<JavaListener serviceName="ibis4test-ForPipe" />
+		</Receiver>
+		<Pipeline firstPipe="forPipe">
+			<Exit path="EXIT" state="success" />
+
+			<ForPipe name="forPipe" startAt="0" stopAt="10">
+				<Forward name="stop" path="EXIT" />
+				<Forward name="continue" path="echoPipe"/>
+			</ForPipe>
+			<EchoPipe name="echoPipe" getInputFromSessionKey="forPipe.iteration">
+				<Forward name="success" path="forPipe"/>
+			</EchoPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="ForPipeWithParam">
+		<Receiver name="ForPipe">
+			<JavaListener serviceName="ibis4test-ForPipeWithParam" />
+		</Receiver>
+		<Pipeline firstPipe="forPipe">
+			<Exit path="EXIT" state="success" />
+
+			<ForPipe name="forPipe">
+				<NumberParam name="stopAt" value="10" />
+				<Forward name="stop" path="EXIT" />
+				<Forward name="continue" path="echoPipe"/>
+			</ForPipe>
+			<EchoPipe name="echoPipe" getInputFromSessionKey="forPipe.iteration">
+				<Forward name="success" path="forPipe"/>
+			</EchoPipe>
+		</Pipeline>
+	</Adapter>
+
+</module>
