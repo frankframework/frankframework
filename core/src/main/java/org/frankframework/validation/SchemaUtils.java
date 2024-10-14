@@ -175,7 +175,7 @@ public class SchemaUtils {
 		// Get attributes of root elements and get import elements from all XSDs
 		List<Attribute> rootAttributes = new ArrayList<>();
 		List<Namespace> rootNamespaceAttributes = new ArrayList<>();
-		Set<XsdStartElementWrapper> imports = new LinkedHashSet<>();
+		Set<StartElementWrapper> imports = new LinkedHashSet<>();
 		String xsdPrefix = null;
 		IXSD firstXsd = null;
 		for (IXSD xsd: xsds) {
@@ -324,11 +324,11 @@ public class SchemaUtils {
 		return XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 	}
 
-	private record XsdStartElementWrapper(StartElement startElement) {
+	private record StartElementWrapper(StartElement startElement) {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof XsdStartElementWrapper other)) {
+			if (!(obj instanceof StartElementWrapper other)) {
 				return false;
 			}
 			Attribute attribute1 = this.startElement.getAttributeByName(NAMESPACE);
@@ -348,7 +348,7 @@ public class SchemaUtils {
 	 * @throws IOException Thrown when there was an exception reading or writing the XSD
 	 * @throws ConfigurationException Thrown when there is an XML parsing or writing error
 	 */
-	private static String collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull Set<XsdStartElementWrapper> imports) throws IOException, ConfigurationException {
+	private static String collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull Set<StartElementWrapper> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		String xsdPrefix = null;
 		try (Reader reader = createXsdReader(xsd)) {
@@ -361,14 +361,11 @@ public class SchemaUtils {
 					if (startElement.getName().equals(SCHEMA)) {
 						xsdPrefix = startElement.getName().getPrefix();
 						// Collect or write attributes of schema element.
-						Iterator<Attribute> iterator = startElement.getAttributes();
-						addUniqueAttributes(rootAttributes, iterator);
-
-						Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
-						addUniqueAttributes(rootNamespaceAttributes, namespaceIterator);
+						addUniqueAttributes(rootAttributes, startElement.getAttributes());
+						addUniqueAttributes(rootNamespaceAttributes, startElement.getNamespaces());
 					} else if (startElement.getName().equals(IMPORT)) {
 						// Collecting import elements.
-						imports.add(new XsdStartElementWrapper(stripSchemaLocation(startElement)));
+						imports.add(new StartElementWrapper(stripSchemaLocation(startElement)));
 					}
 				}
 			}
@@ -390,21 +387,21 @@ public class SchemaUtils {
 				.filter(a -> !a.getName().equals(SCHEMALOCATION))
 				.iterator();
 		return new StartElementEvent(
-					startElement.getName(),
+				startElement.getName(),
 				filteredAttributes,
-					startElement.getNamespaces(),
-					startElement.getNamespaceContext(),
-					startElement.getLocation(),
-					startElement.getSchemaType());
+				startElement.getNamespaces(),
+				startElement.getNamespaceContext(),
+				startElement.getLocation(),
+				startElement.getSchemaType()
+		);
 	}
 
 	private static <T extends Attribute> void addUniqueAttributes(@Nonnull List<T> collectedAttributes, Iterator<T> newAttributes) {
-		while (newAttributes.hasNext()) {
-			T attribute = newAttributes.next();
+		newAttributes.forEachRemaining(attribute -> {
 			if (doesNotContain(collectedAttributes, attribute)) {
 				collectedAttributes.add(attribute);
 			}
-		}
+		});
 	}
 
 	private static <T extends Attribute> boolean doesNotContain(@Nonnull List<T> collectedAttributes, @Nonnull T attribute) {
@@ -461,8 +458,8 @@ public class SchemaUtils {
 		}
 	}
 
-	private static void writeImports(@Nonnull Set<XsdStartElementWrapper> imports, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
-		for (XsdStartElementWrapper xsdImport : imports) {
+	private static void writeImports(@Nonnull Set<StartElementWrapper> imports, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
+		for (StartElementWrapper xsdImport : imports) {
 			streamEventWriter.add(xsdImport.startElement);
 			streamEventWriter.add(XmlUtils.EVENT_FACTORY.createEndElement(xsdImport.startElement.getName(), xsdImport.startElement.getNamespaces()));
 		}
