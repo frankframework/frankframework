@@ -1,8 +1,10 @@
 package org.frankframework.validation;
 
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -12,7 +14,6 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -46,7 +47,6 @@ public class XSDTest {
 	}
 
 	@Test
-	@Disabled("Test is not yet complete")
 	public void xsdDuplicateNSPrefix() throws Exception {
 		// Arrange
 		XSD xsd = new ResourceXsd();
@@ -57,14 +57,9 @@ public class XSDTest {
 		Set<IXSD> xsds = XSD.getXsdsRecursive(Set.of(xsd));
 
 		// Act
-		StringWriter writer = new StringWriter();
-		XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
-		SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, SchemaUtils.groupXsdsByNamespace(xsds, false), w);
-		w.flush();
-		String actual = writer.toString();
-		System.out.println(actual);
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, SchemaUtils.groupXsdsByNamespace(xsds, false)));
 
-		fail("Test incomplete");
+		assertThat(exception.getMessage(), containsString("Prefix [dup] defined in multiple files with different namespaces"));
 	}
 
 	@Test

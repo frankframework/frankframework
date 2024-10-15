@@ -384,8 +384,11 @@ public class SchemaUtils {
 					.collect(Collectors.groupingBy(ns -> ns.attribute.getPrefix()))
 					.entrySet().stream()
 					.filter(entry -> entry.getValue().size() > 1)
-					.map(entry -> "Prefix [%s] defined in multiple files with different namespaces: [%s]".formatted(entry.getKey(), entry.getValue()))
-					.collect(Collectors.joining());
+					.map(entry -> "Prefix [%s] defined in multiple files with different namespaces: [\n%s\n]".formatted(entry.getKey(),
+							entry.getValue().stream()
+									.map(w -> "    Namespace: [%s], Imported from XSD: [%s]".formatted(w.attribute.getNamespaceURI(), w.sourceXsd))
+									.collect(Collectors.joining(",\n"))))
+					.collect(Collectors.joining(",\n"));
 			if (StringUtils.isNotBlank(namespacesByPrefix)) {
 				throw new ConfigurationException(namespacesByPrefix);
 			}
