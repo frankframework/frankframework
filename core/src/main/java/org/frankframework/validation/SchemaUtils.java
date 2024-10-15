@@ -381,13 +381,11 @@ public class SchemaUtils {
 	 *
 	 * @param <T> A type of XML {@link Attribute}.
 	 */
-	private static abstract class AbstractAttributeSet<T extends Attribute> {
+	private abstract static class AbstractAttributeSet<T extends Attribute> {
 		protected final Set<AttributeWrapper<T>> attributes = new LinkedHashSet<>();
 
 		void addAll(IXSD sourceXsd, Iterator<T> newAttributes) {
-			newAttributes.forEachRemaining(attr -> {
-				attributes.add(new AttributeWrapper<>(attr, sourceXsd));
-			});
+			newAttributes.forEachRemaining(attr -> attributes.add(new AttributeWrapper<>(attr, sourceXsd)));
 		}
 
 		Iterator<T> iterator() {
@@ -420,7 +418,7 @@ public class SchemaUtils {
 
 		@Nonnull
 		private static String formatAsError(Map.Entry<String, List<AttributeWrapper<Namespace>>> entry) {
-			return "Prefix [%s] defined in multiple files with different namespaces: [\n%s\n]".formatted(
+			return "Prefix [%s] defined in multiple files with different namespaces: [%n%s%n]".formatted(
 					entry.getKey(), formatListAsError(entry.getValue())
 			);
 		}
