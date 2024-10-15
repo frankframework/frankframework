@@ -17,9 +17,7 @@ package org.frankframework.validation;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,7 +34,6 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
@@ -58,6 +55,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.ResourceXsd;
 
@@ -446,7 +444,7 @@ public abstract class XSD implements IXSD {
 		if (commaSeparatedItems == null || commaSeparatedItems.isEmpty()) {
 			return Collections.emptySet();
 		}
-		return new HashSet<>(Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1)));
+		return StringUtil.splitToStream(commaSeparatedItems).collect(Collectors.toUnmodifiableSet());
 	}
 
 	private static String getXsdLoadingMapKey(IXSD xsd) {
@@ -456,24 +454,6 @@ public abstract class XSD implements IXSD {
 	@Override
 	public String getSystemId() {
 		return getTargetNamespace(); // used by IntraGrammarPoolEntityResolver
-	}
-
-	/**
-	 * convenience method to test adding namespaces to schemas, in the same way that SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes() does this.
-	 */
-	public String addTargetNamespace() throws ConfigurationException {
-		try {
-			List<Attribute> rootAttributes = new ArrayList<>();
-			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
-			List<XMLEvent> imports = new ArrayList<>();
-			StringWriter writer = new StringWriter();
-			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
-			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
-			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, false);
-			return writer.toString();
-		} catch (XMLStreamException | IOException e) {
-			throw new ConfigurationException(toString(), e);
-		}
 	}
 
 	@Nullable

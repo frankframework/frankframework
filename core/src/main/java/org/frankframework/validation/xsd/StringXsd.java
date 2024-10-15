@@ -18,11 +18,8 @@ package org.frankframework.validation.xsd;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 
 import jakarta.annotation.Nonnull;
-
-import lombok.Setter;
 
 import org.frankframework.validation.XSD;
 
@@ -33,15 +30,19 @@ import org.frankframework.validation.XSD;
  */
 public class StringXsd extends XSD {
 
-	private @Setter StringWriter schemaContentsWriter;
+	private final String contents;
+
+	public StringXsd(String contents) {
+		this.contents = contents;
+	}
 
 	@Override
 	public Reader getReader() throws IOException {
-		return new StringReader(schemaContentsWriter.toString());
+		return new StringReader(contents);
 	}
 
 	@Override
 	public @Nonnull String asString() throws IOException {
-		return schemaContentsWriter.toString();
+		return contents;
 	}
 }

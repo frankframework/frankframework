@@ -4,8 +4,16 @@ package org.frankframework.validation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
@@ -13,10 +21,8 @@ import org.frankframework.soap.WsdlGeneratorUtils;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.ResourceXsd;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 public class XSDTest {
 
@@ -52,7 +58,7 @@ public class XSDTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
-		SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
+		SchemaUtils.writeStandaloneXsd(xsd, writer);
 
 		String result = out.toString();
 		String expected = TestFileUtils.getTestFile("/XSDTest/test.xsd");
@@ -70,9 +76,36 @@ public class XSDTest {
 		XSD xsd = getXSD(schemaLocation);
 		xsd.setAddNamespaceToSchema(true);
 
-		String actual = xsd.addTargetNamespace();
-		MatchUtils.assertXmlEquals(expectedSchema, actual);
+		StringWriter writer = new StringWriter();
+		XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
+		SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, Map.of(xsd.getNamespace(), Set.of(xsd)), w);
+		w.flush();
+		String actual = writer.toString();
+		MatchUtils.assertXmlEquals("Schema Merge results do not match expected outcome", expectedSchema, actual, false, true);
 	}
+
+	@Test
+	public void testMergeXsds() throws Exception {
+		// Arrange
+		XSD xsd1 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema1.xsd");
+		XSD xsd2 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema2.xsd");
+		xsd1.setAddNamespaceToSchema(true);
+
+		Set<IXSD> xsds = new LinkedHashSet<>();
+		xsds.add(xsd1);
+		xsds.add(xsd2);
+		Map<String, Set<IXSD>> xsdMap = Map.of(xsd1.getNamespace(), xsds);
+
+		String expectedOutput = TestFileUtils.getTestFile("/XSDTest/XsdMergingTest/merged_xsd_expected_output.xsd");
+
+		// Act
+		Set<IXSD> result = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, xsdMap);
+
+		// Assert
+		IXSD resultXsd = result.iterator().next();
+		MatchUtils.assertXmlEquals("Schema merge results do not match expected result", expectedOutput, resultXsd.asString(), false, true);
+	}
+
 
 	public XSD getXSD(String schemaLocation) throws ConfigurationException {
 		String[] split =  schemaLocation.trim().split("\\s+");
@@ -80,5 +113,4 @@ public class XSDTest {
 		xsd.initNamespace(split[0], scopeProvider, split[1]);
 		return xsd;
 	}
-
 }

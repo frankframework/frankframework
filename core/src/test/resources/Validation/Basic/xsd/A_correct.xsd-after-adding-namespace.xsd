@@ -3,7 +3,8 @@
            targetNamespace="http://www.ing.com/testxmlns" xmlns:a="http://www.ing.com/testxmlns"
            xmlns:b="http://xmlns/b"  xmlns="http://www.ing.com/testxmlns"
     >
-  <xs:import namespace="http://xmlns/b" schemaLocation="B.xsd" />
+  <xs:import namespace="http://xmlns/b"/>
+  <!-- Comment at the start of the file -->
   <xs:element name="Envelope">
     <xs:complexType>
       <xs:sequence>

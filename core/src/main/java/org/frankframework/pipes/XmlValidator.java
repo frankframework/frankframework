@@ -31,6 +31,9 @@ import javax.xml.validation.ValidatorHandler;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.beans.factory.InitializingBean;
+import org.xml.sax.helpers.XMLFilterImpl;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -67,8 +70,6 @@ import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.validation.xsd.ResourceXsd;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
-import org.springframework.beans.factory.InitializingBean;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 
 /**
@@ -395,7 +396,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			}
 			try {
 				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace); // also handles addNamespaceToSchema
 			} catch(Exception e) {
 				throw new ConfigurationException("could not merge schema's", e);
 			}

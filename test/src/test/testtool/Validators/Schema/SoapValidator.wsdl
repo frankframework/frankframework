@@ -2,8 +2,8 @@
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:items/wsdl/" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:ns2="urn:items" targetNamespace="urn:items/wsdl/">
 	<wsdl:documentation>Generated at http://localhost:8080/iaf-test/rest/webservices/SoapValidator.wsdl as SoapValidator.wsdl on 2021-05-31 16:15:39.</wsdl:documentation>
 	<wsdl:types>
-		<!-- v0.1.2 -->
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1">
+		<!-- v0.1.2 -->
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">
@@ -454,10 +454,10 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 </xsd:schema>
-		<!-- edited with XMLSpy v2020 sp1 (x64) (http://www.altova.com) by  (Nationale Nederlanden) -->
 		<xsd:schema xmlns="urn:items" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" elementFormDefault="qualified" targetNamespace="urn:items">
 			<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1"/>
-	
+		<!-- edited with XMLSpy v2020 sp1 (x64) (http://www.altova.com) by  (Nationale Nederlanden) -->
+
 	<xsd:element name="Item_Request">
 		<xsd:complexType>
 			<xsd:sequence>

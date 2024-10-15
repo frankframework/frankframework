@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -80,6 +81,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
@@ -124,7 +126,7 @@ import org.frankframework.xml.XmlWriter;
  * @author  Johan Verrips
  */
 public class XmlUtils {
-	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
@@ -1604,12 +1606,11 @@ public class XmlUtils {
 				.getNamespaceContext());
 	}
 
-	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
-		if (!attribute1.getName().equals(attribute2.getName())) {
-			return false;
-		} else {
-			return attribute1.getValue().equals(attribute2.getValue());
-		}
+	public static boolean attributesEqual(@Nullable Attribute attribute1, @Nullable Attribute attribute2) {
+		if (attribute1 == null && attribute2 == null) return true;
+		if (attribute1 == null || attribute2 == null) return false;
+		return Objects.equals(attribute1.getName(), attribute2.getName())
+				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
