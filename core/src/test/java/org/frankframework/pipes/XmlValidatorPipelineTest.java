@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -458,6 +459,36 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd", "root");
+		// Override throwing exception
+		validator.registerForward(createFailureForward());
+		validator.setThrowException(false);
+
+		// Act
+		validator.configure();
+		validator.start();
+
+		// Assert
+		assertNoWarnings(configuration);
+
+		// Arrange 2
+		String testXml = getTestXml("/Validation/ImportInclude/root-err.xml");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act 2
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
+		PipeForward forward = result.getPipeForward();
+
+		// Assert 2
+		assertEquals("failure", forward.getName());
+	}
+
+	@Disabled("Test is not yet complete and issue still not fixed")
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07b
+	void testIncludeErrorDupNSPrefixes(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
+		// Arrange
+		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/test XSDTest/MultipleIncludesClashingPrefixes/root1.xsd", "cc");
 		// Override throwing exception
 		validator.registerForward(createFailureForward());
 		validator.setThrowException(false);

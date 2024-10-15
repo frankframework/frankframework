@@ -266,7 +266,7 @@ public class WsdlGenerator {
 		namespaceByPrefix = new LinkedHashMap<>();
 		int prefixCount = 1;
 		xsdsGroupedByNamespace =
-				SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
+				SchemaUtils.groupXsdsByNamespace(xsds, true);
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			// When a schema has targetNamespace="http://www.w3.org/XML/1998/namespace"
 			// it needs to be ignored as prefix xml is the only allowed prefix
@@ -454,7 +454,7 @@ public class WsdlGenerator {
 		w.writeStartElement(WSDL_NAMESPACE, "types");
 		if (isUseIncludes()) {
 			SchemaUtils.mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(
-					SchemaUtils.getXsdsGroupedByNamespace(rootXsds, true), w);
+					SchemaUtils.groupXsdsByNamespace(rootXsds, true), w);
 		}  else {
 			SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(pipeLine, xsdsGroupedByNamespace, w);
 		}
