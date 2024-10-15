@@ -333,7 +333,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return ftemplate;
 	}
 
-	protected JCoFunctionTemplate getFunctionTemplate(SapSystemImpl sapSystem, String functionName) throws SapException {
+	public JCoFunctionTemplate getFunctionTemplate(SapSystemImpl sapSystem, String functionName) throws SapException {
 		JCoFunctionTemplate functionTemplate;
 		try {
 			functionTemplate = sapSystem.getJcoRepository().getFunctionTemplate(functionName);

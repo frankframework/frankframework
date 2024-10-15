@@ -18,10 +18,11 @@ package org.frankframework.extensions.sap.jco3;
 import java.io.IOException;
 import java.util.Map;
 
+import com.sap.conn.idoc.IDocDocumentIterator;
+
 import jakarta.annotation.Nonnull;
 
 import com.sap.conn.idoc.IDocDocument;
-import com.sap.conn.idoc.IDocDocumentIterator;
 import com.sap.conn.idoc.IDocDocumentList;
 import com.sap.conn.idoc.IDocXMLProcessor;
 import com.sap.conn.idoc.jco.JCoIDoc;
@@ -29,7 +30,6 @@ import com.sap.conn.idoc.jco.JCoIDocHandler;
 import com.sap.conn.idoc.jco.JCoIDocHandlerFactory;
 import com.sap.conn.idoc.jco.JCoIDocServer;
 import com.sap.conn.idoc.jco.JCoIDocServerContext;
-import com.sap.conn.jco.AbapClassException;
 import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoFunction;
@@ -192,7 +192,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	 * M == JCoFunction
 	 */
 	@Override
-	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
+	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException {
 		try (PipeLineSession session = new PipeLineSession()) {
 			handler.processRawMessage(this, wrapAsJcoFunction(jcoFunction), session, false);
 		} catch (Throwable t) {
@@ -209,7 +209,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	@Override
 	public void handleRequest(JCoServerContext serverCtx, IDocDocumentList documentList) {
 		if(log.isDebugEnabled()) log.debug("{}Incoming IDoc list request containing {} documents...", getLogPrefix(), documentList.getNumDocuments());
-		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
+		IDocXMLProcessor xmlProcessor = getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
 		while (iterator.hasNext()) {
 			IDocDocument doc = iterator.next();
@@ -347,4 +347,10 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	protected String getFunctionName() {
 		return null;
 	}
+
+	// So the IDocXMLProcessor can be mocked during testing.
+	protected IDocXMLProcessor getIDocXMLProcessor() {
+		return JCoIDoc.getIDocFactory().getIDocXMLProcessor();
+	}
+
 }
