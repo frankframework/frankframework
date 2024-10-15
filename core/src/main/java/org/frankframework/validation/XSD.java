@@ -77,18 +77,18 @@ public abstract class XSD implements IXSD {
 	private @Setter String resourceInternalReference;
 	private @Getter String resourceTarget;
 	private String toString;
-	private @Getter String namespace = "";
 	private @Getter @Setter boolean addNamespaceToSchema = false;
-	private @Getter Set<String> importedSchemaLocationsToIgnore = Collections.emptySet();
+	private @Getter String namespace = ""; // Namespace properties may be used as map-keys so should preferably not be NULL
+	private @Getter @Setter String targetNamespace = "";
+	private @Getter String xsdTargetNamespace = "";
+	private @Getter String xsdDefaultNamespace = "";
 	protected @Getter @Setter boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private @Getter Set<String> importedSchemaLocationsToIgnore = Collections.emptySet();
 	private @Getter Set<String> importedNamespacesToIgnore = Collections.emptySet();
 	private @Getter @Setter String parentLocation;
 	private @Getter @Setter boolean rootXsd = true;
-	private @Getter @Setter String targetNamespace;
 	private final @Getter List<String> rootTags = new ArrayList<>();
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
-	private @Getter String xsdTargetNamespace;
-	private @Getter String xsdDefaultNamespace;
 	private @Setter IXSD importParent;
 
 	protected XSD() {
@@ -175,7 +175,7 @@ public abstract class XSD implements IXSD {
 					// determine for target namespace of the schema
 					Attribute a = el.getAttributeByName(SchemaUtils.TNS);
 					if (a != null) {
-						xsdTargetNamespace = a.getValue();
+						xsdTargetNamespace = a.getValue() != null ? a.getValue() : "";
 					}
 					Iterator<Namespace> nsIterator = el.getNamespaces();
 					// search for default namespace of the schema, i.e. a namespace definition without a prefix
@@ -441,9 +441,6 @@ public abstract class XSD implements IXSD {
 	}
 
 	private static Set<String> setOf(String commaSeparatedItems) {
-		if (commaSeparatedItems == null || commaSeparatedItems.isEmpty()) {
-			return Collections.emptySet();
-		}
 		return StringUtil.splitToStream(commaSeparatedItems).collect(Collectors.toUnmodifiableSet());
 	}
 
