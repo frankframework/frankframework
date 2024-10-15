@@ -39,6 +39,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -107,7 +108,7 @@ public class SapListenerTest {
 	}
 
 	@Test
-	public void testHandleRequestFunction() throws ListenerException {
+	public void testHandleRequestFunction() throws ListenerException, SapException {
 		listener.setProgid("prog-id");
 		listener.setSapSystemName(sapSystemName);
 
@@ -123,10 +124,13 @@ public class SapListenerTest {
 		RawMessageWrapper message = messageCaptor.getValue();
 		assertEquals(function, message.getRawMessage());
 		assertInstanceOf(JCoFunction.class, message.getRawMessage());
+
+		listener.afterMessageProcessed(new PipeLineResult(), new RawMessageWrapper<>(function), new PipeLineSession());
+		verify(listener, times(1)).message2FunctionResult(any(), any());
 	}
 
 	@Test
-	public void testHandleRequestIDoc() throws ListenerException {
+	public void testHandleRequestIDoc() throws ListenerException, SapException {
 		listener.setProgid("prog-id");
 		listener.setSapSystemName(sapSystemName);
 
@@ -144,6 +148,9 @@ public class SapListenerTest {
 		assertEquals(2, messageCaptor.getAllValues().size());
 		assertNull(messageCaptor.getAllValues().get(0).getRawMessage());
 		assertNull(messageCaptor.getAllValues().get(1).getRawMessage());
+
+		listener.afterMessageProcessed(new PipeLineResult(), new RawMessageWrapper<>(""), new PipeLineSession());
+		verify(listener, times(0)).message2FunctionResult(any(), any());
 	}
 
 }
