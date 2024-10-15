@@ -77,7 +77,7 @@ public abstract class XSD implements IXSD {
 	private @Setter String resourceInternalReference;
 	private @Getter String resourceTarget;
 	private String toString;
-	private @Getter String namespace;
+	private @Getter String namespace = "";
 	private @Getter @Setter boolean addNamespaceToSchema = false;
 	private @Getter Set<String> importedSchemaLocationsToIgnore = Collections.emptySet();
 	protected @Getter @Setter boolean useBaseImportedSchemaLocationsToIgnore = false;
@@ -116,7 +116,7 @@ public abstract class XSD implements IXSD {
 	}
 
 	protected void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
-		this.namespace=namespace;
+		this.namespace=namespace != null ? namespace : "";
 		this.scopeProvider=scopeProvider;
 		resourceTarget = resourceRef;
 		toString = resourceRef;
@@ -132,7 +132,7 @@ public abstract class XSD implements IXSD {
 	}
 
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<IXSD> sourceXsds) throws ConfigurationException {
-		this.namespace=namespace;
+		this.namespace=namespace != null ? namespace : "";
 		this.scopeProvider=scopeProvider;
 		this.resourceTarget = FilenameUtils.normalize(
 			sourceXsds.stream()
@@ -201,7 +201,7 @@ public abstract class XSD implements IXSD {
 			}
 			er.close();
 			this.targetNamespace = xsdTargetNamespace;
-			if (namespace == null) {
+			if (StringUtils.isEmpty(namespace) && xsdTargetNamespace != null) {
 				// In case WsdlXmlValidator doesn't have schemaLocation
 				namespace = xsdTargetNamespace;
 			}
