@@ -55,7 +55,6 @@ import javanet.staxutils.events.StartElementEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -380,18 +379,29 @@ public class SchemaUtils {
 	private static class AttributeSet extends AbstractAttributeSet<Attribute> {}
 	private static class NamespaceSet extends AbstractAttributeSet<Namespace> {
 		void verifyDuplicatePrefixes() throws ConfigurationException {
-			@NotNull String namespacesByPrefix = attributes.stream()
+			String namespaceDuplicationErrorMessage = attributes.stream()
 					.collect(Collectors.groupingBy(ns -> ns.attribute.getPrefix()))
 					.entrySet().stream()
 					.filter(entry -> entry.getValue().size() > 1)
-					.map(entry -> "Prefix [%s] defined in multiple files with different namespaces: [\n%s\n]".formatted(entry.getKey(),
-							entry.getValue().stream()
-									.map(w -> "    Namespace: [%s], Imported from XSD: [%s]".formatted(w.attribute.getNamespaceURI(), w.sourceXsd))
-									.collect(Collectors.joining(",\n"))))
+					.map(NamespaceSet::formatAsError)
 					.collect(Collectors.joining(",\n"));
-			if (StringUtils.isNotBlank(namespacesByPrefix)) {
-				throw new ConfigurationException(namespacesByPrefix);
+			if (StringUtils.isNotBlank(namespaceDuplicationErrorMessage)) {
+				throw new ConfigurationException(namespaceDuplicationErrorMessage);
 			}
+		}
+
+		@Nonnull
+		private static String formatAsError(Map.Entry<String, List<AttributeWrapper<Namespace>>> entry) {
+			return "Prefix [%s] defined in multiple files with different namespaces: [\n%s\n]".formatted(
+					entry.getKey(), formatListAsError(entry.getValue())
+			);
+		}
+
+		@Nonnull
+		private static String formatListAsError(List<AttributeWrapper<Namespace>> namespaces) {
+			return namespaces.stream()
+					.map(w -> "    Namespace: [%s], Imported from XSD: [%s]".formatted(w.attribute.getNamespaceURI(), w.sourceXsd))
+					.collect(Collectors.joining(",\n"));
 		}
 	}
 
