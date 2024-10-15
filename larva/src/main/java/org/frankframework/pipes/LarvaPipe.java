@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.IbisContext;
@@ -33,7 +34,6 @@ import org.frankframework.doc.Forward;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 
 /**
  * Call Larva Test Tool
@@ -76,12 +76,11 @@ public class LarvaPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		String realPath = AppConstants.getInstance().getProperty("webapp.realpath") + "iaf/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
 		LarvaTool larvaTool = new LarvaTool();
+
 		String currentScenariosRootDirectory = larvaTool.initScenariosRootDirectories(
-				realPath,
 				null, scenariosRootDirectories,
 				scenariosRootDescriptions);
     	String paramExecute = currentScenariosRootDirectory;
@@ -93,7 +92,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		boolean silent = true;
 		LarvaTool.setTimeout(getTimeout());
 		int numScenariosFailed = larvaTool.runScenarios(ibisContext, getLogLevel().getName(), "true", "false", paramExecute,
-				paramWaitBeforeCleanUp, getTimeout(), realPath, currentScenariosRootDirectory, out, silent
+				paramWaitBeforeCleanUp, getTimeout(), currentScenariosRootDirectory, out, silent
 		);
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
