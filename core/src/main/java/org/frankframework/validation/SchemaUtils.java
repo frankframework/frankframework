@@ -344,6 +344,14 @@ public class SchemaUtils {
 		return XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 	}
 
+	/**
+	 * A helper class to allow adding {@link Attribute}s to a set with a custom equals / hashcode, without needing to use a SortedSet and custom Comparator.
+	 * The {@link IXSD} from which the attribute originated is also tracked, for reporting errors.
+	 *
+	 * @param attribute Attribute to record
+	 * @param sourceXsd IXSD from which the Attribute was read
+	 * @param <T> Type of Attribute.
+	 */
 	private record AttributeWrapper<T extends Attribute>(T attribute, IXSD sourceXsd) {
 		@Override
 		public boolean equals(Object obj) {
@@ -360,6 +368,19 @@ public class SchemaUtils {
 		}
 	}
 
+	/**
+	 * Abstract base class for sets of unique attributes. The class is parameterized to allow use with different types
+	 * of attributes.
+	 * <br/>
+	 * The class is not intended to be directly but to be subclassed with the type of attribute fixed.
+	 * <br/>
+	 * Only a small subset of Set methods is implemented, namely those required for accepting attributes from {@link StartElement}s and
+	 * feeding them to constructors for new {@link StartElement}s.
+	 * <br/>
+	 * Internally a wrapper class is used to allow for the uniqueness of elements by custom definition.
+	 *
+	 * @param <T> A type of XML {@link Attribute}.
+	 */
 	private static abstract class AbstractAttributeSet<T extends Attribute> {
 		protected final Set<AttributeWrapper<T>> attributes = new LinkedHashSet<>();
 
@@ -376,7 +397,14 @@ public class SchemaUtils {
 		}
 	}
 
+	/**
+	 * A set containing unique {@link Attribute}s.
+	 */
 	private static class AttributeSet extends AbstractAttributeSet<Attribute> {}
+
+	/**
+	 * A set containing unique {@link Namespace} attributes.
+	 */
 	private static class NamespaceSet extends AbstractAttributeSet<Namespace> {
 		void verifyDuplicatePrefixes() throws ConfigurationException {
 			String namespaceDuplicationErrorMessage = attributes.stream()
