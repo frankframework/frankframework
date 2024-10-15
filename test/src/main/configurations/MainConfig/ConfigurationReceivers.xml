@@ -92,6 +92,7 @@
 			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
 				<forward name="ready" path="READY"/>
 				<forward name="error" path="ERROR"/>
+				<forward name="exception" path="ThrowException"/>
 				<forward name="local-sender" path="IbisLocalSender"/>
 				<forward name="java-sender" path="IbisJavaSender"/>
 			</pipe>
@@ -100,11 +101,14 @@
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-ReceiverTest-child-local" />
 				<forward name="ready" path="READY"/>
 			</pipe>
+
 			<pipe name="IbisJavaSender" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReceiverTest-child-service" />
 				<forward name="ready" path="READY"/>
 				<!-- managed exception, not caught in the sender! -->
 			</pipe>
+
+			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe"/>
 
 		</pipeline>
 	</adapter>
@@ -127,8 +131,7 @@
 				<forward name="error" path="ERROR"/>
 				<forward name="exception" path="ThrowException"/>
 			</pipe>
-			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
-			</pipe>
+			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe"/>
 		</pipeline>
 	</adapter>
 
