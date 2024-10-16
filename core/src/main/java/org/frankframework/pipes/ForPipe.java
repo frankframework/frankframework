@@ -57,7 +57,7 @@ import org.frankframework.stream.Message;
 @Forward(name = "stop", description = "exit for loop")
 @Forward(name = "continue", description = "continue in for loop")
 @ElementType(ElementTypes.ITERATOR)
-public class ForPipe extends FixedForwardPipe {
+public class ForPipe extends AbstractPipe {
 
 	static final String STOP_FORWARD_NAME = "stop";
 	static final String CONTINUE_FORWARD_NAME = "continue";
