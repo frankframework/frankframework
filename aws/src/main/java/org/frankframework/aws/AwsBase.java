@@ -17,9 +17,10 @@ package org.frankframework.aws;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.CredentialFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+
+import org.frankframework.util.CredentialFactory;
 
 public class AwsBase {
 

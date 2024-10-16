@@ -30,21 +30,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import jakarta.annotation.Nullable;
+
+import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.aws.AwsUtil;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Mandatory;
-import org.frankframework.filesystem.utils.AmazonEncodingUtils;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageBuilder;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
-
-import jakarta.annotation.Nullable;
-import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -70,6 +61,16 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.StorageClass;
+
+import org.frankframework.aws.AwsUtil;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.filesystem.utils.AmazonEncodingUtils;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
 	private final @Getter String domain = "Amazon";
@@ -123,7 +124,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 		super.open();
 	}
 
-	//For testing purposes
+	// For testing purposes
 	protected AwsCredentialsProvider getCredentialProvider() {
 		return credentialProvider;
 	}
@@ -251,8 +252,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 	@Override
 	public void createFile(S3FileRef f, InputStream content, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
-		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
-			throw new FolderNotFoundException("folder ["+folder+"] does not exist");
+		if (folder != null && !folderExists(folder)) {
+			// AWS Supports the creation of (sub)folders when creating files, this check is purely here so all FileSystems have the same behavior
+			throw new FolderNotFoundException("folder [" + folder + "] does not exist");
 		}
 
 		// The inputStream content also be directly send to the s3Client.putObject(), when the File length is available.
@@ -280,7 +282,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 	private void addMetadata(PutObjectRequest.Builder por, Map<String, String> userMetadata) {
 		Map<String, String> metadata = new HashMap<>();
 
-		if (userMetadata!= null && !userMetadata.isEmpty()) {
+		if (userMetadata != null && !userMetadata.isEmpty()) {
 			// Prefix the keys and encode the values according to rfc2047
 			// see https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#UserMetadata
 			metadata.putAll(
@@ -337,11 +339,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 	 * @throws FileSystemException if it cannot find the resource in S3.
 	 */
 	private void updateFileAttributes(S3FileRef f) throws FileSystemException {
-		if(f.getContentLength() == null) {
+		if (f.getContentLength() == null) {
 			try {
 				getFileAttributes(f);
 			} catch (AwsServiceException e) {
-				throw new FileSystemException("Could not retrieve tags for object [" + f.getKey() + "] in bucket ["+f.getBucketName()+"]", e);
+				throw new FileSystemException("Could not retrieve tags for object [" + f.getKey() + "] in bucket [" + f.getBucketName() + "]", e);
 			}
 		}
 	}
@@ -396,7 +398,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 				}
 
 				listing = s3Client.listObjectsV2(request.build());
-				if (listing.keyCount() > 0) { //If more then 1 result is returned, files also exist in this folder
+				if (listing.keyCount() > 0) { // If more then 1 result is returned, files also exist in this folder
 					return true;
 				}
 
@@ -470,7 +472,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 	@Override
 	public S3FileRef copyFile(S3FileRef s3Object, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if (!createFolder && !folderExists(destinationFolder)) {
-			throw new FolderNotFoundException("folder ["+destinationFolder+"] does not exist");
+			throw new FolderNotFoundException("folder [" + destinationFolder + "] does not exist");
 		}
 		String destinationFile = destinationFolder+FILE_DELIMITER+getName(s3Object);
 
@@ -546,7 +548,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "bucket ["+getBucketName()+"]";
+		return "bucket [" + getBucketName() + "]";
 	}
 
 	/** Access key to access to the AWS resources owned by the account */
