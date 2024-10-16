@@ -111,9 +111,9 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		Set<String> memberships;
 		try {
 			if (isRecursiveSearch()) {
-				memberships= ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf");
+				memberships = searchRecursivelyViaAttributes(searchedDN);
 			} else {
-				memberships= ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
+				memberships = searchObjectForMultiValuedAttribute(searchedDN);
 			}
 			XmlBuilder result = new XmlBuilder("ldap");
 			result.addSubElement("entryName", searchedDN);
@@ -129,6 +129,14 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		} catch (NamingException e) {
 			throw new PipeRunException(this, "exception on ldap lookup", e);
 		}
+	}
+
+	public Set<String> searchRecursivelyViaAttributes(String searchedDN) throws NamingException {
+		return ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf");
+	}
+
+	public Set<String> searchObjectForMultiValuedAttribute(String searchedDN) throws NamingException {
+		return ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
 	}
 
 

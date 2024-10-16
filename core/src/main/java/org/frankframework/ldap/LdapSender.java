@@ -207,7 +207,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 *    <li>parameter 'filterExpression', specifying the entries searched for</li>
-		 * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+		 * 	  <li>optional attribute 'attributesToReturn' containing attributes to be returned</li>
 		 * </ul>
 		 */
 		@EnumLabel("search") SEARCH,
@@ -216,7 +216,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
 		 *    <li>parameter 'filterExpression', specifying the entries searched for</li>
-		 * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+		 * 	  <li>optional attribute 'attributesToReturn' containing attributes to be returned</li>
 		 * </ul>
 		 */
 		@EnumLabel("deepSearch") DEEP_SEARCH,
@@ -224,7 +224,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		/** Get a list of the direct children of the specifed root. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
-		 * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+		 * 	  <li>optional attribute 'attributesToReturn' containing attributes to be returned</li>
 		 * </ul>
 		 */
 		@EnumLabel("getSubContexts") SUB_CONTEXTS,
@@ -232,7 +232,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		/** Get a copy of the complete tree below the specified root. Configuration requirements:
 		 * <ul>
 		 * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
-		 * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+		 * 	  <li>optional attribute 'attributesToReturn' containing attributes to be returned</li>
 		 * </ul>
 		 */
 		@EnumLabel("getTree") GET_TREE,
@@ -874,9 +874,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		case DELETE:
 			return performOperationDelete(entryName, session, paramValueMap, parseAttributesFromMessage(message));
 		case SEARCH:
-			return performOperationSearch(entryName, session, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.ONELEVEL_SCOPE);
+			return performOperationSearch(entryName, session, paramValueMap, paramValueMap.get(FILTER), SearchControls.ONELEVEL_SCOPE);
 		case DEEP_SEARCH:
-			return performOperationSearch(entryName, session, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.SUBTREE_SCOPE);
+			return performOperationSearch(entryName, session, paramValueMap, paramValueMap.get(FILTER), SearchControls.SUBTREE_SCOPE);
 		case SUB_CONTEXTS:
 			return performOperationGetSubContexts(entryName, session, paramValueMap);
 		case GET_TREE:
