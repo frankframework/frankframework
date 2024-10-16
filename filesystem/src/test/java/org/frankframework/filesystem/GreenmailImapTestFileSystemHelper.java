@@ -25,6 +25,9 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Greenmail based mail file system helper.
+ *
+ * Greenmail is a simple mail backend to send and retrieve e-mails, to mock smtp, imap, etc.
+ * @see "https://github.com/greenmail-mail-test/greenmail/tree/master/greenmail-core/src/test/java/com/icegreen/greenmail/examples" for examples and unit tests.
  */
 public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelperFullControl {
 
