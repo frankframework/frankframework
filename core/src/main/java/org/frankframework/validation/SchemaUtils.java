@@ -20,7 +20,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -51,6 +52,7 @@ import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,24 +87,25 @@ public class SchemaUtils {
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
 
-	public static Map<String, Set<IXSD>> getXsdsGroupedByNamespace(Set<IXSD> xsds, boolean sort) {
-		Map<String, Set<IXSD>> result;
+	/**
+	 * Group a set of XSDs by namespace. To recursively load all XSDs that are referenced from a starting set of XSDs, first call {@link XSD#getXsdsRecursive(Set)}.
+	 *
+	 * @param xsds Set of XSDs to group.
+	 * @param sort Should the resulting map and set per namespace be sorted by namespace / resource XSD, or returned in order of input.
+	 * @return A {@link Map<String, Set<IXSD>>} with XSDs grouped by namespace.
+	 */
+	public static Map<String, Set<IXSD>> groupXsdsByNamespace(Set<IXSD> xsds, boolean sort) {
+		Supplier<Map<String, Set<IXSD>>> mapFactoryFunction;
+		Supplier<Set<IXSD>> setFactoryFunction;
 		if (sort) {
-			result = new TreeMap<>();
+			mapFactoryFunction = TreeMap::new;
+			setFactoryFunction = TreeSet::new;
 		} else {
-			result = new LinkedHashMap<>();
+			mapFactoryFunction = LinkedHashMap::new;
+			setFactoryFunction = LinkedHashSet::new;
 		}
-		for (IXSD xsd : xsds) {
-			Set<IXSD> set = result.computeIfAbsent(xsd.getNamespace(), key -> {
-				if (sort) {
-					return new TreeSet<>();
-				} else {
-					return new LinkedHashSet<>();
-				}
-			});
-			set.add(xsd);
-		}
-		return result;
+		return xsds.stream()
+				.collect(Collectors.groupingBy(IXSD::getNamespace, mapFactoryFunction, Collectors.toCollection(setFactoryFunction)));
 	}
 
 	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<IXSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
@@ -121,7 +124,9 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Write merged XSDs to xmlStreamWriter.
+	 * Write merged XSDs to xmlStreamWriter from a map of XSDs grouped by namespace. This map can be created from {@link #groupXsdsByNamespace(Set, boolean)}.
+	 * XSD {@code <xsd:include/>} tags will be skipped. To get a complete XSD in the output, call {@link XSD#getXsdsRecursive(Set)} on a set of input-XSDs before
+	 * grouping them by namespace in a map.
 	 *
 	 */
 	public static void mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(@Nonnull IScopeProvider scopeProvider, @Nonnull Map<String, Set<IXSD>> xsdsGroupedByNamespace, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
@@ -136,7 +141,9 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Returns merged XSDs.
+	 * Returns merged XSDs from a map of XSDs grouped by namespace. This map can be created from {@link #groupXsdsByNamespace(Set, boolean)}.
+	 * XSD {@code <xsd:include/>} tags will be skipped. To get a complete XSD in the output, call {@link XSD#getXsdsRecursive(Set)} on a set of input-XSDs before
+	 * grouping them by namespace in a map.
 	 *
 	 * @return merged XSDs
 	 */
@@ -166,6 +173,17 @@ public class SchemaUtils {
 		return resultXsds;
 	}
 
+	/**
+	 * Internal method to merge a set of XSDs into a single XSD Schema. All the XSDs should be in the same namespace. {@code <xsd:include/>} elements will
+	 * be skipped. To make sure the output XSD is complete, before calling this method the {@link XSD#getXsdsRecursive(Set)} should have been called.
+	 *
+	 * @param scopeProvider {@link IScopeProvider} for error-reporting
+	 * @param xsds {@link Set<IXSD>} with the XSDs to be merged
+	 * @param namespace Namespace of the XSDs
+	 * @param xmlStreamWriter Output will be written to this destination
+	 * @throws IOException Thrown when there are IO errors
+	 * @throws ConfigurationException Thrown when there are errors in the input XSDs, or the resulting output XSD.
+	 */
 	private static void mergeXsds(IScopeProvider scopeProvider, Set<IXSD> xsds, String namespace, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		if (xsds.isEmpty()) {
 			return;
@@ -173,8 +191,8 @@ public class SchemaUtils {
 		addXsdMergeWarnings(scopeProvider, xsds, namespace);
 
 		// Get attributes of root elements and get import elements from all XSDs
-		List<Attribute> rootAttributes = new ArrayList<>();
-		List<Namespace> rootNamespaceAttributes = new ArrayList<>();
+		AttributeSet rootAttributes = new AttributeSet();
+		NamespaceSet rootNamespaceAttributes = new NamespaceSet();
 		Set<StartElementWrapper> imports = new LinkedHashSet<>();
 		String xsdPrefix = null;
 		IXSD firstXsd = null;
@@ -187,6 +205,8 @@ public class SchemaUtils {
 		if (firstXsd == null || xsdPrefix == null) {
 			throw new IllegalStateException("Must pass at least one xsd, should have been checked already");
 		}
+		rootNamespaceAttributes.verifyDuplicatePrefixes();
+
 		// TODO: After collecting all imports, while we still know what the source files are, we should now validate for duplicate elements
 
 		final Map<String, String> namespacesToCorrect = new HashMap<>();
@@ -324,7 +344,94 @@ public class SchemaUtils {
 		return XMLStreamUtils.mergeAttributes(startElement, List.of(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
 	}
 
-	private record StartElementWrapper(StartElement startElement) {
+	/**
+	 * A helper class to allow adding {@link Attribute}s to a set with a custom equals / hashcode, without needing to use a SortedSet and custom Comparator.
+	 * The {@link IXSD} from which the attribute originated is also tracked, for reporting errors.
+	 *
+	 * @param attribute Attribute to record
+	 * @param sourceXsd IXSD from which the Attribute was read
+	 * @param <T> Type of Attribute.
+	 */
+	private record AttributeWrapper<T extends Attribute>(T attribute, IXSD sourceXsd) {
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null) return false;
+			if (!(obj instanceof AttributeWrapper<?> other)) return false;
+			return XmlUtils.attributesEqual(this.attribute, other.attribute);
+		}
+
+		@Override
+		public int hashCode() {
+			if (attribute == null) return 0;
+			return attribute.getName().hashCode() +
+					31 * attribute.getValue().hashCode();
+		}
+	}
+
+	/**
+	 * Abstract base class for sets of unique attributes. The class is parameterized to allow use with different types
+	 * of attributes.
+	 * <br/>
+	 * The class is not intended to be directly but to be subclassed with the type of attribute fixed.
+	 * <br/>
+	 * Only a small subset of Set methods is implemented, namely those required for accepting attributes from {@link StartElement}s and
+	 * feeding them to constructors for new {@link StartElement}s.
+	 * <br/>
+	 * Internally a wrapper class is used to allow for the uniqueness of elements by custom definition.
+	 *
+	 * @param <T> A type of XML {@link Attribute}.
+	 */
+	private abstract static class AbstractAttributeSet<T extends Attribute> {
+		protected final Set<AttributeWrapper<T>> attributes = new LinkedHashSet<>();
+
+		void addAll(IXSD sourceXsd, Iterator<T> newAttributes) {
+			newAttributes.forEachRemaining(attr -> attributes.add(new AttributeWrapper<>(attr, sourceXsd)));
+		}
+
+		Iterator<T> iterator() {
+			return attributes.stream()
+					.map(w -> w.attribute)
+					.iterator();
+		}
+	}
+
+	/**
+	 * A set containing unique {@link Attribute}s.
+	 */
+	private static class AttributeSet extends AbstractAttributeSet<Attribute> {}
+
+	/**
+	 * A set containing unique {@link Namespace} attributes.
+	 */
+	private static class NamespaceSet extends AbstractAttributeSet<Namespace> {
+		void verifyDuplicatePrefixes() throws ConfigurationException {
+			String namespaceDuplicationErrorMessage = attributes.stream()
+					.collect(Collectors.groupingBy(ns -> ns.attribute.getPrefix()))
+					.entrySet().stream()
+					.filter(entry -> entry.getValue().size() > 1)
+					.map(NamespaceSet::formatAsError)
+					.collect(Collectors.joining(",\n"));
+			if (StringUtils.isNotBlank(namespaceDuplicationErrorMessage)) {
+				throw new ConfigurationException(namespaceDuplicationErrorMessage);
+			}
+		}
+
+		@Nonnull
+		private static String formatAsError(Map.Entry<String, List<AttributeWrapper<Namespace>>> entry) {
+			return "Prefix [%s] defined in multiple files with different namespaces: [%n%s%n]".formatted(
+					entry.getKey(), formatListAsError(entry.getValue())
+			);
+		}
+
+		@Nonnull
+		private static String formatListAsError(List<AttributeWrapper<Namespace>> namespaces) {
+			return namespaces.stream()
+					.map(w -> "    Namespace: [%s], Imported from XSD: [%s]".formatted(w.attribute.getNamespaceURI(), w.sourceXsd))
+					.collect(Collectors.joining(",\n"));
+		}
+	}
+
+	private record StartElementWrapper(StartElement startElement, IXSD sourceXsd) {
 
 		@Override
 		public boolean equals(Object obj) {
@@ -356,7 +463,7 @@ public class SchemaUtils {
 	 * @throws IOException Thrown when there was an exception reading or writing the XSD
 	 * @throws ConfigurationException Thrown when there is an XML parsing or writing error
 	 */
-	private static String collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, @Nonnull Set<StartElementWrapper> imports) throws IOException, ConfigurationException {
+	private static String collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull AttributeSet rootAttributes, @Nonnull NamespaceSet rootNamespaceAttributes, @Nonnull Set<StartElementWrapper> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		String xsdPrefix = null;
 		try (Reader reader = createXsdReader(xsd)) {
@@ -369,11 +476,11 @@ public class SchemaUtils {
 					if (startElement.getName().equals(SCHEMA)) {
 						xsdPrefix = startElement.getName().getPrefix();
 						// Collect or write attributes of schema element.
-						addUniqueAttributes(rootAttributes, startElement.getAttributes());
-						addUniqueAttributes(rootNamespaceAttributes, startElement.getNamespaces());
+						rootAttributes.addAll(xsd, startElement.getAttributes());
+						rootNamespaceAttributes.addAll(xsd, startElement.getNamespaces());
 					} else if (startElement.getName().equals(IMPORT)) {
 						// Collecting import elements.
-						imports.add(new StartElementWrapper(stripSchemaLocation(startElement)));
+						imports.add(new StartElementWrapper(stripSchemaLocation(startElement), xsd));
 					}
 				}
 			}
@@ -402,20 +509,6 @@ public class SchemaUtils {
 				startElement.getLocation(),
 				startElement.getSchemaType()
 		);
-	}
-
-	private static <T extends Attribute> void addUniqueAttributes(@Nonnull List<T> collectedAttributes, Iterator<T> newAttributes) {
-		newAttributes.forEachRemaining(attribute -> {
-			if (doesNotContain(collectedAttributes, attribute)) {
-				collectedAttributes.add(attribute);
-			}
-		});
-	}
-
-	private static <T extends Attribute> boolean doesNotContain(@Nonnull List<T> collectedAttributes, @Nonnull T attribute) {
-		return collectedAttributes
-				.stream()
-				.noneMatch(attribute2 -> XmlUtils.attributesEqual(attribute, attribute2));
 	}
 
 	/**
@@ -473,7 +566,7 @@ public class SchemaUtils {
 		}
 	}
 
-	private static void writeXsdRootStartElement(@Nonnull IXSD xsd, @Nonnull String xsdPrefix, @Nonnull List<Attribute> rootAttributes, @Nonnull List<Namespace> rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter, Map<String, String> namespacesToCorrect) throws XMLStreamException {
+	private static void writeXsdRootStartElement(@Nonnull IXSD xsd, @Nonnull String xsdPrefix, @Nonnull AttributeSet rootAttributes, @Nonnull NamespaceSet rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter, Map<String, String> namespacesToCorrect) throws XMLStreamException {
 		StartElement startElement = XmlUtils.EVENT_FACTORY.createStartElement(
 				xsdPrefix,
 				SCHEMA.getNamespaceURI(),
@@ -483,7 +576,7 @@ public class SchemaUtils {
 		streamEventWriter.add(fixupSchemaStartEvent(xsd, startElement, namespacesToCorrect));
 	}
 
-	private static void writeXsdRootEndElement(@Nonnull String xsdPrefix, @Nonnull List<Namespace> rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
+	private static void writeXsdRootEndElement(@Nonnull String xsdPrefix, @Nonnull NamespaceSet rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
 		EndElement endElement = XmlUtils.EVENT_FACTORY.createEndElement(
 				xsdPrefix,
 				SCHEMA.getNamespaceURI(),

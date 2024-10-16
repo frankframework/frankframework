@@ -4,10 +4,12 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -479,6 +481,23 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		// Assert 2
 		assertEquals("failure", forward.getName());
+	}
+
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07b
+	void testIncludeErrorDupNSPrefixes(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
+		// Arrange
+		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/test XSDTest/MultipleIncludesClashingPrefixes/root1.xsd", "cc");
+		// Override throwing exception
+		validator.registerForward(createFailureForward());
+		validator.setThrowException(false);
+
+		// Act
+		ConfigurationException exception = assertThrows(ConfigurationException.class, validator::configure);
+
+		// Assert
+		assertThat(exception.getMessage(), Matchers.containsString("Prefix [dup] defined in multiple files with different namespaces"));
 	}
 
 	@MethodSource("data")

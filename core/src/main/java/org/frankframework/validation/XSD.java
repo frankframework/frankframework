@@ -42,6 +42,8 @@ import javax.xml.stream.events.XMLEvent;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import com.google.common.collect.Streams;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
@@ -77,18 +79,18 @@ public abstract class XSD implements IXSD {
 	private @Setter String resourceInternalReference;
 	private @Getter String resourceTarget;
 	private String toString;
-	private @Getter String namespace;
 	private @Getter @Setter boolean addNamespaceToSchema = false;
-	private @Getter Set<String> importedSchemaLocationsToIgnore = Collections.emptySet();
+	private @Getter String namespace = ""; // Namespace properties may be used as map-keys so should preferably not be NULL
+	private @Getter @Setter String targetNamespace = "";
+	private @Getter String xsdTargetNamespace = "";
+	private @Getter String xsdDefaultNamespace = "";
 	protected @Getter @Setter boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private @Getter Set<String> importedSchemaLocationsToIgnore = Collections.emptySet();
 	private @Getter Set<String> importedNamespacesToIgnore = Collections.emptySet();
 	private @Getter @Setter String parentLocation;
 	private @Getter @Setter boolean rootXsd = true;
-	private @Getter @Setter String targetNamespace;
 	private final @Getter List<String> rootTags = new ArrayList<>();
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
-	private @Getter String xsdTargetNamespace;
-	private @Getter String xsdDefaultNamespace;
 	private @Setter IXSD importParent;
 
 	protected XSD() {
@@ -116,7 +118,7 @@ public abstract class XSD implements IXSD {
 	}
 
 	protected void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
-		this.namespace=namespace;
+		this.namespace=namespace != null ? namespace : "";
 		this.scopeProvider=scopeProvider;
 		resourceTarget = resourceRef;
 		toString = resourceRef;
@@ -132,7 +134,7 @@ public abstract class XSD implements IXSD {
 	}
 
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<IXSD> sourceXsds) throws ConfigurationException {
-		this.namespace=namespace;
+		this.namespace=namespace != null ? namespace : "";
 		this.scopeProvider=scopeProvider;
 		this.resourceTarget = FilenameUtils.normalize(
 			sourceXsds.stream()
@@ -175,15 +177,10 @@ public abstract class XSD implements IXSD {
 					// determine for target namespace of the schema
 					Attribute a = el.getAttributeByName(SchemaUtils.TNS);
 					if (a != null) {
-						xsdTargetNamespace = a.getValue();
+						xsdTargetNamespace = a.getValue() != null ? a.getValue() : "";
 					}
-					Iterator<Namespace> nsIterator = el.getNamespaces();
-					// search for default namespace of the schema, i.e. a namespace definition without a prefix
-					while (nsIterator.hasNext() && StringUtils.isEmpty(xsdDefaultNamespace)) {
-						Namespace ns = nsIterator.next();
-						if (StringUtils.isEmpty(ns.getPrefix())) {
-							xsdDefaultNamespace = ns.getNamespaceURI();
-						}
+					if (StringUtils.isEmpty(xsdDefaultNamespace)) {
+						xsdDefaultNamespace = findDefaultNamespace(el);
 					}
 				} else if (el.getName().equals(SchemaUtils.IMPORT)) {
 					// find imported namespaces
@@ -201,19 +198,24 @@ public abstract class XSD implements IXSD {
 			}
 			er.close();
 			this.targetNamespace = xsdTargetNamespace;
-			if (namespace == null) {
+			if (StringUtils.isEmpty(namespace) && xsdTargetNamespace != null) {
 				// In case WsdlXmlValidator doesn't have schemaLocation
 				namespace = xsdTargetNamespace;
 			}
-		} catch (IOException e) {
-			String message = "IOException reading XSD";
-			LOG.error(message, e);
-			throw new ConfigurationException(message, e);
-		} catch (XMLStreamException e) {
-			String message = "XMLStreamException reading XSD";
+		} catch (Exception e) {
+			String message = e.getClass().getSimpleName() + " reading XSD";
 			LOG.error(message, e);
 			throw new ConfigurationException(message, e);
 		}
+	}
+
+	private String findDefaultNamespace(StartElement el) {
+		Iterator<Namespace> nsIterator = el.getNamespaces();
+		return Streams.stream(nsIterator)
+				.filter(ns -> StringUtils.isEmpty(ns.getPrefix()) && StringUtils.isNotEmpty(ns.getNamespaceURI()))
+				.findFirst()
+				.map(Namespace::getNamespaceURI)
+				.orElse("");
 	}
 
 	@Override
@@ -355,80 +357,86 @@ public abstract class XSD implements IXSD {
 					continue;
 				}
 				Attribute namespaceAttribute = el.getAttributeByName(SchemaUtils.NAMESPACE);
-				String namespace;
-				if (el.getName().equals(SchemaUtils.IMPORT)) {
-					if (namespaceAttribute == null
-						&& StringUtils.isEmpty(xsd.getXsdDefaultNamespace())
-						&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
-						// TODO: concerning import without namespace when in head xsd default namespace doesn't exist and targetNamespace does)
-						namespace = null;
-					} else {
-						if (namespaceAttribute != null) {
-							namespace = namespaceAttribute.getValue();
-						} else {
-							namespace = xsd.getTargetNamespace();
-						}
-					}
-				} else {
-					namespace = xsd.getNamespace();
-				}
+				String namespace = deriveNamespace(xsd, el, namespaceAttribute);
 
-				// ignore import without namespace when in head xsd default namespace and targetNamespace exists
-				if (el.getName().equals(SchemaUtils.IMPORT)
-					&& namespaceAttribute == null
-					&& StringUtils.isNotEmpty(xsd.getXsdDefaultNamespace())
-					&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
+				if (isImportToIgnore(xsd, el, schemaLocationAttribute, namespaceAttribute, namespace)) continue;
 
-					// Skip
-					continue;
-				}
-
-				// ignore import without namespace when in head xsd default namespace and targetNamespace exists.
-				String sl = schemaLocationAttribute.getValue();
-				if (StringUtils.isNotEmpty(sl)) {
-					if (xsd.isUseBaseImportedSchemaLocationsToIgnore()) {
-						sl = FilenameUtils.getName(sl);
-					}
-					if (xsd.getImportedSchemaLocationsToIgnore().contains(sl)) {
-						// Skip
-						continue;
-					}
-				}
-				if (StringUtils.isNotEmpty(namespace)
-					&& xsd.getImportedNamespacesToIgnore().contains(namespace)) {
-					// Skip
-					continue;
-				}
-
-				ResourceXsd x = new ResourceXsd();
-				x.setAddNamespaceToSchema(xsd.isAddNamespaceToSchema());
-				x.setImportedSchemaLocationsToIgnore(xsd.getImportedSchemaLocationsToIgnore());
-				x.setUseBaseImportedSchemaLocationsToIgnore(xsd.isUseBaseImportedSchemaLocationsToIgnore());
-				x.setImportedNamespacesToIgnore(xsd.getImportedNamespacesToIgnore());
-				x.setParentLocation(xsd.getResourceBase());
-				x.setRootXsd(false);
-				x.setImportParent(xsd);
-				x.initNamespace(namespace, xsd.getScopeProvider(), getResourceRef(xsd.getResourceBase(), schemaLocationAttribute.getValue()));
-
-				String xsdKey = getXsdLoadingMapKey(x);
-				if (!xsds.containsKey(xsdKey)) {
-					LOG.trace("Adding xsd [{}] to set ", xsdKey);
-					xsds.put(xsdKey, x);
-					schemasToLoad.add(x);
-				} else {
-					LOG.trace("xsd [{}] already in set ", xsdKey);
-				}
+				addXsd(xsd, xsds, namespace, schemaLocationAttribute, schemasToLoad);
 			}
 			er.close();
 			loadAllXsdsRecursive(schemasToLoad, xsds, supportRedefine);
-		} catch (IOException e) {
-			String message = "IOException reading XSD";
+		} catch (IOException | XMLStreamException | RuntimeException e) {
+			String message = e.getClass().getSimpleName() + " reading XSD";
 			LOG.error(message, e);
 			throw new ConfigurationException(message, e);
-		} catch (XMLStreamException e) {
-			String message = "XMLStreamException reading XSD";
-			LOG.error(message, e);
-			throw new ConfigurationException(message, e);
+		}
+	}
+
+	private static boolean isImportToIgnore(IXSD xsd, StartElement el, Attribute schemaLocationAttribute, Attribute namespaceAttribute, String namespace) {
+		// ignore import without namespace when in head xsd default namespace and targetNamespace exists
+		if (el.getName().equals(SchemaUtils.IMPORT)
+			&& namespaceAttribute == null
+			&& StringUtils.isNoneEmpty(xsd.getXsdDefaultNamespace(), xsd.getXsdTargetNamespace())) {
+
+			// Skip
+			return true;
+		}
+
+		// ignore import without namespace when in head xsd default namespace and targetNamespace exists.
+		String sl = schemaLocationAttribute.getValue();
+		if (StringUtils.isNotEmpty(sl)) {
+			if (xsd.isUseBaseImportedSchemaLocationsToIgnore()) {
+				sl = FilenameUtils.getName(sl);
+			}
+			if (xsd.getImportedSchemaLocationsToIgnore().contains(sl)) {
+				// Skip
+				return true;
+			}
+		}
+		// Skip
+		return StringUtils.isNotEmpty(namespace)
+				&& xsd.getImportedNamespacesToIgnore().contains(namespace);
+	}
+
+	private static String deriveNamespace(IXSD xsd, StartElement el, Attribute namespaceAttribute) {
+		String namespace;
+		if (el.getName().equals(SchemaUtils.IMPORT)) {
+			if (namespaceAttribute == null
+				&& StringUtils.isEmpty(xsd.getXsdDefaultNamespace())
+				&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
+				// TODO: concerning import without namespace when in head xsd default namespace doesn't exist and targetNamespace does)
+				namespace = "";
+			} else {
+				if (namespaceAttribute != null) {
+					namespace = namespaceAttribute.getValue();
+				} else {
+					namespace = xsd.getTargetNamespace();
+				}
+			}
+		} else {
+			namespace = xsd.getNamespace();
+		}
+		return namespace;
+	}
+
+	private static void addXsd(IXSD xsd, Map<String, IXSD> xsds, String namespace, Attribute schemaLocationAttribute, List<IXSD> schemasToLoad) throws ConfigurationException {
+		ResourceXsd x = new ResourceXsd();
+		x.setAddNamespaceToSchema(xsd.isAddNamespaceToSchema());
+		x.setImportedSchemaLocationsToIgnore(xsd.getImportedSchemaLocationsToIgnore());
+		x.setUseBaseImportedSchemaLocationsToIgnore(xsd.isUseBaseImportedSchemaLocationsToIgnore());
+		x.setImportedNamespacesToIgnore(xsd.getImportedNamespacesToIgnore());
+		x.setParentLocation(xsd.getResourceBase());
+		x.setRootXsd(false);
+		x.setImportParent(xsd);
+		x.initNamespace(namespace, xsd.getScopeProvider(), getResourceRef(xsd.getResourceBase(), schemaLocationAttribute.getValue()));
+
+		String xsdKey = getXsdLoadingMapKey(x);
+		if (!xsds.containsKey(xsdKey)) {
+			LOG.trace("Adding xsd [{}] to set ", xsdKey);
+			xsds.put(xsdKey, x);
+			schemasToLoad.add(x);
+		} else {
+			LOG.trace("xsd [{}] already in set ", xsdKey);
 		}
 	}
 
@@ -441,9 +449,6 @@ public abstract class XSD implements IXSD {
 	}
 
 	private static Set<String> setOf(String commaSeparatedItems) {
-		if (commaSeparatedItems == null || commaSeparatedItems.isEmpty()) {
-			return Collections.emptySet();
-		}
 		return StringUtil.splitToStream(commaSeparatedItems).collect(Collectors.toUnmodifiableSet());
 	}
 
