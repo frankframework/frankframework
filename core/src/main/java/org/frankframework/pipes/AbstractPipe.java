@@ -84,7 +84,6 @@ import org.frankframework.util.SpringUtils;
  *
  * @see PipeLineSession
  */
-@Forward(name = "success", description = "successful processing of the message of the pipe")
 @Forward(name = "exception", description = "some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.")
 public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasStatistics {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

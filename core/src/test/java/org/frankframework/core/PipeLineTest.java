@@ -230,7 +230,7 @@ public class PipeLineTest {
 
 	private static class NonFixedForwardPipe extends AbstractPipe {
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) {
 			return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), message);
 		}
 	}
@@ -242,13 +242,11 @@ public class PipeLineTest {
 
 		IPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		IPipe pipe2 = configuration.createBean(NonFixedForwardPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
@@ -259,9 +257,8 @@ public class PipeLineTest {
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
-		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
+		assertTrue(pipe.getForwards().isEmpty(), "pipe1 should have no forwards");
 		assertTrue(pipe2.getForwards().isEmpty(), "pipe2 should not have a pipe-forward");
 	}
 
