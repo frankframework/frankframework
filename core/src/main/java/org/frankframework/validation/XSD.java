@@ -376,8 +376,7 @@ public abstract class XSD implements IXSD {
 		// ignore import without namespace when in head xsd default namespace and targetNamespace exists
 		if (el.getName().equals(SchemaUtils.IMPORT)
 			&& namespaceAttribute == null
-			&& StringUtils.isNotEmpty(xsd.getXsdDefaultNamespace())
-			&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
+			&& StringUtils.isNoneEmpty(xsd.getXsdDefaultNamespace(), xsd.getXsdTargetNamespace())) {
 
 			// Skip
 			return true;
