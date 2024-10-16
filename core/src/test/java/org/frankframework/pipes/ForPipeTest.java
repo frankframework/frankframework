@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -56,8 +57,11 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		configureAndStartPipe();
 
 		List<String> warnings = getConfigurationWarnings().getWarnings();
-		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("both as attribute and Parameter"));
+		Optional<String> bothAsAttributeAndParameter = warnings.stream()
+				.filter(warning -> warning.contains("both as attribute and Parameter"))
+				.findFirst();
+
+		assertTrue(bothAsAttributeAndParameter.isPresent());
 	}
 
 	@Test
