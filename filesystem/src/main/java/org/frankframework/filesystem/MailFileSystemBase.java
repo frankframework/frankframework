@@ -24,7 +24,6 @@ import lombok.Getter;
  *
  */
 public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
-
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
