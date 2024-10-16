@@ -34,6 +34,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.pipes.MessageSendingPipe;
+import org.frankframework.pipes.AsyncSenderWithListenerPipe;
 import org.frankframework.receivers.Receiver;
 import org.springframework.messaging.Message;
 
@@ -65,11 +66,13 @@ public class ConnectionOverview extends BusEndpointBase {
 							String domain = physicalDestination.getDomain();
 							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain));
 						}
-						IListener<?> listener = msp.getListener();
-						if (listener instanceof HasPhysicalDestination physicalDestination) {
-							String destination = physicalDestination.getPhysicalDestinationName();
-							String domain = physicalDestination.getDomain();
-							connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+						if (pipe instanceof AsyncSenderWithListenerPipe slp) {
+							IListener<?> listener = slp.getListener();
+							if (listener instanceof HasPhysicalDestination physicalDestination) {
+								String destination = physicalDestination.getPhysicalDestinationName();
+								String domain = physicalDestination.getDomain();
+								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+							}
 						}
 					}
 				}

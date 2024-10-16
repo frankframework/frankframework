@@ -57,14 +57,13 @@ public class SenderThread extends Thread {
 
 	@Override
 	public void run() {
-		try {
-			if (session==null) {
-				session = new PipeLineSession();
-			}
-			session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-			SenderResult result = sender.sendMessage(new Message(request), session);
-			response = result.getResult().asString();
-			result.getResult().close();
+		if (session==null) {
+			session = new PipeLineSession();
+		}
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+
+		try (Message input = new Message(request); SenderResult result = sender.sendMessage(input, session)) {
+			response = (Message.isNull(result.getResult())) ? "" : result.getResult().asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
