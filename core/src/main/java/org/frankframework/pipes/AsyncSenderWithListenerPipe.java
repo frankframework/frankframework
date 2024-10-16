@@ -89,8 +89,8 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException("while configuring listener",e);
 		}
-		if (listener instanceof HasPhysicalDestination) {
-			log.debug("has listener on {}", ((HasPhysicalDestination) listener).getPhysicalDestinationName());
+		if (listener instanceof HasPhysicalDestination dest) {
+			log.debug("has listener on {}", dest::getPhysicalDestinationName);
 		}
 
 		super.configure();
@@ -106,6 +106,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		}
 	}
 
+	@Override
 	protected void propagateName() {
 		super.propagateName();
 
@@ -114,48 +115,53 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		}
 	}
 
-	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws TransformerException, IOException, SAXException, SenderException {
-		String messageTrail="no audit trail";
-		if (auditTrailTp!=null) {
-			if (isUseInputForExtract()){
-				messageTrail=auditTrailTp.transform(originalMessage);
-			} else {
-				messageTrail=auditTrailTp.transform(input);
-			}
-		} else {
-			if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
-				messageTrail = session.getString(getAuditTrailSessionKey());
-			}
-		}
-		String storedMessageID= messageID;
-		if (storedMessageID==null) {
-			storedMessageID="-";
-		}
-		if (correlationIDTp!=null) {
-			if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
-				String sourceString = session.getString(getCorrelationIDSessionKey());
-				correlationID =correlationIDTp.transform(sourceString,null);
-			} else {
-				if (isUseInputForExtract()) {
-					correlationID =correlationIDTp.transform(originalMessage);
+	@Override
+	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
+		try {
+			String messageTrail="no audit trail";
+			if (auditTrailTp!=null) {
+				if (isUseInputForExtract()){
+					messageTrail=auditTrailTp.transform(originalMessage);
 				} else {
-					correlationID =correlationIDTp.transform(input);
+					messageTrail=auditTrailTp.transform(input);
+				}
+			} else {
+				if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
+					messageTrail = session.getString(getAuditTrailSessionKey());
 				}
 			}
-			if (StringUtils.isEmpty(correlationID)) {
-				correlationID ="-";
+			String storedMessageID= messageID;
+			if (storedMessageID==null) {
+				storedMessageID="-";
 			}
-		}
-		String label=null;
-		if (labelTp!=null) {
-			if (isUseInputForExtract()) {
-				label=labelTp.transform(originalMessage);
-			} else {
-				label=labelTp.transform(input);
+			if (correlationIDTp!=null) {
+				if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
+					String sourceString = session.getString(getCorrelationIDSessionKey());
+					correlationID =correlationIDTp.transform(sourceString,null);
+				} else {
+					if (isUseInputForExtract()) {
+						correlationID =correlationIDTp.transform(originalMessage);
+					} else {
+						correlationID =correlationIDTp.transform(input);
+					}
+				}
+				if (StringUtils.isEmpty(correlationID)) {
+					correlationID ="-";
+				}
 			}
-		}
+			String label=null;
+			if (labelTp!=null) {
+				if (isUseInputForExtract()) {
+					label=labelTp.transform(originalMessage);
+				} else {
+					label=labelTp.transform(input);
+				}
+			}
 
-		return storeMessage(storedMessageID, correlationID, input, messageTrail, label);
+			return storeMessage(storedMessageID, correlationID, input, messageTrail, label);
+		} catch (TransformerException | IOException | SAXException e) {
+			throw new SenderException("unable to apply xml transformation", e);
+		}
 	}
 
 	@Override
@@ -172,7 +178,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
 				listener.open();
-			} catch (Throwable t) {
+			} catch (ListenerException t) {
 				PipeStartException pse = new PipeStartException("could not start", t);
 				pse.setPipeNameInError(getName());
 				throw pse;

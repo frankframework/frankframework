@@ -504,8 +504,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	private String logToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws TransformerException, IOException, SAXException, SenderException {
-		ITransactionalStorage messageLog = getMessageLog();
-		if (messageLog == null) {
+		if (getMessageLog() == null) {
 			return correlationID;
 		}
 		long messageLogStartTime= System.currentTimeMillis();
@@ -519,7 +518,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 	}
 
-	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws TransformerException, IOException, SAXException, SenderException {
+	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
 		return storeMessage(messageID, correlationID, input, "no audit trail", null);
 	}
 
@@ -772,7 +771,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
 				getSender().open();
-			} catch (Throwable t) {
+			} catch (SenderException t) {
 				PipeStartException pse = new PipeStartException("could not start", t);
 				pse.setPipeNameInError(getName());
 				throw pse;
