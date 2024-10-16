@@ -1,7 +1,6 @@
 package org.frankframework.ldap;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -9,7 +8,6 @@ import org.frankframework.pipes.PipeTestBase;
 
 import org.frankframework.stream.Message;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import javax.naming.NamingException;
@@ -22,15 +20,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
-@Tag("mytag")
 public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroupMembershipsPipe> {
-
-	private static final String SUCCESS_FORWARD = "success";
 
 	@Override
 	public LdapFindGroupMembershipsPipe createPipe() throws ConfigurationException {
 		var pipe = spy(new LdapFindGroupMembershipsPipe());
-		pipe.registerForward(new PipeForward(SUCCESS_FORWARD, SUCCESS_FORWARD));
 		return pipe;
 	}
 
