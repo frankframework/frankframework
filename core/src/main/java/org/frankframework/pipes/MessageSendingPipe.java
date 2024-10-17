@@ -469,7 +469,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 
 		String correlationID = session.getCorrelationId();
-		String messageID = null;
+		String messageID = "-"; //TODO perhaps this should session.getMessageId();
 		if (getSender().isSynchronous()) {
 			if (log.isInfoEnabled()) {
 				log.info("sent message to [{}] synchronously", getSender().getName());
