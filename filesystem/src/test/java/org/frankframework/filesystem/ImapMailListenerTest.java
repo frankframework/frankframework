@@ -9,7 +9,7 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
-public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart, ImapTestFileSystem> {
+public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart, GreenmailImapTestFileSystem> {
 
 	private static final ServerSetup serverSetup = ServerSetupTest.IMAP;
 	static final String INPUT_FOLDER = "InputFolder";
@@ -28,24 +28,35 @@ public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart
 	User user = new User("test@example.org", "testUser", "testPassword");
 
 	@Override
-	public MailListener<Message, MimeBodyPart, ImapTestFileSystem> createFileSystemListener() {
+	public MailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> createFileSystemListener() {
 		greenMail.setUser(user.email, user.username, user.password);
 
-		ImapMailListener listener = new ImapMailListener();
-		listener.setSession(greenMail.getImap().createSession());
-		listener.setHost("localhost");
-		listener.setPort(greenMail.getImap().getPort());
-		listener.setUsername(user.username);
-		listener.setPassword(user.password);
-		listener.setBaseFolder("/");
-		listener.setMessageIdPropertyKey("Subject"); // for the filename based tests to use the correct key
-		listener.setReplyAddressFields("from,sender");
+		MailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> listener = new MailListener<>() {
+			@Override
+			protected GreenmailImapTestFileSystem createFileSystem() {
+				return getImapFileSystem();
+			}
+		};
 
-		// For the tests in the FileSystemTestBase to succeed, make sure to set this
-		listener.setInputFolder(INPUT_FOLDER);
+		listener.setMessageIdPropertyKey("Subject"); // for the filename based tests to use the correct key
+		listener.setInputFolder(INPUT_FOLDER); // For the tests in the FileSystemTestBase to succeed, make sure to set this
 		listener.setCreateFolders(true);
 
 		return listener;
+	}
+
+	private GreenmailImapTestFileSystem getImapFileSystem() {
+		GreenmailImapTestFileSystem imapTestFileSystem = new GreenmailImapTestFileSystem();
+
+		imapTestFileSystem.setSession(greenMail.getImap().createSession());
+		imapTestFileSystem.setHost("localhost");
+		imapTestFileSystem.setPort(greenMail.getImap().getPort());
+		imapTestFileSystem.setUsername(user.username);
+		imapTestFileSystem.setPassword(user.password);
+		imapTestFileSystem.setBaseFolder("/");
+		imapTestFileSystem.setReplyAddressFields("from,sender");
+
+		return imapTestFileSystem;
 	}
 
 	@Override

@@ -252,11 +252,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public void deleteFile(Message f) throws FileSystemException {
+	public void deleteFile(Message message) throws FileSystemException {
 		try {
-			f.setFlag(Flags.Flag.DELETED, true);
+			message.setFlag(Flags.Flag.DELETED, true);
+			message.getFolder().expunge();
 		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(message) + "]: " + e.getMessage());
 		}
 	}
 
@@ -509,8 +510,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Date getModificationTime(Message f) {
-		return null;
+	public Date getModificationTime(Message message) {
+		try {
+			return message.getReceivedDate();
+		} catch (MessagingException e) {
+			return null;
+		}
 	}
 
 	private List<String> getRecipientsOfType(Message f, RecipientType type) throws MessagingException {

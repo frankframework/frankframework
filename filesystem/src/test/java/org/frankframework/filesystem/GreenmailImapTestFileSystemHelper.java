@@ -18,16 +18,15 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SubjectTerm;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
-
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Greenmail based mail file system helper.
- *
+ * <br>
  * Greenmail is a simple mail backend to send and retrieve e-mails, to mock smtp, imap, etc.
- * @see "https://github.com/greenmail-mail-test/greenmail/tree/master/greenmail-core/src/test/java/com/icegreen/greenmail/examples" for examples and unit tests.
+ * @see "https://github.com/greenmail-mail-test/greenmail/tree/master/greenmail-core/src/test/java/com/icegreen/greenmail/examples"
  */
 public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelperFullControl {
 

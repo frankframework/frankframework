@@ -1,11 +1,9 @@
 package org.frankframework.filesystem;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Optional;
 
 import jakarta.annotation.Nullable;
-import jakarta.mail.Flags;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -20,7 +18,7 @@ import org.frankframework.configuration.ConfigurationException;
 /**
  * Slightly modified implementation of ImapFileSystem to be able to use greenmail as a backend.
  */
-public class ImapTestFileSystem extends ImapFileSystem {
+public class GreenmailImapTestFileSystem extends ImapFileSystem {
 	private Session session;
 
 	@Override
@@ -44,27 +42,9 @@ public class ImapTestFileSystem extends ImapFileSystem {
 	}
 
 	@Override
-	public void deleteFile(Message message) throws FileSystemException {
-		try {
-			message.setFlag(Flags.Flag.DELETED, true);
-			message.getFolder().expunge();
-		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(message) + "]: " + e.getMessage());
-		}
-	}
-
-	@Override
-	public Date getModificationTime(Message message) {
-		try {
-			return message.getReceivedDate();
-		} catch (MessagingException e) {
-			return null;
-		}
-	}
-
-	@Override
 	public String getName(Message message) {
 		try {
+			// Use the subject as name, since the uid is generated
 			return message.getSubject();
 		} catch (MessagingException e) {
 			return null;
@@ -93,7 +73,8 @@ public class ImapTestFileSystem extends ImapFileSystem {
 	}
 
 	private Optional<Message> findMatchingFile(String filename, IMAPFolder folder) throws MessagingException {
-		return Arrays.stream(folder.getMessages()).filter(message -> isMatch(filename, message))
+		return Arrays.stream(folder.getMessages())
+				.filter(message -> isMatch(filename, message))
 				.findFirst();
 	}
 
