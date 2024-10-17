@@ -19,17 +19,18 @@ import java.io.IOException;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.xml.SaxElementBuilder;
+import org.frankframework.xml.SaxDocumentBuilder;
 
 /**
  * Implementation of a {@link FileSystemListener} that enables a {@link Receiver} to look in a folder
@@ -76,7 +77,6 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
 
-
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		return switch (getMessageType().name()) {
@@ -95,7 +95,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 					throw new ListenerException("unable to create XmlWriter", e);
 				}
 
-				try (SaxElementBuilder emailXml = new SaxElementBuilder("email", msgBuilder.asXmlWriter())) {
+				try (SaxDocumentBuilder emailXml = new SaxDocumentBuilder("email", msgBuilder.asXmlWriter(), false)) {
 					if (isSimple()) {
 						MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage.getRawMessage(), emailXml);
 					} else {
@@ -145,5 +145,4 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 	public void setMessageType(MessageType messageType) {
 		super.setMessageType(messageType);
 	}
-
 }

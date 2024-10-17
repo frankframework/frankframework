@@ -26,11 +26,13 @@ import java.util.Map;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import org.frankframework.util.LogUtil;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 public class MailFileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
@@ -46,7 +48,6 @@ public class MailFileSystemUtils {
 			IMailFileSystem.DATETIME_RECEIVED_KEY,
 			IMailFileSystem.BEST_REPLY_ADDRESS_KEY
 	);
-
 
 	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
@@ -132,7 +133,6 @@ public class MailFileSystemUtils {
 			}
 		}
 	}
-
 
 	public static String findBestReplyAddress(Map<String,Object> headers, String replyAddressFields) {
 		if (StringUtils.isEmpty(replyAddressFields)) {
