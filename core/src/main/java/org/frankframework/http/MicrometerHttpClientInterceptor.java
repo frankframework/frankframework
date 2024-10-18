@@ -29,6 +29,7 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.protocol.HttpContext;
+
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -42,11 +43,14 @@ import org.frankframework.statistics.MetricsInitializer;
  */
 public class MicrometerHttpClientInterceptor {
 
-	private final Map<HttpContext, Timer.ResourceSample> timerByHttpContext = new ConcurrentHashMap<>();
+	private final Map<ThreadLocal<HttpContext>, Timer.ResourceSample> timerByHttpContext = new ConcurrentHashMap<>();
 
 	private final HttpRequestInterceptor requestInterceptor;
 
 	private final HttpResponseInterceptor responseInterceptor;
+
+	// Wrap the httpContext in a threadLocal since the same context can be used over multiple threads.
+	private final ThreadLocal<HttpContext> threadLocal = new ThreadLocal<>();
 
 	/**
 	 * Create a {@code MicrometerHttpClientInterceptor} instance.
@@ -58,19 +62,26 @@ public class MicrometerHttpClientInterceptor {
 	 */
 	public MicrometerHttpClientInterceptor(MetricsInitializer configurationMetrics, IConfigurationAware parentFrankElement,
 										   Function<HttpRequest, String> uriMapper, boolean exportTagsForRoute) {
-		this.requestInterceptor = (request, context) -> timerByHttpContext.put(context,
-				configurationMetrics.createTimerResource(parentFrankElement, FrankMeterType.SENDER_HTTP,
-						"method", request.getRequestLine().getMethod(),
-						"uri", uriMapper.apply(request)));
+
+		this.requestInterceptor = (request, context) -> {
+			threadLocal.set(context);
+			timerByHttpContext.put(
+					threadLocal,
+					configurationMetrics.createTimerResource(parentFrankElement, FrankMeterType.SENDER_HTTP,
+							"method", request.getRequestLine().getMethod(),
+							"uri", uriMapper.apply(request)
+					)
+			);
+		};
 
 		this.responseInterceptor = (response, context) -> {
-			if (timerByHttpContext.containsKey(context)) {
-				timerByHttpContext.remove(context)
-						.tag("status", Integer.toString(response.getStatusLine().getStatusCode()))
-						.tag("outcome", Outcome.forStatus(response.getStatusLine().getStatusCode()).name())
-						.tags(exportTagsForRoute ? generateTagsForRoute(context) : Tags.empty())
-						.close();
-			}
+			timerByHttpContext.remove(threadLocal)
+					.tag("status", Integer.toString(response.getStatusLine().getStatusCode()))
+					.tag("outcome", Outcome.forStatus(response.getStatusLine().getStatusCode()).name())
+					.tags(exportTagsForRoute ? generateTagsForRoute(context) : Tags.empty())
+					.close();
+
+			threadLocal.remove();
 		};
 	}
 
