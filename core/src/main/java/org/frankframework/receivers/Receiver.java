@@ -52,6 +52,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
@@ -1205,24 +1206,24 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
-		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session);
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapperOriginal.getId(), session);
 			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
 			 final IbisMaskingLayout.HideRegexContext ignored3 = IbisMaskingLayout.pushToThreadLocalReplace(getAdapter().getComposedHideRegexPattern());
 		) {
 			lastMessageDate = startProcessingTimestamp;
-			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
+			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapperOriginal.getId(), messageWrapperOriginal.getCorrelationId());
 
-			String messageId = ensureMessageIdNotEmpty(messageWrapper.getId());
-			final String businessCorrelationId = getBusinessCorrelationId(messageWrapper, messageId, session);
+			String messageId = ensureMessageIdNotEmpty(messageWrapperOriginal.getId());
+			final String businessCorrelationId = getBusinessCorrelationId(messageWrapperOriginal, messageId, session);
 			session.put(PipeLineSession.CORRELATION_ID_KEY, businessCorrelationId);
 
-			MessageWrapper<M> messageWithMessageIdAndCorrelationId = new MessageWrapper<>(messageWrapper, messageWrapper.getMessage(), messageId, businessCorrelationId);
+			MessageWrapper<M> messageWrapper = new MessageWrapper<>(messageWrapperOriginal, messageWrapperOriginal.getMessage(), messageId, businessCorrelationId);
 
-			boolean exitWithoutProcessing = checkMessageHistory(messageWithMessageIdAndCorrelationId, session, manualRetry, duplicatesAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(messageWrapper, session, manualRetry, duplicatesAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
@@ -1249,7 +1250,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					if (getMessageLog() != null) {
 						final String label = extractLabel(compactedMessage);
-						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, messageWithMessageIdAndCorrelationId);
+						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper);
 					}
 					log.debug("{} preparing TimeoutGuard", logPrefix);
 					TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1322,13 +1323,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					if (!isTransacted() && messageInError && !manualRetry
 							&& !(getListener() instanceof IRedeliveringListener<?> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError())) {
-						moveInProcessToError(messageWithMessageIdAndCorrelationId, session, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, TXNEW_CTRL);
+						moveInProcessToError(messageWrapper, session, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, TXNEW_CTRL);
 					}
 					try {
-						RawMessageWrapper<M> messageForAfterMessageProcessed = messageWithMessageIdAndCorrelationId;
+						RawMessageWrapper<M> messageForAfterMessageProcessed = messageWrapper;
 						if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
 							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
-							RawMessageWrapper<M> movedMessage = changeProcessState(messageWithMessageIdAndCorrelationId, targetState, messageInError ? errorMessage : null);
+							RawMessageWrapper<M> movedMessage = changeProcessState(messageWrapper, targetState, messageInError ? errorMessage : null);
 							if (movedMessage!=null) {
 								messageForAfterMessageProcessed = movedMessage;
 							}
@@ -1416,7 +1417,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
 			Optional<ProcessResultCacheItem> cachedProcessResult = getCachedProcessResult(messageId);
-			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageId, correlationId, messageWrapper, session, manualRetry)) {
+			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageWrapper, session, manualRetry)) {
 				if (!isTransacted()) {
 					log.warn("{} received message with messageId [{}] which has a problematic history; aborting processing", logPrefix, messageId);
 				}
@@ -1560,14 +1561,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		int deliveryCount = getDeliveryCount(messageWrapper);
 		// After message has been processed the first delivery also counts as a try so if maxRetries == 0, message has now failed but if maxReties == 1, and deliveryCount == 1, the message should get another try.
 		boolean deliveryCountBelowLimit = deliveryCount <= maxRetries;
-		log.debug("{} Message with messageId [{}] has deliveryCount {}, maxRetries {}, limit reached: {}", this::getLogPrefix, messageWrapper::getId, ()->deliveryCount, this::getMaxRetries, ()->deliveryCountBelowLimit);
+		log.debug("{} Check delivery count in message post processing: Message with messageId [{}] has deliveryCount {}, maxRetries {}, limit reached: {}", this::getLogPrefix, messageWrapper::getId, ()->deliveryCount, this::getMaxRetries, ()->deliveryCountBelowLimit);
 		return deliveryCountBelowLimit;
 	}
 
 	/**
 	 * returns true if message should not be processed when it is delivered.
 	 */
-	protected boolean isDeliveryRetryLimitExceededBeforeMessageProcessing(String messageId, String correlationId, RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session, boolean manualRetry) throws ListenerException {
+	protected boolean isDeliveryRetryLimitExceededBeforeMessageProcessing(RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session, boolean manualRetry) throws ListenerException {
+		String messageId = rawMessageWrapper.getId();
+		String correlationId = rawMessageWrapper.getCorrelationId();
 		if (manualRetry) {
 			session.put(RETRY_FLAG_SESSION_KEY, "true");
 			return isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId);
@@ -1679,13 +1682,30 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
+	private int getActualTransactionTimeout() {
+		if (getTransactionTimeout() != 0) {
+			return getTransactionTimeout();
+		}
+		if (txManager instanceof AbstractPlatformTransactionManager platformTransactionManager) {
+			return platformTransactionManager.getDefaultTimeout();
+		}
+		return 0;
+	}
+
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
+		int maxRetryInterval;
+		if (isTransacted()) {
+			maxRetryInterval = getActualTransactionTimeout() >> 1; // Fast divide-by-two
+			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->maxRetryInterval);
+		} else {
+			maxRetryInterval = MAX_RETRY_INTERVAL;
+		}
 		int currentInterval;
 		synchronized (this) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
-			if (retryInterval > MAX_RETRY_INTERVAL) {
-				retryInterval = MAX_RETRY_INTERVAL;
+			if (retryInterval > maxRetryInterval) {
+				retryInterval = maxRetryInterval;
 			}
 		}
 		if (currentInterval>1) {
