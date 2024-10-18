@@ -1694,8 +1694,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
 		int maxRetryInterval;
-		if (isTransacted()) {
-			maxRetryInterval = getActualTransactionTimeout() >> 1; // Fast divide-by-two
+		int actualTransactionTimeout = getActualTransactionTimeout();
+		if (isTransacted() && actualTransactionTimeout > 0) {
+			maxRetryInterval = Math.min(MAX_RETRY_INTERVAL, actualTransactionTimeout >> 1); // Fast divide-by-two
 			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->maxRetryInterval);
 		} else {
 			maxRetryInterval = MAX_RETRY_INTERVAL;
