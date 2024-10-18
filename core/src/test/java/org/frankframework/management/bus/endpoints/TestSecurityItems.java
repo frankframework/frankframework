@@ -25,12 +25,12 @@ public class TestSecurityItems extends BusTestBase {
 		JmsRealm jdbcRealm = new JmsRealm();
 		jdbcRealm.setRealmName("dummyJmsRealm1");
 		jdbcRealm.setDatasourceName("dummyDatasourceName");
-		JmsRealmFactory.getInstance().registerJmsRealm(jdbcRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jdbcRealm);
 
 		JmsRealm jmsRealm = new JmsRealm();
 		jmsRealm.setRealmName("dummyJmsRealm2");
 		jmsRealm.setQueueConnectionFactoryName("dummyQCF");
-		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 	}
 
 	@Test

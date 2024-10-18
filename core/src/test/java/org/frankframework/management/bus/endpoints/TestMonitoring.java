@@ -77,10 +77,10 @@ public class TestMonitoring extends BusTestBase {
 		trigger.setThreshold(1337);
 		trigger.setSeverity(Severity.HARMLESS);
 		trigger.setTriggerType(TriggerType.ALARM);
-		trigger.registerAdapterFilter(filter);
+		trigger.addAdapterFilter(filter);
 		trigger.setSourceFiltering(SourceFiltering.ADAPTER);
 		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 		manager.addMonitor(monitor);
 		IMonitorDestination ima = new IMonitorDestination() {
 			private @Getter @Setter String name = "mockDestination";
@@ -100,7 +100,7 @@ public class TestMonitoring extends BusTestBase {
 				return new XmlBuilder("destination");
 			}
 		};
-		manager.registerDestination(ima);
+		manager.addDestination(ima);
 		manager.configure();
 	}
 

@@ -25,7 +25,7 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 		XsltPipe first = new XsltPipe();
 		first.setName("XsltPipe");
 		first.setStyleSheetName("/Xslt/extract.xslt");
-		first.registerForward(new PipeForward("success", "nextPipe"));
+		first.addForward(new PipeForward("success", "nextPipe"));
 		autowireByType(first);
 		autowireByName(first);
 		pipeline.addPipe(first);

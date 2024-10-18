@@ -66,9 +66,9 @@ public class TestLocalStatisticsRegistry {
 		receiver.setName("myReceiver");
 		JavaListener<M> listener = configuration.createBean(JavaListener.class);
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 	}
 
 	private static String jsonStructureToString(JsonStructure payload) {

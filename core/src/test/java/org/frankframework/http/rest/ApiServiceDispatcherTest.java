@@ -273,7 +273,7 @@ public class ApiServiceDispatcherTest {
 		successForward.setName(forwardName);
 		successForward.setPath(forwardName);
 
-		echoPipe.registerForward(successForward);
+		echoPipe.addForward(successForward);
 
 		return echoPipe;
 	}
@@ -291,7 +291,7 @@ public class ApiServiceDispatcherTest {
 		PipeForward pipeForward = new PipeForward();
 		pipeForward.setName(forwardName);
 
-		json2xmlInput.registerForward(pipeForward);
+		json2xmlInput.addForward(pipeForward);
 		return json2xmlInput;
 	}
 
@@ -305,8 +305,8 @@ public class ApiServiceDispatcherTest {
 		failure.setState(PipeLine.ExitState.ERROR);
 
 		PipeLineExits exits = new PipeLineExits();
-		exits.registerPipeLineExit(success);
-		exits.registerPipeLineExit(failure);
+		exits.addPipeLineExit(success);
+		exits.addPipeLineExit(failure);
 		return exits;
 	}
 }

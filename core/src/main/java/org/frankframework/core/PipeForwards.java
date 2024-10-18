@@ -36,7 +36,7 @@ public class PipeForwards {
 	 * Defines what pipe or exit to execute next. When the execution of a pipe is done, the pipe looks up the next pipe or exit to execute.
 	 * See {@link PipeForward Forward} for more information.
 	 */
-	public void registerForward(PipeForward forward) {
+	public void addForward(PipeForward forward) {
 		forwards.add(forward);
 	}
 

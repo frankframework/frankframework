@@ -295,14 +295,14 @@ public class OpenApiTestBase extends Mockito {
 			for (PipeLineExit exit : exits) {
 				exit.setName("success" + exit.getExitCode());
 
-				pipeline.registerPipeLineExit(exit);
+				pipeline.addPipeLineExit(exit);
 			}
 			IPipe pipe = new EchoPipe();
 			pipe.setName("echo");
 			pipeline.addPipe(pipe);
 
 			adapter.setPipeLine(pipeline);
-			adapter.registerReceiver(receiver);
+			adapter.addReceiver(receiver);
 			adapter.configure();
 
 			assertTrue(adapter.configurationSucceeded(), "adapter failed to configure!?");

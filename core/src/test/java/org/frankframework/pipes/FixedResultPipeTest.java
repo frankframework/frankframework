@@ -265,7 +265,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		session.put("filename", "nofile");
 
 		pipe.setFilenameSessionKey("filename");
-		pipe.registerForward(new PipeForward("filenotfound", "dummy"));
+		pipe.addForward(new PipeForward("filenotfound", "dummy"));
 		pipe.configure();
 
 		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
