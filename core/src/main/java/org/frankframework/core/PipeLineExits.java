@@ -53,7 +53,7 @@ public class PipeLineExits {
 	 * PipeLine exits.
 	 * @ff.mandatory
 	 */
-	public void registerPipeLineExit(PipeLineExit exit) {
+	public void addPipeLineExit(PipeLineExit exit) {
 		exits.add(exit);
 	}
 }

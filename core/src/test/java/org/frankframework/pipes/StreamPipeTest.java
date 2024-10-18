@@ -96,7 +96,7 @@ class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		pipe.setCheckAntiVirus(true);
 		PipeForward pipeAntiVirusFailedForward = new PipeForward();
 		pipeAntiVirusFailedForward.setName(StreamPipe.ANTIVIRUS_FAILED_FORWARD);
-		pipe.registerForward(pipeAntiVirusFailedForward);
+		pipe.addForward(pipeAntiVirusFailedForward);
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true, true);
 		pipe.addParameter(createHttpRequestParameter(request, session));
 		pipe.configure();

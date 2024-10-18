@@ -39,8 +39,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 	@Test
 	void assertForwardsSet() throws ConfigurationException, PipeStartException {
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		pipe.setStopAt(10);
 		configureAndStartPipe();
 
@@ -52,8 +52,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
 		pipe.setStopAt(10);
 
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
 		List<String> warnings = getConfigurationWarnings().getWarnings();
@@ -70,8 +70,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 		pipe.setStartAt(10);
 		pipe.setStopAt(10);
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
 		// Assert that we start at 10
@@ -100,8 +100,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 			pipe.setStopAt(10);
 		}
 
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
 		// Assert that we start at 10
@@ -124,8 +124,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		String dummyInput = "dummyInput";
 
 		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_VALUE, ""));
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 
 		configureAndStartPipe();
 

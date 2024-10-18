@@ -13,8 +13,8 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 	@Override
 	public CounterSwitchPipe createPipe() throws ConfigurationException {
 		CounterSwitchPipe pipe = new CounterSwitchPipe();
-		pipe.registerForward(new PipeForward("1", null));
-		pipe.registerForward(new PipeForward("2", null));
+		pipe.addForward(new PipeForward("1", null));
+		pipe.addForward(new PipeForward("2", null));
 		return pipe;
 	}
 

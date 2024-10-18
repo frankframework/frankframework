@@ -32,7 +32,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	@Test
 	public void basicInvalid() throws Exception {
 		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
-		pipe.registerForward(new PipeForward("failure", null));
+		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
 		String input = "{}";
@@ -48,7 +48,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	@Test
 	public void basicNullInput() throws Exception {
 		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
-		pipe.registerForward(new PipeForward("failure", null));
+		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
 		String input = null;
@@ -64,8 +64,8 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	@Test
 	public void parserError() throws Exception {
 		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
-		pipe.registerForward(new PipeForward("failure", null));
-		pipe.registerForward(new PipeForward("parserError", null));
+		pipe.addForward(new PipeForward("failure", null));
+		pipe.addForward(new PipeForward("parserError", null));
 		configureAndStartPipe();
 
 		String input = "{asdf";
@@ -93,7 +93,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	@Test
 	public void overrideRootElement() throws Exception {
 		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
-		pipe.registerForward(new PipeForward("failure", null));
+		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/address.json");
@@ -107,7 +107,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 	public void overrideRootElementInvalid() throws Exception {
 		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
 		pipe.setRoot("address");
-		pipe.registerForward(new PipeForward("failure", null));
+		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
 		String input = "{}";

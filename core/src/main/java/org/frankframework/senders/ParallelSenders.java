@@ -164,8 +164,8 @@ public class ParallelSenders extends SenderSeries {
 
 	/** one or more specifications of senders. Each will receive the same input message, to be processed in parallel */
 	@Override
-	public void registerSender(ISender sender) {
-		super.registerSender(sender);
+	public void addSender(ISender sender) {
+		super.addSender(sender);
 	}
 
 	/**

@@ -27,8 +27,8 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		RegExPipe pipe = new RegExPipe();
 
 		//Add default pipes
-		pipe.registerForward(new PipeForward(RegExPipe.THEN_FORWARD, null));
-		pipe.registerForward(new PipeForward(RegExPipe.ELSE_FORWARD, null));
+		pipe.addForward(new PipeForward(RegExPipe.THEN_FORWARD, null));
+		pipe.addForward(new PipeForward(RegExPipe.ELSE_FORWARD, null));
 		return pipe;
 	}
 

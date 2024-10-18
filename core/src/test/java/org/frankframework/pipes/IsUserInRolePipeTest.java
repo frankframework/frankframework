@@ -140,9 +140,9 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(true);
 
 		setNotInRoleForward();
-		pipe.registerForward(new PipeForward(ROLE, ""));
-		pipe.registerForward(new PipeForward(ROLE2, ""));
-		pipe.registerForward(new PipeForward(ROLE3, ""));
+		pipe.addForward(new PipeForward(ROLE, ""));
+		pipe.addForward(new PipeForward(ROLE2, ""));
+		pipe.addForward(new PipeForward(ROLE3, ""));
 		pipe.configure();
 
 		// When
@@ -178,9 +178,9 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(true);
 
 		setNotInRoleForward();
-		pipe.registerForward(new PipeForward(ROLE, ""));
-		pipe.registerForward(new PipeForward(ROLE2, ""));
-		pipe.registerForward(new PipeForward(ROLE3, ""));
+		pipe.addForward(new PipeForward(ROLE, ""));
+		pipe.addForward(new PipeForward(ROLE2, ""));
+		pipe.addForward(new PipeForward(ROLE3, ""));
 		pipe.setRole(ROLES);
 		pipe.configure();
 
@@ -216,9 +216,9 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(false);
 
 		setNotInRoleForward();
-		pipe.registerForward(new PipeForward(ROLE, ""));
-		pipe.registerForward(new PipeForward(ROLE2, ""));
-		pipe.registerForward(new PipeForward(ROLE3, ""));
+		pipe.addForward(new PipeForward(ROLE, ""));
+		pipe.addForward(new PipeForward(ROLE2, ""));
+		pipe.addForward(new PipeForward(ROLE3, ""));
 		pipe.configure();
 
 		// When
@@ -254,9 +254,9 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(false);
 
 		setNotInRoleForward();
-		pipe.registerForward(new PipeForward(ROLE, ""));
-		pipe.registerForward(new PipeForward(ROLE2, ""));
-		pipe.registerForward(new PipeForward(ROLE3, ""));
+		pipe.addForward(new PipeForward(ROLE, ""));
+		pipe.addForward(new PipeForward(ROLE2, ""));
+		pipe.addForward(new PipeForward(ROLE3, ""));
 		pipe.setRole(ROLES);
 		pipe.configure();
 
@@ -269,7 +269,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 
 	protected void setNotInRoleForward() throws ConfigurationException {
 		PipeForward notInRole = new PipeForward(NOT_IN_ROLE_FORWARD_NAME, NOT_IN_ROLE_FORWARD_PATH);
-		pipe.registerForward(notInRole);
+		pipe.addForward(notInRole);
 	}
 
 

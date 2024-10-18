@@ -43,8 +43,8 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 
 
 	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.registerForward(new PipeForward("1","FixedResult1"));
-		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
+		pipe.addForward(new PipeForward("1","FixedResult1"));
+		pipe.addForward(new PipeForward("NF","FixedResultNF"));
 		pipe.setServiceSelectionStylesheetFilename(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
@@ -54,8 +54,8 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	public void testNamespaceAwarenessWithXpath(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.registerForward(new PipeForward("1","FixedResult1"));
-		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
+		pipe.addForward(new PipeForward("1","FixedResult1"));
+		pipe.addForward(new PipeForward("NF","FixedResultNF"));
 		pipe.setXpathExpression("/root/sub");
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);

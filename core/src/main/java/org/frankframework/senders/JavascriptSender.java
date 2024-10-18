@@ -183,8 +183,8 @@ public class JavascriptSender extends SenderSeries {
 
 	@Optional
 	@Override
-	public void registerSender(ISender sender) {
-		super.registerSender(sender);
+	public void addSender(ISender sender) {
+		super.addSender(sender);
 	}
 
 	/**

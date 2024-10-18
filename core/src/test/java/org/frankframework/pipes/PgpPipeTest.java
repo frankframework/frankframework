@@ -111,10 +111,10 @@ public class PgpPipeTest {
 		encryptPipe = new PGPPipe();
 		decryptPipe = new PGPPipe();
 
-		encryptPipe.registerForward(new PipeForward("success", null));
+		encryptPipe.addForward(new PipeForward("success", null));
 		encryptPipe.setName(encryptPipe.getClass().getSimpleName() + " under test");
 
-		decryptPipe.registerForward(new PipeForward("success", null));
+		decryptPipe.addForward(new PipeForward("success", null));
 		decryptPipe.setName(decryptPipe.getClass().getSimpleName() + " under test");
 	}
 

@@ -44,7 +44,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		String jsonString = getTestFile(inputFile + (skipJsonRootElements ? "-compact" : "-full") + ".json");
 
 		Json2XmlValidator validator = new Json2XmlValidator();
-		validator.registerForward(new PipeForward("success", null));
+		validator.addForward(new PipeForward("success", null));
 		validator.setThrowException(true);
 		if (StringUtils.isNotEmpty(namespace)) {
 			validator.setSchemaLocation(namespace + " " + BASEDIR + schemaFile);

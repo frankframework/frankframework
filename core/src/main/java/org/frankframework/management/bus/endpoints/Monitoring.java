@@ -121,7 +121,7 @@ public class Monitoring extends BusEndpointBase {
 			monitor = getMonitor(mm, name);
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
-			monitor.registerTrigger(trigger);
+			monitor.addTrigger(trigger);
 		} else {
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
@@ -211,7 +211,7 @@ public class Monitoring extends BusEndpointBase {
 			for(String adapter : dto.getAdapters()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
-				trigger.registerAdapterFilter(adapterFilter);
+				trigger.addAdapterFilter(adapterFilter);
 			}
 		} else if(SourceFiltering.SOURCE == dto.getFilter()) {
 			for(Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
@@ -220,7 +220,7 @@ public class Monitoring extends BusEndpointBase {
 				for(String subObject : entry.getValue()) {
 					adapterFilter.registerSubObject(subObject);
 				}
-				trigger.registerAdapterFilter(adapterFilter);
+				trigger.addAdapterFilter(adapterFilter);
 			}
 		}
 	}

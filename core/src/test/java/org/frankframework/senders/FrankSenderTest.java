@@ -527,7 +527,7 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.registerReceiver(receiver);
+		targetAdapter.addReceiver(receiver);
 		receiver.setAdapter(targetAdapter);
 
 		listener.configure();
@@ -549,7 +549,7 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.registerReceiver(receiver);
+		targetAdapter.addReceiver(receiver);
 		receiver.setAdapter(targetAdapter);
 
 		listener.open();
@@ -573,10 +573,10 @@ class FrankSenderTest {
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName(exitState.name());
 		ple.setState(exitState);
-		pl.registerPipeLineExit(ple);
+		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 		return adapter;
 	}
 

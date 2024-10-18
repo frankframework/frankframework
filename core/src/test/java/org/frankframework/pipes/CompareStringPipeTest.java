@@ -21,9 +21,9 @@ class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	public CompareStringPipe createPipe() throws ConfigurationException {
 		CompareStringPipe pipe = new CompareStringPipe();
 
-		pipe.registerForward(new PipeForward(LESS_THAN, null));
-		pipe.registerForward(new PipeForward(GREATER_THAN, null));
-		pipe.registerForward(new PipeForward(EQUALS, null));
+		pipe.addForward(new PipeForward(LESS_THAN, null));
+		pipe.addForward(new PipeForward(GREATER_THAN, null));
+		pipe.addForward(new PipeForward(EQUALS, null));
 
 		return pipe;
 	}

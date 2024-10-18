@@ -536,7 +536,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void multiThreadedMailWithWordAttachment() throws Exception {
 		pipe.setName("multiThreadedmailWithWordAttachment");
 		pipe.setAction(DocumentAction.CONVERT);
-		pipe.registerForward(new PipeForward("success", "dummy"));
+		pipe.addForward(new PipeForward("success", "dummy"));
 		pipe.configure();
 		pipe.start();
 

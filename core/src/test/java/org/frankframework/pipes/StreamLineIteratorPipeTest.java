@@ -174,7 +174,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
+		pipe.addForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -234,7 +234,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setSender(getElementRenderer());
 		pipe.setStartPosition(4);
 		pipe.setEndPosition(5);
-		pipe.registerForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
+		pipe.addForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
 		pipe.setStopConditionXPathExpression("/block='key 4 nine'");
 		pipe.setCombineBlocks(true);
 		configurePipe();

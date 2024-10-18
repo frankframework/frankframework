@@ -364,16 +364,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	/**
 	 * Include the referenced Module in this configuration
 	 */
-	public void registerInclude(Include module) {
+	public void addInclude(Include module) {
 		// method exists to trigger FrankDoc.
 	}
 
 	/**
 	 * Add adapter.
 	 */
-	public void registerAdapter(Adapter adapter) {
+	public void addAdapter(Adapter adapter) {
 		adapter.setConfiguration(this);
-		adapterManager.registerAdapter(adapter);
+		adapterManager.addAdapter(adapter);
 
 		log.debug("Configuration [{}] registered adapter [{}]", this::getName, adapter::toString);
 	}
@@ -509,6 +509,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		// SapSystems self register;
 	}
 
+	// TODO
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	public void setJmsRealms(JmsRealmFactory realm) {
 		// JmsRealm-objects self register in JmsRealmFactory;
@@ -516,8 +517,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	@Deprecated
-	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm); // For backwards compatibility to support old ibisdoc xsd
+	public void addJmsRealm(JmsRealm realm) {
+		JmsRealmFactory.getInstance().addJmsRealm(realm); // For backwards compatibility to support old ibisdoc xsd
 	}
 
 	/**

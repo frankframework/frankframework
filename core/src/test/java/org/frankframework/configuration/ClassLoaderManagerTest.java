@@ -126,7 +126,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		JmsRealm jmsRealm = spy(new JmsRealm());
 		jmsRealm.setDatasourceName("fake");
 		jmsRealm.setRealmName("myRealm");
-		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 		FixedQuerySender fq = mock(FixedQuerySender.class);
 		doReturn(new GenericDbmsSupport()).when(fq).getDbmsSupport();
 

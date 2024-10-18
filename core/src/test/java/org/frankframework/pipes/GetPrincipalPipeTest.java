@@ -68,7 +68,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 		// Given
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
-		pipe.registerForward(notFound);
+		pipe.addForward(notFound);
 
 		// Expect/When
 		assertDoesNotThrow(() -> pipe.configure());
@@ -152,7 +152,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
-		pipe.registerForward(notFound);
+		pipe.addForward(notFound);
 		pipe.configure();
 		pipe.start();
 
@@ -174,7 +174,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
-		pipe.registerForward(notFound);
+		pipe.addForward(notFound);
 		pipe.configure();
 		pipe.start();
 
@@ -196,7 +196,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
-		pipe.registerForward(notFound);
+		pipe.addForward(notFound);
 		pipe.configure();
 		pipe.start();
 

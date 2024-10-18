@@ -70,7 +70,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		JmsRealm jmsRealm = spy(new JmsRealm());
 		jmsRealm.setDatasourceName("fake");
 		jmsRealm.setRealmName("myRealm");
-		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 	}
 
 	private void mockDatabase() throws Exception {

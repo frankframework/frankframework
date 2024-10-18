@@ -21,7 +21,7 @@ import org.frankframework.doc.FrankDocGroupValue;
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class SapSystems {
 
-	public void registerSapSystem(ISapSystem sapSystem) {
+	public void addSapSystem(ISapSystem sapSystem) {
 		//SapSystems selfRegister, this method only exists for the FrankDoc;
 	}
 

@@ -714,7 +714,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setStopConditionXPathExpression("*[@name='p & Q']");
-		pipe.registerForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
+		pipe.addForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -768,7 +768,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(1);
-		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
+		pipe.addForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -804,7 +804,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(2);
-		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
+		pipe.addForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 

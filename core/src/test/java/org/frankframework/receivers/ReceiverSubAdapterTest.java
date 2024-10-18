@@ -90,8 +90,8 @@ public class ReceiverSubAdapterTest {
 		failure.setState(PipeLine.ExitState.ERROR);
 
 		PipeLineExits exits = new PipeLineExits();
-		exits.registerPipeLineExit(success);
-		exits.registerPipeLineExit(failure);
+		exits.addPipeLineExit(success);
+		exits.addPipeLineExit(failure);
 		pl.setPipeLineExits(exits);
 
 		CorePipeLineProcessor plp = new CorePipeLineProcessor();
@@ -121,9 +121,9 @@ public class ReceiverSubAdapterTest {
 		receiver.setName(name);
 		adapter.setName(name);
 
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 
 		receiver.setApplicationContext(configuration);
 		receiver.setAdapter(adapter);
@@ -253,8 +253,8 @@ public class ReceiverSubAdapterTest {
 		AtomicInteger succeeds = new AtomicInteger();
 
 		FailurePipe() throws ConfigurationException {
-			registerForward(failureForward);
-			registerForward(successForward);
+			addForward(failureForward);
+			addForward(successForward);
 			setName("fail");
 		}
 

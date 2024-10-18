@@ -54,7 +54,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE);
 		val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
@@ -66,7 +66,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE_WITH_INCLUDE);
 		val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
@@ -81,7 +81,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		validator.setSoapVersion(SoapVersion.AUTO);
 		validator.setIgnoreUnknownNamespaces(true);
 		validator.setThrowException(true);
-		validator.registerForward(new PipeForward("success", null));
+		validator.addForward(new PipeForward("success", null));
 
 		// Act
 		validator.configure();
@@ -101,7 +101,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 			validator.setSoapVersion(SoapVersion.AUTO);
 			validator.setIgnoreUnknownNamespaces(true);
 			validator.setThrowException(true);
-			validator.registerForward(new PipeForward("success", null));
+			validator.addForward(new PipeForward("success", null));
 
 			int nrOfWarningsBefore = getConfigurationWarnings().size();
 
@@ -149,7 +149,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setSoapBody("TradePriceRequest,TradePrice,Fault");
 		val.setTargetNamespace("");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 
@@ -182,7 +182,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
@@ -217,7 +217,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
@@ -261,7 +261,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -284,7 +284,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE_WITH_REFERENCE);
 		val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
@@ -295,7 +295,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(SIMPLE_WITH_REFERENCE);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -310,7 +310,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setSoapHeader("MessageHeader");
 		val.setSoapBody("Request");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("""
@@ -348,7 +348,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(TIBCO);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -387,7 +387,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(TIBCO);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -428,7 +428,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE);
 		val.setSoapBody("TradePriceRequest");
 		val.setForwardFailureToSuccess(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		PipeLineSession pls = new PipeLineSession();
@@ -452,7 +452,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setSoapBodyNamespace("http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1");
 		val.setAddNamespaceToSchema(true);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		assertThrows(ConfigurationException.class, val::configure
 		);
 	}
@@ -465,7 +465,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setAddNamespaceToSchema(true);
 		pipe.setSchemaLocation("http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2 http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 ");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
@@ -483,7 +483,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setAddNamespaceToSchema(true);
 		pipe.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
@@ -499,7 +499,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("TradePriceRequest");
 		pipe.setSchemaLocation("dummy schema1");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
@@ -518,7 +518,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedNamespacesToIgnore("http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
@@ -534,7 +534,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedNamespacesToIgnore("http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
@@ -551,7 +551,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedSchemaLocationsToIgnore("schema1.xsd");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
@@ -567,7 +567,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedSchemaLocationsToIgnore("schema1.xsd");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");

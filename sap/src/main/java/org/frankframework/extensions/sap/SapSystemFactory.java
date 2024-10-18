@@ -79,7 +79,7 @@ public class SapSystemFactory {
 		return result;
 	}
 
-	public void registerSapSystem(Object sapSystem, String name) {
+	public void addSapSystem(Object sapSystem, String name) {
 		sapSystems.put(name, sapSystem);
 		log.debug("SapSystemFactory registered sapSystem [{}]", sapSystem.toString());
 	}

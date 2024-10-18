@@ -132,7 +132,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testExceptionForward() throws Exception {
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
-		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
+		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
 
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);

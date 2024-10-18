@@ -76,7 +76,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.setSoapBody(soapBody);
 		val.setValidateJsonToRootElementOnly(false);
 		val.configure();
@@ -128,7 +128,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
 		val.setWsdl(wsdl);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.setSoapBody(soapBody);
 		val.configure();
 		val.start();

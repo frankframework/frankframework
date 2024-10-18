@@ -51,7 +51,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		pipeLine.addPipe(fileSystemPipe);
 
 		autowireByName(fileSystemPipe);
-		fileSystemPipe.registerForward(new PipeForward("success",null));
+		fileSystemPipe.addForward(new PipeForward("success",null));
 	}
 
 	@Override
@@ -398,7 +398,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 	@Test
 	public void fileSystemPipeWritingFileThatAlreadyExists() throws Exception {
-		fileSystemPipe.registerForward(new PipeForward("fileAlreadyExists", "fileAlreadyExists"));
+		fileSystemPipe.addForward(new PipeForward("fileAlreadyExists", "fileAlreadyExists"));
 		prr = fileSystemPipeWriteFile("folder3", true, false);
 
 		assertNotNull(prr);
@@ -442,7 +442,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		fileSystemPipe.setAction(FileSystemAction.MKDIR);
-		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.FOLDER_ALREADY_EXISTS.getForwardName(), "x"));
+		fileSystemPipe.addForward(new PipeForward(FileSystemException.Forward.FOLDER_ALREADY_EXISTS.getForwardName(), "x"));
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -467,7 +467,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		fileSystemPipe.setAction(FileSystemAction.MKDIR);
-		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.EXCEPTION.getForwardName(), "x"));
+		fileSystemPipe.addForward(new PipeForward(FileSystemException.Forward.EXCEPTION.getForwardName(), "x"));
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -541,7 +541,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		fileSystemPipe.setAction(FileSystemAction.RMDIR);
-		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.FOLDER_NOT_FOUND.getForwardName(), "x"));
+		fileSystemPipe.addForward(new PipeForward(FileSystemException.Forward.FOLDER_NOT_FOUND.getForwardName(), "x"));
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
@@ -564,7 +564,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		fileSystemPipe.setAction(FileSystemAction.RMDIR);
-		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.EXCEPTION.getForwardName(), "x"));
+		fileSystemPipe.addForward(new PipeForward(FileSystemException.Forward.EXCEPTION.getForwardName(), "x"));
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 

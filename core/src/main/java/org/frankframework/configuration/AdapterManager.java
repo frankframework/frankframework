@@ -61,7 +61,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		return 100;
 	}
 
-	public void registerAdapter(Adapter adapter) {
+	public void addAdapter(Adapter adapter) {
 		if(!active.get()) {
 			throw new IllegalStateException("AdapterManager in state [closed] unable to register Adapter ["+adapter.getName()+"]");
 		}

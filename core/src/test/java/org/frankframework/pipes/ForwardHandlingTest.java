@@ -31,7 +31,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 	void testFindForwardToPipeExplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
-		pipe1.registerForward(new PipeForward("fakeForward", "pipe3"));
+		pipe1.addForward(new PipeForward("fakeForward", "pipe3"));
 		pipeline.addPipe(pipe1);
 
 		EchoPipe pipe2 = new EchoPipe();
@@ -99,7 +99,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 	void testFindForwardToExitExplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
-		pipe1.registerForward(new PipeForward("ready", "READY"));
+		pipe1.addForward(new PipeForward("ready", "READY"));
 		pipeline.addPipe(pipe1);
 
 		EchoPipe pipe2 = new EchoPipe();
@@ -140,8 +140,8 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", null)));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("thisForwardDoesntExist", null)));
 
 		assertDoesNotThrow(pipe::configure);
 		List<String> warnings = getConfigurationWarnings().getWarnings();
@@ -158,8 +158,8 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null))); // FixedForwardPipe requires a SUCCESS forward
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward(forwardName, null)));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", null))); // FixedForwardPipe requires a SUCCESS forward
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward(forwardName, null)));
 
 		assertDoesNotThrow(pipe::configure);
 		List<String> warnings = getConfigurationWarnings().getWarnings();
@@ -174,8 +174,8 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi")));
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi")));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", "Sergi")));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", "Sergi")));
 
 		assertDoesNotThrow(pipe::configure);
 		List<String> warnings = getConfigurationWarnings().getWarnings();
@@ -191,8 +191,8 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 			pipeline.addPipe(pipe);
 			autowireByType(pipe);
 
-			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi1")));
-			assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", "Sergi2")));
+			assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", "Sergi1")));
+			assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", "Sergi2")));
 			assertDoesNotThrow(pipe::configure);
 
 			assertTrue(appender.contains("INFO - PipeForward [success] already registered, pointing to [Sergi1]. Ignoring new one, that points to [Sergi2]"), "Log messages: "+appender.getLogLines());
@@ -206,7 +206,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", null)));
 	}
 
 	@Test
@@ -216,7 +216,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("thisForwardDoesntExist", null)));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("thisForwardDoesntExist", null)));
 	}
 
 	@Test
@@ -226,7 +226,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 		pipeline.addPipe(pipe);
 		autowireByType(pipe);
 
-		assertDoesNotThrow(() -> pipe.registerForward(new PipeForward("success", null)));
+		assertDoesNotThrow(() -> pipe.addForward(new PipeForward("success", null)));
 	}
 
 }

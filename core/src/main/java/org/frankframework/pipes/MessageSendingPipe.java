@@ -301,7 +301,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private void configureElement(@Nonnull final IPipe pipe) throws ConfigurationException {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-		pipe.registerForward(pf);
+		pipe.addForward(pf);
 		configure(pipe);
 	}
 

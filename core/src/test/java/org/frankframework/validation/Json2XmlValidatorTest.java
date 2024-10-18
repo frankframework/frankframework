@@ -56,7 +56,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	protected void init() throws ConfigurationException  {
 		jsonPipe=new JsonPipe();
 		jsonPipe.setName("xml2json");
-		jsonPipe.registerForward(new PipeForward("success",null));
+		jsonPipe.addForward(new PipeForward("success",null));
 		jsonPipe.setDirection(Direction.XML2JSON);
 		jsonPipe.configure();
 		try {
@@ -68,7 +68,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		validator.setFullSchemaChecking(true);
 
 		instance=new Json2XmlValidator();
-		instance.registerForward(new PipeForward("success",null));
+		instance.addForward(new PipeForward("success",null));
 		instance.setSoapNamespace(null);
 		instance.setFailOnWildcards(false);
 	}
@@ -82,13 +82,13 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		instance.setSchemaLocation(schemaLocation);
 		instance.setAddNamespaceToSchema(addNamespaceToSchema);
 		instance.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
-//        instance.registerForward("success");
+//        instance.addForward("success");
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
 		instance.setTargetNamespace(rootNamespace);
-		instance.registerForward(new PipeForward("warnings", null));
-		instance.registerForward(new PipeForward("failure", null));
-		instance.registerForward(new PipeForward("parserError", null));
+		instance.addForward(new PipeForward("warnings", null));
+		instance.addForward(new PipeForward("failure", null));
+		instance.addForward(new PipeForward("parserError", null));
 		if (rootelement != null) {
 			instance.setRoot(rootelement);
 		}
@@ -224,7 +224,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 		json2xml.setThrowException(true);
 
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.addForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();
@@ -258,7 +258,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 		json2xml.setThrowException(true);
 
-		json2xml.registerForward(new PipeForward("success", null));
+		json2xml.addForward(new PipeForward("success", null));
 
 		try {
 			Thread.currentThread().setContextClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
@@ -285,7 +285,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		json2xml.setSchema(BASE_DIR_VALIDATION + "/ContentAlreadySetAsStringHandled/PostZgwZaak.xsd");
 		json2xml.setThrowException(true);
 
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.addForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 

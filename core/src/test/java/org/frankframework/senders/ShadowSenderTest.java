@@ -44,10 +44,10 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		ShadowSender ps = new ShadowSender();
 
 		ps.setOriginalSender(ORIGINAL_SENDER_NAME);
-		ps.registerSender(createOriginalSender());
+		ps.addSender(createOriginalSender());
 
 		ps.setResultSender(RESULT_SENDER_NAME);
-		ps.registerSender(createResultSender());
+		ps.addSender(createResultSender());
 
 		return ps;
 	}
@@ -105,7 +105,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	@Test
 	public void testMultipleResultSenders() {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
-			sender.registerSender(createResultSender());
+			sender.addSender(createResultSender());
 			sender.configure();
 			sender.open();
 		});
@@ -115,7 +115,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	@Test
 	public void testMultipleOriginalSenders() {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
-			sender.registerSender(createOriginalSender());
+			sender.addSender(createOriginalSender());
 			sender.configure();
 			sender.open();
 		});
@@ -172,9 +172,9 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 	@Test
 	public void testResultSenderResultWith3ShadowSenders() throws Exception {
-		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
-		sender.registerSender(new TestSender("shadowSenderWithDelay2"));
-		sender.registerSender(new TestSender("shadowSenderWithDelay3"));
+		sender.addSender(new TestSender("shadowSenderWithDelay1"));
+		sender.addSender(new TestSender("shadowSenderWithDelay2"));
+		sender.addSender(new TestSender("shadowSenderWithDelay3"));
 
 		sender.configure();
 		sender.open();
@@ -216,9 +216,9 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	@Test
 	public void testResultSenderResultWith3ShadowSendersAsync() throws Exception {
 		// Arrange
-		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
-		sender.registerSender(new TestSender("shadowSenderWithDelay2"));
-		sender.registerSender(new TestSender("shadowSenderWithDelay3"));
+		sender.addSender(new TestSender("shadowSenderWithDelay1"));
+		sender.addSender(new TestSender("shadowSenderWithDelay2"));
+		sender.addSender(new TestSender("shadowSenderWithDelay3"));
 		((ShadowSender)sender).setWaitForShadowsToFinish(false);
 
 		sender.configure();

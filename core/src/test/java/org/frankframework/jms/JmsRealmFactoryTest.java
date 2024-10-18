@@ -21,10 +21,10 @@ public class JmsRealmFactoryTest {
 	public void setup() {
 		jmsRealmFactory = JmsRealmFactory.getInstance();
 		jmsRealmFactory.clear();
-		jmsRealmFactory.registerJmsRealm(createRealm("c",false));
-		jmsRealmFactory.registerJmsRealm(createRealm("b",true));
-		jmsRealmFactory.registerJmsRealm(createRealm("d",false));
-		jmsRealmFactory.registerJmsRealm(createRealm("a",true));
+		jmsRealmFactory.addJmsRealm(createRealm("c",false));
+		jmsRealmFactory.addJmsRealm(createRealm("b",true));
+		jmsRealmFactory.addJmsRealm(createRealm("d",false));
+		jmsRealmFactory.addJmsRealm(createRealm("a",true));
 	}
 
 	public JmsRealm createRealm(String name, boolean withDatasourceName) {

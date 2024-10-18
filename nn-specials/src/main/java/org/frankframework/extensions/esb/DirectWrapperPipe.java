@@ -73,7 +73,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			}
 		}
 		try {
-			eswPipe.registerForward(getSuccessForward());
+			eswPipe.addForward(getSuccessForward());
 			eswPipe.configure();
 			return eswPipe.doPipe(message, session);
 		} catch (Exception e) {

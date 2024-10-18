@@ -108,11 +108,11 @@ public class JavaListenerTest {
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
 		ple.setState(PipeLine.ExitState.SUCCESS);
-		pl.registerPipeLineExit(ple);
+		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.registerReceiver(receiver);
-		configuration.registerAdapter(adapter);
+		adapter.addReceiver(receiver);
+		configuration.addAdapter(adapter);
 		return adapter;
 	}
 

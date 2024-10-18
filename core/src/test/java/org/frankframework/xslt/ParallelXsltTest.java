@@ -67,7 +67,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey"+i));
 
 			autowireByType(sender);
-			psenders.registerSender(sender);
+			psenders.addSender(sender);
 			xsltSenders.add(sender);
 		}
 		session.put("sessionKeyGlobal","sessionKeyGlobalValue");
