@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -60,14 +61,12 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 
-import lombok.Lombok;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,8 +79,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
+
+import lombok.Lombok;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
@@ -115,14 +117,14 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 import org.frankframework.testutil.mock.DataSourceFactoryMock;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
 
 @Tag("slow")
 public class ReceiverTest {
-	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	public static final DefaultTransactionDefinition TX_REQUIRES_NEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	protected static final Logger LOG = LogUtil.getLogger(ReceiverTest.class);
 	private TestConfiguration configuration;
 	private String adapterName;
@@ -139,7 +141,7 @@ public class ReceiverTest {
 	}
 
 	@AfterEach
-	@Timeout(value = 10, unit = TimeUnit.SECONDS) //Unfortunately this doesn't work on other threads
+	@Timeout(value = 10) //Unfortunately this doesn't work on other threads
 	void tearDown() {
 		if (configuration != null) {
 			configuration.close();
@@ -172,12 +174,14 @@ public class ReceiverTest {
 
 	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<M> receiver = configuration.createBean(Receiver.class);
+		Receiver<M> receiver = spy(configuration.createBean(Receiver.class));
 		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
+		// To speed up test, we don't actually sleep
+		doNothing().when(receiver).suspendReceiver(anyInt());
 		DummySender sender = configuration.createBean(DummySender.class);
 		receiver.setSender(sender);
 		return receiver;
@@ -188,7 +192,6 @@ public class ReceiverTest {
 	}
 
 	public <M> Adapter setupAdapter(Receiver<M> receiver, ExitState exitState) throws Exception {
-
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -208,6 +211,7 @@ public class ReceiverTest {
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
 		ple.setState(exitState);
+		//noinspection deprecation
 		pl.registerPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
@@ -217,13 +221,16 @@ public class ReceiverTest {
 	}
 
 	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) {
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		@SuppressWarnings("unchecked")
+		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		DummySender sender = configuration.createBean(DummySender.class);
 		receiver.setSender(sender);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setNumThreads(2);
+		// To speed up test, we don't actually sleep
+		doNothing().when(receiver).suspendReceiver(anyInt());
 		return receiver;
 	}
 
@@ -244,7 +251,8 @@ public class ReceiverTest {
 	}
 
 	public ITransactionalStorage<Serializable> setupErrorStorage() {
-		JdbcTransactionalStorage txStorage = mock(JdbcTransactionalStorage.class);
+		//noinspection unchecked
+		JdbcTransactionalStorage<Serializable> txStorage = mock(JdbcTransactionalStorage.class);
 		txStorage.setDataSourceFactory(new DataSourceFactoryMock());
 		return txStorage;
 	}
@@ -256,8 +264,7 @@ public class ReceiverTest {
 	}
 
 	private static TestConfiguration buildNarayanaTransactionManagerConfiguration() {
-		TestConfiguration configuration =  buildConfiguration(TransactionManagerType.NARAYANA);
-		return configuration;
+		return buildConfiguration(TransactionManagerType.NARAYANA);
 	}
 
 	private static TestConfiguration buildConfiguration(TransactionManagerType txManagerType) {
@@ -298,11 +305,6 @@ public class ReceiverTest {
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
-		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
-		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
-		retryIntervalField.setAccessible(true);
-		retryIntervalField.set(receiver, 2);
-
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -317,7 +319,7 @@ public class ReceiverTest {
 
 		TextMessage jmsMessage = mock(TextMessage.class);
 		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
-		doReturn(receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doReturn(receiver.getMaxRetries() + 2).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
 		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
@@ -338,7 +340,8 @@ public class ReceiverTest {
 				try {
 					int nrTries = 0;
 					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
-						final TransactionStatus tx = txManager.getTransaction(TRANSACTION_DEFINITION);
+						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
+						//noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
 							.thenAnswer(invocation -> {
@@ -359,7 +362,7 @@ public class ReceiverTest {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
-								LOG.warn("I had expected TX to be marked for rollback-only by now?");
+								LOG.debug("Main TX not marked for rollback-only.");
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
@@ -367,10 +370,9 @@ public class ReceiverTest {
 								txNotCompletedAfterReceiverEnds.incrementAndGet();
 								txManager.rollback(tx);
 							}
-							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
 						}
 					}
-				} catch (SenderException | IllegalAccessException| IllegalArgumentException e) {
+				} catch (SenderException | IllegalArgumentException e) {
 					throw Lombok.sneakyThrow(e);
 				} finally {
 					semaphore.release();
@@ -386,6 +388,7 @@ public class ReceiverTest {
 
 		// Assert
 		assertAll(
+			() -> assertEquals(3, receiver.getMaxRetries()),
 			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
 			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
@@ -416,7 +419,6 @@ public class ReceiverTest {
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
-
 		createMessagingSource(listener);
 
 		@SuppressWarnings("unchecked")
@@ -427,21 +429,15 @@ public class ReceiverTest {
 		receiver.setMessageLog(messageLog);
 
 		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
-		txManager.setDefaultTimeout(1);
-//		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 1
+		txManager.setDefaultTimeout(10);
+//		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 10
 
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
 		final int TEST_MAX_RETRIES = 2;
-		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 1;
+		final int MAX_NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 3;
 		receiver.setMaxRetries(TEST_MAX_RETRIES);
-		receiver.setMaxDeliveries(TEST_MAX_RETRIES);
-
-		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
-		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
-		retryIntervalField.setAccessible(true);
-		retryIntervalField.set(receiver, 2);
 
 		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 
@@ -464,9 +460,9 @@ public class ReceiverTest {
 
 		TextMessage jmsMessage = mock(TextMessage.class);
 		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
-		doAnswer(invocation -> rolledBackTXCounter.get() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+
 		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 		ArgumentCaptor<String> messageIdCaptor = forClass(String.class);
@@ -479,8 +475,13 @@ public class ReceiverTest {
 			public void run() {
 				try {
 					int nrTries = 0;
-					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
-						final TransactionStatus tx = txManager.getTransaction(TRANSACTION_DEFINITION);
+					while (nrTries++ < MAX_NR_TIMES_MESSAGE_OFFERED && movedToErrorStorage.get() == 0) {
+						final int deliveryCount = nrTries;
+						doAnswer(invocation -> deliveryCount).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+
+						LOG.info("Nr tries: {}, Nr rolled back transactions: {}, delivery count: {}", nrTries, rolledBackTXCounter.get(), receiver.getDeliveryCount(messageWrapper));
+						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
+						//noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
 								.thenAnswer(invocation -> {
@@ -501,7 +502,7 @@ public class ReceiverTest {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
-								LOG.warn("I had expected TX to be marked for rollback-only by now?");
+								LOG.debug("Main TX not marked for rollback-only");
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
@@ -509,10 +510,9 @@ public class ReceiverTest {
 								txNotCompletedAfterReceiverEnds.incrementAndGet();
 								txManager.rollback(tx);
 							}
-							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
 						}
 					}
-				} catch (SenderException | IllegalAccessException| IllegalArgumentException e) {
+				} catch (SenderException | IllegalArgumentException | JMSException e) {
 					throw Lombok.sneakyThrow(e);
 				} finally {
 					semaphore.release();
@@ -527,16 +527,17 @@ public class ReceiverTest {
 		((DisposableBean) txManager).destroy();
 
 		// Assert
+		int expectedNrTimesMessageActuallyOffered = receiver.getMaxRetries() + 2;
 		assertAll(
 			() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
 			() -> assertEquals("dummy-cid", correlationIdCaptor.getValue(), "Correlation ID does not match"),
 			() -> assertEquals("message", ((MessageWrapper<?>)messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
 			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
+			() -> assertEquals(expectedNrTimesMessageActuallyOffered, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
 			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
 			() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
 			() -> assertEquals(1, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
+			() -> assertEquals(expectedNrTimesMessageActuallyOffered, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
 		);
 	}
 
@@ -560,7 +561,7 @@ public class ReceiverTest {
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		receiver.setMaxDeliveries(1);
+		receiver.setMaxRetries(1);
 
 		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 
@@ -576,7 +577,7 @@ public class ReceiverTest {
 
 		TextMessage jmsMessage = mock(TextMessage.class);
 		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
-		doAnswer(invocation -> receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doAnswer(invocation -> receiver.getMaxRetries() + 2).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
 		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
@@ -621,22 +622,63 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
+		ConnectionFactoryFactoryMock connectionFactoryFactoryMock = new ConnectionFactoryFactoryMock();
+		listener.setConnectionFactoryFactory(connectionFactoryFactoryMock);
+		listener.setQueueConnectionFactoryName(ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
+		listener.setDestinationName("jms/dest_fake");
+		listener.setLookupDestination(false);
+
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
+		receiver.configure();
+
+		// Should have 3 retries with JMS listeners
+		assertEquals(3, receiver.getMaxRetries());
 
 		TextMessage jmsMessage = mock(TextMessage.class);
 		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
-		doAnswer(invocation -> 5).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
 		RawMessageWrapper<jakarta.jms.Message> rawMessage = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
+		MessageWrapper<jakarta.jms.Message> messageWrapper = new MessageWrapper<>(rawMessage, Message.nullMessage());
 
-		// Act
-		int result = receiver.getDeliveryCount(rawMessage);
+		doAnswer(invocation -> 5).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 
-		// Assert
-		assertEquals(4, result);
+		// Act / Assert
+		assertAll(
+				()-> assertEquals(5, receiver.getDeliveryCount(rawMessage)),
+				()-> assertFalse(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage.getId(), rawMessage.getCorrelationId(), rawMessage, new PipeLineSession(), false))
+		);
+
+		doAnswer(invocation -> receiver.getMaxRetries()).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+
+		assertAll(
+				()-> assertTrue(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage.getId(), rawMessage.getCorrelationId(), rawMessage, new PipeLineSession(), false))
+		);
+
+		doAnswer(invocation -> receiver.getMaxRetries()-1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+
+		assertAll(
+				()-> assertTrue(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage.getId(), rawMessage.getCorrelationId(), rawMessage, new PipeLineSession(), false))
+		);
+
+		doAnswer(invocation -> receiver.getMaxRetries()+1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+
+		assertAll(
+				()-> assertFalse(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage.getId(), rawMessage.getCorrelationId(), rawMessage, new PipeLineSession(), false))
+		);
+
+		doAnswer(invocation -> receiver.getMaxRetries()+2).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+
+		assertAll(
+				()-> assertFalse(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage.getId(), rawMessage.getCorrelationId(), rawMessage, new PipeLineSession(), false))
+		);
 	}
 
 	@Test
@@ -659,6 +701,7 @@ public class ReceiverTest {
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.NOTSUPPORTED);
+		receiver.configure();
 
 		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 		configuration.configure();
@@ -667,6 +710,7 @@ public class ReceiverTest {
 
 		final String messageId = "A Path";
 		RawMessageWrapper<String> rawMessageWrapper = new RawMessageWrapper<>("message", messageId, null);
+		MessageWrapper<String> messageWrapper = new MessageWrapper<>(rawMessageWrapper, Message.asMessage(rawMessageWrapper.rawMessage));
 
 		// Act
 		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
@@ -686,7 +730,12 @@ public class ReceiverTest {
 		int result2 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
-		assertEquals(2, result2);
+		assertAll(
+				()-> assertEquals(1, result2),
+				()-> assertEquals(1, receiver.getMaxRetries()),
+				()-> assertTrue(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessageWrapper.getId(), rawMessageWrapper.getCorrelationId(), rawMessageWrapper, new PipeLineSession(), false))
+		);
 	}
 
 	@Test
@@ -746,10 +795,6 @@ public class ReceiverTest {
 
 		// start adapter
 		configuration.configure();
-//		configuration.start();
-//
-//		waitForState(adapter, RunState.STARTED);
-//		waitForState(receiver, RunState.STARTED);
 
 		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
 		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
@@ -788,10 +833,6 @@ public class ReceiverTest {
 
 		// start adapter
 		configuration.configure();
-//		configuration.start();
-//
-//		waitForState(adapter, RunState.STARTED);
-//		waitForState(receiver, RunState.STARTED);
 
 		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
 		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
@@ -904,12 +945,12 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertFalse(listener.isClosed()); // Not closed, thus open
 		assertFalse(receiver.getSender().isSynchronous()); // Not closed, thus open
@@ -943,13 +984,13 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState " + adapter.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
 
-		LOG.info("Receiver RunState " + receiver.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
 		await().atMost(500, TimeUnit.MILLISECONDS)
 						.until(()-> receiver.getSender().isSynchronous());
@@ -998,7 +1039,7 @@ public class ReceiverTest {
 					.atMost(5, TimeUnit.SECONDS)
 					.pollInterval(1, TimeUnit.SECONDS)
 					.until(() -> {
-						LOG.info("<*> Receiver runstate: " + receiver.getRunState());
+						LOG.info("<*> Receiver runstate: {}", receiver.getRunState());
 						return adapter.getRunState() == RunState.STOPPED;
 					});
 
@@ -1041,15 +1082,15 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState "+adapter.getRunState());
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
@@ -1081,15 +1122,15 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState "+adapter.getRunState());
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 	}
@@ -1117,8 +1158,8 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState " + adapter.getRunState());
-		LOG.info("Receiver RunState " + receiver.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
@@ -1138,7 +1179,7 @@ public class ReceiverTest {
 				.stream()
 				.filter(msg -> msg != null && "ERROR".equals(msg.getMessageLevel()))
 				.map(Object::toString)
-				.collect(Collectors.toList());
+				.toList();
 
 		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
 
@@ -1147,7 +1188,7 @@ public class ReceiverTest {
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 	}
@@ -1173,8 +1214,8 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState "+adapter.getRunState());
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
@@ -1193,15 +1234,15 @@ public class ReceiverTest {
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
 		List<String> warnings = new ArrayList<>(adapter.getMessageKeeper())
 				.stream()
-				.filter(msg -> msg instanceof MessageKeeperMessage && "WARN".equals(msg.getMessageLevel()))
+				.filter(msg -> msg != null && "WARN".equals(msg.getMessageLevel()))
 				.map(Object::toString)
-				.collect(Collectors.toList());
+				.toList();
 		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
 	}
 
@@ -1224,12 +1265,12 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STOPPED);
 		waitWhileInState(receiver, RunState.STARTING);
 
-		LOG.info("Adapter RunState " + adapter.getRunState());
-		LOG.info("Receiver RunState " + receiver.getRunState());
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		// stop receiver then start
 		Semaphore semaphore = new Semaphore(0);
-		SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+		TaskExecutor taskExecutor = configuration.getApplicationContext().getBean("taskExecutor", TaskExecutor.class);
 		taskExecutor.execute(()-> {
 			try {
 				LOG.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());

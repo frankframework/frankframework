@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
@@ -264,8 +263,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID }
 
 	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
-	private @Getter int maxDeliveries=5;
-	private @Getter int maxRetries=1;
+	private @Getter Integer maxRetries = null;
 	private @Getter int processResultCacheSize = 100;
 	private @Getter boolean supportProgrammaticRetry=false;
 
@@ -720,6 +718,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					getMessageLog().setHideMethod(getHideMethod());
 				}
 			}
+
+			if (maxRetries == null) {
+				if (getListener() instanceof IKnowsDeliveryCount<M>) {
+					maxRetries = 3;
+				} else {
+					maxRetries = 1;
+				}
+			}
 		} catch (Throwable t) {
 			ConfigurationException e;
 			if (t instanceof ConfigurationException exception) {
@@ -854,7 +860,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> message, ProcessState toState, String reason) throws ListenerException {
-		if (toState==ProcessState.AVAILABLE) {
+		if (toState == ProcessState.AVAILABLE) {
 			String id = message.getId();
 			resetProblematicHistory(id);
 		}
@@ -864,6 +870,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
+		//noinspection unchecked
 		return (IMessageBrowser<M>)messageBrowsers.get(state);
 	}
 
@@ -909,12 +916,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 			origin.afterMessageProcessed(plr, messageWrapper, session);
 		} catch (ListenerException e) {
-			String errorDescription;
-			if (prci != null) {
-				errorDescription = getLogPrefix() + "received message with messageId [" + messageId + "] too many times [" + prci.receiveCount + "]; maxRetries=[" + getMaxRetries() + "]. Error occurred while moving message to error store.";
-			} else {
-				errorDescription = getLogPrefix() + "received message with messageId [" + messageId + "] too many times [" + getListenerDeliveryCount(messageWrapper, origin) + "]; maxDeliveries=[" + getMaxDeliveries() + "]. Error occurred while moving message to error store.";
-			}
+			String errorDescription = getLogPrefix() + "received message with messageId [" + messageId + "] too many times [" + getDeliveryCount(messageWrapper) + "]; maxRetries=[" + getMaxRetries() + "]. Error occurred while moving message to error store.";
 			increaseRetryIntervalAndWait(e, errorDescription);
 			throw e;
 		}
@@ -1358,10 +1360,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && !duplicatesAlreadyChecked && retryCountNotReached(messageWrapper, prci)) {
+						if (messageInError && !duplicatesAlreadyChecked && isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
+						} else if (!messageInError) {
+							resetRetryInterval();
 						}
 					}
 				}
@@ -1369,22 +1373,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
 			return result;
 		}
-	}
-
-	private boolean retryCountNotReached(@Nonnull final MessageWrapper<M> messageWrapper, @Nullable final ProcessResultCacheItem prci) {
-		final IListener<M> origin = getListener();
-		final int receiveCount;
-		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
-			receiveCount = knowsDeliveryCount.getDeliveryCount(messageWrapper);
-		} else if (prci != null) {
-			receiveCount = prci.receiveCount;
-		} else {
-			receiveCount = 1;
-		}
-		if (origin instanceof IRedeliveringListener<M> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError()) {
-			return receiveCount < maxDeliveries;
-		}
-		return receiveCount < maxRetries;
 	}
 
 	private String ensureMessageIdNotEmpty(String messageId) {
@@ -1428,7 +1416,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
 			Optional<ProcessResultCacheItem> cachedProcessResult = getCachedProcessResult(messageId);
-			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceeded(messageId, correlationId, messageWrapper, session, manualRetry)) {
+			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageId, correlationId, messageWrapper, session, manualRetry)) {
 				if (!isTransacted()) {
 					log.warn("{} received message with messageId [{}] which has a problematic history; aborting processing", logPrefix, messageId);
 				}
@@ -1442,7 +1430,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				session.setExitState(ExitState.REJECTED, 500);
 				return true;
 			}
-			resetRetryInterval();
 			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId)) {
 				session.setExitState(ExitState.SUCCESS, 304);
 				return true;
@@ -1541,60 +1528,77 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return oprci.map(prci -> prci.comments).orElse(null);
 	}
 
+	/**
+	 * Get the delivery-count for the message.
+	 * If the listener implements {@link IKnowsDeliveryCount} then get the delivery count from the listener, otherwise get it from the
+	 * internal process-result cache.
+	 *
+	 * @param rawMessage {@link RawMessageWrapper} for which to retrieve the delivery count
+	 * @return Number of times the message has been delivered, minimum is always 1 (for the first delivery of the message).
+	 */
 	public int getDeliveryCount(RawMessageWrapper<M> rawMessage) {
 		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		log.debug("{} checking delivery count for messageId [{}]", this::getLogPrefix, rawMessage::getId);
 		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
-			return knowsDeliveryCount.getDeliveryCount(rawMessage)-1;
+			return knowsDeliveryCount.getDeliveryCount(rawMessage);
 		}
 		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(rawMessage.getId());
-		return oprci.map(prci -> prci.receiveCount + 1).orElse(1);
+		return oprci.map(prci -> prci.receiveCount).orElse(1);
 	}
 
-	/*
-	 * returns true if message should not be processed
+	/**
+	 * Returns true if the message should go for another try after it fails in processing.
+	 *
+	 * @param messageWrapper Message for which to check delivery count
+	 * @return {@code true} if message should stil be retried, {@code false} if not.
 	 */
-	private boolean isDeliveryRetryLimitExceeded(String messageId, String correlationId, RawMessageWrapper<M> rawMessageWrapper, Map<String,Object> threadContext, boolean manualRetry) throws ListenerException {
+	protected boolean isDeliveryCountBelowRetryLimitAfterMessageProcessed(@Nonnull final MessageWrapper<M> messageWrapper) {
+		if (getMaxRetries() < 0) {
+			log.debug("{} Receiver has no retry limit so message will be retried", this::getLogPrefix);
+			return true;
+		}
+		int deliveryCount = getDeliveryCount(messageWrapper);
+		// After message has been processed the first delivery also counts as a try so if maxRetries == 0, message has now failed but if maxReties == 1, and deliveryCount == 1, the message should get another try.
+		boolean deliveryCountBelowLimit = deliveryCount <= maxRetries;
+		log.debug("{} Message with messageId [{}] has deliveryCount {}, maxRetries {}, limit reached: {}", this::getLogPrefix, messageWrapper::getId, ()->deliveryCount, this::getMaxRetries, ()->deliveryCountBelowLimit);
+		return deliveryCountBelowLimit;
+	}
+
+	/**
+	 * returns true if message should not be processed when it is delivered.
+	 */
+	protected boolean isDeliveryRetryLimitExceededBeforeMessageProcessing(String messageId, String correlationId, RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session, boolean manualRetry) throws ListenerException {
 		if (manualRetry) {
-			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
+			session.put(RETRY_FLAG_SESSION_KEY, "true");
 			return isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId);
 		}
 
-		final IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		final String logPrefix = getLogPrefix();
 		log.debug("{} checking try count for messageId [{}]", logPrefix, messageId);
-		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(messageId);
-
-		final boolean isProblematic = oprci.map(prci -> {
-			if (prci.receiveCount > 1) {
-				log.warn("{} message with messageId [{}] has receive count [{}]", logPrefix, messageId, prci.receiveCount);
-				threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-			}
-			if (getMaxRetries() < 0) return false;
-			return prci.receiveCount >= getMaxRetries();
-		}).orElseGet(() -> {
-			int deliveryCount = getListenerDeliveryCount(rawMessageWrapper, origin);
-			if (deliveryCount > 1) {
-				log.warn("{} message with messageId [{}] has delivery count [{}]", logPrefix, messageId, deliveryCount);
-				threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-			}
-			return deliveryCount > getMaxDeliveries();
-		});
-
-		if (isProblematic) {
-			log.debug("{} message with ID [{}] / correlation ID [{}] has problematic history", logPrefix, messageId, correlationId);
+		int deliveryCount = getDeliveryCount(rawMessageWrapper);
+		if (deliveryCount == 1) {
+			log.debug("{} message with messageId [{}] processed for first time", logPrefix, messageId);
+			return false;
 		}
-		return isProblematic;
-	}
+		log.warn("{} message with messageId [{}] has receive count [{}]", logPrefix, messageId, deliveryCount);
+		session.put(RETRY_FLAG_SESSION_KEY, "true");
 
-	private int getListenerDeliveryCount(RawMessageWrapper<M> rawMessageWrapper, IListener<M> origin) {
-		//noinspection unchecked
-		return origin instanceof IKnowsDeliveryCount<?> ? ((IKnowsDeliveryCount<M>) origin).getDeliveryCount(rawMessageWrapper) : -1;
+		if (getMaxRetries() < 0) {
+			log.debug("{} Infinite retries, message with messageId [{}] will be processed regardless of number of previous attempts", logPrefix, messageId);
+			return false;
+		}
+		// Before attempting to process, the first delivery doesn't yet count as a "try" so delivery-count should be allowed to reach max-allowable-retry-count + 1
+		if (deliveryCount <= getMaxRetries() + 1) {
+			log.debug("{} message with messageId[{}] has not yet exceeded retry limit [{}]", logPrefix, messageId, maxRetries);
+			return false;
+		}
+
+		log.debug("{} message with ID [{}] / correlation ID [{}] exceeded the retry-limit of {}", logPrefix, messageId, correlationId, getMaxRetries());
+		return true;
 	}
 
 	private void resetProblematicHistory(String messageId) {
-		Optional<ProcessResultCacheItem> prci = getCachedProcessResult(messageId);
-		prci.ifPresent(processResultCacheItem -> processResultCacheItem.receiveCount = 0);
+		getCachedProcessResult(messageId).ifPresent(prci -> prci.receiveCount = 0);
 	}
 
 	/*
@@ -1663,19 +1667,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	public void resetRetryInterval() {
-		log.trace("Reset retry interval - synchronize (lock) on Receiver {}", this::toString);
 		synchronized (this) {
 			if (suspensionMessagePending) {
 				suspensionMessagePending=false;
 				throwEvent(RCV_RESUMED_MONITOR_EVENT);
 			}
-			retryInterval = 1;
+			if (retryInterval > 1) {
+				log.info("Resetting retry-delay from {} seconds to 1 second", retryInterval);
+				retryInterval = 1;
+			}
 		}
-		log.trace("Reset retry interval - lock on Receiver {} released", this::toString);
 	}
 
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
-		long currentInterval;
+		int currentInterval;
 		synchronized (this) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
@@ -1694,9 +1699,19 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			}
 		}
+		suspendReceiver(currentInterval);
+	}
+
+	/**
+	 * Suspend the receiver for {@code delayTimeInSeconds} seconds
+	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
+	 */
+	protected void suspendReceiver(int delayTimeInSeconds) {
+		log.error("In unit testing should not call suspendReceiver");
+		int currentInterval = delayTimeInSeconds;
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(1000L);
 			} catch (Exception e2) {
 				error("sleep interrupted", e2);
 				stopRunning();
@@ -2032,19 +2047,28 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/**
-	 * The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored
-	 * @ff.default 5
+	 * The maximum retry count after which to stop processing the message. If equal to or lower than 0, the retry count is ignored. This property is
+	 * deprecated -- use {@code maxRetries} instead. Until removal of this property, the code will treat this property as the same as {@code maxRetries}. If
+	 * both are set in a configuration, then the highest value is used.
 	 */
-	public void setMaxDeliveries(int i) {
-		maxDeliveries = i;
+	@Deprecated(forRemoval = true, since = "9.0")
+	@ConfigurationWarning("This property has been deprecated, please use maxRetries instead.")
+	public void setMaxDeliveries(Integer i) {
+		// TODO: After deleting this deprecated method, clean up implementation of setMaxRetries to just set value without taking max.
+		setMaxRetries(i);
 	}
 
 	/**
 	 * The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite
-	 * @ff.default 1
+	 * @ff.default 1, or 3 for JMS Listeners
 	 */
-	public void setMaxRetries(int i) {
-		maxRetries = i;
+	public void setMaxRetries(Integer i) {
+		// TODO: when setMaxDeliveries is removed, no need to check for max value.
+		if (maxRetries == null) {
+			maxRetries = i;
+		} else {
+			maxRetries = Math.max(maxRetries, i);
+		}
 	}
 
 	/**
