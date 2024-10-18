@@ -75,12 +75,13 @@ public class MicrometerHttpClientInterceptor {
 		};
 
 		this.responseInterceptor = (response, context) -> {
-			timerByHttpContext.remove(threadLocal)
-					.tag("status", Integer.toString(response.getStatusLine().getStatusCode()))
-					.tag("outcome", Outcome.forStatus(response.getStatusLine().getStatusCode()).name())
-					.tags(exportTagsForRoute ? generateTagsForRoute(context) : Tags.empty())
-					.close();
-
+			if (timerByHttpContext.containsKey(threadLocal)) {
+				timerByHttpContext.remove(threadLocal)
+						.tag("status", Integer.toString(response.getStatusLine().getStatusCode()))
+						.tag("outcome", Outcome.forStatus(response.getStatusLine().getStatusCode()).name())
+						.tags(exportTagsForRoute ? generateTagsForRoute(context) : Tags.empty())
+						.close();
+			}
 			threadLocal.remove();
 		};
 	}
