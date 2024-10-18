@@ -15,6 +15,8 @@
 */
 package org.frankframework.documentbuilder;
 
+import java.io.Writer;
+
 import org.frankframework.stream.MessageBuilder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -32,12 +34,12 @@ public class DocumentBuilderFactory {
 		}
 	}
 
-	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException {
+	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, Writer writer) throws SAXException {
 		switch (format) {
 		case XML:
-			return new XmlDocumentBuilder(rootElement);
+			return new XmlDocumentBuilder(rootElement, writer, false);
 		case JSON:
-			return new JsonDocumentBuilder();
+			return new JsonDocumentBuilder(writer);
 		default:
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
@@ -55,16 +57,8 @@ public class DocumentBuilderFactory {
 		return startDocument(format, rootElement, outputStream, prettyPrint).asObjectBuilder();
 	}
 
-	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement) throws SAXException {
-		return startDocument(format, rootElement).asObjectBuilder();
-	}
-
 	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageBuilder outputStream, boolean prettyPrint) throws SAXException {
 		return startDocument(format, rootElement, outputStream, prettyPrint).asArrayBuilder(elementName);
-	}
-
-	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName) throws SAXException {
-		return startDocument(format, rootElement).asArrayBuilder(elementName);
 	}
 
 }
