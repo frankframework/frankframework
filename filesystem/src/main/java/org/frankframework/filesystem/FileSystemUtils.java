@@ -16,6 +16,7 @@
 package org.frankframework.filesystem;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
@@ -293,15 +294,13 @@ public class FileSystemUtils {
 
 
 	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
-		try {
-			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
-			try(builder) {
-				getFileInfo(fileSystem, f, builder);
-			}
-			return builder.toString();
-		} catch (SAXException e) {
+		StringWriter writer = new StringWriter();
+		try (StringWriter w = writer; INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file", w)) {
+			getFileInfo(fileSystem, f, builder);
+		} catch (IOException | SAXException e) {
 			throw new FileSystemException("Cannot get FileInfo", e);
 		}
+		return writer.toString();
 	}
 
 	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {

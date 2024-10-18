@@ -2,6 +2,7 @@ package org.frankframework.mongodb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +80,7 @@ class JsonDocumentWriterTest {
 	}
 
 	private static String convertDocumentToString(Document inputDocument, DocumentFormat documentFormat) throws SAXException {
-		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(documentFormat, "FindOneResult")) {
+		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(documentFormat, "FindOneResult", new StringWriter())) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
 			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
