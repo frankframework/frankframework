@@ -31,7 +31,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.RawMessageWrapper;
 
-public abstract class WritableFileSystemListenerTest<F, FS extends IWritableFileSystem<F>> extends BasicFileSystemListenerTest<F, FS> {
+public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileSystem<F>> extends BasicFileSystemListenerTest<F, S> {
 
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcessTimeSensitive() throws Exception {

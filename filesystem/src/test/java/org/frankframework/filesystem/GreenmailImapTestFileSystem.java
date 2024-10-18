@@ -12,6 +12,7 @@ import jakarta.mail.Store;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SubjectTerm;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -75,7 +76,7 @@ public class GreenmailImapTestFileSystem extends ImapFileSystem {
 
 	private Message getNotExistingMessage(String filename) throws MessagingException {
 		MimeMessage message = new MimeMessage(session);
-		message.setSubject(filename);
+		message.setSubject(StringEscapeUtils.escapeJava(filename));
 
 		return message;
 	}

@@ -18,6 +18,7 @@ import jakarta.mail.search.SubjectTerm;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.jetbrains.annotations.NotNull;
 
@@ -93,8 +94,9 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 
 		// Construct a message
 		MimeMessage message = new MimeMessage(session);
-		message.setSubject(filename);
-		message.setText("content#0");
+		message.setSubject(StringEscapeUtils.escapeJava(filename));
+		message.setText(StringEscapeUtils.escapeJava("content#0"));
+
 		setRecipients(message, Message.RecipientType.TO, "to", 1, 2);
 		message.setFrom(new InternetAddress("from2@localhost"));
 		message.setFlag(Flags.Flag.ANSWERED, true);
