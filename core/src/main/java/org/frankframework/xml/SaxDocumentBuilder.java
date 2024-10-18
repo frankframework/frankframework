@@ -15,8 +15,6 @@
 */
 package org.frankframework.xml;
 
-import java.io.Writer;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
