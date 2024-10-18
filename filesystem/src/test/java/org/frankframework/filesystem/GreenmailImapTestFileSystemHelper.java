@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 
 import jakarta.mail.Address;
 import jakarta.mail.Flags;
@@ -26,29 +25,31 @@ import org.jetbrains.annotations.NotNull;
  * Greenmail based mail file system helper.
  * <br>
  * Greenmail is a simple mail backend to send and retrieve e-mails, to mock smtp, imap, etc.
+ *
  * @see "https://github.com/greenmail-mail-test/greenmail/tree/master/greenmail-core/src/test/java/com/icegreen/greenmail/examples"
  */
-public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelperFullControl {
+public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper {
 
 	private final GreenMailExtension greenMail;
 	private final ImapMailListenerTest.User user;
+	private final String inputFolder;
 	private Folder inbox;
 
-	public GreenmailImapTestFileSystemHelper(GreenMailExtension greenMail, ImapMailListenerTest.User user) {
+	public GreenmailImapTestFileSystemHelper(GreenMailExtension greenMail, ImapMailListenerTest.User user, String inputFolder) {
 		this.greenMail = greenMail;
 		this.user = user;
-	}
-
-	@Override
-	public void setFileDate(String folderName, String filename, Date modifiedDate)  {
-		// not supported
+		this.inputFolder = inputFolder;
 	}
 
 	@Override
 	public void setUp() throws Exception {
 		Store store = greenMail.getImap().createStore();
 		store.connect(user.username(), user.password());
-		this.inbox = store.getFolder("INBOX");
+
+		inbox = store.getFolder("INBOX");
+
+		// The tests assume that the input folder is present
+		_createFolder(inputFolder);
 
 		inbox.open(Folder.READ_ONLY);
 	}

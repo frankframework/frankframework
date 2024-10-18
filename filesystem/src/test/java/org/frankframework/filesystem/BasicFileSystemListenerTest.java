@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
@@ -42,20 +42,21 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
-public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> extends HelperedFileSystemTestBase {
+public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected String fileAndFolderPrefix = "";
-	protected MailListener<M, A, FS> fileSystemListener;
+	protected boolean testFullErrorMessages = true;
+
+	protected FileSystemListener<F, S> fileSystemListener;
 	protected Map<String, Object> threadContext;
 
-	public abstract MailListener<M, A, FS> createFileSystemListener();
+	public abstract FileSystemListener<F, S> createFileSystemListener();
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
-		fileSystemListener = createFileSystemListener();
 		super.setUp();
-
+		fileSystemListener = createFileSystemListener();
 		autowireByName(fileSystemListener);
 		threadContext = new HashMap<>();
 	}
@@ -72,60 +73,99 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 	}
 
 	@Test
-	public void fileListenerTestConfigure(){
+	public void fileListenerTestConfigure() {
 		assertDoesNotThrow(() -> fileSystemListener.configure());
 	}
 
 	@Test
 	public void fileListenerTestOpen() {
-		assertDoesNotThrow(() -> {
-			fileSystemListener.configure();
-			fileSystemListener.open();
-		});
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+		assertDoesNotThrow(() -> fileSystemListener.open());
 	}
 
 	@Test
-	public void fileListenerTestCreateInputFolder() throws Exception {
+	public void fileListenerTestInvalidInputFolder() {
+		String folder = fileAndFolderPrefix + "xxx";
+		fileSystemListener.setInputFolder(folder);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for inputFolder [" + folder + "], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		}
+	}
+
+	@Test
+	public void fileListenerTestInvalidInProcessFolder() {
+		String folder = fileAndFolderPrefix + "xxx";
+		fileSystemListener.setInProcessFolder(folder);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for inProcessFolder [" + folder + "], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		}
+	}
+
+	@Test
+	public void fileListenerTestInvalidProcessedFolder() {
+		String folder = fileAndFolderPrefix + "xxx";
+		fileSystemListener.setProcessedFolder(folder);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for processedFolder [" + folder + "], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		}
+	}
+
+	@Test
+	public void fileListenerTestCreateInputFolder() {
 		fileSystemListener.setInputFolder(fileAndFolderPrefix + "xxx1");
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		assertTrue(fileSystemListener.getFileSystem().folderExists(fileSystemListener.getInputFolder()));
+		fileSystemListener.setCreateFolders(true);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+		assertDoesNotThrow(() -> fileSystemListener.open());
 	}
 
 	@Test
-	public void fileListenerTestCreateInProcessFolder() throws Exception {
+	public void fileListenerTestCreateInProcessFolder() {
 		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + "xxx2");
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		assertTrue(fileSystemListener.getFileSystem().folderExists(fileSystemListener.getInProcessFolder()));
+		fileSystemListener.setCreateFolders(true);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+		assertDoesNotThrow(() -> fileSystemListener.open());
 	}
 
 	@Test
-	public void fileListenerTestCreateProcessedFolder() throws Exception {
+	public void fileListenerTestCreateProcessedFolder() {
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + "xxx3");
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		assertTrue(fileSystemListener.getFileSystem().folderExists(fileSystemListener.getProcessedFolder()));
+		fileSystemListener.setCreateFolders(true);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+		assertDoesNotThrow(() -> fileSystemListener.open());
 	}
 
 	@Test
-	public void fileListenerTestCreateLogFolder() throws Exception {
+	public void fileListenerTestCreateLogFolder() {
 		fileSystemListener.setLogFolder(fileAndFolderPrefix + "xxx4");
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		assertTrue(fileSystemListener.getFileSystem().folderExists(fileSystemListener.getLogFolder()));
+		fileSystemListener.setCreateFolders(true);
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+		assertDoesNotThrow(() -> fileSystemListener.open());
 	}
 
-	/*
+	/**
 	 * vary this on:
-	 *   inputFolder
-	 *   inProcessFolder
+	 * inputFolder
+	 * inProcessFolder
 	 */
-	public void fileListenerTestGetRawMessage(String inputFolder, String inProcessFolder) throws Exception {
+	void fileListenerTestGetRawMessage(String inputFolder, String inProcessFolder) throws Exception {
 		String filename = "rawMessageFile";
 		String contents = "Test Message Contents";
 
@@ -138,11 +178,10 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 			_createFolder(inProcessFolder);
 			waitForActionToFinish();
 		}
+		assertDoesNotThrow(() -> fileSystemListener.configure());
+		assertDoesNotThrow(() -> fileSystemListener.open());
 
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
 
 		createFile(null, filename, contents);
@@ -150,7 +189,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage, "raw message must be not null when a file is available");
 
-		RawMessageWrapper<M> secondMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> secondMessage = fileSystemListener.getRawMessage(threadContext);
 		if (inProcessFolder != null) {
 			boolean movedFirst = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null) != null;
 			boolean movedSecond = fileSystemListener.changeProcessState(secondMessage, ProcessState.INPROCESS, null) != null;
@@ -158,7 +197,6 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		} else {
 			assertNotNull(secondMessage, "raw message must still be available when no inProcessFolder is configured");
 		}
-
 	}
 
 	@Test
@@ -173,111 +211,21 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 	}
 
 	@Test
-	public void fileListenerTestGetRawMessageWithInProcessTimeSensitive() throws Exception {
-		String folderName = "inProcessFolder";
-
-		String filename = "rawMessageFile";
-		String contents = "Test Message Contents";
-
-		fileSystemListener.setFileTimeSensitive(true);
-		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + folderName);
-		_createFolder(folderName);
-
-		waitForActionToFinish();
-
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertNull(rawMessage, "raw message must be null when not available");
-
-		createFile(null, filename, contents);
-
-		rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertNotNull(rawMessage, "raw message must be not null when a file is available");
-
-		RawMessageWrapper<M> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename));
-	}
-
-	@Test
-	public void changeProcessStateForTwoFilesWithTheSameName() throws Exception {
-		String folderName = "inProcessFolder";
-
-		String filename = "rawMessageFile";
-		String contents = "Test Message Contents";
-
-		fileSystemListener.setFileTimeSensitive(true);
-		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + folderName);
-		_createFolder(folderName);
-
-		waitForActionToFinish();
-
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertNull(rawMessage, "raw message must be null when not available");
-
-		createFile(null, filename, contents);
-
-		rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertNotNull(rawMessage, "raw message must be not null when a file is available");
-
-		RawMessageWrapper<M> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename));
-
-		String filename2 = filename + "2";
-		createFile(null, filename2, contents);
-		RawMessageWrapper<M> rawMessage2 = fileSystemListener.getRawMessage(threadContext);
-		RawMessageWrapper<M> movedFile2 = fileSystemListener.changeProcessState(rawMessage2, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()).startsWith(filename2));
-
-		assertNotEquals(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), fileSystemListener.getFileSystem()
-				.getName(movedFile2.getRawMessage()));
-	}
-
-
-	@Test
 	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {
 		String filename = "rawMessageFile";
 		String contents = "Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType(MailListener.MessageType.MIME);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
 		createFile(null, filename, contents);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		try (Message message = fileSystemListener.extractMessage(rawMessage, threadContext)) {
-			assertThat(message.asString(), containsString(filename));
-		}
-	}
-
-	@Test
-	public void fileListenerTestGetStringFromRawMessageWithMessageTypeEmail() throws Exception {
-		String filename = "rawMessageFile";
-		String contents = "Test Message Contents";
-
-		// By not setting messageType, it'll default to 'EMAIL'
-		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.configure();
-		fileSystemListener.open();
-
-		createFile(null, filename, contents);
-
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertNotNull(rawMessage);
-
-		try (Message message = fileSystemListener.extractMessage(rawMessage, threadContext)) {
-			assertThat(message.asString(), containsString(filename));
-		}
+		Message message = fileSystemListener.extractMessage(rawMessage, threadContext);
+		assertThat(message.asString(), containsString(filename));
 	}
 
 	@Test
@@ -292,15 +240,14 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 
 		createFile(null, filename, contents);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		try (Message message = fileSystemListener.extractMessage(rawMessage, threadContext)) {
-			assertEquals(contents, message.asString());
-		}
+		Message message = fileSystemListener.extractMessage(rawMessage, threadContext);
+		assertEquals(contents, message.asString());
 	}
 
-	/*
+	/**
 	 * Test for proper id
 	 * Test for additionalProperties in session variables
 	 */
@@ -315,7 +262,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 
 		createFile(null, filename, contents);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
 		String id = rawMessage.getId();
@@ -338,7 +285,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 
 		createFile(null, filename, contents);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
 		String id = rawMessage.getId();
@@ -360,7 +307,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 
 		createFile(null, filename, contents);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
 		String id = rawMessage.getId();
@@ -371,7 +318,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		assertThat(metadataAttribute, startsWith("<metadata"));
 	}
 
-	/*
+	/**
 	 * Test for proper id
 	 * Test for additionalProperties in session variables
 	 */
@@ -387,7 +334,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 
 		createFile(null, filename, contents);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
 		String id = rawMessage.getId();
@@ -397,6 +344,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		String currentDateFormatted = DateFormatUtils.format(currentDate, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 		String timestamp = id.substring(id.length() - currentDateFormatted.length());
 		long timestampDate = DateFormatUtils.parseToInstant(timestamp, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).toEpochMilli();
+
 		log.debug("Current date formatted: {}, in Millis: {}, timestamp from file: {}, parsed to millis: {}, difference: {}", currentDateFormatted, currentDate, timestamp, timestampDate, timestampDate - currentDate);
 		assertTrue(Math.abs(timestampDate - currentDate) < 7300000); // less than two hours in milliseconds.
 	}
@@ -410,6 +358,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
 		fileSystemListener.setLogFolder(fileAndFolderPrefix + logFolder);
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
@@ -418,8 +367,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		// test
 		existsCheck(filename);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertEquals("from2@localhost", threadContext.get("bestReplyAddress"));
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
@@ -429,7 +377,6 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
 		assertFileExistsWithContents(logFolder, filename, contents);
 	}
-
 
 	@Test
 	public void fileListenerTestAfterMessageProcessedMoveFile() throws Exception {
@@ -452,14 +399,13 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-
 
 		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
 		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
@@ -489,14 +435,13 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-
 
 		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
 		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
@@ -517,7 +462,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		// test
 		existsCheck(filename);
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
@@ -526,7 +471,6 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		// test
 		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
 	}
-
 
 	@Test
 	public void fileListenerTestAfterMessageProcessedErrorMoveFileToErrorFolder() throws Exception {
@@ -552,14 +496,13 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");  // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-
 
 		assertTrue(_folderExists(processedFolder), "Error folder must exist");
 		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
@@ -588,7 +531,7 @@ public abstract class MailListenerTest<M, A, FS extends IMailFileSystem<M, A>> e
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		RawMessageWrapper<M> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);

@@ -1,19 +1,20 @@
 package org.frankframework.filesystem;
 
+import java.util.HashMap;
+
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
-public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart, GreenmailImapTestFileSystem> {
-
-	private static final ServerSetup serverSetup = ServerSetupTest.IMAP;
+public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, GreenmailImapTestFileSystem> {
 	static final String INPUT_FOLDER = "InputFolder";
-
+	private static final ServerSetup serverSetup = ServerSetupTest.IMAP;
 	@RegisterExtension
 	static GreenMailExtension greenMail = new GreenMailExtension(serverSetup);
 
@@ -23,9 +24,17 @@ public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart
 		serverSetup.dynamicPort();
 	}
 
-	public record User(String email, String username, String password){};
-
 	User user = new User("test@example.org", "testUser", "testPassword");
+
+	@Override
+	@BeforeEach
+	public void setUp() throws Exception {
+		fileSystemListener = createFileSystemListener();
+		super.setUp();
+
+		autowireByName(fileSystemListener);
+		threadContext = new HashMap<>();
+	}
 
 	@Override
 	public MailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> createFileSystemListener() {
@@ -40,7 +49,6 @@ public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart
 
 		listener.setMessageIdPropertyKey("Subject"); // for the filename based tests to use the correct key
 		listener.setInputFolder(INPUT_FOLDER); // For the tests in the FileSystemTestBase to succeed, make sure to set this
-		listener.setCreateFolders(true);
 
 		return listener;
 	}
@@ -49,8 +57,8 @@ public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart
 		GreenmailImapTestFileSystem imapTestFileSystem = new GreenmailImapTestFileSystem();
 
 		imapTestFileSystem.setSession(greenMail.getImap().createSession());
-		imapTestFileSystem.setHost("localhost");
 		imapTestFileSystem.setPort(greenMail.getImap().getPort());
+		imapTestFileSystem.setHost("localhost");
 		imapTestFileSystem.setUsername(user.username);
 		imapTestFileSystem.setPassword(user.password);
 		imapTestFileSystem.setBaseFolder("/");
@@ -60,7 +68,11 @@ public class ImapMailListenerTest extends MailListenerTest<Message, MimeBodyPart
 	}
 
 	@Override
-	protected IFileSystemTestHelperFullControl getFileSystemTestHelper() {
-		return new GreenmailImapTestFileSystemHelper(greenMail, user);
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		return new GreenmailImapTestFileSystemHelper(greenMail, user, INPUT_FOLDER);
+	}
+
+	// Simple container with user information to pass around
+	public record User(String email, String username, String password) {
 	}
 }

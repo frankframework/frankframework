@@ -9,6 +9,7 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SubjectTerm;
 
 import org.eclipse.angus.mail.imap.IMAPFolder;
@@ -63,13 +64,20 @@ public class GreenmailImapTestFileSystem extends ImapFileSystem {
 			}
 
 			return findMatchingFile(filename, folder)
-					.orElse(null);
+					.orElse(getNotExistingMessage(filename));
 		} catch (MessagingException e) {
 			invalidateConnectionOnRelease = true;
 			throw new FileSystemException(e);
 		} finally {
 			releaseConnection(baseFolder, invalidateConnectionOnRelease);
 		}
+	}
+
+	private Message getNotExistingMessage(String filename) throws MessagingException {
+		MimeMessage message = new MimeMessage(session);
+		message.setSubject(filename);
+
+		return message;
 	}
 
 	private Optional<Message> findMatchingFile(String filename, IMAPFolder folder) throws MessagingException {
