@@ -56,7 +56,7 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	void setPeriod(int i);
 	int getPeriod();
 
-	void registerAdapterFilter(AdapterFilter af);
+	void addAdapterFilter(AdapterFilter af);
 	Map<String, AdapterFilter> getAdapterFilters();
 	void clearAdapterFilters();
 

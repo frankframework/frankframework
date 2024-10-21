@@ -189,7 +189,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			PipeLineExit defaultExit = new PipeLineExit();
 			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
-			registerPipeLineExit(defaultExit);
+			addPipeLineExit(defaultExit);
 			log.debug("Created default Exit named [{}], state [{}]", defaultExit.getName(), defaultExit.getState());
 		}
 		for (int i=0; i < pipes.size(); i++) {
@@ -206,7 +206,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						PipeForward pf = new PipeForward();
 						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 						pf.setPath(nextPipeName);
-						pipe.registerForward(pf);
+						pipe.addForward(pf);
 					} else {
 						// This is the last pipe, so forwards to a PipeLineExit
 						PipeLineExit plExit = findExitByState(ExitState.SUCCESS)
@@ -217,7 +217,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						PipeForward pf = new PipeForward();
 						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 						pf.setPath(plExit.getName());
-						pipe.registerForward(pf);
+						pipe.addForward(pf);
 					}
 				}
 			}
@@ -294,7 +294,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private ConfigurationException configureSpecialPipe(@Nonnull final IPipe pipe, @Nonnull final String name, @Nullable final ConfigurationException configurationException) throws ConfigurationException {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-		pipe.registerForward(pf);
+		pipe.addForward(pf);
 		pipe.setName(name);
 
 		try {
@@ -574,7 +574,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value PipeLine.ExitState#SUCCESS_EXIT_STATE} */
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
-			registerPipeLineExit(exit);
+			addPipeLineExit(exit);
 		}
 	}
 
@@ -582,7 +582,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * PipeLine exits.
 	 */
 	@Deprecated
-	public void registerPipeLineExit(PipeLineExit exit) {
+	public void addPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getName())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
 		}
@@ -603,12 +603,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	public void setGlobalForwards(PipeForwards forwards){
 		for(PipeForward forward: forwards.getForwards()) {
-			registerForward(forward);
+			addForward(forward);
 		}
 	}
 
 	@Deprecated
-	public void registerForward(PipeForward forward) {
+	public void addForward(PipeForward forward) {
 		globalForwards.put(forward.getName(), forward);
 		log.debug("registered global PipeForward {}", forward);
 	}

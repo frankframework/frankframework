@@ -23,7 +23,7 @@ import org.frankframework.http.HttpSession;
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class SharedResources {
 
-	public void registerSharedResource(SharedResource<?> resource) {
+	public void addSharedResource(SharedResource<?> resource) {
 		//This method only exists for the FrankDoc
 	}
 

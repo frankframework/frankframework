@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.receivers.RawMessageWrapper;
 
-public abstract class FileSystemListenerExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemListenerTest<F, FS> {
+public abstract class FileSystemListenerExtraTest<F,S extends IWritableFileSystem<F>> extends WritableFileSystemListenerTest<F, S> {
 
 	@Override
 	protected abstract IFileSystemTestHelperFullControl getFileSystemTestHelper();

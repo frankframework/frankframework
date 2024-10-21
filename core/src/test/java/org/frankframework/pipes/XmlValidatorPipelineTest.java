@@ -72,7 +72,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		XmlValidator validator = configuration.createBean(XmlValidator.class);
 		validator.setName("validator");
-		validator.registerForward(createSuccessForward());
+		validator.addForward(createSuccessForward());
 		validator.setRoot(root);
 		validator.setSchemaLocation(schemaLocation);
 		validator.setThrowException(true);
@@ -113,7 +113,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		if (addNamespaceToSchema) {
 			validator.setAddNamespaceToSchema(addNamespaceToSchema);
 		}
-		validator.registerForward(createSuccessForward());
+		validator.addForward(createSuccessForward());
 		validator.setThrowException(true);
 		validator.setFullSchemaChecking(true);
 		return validator;
@@ -153,7 +153,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, null, NO_NAMESPACE_SOAP_MSGROOT);
 		validator.setFullSchemaChecking(true);
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 		try {
 			validator.setImplementation(implementation);
 		} catch (Exception e) {
@@ -212,7 +212,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK,  "anotherElement");
 		validator.setFullSchemaChecking(true);
 		validator.setReasonSessionKey("reason");
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -301,7 +301,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		String root = "A";
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK, root);
 		validator.setReasonSessionKey("reason");
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -461,7 +461,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd", "root");
 		// Override throwing exception
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -490,7 +490,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/test XSDTest/MultipleIncludesClashingPrefixes/root1.xsd", "cc");
 		// Override throwing exception
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 		validator.setThrowException(false);
 
 		// Act
@@ -533,7 +533,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
 		validator.setThrowException(false);
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 
 		// Act
 		validator.configure();
@@ -563,7 +563,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportNestedInclude/xsd/root.xsd", "root");
 
 		validator.setThrowException(true);
-		validator.registerForward(createFailureForward());
+		validator.addForward(createFailureForward());
 
 		// Act
 		validator.configure();

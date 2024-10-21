@@ -26,11 +26,15 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.HasPhysicalDestination;
@@ -245,14 +249,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public synchronized RawMessageWrapper<F> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.trace("Get Raw Message");
-		FS fileSystem=getFileSystem();
+		FS fileSystem = getFileSystem();
 		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
+
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
-			Optional<F> fo = findFirstStableFile(ds);
-			if (fo.isEmpty()) {
+			Optional<F> optionalFile = findFirstStableFile(ds);
+			if (optionalFile.isEmpty()) {
 				return null;
 			}
-			F file = fo.get();
+			F file = optionalFile.get();
 			String originalFilename;
 			if (StringUtils.isNotEmpty(getInProcessFolder())) {
 				originalFilename = fileSystem.getName(file);
@@ -358,10 +363,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (attributes!=null) {
 				messageProperties.putAll(attributes);
 			}
-			if (!"path".equals(getMessageType())) {
+			if (getMessageType() != MessageType.PATH) {
 				messageProperties.put(FILEPATH_KEY, fs.getCanonicalName(rawMessage));
 			}
-			if (!"name".equals(getMessageType())) {
+			if (getMessageType() != MessageType.NAME) {
 				messageProperties.put(FILENAME_KEY, fs.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
@@ -429,9 +434,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private RawMessageWrapper<F> wrapRawMessage(F file, String originalFilename, Map<String, Object> threadContext) throws ListenerException {
 		Map<String, Object> messageProperties = extractMessageProperties(file, originalFilename);
 		threadContext.putAll(messageProperties);
+
 		Map<String, Object> messageContext = threadContext.entrySet().stream()
 				.filter(entry -> KEYS_COPIED_TO_MESSAGE_CONTEXT.contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
 		return new RawMessageWrapper<>(file, messageContext);
 	}
 

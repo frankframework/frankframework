@@ -45,7 +45,7 @@ public class Json2XmlValidatorSmileyTest {
 		json2xml.setSchema(xsd);
 		json2xml.setRoot("x");
 		json2xml.setThrowException(true);
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.addForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();
@@ -65,7 +65,7 @@ public class Json2XmlValidatorSmileyTest {
 		json2xml.setRoot("x");
 		json2xml.setOutputFormat(DocumentFormat.JSON);
 		json2xml.setThrowException(true);
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.addForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();

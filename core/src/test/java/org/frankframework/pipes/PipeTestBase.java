@@ -36,7 +36,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		super.setUp();
 		pipe = createPipe();
 		autowireByType(pipe);
-		pipe.registerForward(new PipeForward("success", "READY"));
+		pipe.addForward(new PipeForward("success", "READY"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline.addPipe(pipe);
 	}

@@ -74,7 +74,7 @@ public class TestWebServices extends BusTestBase {
 		receiver.setName("ReceiverName2");
 		listener.setReceiver(receiver);
 		receiver.setAdapter(adapter);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		pipe.setName("EchoPipe");
@@ -95,7 +95,7 @@ public class TestWebServices extends BusTestBase {
 		Receiver receiver = new Receiver<>();
 		receiver.setName("ReceiverName1");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		receiver.setAdapter(adapter);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
@@ -103,7 +103,7 @@ public class TestWebServices extends BusTestBase {
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 
@@ -117,7 +117,7 @@ public class TestWebServices extends BusTestBase {
 		Receiver receiver = new Receiver<>();
 		receiver.setName("ReceiverName3");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		receiver.setAdapter(adapter);
 		PipeLine pipeline = new PipeLine();
 		XmlValidator validator = new XmlValidator();
@@ -128,7 +128,7 @@ public class TestWebServices extends BusTestBase {
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 

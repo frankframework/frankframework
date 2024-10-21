@@ -127,7 +127,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_" + fileBaseName);
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			receiver.setListener(esbJmsListener);
-			adapter.registerReceiver(receiver);
+			adapter.addReceiver(receiver);
 			adapter.setPipeLine(pipeLine);
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
 			WsdlGenerator wsdl = new WsdlGenerator(pipeLine, generationInfo);
@@ -287,7 +287,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbSoapValidator.setForwardFailureToSuccess(true);
 			PipeForward pf = new PipeForward();
 			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-			esbSoapValidator.registerForward(pf);
+			esbSoapValidator.addForward(pf);
 			esbSoapValidator.setPipeLine(pipeLine);
 			esbSoapValidator.configure();
 			return esbSoapValidator;

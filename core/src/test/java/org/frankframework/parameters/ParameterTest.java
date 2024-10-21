@@ -1069,7 +1069,7 @@ public class ParameterTest {
 			PipeLineExit exit = new PipeLineExit();
 			exit.setName("exit");
 			exit.setState(ExitState.SUCCESS);
-			pipeline.registerPipeLineExit(exit);
+			pipeline.addPipeLineExit(exit);
 			pipeline.configure();
 
 			CorePipeLineProcessor cpp = configuration.createBean(CorePipeLineProcessor.class);
