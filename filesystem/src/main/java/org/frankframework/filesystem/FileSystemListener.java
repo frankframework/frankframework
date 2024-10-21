@@ -360,10 +360,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (attributes!=null) {
 				messageProperties.putAll(attributes);
 			}
-			if (!"path".equals(getMessageType())) {
+			if (getMessageType() != MessageType.PATH) {
 				messageProperties.put(FILEPATH_KEY, fs.getCanonicalName(rawMessage));
 			}
-			if (!"name".equals(getMessageType())) {
+			if (getMessageType() != MessageType.NAME) {
 				messageProperties.put(FILENAME_KEY, fs.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
@@ -573,7 +573,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		this.excludeWildcard = excludeWildcard;
 	}
 
-	/** If set, an XML with all message properties is provided under this key */
+	/**
+	 * If set, an XML with all message properties is provided under this key.
+	 * Also stored in the {@value PipeLineSession#ORIGINAL_MESSAGE_KEY} metadata.
+	 */
 	public void setStoreMetadataInSessionKey(String storeMetadataInSessionKey) {
 		this.storeMetadataInSessionKey = storeMetadataInSessionKey;
 	}
