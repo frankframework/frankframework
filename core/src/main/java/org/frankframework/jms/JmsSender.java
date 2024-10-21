@@ -218,7 +218,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 			if (isSynchronous()) {
 				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
-			return new Message(messageToSend.getJMSMessageID());
+			return new Message(messageToSend.getJMSMessageID(), getContext(messageToSend));
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
 			throw new SenderException(e);
 		} finally {
