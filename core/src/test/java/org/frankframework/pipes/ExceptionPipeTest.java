@@ -4,13 +4,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 /**
  * ExceptionPipe Tester.
@@ -24,7 +25,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	public ExceptionPipe createPipe() {
 		var pipe = new ExceptionPipe();
 
-		pipe.registerForward(new PipeForward("success", "success"));
+		pipe.addForward(new PipeForward("success", "success"));
 
 		return pipe;
 	}
