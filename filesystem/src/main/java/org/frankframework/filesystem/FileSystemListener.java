@@ -24,17 +24,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.HasPhysicalDestination;
@@ -45,9 +36,9 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.ObjectBuilder;
+import org.frankframework.documentbuilder.XmlDocumentBuilder;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -55,6 +46,15 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
+import org.frankframework.xml.XmlWriter;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.SAXException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
@@ -367,20 +367,21 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageProperties.put(FILENAME_KEY, fs.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
-				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
-
-				if (attributes != null) {
-					attributes.forEach((k,v) -> {
-						try {
-							metadataBuilder.add(k, v == null ? null : v.toString());
-						} catch (SAXException e) {
-							log.warn("cannot add property [{}] value [{}]", k, v, e);
-						}
-					});
+				XmlWriter writer = new XmlWriter();
+				try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("metadata", writer, true)) {
+					if (attributes != null) {
+						ObjectBuilder metadataBuilder = xmlBuilder.startObject();
+						attributes.forEach((k,v) -> {
+							try {
+								metadataBuilder.add(k, v == null ? null : v.toString());
+							} catch (SAXException e) {
+								log.warn("cannot add property [{}] value [{}]", k, v, e);
+							}
+						});
+					}
 				}
 
-				metadataBuilder.close();
-				messageProperties.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
+				messageProperties.put(getStoreMetadataInSessionKey(), writer.toString());
 			}
 			return messageProperties;
 		} catch (Exception e) {
@@ -390,6 +391,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	// result is guaranteed if toState==ProcessState.INPROCESS
 	@Override
+	@SuppressWarnings("unchecked")
 	public RawMessageWrapper<F> changeProcessState(RawMessageWrapper<F> message, ProcessState toState, String reason) throws ListenerException {
 		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
@@ -412,7 +414,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 					i++;
 				}
-				//noinspection unchecked
 				return wrap(FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0), message);
 			}
 			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false), message);
@@ -577,6 +578,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * If set, an XML with all message properties is provided under this key.
 	 * Also stored in the {@value PipeLineSession#ORIGINAL_MESSAGE_KEY} metadata.
 	 */
+	@Deprecated(since = "9.0")
 	public void setStoreMetadataInSessionKey(String storeMetadataInSessionKey) {
 		this.storeMetadataInSessionKey = storeMetadataInSessionKey;
 	}

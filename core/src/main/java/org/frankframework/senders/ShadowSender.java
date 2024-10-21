@@ -33,6 +33,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
@@ -193,18 +194,18 @@ public class ShadowSender extends ParallelSenders {
 	}
 
 	private Message collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message originalMessage, String correlationID) throws SAXException, IOException {
-		SaxDocumentBuilder builder = new SaxDocumentBuilder("results");
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("results", messageBuilder.asXmlWriter(), true)) {
+			builder.addAttribute("correlationID", correlationID);
+			builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(originalMessage.asString()));
+			addResult(builder, originalSender, executorMap, "originalResult");
 
-		builder.addAttribute("correlationID", correlationID);
-		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(originalMessage.asString()));
-		addResult(builder, originalSender, executorMap, "originalResult");
-
-		for (ISender sender : getSecondarySenders()) {
-			addResult(builder, sender, executorMap, "shadowResult");
+			for (ISender sender : getSecondarySenders()) {
+				addResult(builder, sender, executorMap, "shadowResult");
+			}
 		}
 
-		builder.close();
-		return new Message(builder.toString());
+		return messageBuilder.build();
 	}
 
 	protected void addResult(SaxDocumentBuilder builder, ISender sender, Map<ISender, ParallelSenderExecutor> executorMap, String tagName) throws SAXException, IOException {

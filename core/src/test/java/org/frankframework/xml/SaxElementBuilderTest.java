@@ -13,8 +13,8 @@ public class SaxElementBuilderTest {
 	@Test
 	public void buildDocument() throws SAXException {
 		String expected = "<root attr1=\"1234\" attr2=\"a b  c d e f   g\" attr3=\"abc\" attr4=\"def\"><sub1>sub1Value</sub1><sub2 attr=\"a b  c d e f   g\">sub2value</sub2></root>";
-		SaxElementBuilder root = new SaxElementBuilder("root");
-		try {
+		XmlWriter writer = new XmlWriter();
+		try (SaxElementBuilder root = new SaxElementBuilder("root", writer)) {
 			root.addAttribute("attr1", 1234);
 			root.addAttribute("attr2", "a b  c\td\re\nf\r\n\t\ng");
 
@@ -25,9 +25,7 @@ public class SaxElementBuilderTest {
 
 			root.addElement("sub1", "sub1Value");
 			root.addElement("sub2", "attr", "a b  c\td\re\nf\r\n\t\ng", "sub2value");
-		} finally {
-			root.close();
 		}
-		assertEquals(expected, root.toString());
+		assertEquals(expected, writer.toString());
 	}
 }

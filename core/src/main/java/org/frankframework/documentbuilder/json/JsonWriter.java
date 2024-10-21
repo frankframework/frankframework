@@ -16,8 +16,6 @@
 package org.frankframework.documentbuilder.json;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayDeque;
@@ -25,7 +23,6 @@ import java.util.Deque;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.frankframework.documentbuilder.JsonEventHandler;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.xml.SaxException;
 import org.xml.sax.SAXException;
 
@@ -45,14 +42,12 @@ public class JsonWriter implements JsonEventHandler {
 		}
 	}
 
+	/** When the implicit {@link StringWriter} is used, it's automatically closed on endDocument. */
 	public JsonWriter() {
-		this(new StringWriter());
+		this(new StringWriter(), true);
 	}
 
-	public JsonWriter(OutputStream stream) {
-		this(new OutputStreamWriter(stream, StreamUtil.DEFAULT_CHARSET));
-	}
-
+	/** When you supply a {@link Writer} you will have to close it. */
 	public JsonWriter(Writer writer) {
 		this(writer, false);
 	}

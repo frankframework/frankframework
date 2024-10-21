@@ -33,7 +33,7 @@ public class DocumentUtilsTest {
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
 		StringWriter writer = new StringWriter();
-		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root",writer, false)) {
+		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {
 			DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 		}
 		MatchUtils.assertXmlEquals(expected, writer.toString());
