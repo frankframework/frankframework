@@ -24,7 +24,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	public ExceptionPipe createPipe() {
 		var pipe = new ExceptionPipe();
 
-		pipe.registerForward(new PipeForward("success", "success"));
+		pipe.addForward(new PipeForward("success", "success"));
 
 		return pipe;
 	}
