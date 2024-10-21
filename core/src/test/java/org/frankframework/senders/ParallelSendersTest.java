@@ -44,7 +44,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	public void test10SubSenders() throws Exception {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 10; i++) {
-			sender.registerSender(new TestSender("Sender"+i));
+			sender.addSender(new TestSender("Sender"+i));
 		}
 
 		sender.configure();
@@ -66,7 +66,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	public void test10SubSendersNonRepeatableMessage() throws Exception {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 10; i++) {
-			sender.registerSender(new TestSender("Sender"+i));
+			sender.addSender(new TestSender("Sender"+i));
 		}
 
 		sender.configure();
@@ -93,9 +93,9 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 			SenderSeries wrapper = getConfiguration().createBean(SenderSeries.class);
 			wrapper.setName("Wrapper"+i);
 			for (int j = 0; j < amountOfDelaySendersInWrapper; j++) {
-				wrapper.registerSender(new TestSender("Wrapper"+i+"-Sender"+j));
+				wrapper.addSender(new TestSender("Wrapper"+i+"-Sender"+j));
 			}
-			sender.registerSender(wrapper);
+			sender.addSender(wrapper);
 		}
 
 		sender.configure();
@@ -115,7 +115,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	@Test
 	public void testSingleExceptionHandling() throws Exception {
-		sender.registerSender(new ExceptionThrowingSender());
+		sender.addSender(new ExceptionThrowingSender());
 		sender.configure();
 		sender.open();
 
@@ -127,9 +127,9 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	@Test
 	public void testExceptionHandling() throws Exception {
-		sender.registerSender(new EchoSender());
-		sender.registerSender(new ExceptionThrowingSender());
-		sender.registerSender(new EchoSender());
+		sender.addSender(new EchoSender());
+		sender.addSender(new ExceptionThrowingSender());
+		sender.addSender(new EchoSender());
 
 		sender.configure();
 		sender.open();

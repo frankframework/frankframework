@@ -21,8 +21,8 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		IsXmlPipe isXmlPipe = new IsXmlPipe();
 
 		//Add default pipes
-		isXmlPipe.registerForward(new PipeForward(pipeForwardThen, null));
-		isXmlPipe.registerForward(new PipeForward(pipeForwardElse, null));
+		isXmlPipe.addForward(new PipeForward(pipeForwardThen, null));
+		isXmlPipe.addForward(new PipeForward(pipeForwardElse, null));
 		return isXmlPipe;
 	}
 
@@ -39,7 +39,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	@Test
 	void emptySpaceInputOnValidThenPipeTest() throws Exception {
 		String pipeName = "test123";
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
@@ -60,7 +60,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	@Test
 	void tabSpaceInputOnValidThenPipeTest() throws Exception {
 		String pipeName = "test123";
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
@@ -93,7 +93,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		String pipeName = "test123";
 
 		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.addForward(new PipeForward(pipeName,null));
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "test1", session);
@@ -104,7 +104,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void validInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.addForward(new PipeForward(pipeName,null));
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "<test1", session);

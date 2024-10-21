@@ -32,7 +32,7 @@ public class TestBrowseQueue extends BusTestBase {
 		JmsRealm jmsRealm = new JmsRealm();
 		jmsRealm.setRealmName("dummyQCFAddedViaJmsRealm");
 		jmsRealm.setQueueConnectionFactoryName("dummyQCFAddedViaJmsRealm");
-		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 	}
 
 	@Test

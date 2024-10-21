@@ -57,7 +57,7 @@ public class TestPipelineTest extends BusTestBase {
 		SpringUtils.autowireByName(configuration, adapter);
 		adapter.setName(TEST_PIPELINE_ADAPER_NAME);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 

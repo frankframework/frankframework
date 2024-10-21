@@ -245,7 +245,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
 	@Override
-	public void registerForward(PipeForward forward) {
+	public void addForward(PipeForward forward) {
 		registeredForwards.add(forward);
 	}
 

@@ -58,7 +58,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 		EchoSender log = new EchoSender();
 		log.setName("myFunction");
-		sender.registerSender(log);
+		sender.addSender(log);
 
 		sender.configure();
 		sender.open();
@@ -77,7 +77,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 		PromiseResultSender promise = new PromiseResultSender();
 		promise.setName("result");
-		sender.registerSender(promise);
+		sender.addSender(promise);
 
 		sender.configure();
 		sender.open();

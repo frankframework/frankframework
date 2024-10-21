@@ -70,7 +70,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends ValidatorBase> 
 	}
 
 	@Override
-	public void registerForward(PipeForward forward) {
+	public void addForward(PipeForward forward) {
 		forwards.put(forward.getName(), forward);
 	}
 

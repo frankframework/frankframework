@@ -80,7 +80,7 @@ public class CleanupDatabaseJobTest {
 			when(mockReceiver.getMessageLog()).thenReturn(storage);
 			when(mockReceiver.getName()).thenReturn("MockReceiver");
 			when(mockAdapter.getReceivers()).thenReturn(Collections.singletonList(mockReceiver));
-			configuration.registerAdapter(mockAdapter);
+			configuration.addAdapter(mockAdapter);
 		}
 
 		// Ensure we have an IbisManager via side effects of method

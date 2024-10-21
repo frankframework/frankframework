@@ -43,7 +43,7 @@ public class MonitorTest {
 		Alarm trigger = configuration.createBean(Alarm.class);
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
 		manager.addMonitor(monitor);
 
@@ -52,7 +52,7 @@ public class MonitorTest {
 
 		MessageCapturingEchoSender sender = new  MessageCapturingEchoSender();
 		destination.setSender(sender);
-		manager.registerDestination(destination);
+		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
 		Message message = new Message("very important message");
 		message.getContext().put("special-key", 123);
