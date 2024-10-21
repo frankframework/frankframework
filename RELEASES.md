@@ -8,14 +8,15 @@ Upcoming (9.0)
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)
 
+- The SenderPipe no longer accepts a `Listener`, when using asychronous messaging (sender/listener combination) please use the `AsyncSenderWithListenerPipe` instead. No other attributes need to be modified!
 
 8.3.0 - Oct 10th, 2024
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/v8.2.0...v8.3.0)
-WebServiceListeners now use a different way of returning Multipart Attachments. The old behavior can be restored by setting 'WebServiceListener.backwardsCompatibleMultipartNotation=true'.
 
-The `messageType` attribute of IMapListener, ExchangeMailListener, DirectoryListener, FtpFileSystemListener, FtpsFileSystemListener, SambaListener and Samba2Listener is an enum and no longer supports a custom value to search for attributes in the file. This can be achieved by using the `INFO` `messageType` with a xpath expression.
-The `HttpListener` endpoint has been disabled by default.
+- WebServiceListeners now use a different way of returning Multipart Attachments. The old behavior can be restored by setting 'WebServiceListener.backwardsCompatibleMultipartNotation=true'.
+- The `messageType` attribute of IMapListener, ExchangeMailListener, DirectoryListener, FtpFileSystemListener, FtpsFileSystemListener, SambaListener and Samba2Listener is an enum and no longer supports a custom value to search for attributes in the file. This can be achieved by using the `INFO` `messageType` with a xpath expression.
+- The `HttpListener` endpoint has been disabled by default.
 
 8.2.0 - Jul 12th, 2024
 --------------
@@ -50,6 +51,7 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 Requires JDK 11 or later, tested on JDK 11, 17 and 21.
 Package `nl.nn.adapterframework` is renamed to `org.frankframework`.
 Removed many deprecated features.
+Inside Larva configuration XML files, the `nl.nn.adapterframework.` package should be replaced with `org.frankframework.`. This is due to the package name change in the framework.
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
@@ -57,7 +59,6 @@ Removed many deprecated features.
 - IbisTester class has been moved from the CORE module to LARVA
 - IteratingPipes with `parallel=true` now throws exceptions. In order to suppress this behaviour please set `ignoreExceptions=true`.
 - Remove support for Maven Jetty plugin
-- Inside Larva configuration XML files, the `nl.nn.adapterframework.` package should be replaced with `org.frankframework.`. This is due to the package name change in the framework. Still works in 8.0 as a compatibility feature.
 
 7.9.1 - March 1st, 2024
 ---
