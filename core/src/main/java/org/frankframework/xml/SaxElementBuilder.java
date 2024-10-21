@@ -33,10 +33,6 @@ public class SaxElementBuilder implements AutoCloseable {
 	private AttributesImpl attributes=null;
 	private boolean promotedToObject = false;
 
-	public SaxElementBuilder() throws SAXException {
-		this(new XmlWriter());
-	}
-
 	public SaxElementBuilder(ContentHandler handler) throws SAXException {
 		this(null, handler, null);
 	}
@@ -158,12 +154,8 @@ public class SaxElementBuilder implements AutoCloseable {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return getHandler().toString();
-	}
-
-	public ContentHandler getHandler() {
+	// Package private for now
+	ContentHandler getHandler() {
 		return handler;
 	}
 }

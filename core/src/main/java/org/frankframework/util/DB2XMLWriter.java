@@ -318,9 +318,11 @@ public class DB2XMLWriter {
 
 
 	public static String getRowXml(IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
-		SaxElementBuilder parent = new SaxElementBuilder();
-		getRowXml(parent, dbmsSupport, rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
-		return parent.toString();
+		XmlWriter writer = new XmlWriter();
+		try (SaxElementBuilder parent = new SaxElementBuilder(writer)) {
+			getRowXml(parent, dbmsSupport, rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
+		}
+		return writer.toString();
 	}
 
 	public static void getRowXml(SaxElementBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
