@@ -51,7 +51,7 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 Requires JDK 11 or later, tested on JDK 11, 17 and 21.
 Package `nl.nn.adapterframework` is renamed to `org.frankframework`.
 Removed many deprecated features.
-Inside Larva configuration XML files, the `nl.nn.adapterframework.` package should be replaced with `org.frankframework.`. This is due to the package name change in the framework.
+Inside Larva configuration XML files, the `nl.nn.adapterframework.` package must be replaced with `org.frankframework.`. This is due to the package name change in the framework.
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
