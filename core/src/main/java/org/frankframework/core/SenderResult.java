@@ -53,7 +53,7 @@ public class SenderResult implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		if (result != null) {
 			result.close();
 		}

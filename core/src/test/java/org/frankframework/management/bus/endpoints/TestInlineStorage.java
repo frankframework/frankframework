@@ -72,7 +72,7 @@ public class TestInlineStorage extends BusTestBase {
 		Receiver<String> receiver = SpringUtils.createBean(configuration, Receiver.class);
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = SpringUtils.createBean(configuration, PipeLine.class);
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		pipe.setName("EchoPipe");
@@ -80,7 +80,7 @@ public class TestInlineStorage extends BusTestBase {
 		adapter.setPipeLine(pipeline);
 
 		adapter.configure();
-		getAdapterManager().registerAdapter(adapter);
+		getAdapterManager().addAdapter(adapter);
 
 		return adapter;
 	}

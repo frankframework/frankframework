@@ -21,7 +21,7 @@
 
 		<jackson.version>2.18.0</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
-		<spring.version>6.1.13</spring.version>
+		<spring.version>6.1.14</spring.version>
 		<spring-security.version>6.3.3</spring-security.version>
 		<spring-integration.version>6.3.4</spring-integration.version>
 		<spring.boot.version>3.3.4</spring.boot.version>
@@ -118,6 +118,21 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Lock transient dependency versions to fix CVE's -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.5.14</version>
+		</dependency>
 			<dependency>
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
@@ -441,6 +456,11 @@
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcpg-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpkix-jdk18on</artifactId>
 				<version>${bouncycastle.version}</version>
 			</dependency>
 

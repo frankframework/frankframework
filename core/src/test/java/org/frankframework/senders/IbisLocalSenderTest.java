@@ -359,9 +359,9 @@ class IbisLocalSenderTest {
 			registerWithServiceDispatcher(listener);
 		}
 
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		receiver.setListener(listener);
 		receiver.setAdapter(adapter);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
@@ -381,7 +381,7 @@ class IbisLocalSenderTest {
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
 		ple.setState(PipeLine.ExitState.SUCCESS);
-		pl.registerPipeLineExit(ple);
+		pl.addPipeLineExit(ple);
 		CorePipeLineProcessor plp = new CorePipeLineProcessor();
 		plp.setAdapterManager(configuration.getAdapterManager());
 		plp.setPipeProcessor(new CorePipeProcessor());

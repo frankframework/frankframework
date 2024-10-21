@@ -83,7 +83,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 		return "Manager@"+this.hashCode();
 	}
 
-	public void registerDestination(IMonitorDestination monitorAdapter) {
+	public void addDestination(IMonitorDestination monitorAdapter) {
 		destinations.put(monitorAdapter.getName(), monitorAdapter);
 	}
 	public IMonitorDestination getDestination(String name) {

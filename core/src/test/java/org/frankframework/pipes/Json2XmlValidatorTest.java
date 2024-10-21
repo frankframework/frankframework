@@ -110,7 +110,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setName("Response_Validator");
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.addForward(new PipeForward("success",null));
 		pipe.configure();
 		pipe.start();
 
@@ -620,8 +620,8 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			pipe.setRoot("a");
 		}
 
-		pipe.registerForward(new PipeForward("failure",null));
-		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
+		pipe.addForward(new PipeForward("failure",null));
+		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
 
 		pipe.configure();
 		pipe.start();
@@ -671,9 +671,9 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setXmlReasonSessionKey("XmlReasons");
 		pipe.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
 
-		pipe.registerForward(new PipeForward("failure",null));
-		pipe.registerForward(new PipeForward("warnings",null));
-		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
+		pipe.addForward(new PipeForward("failure",null));
+		pipe.addForward(new PipeForward("warnings",null));
+		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
 
 		pipe.configure();
 		pipe.start();
@@ -738,7 +738,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		pipe.setThrowException(true);
 
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		URL json = TestFileUtils.getTestFileURL("/Validation/AttributesOnDifferentLevels/input-"+input+".json");

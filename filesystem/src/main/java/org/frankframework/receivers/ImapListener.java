@@ -17,6 +17,7 @@ package org.frankframework.receivers;
 
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
+
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.ImapFileSystem;
@@ -40,7 +41,6 @@ public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSy
 		getFileSystem().setPort(port);
 	}
 
-
 	@ReferTo(ImapFileSystem.class)
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
@@ -56,17 +56,14 @@ public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSy
 		getFileSystem().setPassword(password);
 	}
 
-
 	@ReferTo(ImapFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-
 	@ReferTo(ImapFileSystem.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}
-
 
 }

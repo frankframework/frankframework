@@ -71,7 +71,7 @@ public class InputOutputPipeProcessorTest {
 
 		PipeForward forward = new PipeForward();
 		forward.setName("success");
-		pipe.registerForward(forward);
+		pipe.addForward(forward);
 
 		session = new PipeLineSession();
 	}
@@ -92,7 +92,7 @@ public class InputOutputPipeProcessorTest {
 		pipe.setElementToMove("identificatie");
 		PipeForward forward = new PipeForward();
 		forward.setName("success");
-		pipe.registerForward(forward);
+		pipe.addForward(forward);
 		pipe.configure();
 		pipe.start();
 
@@ -124,7 +124,7 @@ public class InputOutputPipeProcessorTest {
 		pipe1.setElementToMove("identificatie");
 		PipeForward forward1 = new PipeForward();
 		forward1.setName("success");
-		pipe1.registerForward(forward1);
+		pipe1.addForward(forward1);
 		pipe1.configure();
 		pipe1.start();
 
@@ -133,7 +133,7 @@ public class InputOutputPipeProcessorTest {
 		pipe2.setRemoveCompactMsgNamespaces(false);
 		PipeForward forward2 = new PipeForward();
 		forward2.setName("success");
-		pipe2.registerForward(forward2);
+		pipe2.addForward(forward2);
 		pipe2.configure();
 		pipe2.start();
 
@@ -170,7 +170,7 @@ public class InputOutputPipeProcessorTest {
 		PipeForward forward = new PipeForward();
 		forward.setName("success");
 
-		pipe.registerForward(forward);
+		pipe.addForward(forward);
 		pipe.configure();
 		pipe.start();
 

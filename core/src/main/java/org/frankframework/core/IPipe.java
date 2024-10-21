@@ -82,7 +82,7 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * @see PipeLine
 	 * @see PipeForward
 	 */
-	void registerForward(PipeForward forward) throws ConfigurationException;
+	void addForward(PipeForward forward) throws ConfigurationException;
 
 	/**
 	 * Perform necessary action to start the pipe. This method is executed

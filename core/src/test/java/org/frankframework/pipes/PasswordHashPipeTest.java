@@ -47,7 +47,7 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
 		String hashed = PasswordHash.createHash("password");
 		session.put("key", hashed + "2132"); // this will make test fail as validation of the hash and the password will not be the same
 		pipe.setHashSessionKey("key");
-		pipe.registerForward(new PipeForward("failure", "random/path"));
+		pipe.addForward(new PipeForward("failure", "random/path"));
 		pipe.configure();
 		PipeRunResult res = doPipe(pipe, "password", session);
 		assertEquals("failure", res.getPipeForward().getName());
@@ -59,7 +59,7 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
 		session.put("key", hashed); // this will make test fail as validation of the hash and the paswword will not
 									// be the same
 		pipe.setHashSessionKey("key");
-		pipe.registerForward(new PipeForward("failure", "random/path"));
+		pipe.addForward(new PipeForward("failure", "random/path"));
 		pipe.configure();
 		PipeRunResult res = doPipe(pipe, "password", session);
 		assertEquals("success", res.getPipeForward().getName());

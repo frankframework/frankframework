@@ -167,7 +167,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
-		pipe.registerForward(failure);
+		pipe.addForward(failure);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
@@ -187,7 +187,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
-		pipe.registerForward(failure);
+		pipe.addForward(failure);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message("otherMessage"));
@@ -205,7 +205,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
-		pipe.registerForward(failure);
+		pipe.addForward(failure);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));

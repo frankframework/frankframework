@@ -45,17 +45,20 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.angus.mail.imap.AppendUID;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.eclipse.angus.mail.imap.IMAPMessage;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.PartMessage;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
@@ -120,7 +123,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		}
 	}
 
-	private IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException {
+	IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException {
 		if (StringUtils.isNotEmpty(name)) {
 			return (IMAPFolder)baseFolder.getFolder(name);
 		}
@@ -249,11 +252,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public void deleteFile(Message f) throws FileSystemException {
+	public void deleteFile(Message message) throws FileSystemException {
 		try {
-			f.setFlag(Flags.Flag.DELETED, true);
+			message.setFlag(Flags.Flag.DELETED, true);
+			message.getFolder().expunge();
 		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(message) + "]: " + e.getMessage());
 		}
 	}
 
@@ -506,8 +510,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Date getModificationTime(Message f) {
-		return null;
+	public Date getModificationTime(Message message) {
+		try {
+			return message.getReceivedDate();
+		} catch (MessagingException e) {
+			return null;
+		}
 	}
 
 	private List<String> getRecipientsOfType(Message f, RecipientType type) throws MessagingException {
@@ -613,9 +621,8 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	private static class MimeContentMessage extends org.frankframework.stream.Message {
-
 		public MimeContentMessage(IMAPMessage imapMessage) {
-			super(imapMessage::getMimeStream, null, imapMessage.getClass());
+			super(imapMessage::getMimeStream, new MessageContext(), imapMessage.getClass());
 		}
 	}
 

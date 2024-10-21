@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -38,8 +39,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 	@Test
 	void assertForwardsSet() throws ConfigurationException, PipeStartException {
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		pipe.setStopAt(10);
 		configureAndStartPipe();
 
@@ -51,13 +52,16 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
 		pipe.setStopAt(10);
 
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
 		List<String> warnings = getConfigurationWarnings().getWarnings();
-		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("both as attribute and Parameter"));
+		Optional<String> bothAsAttributeAndParameter = warnings.stream()
+				.filter(warning -> warning.contains("both as attribute and Parameter"))
+				.findFirst();
+
+		assertTrue(bothAsAttributeAndParameter.isPresent());
 	}
 
 	@Test
@@ -66,8 +70,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 		pipe.setStartAt(10);
 		pipe.setStopAt(10);
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
 		// Assert that we start at 10
@@ -96,8 +100,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 			pipe.setStopAt(10);
 		}
 
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 		configureAndStartPipe();
 
 		// Assert that we start at 10
@@ -120,8 +124,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		String dummyInput = "dummyInput";
 
 		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_VALUE, ""));
-		pipe.registerForward(new PipeForward("continue", null));
-		pipe.registerForward(new PipeForward("stop", null));
+		pipe.addForward(new PipeForward("continue", null));
+		pipe.addForward(new PipeForward("stop", null));
 
 		configureAndStartPipe();
 

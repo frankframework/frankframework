@@ -24,7 +24,6 @@ import lombok.Getter;
  *
  */
 public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
-
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
@@ -56,7 +55,6 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		this.password = password;
 	}
 
-
 	/** Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used */
 	public void setBaseFolder(String baseFolder) {
 		this.baseFolder = baseFolder;
@@ -77,5 +75,4 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
 	}
-
 }

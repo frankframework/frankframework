@@ -625,7 +625,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		// Arrange: inputWrapper 2 - wrap
 		SoapWrapperPipe outputWrapper = createPipe();
 		autowireByType(outputWrapper);
-		outputWrapper.registerForward(new PipeForward("success", PipeLine.OUTPUT_WRAPPER_NAME + "2"));
+		outputWrapper.addForward(new PipeForward("success", PipeLine.OUTPUT_WRAPPER_NAME + "2"));
 		outputWrapper.setName(PipeLine.OUTPUT_WRAPPER_NAME + "1");
 		outputWrapper.setSoapVersion(SoapVersion.SOAP11);
 		pipeline.addPipe(outputWrapper);
@@ -637,7 +637,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		outputWrapper2.setName(PipeLine.OUTPUT_WRAPPER_NAME + "2");
 		outputWrapper2.setDirection(Direction.UNWRAP);
 		outputWrapper2.setRemoveOutputNamespaces(true);
-		outputWrapper2.registerForward(new PipeForward("success", "READY"));
+		outputWrapper2.addForward(new PipeForward("success", "READY"));
 		outputWrapper2.configure();
 		outputWrapper2.start();
 		pipeline.addPipe(outputWrapper2);
@@ -662,7 +662,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		SoapWrapperPipe wrapPipeSoap = createPipe();
 		wrapPipeSoap.setDirection(Direction.WRAP);
 		autowireByType(wrapPipeSoap);
-		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
+		wrapPipeSoap.addForward(new PipeForward("success", "READY"));
 		wrapPipeSoap.setName(PipeLine.OUTPUT_WRAPPER_NAME);
 		wrapPipeSoap.setSoapVersion(soapVersion);
 		pipeline.addPipe(wrapPipeSoap);

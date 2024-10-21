@@ -32,7 +32,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		secondSenderOutput = null;
 
 		sender = configuration.createBean(SenderSeries.class);
-		sender.registerSender(new SenderBase() {
+		sender.addSender(new SenderBase() {
 			@Override
 			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				try {
@@ -42,7 +42,7 @@ public class InputOutputSenderWrapperProcessorTest {
 				}
 			}
 		});
-		sender.registerSender(new SenderBase() {
+		sender.addSender(new SenderBase() {
 			@Override
 			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				try {

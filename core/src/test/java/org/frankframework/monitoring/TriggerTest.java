@@ -50,7 +50,7 @@ public class TriggerTest implements EventThrowing {
 
 		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
-		manager.registerDestination(destination);
+		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
 	}
 
@@ -65,7 +65,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
@@ -111,7 +111,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
@@ -160,7 +160,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 		monitor.setAlarmSeverity(Severity.WARNING);
 
 		trigger.addEventCode(EVENT_CODE);
@@ -204,7 +204,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
@@ -256,8 +256,8 @@ public class TriggerTest implements EventThrowing {
 		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 
 		manager.addMonitor(monitor);
-		monitor.registerTrigger(trigger);
-		manager.registerDestination(destination);
+		monitor.addTrigger(trigger);
+		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);

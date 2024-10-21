@@ -113,7 +113,7 @@ public class JmsRealmFactory {
 	/**
 	 * Register a Realm
 	 */
-	public void registerJmsRealm(JmsRealm jmsRealm) {
+	public void addJmsRealm(JmsRealm jmsRealm) {
 		String realmName = jmsRealm.getRealmName();
 		if(jmsRealms.containsKey(realmName)) {
 			log.warn("overwriting JmsRealm [{}]. Realm with name [{}] already exists", jmsRealm, realmName);

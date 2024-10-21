@@ -15,6 +15,7 @@ Frank!Framework
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.frankframework/frankframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework?ref=badge_shield&issueType=license)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework?ref=badge_shield&issueType=security)
+[![Dependency Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DDependencyVulnerabilities%26pid%3Dxbuzi9hbw%26)](https://app.soos.io/research/repositories/github/frankframework/frankframework?attributionFormat=soosissues)
 
 
 ## Open-Source, Low-Code & Stateless
