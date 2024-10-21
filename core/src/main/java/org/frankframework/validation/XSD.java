@@ -15,6 +15,8 @@
 */
 package org.frankframework.validation;
 
+import static org.frankframework.validation.SchemaUtils.isElement;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -173,7 +175,7 @@ public abstract class XSD implements IXSD {
 				}
 				elementDepth++;
 				StartElement el = e.asStartElement();
-				if (el.getName().equals(SchemaUtils.SCHEMA)) {
+				if (isElement(el, SchemaUtils.SCHEMA)) {
 					// determine for target namespace of the schema
 					Attribute a = el.getAttributeByName(SchemaUtils.TNS);
 					if (a != null) {
@@ -182,7 +184,7 @@ public abstract class XSD implements IXSD {
 					if (StringUtils.isEmpty(xsdDefaultNamespace)) {
 						xsdDefaultNamespace = findDefaultNamespace(el);
 					}
-				} else if (el.getName().equals(SchemaUtils.IMPORT)) {
+				} else if (isElement(el, SchemaUtils.IMPORT)) {
 					// find imported namespaces
 					Attribute a = el.getAttributeByName(SchemaUtils.NAMESPACE);
 					if (a == null) {
@@ -192,7 +194,7 @@ public abstract class XSD implements IXSD {
 						continue;
 					}
 					importedNamespaces.add(a.getValue());
-				} else if (el.getName().equals(SchemaUtils.ELEMENT) && (elementDepth == 2)) {
+				} else if (isElement(el, SchemaUtils.ELEMENT) && (elementDepth == 2)) {
 					rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
 				}
 			}
@@ -346,9 +348,8 @@ public abstract class XSD implements IXSD {
 					continue;
 				}
 				StartElement el = e.asStartElement();
-				if (!el.getName().equals(SchemaUtils.IMPORT) &&
-					!el.getName().equals(SchemaUtils.INCLUDE) &&
-					(!el.getName().equals(SchemaUtils.REDEFINE) || !supportRedefine)
+				if (!isElement(el, SchemaUtils.IMPORT, SchemaUtils.INCLUDE) &&
+					(!isElement(el, SchemaUtils.REDEFINE) || !supportRedefine)
 				) {
 					continue;
 				}
@@ -374,7 +375,7 @@ public abstract class XSD implements IXSD {
 
 	private static boolean isImportToIgnore(IXSD xsd, StartElement el, Attribute schemaLocationAttribute, Attribute namespaceAttribute, String namespace) {
 		// ignore import without namespace when in head xsd default namespace and targetNamespace exists
-		if (el.getName().equals(SchemaUtils.IMPORT)
+		if (isElement(el, SchemaUtils.IMPORT)
 			&& namespaceAttribute == null
 			&& StringUtils.isNoneEmpty(xsd.getXsdDefaultNamespace(), xsd.getXsdTargetNamespace())) {
 
@@ -400,7 +401,7 @@ public abstract class XSD implements IXSD {
 
 	private static String deriveNamespace(IXSD xsd, StartElement el, Attribute namespaceAttribute) {
 		String namespace;
-		if (el.getName().equals(SchemaUtils.IMPORT)) {
+		if (isElement(el, SchemaUtils.IMPORT)) {
 			if (namespaceAttribute == null
 				&& StringUtils.isEmpty(xsd.getXsdDefaultNamespace())
 				&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
