@@ -37,8 +37,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		XmlIf xmlIf = new XmlIf();
 
 		//Add default pipes
-		xmlIf.registerForward(new PipeForward(pipeForwardThen, null));
-		xmlIf.registerForward(new PipeForward(pipeForwardElse, null));
+		xmlIf.addForward(new PipeForward(pipeForwardThen, null));
+		xmlIf.addForward(new PipeForward(pipeForwardElse, null));
 		return xmlIf;
 	}
 
@@ -210,7 +210,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	void testWithInvalidThenPipe() throws Exception {
 		String pipeName = "someText";
 		pipe.setThenForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<test123", session);
@@ -221,7 +221,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	void testWithInvalidElsePipe() throws Exception {
 		String pipeName = "someText";
 		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<test123", session);
@@ -395,7 +395,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
 		String pipeName = "test1";
 		pipe.setThenForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
 		configureAndStartPipe();
@@ -409,7 +409,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 2)");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
 		configureAndStartPipe();
@@ -422,7 +422,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	void namespaceDefsTestEmptyBooleanCheck() throws Exception {
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		pipe.setXpathExpression("xs:boolean()");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
 
@@ -434,7 +434,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	void testNullInput() throws Exception {
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName, null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, new Message((String) null), session);
@@ -447,8 +447,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
 		pipe.addParameter(new Parameter("param", "value"));
 		pipe.setXpathExpression("contains(/root/test, $param)");
 		String input = "<root><test>value is present</test></root>";
@@ -465,8 +465,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
 		Parameter p = new Parameter("param", "<root><test>value</test></root>");
 		p.setType(ParameterType.DOMDOC);
 		pipe.addParameter(p);
@@ -484,8 +484,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
 		Parameter p = new Parameter("param", "<root><test>value</test></root>");
 		p.setType(ParameterType.DOMDOC);
 		pipe.addParameter(p);
@@ -507,8 +507,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
 		Parameter p = ParameterBuilder.create("param", "<root><test>value</test></root>").withType(ParameterType.DOMDOC);
 		pipe.addParameter(p);
 

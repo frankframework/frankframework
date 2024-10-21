@@ -174,7 +174,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 * @see PipeLine#configure()
 	 */
 	/*
-	 * This function is called by Configuration.registerAdapter,
+	 * This function is called by Configuration.addAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
 	 * This method also performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
@@ -670,7 +670,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 * @ff.mandatory
 	 */
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
-	public void registerReceiver(Receiver<?> receiver) {
+	public void addReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
 		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}

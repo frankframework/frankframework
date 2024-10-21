@@ -50,8 +50,8 @@ public class PipeLineTest {
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		adapter.setPipeLine(pipeline);
 
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
@@ -78,7 +78,7 @@ public class PipeLineTest {
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
@@ -108,15 +108,15 @@ public class PipeLineTest {
 		PipeLineExit errorExit = new PipeLineExit();
 		errorExit.setName("error");
 		errorExit.setState(ExitState.ERROR);
-		pipeline.registerPipeLineExit(errorExit);
+		pipeline.addPipeLineExit(errorExit);
 		PipeLineExit successExit = new PipeLineExit();
 		successExit.setName("exit");
 		successExit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(successExit);
+		pipeline.addPipeLineExit(successExit);
 		PipeLineExit successExit2 = new PipeLineExit();
 		successExit2.setName("exit2");
 		successExit2.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(successExit2);
+		pipeline.addPipeLineExit(successExit2);
 
 		// Act
 		pipeline.configure();
@@ -137,20 +137,20 @@ public class PipeLineTest {
 
 		IPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
+		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		IPipe pipe2 = configuration.createBean(EchoPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
@@ -168,24 +168,24 @@ public class PipeLineTest {
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
+		pipe.addForward(new PipeForward("success", pipeForwardName));
+		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		EchoPipe pipe2 = configuration.createBean(EchoPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit")); // Surprisingly this doesn't cause any warnings
+		pipe.addForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit")); // Surprisingly this doesn't cause any warnings
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
@@ -204,7 +204,7 @@ public class PipeLineTest {
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", "the next pipe"));
+		pipe.addForward(new PipeForward("success", "the next pipe"));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
@@ -216,7 +216,7 @@ public class PipeLineTest {
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("special exit name");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
@@ -230,7 +230,7 @@ public class PipeLineTest {
 
 	private static class NonFixedForwardPipe extends AbstractPipe {
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) {
 			return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), message);
 		}
 	}
@@ -242,26 +242,23 @@ public class PipeLineTest {
 
 		IPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		IPipe pipe2 = configuration.createBean(NonFixedForwardPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
-		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
+		assertTrue(pipe.getForwards().isEmpty(), "pipe1 should have no forwards");
 		assertTrue(pipe2.getForwards().isEmpty(), "pipe2 should not have a pipe-forward");
 	}
 

@@ -142,6 +142,20 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	@Test
+	public void createNewEntry() throws Exception {
+		sender.setOperation(Operation.CREATE);
+		sender.addParameter(new Parameter("entryName", "cn=Application Developer,ou=groups,ou=development," + baseDNs));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<attributes><attribute name=\"department\"><value>Java Developers</value></attribute></attributes>").asString();
+
+		assertEquals("<LdapResult>Success</LdapResult>", result);
+		compareXML("Ldap/expected/create.xml", getTree());
+	}
+
+	@Test
 	public void deleteAttribute() throws Exception {
 		sender.setOperation(Operation.DELETE);
 		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
@@ -153,6 +167,23 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/delete.xml", getTree());
+	}
+
+	@Test
+	public void searchAttribute() throws Exception {
+		sender.setOperation(Operation.SEARCH);
+		sender.addParameter(new Parameter("entryName", "ou=groups,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("filterExpression", "(entryUUID=*)"));
+		sender.setAttributesToReturn("entryUUID,createTimestamp");
+		// 4 entries exist
+		sender.setMaxEntriesReturned(3);
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<dummy />").asString();
+
+		compareXML("Ldap/expected/search.xml", result);
 	}
 
 	//Create a new sender and execute the TREE action to run a diff against that changes

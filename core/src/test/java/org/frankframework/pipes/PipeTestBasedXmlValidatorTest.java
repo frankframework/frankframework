@@ -23,7 +23,7 @@ public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {
 		pipe.setRoot("Root");
 		pipe.setReasonSessionKey("reason");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		pipe.setSchemaLocation(SCHEMA_LOCATION_FACET_ERROR);
 		configureAndStartPipe();
 		assertEquals(1, getConfigurationWarnings().size());

@@ -25,6 +25,7 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
@@ -39,6 +40,7 @@ import org.frankframework.util.MessageUtils;
  *
  * @author Gerrit van Brakel
  */
+@Forward(name = "success", description = "successful processing of the message of the pipe")
 public abstract class FixedForwardPipe extends AbstractPipe {
 
 	private @Getter PipeForward successForward;

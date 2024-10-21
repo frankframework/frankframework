@@ -1,7 +1,10 @@
 package org.frankframework.validation;
 
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -41,6 +44,22 @@ public class XSDTest {
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
 		assertEquals("http://test", xsd.getNamespace());
 		assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
+	}
+
+	@Test
+	public void xsdDuplicateNSPrefix() throws Exception {
+		// Arrange
+		XSD xsd = new ResourceXsd();
+		xsd.initNamespace("http://www.frankframework.org/test", scopeProvider, "XSDTest/MultipleIncludesClashingPrefixes/root1.xsd");
+
+		assertEquals("http://www.frankframework.org/test", xsd.getNamespace());
+
+		Set<IXSD> xsds = XSD.getXsdsRecursive(Set.of(xsd));
+
+		// Act
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, SchemaUtils.groupXsdsByNamespace(xsds, false)));
+
+		assertThat(exception.getMessage(), containsString("Prefix [dup] defined in multiple files with different namespaces"));
 	}
 
 	@Test

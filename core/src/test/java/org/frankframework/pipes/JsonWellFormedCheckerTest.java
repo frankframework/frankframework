@@ -36,7 +36,7 @@ public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecke
 	@ParameterizedTest(name = "{index}: input [ {0} ] forward [{1}]")
 	public void runTest(String input, String forward) throws Exception {
 		initJsonWellFormedCheckerTestData(input, forward);
-		pipe.registerForward( new PipeForward("failure", "path") );
+		pipe.addForward( new PipeForward("failure", "path") );
 		pipe.configure();
 		pipe.start();
 		PipeRunResult pipeRunResult = doPipe(pipe, input, session);

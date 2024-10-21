@@ -40,14 +40,14 @@ public class TestConnectionOverview extends BusTestBase {
 		Receiver<String> receiver = new Receiver<>();
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 

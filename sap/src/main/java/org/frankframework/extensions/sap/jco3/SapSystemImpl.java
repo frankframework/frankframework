@@ -148,7 +148,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	@Override
 	public void registerItem(Object dummyParent) {
 		super.registerItem(dummyParent);
-		SapSystemFactory.getInstance().registerSapSystem(this, getName());
+		SapSystemFactory.getInstance().addSapSystem(this, getName());
 	}
 
 	public void clearCache() {

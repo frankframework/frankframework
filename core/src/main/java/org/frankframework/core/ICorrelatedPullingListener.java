@@ -27,7 +27,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since   4.0
  */
-public interface ICorrelatedPullingListener<M> extends IPullingListener<M>{
+public interface ICorrelatedPullingListener<M> extends IPullingListener<M> {
 
 	/**
 	 * Retrieves messages from queue or other channel,  but retrieves only

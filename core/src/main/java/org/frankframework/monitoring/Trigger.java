@@ -240,18 +240,18 @@ public class Trigger implements ITrigger {
 		setSourceFiltering(SourceFiltering.NONE);
 	}
 
+	public boolean isFilterOnLowerLevelObjects() {
+		return sourceFiltering == SourceFiltering.SOURCE;
+	}
+
 	@Override
-	public void registerAdapterFilter(AdapterFilter af) {
+	public void addAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
 		if(af.isFilteringToLowerLevelObjects()) {
 			setSourceFiltering(SourceFiltering.SOURCE);
 		} else if (getSourceFiltering() == SourceFiltering.NONE) {
 			setSourceFiltering(SourceFiltering.ADAPTER);
 		}
-	}
-
-	public boolean isFilterOnLowerLevelObjects() {
-		return sourceFiltering == SourceFiltering.SOURCE;
 	}
 	public boolean isFilterOnAdapters() {
 		return sourceFiltering == SourceFiltering.ADAPTER;

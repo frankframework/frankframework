@@ -8,8 +8,8 @@ import org.frankframework.core.Adapter;
 public class AutoConfiguringAdapterManager extends AdapterManager {
 
 	@Override
-	public void registerAdapter(Adapter adapter) {
-		super.registerAdapter(adapter);
+	public void addAdapter(Adapter adapter) {
+		super.addAdapter(adapter);
 		try {
 			adapter.configure();
 		} catch (ConfigurationException e) {

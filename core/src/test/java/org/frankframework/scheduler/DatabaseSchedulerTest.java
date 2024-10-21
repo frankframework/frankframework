@@ -51,7 +51,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		builder.setValue("MESSAGE", "dummy message");
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("testAdapter");
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 
 		configuration.mockQuery("SELECT COUNT(*) FROM IBISSCHEDULES", builder.build());
 

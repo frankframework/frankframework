@@ -23,6 +23,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -32,6 +33,7 @@ import org.frankframework.util.CredentialFactory;
  *
  * @author Gerrit van Brakel
  */
+@Forward(name = "*", description = "When {@literal notFoundForwardName} or {@literal exceptionForwardName} is used")
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 
 	private @Getter String ldapProviderURL;

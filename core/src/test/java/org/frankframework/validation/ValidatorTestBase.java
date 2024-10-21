@@ -199,7 +199,7 @@ public abstract class ValidatorTestBase {
 				xsds = XSD.getXsdsRecursive(xsds);
 				//checkRootValidations(xsds);
 				try {
-					Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+					Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.groupXsdsByNamespace(xsds, false);
 					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(testScopeProvider, xsdsGroupedByNamespace);
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);

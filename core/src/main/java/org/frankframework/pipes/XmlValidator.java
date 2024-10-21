@@ -395,7 +395,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				checkOutputRootValidations(xsds);
 			}
 			try {
-				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.groupXsdsByNamespace(xsds, false);
 				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace); // also handles addNamespaceToSchema
 			} catch(Exception e) {
 				throw new ConfigurationException("could not merge schema's", e);

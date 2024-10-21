@@ -62,6 +62,7 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.ProcessStateDTO;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.pipes.MessageSendingPipe;
+import org.frankframework.pipes.AsyncSenderWithListenerPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
@@ -233,13 +234,15 @@ public class AdapterStatus extends BusEndpointBase {
 				if (sender instanceof JdbcSenderBase) {
 					pipesInfo.put("isJdbcSender", true);
 				}
-				IListener<?> listener = msp.getListener();
-				if (listener!=null) {
-					pipesInfo.put("listenerName", listener.getName());
-					pipesInfo.put("listenerClass", ClassUtils.nameOf(listener));
-					if (listener instanceof HasPhysicalDestination destination) {
-						String pd = destination.getPhysicalDestinationName();
-						pipesInfo.put("listenerDestination", pd);
+				if (pipe instanceof AsyncSenderWithListenerPipe slp) {
+					IListener<?> listener = slp.getListener();
+					if (listener!=null) {
+						pipesInfo.put("listenerName", listener.getName());
+						pipesInfo.put("listenerClass", ClassUtils.nameOf(listener));
+						if (listener instanceof HasPhysicalDestination destination) {
+							String pd = destination.getPhysicalDestinationName();
+							pipesInfo.put("listenerDestination", pd);
+						}
 					}
 				}
 				ITransactionalStorage<?> messageLog = msp.getMessageLog();
