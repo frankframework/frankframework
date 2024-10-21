@@ -37,7 +37,7 @@ public class DocumentBuilderFactory {
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, Writer writer) throws SAXException {
 		switch (format) {
 		case XML:
-			return new XmlDocumentBuilder(rootElement, writer, false);
+			return new XmlDocumentBuilder(rootElement, writer);
 		case JSON:
 			return new JsonDocumentBuilder(writer);
 		default:

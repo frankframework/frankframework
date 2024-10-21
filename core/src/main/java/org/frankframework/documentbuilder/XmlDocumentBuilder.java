@@ -28,7 +28,7 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 	private Writer writer;
 	private SaxDocumentBuilder saxDocumentBuilder;
 
-	public XmlDocumentBuilder(String rootElement, Writer writer, boolean prettyPrint) throws SAXException {
+	public XmlDocumentBuilder(String rootElement, Writer writer) throws SAXException {
 		this(new SaxDocumentBuilder(null, new XmlWriter(writer), true), rootElement);
 		this.writer = writer;
 	}

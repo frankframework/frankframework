@@ -175,7 +175,7 @@ public class DocumentBuilderTest {
 			JsonValue jValue=null;
 			jValue = jr.read();
 			StringWriter writer = new StringWriter();
-			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer, true)) {
+			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {
 				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 			}
 			MatchUtils.assertXmlEquals(expected, writer.toString());
