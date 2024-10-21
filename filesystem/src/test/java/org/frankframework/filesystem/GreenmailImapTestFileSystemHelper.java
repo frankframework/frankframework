@@ -5,6 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.eclipse.angus.mail.imap.IMAPFolder;
+
+import com.icegreen.greenmail.junit5.GreenMailExtension;
+
+import jakarta.annotation.Nonnull;
 import jakarta.mail.Address;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
@@ -15,12 +22,6 @@ import jakarta.mail.Store;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SubjectTerm;
-
-import com.icegreen.greenmail.junit5.GreenMailExtension;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
-import org.eclipse.angus.mail.imap.IMAPFolder;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Greenmail based mail file system helper.
@@ -121,7 +122,7 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 	}
 
 	// the tests in FileSystemTestBase assume that the input folder is used
-	private @NotNull String getFolderToUse(String folderName) {
+	private @Nonnull String getFolderToUse(String folderName) {
 		return StringUtils.isNotBlank(folderName) ? folderName : ImapMailListenerTest.INPUT_FOLDER;
 	}
 
