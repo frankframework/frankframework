@@ -25,8 +25,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.InvalidDestinationException;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueSender;
+import jakarta.jms.QueueSession;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicPublisher;
+import jakarta.jms.TopicSession;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.HasPhysicalDestination;
@@ -46,29 +70,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlException;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.xml.sax.SAXException;
-
-import jakarta.annotation.Nonnull;
-import jakarta.jms.BytesMessage;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.Destination;
-import jakarta.jms.InvalidDestinationException;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageConsumer;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueSender;
-import jakarta.jms.QueueSession;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
-import jakarta.jms.Topic;
-import jakarta.jms.TopicPublisher;
-import jakarta.jms.TopicSession;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 
 /**
@@ -243,10 +244,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return result;
 	}
 
-	public Object getManagedConnectionFactory() throws JmsException {
-		return getMessagingSource().getManagedConnectionFactory();
-	}
-
 	public String getConnectionFactoryInfo() throws JmsException {
 		return getMessagingSource().getPhysicalName();
 	}
@@ -312,14 +309,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Obtains a connection and a serviceQueue.
 	 */
-	public void open() throws Exception {
+	public void start() throws Exception {
 		try {
 			getMessagingSource(); // obtain and cache connection, then start it.
 			if (StringUtils.isNotEmpty(getDestinationName())) {
 				getDestination();
 			}
 		} catch (Exception e) {
-			close();
+			stop();
 			throw e;
 		}
 	}
@@ -328,7 +325,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Releases references to serviceQueue and connection.
 	 */
 	@Override
-	public void close() {
+	public void stop() {
 		try {
 			if (messagingSource != null) {
 				try {

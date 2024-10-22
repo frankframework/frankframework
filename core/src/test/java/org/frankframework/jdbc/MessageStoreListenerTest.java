@@ -278,11 +278,11 @@ public class MessageStoreListenerTest {
 	private String insertARecord(String message, char type) throws SenderException, ConfigurationException {
 		storage.setType(type+"");
 		storage.configure();
-		storage.open();
+		storage.start();
 		try {
 			return storage.storeMessage("fakeMid", "fakeCid", new Date(), "fakeComments", "fakeLabel", message);
 		} finally {
-			storage.close();
+			storage.stop();
 		}
 	}
 

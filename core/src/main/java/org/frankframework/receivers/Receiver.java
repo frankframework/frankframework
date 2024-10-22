@@ -426,10 +426,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					getErrorSender().open();
 				}
 				if (getErrorStorage()!=null) {
-					getErrorStorage().open();
+					getErrorStorage().start();
 				}
 				if (getMessageLog()!=null) {
-					getMessageLog().open();
+					getMessageLog().start();
 				}
 			} catch (Exception e) {
 				throw new ListenerException(e);
@@ -490,14 +490,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 			if (getErrorStorage()!=null) {
 				try {
-					getErrorStorage().close();
+					getErrorStorage().stop();
 				} catch (Exception e) {
 					error("error closing error storage", e);
 				}
 			}
 			if (getMessageLog()!=null) {
 				try {
-					getMessageLog().close();
+					getMessageLog().stop();
 				} catch (Exception e) {
 					error("error closing message log", e);
 				}

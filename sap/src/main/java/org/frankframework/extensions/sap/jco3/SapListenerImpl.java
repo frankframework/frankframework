@@ -99,7 +99,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		try {
 			openFacade();
 			SapServerDataProvider serverDataProvider = SapServerDataProvider.getInstance();
@@ -115,7 +115,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 			serverDataProvider.getServerDataEventListener().updated(getName());
 		} catch (Exception e) {
 			try {
-				close();
+				stop();
 			} catch (Exception e2) {
 				e.addSuppressed(e2);
 			}
@@ -124,7 +124,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public void close() throws ListenerException {
+	public void stop() throws ListenerException {
 		try {
 			log.debug("{}stop server", getLogPrefix());
 			SapServerDataProvider.getInstance().getServerDataEventListener().deleted(getName());
