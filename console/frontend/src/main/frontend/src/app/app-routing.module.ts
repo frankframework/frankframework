@@ -263,6 +263,7 @@ export const routes: Routes = [
   {
     path: 'security-items',
     component: SecurityItemsComponent,
+    title: 'Security Items',
     data: {
       pageTitle: 'Security Items',
       breadcrumbs: 'Security Items',
