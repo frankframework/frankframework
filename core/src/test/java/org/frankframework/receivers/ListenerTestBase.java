@@ -18,17 +18,19 @@ package org.frankframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 /**
  * How to test listeners? The main focus is on what to do after a listener has received a 'raw' message.
@@ -70,7 +72,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	@AfterEach
 	public void tearDown() throws ListenerException {
 		if (listener != null) {
-			listener.close();
+			listener.stop();
 			listener = null;
 		}
 	}

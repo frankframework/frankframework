@@ -102,7 +102,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		try {
 			super.open();
 		} catch (Exception e) {
@@ -117,7 +117,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		super.close();
 		try {
 			if (getSender() != null) {

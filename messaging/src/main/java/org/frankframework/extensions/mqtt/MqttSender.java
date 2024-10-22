@@ -17,8 +17,10 @@
 package org.frankframework.extensions.mqtt;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
@@ -61,7 +63,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public void close() {
-		super.close();
+		super.stop();
 	}
 
 	@Override

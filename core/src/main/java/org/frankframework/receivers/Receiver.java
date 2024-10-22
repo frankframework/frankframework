@@ -434,7 +434,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			} catch (Exception e) {
 				throw new ListenerException(e);
 			}
-			getListener().open();
+			getListener().start();
 		} finally {
 			if (timeoutGuard.cancel()) {
 				throw new TimeoutException("timeout exceeded while starting receiver");
@@ -470,7 +470,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		log.debug("{}closing", getLogPrefix());
 		try {
 			try {
-				getListener().close();
+				getListener().stop();
 			} catch (Exception e) {
 				error("error closing listener", e);
 			}

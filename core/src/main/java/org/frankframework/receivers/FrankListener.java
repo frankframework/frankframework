@@ -21,10 +21,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -36,7 +39,6 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
-import org.springframework.context.ApplicationContext;
 
 
 /**
@@ -101,7 +103,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		FrankListener putResult = listeners.putIfAbsent(fullName, this);
 		if (putResult != null && putResult != this) {
 			throw new ListenerException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
@@ -110,7 +112,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		listeners.remove(fullName);
 		open = false;
 	}

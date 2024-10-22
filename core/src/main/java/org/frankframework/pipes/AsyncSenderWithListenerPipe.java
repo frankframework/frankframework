@@ -177,7 +177,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 
 		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
-				listener.open();
+				listener.start();
 			} catch (ListenerException t) {
 				PipeStartException pse = new PipeStartException("could not start", t);
 				pse.setPipeNameInError(getName());
@@ -190,7 +190,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	public void stop() {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
-				listener.close();
+				listener.stop();
 				log.info("closed listener");
 			} catch (ListenerException e) {
 				log.warn("Exception closing listener", e);

@@ -27,6 +27,6 @@ public interface IMessageBrowsingIterator extends AutoCloseable {
 	IMessageBrowsingIteratorItem  next() throws ListenerException;
 
 	@Override
-	void  close() throws ListenerException;
+	void close() throws ListenerException;
 
 }

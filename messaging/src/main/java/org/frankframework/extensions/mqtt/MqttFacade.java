@@ -25,12 +25,13 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.util.CredentialFactory;
-import org.springframework.context.ApplicationContext;
 
 @Log4j2
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
@@ -102,7 +103,7 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		}
 	}
 
-	public void close() {
+	public void stop() {
 		try {
 			client.disconnect();
 		} catch (MqttException e) {

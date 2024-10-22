@@ -41,7 +41,7 @@ public abstract class FileSystemListenerExtraTest<F,S extends IWritableFileSyste
 		String contents="Test Message Contents";
 
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 

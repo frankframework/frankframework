@@ -1083,7 +1083,7 @@ public class LarvaTool {
 				if (jmsCleanUp(queueName, pullingJmsListener)) {
 					remainingMessagesFound = true;
 				}
-				pullingJmsListener.close();
+				pullingJmsListener.stop();
 				debugMessage("Closed jms listener '" + queueName + "'");
 			}
 		}

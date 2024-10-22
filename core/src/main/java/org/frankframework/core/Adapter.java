@@ -35,11 +35,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-
-import org.frankframework.doc.FrankDocGroup;
-
-import org.frankframework.doc.FrankDocGroupValue;
-
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
@@ -49,6 +44,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -797,10 +794,9 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	/**
 	 * Stop the <code>Adapter</code> and close all elements like receivers,
 	 * Pipeline, pipes etc.
-	 * The adapter
-	 * will call the <code>IReceiver</code> to <code>stopListening</code>
-	 * <p>Also the <code>PipeLine.close()</code> method will be called,
-	 * closing all registered pipes. </p>
+	 * The adapter will call the <code>IReceiver</code> to <code>stopListening</code>
+	 * <p>Also the {@link PipeLine#stop} method will be called, closing all registered pipes. </p>
+	 *
 	 * @see Receiver#stopRunning
 	 * @see PipeLine#stop
 	 */

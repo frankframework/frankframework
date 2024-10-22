@@ -111,7 +111,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		if (!isConnectionsArePooled()) {
 			try {
 				connection = getConnection();
@@ -128,7 +128,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		try {
 			if (connection != null) {
 				connection.close();

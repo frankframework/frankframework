@@ -19,13 +19,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.nimbusds.jose.proc.SecurityContext;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import com.nimbusds.jose.proc.SecurityContext;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -41,7 +43,6 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
-import org.springframework.util.MimeType;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 
@@ -180,7 +181,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			try {
@@ -190,12 +191,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
 			}
 		}
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 

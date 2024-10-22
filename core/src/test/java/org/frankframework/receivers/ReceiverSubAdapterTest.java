@@ -110,7 +110,7 @@ public class ReceiverSubAdapterTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		listener.open();
+		listener.start();
 		return listener;
 	}
 

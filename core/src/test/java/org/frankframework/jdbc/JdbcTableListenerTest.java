@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Disabled;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser.SortOrder;
 import org.frankframework.core.ListenerException;
@@ -84,7 +85,7 @@ public class JdbcTableListenerTest {
 	@AfterEach
 	public void teardown() throws Exception {
 		if(listener != null) {
-			listener.close();
+			listener.stop();
 		}
 	}
 
@@ -97,7 +98,7 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
-		listener.open();
+		listener.start();
 	}
 
 	@DatabaseTest
@@ -202,7 +203,7 @@ public class JdbcTableListenerTest {
 
 	public void testGetRawMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
@@ -328,7 +329,7 @@ public class JdbcTableListenerTest {
 
 	public void testGetMessageCount(String status, ProcessState state, int expectedCount) throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'A')", null, new PipeLineSession());
@@ -378,7 +379,7 @@ public class JdbcTableListenerTest {
 
 	public void testPeekMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
@@ -418,7 +419,7 @@ public class JdbcTableListenerTest {
 		listener.setMessageIdField("tVARCHAR");
 		listener.setCorrelationIdField("tCLOB");
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null, new PipeLineSession());
@@ -440,7 +441,7 @@ public class JdbcTableListenerTest {
 			listener.setStatusValueInProcess("4");
 		}
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
@@ -466,7 +467,7 @@ public class JdbcTableListenerTest {
 
 	public void testParallelChangeProcessState(boolean mainThreadFirst) throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "DELETE FROM " + TEST_TABLE + " WHERE TKEY=10", null, new PipeLineSession());
@@ -557,7 +558,7 @@ public class JdbcTableListenerTest {
 			listener.setStatusValueInProcess("4");
 		}
 		listener.configure();
-		listener.open();
+		listener.start();
 
 
 		try(Connection connection = env.getConnection()) {
@@ -582,7 +583,7 @@ public class JdbcTableListenerTest {
 			listener.setStatusValueInProcess("4");
 		}
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
@@ -609,7 +610,7 @@ public class JdbcTableListenerTest {
 			listener.setStatusValueInProcess("4");
 		}
 		listener.configure();
-		listener.open();
+		listener.start();
 		boolean useStatusInProcess;
 		RawMessageWrapper rawMessage;
 
@@ -669,7 +670,7 @@ public class JdbcTableListenerTest {
 	public void testForRaceConditionHandlingOnParallelGet(int checkpoint) throws Exception {
 		listener.setStatusValueInProcess("4");
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		boolean useUpdateRow=false;
 

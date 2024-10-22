@@ -17,6 +17,8 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,8 +26,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import jakarta.annotation.Nonnull;
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -58,9 +62,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 
-import nl.nn.adapterframework.dispatcher.DispatcherException;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-
 @Log4j2
 class FrankSenderTest {
 	private static final String TARGET_SERVICE_NAME = "TEST_TARGET_SERVICE";
@@ -86,7 +87,7 @@ class FrankSenderTest {
 			// Ignore
 		}
 		if (frankListener != null) {
-			frankListener.close();
+			frankListener.stop();
 		}
 		log.debug("FrankSenderTest: Teardown done");
 	}
@@ -276,7 +277,7 @@ class FrankSenderTest {
 		frankListener.setName("ListenerName");
 		frankListener.setApplicationContext(mockConfiguration);
 		frankListener.configure();
-		frankListener.open();
+		frankListener.start();
 
 		// Act
 		ServiceClient actual = sender.getFrankListener(target);
@@ -302,7 +303,7 @@ class FrankSenderTest {
 		frankListener.setName("ListenerName");
 		frankListener.setApplicationContext(configuration);
 		frankListener.configure();
-		frankListener.open();
+		frankListener.start();
 
 		// Act
 		assertThrows(SenderException.class, ()-> sender.getFrankListener(target));
@@ -531,7 +532,7 @@ class FrankSenderTest {
 		receiver.setAdapter(targetAdapter);
 
 		listener.configure();
-		listener.open();
+		listener.start();
 	}
 
 	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
@@ -552,7 +553,7 @@ class FrankSenderTest {
 		targetAdapter.addReceiver(receiver);
 		receiver.setAdapter(targetAdapter);
 
-		listener.open();
+		listener.start();
 	}
 
 	private Adapter createAdapter(TestConfiguration configuration, IPipe pipe) throws ConfigurationException {

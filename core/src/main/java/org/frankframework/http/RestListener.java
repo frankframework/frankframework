@@ -18,8 +18,10 @@ package org.frankframework.http;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.HasPhysicalDestination;
@@ -73,14 +75,14 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@Override
-	public void open() throws ListenerException {
-		super.open();
+	public void start() throws ListenerException {
+		super.start();
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern(), getMethod());
 	}
 

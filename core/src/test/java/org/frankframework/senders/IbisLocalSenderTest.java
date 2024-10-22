@@ -22,6 +22,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -46,9 +49,6 @@ import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
-
-import nl.nn.adapterframework.dispatcher.DispatcherException;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
 @Log4j2
 class IbisLocalSenderTest {
@@ -370,7 +370,7 @@ class IbisLocalSenderTest {
 
 		adapter.setPipeLine(pipeline);
 
-		listener.open();
+		listener.start();
 		return listener;
 	}
 
