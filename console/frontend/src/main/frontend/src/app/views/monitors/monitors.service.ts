@@ -68,9 +68,11 @@ export class MonitorsService {
   }
 
   getTriggerUrl(selectedConfiguration: string, monitorName: string, triggerId: number): string {
-    return `${
+    let url = `${
       this.appService.absoluteApiPath
-    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers/${triggerId > -1 ? triggerId : ''}`;
+    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers`;
+    if (triggerId > -1) url += `/${triggerId}`;
+    return url;
   }
 
   getMonitors(selectedConfiguration: string): Observable<MonitorsResponse> {

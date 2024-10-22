@@ -3,6 +3,7 @@ import { Client, IFrame, IMessage, IStompSocket, StompSubscription } from '@stom
 import { AppService, ClusterMember } from '../app.service';
 import { Subject } from 'rxjs';
 import { SweetalertService } from './sweetalert.service';
+import { ToastService } from './toast.service';
 
 type ChannelMessage = {
   channel: string;
@@ -69,6 +70,7 @@ export class WebsocketService {
   constructor(
     private appService: AppService,
     private sweetalertService: SweetalertService,
+    private toastsService: ToastService,
   ) {}
 
   activate(): void {
@@ -120,6 +122,8 @@ export class WebsocketService {
         this.client.deactivate();
       }
     }, 20_000);
+
+    this.toastsService.warning('Websocket Error', 'Switching to fallback');
     this.client.webSocketFactory = (): IStompSocket => {
       return new window.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
         transports: [
