@@ -79,7 +79,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		closeFacade();
 	}
 
