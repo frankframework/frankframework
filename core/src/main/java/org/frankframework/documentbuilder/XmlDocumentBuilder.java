@@ -19,6 +19,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.XmlWriter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -27,12 +28,8 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 	private Writer writer;
 	private SaxDocumentBuilder saxDocumentBuilder;
 
-	public XmlDocumentBuilder(String rootElement) throws SAXException {
-		this(rootElement, new StringWriter(), true);
-	}
-
-	public XmlDocumentBuilder(String rootElement, Writer writer, boolean prettyPrint) throws SAXException {
-		this(new SaxDocumentBuilder(null, writer), rootElement);
+	public XmlDocumentBuilder(String rootElement, Writer writer) throws SAXException {
+		this(new SaxDocumentBuilder(null, new XmlWriter(writer), true), rootElement);
 		this.writer = writer;
 	}
 

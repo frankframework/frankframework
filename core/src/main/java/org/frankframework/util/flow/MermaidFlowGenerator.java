@@ -39,6 +39,7 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
+import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -92,14 +93,14 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	}
 
 	private String compileFrankElementList() throws SAXException {
-		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("root")) {
+		XmlWriter writer = new XmlWriter();
+		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("root", writer, true)) {
 			List<String> classNames = findAllFrankElements();
 			for (String className : classNames) {
 				addClassInfo(className, builder);
 			}
-			builder.endElement();
-			return builder.toString();
 		}
+		return writer.toString();
 	}
 
 	private void addClassInfo(String className, SaxDocumentBuilder builder) throws SAXException {

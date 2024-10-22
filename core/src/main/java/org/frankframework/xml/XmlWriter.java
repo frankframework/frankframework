@@ -71,10 +71,12 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		}
 	}
 
+	/** When the implicit {@link StringWriter} is used, it's automatically closed on endDocument. */
 	public XmlWriter() {
-		this(new StringWriter());
+		this(new StringWriter(), true);
 	}
 
+	/** When you supply a {@link Writer} you will have to close it. */
 	public XmlWriter(Writer writer) {
 		this(writer, false);
 	}

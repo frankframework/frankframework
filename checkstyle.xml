@@ -10,7 +10,7 @@
 		<property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
 	</module>
 
-	<property name="severity" value="warning" />
+	<property name="severity" value="error" />
 	<module name="TreeWalker">
 		<property name="fileExtensions" value="java" />
 		<property name="severity" value="error" />

@@ -5,11 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -23,7 +18,12 @@ import org.frankframework.documentbuilder.json.JsonTee;
 import org.frankframework.documentbuilder.json.JsonWriter;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.xml.XmlWriter;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
+
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 
 public class DocumentBuilderTest {
 
@@ -116,17 +116,17 @@ public class DocumentBuilderTest {
 	@Test
 	public void testXmlDocumentBuilderDefault() throws SAXException {
 		String expected = expectedXml;
-		try (IDocumentBuilder root = new XmlDocumentBuilder("root")) {
+		XmlWriter writer = new XmlWriter();
+		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer, true)) {
 			buildDocument(root);
-			root.close();
-			MatchUtils.assertXmlEquals(expected, root.toString());
 		}
+		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	@Test
 	public void testJsonObjectDocumentBuilder() throws SAXException {
 		String expected = expectedJson;
-		try (ObjectBuilder root = DocumentBuilderFactory.startObjectDocument(DocumentFormat.JSON, "dummy")) {
+		try (ObjectBuilder root = DocumentBuilderFactory.startDocument(DocumentFormat.JSON, "dummy", new StringWriter()).asObjectBuilder()) {
 			buildObject(root);
 			root.close();
 			assertEquals(expected, root.toString());
@@ -136,7 +136,7 @@ public class DocumentBuilderTest {
 	@Test
 	public void testXmlObjectDocumentBuilder() throws SAXException {
 		String expected = expectedXml;
-		try (ObjectBuilder root = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "root")) {
+		try (ObjectBuilder root = DocumentBuilderFactory.startDocument(DocumentFormat.XML, "root", new StringWriter()).asObjectBuilder()) {
 			buildObject(root);
 			root.close();
 			MatchUtils.assertXmlEquals(expected, root.toString());
@@ -175,7 +175,7 @@ public class DocumentBuilderTest {
 			JsonValue jValue=null;
 			jValue = jr.read();
 			StringWriter writer = new StringWriter();
-			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer, true)) {
+			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {
 				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 			}
 			MatchUtils.assertXmlEquals(expected, writer.toString());
