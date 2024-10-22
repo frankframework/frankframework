@@ -20,6 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
@@ -34,8 +36,6 @@ import org.frankframework.pipes.StringIteratorPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.SpringUtils;
-
-import lombok.Getter;
 
 
 /**
@@ -99,7 +99,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void stop() {
 		super.stop();
-		querySender.close();
+		querySender.stop();
 	}
 
 	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;

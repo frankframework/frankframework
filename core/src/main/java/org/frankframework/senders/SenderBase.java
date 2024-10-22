@@ -17,13 +17,14 @@ package org.frankframework.senders;
 
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.SenderException;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Baseclass for senders.
@@ -46,7 +47,7 @@ public abstract class SenderBase implements ISender {
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() throws SenderException {
 	}
 
 	/**

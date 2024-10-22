@@ -20,10 +20,11 @@ import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
 
 public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSender> {
 
@@ -59,7 +60,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -91,7 +92,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -123,7 +124,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -156,7 +157,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -189,7 +190,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -222,7 +223,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
@@ -277,7 +278,7 @@ public class QueueCreator {
 						try (PipeLineSession session = new PipeLineSession()){
 							deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), session).close();
 						} finally {
-							deleteQuerySender.close();
+							deleteQuerySender.stop();
 						}
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, correlationId);

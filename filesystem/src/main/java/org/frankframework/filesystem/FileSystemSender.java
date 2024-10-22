@@ -18,6 +18,7 @@ package org.frankframework.filesystem;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
@@ -84,7 +85,7 @@ public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() throws SenderException {
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {

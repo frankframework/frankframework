@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -53,6 +54,9 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -80,8 +84,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -310,7 +312,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		if (globalSession != null) {
 			log.debug("Closing global CMIS session");
 			globalSession.close();

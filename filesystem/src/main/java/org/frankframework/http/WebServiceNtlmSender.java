@@ -21,6 +21,7 @@ import java.net.SocketTimeoutException;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
+
 import jcifs.ntlmssp.NtlmFlags;
 import jcifs.ntlmssp.Type1Message;
 import jcifs.ntlmssp.Type2Message;
@@ -49,6 +50,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
@@ -146,7 +148,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 //		httpClient.getConnectionManager().shutdown();
 		connectionManager.shutdown();
 		connectionManager=null;

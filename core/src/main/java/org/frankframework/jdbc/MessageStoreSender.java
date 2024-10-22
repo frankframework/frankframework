@@ -21,10 +21,12 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ITransactionalStorage;
@@ -89,6 +91,12 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			throw new ConfigurationException("[slotId] has to be configured");
 		}
 		super.configure();
+	}
+
+	@Override
+	public void open() throws SenderException {
+		// TODO FIX this in ISender
+		start();
 	}
 
 	@Override

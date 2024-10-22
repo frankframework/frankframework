@@ -6,10 +6,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -52,13 +53,13 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 
 		// Assert 1
 		verify(senderMock, Mockito.times(2)).open();
-		verify(senderMock, Mockito.times(1)).close();
+		verify(senderMock, Mockito.times(1)).stop();
 
 		// Act 2: now close the session too
 		session.close();
 
 		// Assert 2: only now the sender should be closed
-		verify(senderMock, Mockito.times(2)).close();
+		verify(senderMock, Mockito.times(2)).stop();
 	}
 
 	private static class TestOpenAndConfigureSender extends SenderWithParametersBase {
@@ -85,7 +86,7 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		}
 
 		@Override
-		public void close() throws SenderException {
+		public void stop() throws SenderException {
 			if (!opened.compareAndSet(true, false)) {
 				throw new SenderException("already closed");
 			}

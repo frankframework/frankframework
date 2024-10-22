@@ -1071,7 +1071,7 @@ public class LarvaTool {
 			String queueName = entry.getKey();
 			if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
-				jmsSender.close();
+				jmsSender.stop();
 				debugMessage("Closed jms sender '" + queueName + "'");
 			}
 		}
@@ -1121,7 +1121,7 @@ public class LarvaTool {
 							remainingMessagesFound = true;
 
 						}
-						prePostFixedQuerySender.close();
+						prePostFixedQuerySender.stop();
 					} catch(TimeoutException e) {
 						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e);
 					} catch(IOException | SenderException e) {
@@ -1129,7 +1129,7 @@ public class LarvaTool {
 					}
 				}
 				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
-				readQueryFixedQuerySender.close();
+				readQueryFixedQuerySender.stop();
 			}
 		}
 

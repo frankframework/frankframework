@@ -80,7 +80,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			connection = null;
-			super.close();
+			super.stop();
 		}
 	}
 

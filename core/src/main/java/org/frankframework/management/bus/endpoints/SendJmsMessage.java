@@ -16,10 +16,8 @@
 package org.frankframework.management.bus.endpoints;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -33,6 +31,9 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.LogUtil;
 
@@ -118,7 +119,7 @@ public class SendJmsMessage extends BusEndpointBase {
 			throw new BusException("error occurred sending message", e);
 		} finally {
 			try {
-				qms.close();
+				qms.stop();
 			} catch (Exception e) {
 				LogUtil.getLogger(this).error("unable to close connection", e);
 			}

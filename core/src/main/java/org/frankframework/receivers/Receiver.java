@@ -476,14 +476,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 			if (getSender()!=null) {
 				try {
-					getSender().close();
+					getSender().stop();
 				} catch (Exception e) {
 					error("error closing sender", e);
 				}
 			}
 			if (getErrorSender()!=null) {
 				try {
-					getErrorSender().close();
+					getErrorSender().stop();
 				} catch (Exception e) {
 					error("error closing error sender", e);
 				}

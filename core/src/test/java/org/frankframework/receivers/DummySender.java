@@ -1,8 +1,11 @@
 package org.frankframework.receivers;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -10,7 +13,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-import org.springframework.context.ApplicationContext;
 
 public class DummySender implements ISender {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -29,7 +31,7 @@ public class DummySender implements ISender {
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		closed = true;
 	}
 

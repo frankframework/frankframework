@@ -16,7 +16,9 @@
 package org.frankframework.core;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
@@ -50,7 +52,7 @@ public interface ISender extends IConfigurable {
 	/**
 	 * Stop/close the sender and deallocate resources.
 	 */
-	void close() throws SenderException;
+	void stop() throws SenderException;
 
 	/**
 	 * When <code>true</code>, the result of sendMessage is the reply of the request.

@@ -258,7 +258,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		if(StringUtils.isBlank(sharedResourceRef)) {
 			super.stop();
 		}

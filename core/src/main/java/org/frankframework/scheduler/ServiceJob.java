@@ -18,6 +18,7 @@ package org.frankframework.scheduler;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
@@ -58,7 +59,7 @@ public class ServiceJob extends BaseJob {
 			try(PipeLineSession session = new PipeLineSession()) {
 				localSender.sendMessageOrThrow(message, session).close();
 			} finally {
-				localSender.close();
+				localSender.stop();
 			}
 		}
 		catch (Exception e) {

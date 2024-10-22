@@ -33,13 +33,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nullable;
+import jakarta.mail.internet.InternetAddress;
+
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
-
-import jakarta.annotation.Nullable;
-import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -83,6 +83,8 @@ import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.encryption.HasKeystore;
@@ -94,7 +96,6 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
@@ -262,7 +263,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			super.close();
 			if (msalClientAdapter != null) {
-				msalClientAdapter.close();
+				msalClientAdapter.stop();
 				client = null;
 			}
 		} finally {

@@ -32,7 +32,12 @@ import java.util.stream.Collectors;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -55,10 +60,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.messaging.Message;
-import org.xml.sax.SAXException;
-
-import jakarta.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
@@ -137,7 +138,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		} catch (Exception t) {
 			throw new BusException("an error occurred while determining query to execute", t);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		List<Map<String, String>> resultMap = null;

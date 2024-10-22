@@ -121,7 +121,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		super.stop();
 		try {
 			if (getSender() != null) {
-				getSender().close();
+				getSender().stop();
 			}
 		} catch (Exception e) {
 			log.warn("{}caught exception stopping listener", getLogPrefix(), e);

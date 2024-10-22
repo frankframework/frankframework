@@ -24,6 +24,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -33,14 +37,12 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class WebServiceSenderResultTest extends Mockito {
 
@@ -86,7 +88,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	@AfterEach
 	public void setDown() {
 		if (sender != null) {
-			sender.close();
+			sender.stop();
 			sender = null;
 		}
 	}

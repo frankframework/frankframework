@@ -18,11 +18,13 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
@@ -100,12 +102,12 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 
 		//When we use pooling connections we need to ask for a new connection every time we want to use it
 		if (isConnectionsArePooled()) {
-			close();
+			this.stop();
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		try {
 			if (connection != null) {
 				connection.close();
@@ -114,7 +116,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 			log.warn("caught exception stopping sender", e);
 		} finally {
 			connection = null;
-			super.close();
+			super.stop();
 		}
 	}
 

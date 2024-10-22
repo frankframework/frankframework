@@ -38,8 +38,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -57,10 +63,6 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
-import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Functions to manipulate the configuration.
@@ -169,7 +171,7 @@ public class ConfigurationUtils {
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 
@@ -213,7 +215,7 @@ public class ConfigurationUtils {
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 
@@ -346,7 +348,7 @@ public class ConfigurationUtils {
 		} finally {
 			itx.complete();
 			JdbcUtil.close(conn);
-			qs.close();
+			qs.stop();
 		}
 	}
 
@@ -373,7 +375,7 @@ public class ConfigurationUtils {
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 
@@ -424,7 +426,7 @@ public class ConfigurationUtils {
 			}
 		} finally {
 			JdbcUtil.close(conn);
-			qs.close();
+			qs.stop();
 		}
 		return false;
 	}
@@ -464,7 +466,7 @@ public class ConfigurationUtils {
 				}
 			}
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 		return false;
 	}
@@ -597,7 +599,7 @@ public class ConfigurationUtils {
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 }

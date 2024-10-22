@@ -32,7 +32,11 @@ import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -50,8 +54,6 @@ import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
@@ -284,7 +286,7 @@ public class ConfigManagement extends BusEndpointBase {
 		} catch (Exception e) {
 			throw new BusException("unable to retrieve configuration from database", e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		configurations.sort(new ConfigurationDTO.VersionComparator());

@@ -19,13 +19,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import com.sendgrid.Client;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
@@ -37,9 +30,14 @@ import com.sendgrid.helpers.mail.objects.Attachments.Builder;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
@@ -48,6 +46,7 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.HttpSession;
 import org.frankframework.http.HttpSessionBase;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
@@ -84,8 +83,8 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	public void close() throws SenderException {
-		super.close();
+	public void stop() throws SenderException {
+		super.stop();
 		httpSession.stop();
 	}
 

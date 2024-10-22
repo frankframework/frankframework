@@ -64,7 +64,7 @@ public class ExecuteQueryJob extends JobDef {
 		} catch (SenderException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 

@@ -25,17 +25,20 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
@@ -59,7 +62,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
-import org.xml.sax.SAXException;
 
 /**
  * This class sends messages with JMS.
@@ -152,7 +154,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 	@Override
 	public void open() throws SenderException {
 		try {
-			super.open();
+			super.start();
 		}
 		catch (Exception e) {
 			throw new SenderException(e);

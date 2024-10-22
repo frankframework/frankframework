@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -109,7 +110,7 @@ public class CheckReloadJob extends JobDef {
 			getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
 			return;
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		if (!configsToReload.isEmpty()) {

@@ -57,7 +57,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();
+		sender.stop();
 	}
 
 	@Override

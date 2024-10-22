@@ -73,7 +73,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();
+		sender.stop();
 		counters.clear();
 		levels.clear();
 	}

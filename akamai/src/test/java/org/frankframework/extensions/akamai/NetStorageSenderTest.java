@@ -95,7 +95,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -119,7 +119,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -142,7 +142,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -165,7 +165,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -191,7 +191,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -218,7 +218,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -246,7 +246,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -273,7 +273,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -301,7 +301,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -328,7 +328,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -356,7 +356,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -379,7 +379,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -402,7 +402,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -426,7 +426,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -450,7 +450,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -473,7 +473,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}

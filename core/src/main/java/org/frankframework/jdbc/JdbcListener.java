@@ -137,7 +137,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			connection = null;
-			super.close();
+			super.stop();
 		}
 	}
 

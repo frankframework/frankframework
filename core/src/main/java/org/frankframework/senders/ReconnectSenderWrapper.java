@@ -15,6 +15,8 @@
 */
 package org.frankframework.senders;
 
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
@@ -23,8 +25,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-
-import lombok.Setter;
 
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
@@ -68,7 +68,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 			sender.open();
 			super.open();
 		} finally {
-			sender.close(); //Only open to test the connection, close afterwards if all is ok.
+			sender.stop(); //Only open to test the connection, close afterwards if all is ok.
 		}
 	}
 
@@ -90,7 +90,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 		public void close() {
 			try {
 				log.debug("Closing sender after use: [{}]", sender.getName());
-				sender.close();
+				sender.stop();
 			} catch (SenderException e) {
 				log.warn("Error closing sender: [{}]", sender.getName(), e);
 			}

@@ -262,7 +262,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			((AutoCloseable) get()).close();
 		}
 		else if(get() instanceof ISender) {
-			((ISender) get()).close();
+			((ISender) get()).stop();
 		}
 		else if(get() instanceof IListener<?>) {
 			((IListener<?>) get()).stop();

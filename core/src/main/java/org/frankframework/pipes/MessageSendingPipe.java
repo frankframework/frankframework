@@ -807,7 +807,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			log.info("is closing");
 			try {
-				getSender().close();
+				getSender().stop();
 			} catch (SenderException e) {
 				log.warn("exception closing sender", e);
 			}
