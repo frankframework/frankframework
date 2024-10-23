@@ -32,7 +32,6 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	public static final String USERNAME_FILE_PROPERTY="credentialFactory.filesystem.usernamefile";
 	public static final String PASSWORD_FILE_PROPERTY="credentialFactory.filesystem.passwordfile";
 
-	public static final String FILESYSTEM_ROOT_DEFAULT="/etc/secrets";
 	public static final String USERNAME_FILE_DEFAULT="username";
 	public static final String PASSWORD_FILE_DEFAULT="password";
 
