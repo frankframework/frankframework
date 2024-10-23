@@ -68,8 +68,8 @@
 	<rule pattern="*/monitor" registerMethod="addMonitor" beanClass="org.frankframework.monitoring.Monitor"/>
 
 	<rule pattern="*/monitor/trigger" registerMethod="addTrigger" beanClass="org.frankframework.monitoring.Trigger"/>
-	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>
+	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCodeText"/>
 
 	<rule pattern="*/adapterfilter" registerMethod="addAdapterFilter" beanClass="org.frankframework.monitoring.AdapterFilter"/>
-	<rule pattern="*/adapterfilter/source" registerTextMethod="registerSubObject"/>
+	<rule pattern="*/adapterfilter/source" registerTextMethod="addSubObjectText"/>
 </digester-rules>
