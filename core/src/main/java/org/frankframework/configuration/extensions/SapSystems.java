@@ -26,6 +26,7 @@ public class SapSystems {
 
 	public void addSapSystem(GlobalListItem sapSystem) {
 		registerItem(sapSystem);
+		SapSystemFactory.getInstance().addSapSystem(sapSystem, sapSystem.getName());
 	}
 
 }
