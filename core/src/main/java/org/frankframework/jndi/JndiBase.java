@@ -29,6 +29,8 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.jms.JmsRealm;
@@ -36,7 +38,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -69,12 +70,12 @@ public class JndiBase implements IConfigurable {
 	public void configure() throws ConfigurationException {
 		// somewhere a sender is being initialized without setting the property
 		// TODO get rid of the workaround and find out why spring does not set the prefix
-		if(StringUtils.isEmpty(jndiContextPrefix)) {
+		if (StringUtils.isEmpty(jndiContextPrefix)) {
 			jndiContextPrefix = AppConstants.getInstance(configurationClassLoader).getString("jndiContextPrefix","");
 		}
 	}
 
-	public void close() {
+	public void stop() {
 		if (null != context) {
 			log.debug("closing JNDI-context");
 			try {

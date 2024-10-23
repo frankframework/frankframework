@@ -58,7 +58,7 @@ public class MessageStoreSenderTest {
 		// Arrange
 		sender.setSlotId("testSendMessageBasic");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
@@ -86,7 +86,7 @@ public class MessageStoreSenderTest {
 		sender.setSlotId("testSendMessageBasic");
 		sender.addParameter(new Parameter(MessageStoreSender.PARAM_MESSAGEID, messageId));
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
@@ -110,7 +110,7 @@ public class MessageStoreSenderTest {
 		// Arrange
 		sender.setSlotId("testSendMessageStore2ndTimeNoInsert");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
@@ -147,7 +147,7 @@ public class MessageStoreSenderTest {
 		// Arrange
 		sender.setSlotId("testSendMessageStore2ndTimeNoInsert");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy1/>";
 		Message message1 = new Message(input);

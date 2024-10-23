@@ -73,13 +73,13 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			openFacade();
 		} catch (SapException e) {
 			log.error("{}Exception on opening SapFunctionFacade", getLogPrefix(), e);
-			close();
+			stop();
 			throw new SenderException(getLogPrefix()+"exception starting", e);
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		closeFacade();
 	}
 

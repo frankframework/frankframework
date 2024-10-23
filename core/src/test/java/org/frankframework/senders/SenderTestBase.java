@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -57,7 +58,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	public void tearDown() {
 		try {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		} catch (SenderException e) {
 			log.warn("Error closing Sender", e);

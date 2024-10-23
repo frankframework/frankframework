@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -417,7 +418,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 

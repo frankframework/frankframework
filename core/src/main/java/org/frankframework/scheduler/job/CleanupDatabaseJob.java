@@ -25,6 +25,7 @@ import java.util.Set;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -142,7 +143,7 @@ public class CleanupDatabaseJob extends JobDef {
 				log.error("{}{}", getLogPrefix(), msg, e);
 			} finally {
 				if (qs != null) {
-					qs.close();
+					qs.stop();
 				}
 			}
 		}
@@ -202,7 +203,7 @@ public class CleanupDatabaseJob extends JobDef {
 				log.error("{} {}", getLogPrefix(), msg);
 			} finally {
 				if (qs != null) {
-					qs.close();
+					qs.stop();
 				}
 			}
 		}

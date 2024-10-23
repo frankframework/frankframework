@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -69,7 +70,7 @@ public class SvnUtils {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 
@@ -96,7 +97,7 @@ public class SvnUtils {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 

@@ -11,9 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
-
 import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -25,8 +27,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManager> {
 
@@ -149,7 +149,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		}
 
 		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
-		fs1.close();
+		fs1.stop();
 	}
 
 	private class ConcurrentXATransactionTester extends ConcurrentActionTester {

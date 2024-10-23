@@ -30,7 +30,7 @@ class Result2BlobWriterTest {
 
 	@AfterEach
 	void tearDown() throws SenderException {
-		writer.querySender.close();
+		writer.querySender.stop();
 		writer.close();
 	}
 

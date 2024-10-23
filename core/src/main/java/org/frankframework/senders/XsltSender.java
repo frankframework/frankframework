@@ -23,10 +23,16 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -51,10 +57,6 @@ import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SkipEmptyTagsFilter;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
@@ -147,8 +149,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	}
 
 	@Override
-	public void close() throws SenderException {
-		super.close();
+	public void stop() throws SenderException {
+		super.stop();
 
 		if (transformerPool!=null) {
 			transformerPool.close();

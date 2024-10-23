@@ -55,7 +55,7 @@ class FrankListenerTest {
 	@AfterEach
 	void tearDown() {
 		CloseUtils.closeSilently(message, session, configuration);
-		listener.close();
+		listener.stop();
 	}
 
 	@Test
@@ -99,7 +99,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void openSuccess() throws ListenerException {
+	void startSuccess() throws ListenerException {
 		// Arrange
 		listener.configure();
 
@@ -108,7 +108,7 @@ class FrankListenerTest {
 		assertNull(FrankListener.getListener(listener.getPhysicalDestinationName()));
 
 		// Act
-		listener.open();
+		listener.start();
 
 		// Assert
 		// Verify that listener is now open and can be found
@@ -117,16 +117,16 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void openAlreadyOpen() throws ListenerException {
+	void openAlreadyStart() throws ListenerException {
 		// Arrange
 		listener.configure();
 
 		assertFalse(listener.isOpen(), "Listener not supposed to be open before test");
-		listener.open();
+		listener.start();
 		assertTrue(listener.isOpen(), "Listener is supposed to be open after test");
 
 		// Act
-		assertDoesNotThrow(listener::open);
+		assertDoesNotThrow(listener::start);
 
 		// Assert
 		assertTrue(listener.isOpen(), "Listener is supposed to be open after test");
@@ -134,7 +134,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void openAlreadyRegistered() {
+	void startAlreadyRegistered() {
 		// Arrange
 		FrankListener otherListener = configuration.createBean(FrankListener.class);
 		otherListener.setHandler(receiver);
@@ -143,26 +143,26 @@ class FrankListenerTest {
 		listener.setName(LISTENER_NAME);
 		listener.configure();
 
-		assertDoesNotThrow(listener::open);
+		assertDoesNotThrow(listener::start);
 
 		// Act
-		assertThrows(ListenerException.class, otherListener::open);
+		assertThrows(ListenerException.class, otherListener::start);
 
 		// Assert
 		assertFalse(otherListener.isOpen(), "Other Listener is not supposed to be open after the test");
 	}
 
 	@Test
-	void close() throws ListenerException {
+	void stop() throws ListenerException {
 		// Arrange
 		listener.configure();
-		listener.open();
+		listener.start();
 		// Verify that listener is now open before closing it, and can be found.
 		assertTrue(listener.isOpen(), "Listener is supposed to be open after test");
 		assertSame(listener, FrankListener.getListener(listener.getPhysicalDestinationName()));
 
 		// Act
-		listener.close();
+		listener.stop();
 
 		// Assert
 		// Verify that listener is closed again, and can no longer be found
@@ -189,7 +189,7 @@ class FrankListenerTest {
 
 		// Arrange
 		listener.configure();
-		listener.open();
+		listener.start();
 		when(receiver.processRequest(any(), any(), any(), any())).thenReturn(message);
 
 		// Act
@@ -201,7 +201,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void processRequestWhenNotOpen() {
+	void processRequestWhenNotStart() {
 		// Arrange
 		listener.configure();
 

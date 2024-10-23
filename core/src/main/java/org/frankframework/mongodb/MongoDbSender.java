@@ -24,6 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NamingException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -33,11 +38,6 @@ import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.connection.ServerDescription;
-
-import jakarta.annotation.Nonnull;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
@@ -49,6 +49,8 @@ import org.bson.codecs.Encoder;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
@@ -68,7 +70,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
-import org.xml.sax.SAXException;
 
 /**
  * Sender to perform action on a MongoDB database.
@@ -154,9 +155,9 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() throws SenderException {
 		try {
-			super.close();
+			super.stop();
 		} finally {
 			if (mongoClient!=null) {
 				mongoClient.close();

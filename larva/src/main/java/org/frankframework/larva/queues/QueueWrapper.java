@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IListener;
@@ -249,7 +250,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 				((ISender) get()).open();
 			}
 			else if(get() instanceof IListener<?>) {
-				((IListener<?>) get()).open();
+				((IListener<?>) get()).start();
 			}
 		} catch (SenderException | ListenerException e) {
 			throw new ConfigurationException("error opening [" + get() + "]", e);
@@ -261,10 +262,10 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			((AutoCloseable) get()).close();
 		}
 		else if(get() instanceof ISender) {
-			((ISender) get()).close();
+			((ISender) get()).stop();
 		}
 		else if(get() instanceof IListener<?>) {
-			((IListener<?>) get()).close();
+			((IListener<?>) get()).stop();
 		}
 	}
 

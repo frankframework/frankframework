@@ -21,7 +21,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -44,7 +47,6 @@ import org.frankframework.scheduler.job.DatabaseJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.springframework.messaging.Message;
 
 
 @BusAware("frank-management-bus")
@@ -185,7 +187,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 			} catch (SenderException | SQLException | JdbcException e) {
 				throw new BusException("error saving job in database", e);
 			} finally {
-				qs.close();
+				qs.stop();
 			}
 
 			if(!success)

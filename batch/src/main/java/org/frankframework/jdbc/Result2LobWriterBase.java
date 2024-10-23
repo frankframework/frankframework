@@ -23,21 +23,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.batch.IResultHandler;
-import org.frankframework.batch.ResultWriter;
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import lombok.Setter;
+import org.frankframework.batch.IResultHandler;
+import org.frankframework.batch.ResultWriter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
-
 import org.frankframework.util.SpringUtils;
 
 
@@ -77,7 +75,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		try {
 			super.close();
 		} finally {
-			querySender.close();
+			querySender.stop();
 		}
 	}
 

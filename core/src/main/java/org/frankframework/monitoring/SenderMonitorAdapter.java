@@ -15,10 +15,10 @@
 */
 package org.frankframework.monitoring;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -54,7 +54,7 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 			senderConfigured=true;
 		} else {
 			try {
-				getSender().close();
+				getSender().stop();
 			} catch (SenderException e) {
 				log.error("cannot close sender",e);
 			}

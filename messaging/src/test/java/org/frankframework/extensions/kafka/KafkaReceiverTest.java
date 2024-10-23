@@ -25,6 +25,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -36,13 +44,6 @@ import org.apache.kafka.common.metrics.KafkaMetric;
 import org.apache.kafka.common.metrics.stats.Value;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.utils.Time;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
@@ -114,7 +115,7 @@ public class KafkaReceiverTest {
 	@ParameterizedTest
 	@MethodSource
 	public void test(String topic) throws Exception {
-		listener.open();
+		listener.start();
 		HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
 		TopicPartition topicPartition = new TopicPartition(topic, 0);
 		startOffsets.put(topicPartition, 0L);
@@ -144,7 +145,7 @@ public class KafkaReceiverTest {
 		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
 
 		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
-		listener.close();
+		listener.stop();
 	}
 
 	static Stream<Arguments> test() {
@@ -156,8 +157,8 @@ public class KafkaReceiverTest {
 
 	@Test
 	void throwsErrorOnBadConnection() {
-		Assertions.assertDoesNotThrow(listener::open, "shouldn't throw on valid connection");
+		Assertions.assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
 		Mockito.when(mockListener.metrics()).thenReturn(new HashMap<>());
-		Assertions.assertThrows(ListenerException.class, listener::open, "should throw on (simulated) bad connection");
+		Assertions.assertThrows(ListenerException.class, listener::start, "should throw on (simulated) bad connection");
 	}
 }

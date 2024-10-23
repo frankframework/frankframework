@@ -74,7 +74,7 @@ public class SendMessageJob extends JobDef {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {
-				localSender.close();
+				localSender.stop();
 			} catch (SenderException e) {
 				log.warn("unable to close LocalSender", e);
 			}

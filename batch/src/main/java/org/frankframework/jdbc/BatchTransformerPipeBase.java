@@ -68,7 +68,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	@Override
 	public void stop() {
 		super.stop();
-		querySender.close();
+		querySender.stop();
 	}
 
 	public static class ResultSetReader extends BufferedReader {

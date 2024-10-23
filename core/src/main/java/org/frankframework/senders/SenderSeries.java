@@ -20,10 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
@@ -71,11 +73,11 @@ public class SenderSeries extends SenderWrapperBase {
 		super.open();
 	}
 	@Override
-	public void close() throws SenderException {
+	public void stop() throws SenderException {
 		for (ISender sender: getSenders()) {
-			sender.close();
+			sender.stop();
 		}
-		super.close();
+		super.stop();
 	}
 
 	@Override

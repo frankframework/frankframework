@@ -794,7 +794,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		ITransactionalStorage<?> messageLog = getMessageLog();
 		if (messageLog!=null) {
 			try {
-				messageLog.open();
+				messageLog.start();
 			} catch (Exception e) {
 				PipeStartException pse = new PipeStartException("could not open messagelog", e);
 				pse.setPipeNameInError(getName());
@@ -807,7 +807,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			log.info("is closing");
 			try {
-				getSender().close();
+				getSender().stop();
 			} catch (SenderException e) {
 				log.warn("exception closing sender", e);
 			}
@@ -829,7 +829,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog!=null) {
 			try {
-				messageLog.close();
+				messageLog.stop();
 			} catch (Exception e) {
 				log.warn("Exception closing messageLog", e);
 			}

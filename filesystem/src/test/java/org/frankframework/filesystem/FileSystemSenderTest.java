@@ -52,7 +52,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		CloseUtils.closeSilently(senderResult);
 		try {
 			if (fileSystemSender != null) {
-				fileSystemSender.close();
+				fileSystemSender.stop();
 			}
 		} catch (SenderException e) {
 			log.warn("Failed to close fileSystemSender", e);

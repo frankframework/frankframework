@@ -14,11 +14,9 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListenerConnector;
-import org.frankframework.soap.SoapWrapper;
-import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
-import org.frankframework.util.AppConstants;
+import com.mockrunner.mock.jms.MockBytesMessage;
+import com.mockrunner.mock.jms.MockTextMessage;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +24,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.mockrunner.mock.jms.MockBytesMessage;
-import com.mockrunner.mock.jms.MockTextMessage;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IListenerConnector;
+import org.frankframework.soap.SoapWrapper;
+import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
+import org.frankframework.util.AppConstants;
 
 class EsbJmsListenerTest {
 
@@ -62,7 +63,7 @@ class EsbJmsListenerTest {
 
 	@AfterEach
 	void tearDown() {
-		jmsListener.close();
+		jmsListener.stop();
 	}
 
 	@Test
