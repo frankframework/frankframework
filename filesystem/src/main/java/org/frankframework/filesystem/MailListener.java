@@ -118,13 +118,13 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 	 * when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(since = "7.7", forRemoval = true)
 	@ConfigurationWarning("Please use <code>messageType</code> to control the message produced by the listener")
 	public void setSimple(boolean b) {
 		simple = b;
 	}
 
-	@Deprecated
+	@Deprecated(since = "7.5", forRemoval = true)
 	@ConfigurationWarning("Please use <code>messageType=mime</code> and sessionKey originalMessage")
 	public void setStoreEmailAsStreamInSessionKey(String string) {
 		storeEmailAsStreamInSessionKey = string;
