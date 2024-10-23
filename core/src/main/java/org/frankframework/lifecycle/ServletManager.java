@@ -87,7 +87,7 @@ import org.frankframework.util.StringUtil;
 public class ServletManager implements ApplicationContextAware, InitializingBean, ServletContextAware {
 
 	private ServletContext servletContext = null;
-	private final List<String> registeredRoles = new ArrayList<>(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES); //Add the default IBIS roles
+	private final List<String> registeredRoles = new ArrayList<>(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES); // Add the default IBIS roles
 	private final Logger log = LogUtil.getLogger(this);
 	private final Map<String, ServletConfiguration> servlets = new HashMap<>();
 	private final Map<String, IAuthenticator> authenticators = new HashMap<>();
@@ -229,7 +229,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		serv.setServletSecurity(getServletSecurity(config));
 
 		if(!config.getInitParameters().isEmpty()) {
-			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
+			// Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
 			for(Entry<String, String> entry : config.getInitParameters().entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();

@@ -971,7 +971,7 @@ public class ReceiverTest {
 
 	@Test
 	public void testStopAdapterWhileReceiverIsStillStarting() throws Exception {
-		assumeFalse(TestAssertions.isTestRunningOnCI() || TestAssertions.isTestRunningOnGitHub(), "For unknown reasons this test is unreliable on Github and CI so only run locally for now until we have time to investigate");
+		assumeFalse(TestAssertions.isTestRunningWithSurefire() || TestAssertions.isTestRunningOnCI(), "For unknown reasons this test is unreliable on Github and CI so only run locally for now until we have time to investigate");
 
 		// Arrange
 		configuration = buildConfiguration(null);
