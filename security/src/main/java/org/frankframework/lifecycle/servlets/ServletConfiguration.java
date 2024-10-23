@@ -64,7 +64,9 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	@Override
 	public void afterPropertiesSet() {
-		defaultSecuritySettings();
+		transportGuarantee = SecuritySettings.getDefaultTransportGuarantee();
+		String defaultAuthenticatorName = environment.getProperty("application.security.http.authenticator");
+		authenticatorName = SecuritySettings.isWebSecurityEnabled() ? defaultAuthenticatorName : AuthenticationType.NONE.name();
 	}
 
 	public void setSecurityRoles(String[] accessGrantingRoles) {
@@ -112,12 +114,6 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	public boolean isAuthenticationEnabled() {
 		return !securityRoles.isEmpty() && !"NONE".equals(authenticatorName);
-	}
-
-	private void defaultSecuritySettings() {
-		transportGuarantee = SecuritySettings.getDefaultTransportGuarantee();
-		AuthenticationType defaultType = SecuritySettings.isWebSecurityEnabled() ? AuthenticationType.CONTAINER : AuthenticationType.NONE;
-		authenticatorName = defaultType.name();
 	}
 
 	/**

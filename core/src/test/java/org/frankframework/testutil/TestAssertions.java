@@ -153,6 +153,14 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub();
 	}
 
+	/**
+	 * When the JUnitTest is run via SureFire it uses the 'surefirebooter.jar'.
+	 * When run directly in an IDE, the IDE usually provides a 'Test Runner'.
+	 */
+	public static boolean isTestRunningWithSurefire() {
+		return System.getProperty("sun.java.command").contains("surefire");
+	}
+
 	public static boolean isTestRunningOnWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
