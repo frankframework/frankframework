@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-\
+
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
