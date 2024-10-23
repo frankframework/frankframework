@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.INamedObject;
 
 /**
@@ -35,7 +36,7 @@ import org.frankframework.core.INamedObject;
  * <br/>
  * @author Gerrit van Brakel
  */
-public class GlobalListItem implements INamedObject {
+public abstract class GlobalListItem implements INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final Hashtable<String, GlobalListItem> items = new Hashtable<>();
@@ -45,7 +46,7 @@ public class GlobalListItem implements INamedObject {
 	/**
 	 * configure() will be called once for each item registered, except for the aliasses.
 	 */
-	protected void configure() {
+	public void configure() {
 	}
 
 	/**
@@ -94,12 +95,11 @@ public class GlobalListItem implements INamedObject {
 	/**
 	 * Register an item in the list
 	 */
-	public void registerItem(Object dummyParent) {
-		if(StringUtils.isEmpty(getAliasFor())) {
-			configure();
+	public static void registerItem(GlobalListItem item) {
+		if(StringUtils.isEmpty(item.getAliasFor())) {
+			item.configure();
 		}
-		items.put(getName(), this);
-		log.debug("globalItemList registered item [{}]", this);
+		items.put(item.getName(), item);
 	}
 
 	public static void clear() {

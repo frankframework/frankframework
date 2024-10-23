@@ -34,7 +34,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;
 import org.frankframework.extensions.sap.SapException;
-import org.frankframework.extensions.sap.SapSystemFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.GlobalListItem;
 
@@ -143,12 +142,6 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 			SapSystemImpl system = getSystem(systemName);
 			system.closeSystem();
 		}
-	}
-
-	@Override
-	public void registerItem(Object dummyParent) {
-		super.registerItem(dummyParent);
-		SapSystemFactory.getInstance().addSapSystem(this, getName());
 	}
 
 	public void clearCache() {

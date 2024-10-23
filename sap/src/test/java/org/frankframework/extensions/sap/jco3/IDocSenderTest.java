@@ -23,7 +23,7 @@ public class IDocSenderTest {
 
 		sapSystem = new SapSystem();
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(sender);
+		GlobalListItem.registerItem(sapSystem);
 	}
 
 	@Test

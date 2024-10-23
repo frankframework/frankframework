@@ -17,12 +17,15 @@ package org.frankframework.configuration.extensions;
 
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.util.GlobalListItem;
+
+import static org.frankframework.util.GlobalListItem.registerItem;
 
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class SapSystems {
 
-	public void addSapSystem(ISapSystem sapSystem) {
-		//SapSystems selfRegister, this method only exists for the FrankDoc;
+	public void addSapSystem(GlobalListItem sapSystem) {
+		registerItem(sapSystem);
 	}
 
 }
