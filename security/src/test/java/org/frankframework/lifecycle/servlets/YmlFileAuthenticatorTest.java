@@ -20,8 +20,7 @@ class YmlFileAuthenticatorTest extends ServletAuthenticatorTest {
 		((YmlFileAuthenticator) authenticator).setFile("tralala");
 
 		// Arrange
-		ServletConfiguration config = new ServletConfiguration();
-		config.afterPropertiesSet();
+		ServletConfiguration config = createServletConfiguration();
 		config.setUrlMapping("/iaf/api/*, !/iaf/api/server/health");
 		config.setSecurityRoles(new String[] {"IbisTester"});
 		authenticator.registerServlet(config);

@@ -83,8 +83,10 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 	private @Setter Environment environment;
 	private @Setter ServletContext servletContext;
 
-	private IAuthenticator createAuthenticator() {
-		String properyPrefix = "application.security.testtool.authentication.";
+	private static final String STANDALONE_PROPERTY_PREFIX = "application.security.testtool.authentication.";
+	private static final String CONSOLE_PROPERTY_PREFIX = "application.security.console.authentication.";
+
+	private IAuthenticator createAuthenticator(String properyPrefix) {
 		String type = environment.getProperty(properyPrefix+"type", AuthenticationType.SEALED.name());
 		AuthenticationType auth = null;
 		try {
@@ -111,11 +113,17 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http) throws Exception {
-		return configureChain();
+		final IAuthenticator authenticator;
+		if(StringUtils.isNotBlank(environment.getProperty(STANDALONE_PROPERTY_PREFIX+"type"))) {
+			authenticator = createAuthenticator(STANDALONE_PROPERTY_PREFIX);
+		} else {
+			authenticator = createAuthenticator(CONSOLE_PROPERTY_PREFIX);
+		}
+
+		return configureChain(authenticator);
 	}
 
-	private SecurityFilterChain configureChain() throws Exception {
-		IAuthenticator authenticator = createAuthenticator();
+	private SecurityFilterChain configureChain(IAuthenticator authenticator) throws Exception {
 		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(authenticator));
 
 		authenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
