@@ -9,7 +9,6 @@ import org.frankframework.pipes.PipeTestBase;
 
 import org.frankframework.stream.Message;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import javax.naming.NamingException;
@@ -23,7 +22,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
-@Tag("mytag")
 public class LdapFindMemberPipeTest extends PipeTestBase<LdapFindMemberPipe> {
 
 	private static final String SUCCESS_FORWARD = "success";
