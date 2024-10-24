@@ -199,13 +199,13 @@ public class Trigger implements ITrigger {
 	private void clearEventCodes() {
 		eventCodes.clear();
 	}
-	public void addEventCode(String code) {
+	public void addEventCodeText(String code) {
 		eventCodes.add(code);
 	}
 
 	public void setEventCode(String code) {
 		clearEventCodes();
-		addEventCode(code);
+		addEventCodeText(code);
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 			manager.addHandler(flow);
 			try {
-				registerManager(manager);
+				addManager(manager);
 			} catch (Exception e) {
 				throw new ConfigurationException("could not register default manager and flow", e);
 			}
@@ -185,12 +185,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	/**
 	 * Register a uniquely named manager.
-	 * @deprecated please use registerManager
+	 * @deprecated please use addManager
 	 */
 	@Deprecated
-	public void registerChild(IRecordHandlerManager manager) throws Exception {
+	public void addChild(IRecordHandlerManager manager) throws Exception {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		registerManager(manager);
+		addManager(manager);
 	}
 
 	/**
@@ -199,7 +199,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * and the first registered resultHandler (if available).
 	 * @ff.mandatory
 	 */
-	public void registerManager(IRecordHandlerManager manager) throws Exception {
+	public void addManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
 			if (initialManager != null) {
@@ -218,7 +218,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use manager.addFlow()
 	 */
 	@Deprecated
-	public void registerChild(RecordHandlingFlow flowEl) throws ConfigurationException {
+	public void addChild(RecordHandlingFlow flowEl) throws ConfigurationException {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		IRecordHandlerManager manager = registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
@@ -230,16 +230,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	/**
 	 * Register a uniquely named record manager.
-	 * @deprecated please use registerRecordHandler()
+	 * @deprecated please use addRecordHandler()
 	 */
 	@Deprecated
-	public void registerChild(IRecordHandler handler) {
+	public void addChild(IRecordHandler handler) {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		registerRecordHandler(handler);
+		addRecordHandler(handler);
 	}
 
 	/** Handler for transforming records of a specific type */
-	public void registerRecordHandler(IRecordHandler handler) {
+	public void addRecordHandler(IRecordHandler handler) {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
 
@@ -249,16 +249,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	/**
 	 * Register a uniquely named result manager.
-	 * @deprecated Please use registerResultHandler()
+	 * @deprecated Please use addResultHandler()
 	 */
 	@Deprecated
-	public void registerChild(IResultHandler handler) {
+	public void addChild(IResultHandler handler) {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		registerResultHandler(handler);
+		addResultHandler(handler);
 	}
 
 	/** Handler for processing transformed records */
-	public void registerResultHandler(IResultHandler handler) {
+	public void addResultHandler(IResultHandler handler) {
 		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);
 		if (handler.isDefault()) {

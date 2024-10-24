@@ -21,7 +21,7 @@ public class GlobalListItemTest {
 		sapSystem1.setName("sapSystem1");
 
 		//Act
-		sapSystem1.registerItem(null);
+		GlobalListItem.registerItem(sapSystem1);
 
 		//Assert
 		assertEquals(1, GlobalListItem.getRegisteredNamesAsList().size());

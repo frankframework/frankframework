@@ -60,7 +60,7 @@ public class SapSenderTest {
 		doNothing().when(sapSystem).openSystem();
 
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(sender);
+		GlobalListItem.registerItem(sapSystem);
 	}
 
 	@AfterEach

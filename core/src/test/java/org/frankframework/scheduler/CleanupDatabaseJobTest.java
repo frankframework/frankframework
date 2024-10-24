@@ -59,7 +59,7 @@ public class CleanupDatabaseJobTest {
 			when(mockJob.getLocker()).thenReturn(mockLocker);
 			when(mockJob.getName()).thenReturn("MockJob");
 
-			configuration.getScheduleManager().registerScheduledJob(mockJob);
+			configuration.getScheduleManager().addScheduledJob(mockJob);
 		}
 
 		if (configuration.getRegisteredAdapter("MockAdapter") == null) {

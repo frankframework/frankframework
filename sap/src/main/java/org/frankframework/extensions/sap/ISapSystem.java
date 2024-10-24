@@ -26,10 +26,6 @@ import org.frankframework.core.INamedObject;
  */
 public interface ISapSystem extends INamedObject, org.frankframework.configuration.extensions.ISapSystem {
 
-
-	@Override
-	void registerItem(Object dummyParent);
-
 	void setGwhost(String string);
 	void setMandant(String string);
 	void setAuthAlias(String string);

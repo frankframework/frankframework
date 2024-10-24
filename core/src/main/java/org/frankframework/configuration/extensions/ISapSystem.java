@@ -20,7 +20,5 @@ import org.frankframework.doc.FrankDocGroupValue;
 
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public interface ISapSystem {
-
-	public void registerItem(Object dummyParent);
-
+	String getDestinationAsString();
 }

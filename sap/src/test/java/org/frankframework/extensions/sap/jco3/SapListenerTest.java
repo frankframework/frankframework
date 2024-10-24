@@ -59,7 +59,7 @@ public class SapListenerTest {
 		doNothing().when(sapSystem).openSystem();
 
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(listener);
+		GlobalListItem.registerItem(sapSystem);
 	}
 
 	@Test

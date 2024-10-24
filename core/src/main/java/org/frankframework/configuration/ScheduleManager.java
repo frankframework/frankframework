@@ -149,7 +149,7 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 	 * Job that is executed periodically. The time of execution can be configured within the job
 	 * or from outside the configuration through the Frank!Console.
 	 */
-	public void registerScheduledJob(IJob job) {
+	public void addScheduledJob(IJob job) {
 		if(!inState(RunState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state [{}]", this::getState);
 		}

@@ -67,7 +67,7 @@ public class TriggerTest implements EventThrowing {
 
 		monitor.addTrigger(trigger);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 
 		manager.configure();
@@ -113,7 +113,7 @@ public class TriggerTest implements EventThrowing {
 
 		monitor.addTrigger(trigger);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		trigger.setThreshold(5);
 		trigger.setPeriod(1);
@@ -163,7 +163,7 @@ public class TriggerTest implements EventThrowing {
 		monitor.addTrigger(trigger);
 		monitor.setAlarmSeverity(Severity.WARNING);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.WARNING);
 
 		manager.configure();
@@ -206,7 +206,7 @@ public class TriggerTest implements EventThrowing {
 
 		monitor.addTrigger(trigger);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 
 		manager.configure();
@@ -259,7 +259,7 @@ public class TriggerTest implements EventThrowing {
 		monitor.addTrigger(trigger);
 		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		monitor.setAlarmSeverity(Severity.WARNING);
 

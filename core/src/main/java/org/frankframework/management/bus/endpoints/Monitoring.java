@@ -218,7 +218,7 @@ public class Monitoring extends BusEndpointBase {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
 				for(String subObject : entry.getValue()) {
-					adapterFilter.registerSubObject(subObject);
+					adapterFilter.addSubObjectText(subObject);
 				}
 				trigger.addAdapterFilter(adapterFilter);
 			}
