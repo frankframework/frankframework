@@ -37,9 +37,9 @@ import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StreamUtil;
@@ -69,7 +69,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 		}
 	}
 
-	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
+	private CmisHttpSender getInstance(BindingSession session) throws LifecycleException, ConfigurationException {
 		if(sender == null) {
 			log.debug("creating new CmisHttpInvoker");
 			sender = createSender();

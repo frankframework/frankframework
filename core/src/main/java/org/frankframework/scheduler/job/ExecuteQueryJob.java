@@ -25,6 +25,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -61,7 +62,7 @@ public class ExecuteQueryJob extends JobDef {
 			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 				log.info("result [{}]", result);
 			}
-		} catch (SenderException e) {
+		} catch (LifecycleException | SenderException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
 		} finally {
 			qs.stop();
