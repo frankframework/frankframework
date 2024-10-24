@@ -16,8 +16,6 @@
 
 package org.frankframework.http;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import io.micrometer.core.instrument.Tags;
@@ -43,14 +41,12 @@ import org.frankframework.statistics.MetricsInitializer;
  */
 public class MicrometerHttpClientInterceptor {
 
-	private final Map<ThreadLocal<HttpContext>, Timer.ResourceSample> timerByHttpContext = new ConcurrentHashMap<>();
-
 	private final HttpRequestInterceptor requestInterceptor;
 
 	private final HttpResponseInterceptor responseInterceptor;
 
-	// Wrap the httpContext in a threadLocal since the same context can be used over multiple threads.
-	private final ThreadLocal<HttpContext> threadLocal = new ThreadLocal<>();
+	// Keep the resource sample as a ThreadLocal
+	private final ThreadLocal<Timer.ResourceSample> threadLocal = new ThreadLocal<>();
 
 	/**
 	 * Create a {@code MicrometerHttpClientInterceptor} instance.
@@ -63,26 +59,23 @@ public class MicrometerHttpClientInterceptor {
 	public MicrometerHttpClientInterceptor(MetricsInitializer configurationMetrics, IConfigurationAware parentFrankElement,
 										   Function<HttpRequest, String> uriMapper, boolean exportTagsForRoute) {
 
-		this.requestInterceptor = (request, context) -> {
-			threadLocal.set(context);
-			timerByHttpContext.put(
-					threadLocal,
-					configurationMetrics.createTimerResource(parentFrankElement, FrankMeterType.SENDER_HTTP,
-							"method", request.getRequestLine().getMethod(),
-							"uri", uriMapper.apply(request)
-					)
-			);
-		};
+		this.requestInterceptor = (request, context) ->
+				threadLocal.set(configurationMetrics.createTimerResource(parentFrankElement, FrankMeterType.SENDER_HTTP,
+						"method", request.getRequestLine().getMethod(),
+						"uri", uriMapper.apply(request)
+				));
 
 		this.responseInterceptor = (response, context) -> {
-			if (timerByHttpContext.containsKey(threadLocal)) {
-				timerByHttpContext.remove(threadLocal)
-						.tag("status", Integer.toString(response.getStatusLine().getStatusCode()))
+			Timer.ResourceSample resourceSample = threadLocal.get();
+
+			if (resourceSample != null) {
+				resourceSample.tag("status", Integer.toString(response.getStatusLine().getStatusCode()))
 						.tag("outcome", Outcome.forStatus(response.getStatusLine().getStatusCode()).name())
 						.tags(exportTagsForRoute ? generateTagsForRoute(context) : Tags.empty())
 						.close();
+
+				threadLocal.remove();
 			}
-			threadLocal.remove();
 		};
 	}
 
