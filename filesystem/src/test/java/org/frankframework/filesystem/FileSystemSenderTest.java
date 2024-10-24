@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.lifecycle.LifecycleException;
@@ -616,7 +615,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setInputFolder("NonExistentFolder");
 		fileSystemSender.configure();
 
-		SenderException e = assertThrows(SenderException.class, fileSystemSender::start);
+		LifecycleException e = assertThrows(LifecycleException.class, fileSystemSender::start);
 		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
 	}
 
