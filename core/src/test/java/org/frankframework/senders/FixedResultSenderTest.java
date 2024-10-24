@@ -5,10 +5,11 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 
 public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 
@@ -28,7 +29,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		String text="Dit is het resultaat";
 		sender.setReturnString(text);
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message input = new Message("dummy message");
 		String result = sender.sendMessageOrThrow(input, session).asString();
 		assertEquals(text,result);
@@ -39,7 +40,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		String text="Dit is het resultaat";
 		sender.setReturnString(text);
 		sender.configure();
-		sender.open();
+		sender.start();
 		String result = sender.sendMessageOrThrow(null, session).asString();
 		assertEquals(text,result);
 	}
@@ -49,7 +50,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		String filename = "/FixedResult/input.xml";
 		sender.setFilename(filename);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("dummy message"), session).asString();
 
@@ -63,7 +64,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.setFilename(filename);
 		sender.setStyleSheetName("/FixedResult/sub.xslt");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("dummy message"), session).asString();
 

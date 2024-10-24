@@ -126,7 +126,7 @@ class IbisLocalSenderTest {
 		configuration.start();
 
 		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
-		ibisLocalSender.open();
+		ibisLocalSender.start();
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
@@ -171,7 +171,7 @@ class IbisLocalSenderTest {
 		configuration.start();
 
 		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
-		ibisLocalSender.open();
+		ibisLocalSender.start();
 
 		// Act
 		PipeLineSession session = new PipeLineSession();

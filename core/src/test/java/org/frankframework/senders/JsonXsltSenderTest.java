@@ -4,14 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.SenderResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
 
 public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 
@@ -24,7 +25,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	public void basic() throws Exception {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.configure();
-		sender.open();
+		sender.start();
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
@@ -39,7 +40,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.setJsonResult(false);
 		sender.configure();
-		sender.open();
+		sender.start();
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
@@ -55,7 +56,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		sender.setOutputType(OutputType.TEXT);
 		sender.setJsonResult(false);
 		sender.configure();
-		sender.open();
+		sender.start();
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);

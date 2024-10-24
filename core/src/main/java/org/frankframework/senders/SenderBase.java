@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
-import org.frankframework.core.SenderException;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
@@ -43,11 +42,11 @@ public abstract class SenderBase implements ISender {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 	}
 
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 	}
 
 	/**

@@ -39,9 +39,11 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.jms.JMSException;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -53,6 +55,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
@@ -184,14 +187,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	protected abstract String getQuery(Message message) throws SenderException;
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try {
 				convertedResultQuery = convertQuery(getResultQuery());
 				if (log.isDebugEnabled()) log.debug("converted result query into [{}]", convertedResultQuery);
 			} catch (JdbcException | SQLException e) {
-				throw new SenderException("Cannot convert result query",e);
+				throw new LifecycleException("Cannot convert result query",e);
 			}
 		}
 	}

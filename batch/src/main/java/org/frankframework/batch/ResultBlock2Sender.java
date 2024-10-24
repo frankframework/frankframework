@@ -67,7 +67,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sender.open();
+		sender.start();
 	}
 
 	@Override

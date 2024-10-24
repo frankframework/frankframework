@@ -31,6 +31,7 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.pipes.StringIteratorPipe;
 import org.frankframework.stream.Message;
@@ -88,8 +89,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void start() throws PipeStartException {
 		try {
-			querySender.open();
-		} catch (SenderException e) {
+			querySender.start();
+		} catch (LifecycleException e) {
 			throw new PipeStartException(e);
 		}
 

@@ -20,10 +20,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -38,6 +40,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.http.WebServiceListener;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.ServiceClient;
@@ -147,8 +150,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
 			boolean listenerOpened=false;
 			long sleepDelay = 25L;
@@ -167,7 +170,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
-						throw new SenderException(e);
+						throw new LifecycleException(e);
 					}
 				}
 				if(System.currentTimeMillis() >= timeoutAt && (listener==null || !listener.isOpen())) {

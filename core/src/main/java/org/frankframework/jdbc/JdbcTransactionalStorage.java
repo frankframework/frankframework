@@ -60,6 +60,7 @@ import org.frankframework.core.TransactionAttributes;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -344,13 +345,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@Override
-	public void start() throws SenderException {
+	public void start() {
 		try {
 			initialize(getDbmsSupport());
 		} catch (JdbcException e) {
-			throw new SenderException(e);
+			throw new LifecycleException(e);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
+			throw new LifecycleException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
 		}
 	}
 
@@ -426,7 +427,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	/**
 	 *	Checks if table exists, and creates when necessary.
 	 */
-	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
+	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException {
 		try (Connection conn = getConnection()) {
 			boolean tableMustBeCreated;
 
@@ -434,7 +435,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				try {
 					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
 					if (!isCreateTable() && tableMustBeCreated) {
-						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
+						throw new LifecycleException("table ["+getPrefix()+getTableName()+"] does not exist");
 					}
 					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated?"NOT ":""));
 				} catch (JdbcException e) {

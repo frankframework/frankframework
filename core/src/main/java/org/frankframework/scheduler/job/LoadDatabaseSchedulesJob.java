@@ -86,7 +86,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 		try {
 			qs.configure();
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {

@@ -72,6 +72,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	public void start() throws ListenerException {
 		setRunning(true);
 	}
+
 	@Override
 	public void stop() {
 		setRunning(false);

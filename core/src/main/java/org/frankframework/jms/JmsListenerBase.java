@@ -46,6 +46,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -110,8 +111,8 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		}
 		try {
 			if (getSender() != null)
-				getSender().open();
-		} catch (SenderException e) {
+				getSender().start();
+		} catch (LifecycleException e) {
 			throw new ListenerException("error opening sender [" + getSender().getName() + "]", e);
 		}
 	}
@@ -123,7 +124,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 			if (getSender() != null) {
 				getSender().stop();
 			}
-		} catch (Exception e) {
+		} catch (LifecycleException e) {
 			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		}
 	}

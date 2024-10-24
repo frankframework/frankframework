@@ -109,7 +109,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result);
@@ -137,7 +137,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 	}
@@ -149,7 +149,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 		assertTrue(exception.getMessage().contains("Missing start boundary"));
@@ -162,7 +162,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls));
 		assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
@@ -175,7 +175,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result.trim());

@@ -53,12 +53,8 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public void open() throws SenderException {
-		try {
-			super.open();
-		} catch (Exception e) {
-			throw new SenderException("Could not publish to topic", e);
-		}
+	public void start() {
+		super.start();
 	}
 
 	@Override
@@ -86,15 +82,15 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException {
 		try {
-			if(!client.isConnected()) {
-				super.open();
+			if (!client.isConnected()) {
+				super.start();
 			}
 
 			log.debug(message);
-			MqttMessage MqttMessage = new MqttMessage();
-			MqttMessage.setPayload(message.asByteArray());
-			MqttMessage.setQos(getQos());
-			client.publish(getTopic(), MqttMessage);
+			MqttMessage mqttMessage = new MqttMessage();
+			mqttMessage.setPayload(message.asByteArray());
+			mqttMessage.setQos(getQos());
+			client.publish(getTopic(), mqttMessage);
 		}
 		catch (Exception e) {
 			throw new SenderException(e);

@@ -4,10 +4,12 @@ import jakarta.annotation.Nonnull;
 import jakarta.mail.Provider;
 import jakarta.mail.Provider.Type;
 import jakarta.mail.Session;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.mail.MailSenderTestBase;
 import org.frankframework.senders.mail.TransportMock;
 import org.frankframework.stream.Message;
@@ -19,7 +21,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 		MailSender mailSender = new MailSender() {
 			Session mailSession;
 			@Override
-			protected Session createSession() throws SenderException {
+			protected Session createSession() {
 				try {
 					mailSession = super.createSession();
 					Provider provider = new Provider(Type.TRANSPORT, "smtp", TransportMock.class.getCanonicalName(), "frankframework.org", "1.0");
@@ -28,7 +30,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 					return mailSession;
 				} catch(Exception e) {
 					log.error("unable to create mail Session", e);
-					throw new SenderException(e);
+					throw new LifecycleException(e);
 				}
 			}
 

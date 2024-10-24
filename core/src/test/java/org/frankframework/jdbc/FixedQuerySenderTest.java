@@ -91,7 +91,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setUseNamedParams(true);
 
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
@@ -104,7 +104,7 @@ public class FixedQuerySenderTest {
 
 		fixedQuerySender.configure();
 		assertTrue(fixedQuerySender.getUseNamedParams());
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
@@ -115,7 +115,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('3', '?{param}')");
 
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
@@ -136,7 +136,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.addParameter(new Parameter("param", "value"));
 
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 	}
@@ -146,7 +146,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', 'text')");
 		fixedQuerySender.setUseNamedParams(true);
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
@@ -157,7 +157,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.setUseNamedParams(true);
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
@@ -169,7 +169,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.setUseNamedParams(false);
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
@@ -180,7 +180,7 @@ public class FixedQuerySenderTest {
 	public void testIncompleteNamedParamInQuery(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param)");
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
@@ -196,7 +196,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setColumnsReturned("tKEY, tVARCHAR");
 
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertColumnsReturned(result);
@@ -211,7 +211,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setColumnsReturned("  tKEY,  tVARCHAR  ");
 
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertColumnsReturned(result);
@@ -225,7 +225,7 @@ public class FixedQuerySenderTest {
 
 		fixedQuerySender.setColumnsReturned("tKEY,tVARCHAR");
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertColumnsReturned(result);
@@ -237,7 +237,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.addParameter(NumberParameterBuilder.create("param", 7));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
@@ -251,7 +251,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setIncludeFieldDefinition(includeFieldDefinition);
 		fixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		asserter.accept(result.asString());
@@ -304,7 +304,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		String block = getLongString(10);
 
@@ -321,7 +321,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		String block = getLongString(10000);
 
@@ -340,7 +340,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
-		fixedQuerySender.open();
+		fixedQuerySender.start();
 
 		String block = getLongString(1000);
 

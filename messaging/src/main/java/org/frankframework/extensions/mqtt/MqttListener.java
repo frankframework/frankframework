@@ -31,6 +31,7 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
@@ -85,12 +86,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		try {
-			super.open();
+			super.start();
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
-			throw new ListenerException("Could not subscribe to topic", e);
+			throw new LifecycleException("Could not subscribe to topic", e);
 		}
 	}
 

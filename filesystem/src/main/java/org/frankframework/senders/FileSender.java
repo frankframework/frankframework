@@ -71,11 +71,11 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 	}
 
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 	}
 
 	@Override

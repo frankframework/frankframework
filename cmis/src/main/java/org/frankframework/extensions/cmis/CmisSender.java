@@ -74,6 +74,7 @@ import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.HttpSessionBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -226,8 +227,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private @Getter boolean getDocumentContent = true;
 	private @Getter boolean useRootFolder = true;
 	private @Getter String resultOnNotFound;
-
-
 	private boolean runtimeSession = false;
 	private @Getter boolean keepSession = true;
 
@@ -299,14 +298,13 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
 			try {
 				globalSession = getSessionBuilder().build();
-			}
-			catch (CmisSessionException e) {
-				throw new SenderException("unable to create cmis session", e);
+			} catch (CmisSessionException e) {
+				throw new LifecycleException("unable to create cmis session", e);
 			}
 		}
 	}

@@ -55,12 +55,12 @@ public class SenderWrapper extends SenderWrapperBase {
 		getSender().configure();
 	}
 	@Override
-	public void open() throws SenderException {
-		getSender().open();
-		super.open();
+	public void start() {
+		getSender().start();
+		super.start();
 	}
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 		super.stop();
 		getSender().stop();
 	}

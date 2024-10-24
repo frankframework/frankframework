@@ -420,10 +420,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		try {
 			try {
 				if (getSender()!=null) {
-					getSender().open();
+					getSender().start();
 				}
 				if (getErrorSender()!=null) {
-					getErrorSender().open();
+					getErrorSender().start();
 				}
 				if (getErrorStorage()!=null) {
 					getErrorStorage().start();

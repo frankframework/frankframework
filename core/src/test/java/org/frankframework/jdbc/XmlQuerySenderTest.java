@@ -60,7 +60,7 @@ public class XmlQuerySenderTest {
 		insert(1, "value1");
 		insert(2, "value2");
 		xmlQuerySender.configure();
-		xmlQuerySender.open();
+		xmlQuerySender.start();
 
 		Message result = xmlQuerySender.sendMessage(new Message("""
 				<select><tableName>temp</tableName>
@@ -77,7 +77,7 @@ public class XmlQuerySenderTest {
 		insert(1, "value1");
 		insert(2, "value2");
 		xmlQuerySender.configure();
-		xmlQuerySender.open();
+		xmlQuerySender.start();
 
 		Message result = xmlQuerySender.sendMessage(new Message("""
 				<insert><tableName>temp</tableName>
@@ -94,7 +94,7 @@ public class XmlQuerySenderTest {
 		insert(1, "value1");
 		insert(2, "value2");
 		xmlQuerySender.configure();
-		xmlQuerySender.open();
+		xmlQuerySender.start();
 
 		Message result = xmlQuerySender.sendMessage(new Message("""
 				<delete><tableName>temp</tableName>
@@ -108,7 +108,7 @@ public class XmlQuerySenderTest {
 		insert(1, "value1");
 		insert(2, "value2");
 		xmlQuerySender.configure();
-		xmlQuerySender.open();
+		xmlQuerySender.start();
 
 		Message result = xmlQuerySender.sendMessage(new Message("""
 				<update><tableName>temp</tableName>

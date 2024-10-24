@@ -69,15 +69,15 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		if (cache!=null) {
 			cache.open();
 		}
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 		try {
 			super.stop();
 		} finally {

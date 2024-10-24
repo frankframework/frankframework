@@ -55,7 +55,7 @@ class JmsSenderTest {
 		jmsSender.setApplicationContext(configuration.getApplicationContext());
 
 		jmsSender.configure();
-		jmsSender.open();
+		jmsSender.start();
 	}
 
 	@AfterEach

@@ -52,7 +52,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.setNumberOfBackups(1);
 		autowireByName(sender);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		try (FileOutputStream stream = new FileOutputStream(src)) {
 			stream.write("tja".getBytes());
@@ -82,7 +82,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		try (FileOutputStream stream = new FileOutputStream(src)) {
 			stream.write("tja".getBytes());

@@ -83,7 +83,7 @@ public class CheckReloadJob extends JobDef {
 		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
 		try {
 			qs.configure();
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();

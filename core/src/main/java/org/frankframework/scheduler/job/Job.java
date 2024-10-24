@@ -15,10 +15,9 @@
 */
 package org.frankframework.scheduler.job;
 
+import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 
-import lombok.Getter;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.scheduler.JobDefFunctions;
@@ -42,7 +41,7 @@ public class Job extends JobDef {
 	private @Getter JobDefFunctions function;
 
 	@Override
-	public void execute() throws JobExecutionException, TimeoutException {
+	public void execute() {
 		throw new NotImplementedException(); // will be replaced by appropriate executor class in JobFactory, based on function
 	}
 

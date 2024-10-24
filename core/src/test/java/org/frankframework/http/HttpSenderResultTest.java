@@ -133,7 +133,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessageOrThrow(new Message(""), session).asString();
@@ -148,7 +148,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("text default", result);
@@ -172,7 +172,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<soap:Envelope/>", result.trim());

@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -18,8 +21,6 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
@@ -54,7 +55,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		sender.setXsltVersion(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message input=MessageTestUtils.getMessage("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
@@ -68,7 +69,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	public void basicXslt2() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message input=MessageTestUtils.getMessage("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
@@ -83,7 +84,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setXpathExpression("result");
 		sender.setXsltVersion(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message input = new Message("<result>dummy</result>");
 		String result = sender.sendMessageOrThrow(input, session).asString();
@@ -95,7 +96,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	public void testSimpleXslt2Xpath() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("result");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message input = new Message("<result>dummy</result>");
 		String result = sender.sendMessageOrThrow(input, session).asString();
@@ -110,7 +111,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setOutputType(OutputType.TEXT);
 		sender.setXsltVersion(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message input = new Message("<results><result name='test1'>dummy1</result><result name='test2'>dummy2</result></results>");
 		String result = sender.sendMessageOrThrow(input, session).asString();
@@ -124,7 +125,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setNamespaceDefs("x=http://studieData.nl/schema/edudex/directory");
 		sender.setXsltVersion(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message input = MessageTestUtils.getMessage("/Xslt/XPathWithNamespace/input.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/expected-xslt1.txt");
@@ -137,7 +138,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	public void testXpathWithNamespaceXslt2() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("//directoryUrl");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message input = MessageTestUtils.getMessage("/Xslt/XPathWithNamespace/input.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/expected-xslt2.txt");
@@ -151,7 +152,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
@@ -167,7 +168,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
@@ -184,7 +185,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/correctDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session = new PipeLineSession();
 
@@ -206,7 +207,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
@@ -223,7 +224,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session = new PipeLineSession();
 
@@ -238,7 +239,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/nonexistingDummy.xsl");
@@ -256,7 +257,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceUnAware.xsl");
 		sender.setRemoveNamespaces(true);
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message input=MessageTestUtils.getMessage("/Xslt/NamespaceUnaware/in.xml");
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/out.xml");
@@ -271,7 +272,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	public void testNamespaceAware() throws Exception {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceAware.xsl");
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message input=MessageTestUtils.getMessage("/Xslt/NamespaceUnaware/in.xml");
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/out.xml");
@@ -315,7 +316,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setOmitXmlDeclaration(true);
 		sender.setRemoveNamespaces(!namespaceAware);
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message input=new Message(NAMESPACE_UNAWARENESS_INPUT);
 
 		String actual = sender.sendMessageOrThrow(input, session).asString();

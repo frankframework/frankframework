@@ -41,6 +41,7 @@ import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestConfig;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.FrankSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
@@ -274,7 +275,7 @@ public class QueueCreator {
 						deleteQuerySender.setQuery("delete from " + preDelete);
 
 						deleteQuerySender.configure();
-						deleteQuerySender.open();
+						deleteQuerySender.start();
 						try (PipeLineSession session = new PipeLineSession()){
 							deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), session).close();
 						} finally {
@@ -315,8 +316,8 @@ public class QueueCreator {
 					}
 					if (queues != null) {
 						try {
-							prePostFixedQuerySender.open();
-						} catch(SenderException e) {
+							prePostFixedQuerySender.start();
+						} catch(LifecycleException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
 							errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
@@ -360,9 +361,9 @@ public class QueueCreator {
 					}
 					if (queues != null) {
 						try {
-							readQueryFixedQuerySender.open();
+							readQueryFixedQuerySender.start();
 							querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
-						} catch(SenderException e) {
+						} catch(LifecycleException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
 							errorMessage("Could not open '" + name + "': " + e.getMessage(), e);

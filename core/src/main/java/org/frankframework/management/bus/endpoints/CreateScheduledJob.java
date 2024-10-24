@@ -29,10 +29,10 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -152,7 +152,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 			}
 
 			try {
-				qs.open();
+				qs.start();
 				try (Connection conn = qs.getConnection()) {
 
 					if(overwrite) {
@@ -184,7 +184,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 						success = stmt.executeUpdate() > 0;
 					}
 				}
-			} catch (SenderException | SQLException | JdbcException e) {
+			} catch (LifecycleException | SQLException | JdbcException e) {
 				throw new BusException("error saving job in database", e);
 			} finally {
 				qs.stop();

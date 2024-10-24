@@ -106,7 +106,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			qs.setBlobSmartGet(true);
 			qs.setPrettyPrint(true);
 			qs.configure(true);
-			qs.open();
+			qs.start();
 
 			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session);
 

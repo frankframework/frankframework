@@ -142,7 +142,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 		connectionManager = new PoolingClientConnectionManager();
 		connectionManager.setMaxTotal(getMaxConnections());
 	}

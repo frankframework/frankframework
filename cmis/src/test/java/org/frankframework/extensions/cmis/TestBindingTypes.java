@@ -98,7 +98,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
-		sender.open();
+		sender.start();
 	}
 
 	@ParameterizedTest(name = "{0} - {1}")

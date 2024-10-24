@@ -260,7 +260,7 @@ public class ConfigManagement extends BusEndpointBase {
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {

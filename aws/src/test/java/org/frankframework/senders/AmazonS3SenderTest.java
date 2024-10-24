@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
@@ -24,8 +26,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * AmazonS3Sender tests.
@@ -104,7 +104,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3F
 		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+ filename));
 		fileSystemSender.setAction(FileSystemAction.READ);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		// Act
 		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");

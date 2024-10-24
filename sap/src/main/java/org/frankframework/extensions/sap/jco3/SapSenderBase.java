@@ -17,19 +17,20 @@ package org.frankframework.extensions.sap.jco3;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoException;
-
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Base class for functions that call SAP.
@@ -68,13 +69,13 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			openFacade();
 		} catch (SapException e) {
 			log.error("{}Exception on opening SapFunctionFacade", getLogPrefix(), e);
 			stop();
-			throw new SenderException(getLogPrefix()+"exception starting", e);
+			throw new LifecycleException(getLogPrefix()+"exception starting", e);
 		}
 	}
 

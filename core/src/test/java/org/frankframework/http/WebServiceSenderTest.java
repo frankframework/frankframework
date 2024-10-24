@@ -46,7 +46,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWss.txt"), result.trim());
@@ -66,7 +66,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setSoapAction(sender.getUrl());
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssSoapAction.txt"), result.trim());
@@ -98,7 +98,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart.txt"), result.trim());
@@ -132,7 +132,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart2.txt"), result.trim());
@@ -164,7 +164,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMtom.txt"), result.trim());
@@ -190,7 +190,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());

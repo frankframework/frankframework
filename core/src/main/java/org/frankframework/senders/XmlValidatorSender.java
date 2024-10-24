@@ -50,8 +50,9 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 	@Override
 	public void stop() {
 	}
+
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 	}
 
 	@Override

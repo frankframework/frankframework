@@ -19,11 +19,13 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.Test;
-
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+
+import org.junit.jupiter.api.Test;
+
 import org.eclipse.angus.mail.smtp.SMTPMessage;
+
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -49,7 +51,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
 		assertThat(e.getMessage(), containsString("at least 1 recipient must be specified"));
@@ -180,7 +182,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -215,7 +217,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
 		assertThat(e.getMessage(), containsString("messageType [MessageTypeWithoutASlash] must contain a forward slash ('/')"));
@@ -239,7 +241,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -268,7 +270,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
 	}
@@ -293,7 +295,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -325,7 +327,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -357,7 +359,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -389,7 +391,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -421,7 +423,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
 		assertThat(e.getMessage(), containsString("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')"));
@@ -434,7 +436,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		appendParameters(sender);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -458,7 +460,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		appendAttachmentParameter(sender, attachmentsXml);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -484,7 +486,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		appendAttachmentParameter(sender, attachmentsXml);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		session.put("attachment1", "This is a text message.");
 		session.put("attachment2", "VGhpcyBpcyBhIHRlc3QgZmlsZS4=");
@@ -523,7 +525,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.setBounceAddress("my@bounce.nl");
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -555,7 +557,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			""";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 		Session mailSession = (Session) session.get("mailSession");
@@ -597,7 +599,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 					((MailSender) sender2).setBounceAddress(bounce);
 
 					sender2.configure();
-					sender2.open();
+					sender2.start();
 
 					PipeLineSession session1 = new PipeLineSession();
 					sender2.sendMessageOrThrow(new Message(mailInput), session1);
