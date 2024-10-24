@@ -18,19 +18,22 @@ package org.frankframework.scheduler;
 import static org.quartz.JobBuilder.newJob;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -70,12 +73,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 		try {
 			schedulerHelper.startScheduler();
 		} catch (SchedulerException e) {
-			throw new SenderException("Could not start Scheduler", e);
+			throw new LifecycleException("Could not start Scheduler", e);
 		}
 	}
 

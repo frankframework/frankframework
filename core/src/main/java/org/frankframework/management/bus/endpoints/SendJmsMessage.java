@@ -105,7 +105,7 @@ public class SendJmsMessage extends BusEndpointBase {
 
 	private Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
 		try(PipeLineSession session = new PipeLineSession()) {
-			qms.open();
+			qms.start();
 			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), session);
 			if(!expectsReply) {
 				return null;

@@ -68,16 +68,11 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 	}
 
 	@Override
 	public void stop() {
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 	@Override

@@ -9,9 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 
-import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -48,7 +49,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		}
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String expected = getExpectedTestFile("test10SubSenders.txt");
 		assertNotNull(expected, "cannot find expected result file");
@@ -70,7 +71,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		}
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String expected = getExpectedTestFile("test10SubSendersNonRepeatableMessage.txt");
 		assertNotNull(expected, "cannot find expected result file");
@@ -99,7 +100,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		}
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String expected = getExpectedTestFile("test5wrappersWith10SubSenders.txt");
 		assertNotNull(expected, "cannot find expected result file");
@@ -117,7 +118,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	public void testSingleExceptionHandling() throws Exception {
 		sender.addSender(new ExceptionThrowingSender());
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
 
@@ -132,7 +133,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.addSender(new EchoSender());
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
 

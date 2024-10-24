@@ -21,6 +21,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -54,7 +55,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			if (fileSystemSender != null) {
 				fileSystemSender.stop();
 			}
-		} catch (SenderException e) {
+		} catch (LifecycleException e) {
 			log.warn("Failed to close fileSystemSender", e);
 		}
 		CloseUtils.closeSilently(result);
@@ -68,10 +69,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 
 	@Test
-	public void fileSystemSenderTestOpen() throws Exception {
+	public void fileSystemSenderTestStart() throws Exception {
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 	}
 
 	@Test
@@ -89,7 +90,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwString"));
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		Message message = new Message(filename);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
@@ -117,7 +118,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		Message message = new Message(filename);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
@@ -147,7 +148,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		Message message = new Message(filename);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
@@ -170,7 +171,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.DOWNLOAD);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = new Message(filename);
@@ -203,7 +204,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			fileSystemSender.setCreateFolder(true);
 		}
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = new Message(filename);
@@ -254,7 +255,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		// Act
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		Message message = new Message("is-not-relevant");
 		result = fileSystemSender.sendMessageOrThrow(message, session);
@@ -280,7 +281,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.MKDIR);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = new Message(folder);
@@ -305,7 +306,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.RMDIR);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = new Message(folder);
@@ -340,7 +341,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setRemoveNonEmptyFolder(true);
 		fileSystemSender.setAction(FileSystemAction.RMDIR);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = new Message(folder);
@@ -365,7 +366,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.DELETE);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = new Message(filename);
@@ -391,7 +392,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.addParameter(new Parameter("destination", dest));
 		fileSystemSender.setAction(FileSystemAction.RENAME);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		deleteFile(null, dest);
 
@@ -434,7 +435,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setTypeFilter(typeFilter);
 		fileSystemSender.setInputFolder(inputFolder);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = Message.nullMessage();
@@ -496,7 +497,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			fileSystemSender.setCreateFolder(true);
 		}
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		Message input = new Message(folder + "/" + filename);
 		senderResult = fileSystemSender.sendMessage(input, session);
@@ -555,7 +556,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setCreateFolder(setCreateFolderAttribute);
 		fileSystemSender.addParameter(ParameterBuilder.create("filename", folder + "/" + filename));
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		Message input = new Message("dummyText");
 		senderResult = fileSystemSender.sendMessage(input, session);
@@ -615,7 +616,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setInputFolder("NonExistentFolder");
 		fileSystemSender.configure();
 
-		SenderException e = assertThrows(SenderException.class, fileSystemSender::open);
+		SenderException e = assertThrows(SenderException.class, fileSystemSender::start);
 		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
 	}
 
@@ -626,14 +627,14 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setTypeFilter(TypeFilter.FILES_ONLY);
 		fileSystemSender.setInputFolder(FOLDER_NAME);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 	}
 
 	@Test()
 	public void fileSystemSenderTestForFolderExistenceWithRoot() throws Exception {
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 	}
 
 	@Test
@@ -663,7 +664,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 				.withSessionKey(TypeFilter.FILES_ONLY.toString().toLowerCase()));
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		// Act
 		assertTrue(_fileExists(inputFolder, filename), "File [" + filename + "] expected to be present");
@@ -695,7 +696,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder + "/" + filename));
 		fileSystemSender.setAction(FileSystemAction.READDELETE);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		// Act
 		assertTrue(_fileExists(inputFolder, filename), "File [" + filename + "] expected to be present");

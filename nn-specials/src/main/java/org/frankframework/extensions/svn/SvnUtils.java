@@ -64,7 +64,7 @@ public class SvnUtils {
 			httpSender.setXhtml(true);
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
-			httpSender.open();
+			httpSender.start();
 			try (PipeLineSession session = new PipeLineSession();
 				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session)) {
 				return result.asString();
@@ -84,7 +84,7 @@ public class SvnUtils {
 			httpSender.setXhtml(true);
 			httpSender.setMethodType(HttpMethod.REPORT);
 			httpSender.configure();
-			httpSender.open();
+			httpSender.start();
 
 			String logReportRequest = "<S:log-report xmlns:S=\"svn:\">"
 					+ "<S:start-revision>" + revision + "</S:start-revision>"

@@ -21,18 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.angus.mail.smtp.SMTPMessage;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.ISender;
-import org.frankframework.core.SenderException;
-import org.frankframework.doc.Category;
-import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
@@ -45,8 +33,22 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
+
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.ISender;
+import org.frankframework.core.SenderException;
+import org.frankframework.doc.Category;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.util.XmlUtils;
 
 /**
  * {@link ISender sender} that sends a mail specified by an XML message.
@@ -145,14 +147,14 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 	 * Create a session to validate connectivity
 	 */
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		createSession(); //Test connection to SMTP host
 	}
 
 	/**
 	 * Create the session during runtime
 	 */
-	protected Session createSession() throws SenderException {
+	protected Session createSession() {
 		try {
 			if(session == null) {
 				session = Session.getInstance(properties, null);
@@ -160,9 +162,8 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 			}
 
 			return session;
-		}
-		catch (Exception e) {
-			throw new SenderException("MailSender got error", e);
+		} catch (Exception e) {
+			throw new LifecycleException("MailSender got error", e);
 		}
 	}
 

@@ -25,6 +25,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Optional;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.FrankListener;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.senders.IbisLocalSender;
@@ -68,14 +69,14 @@ public class SendMessageJob extends JobDef {
 			// Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 
-			localSender.open();
+			localSender.start();
 			localSender.sendMessageOrThrow(toSendMessage, session).close();
 		} catch (SenderException e) {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {
 				localSender.stop();
-			} catch (SenderException e) {
+			} catch (LifecycleException e) {
 				log.warn("unable to close LocalSender", e);
 			}
 		}

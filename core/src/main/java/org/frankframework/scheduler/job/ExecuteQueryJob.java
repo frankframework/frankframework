@@ -56,7 +56,7 @@ public class ExecuteQueryJob extends JobDef {
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
 		try(PipeLineSession session = new PipeLineSession()) {
-			qs.open();
+			qs.start();
 
 			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 				log.info("result [{}]", result);

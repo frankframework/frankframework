@@ -151,7 +151,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			}
 
 			sender.configure();
-			sender.open();
+			sender.start();
 		}
 		return sender;
 	}

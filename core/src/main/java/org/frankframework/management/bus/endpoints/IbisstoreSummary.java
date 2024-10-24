@@ -75,7 +75,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setBlobSmartGet(true);
 				qs.setAvoidLocking(true);
 				qs.configure(true);
-				qs.open();
+				qs.start();
 				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), session)) {
 					result = message.asString();
 				}

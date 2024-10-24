@@ -67,7 +67,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		querySender.open();
+		querySender.start();
 	}
 
 	@Override

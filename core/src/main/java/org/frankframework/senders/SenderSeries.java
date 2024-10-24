@@ -64,19 +64,17 @@ public class SenderSeries extends SenderWrapperBase {
 		super.configure();
 	}
 
+	@Override
+	public void start() {
+		getSenders().forEach(ISender::start);
+
+		super.start();
+	}
 
 	@Override
-	public void open() throws SenderException {
-		for (ISender sender: getSenders()) {
-			sender.open();
-		}
-		super.open();
-	}
-	@Override
-	public void stop() throws SenderException {
-		for (ISender sender: getSenders()) {
-			sender.stop();
-		}
+	public void stop() {
+		getSenders().forEach(ISender::stop);
+
 		super.stop();
 	}
 

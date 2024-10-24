@@ -25,11 +25,11 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.senders.XsltSender;
@@ -81,8 +81,8 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	public void start() throws PipeStartException {
 		super.start();
 		try {
-			sender.open();
-		} catch (SenderException e) {
+			sender.start();
+		} catch (LifecycleException e) {
 			throw new PipeStartException(e);
 		}
 	}
@@ -91,7 +91,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	public void stop() {
 		try {
 			sender.stop();
-		} catch (SenderException e) {
+		} catch (LifecycleException e) {
 			log.warn("exception closing XsltSender",e);
 		}
 		super.stop();

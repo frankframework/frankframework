@@ -36,6 +36,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 /**
@@ -66,19 +67,19 @@ public class KafkaSender extends KafkaFacade implements ISender {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		producer = new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
 
-		//TODO find a better alternative, perhaps attempting to create (and close) a transaction? Definitely don't use Thread.sleep!
+		// TODO find a better alternative, perhaps attempting to create (and close) a transaction? Definitely don't use Thread.sleep!
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new SenderException(e);
+			throw new LifecycleException(e);
 		}
 
-		Double metric = (Double) producer.metrics().values().stream().filter(item -> "response-total".equals(item.metricName().name())).findFirst().orElseThrow(() -> new SenderException("Failed to get response-total metric.")).metricValue();
-		if (metric.intValue() == 0) throw new SenderException("Didn't get a response from Kafka while connecting for Sending.");
+		Double metric = (Double) producer.metrics().values().stream().filter(item -> "response-total".equals(item.metricName().name())).findFirst().orElseThrow(() -> new LifecycleException("Failed to get response-total metric.")).metricValue();
+		if (metric.intValue() == 0) throw new LifecycleException("Didn't get a response from Kafka while connecting for Sending.");
 	}
 
 	@Override

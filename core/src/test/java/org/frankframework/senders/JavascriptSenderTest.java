@@ -49,7 +49,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("0", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -64,7 +64,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("1", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -84,7 +84,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("3", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -106,7 +106,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("12", sender.sendMessageOrThrow(message, session).asString());
 	}
@@ -127,7 +127,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(new Parameter("y", " World!"));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("Hello World!", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -148,7 +148,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(BooleanParameterBuilder.create("z", true));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("3", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -169,7 +169,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(BooleanParameterBuilder.create("z", false));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("0", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -207,7 +207,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		dummyInput = new Message("dummyinput");
 		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
@@ -235,7 +235,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
@@ -250,7 +250,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
@@ -270,7 +270,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
@@ -296,7 +296,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(NumberParameterBuilder.create("y", 2));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		dummyInput = Message.nullMessage();
 

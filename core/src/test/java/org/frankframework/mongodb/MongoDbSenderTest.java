@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-
 import lombok.extern.log4j.Log4j2;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -101,7 +100,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setAction(MongoDbSender.MongoAction.INSERTONE);
 		sender.setCollection("Students");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"KarelV\", \"class_id\": \"first\", \"grades\": [ 4, 5, 6] }");
 		assertThat(result.asString(), StringContains.containsString("\"insertedId\":"));
@@ -113,7 +112,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setAction(MongoDbSender.MongoAction.INSERTMANY);
 		sender.setCollection("Students");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		JsonArrayBuilder students = Json.createArrayBuilder();
 		createStudent(List.of("Harry", "Klaas", "Bruinsma"), "1a", 4, 5, 6)
@@ -137,7 +136,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setAction(MongoAction.FINDONE);
 		sender.setCollection("Students");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		// Act & assert 1: find the student
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
@@ -157,7 +156,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setCollection("Students");
 		sender.setOutputFormat(DocumentFormat.XML);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		System.out.println("FindOne: [" + result.asString() + "]");
@@ -172,7 +171,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setAction(MongoAction.FINDMANY);
 		sender.setCollection("Students");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		assertThat(result.asString(), StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
@@ -185,7 +184,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setCollection("Students");
 		sender.setOutputFormat(DocumentFormat.XML);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		System.out.println("FindManyXml: [" + result.asString() + "]");
@@ -205,7 +204,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		param.setValue("Evert");
 		sender.addParameter(param);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"?{searchTarget}\" }");
 		assertThat(result.asString(), StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
@@ -218,7 +217,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setCollection("Students");
 		sender.setCountOnly(true);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		int count = Integer.parseInt(result.asString());
@@ -234,7 +233,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setCountOnly(true);
 		sender.setLimit(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 		int count = Integer.parseInt(result.asString());
@@ -250,7 +249,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setCollection("Students");
 		sender.setFilter(filter);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage(update);
 		assertThat(result.asString(), StringContains.containsString("\"modifiedCount\":"));
@@ -262,7 +261,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setCollection("Students");
 		sender.setAction(MongoAction.DELETEMANY);
 		sender.configure();
-		sender.open();
+		sender.start();
 		result = sendMessage("{ \"student_id\": \"Evert\" }");
 
 		// Arrange: insert student
@@ -291,7 +290,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setFilter(filter);
 		sender.setOutputFormat(DocumentFormat.XML);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage(update);
 		assertThat(result.asString(), StringContains.containsString("<modifiedCount>"));
@@ -301,7 +300,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.setAction(MongoAction.INSERTONE);
 		sender.setCollection("Students");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		List<JsonObject> stud = createStudent(Collections.singletonList("Evert"), "1c", 4, 4, 3);
 		return sendMessage(stud.get(0).toString());

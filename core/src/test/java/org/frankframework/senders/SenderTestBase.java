@@ -32,6 +32,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
@@ -60,7 +61,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 			if (sender != null) {
 				sender.stop();
 			}
-		} catch (SenderException e) {
+		} catch (LifecycleException e) {
 			log.warn("Error closing Sender", e);
 		}
 		sender = null;

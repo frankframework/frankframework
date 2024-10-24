@@ -24,6 +24,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 /**
@@ -63,18 +64,18 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
-			sender.open();
-			super.open();
+			sender.start();
+			super.start();
 		} finally {
-			sender.stop(); //Only open to test the connection, close afterwards if all is ok.
+			sender.stop(); // Only open to test the connection, close afterwards if all is ok.
 		}
 	}
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		sender.open();
+		sender.start();
 		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this.toString());
 		return sender.sendMessage(message, session);
 	}
@@ -91,7 +92,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 			try {
 				log.debug("Closing sender after use: [{}]", sender.getName());
 				sender.stop();
-			} catch (SenderException e) {
+			} catch (LifecycleException e) {
 				log.warn("Error closing sender: [{}]", sender.getName(), e);
 			}
 		}

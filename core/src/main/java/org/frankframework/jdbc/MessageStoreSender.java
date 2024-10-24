@@ -94,12 +94,6 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	}
 
 	@Override
-	public void open() throws SenderException {
-		// TODO FIX this in ISender
-		start();
-	}
-
-	@Override
 	public boolean isSynchronous() {
 		return false;
 	}

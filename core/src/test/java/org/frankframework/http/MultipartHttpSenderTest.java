@@ -52,7 +52,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
@@ -84,7 +84,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
@@ -116,7 +116,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
@@ -149,7 +149,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
@@ -182,7 +182,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
@@ -215,7 +215,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
