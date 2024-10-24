@@ -160,6 +160,15 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		return destination;
 	}
 
+	@Override
+	public String getDestinationAsString() {
+		try {
+			return getDestination().toString();
+		} catch (JCoException exception) {
+			return null;
+		}
+	}
+
 	public JCoRepository getJcoRepository() throws JCoException {
 		return getDestination().getRepository();
 	}
