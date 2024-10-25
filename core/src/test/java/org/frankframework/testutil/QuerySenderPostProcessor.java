@@ -4,12 +4,13 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Setter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import lombok.Setter;
 
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.FixedQuerySender;

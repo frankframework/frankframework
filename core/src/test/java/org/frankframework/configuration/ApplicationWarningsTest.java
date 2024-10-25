@@ -2,10 +2,11 @@ package org.frankframework.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.testutil.TestConfiguration;
 

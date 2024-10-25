@@ -3,12 +3,13 @@ package org.frankframework.extensions.kafka;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import com.google.common.collect.Lists;
 
 import org.frankframework.configuration.ConfigurationException;
 

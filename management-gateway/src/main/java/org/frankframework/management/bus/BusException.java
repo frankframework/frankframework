@@ -15,9 +15,10 @@
 */
 package org.frankframework.management.bus;
 
-import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
 
 import org.frankframework.core.IbisException;
 

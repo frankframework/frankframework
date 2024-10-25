@@ -2,12 +2,14 @@ package org.frankframework.filesystem;
 
 import java.nio.file.Path;
 
-import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
+
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Testcontainers(disabledWithoutDocker = true)

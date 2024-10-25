@@ -6,11 +6,12 @@ import static org.mockito.Mockito.mock;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import lombok.Getter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+
+import lombok.Getter;
 
 public class TransactionManagerMock implements PlatformTransactionManager {
 	private static Queue<TransactionStatus> items = new ConcurrentLinkedQueue<>();

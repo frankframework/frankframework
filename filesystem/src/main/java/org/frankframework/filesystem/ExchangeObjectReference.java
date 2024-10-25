@@ -15,10 +15,11 @@
 */
 package org.frankframework.filesystem;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A reference to an Exchange folder or object and its mailbox.

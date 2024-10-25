@@ -32,9 +32,10 @@ import jakarta.jms.QueueBrowser;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
+import org.mockito.Mockito;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.mockito.Mockito;
 
 import org.frankframework.jms.IConnectionFactoryFactory;
 import org.frankframework.jms.JmsTransactionalStorage;

@@ -16,10 +16,11 @@
  
 package net.wedjaa.ansible.vault.crypto.data;
 
-import net.wedjaa.ansible.vault.crypto.decoders.CypherFactory;
-import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+
+import net.wedjaa.ansible.vault.crypto.decoders.CypherFactory;
+import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 
 public class VaultInfo
 {

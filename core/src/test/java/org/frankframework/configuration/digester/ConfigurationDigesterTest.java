@@ -12,13 +12,14 @@ import java.net.URL;
 
 import javax.xml.validation.ValidatorHandler;
 
-import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationDigester;

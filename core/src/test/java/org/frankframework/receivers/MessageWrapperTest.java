@@ -12,9 +12,10 @@ import java.nio.file.Path;
 import jakarta.mail.internet.InternetHeaders;
 import jakarta.mail.internet.MimeBodyPart;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.http.PartMessage;
 import org.frankframework.stream.Message;

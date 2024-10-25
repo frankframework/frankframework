@@ -26,8 +26,9 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Session;
 import jakarta.jms.TopicSession;
 
-import com.tibco.tibjms.TibjmsConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
+
+import com.tibco.tibjms.TibjmsConnectionFactory;
 
 import org.frankframework.jms.JmsException;
 import org.frankframework.jms.JmsMessagingSource;

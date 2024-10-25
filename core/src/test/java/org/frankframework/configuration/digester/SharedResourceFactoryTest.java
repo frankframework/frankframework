@@ -8,11 +8,12 @@ import static org.mockito.Mockito.mock;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.digester3.Digester;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.CanUseSharedResource;

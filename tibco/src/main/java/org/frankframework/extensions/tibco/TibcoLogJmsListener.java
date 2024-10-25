@@ -26,9 +26,10 @@ import javax.xml.transform.TransformerException;
 
 import jakarta.jms.JMSException;
 
-import com.tibco.tibjms.TibjmsMapMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
+
+import com.tibco.tibjms.TibjmsMapMessage;
 
 import org.frankframework.jms.JmsListener;
 import org.frankframework.soap.SoapWrapper;

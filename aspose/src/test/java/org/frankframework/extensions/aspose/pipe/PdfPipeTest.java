@@ -39,9 +39,6 @@ import javax.imageio.ImageIO;
 
 import jakarta.annotation.Nonnull;
 
-import com.testautomationguru.utility.CompareMode;
-import com.testautomationguru.utility.ImageUtil;
-import com.testautomationguru.utility.PDFUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +47,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.MimeType;
+
+import com.testautomationguru.utility.CompareMode;
+import com.testautomationguru.utility.ImageUtil;
+import com.testautomationguru.utility.PDFUtil;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;

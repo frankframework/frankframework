@@ -20,8 +20,9 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;

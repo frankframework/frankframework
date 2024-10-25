@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.transaction.TransactionManager;
 
-import lombok.Setter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.TransactionSystemException;
+
+import lombok.Setter;
 
 public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager>{
 

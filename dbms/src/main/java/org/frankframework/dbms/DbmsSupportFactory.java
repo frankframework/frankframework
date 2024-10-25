@@ -25,9 +25,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.util.ClassUtils;
 

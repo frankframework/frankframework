@@ -18,8 +18,9 @@ package org.frankframework.credentialprovider;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Setter;
 
 public class Credentials implements ICredentials {
 	protected Logger log = Logger.getLogger(this.getClass().getName());

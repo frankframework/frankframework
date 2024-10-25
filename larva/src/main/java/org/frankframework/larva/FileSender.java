@@ -21,13 +21,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.helper.ProjectHelperImpl;
 import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;

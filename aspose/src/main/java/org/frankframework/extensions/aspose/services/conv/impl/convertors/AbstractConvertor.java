@@ -25,9 +25,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.aspose.pdf.Document;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
+
+import com.aspose.pdf.Document;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;

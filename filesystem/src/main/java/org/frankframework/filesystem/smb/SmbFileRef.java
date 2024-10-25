@@ -18,11 +18,13 @@ package org.frankframework.filesystem.smb;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import com.hierynomus.msfscc.fileinformation.FileAllInformation;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import com.hierynomus.msfscc.fileinformation.FileAllInformation;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class SmbFileRef {
 	private @Nonnull @Getter String filename;

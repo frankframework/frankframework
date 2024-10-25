@@ -24,9 +24,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
 
 import org.frankframework.core.SenderException;
 import org.frankframework.http.HttpServletBase;

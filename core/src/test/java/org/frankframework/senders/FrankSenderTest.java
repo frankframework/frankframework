@@ -19,15 +19,17 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.extern.log4j.Log4j2;
-import nl.nn.adapterframework.dispatcher.DispatcherException;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import lombok.extern.log4j.Log4j2;
+
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.Configuration;

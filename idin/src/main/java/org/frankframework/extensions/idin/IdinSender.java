@@ -31,6 +31,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
 import lombok.Getter;
 import lombok.Setter;
 import net.bankid.merchant.library.AssuranceLevel;
@@ -46,9 +50,6 @@ import net.bankid.merchant.library.ServiceId;
 import net.bankid.merchant.library.StatusRequest;
 import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;

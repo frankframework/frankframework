@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +18,8 @@ import org.junit.jupiter.api.Disabled;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionObject;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;

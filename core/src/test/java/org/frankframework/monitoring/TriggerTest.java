@@ -13,13 +13,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import lombok.Getter;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;

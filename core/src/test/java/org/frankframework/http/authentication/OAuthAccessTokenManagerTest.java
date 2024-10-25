@@ -8,13 +8,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.nimbusds.oauth2.sdk.Scope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.nimbusds.oauth2.sdk.Scope;
 
 import org.frankframework.http.HttpSender;
 import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;

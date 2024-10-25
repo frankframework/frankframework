@@ -3,9 +3,10 @@ package org.frankframework.testutil;
 import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;

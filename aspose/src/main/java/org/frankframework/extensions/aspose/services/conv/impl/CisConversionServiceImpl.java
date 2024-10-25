@@ -17,9 +17,10 @@ package org.frankframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;

@@ -22,8 +22,9 @@ import java.util.Iterator;
 
 import jakarta.annotation.Nonnull;
 
-import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import org.apache.commons.codec.binary.Base64InputStream;
+
+import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;

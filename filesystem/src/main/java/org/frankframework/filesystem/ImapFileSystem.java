@@ -46,12 +46,13 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.angus.mail.imap.AppendUID;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.eclipse.angus.mail.imap.IMAPMessage;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.PartMessage;

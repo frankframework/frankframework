@@ -33,14 +33,16 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.aspose.cells.FontConfigs;
 import com.aspose.slides.FontsLoader;
 import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
+
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.TemporaryDirectoryUtils;

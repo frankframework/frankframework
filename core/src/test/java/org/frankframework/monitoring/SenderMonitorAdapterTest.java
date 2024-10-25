@@ -6,9 +6,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import lombok.Getter;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineSession;

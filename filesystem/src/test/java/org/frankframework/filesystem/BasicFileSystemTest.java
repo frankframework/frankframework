@@ -18,12 +18,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import lombok.AllArgsConstructor;
 
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;

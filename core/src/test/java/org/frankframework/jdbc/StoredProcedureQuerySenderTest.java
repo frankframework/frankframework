@@ -30,10 +30,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;

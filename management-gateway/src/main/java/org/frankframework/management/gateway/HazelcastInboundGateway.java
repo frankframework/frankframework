@@ -22,12 +22,6 @@ import java.util.UUID;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import com.hazelcast.collection.IQueue;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.topic.ITopic;
-import com.hazelcast.topic.MessageListener;
-import lombok.Lombok;
-import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -42,6 +36,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+
+import com.hazelcast.collection.IQueue;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.topic.ITopic;
+import com.hazelcast.topic.MessageListener;
+
+import lombok.Lombok;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.SpringUtils;

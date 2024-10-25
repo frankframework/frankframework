@@ -27,8 +27,6 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -65,6 +63,9 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.filter.RequestContextFilter;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;

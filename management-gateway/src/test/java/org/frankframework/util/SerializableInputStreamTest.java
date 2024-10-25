@@ -15,12 +15,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.gateway.SerializableInputStream;
 

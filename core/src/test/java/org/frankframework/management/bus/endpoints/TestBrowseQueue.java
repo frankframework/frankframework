@@ -1,11 +1,12 @@
 package org.frankframework.management.bus.endpoints;
 
-import com.mockrunner.mock.jms.MockMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import com.mockrunner.mock.jms.MockMessage;
 
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsRealm;

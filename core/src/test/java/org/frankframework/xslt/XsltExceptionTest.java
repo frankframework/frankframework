@@ -3,10 +3,11 @@ package org.frankframework.xslt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.threading.ThreadConnector;

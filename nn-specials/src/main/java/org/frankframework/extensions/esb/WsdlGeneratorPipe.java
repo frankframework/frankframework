@@ -30,9 +30,10 @@ import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;

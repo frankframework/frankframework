@@ -16,10 +16,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
-import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;

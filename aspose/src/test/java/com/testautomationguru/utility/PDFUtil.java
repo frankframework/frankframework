@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
@@ -40,6 +38,9 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
 * <h1>PDF Utility</h1>

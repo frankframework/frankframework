@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
+
+import lombok.Getter;
 
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;

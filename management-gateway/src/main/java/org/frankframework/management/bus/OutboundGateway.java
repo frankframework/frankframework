@@ -22,11 +22,12 @@ import java.util.UUID;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.integration.IntegrationPattern;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public interface OutboundGateway extends IntegrationPattern {
 

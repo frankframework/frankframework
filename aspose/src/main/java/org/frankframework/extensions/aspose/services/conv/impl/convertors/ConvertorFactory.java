@@ -18,8 +18,9 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionService;

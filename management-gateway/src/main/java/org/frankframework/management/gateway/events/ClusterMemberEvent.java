@@ -17,8 +17,9 @@ package org.frankframework.management.gateway.events;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
 import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
 
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 

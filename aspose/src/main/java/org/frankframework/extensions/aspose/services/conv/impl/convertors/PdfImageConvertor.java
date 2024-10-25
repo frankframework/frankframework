@@ -25,6 +25,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+
 import com.aspose.imaging.extensions.ImageExtensions;
 import com.aspose.imaging.fileformats.tiff.TiffFrame;
 import com.aspose.imaging.fileformats.tiff.TiffImage;
@@ -34,8 +37,6 @@ import com.aspose.pdf.Image;
 import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
-import org.apache.logging.log4j.Logger;
-import org.springframework.http.MediaType;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;

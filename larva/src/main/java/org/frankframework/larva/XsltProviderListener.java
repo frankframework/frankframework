@@ -20,10 +20,11 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;

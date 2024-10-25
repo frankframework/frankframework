@@ -9,10 +9,11 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLEventReader;
 
+import org.junit.jupiter.api.Test;
+
 import microsoft.exchange.webservices.data.core.EwsServiceMultiResponseXmlReader;
 import microsoft.exchange.webservices.data.core.EwsXmlReader;
 import microsoft.exchange.webservices.data.security.XmlNodeType;
-import org.junit.jupiter.api.Test;
 
 /**
  * Tests if XML 1.1 has been enabled, to avoid errors like:

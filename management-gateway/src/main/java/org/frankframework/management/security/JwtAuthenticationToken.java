@@ -20,11 +20,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import com.nimbusds.jwt.JWTClaimsSet;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 

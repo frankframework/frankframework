@@ -10,6 +10,7 @@ import jakarta.jms.Session;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import software.amazon.awssdk.regions.Region;
 
 import org.frankframework.testutil.PropertyUtil;

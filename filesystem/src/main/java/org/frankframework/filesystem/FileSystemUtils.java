@@ -28,11 +28,12 @@ import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Lombok;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
+
+import lombok.Lombok;
 
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;

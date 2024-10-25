@@ -11,12 +11,13 @@ import java.nio.charset.StandardCharsets;
 import jakarta.jms.BytesMessage;
 import jakarta.jms.TextMessage;
 
-import com.mockrunner.mock.jms.MockQueue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+
+import com.mockrunner.mock.jms.MockQueue;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.statistics.MetricsInitializer;

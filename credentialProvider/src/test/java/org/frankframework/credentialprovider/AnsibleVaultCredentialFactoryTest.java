@@ -16,9 +16,10 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import net.wedjaa.ansible.vault.crypto.VaultHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import net.wedjaa.ansible.vault.crypto.VaultHandler;
 
 public class AnsibleVaultCredentialFactoryTest {
 

@@ -30,11 +30,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser.SortOrder;

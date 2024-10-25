@@ -33,8 +33,9 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.INamedObject;
 

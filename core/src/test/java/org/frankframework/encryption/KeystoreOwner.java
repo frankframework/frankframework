@@ -1,8 +1,9 @@
 package org.frankframework.encryption;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 
 public class KeystoreOwner implements HasKeystore {
 

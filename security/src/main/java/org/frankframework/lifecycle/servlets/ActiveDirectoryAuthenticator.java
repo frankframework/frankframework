@@ -22,13 +22,14 @@ import java.util.Map;
 
 import javax.naming.Context;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.web.SecurityFilterChain;
+
+import lombok.Setter;
 
 import org.frankframework.util.ClassUtils;
 

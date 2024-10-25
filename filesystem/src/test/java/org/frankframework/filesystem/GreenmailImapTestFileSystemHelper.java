@@ -17,10 +17,11 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SubjectTerm;
 
-import com.icegreen.greenmail.junit5.GreenMailExtension;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.angus.mail.imap.IMAPFolder;
+
+import com.icegreen.greenmail.junit5.GreenMailExtension;
 
 /**
  * Greenmail based mail file system helper.

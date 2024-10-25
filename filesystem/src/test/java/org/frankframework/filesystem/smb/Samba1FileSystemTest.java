@@ -1,7 +1,8 @@
 package org.frankframework.filesystem.smb;
 
-import jcifs.smb.SmbFile;
 import org.junit.jupiter.api.BeforeEach;
+
+import jcifs.smb.SmbFile;
 
 import org.frankframework.filesystem.FileSystemTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;

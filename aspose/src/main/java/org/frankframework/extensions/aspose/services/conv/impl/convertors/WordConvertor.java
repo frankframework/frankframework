@@ -24,6 +24,8 @@ import java.util.function.Supplier;
 
 import jakarta.annotation.Nullable;
 
+import org.springframework.http.MediaType;
+
 import com.aspose.words.Document;
 import com.aspose.words.HtmlLoadOptions;
 import com.aspose.words.IncorrectPasswordException;
@@ -31,8 +33,8 @@ import com.aspose.words.LoadFormat;
 import com.aspose.words.LoadOptions;
 import com.aspose.words.SaveFormat;
 import com.aspose.words.SaveOptions;
+
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.MediaType;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;

@@ -1,9 +1,10 @@
 package org.frankframework.filesystem.sftp;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;

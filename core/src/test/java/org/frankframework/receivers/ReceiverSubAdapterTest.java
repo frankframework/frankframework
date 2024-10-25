@@ -14,12 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.extern.log4j.Log4j2;
-import nl.nn.adapterframework.dispatcher.DispatcherException;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
+
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;

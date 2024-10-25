@@ -15,7 +15,6 @@
 */
 package org.frankframework.management.bus;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +23,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils;
+
+import lombok.Setter;
 
 import org.frankframework.util.SpringUtils;
 

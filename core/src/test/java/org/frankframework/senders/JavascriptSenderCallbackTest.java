@@ -8,9 +8,10 @@ import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;

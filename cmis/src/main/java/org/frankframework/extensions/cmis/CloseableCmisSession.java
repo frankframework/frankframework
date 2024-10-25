@@ -17,10 +17,11 @@ package org.frankframework.extensions.cmis;
 
 import java.util.Map;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.chemistry.opencmis.client.runtime.SessionImpl;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Subclass of CMIS {@link SessionImpl} that is closeable so it can clean up

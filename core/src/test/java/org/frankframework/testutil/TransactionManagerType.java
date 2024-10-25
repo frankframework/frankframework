@@ -10,13 +10,14 @@ import java.util.WeakHashMap;
 
 import javax.sql.DataSource;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.datasource.DataSourceFactory;

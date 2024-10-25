@@ -22,8 +22,6 @@ import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 import jakarta.servlet.http.HttpServlet;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,6 +33,9 @@ import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.SecuritySettings;

@@ -18,8 +18,9 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import com.aspose.pdf.exceptions.InvalidPasswordException;
 import org.springframework.http.MediaType;
+
+import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
