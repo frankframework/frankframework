@@ -195,7 +195,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		try {
-			qs.open();
+			qs.start();
 		} catch (Throwable t) {
 			PipeStartException pse = new PipeStartException("could not start", t);
 			pse.setPipeNameInError(getName());

@@ -40,7 +40,6 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -48,6 +47,7 @@ import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -206,9 +206,9 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			qs.setBlobSmartGet(true);
 			qs.setIncludeFieldDefinition(true);
 			qs.configure(true);
-			qs.open();
+			qs.start();
 			return qs;
-		} catch (ConfigurationException | SenderException e) {
+		} catch (ConfigurationException | LifecycleException e) {
 			throw new BusException("unable to create QuerySender", e);
 		}
 	}

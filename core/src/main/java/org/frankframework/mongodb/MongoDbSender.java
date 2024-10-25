@@ -64,6 +64,7 @@ import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -145,17 +146,17 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
 		} catch (NamingException e) {
-			throw new SenderException("cannot open MongoDB datasource ["+getDatasourceName()+"]", e);
+			throw new LifecycleException("cannot open MongoDB datasource ["+getDatasourceName()+"]", e);
 		}
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 		try {
 			super.stop();
 		} finally {

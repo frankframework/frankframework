@@ -55,7 +55,7 @@ public class ServiceJob extends BaseJob {
 			localSender.setName("ServiceJob");
 			localSender.configure();
 
-			localSender.open();
+			localSender.start();
 			try(PipeLineSession session = new PipeLineSession()) {
 				localSender.sendMessageOrThrow(message, session).close();
 			} finally {

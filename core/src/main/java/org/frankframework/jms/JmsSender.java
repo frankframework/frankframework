@@ -48,6 +48,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
@@ -152,12 +153,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 	 * Starts the sender
 	 */
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			super.start();
-		}
-		catch (Exception e) {
-			throw new SenderException(e);
+		} catch (Exception e) {
+			throw new LifecycleException(e);
 		}
 	}
 

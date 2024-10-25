@@ -26,7 +26,7 @@ public class DummySender implements ISender {
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 		closed = false;
 	}
 

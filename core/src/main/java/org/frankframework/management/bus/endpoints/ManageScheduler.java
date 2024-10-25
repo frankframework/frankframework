@@ -33,10 +33,10 @@ import org.quartz.Trigger;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -208,7 +208,7 @@ public class ManageScheduler extends BusEndpointBase {
 				qs.configure();
 
 				try {
-					qs.open();
+					qs.start();
 					try (Connection conn = qs.getConnection()) {
 
 						String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
@@ -219,7 +219,7 @@ public class ManageScheduler extends BusEndpointBase {
 							success = stmt.executeUpdate() > 0;
 						}
 					}
-				} catch (SenderException | SQLException | JdbcException e) {
+				} catch (LifecycleException | SQLException | JdbcException e) {
 					throw new BusException("error removing job from database", e);
 				} finally {
 					qs.stop();

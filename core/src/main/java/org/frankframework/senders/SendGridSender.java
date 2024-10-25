@@ -46,6 +46,7 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.HttpSession;
 import org.frankframework.http.HttpSessionBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -70,20 +71,20 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 		httpSession.start();
 
 		CloseableHttpClient httpClient = httpSession.getHttpClient();
 		if(httpClient == null)
-			throw new SenderException("no HttpClient found, did it initialize properly?");
+			throw new LifecycleException("no HttpClient found, did it initialize properly?");
 
 		Client client = new Client(httpClient);
 		sendGrid = new SendGrid(getCredentialFactory().getPassword(), client);
 	}
 
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 		super.stop();
 		httpSession.stop();
 	}

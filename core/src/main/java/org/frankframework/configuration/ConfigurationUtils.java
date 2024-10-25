@@ -51,11 +51,11 @@ import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.core.IbisTransaction;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.LogUtil;
@@ -161,14 +161,14 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try(Connection conn = qs.getConnection()) {
 				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					return extractConfigurationsFromResultSet(stmt);
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.stop();
@@ -194,7 +194,7 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try(Connection conn = qs.getConnection()) {
 				if (version == null) { // Return active config
 					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
@@ -212,7 +212,7 @@ public class ConfigurationUtils {
 					}
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.stop();
@@ -306,7 +306,7 @@ public class ConfigurationUtils {
 		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
 		try {
-			qs.open();
+			qs.start();
 			conn = qs.getConnection();
 			int updated = 0;
 
@@ -342,7 +342,7 @@ public class ConfigurationUtils {
 
 				return stmt.executeUpdate() > 0;
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			itx.setRollbackOnly();
 			throw new ConfigurationException(e);
 		} finally {
@@ -363,7 +363,7 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				String query = "DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -372,7 +372,7 @@ public class ConfigurationUtils {
 					stmt.execute();
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.stop();
@@ -382,7 +382,7 @@ public class ConfigurationUtils {
 	/**
 	 * Set the all ACTIVECONFIG to false and specified version to true
 	 */
-	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, String dataSourceName) throws ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -397,7 +397,7 @@ public class ConfigurationUtils {
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
 
 		try {
-			qs.open();
+			qs.start();
 			conn = qs.getConnection();
 			int updated;
 
@@ -434,7 +434,7 @@ public class ConfigurationUtils {
 	/**
 	 * Toggle AUTORELOAD
 	 */
-	public static boolean autoReloadConfig(ApplicationContext applicationContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean autoReloadConfig(ApplicationContext applicationContext, String name, String version, boolean booleanValue, String dataSourceName) throws ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -446,7 +446,7 @@ public class ConfigurationUtils {
 		qs.configure();
 
 		try {
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
@@ -478,7 +478,7 @@ public class ConfigurationUtils {
 		return retrieveAllConfigNames(applicationContext, CONFIG_AUTO_FS_CLASSLOADER, CONFIG_AUTO_DB_CLASSLOADER);
 	}
 
-	//protected because of jUnit tests
+	// protected because of jUnit tests
 	protected static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext, boolean directoryConfigurations, boolean databaseConfigurations) {
 		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNameItems = new LinkedHashMap<>();
 
@@ -578,7 +578,7 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
 					log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
@@ -596,7 +596,7 @@ public class ConfigurationUtils {
 					return Collections.unmodifiableList(configurationNames);
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.stop();

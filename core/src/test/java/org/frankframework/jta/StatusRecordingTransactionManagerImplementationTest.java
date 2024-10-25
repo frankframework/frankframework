@@ -141,7 +141,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		fs1.setName("fs1");
 		fs1.setDatasourceName(datasourceName);
 		fs1.configure();
-		fs1.open();
+		fs1.start();
 		try {
 			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),null);
 		} catch (Exception e) {
@@ -174,8 +174,8 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 			fs2.setDatasourceName(SECONDARY_PRODUCT);
 			fs2.configure();
 
-			fs1.open();
-			fs2.open();
+			fs1.start();
+			fs2.start();
 
 			TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
 			TransactionStatus txStatus = txManager.getTransaction(txDef);

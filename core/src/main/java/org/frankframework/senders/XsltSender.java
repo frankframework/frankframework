@@ -40,6 +40,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.documentbuilder.xml.XmlTap;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
@@ -136,20 +137,20 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 
 		if (transformerPool!=null) {
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
-				throw new SenderException("cannot start TransformerPool", e);
+				throw new LifecycleException("cannot start TransformerPool", e);
 			}
 		}
 	}
 
 	@Override
-	public void stop() throws SenderException {
+	public void stop() {
 		super.stop();
 
 		if (transformerPool!=null) {
@@ -163,11 +164,9 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		}
 	}
 
-
 	protected ContentHandler filterInput(ContentHandler input, PipeLineSession session) {
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
-
 
 	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();

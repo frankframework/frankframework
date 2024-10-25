@@ -6,11 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import jakarta.annotation.Nonnull;
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -39,7 +41,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.addParameter(NumberParameterBuilder.create("y", 4));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertEquals("7", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
@@ -61,7 +63,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.addSender(log);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
 		assertEquals("true", sender.sendMessageOrThrow(dummyInput,session).asString());
@@ -80,7 +82,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.addSender(promise);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message senderResult = sender.sendMessageOrThrow(dummyInput, session);
 		assertTrue(Message.isEmpty(senderResult));

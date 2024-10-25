@@ -86,10 +86,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -241,7 +241,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			CredentialFactory cf = getCredentials();
 
 			try {
-				msalClientAdapter.open();
+				msalClientAdapter.start();
 
 				client = ConfidentialClientApplication.builder(
 						cf.getUsername(),
@@ -250,7 +250,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 					.httpClient(msalClientAdapter)
 					.executorService(executor)
 					.build();
-			} catch (MalformedURLException | SenderException e) {
+			} catch (LifecycleException | MalformedURLException e) {
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
