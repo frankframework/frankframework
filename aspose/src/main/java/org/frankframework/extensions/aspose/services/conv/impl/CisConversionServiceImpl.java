@@ -17,6 +17,10 @@ package org.frankframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
+import lombok.extern.log4j.Log4j2;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionException;
@@ -24,10 +28,6 @@ import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 /**

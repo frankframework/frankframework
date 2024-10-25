@@ -16,11 +16,11 @@
 
 package net.wedjaa.ansible.vault.crypto.decoders.implementation;
 
-import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
-import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
-
 import java.io.IOException;
 import java.io.OutputStream;
+
+import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
+import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 
 public class CypherAES implements CypherInterface
 {

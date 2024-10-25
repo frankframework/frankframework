@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.ClassLoaderUtils;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.util.ClassLoaderUtils;
 
 @Log4j2
 public class PropertyUtil {

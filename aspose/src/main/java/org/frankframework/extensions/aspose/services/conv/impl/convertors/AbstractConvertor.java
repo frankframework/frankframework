@@ -25,6 +25,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.aspose.pdf.Document;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.http.MediaType;
+
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
@@ -32,11 +36,6 @@ import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
-import org.springframework.http.MediaType;
-
-import com.aspose.pdf.Document;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 abstract class AbstractConvertor implements Convertor {

@@ -2,17 +2,18 @@ package org.frankframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
+
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.regions.Region;
+
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.LogUtil;
-import software.amazon.awssdk.regions.Region;
 
 class AmazonSqsFactoryTest {
 	protected Logger log = LogUtil.getLogger(this);

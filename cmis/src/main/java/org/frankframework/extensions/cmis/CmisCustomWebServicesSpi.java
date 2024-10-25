@@ -15,10 +15,9 @@
  */
 package org.frankframework.extensions.cmis;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
 import org.apache.chemistry.opencmis.client.bindings.spi.webservices.CmisWebServicesSpi;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class CmisCustomWebServicesSpi extends CmisWebServicesSpi {

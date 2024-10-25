@@ -19,17 +19,18 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 import jakarta.annotation.Nonnull;
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.SaveFormat;
 import com.aspose.pdf.XpsLoadOptions;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
+import org.springframework.http.MediaType;
 
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 

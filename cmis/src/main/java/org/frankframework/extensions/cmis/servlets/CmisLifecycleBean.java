@@ -22,13 +22,14 @@ import jakarta.servlet.ServletContext;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.web.context.ServletContextAware;
+
 import org.frankframework.extensions.cmis.server.RepositoryConnectorFactory;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.context.ServletContextAware;
 
 /**
  * Autowires the CMIS RepositoryConnectorFactory

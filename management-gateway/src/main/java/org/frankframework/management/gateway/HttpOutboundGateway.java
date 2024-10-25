@@ -15,6 +15,9 @@
 */
 package org.frankframework.management.gateway;
 
+import jakarta.annotation.Nonnull;
+
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
-
-import jakarta.annotation.Nonnull;
-import lombok.Setter;
 
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.util.SpringUtils;

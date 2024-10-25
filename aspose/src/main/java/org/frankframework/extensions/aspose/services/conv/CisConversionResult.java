@@ -21,11 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.MediaType;
+
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.util.XmlBuilder;
-import org.springframework.http.MediaType;
 
 /**
  * @author

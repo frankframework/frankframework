@@ -18,8 +18,10 @@ package org.frankframework.extensions.fxf;
 import java.io.File;
 
 import jakarta.jms.Message;
+
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;

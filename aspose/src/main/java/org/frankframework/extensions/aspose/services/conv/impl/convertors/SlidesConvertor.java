@@ -21,16 +21,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.springframework.http.MediaType;
-
 import com.aspose.slides.InvalidPasswordException;
 import com.aspose.slides.LoadOptions;
 import com.aspose.slides.Presentation;
 import com.aspose.slides.SaveFormat;
-
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.MediaType;
+
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 

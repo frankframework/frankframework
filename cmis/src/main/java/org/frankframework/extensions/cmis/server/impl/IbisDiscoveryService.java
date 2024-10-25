@@ -26,7 +26,6 @@ import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.w3c.dom.Element;
 
 import org.frankframework.core.PipeLineSession;
-
 import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;

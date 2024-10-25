@@ -9,10 +9,9 @@ import static org.mockito.Mockito.spy;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 

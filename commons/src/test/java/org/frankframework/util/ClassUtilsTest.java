@@ -9,10 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
 
-import org.junit.jupiter.api.Test;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.INamedObject;
 
