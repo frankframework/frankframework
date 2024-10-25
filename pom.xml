@@ -24,7 +24,7 @@
 		<spring.version>6.1.14</spring.version>
 		<spring-security.version>6.3.4</spring-security.version>
 		<spring-integration.version>6.3.5</spring-integration.version>
-		<spring.boot.version>3.3.4</spring.boot.version>
+		<spring.boot.version>3.3.5</spring.boot.version>
 		<tomcat.version>10.1.31</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
