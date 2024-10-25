@@ -90,7 +90,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;

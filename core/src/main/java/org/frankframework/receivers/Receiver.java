@@ -202,7 +202,7 @@ import org.frankframework.util.XmlUtils;
  * requests.
  *
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

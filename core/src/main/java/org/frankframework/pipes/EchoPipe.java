@@ -28,7 +28,7 @@ import org.frankframework.stream.Message;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.TRANSLATOR)
 public class EchoPipe extends FixedForwardPipe {
 

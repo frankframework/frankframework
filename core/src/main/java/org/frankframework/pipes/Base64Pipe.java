@@ -38,7 +38,7 @@ import org.frankframework.stream.Message;
  * @author  Niels Meijer
  * @version 2.0
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.TRANSLATOR)
 public class Base64Pipe extends FixedForwardPipe {
 

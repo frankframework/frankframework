@@ -70,7 +70,7 @@ import org.xml.sax.SAXException;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
 	public static final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming

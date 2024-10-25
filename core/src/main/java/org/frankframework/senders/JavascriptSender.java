@@ -62,7 +62,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @since 7.4
  */
-@Category("Advanced")
+@Category(Category.Categories.ADVANCED)
 public class JavascriptSender extends SenderSeries {
 
 	private @Getter String jsFileName;

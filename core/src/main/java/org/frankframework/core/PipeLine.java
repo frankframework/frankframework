@@ -96,7 +96,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author  Johan Verrips
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;

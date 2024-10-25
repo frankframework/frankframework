@@ -218,7 +218,7 @@ import org.frankframework.util.TransformerPool;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.TRANSLATOR)
 @Forward(name = "filenotfound", description = "the configured file was not found (when this forward isn't specified an exception will be thrown)")
 public class FixedResultPipe extends FixedForwardPipe {

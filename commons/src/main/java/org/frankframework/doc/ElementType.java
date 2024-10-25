@@ -28,18 +28,26 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ElementType {
 
-	@LabelValue ElementTypes value();
+	ElementTypes value();
 
 	enum ElementTypes {
-		UNKNOWN,
+		@EnumLabel("Listener")
 		LISTENER,
+		@EnumLabel("Endpoint")
 		ENDPOINT,
+		@EnumLabel("Validator")
 		VALIDATOR,
+		@EnumLabel("Wrapper")
 		WRAPPER,
+		@EnumLabel("Router")
 		ROUTER,
+		@EnumLabel("Iterator")
 		ITERATOR,
+		@EnumLabel("Session")
 		SESSION,
+		@EnumLabel("Errorhandling")
 		ERRORHANDLING,
+		@EnumLabel("Translator")
 		TRANSLATOR
 	}
 }

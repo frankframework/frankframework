@@ -37,7 +37,7 @@ import org.frankframework.util.AppConstants;
  *
  * {@inheritDoc}
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.ENDPOINT)
 public class SenderPipe extends MessageSendingPipe {
 

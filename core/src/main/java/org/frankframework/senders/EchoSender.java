@@ -29,7 +29,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 public class EchoSender extends SenderWithParametersBase {
 
 	private boolean synchronous=true;

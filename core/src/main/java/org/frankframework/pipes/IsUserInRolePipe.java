@@ -49,7 +49,7 @@ import lombok.Getter;
  */
 @Forward(name = "notInRole", description = "user does not have the required role")
 @Forward(name = "*", description = "the first matched role which the user has")
-@Category("Advanced")
+@Category(Category.Categories.ADVANCED)
 @ElementType(ElementTypes.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {
 

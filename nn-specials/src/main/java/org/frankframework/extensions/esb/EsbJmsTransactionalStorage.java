@@ -67,7 +67,7 @@ import org.frankframework.util.UUIDUtil;
  *
  * @author Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Categories.NN_SPECIAL)
 public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;

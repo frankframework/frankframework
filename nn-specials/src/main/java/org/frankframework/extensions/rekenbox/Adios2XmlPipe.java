@@ -69,7 +69,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  */
 @Forward(name = "noConversionForwardName", description = "when successful, but no conversion took place")
-@Category("NN-Special")
+@Category(Category.Categories.NN_SPECIAL)
 public class Adios2XmlPipe extends FixedForwardPipe {
 
 	private Hashtable rubriek2nummer;

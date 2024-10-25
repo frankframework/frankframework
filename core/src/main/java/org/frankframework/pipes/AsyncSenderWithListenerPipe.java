@@ -52,7 +52,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  * 
  * {@inheritDoc}
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.ENDPOINT)
 public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	private @Getter ICorrelatedPullingListener<M> listener = null;

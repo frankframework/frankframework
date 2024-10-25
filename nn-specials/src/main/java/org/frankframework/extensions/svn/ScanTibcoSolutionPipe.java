@@ -49,7 +49,7 @@ import org.frankframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
-@Category("NN-Special")
+@Category(Category.Categories.NN_SPECIAL)
 public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 
 	private String url;

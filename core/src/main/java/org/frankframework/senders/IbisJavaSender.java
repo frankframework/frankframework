@@ -65,7 +65,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @since   4.4.5
  */
 @Forward(name = "*", description = "Exit code")
-@Category("Advanced")
+@Category(Category.Categories.ADVANCED)
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private final @Getter String domain = "JVM";

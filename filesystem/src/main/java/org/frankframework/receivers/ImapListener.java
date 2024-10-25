@@ -23,7 +23,7 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.ImapFileSystem;
 import org.frankframework.filesystem.MailListener;
 
-@Category("Advanced")
+@Category(Category.Categories.ADVANCED)
 public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSystem> {
 
 	@Override

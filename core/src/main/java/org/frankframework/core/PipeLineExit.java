@@ -35,7 +35,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  * @author Johan Verrips
  * @author Niels Meijer
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class PipeLineExit implements IForwardTarget {
 

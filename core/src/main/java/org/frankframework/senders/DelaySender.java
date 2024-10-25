@@ -30,7 +30,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category("Advanced")
+@Category(Category.Categories.ADVANCED)
 public class DelaySender extends SenderBase {
 
 	private long delayTime=5000;

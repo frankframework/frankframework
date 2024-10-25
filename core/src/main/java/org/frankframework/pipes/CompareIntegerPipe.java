@@ -42,7 +42,7 @@ import org.frankframework.stream.Message;
 @Forward(name = "lessthan", description = "operand1 &lt; operand2")
 @Forward(name = "greaterthan", description = "operand1 &gt; operand2")
 @Forward(name = "equals", description = "operand1 = operand2")
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.ROUTER)
 public class CompareIntegerPipe extends AbstractPipe {
 

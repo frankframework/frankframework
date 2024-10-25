@@ -43,7 +43,7 @@ import org.frankframework.soap.WsdlGeneratorUtils;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-@Category("NN-Special")
+@Category(Category.Categories.NN_SPECIAL)
 public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExtension<EsbSoapWsdlGeneratorContext> {
 
 	private @Getter Direction direction = null;

@@ -45,7 +45,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @ElementType(ElementTypes.TRANSLATOR)
 public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 

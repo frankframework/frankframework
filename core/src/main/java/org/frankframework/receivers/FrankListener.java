@@ -48,7 +48,7 @@ import org.frankframework.stream.Message;
  * <br/>
  * See the {@link org.frankframework.senders.FrankSender} documentation for more information.
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 @Log4j2
 public class FrankListener implements IPushingListener<Message>, HasPhysicalDestination, ServiceClient {
 

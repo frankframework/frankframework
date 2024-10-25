@@ -27,7 +27,7 @@ import org.frankframework.stream.Message;
  *
  * @author L180564 - Johan Verrips
  */
-@Category("Basic")
+@Category(Category.Categories.BASIC)
 public class DelayPipe extends FixedForwardPipe {
 
 	private long delayTime=5000;
