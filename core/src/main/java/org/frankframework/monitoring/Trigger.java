@@ -240,8 +240,12 @@ public class Trigger implements ITrigger {
 		setSourceFiltering(SourceFiltering.NONE);
 	}
 
+	public boolean isFilterOnLowerLevelObjects() {
+		return sourceFiltering == SourceFiltering.SOURCE;
+	}
+
 	@Override
-	public void registerAdapterFilter(AdapterFilter af) {
+	public void addAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
 		if(af.isFilteringToLowerLevelObjects()) {
 			setSourceFiltering(SourceFiltering.SOURCE);
@@ -250,9 +254,6 @@ public class Trigger implements ITrigger {
 		}
 	}
 
-	public boolean isFilterOnLowerLevelObjects() {
-		return sourceFiltering == SourceFiltering.SOURCE;
-	}
 	public boolean isFilterOnAdapters() {
 		return sourceFiltering == SourceFiltering.ADAPTER;
 	}

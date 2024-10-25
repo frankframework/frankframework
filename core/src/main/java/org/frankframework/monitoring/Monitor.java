@@ -222,7 +222,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 		}
 	}
 
-	public void registerTrigger(ITrigger trigger) {
+	public void addTrigger(ITrigger trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
