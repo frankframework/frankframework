@@ -25,13 +25,14 @@ import java.nio.file.Files;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
-import org.springframework.context.ApplicationContext;
 
 /**
  * File listener for the Test Tool.

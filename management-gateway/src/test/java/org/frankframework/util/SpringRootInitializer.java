@@ -1,13 +1,14 @@
 package org.frankframework.util;
 
-import org.frankframework.management.bus.InboundGatewayFactory;
-import org.frankframework.management.bus.OutboundGatewayFactory;
-import org.frankframework.management.gateway.HazelcastInboundGateway;
-import org.frankframework.management.gateway.HazelcastOutboundGateway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.MessageChannel;
+
+import org.frankframework.management.bus.InboundGatewayFactory;
+import org.frankframework.management.bus.OutboundGatewayFactory;
+import org.frankframework.management.gateway.HazelcastInboundGateway;
+import org.frankframework.management.gateway.HazelcastOutboundGateway;
 
 /**
  * A minimal Spring ApplicationContext which contains no beans and no configuration.

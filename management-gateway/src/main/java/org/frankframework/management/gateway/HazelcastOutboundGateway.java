@@ -21,22 +21,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.topic.ITopic;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.gateway.events.ClusterMemberEvent;
-import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -47,6 +42,12 @@ import org.springframework.messaging.core.GenericMessagingTemplate;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
+import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {

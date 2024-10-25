@@ -15,11 +15,12 @@
 */
 package org.frankframework.management.gateway.events;
 
-import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 
-import jakarta.annotation.Nonnull;
-import lombok.Getter;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 
 public class ClusterMemberEvent extends AbstractGatewayEvent {
 

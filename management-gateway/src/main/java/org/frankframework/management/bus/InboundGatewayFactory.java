@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,8 +34,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.IntegrationPattern;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.util.ClassUtils;
-
-import lombok.Setter;
 
 import org.frankframework.util.SpringUtils;
 

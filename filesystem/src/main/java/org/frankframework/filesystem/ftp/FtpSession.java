@@ -29,6 +29,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.DocumentedEnum;
@@ -41,7 +43,6 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Base class for FTP(s) connections

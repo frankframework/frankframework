@@ -27,10 +27,13 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Lombok;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.INodeBuilder;
@@ -42,7 +45,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
-import org.xml.sax.SAXException;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);

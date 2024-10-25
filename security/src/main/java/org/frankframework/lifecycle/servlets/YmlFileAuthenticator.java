@@ -22,8 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StreamUtil;
+import lombok.Setter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,7 +30,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.yaml.snakeyaml.Yaml;
 
-import lombok.Setter;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
 
 /**
  * users [array] Set localUsers who can log in on the Frank!

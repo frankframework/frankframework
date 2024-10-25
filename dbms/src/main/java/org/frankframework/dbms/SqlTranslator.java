@@ -25,11 +25,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
-
-import lombok.extern.log4j.Log4j2;
 
 
 /**

@@ -33,11 +33,14 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IPipe;
@@ -50,7 +53,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FilePipe;
 import org.frankframework.senders.FileSender;
 import org.frankframework.stream.Message;
-import org.springframework.context.ApplicationContext;
 
 
 /**

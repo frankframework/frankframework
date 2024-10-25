@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.management.bus.message.JsonMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.management.bus.message.JsonMessage;
 
 public class BusMessageUtilsTest {
 	private static JsonMessage TEST_MESSAGE;

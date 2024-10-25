@@ -47,8 +47,8 @@ import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
-
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IFileSystemTestHelper;

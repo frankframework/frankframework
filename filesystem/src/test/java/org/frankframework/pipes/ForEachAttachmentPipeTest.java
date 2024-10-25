@@ -6,8 +6,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.filesystem.ForEachAttachmentPipe;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.filesystem.ForEachAttachmentPipe;
 
 public class ForEachAttachmentPipeTest {
 

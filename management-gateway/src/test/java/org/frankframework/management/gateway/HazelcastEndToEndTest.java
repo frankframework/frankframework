@@ -9,9 +9,9 @@ import static org.mockito.Mockito.spy;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.awaitility.Awaitility;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.util.SpringRootInitializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.util.SpringRootInitializer;
 
 @SpringJUnitConfig(classes = {SpringRootInitializer.class})
 @DirtiesContext

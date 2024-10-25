@@ -6,9 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.jupiter.api.Test;
-
 import com.tibco.tibjms.TibjmsSSL;
+import org.junit.jupiter.api.Test;
 
 public class TibcoJndiPropertiesTest {
 	private ClassLoader classLoader = this.getClass().getClassLoader();

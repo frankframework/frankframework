@@ -15,10 +15,10 @@
 */
 package org.frankframework.filesystem.smb;
 
-import com.hierynomus.msfscc.fileinformation.FileAllInformation;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;

@@ -29,13 +29,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import jakarta.annotation.Nullable;
-import lombok.Getter;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;

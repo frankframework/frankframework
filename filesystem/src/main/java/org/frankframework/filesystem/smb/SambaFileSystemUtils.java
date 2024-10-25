@@ -28,13 +28,12 @@ import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
+import com.hierynomus.smbj.auth.GSSAuthenticationContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
-
-import com.hierynomus.smbj.auth.GSSAuthenticationContext;
 
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;

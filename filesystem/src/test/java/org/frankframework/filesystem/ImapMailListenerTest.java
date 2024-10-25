@@ -5,12 +5,11 @@ import java.util.HashMap;
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, GreenmailImapTestFileSystem> {
 	static final String INPUT_FOLDER = "InputFolder";
