@@ -25,13 +25,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.xml.transform.Transformer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.Data;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -89,13 +89,17 @@ public class TestPipeline extends BusEndpointBase {
 		return processMessage(adapter, payload, threadContext, expectsReply);
 	}
 
-	//Does not support async requests because receiver requests are synchronous
+	// Does not support async requests because receiver requests are synchronous
 	private BinaryResponseMessage processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
-		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			if(threadContext != null) {
 				pls.putAll(threadContext);
+			}
+
+			String correlationId = null;
+			if (!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
+				correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 			}
 
 			Date now = new Date();
@@ -107,7 +111,7 @@ public class TestPipeline extends BusEndpointBase {
 				PipeLineResult plr = adapter.processMessage(messageId, new nl.nn.adapterframework.stream.Message(payload), pls);
 
 				if(!expectsReply) {
-					return null; //Abort here, we do not need a reply.
+					return null; // Abort here, we do not need a reply.
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);
