@@ -170,7 +170,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public XmlBuilder toXml() {
-		XmlBuilder monitor=new XmlBuilder("monitor");
+		XmlBuilder monitor=new XmlBuilder("Monitor");
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType().name());
 		monitor.addAttribute("destinations",getDestinationsAsString());
@@ -222,7 +222,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 		}
 	}
 
-	public void addTrigger(ITrigger trigger) {
+	public void registerTrigger(ITrigger trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
