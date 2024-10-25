@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.ParameterException;
@@ -16,7 +18,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
-import org.junit.jupiter.api.Test;
 
 public class DateParameterTest {
 

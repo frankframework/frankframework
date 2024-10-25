@@ -6,16 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.frankframework.configuration.ApplicationWarnings;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ConfiguredTestBase;
-import org.frankframework.core.PipeForward;
-import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
+
+import org.frankframework.configuration.ApplicationWarnings;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ConfiguredTestBase;
+import org.frankframework.core.PipeForward;
+import org.frankframework.testutil.TestAppender;
 
 class ForwardHandlingTest extends ConfiguredTestBase {
 

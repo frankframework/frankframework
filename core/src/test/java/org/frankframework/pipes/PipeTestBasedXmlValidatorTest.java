@@ -4,8 +4,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.core.PipeForward;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.PipeForward;
 
 public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {
 	public static String BASE_DIR_VALIDATION="/Validation";

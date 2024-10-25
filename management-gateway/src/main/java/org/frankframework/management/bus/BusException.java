@@ -17,9 +17,10 @@ package org.frankframework.management.bus;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IbisException;
 
 import lombok.Getter;
+
+import org.frankframework.core.IbisException;
 
 /**
  * Serialized and send as an ExceptionMessage over the Spring Bus

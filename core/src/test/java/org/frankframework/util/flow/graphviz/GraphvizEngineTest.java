@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
@@ -17,9 +21,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.flow.FlowGenerationException;
-import org.junit.jupiter.api.MethodOrderer.MethodName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(MethodName.class)
 public class GraphvizEngineTest {

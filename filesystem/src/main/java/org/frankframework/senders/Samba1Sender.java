@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import jcifs.smb.SmbFile;
+
 import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.smb.Samba1FileSystem;
 import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;

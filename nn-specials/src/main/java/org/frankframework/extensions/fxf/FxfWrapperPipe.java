@@ -20,8 +20,10 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;

@@ -27,12 +27,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.StringResolver;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.StringResolver;
 
 @Log4j2
 public class AuthorityMapper implements GrantedAuthoritiesMapper {

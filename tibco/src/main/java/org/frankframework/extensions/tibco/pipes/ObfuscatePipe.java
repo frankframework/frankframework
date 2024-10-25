@@ -17,8 +17,9 @@ package org.frankframework.extensions.tibco.pipes;
 
 import java.io.IOException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;

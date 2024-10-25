@@ -3,9 +3,10 @@ package org.frankframework.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.custommonkey.xmlunit.XMLUnit;
-import org.frankframework.testutil.MatchUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.testutil.MatchUtils;
 
 public class XmlBuilderTest {
 	private final String UNICODE_CHARACTERS = " aâΔع你好ಡತ";

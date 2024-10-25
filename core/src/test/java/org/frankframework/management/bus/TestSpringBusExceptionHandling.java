@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.frankframework.core.SenderException;
-import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
-import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.MessageHandlingException;
@@ -15,6 +12,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import org.frankframework.core.SenderException;
+import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
+import org.frankframework.testutil.SpringRootInitializer;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestSpringBusExceptionHandling extends BusTestBase {

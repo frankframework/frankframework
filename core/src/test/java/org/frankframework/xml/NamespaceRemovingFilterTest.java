@@ -19,8 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringWriter;
 
-import org.frankframework.util.XmlUtils;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.util.XmlUtils;
 
 public class NamespaceRemovingFilterTest {
 

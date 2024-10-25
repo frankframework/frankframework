@@ -8,11 +8,11 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.xml.sax.Attributes;
 
 import org.frankframework.documentbuilder.json.JsonWriter;
 import org.frankframework.xml.XmlWriter;
-import org.springframework.http.MediaType;
-import org.xml.sax.Attributes;
 
 public class MessageBuilderTest {
 

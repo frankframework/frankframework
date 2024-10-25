@@ -7,9 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class CredentialFactoryTest {
 

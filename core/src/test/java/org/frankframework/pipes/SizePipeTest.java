@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
-import org.frankframework.core.PipeRunResult;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.PipeRunResult;
 
 /**
 * SizePipe Tester.

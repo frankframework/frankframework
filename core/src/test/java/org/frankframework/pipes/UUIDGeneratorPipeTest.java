@@ -3,10 +3,11 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.UUIDGeneratorPipe.Type;
-import org.junit.jupiter.api.Test;
 
 public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 

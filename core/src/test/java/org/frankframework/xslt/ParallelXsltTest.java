@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.frankframework.testutil.TestAppender;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -23,6 +21,7 @@ import org.frankframework.senders.ParallelSenders;
 import org.frankframework.senders.SenderSeries;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.TransformerPool.OutputType;
 

@@ -5,11 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URL;
 import java.util.Properties;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
-import org.junit.jupiter.api.Test;
 
 public class ElementPropertyResolverTest {
 

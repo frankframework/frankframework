@@ -1,5 +1,8 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.filesystem.FileSystemActor;
 import org.frankframework.filesystem.FileSystemPipeTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
@@ -9,8 +12,6 @@ import org.frankframework.pipes.Samba2Pipe;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, Samba2FileSystem> {
 

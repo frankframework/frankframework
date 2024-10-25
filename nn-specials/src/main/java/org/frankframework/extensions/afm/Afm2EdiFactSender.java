@@ -19,13 +19,14 @@ import java.text.DecimalFormat;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;

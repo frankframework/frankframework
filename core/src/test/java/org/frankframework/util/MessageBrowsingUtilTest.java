@@ -22,11 +22,11 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLineResult;

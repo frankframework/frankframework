@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.UUIDUtil;

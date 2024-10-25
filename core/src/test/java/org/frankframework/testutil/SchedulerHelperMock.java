@@ -1,9 +1,10 @@
 package org.frankframework.testutil;
 
-import org.frankframework.scheduler.SchedulerHelper;
 import org.mockito.Mockito;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+
+import org.frankframework.scheduler.SchedulerHelper;
 
 public class SchedulerHelperMock extends SchedulerHelper {
 

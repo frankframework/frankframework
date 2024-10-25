@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.testutil.TestConfiguration;
 
 @Log4j2

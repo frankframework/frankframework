@@ -2,9 +2,8 @@ package org.frankframework.extensions.cmis;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Test;
-
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.lifecycle.LifecycleException;

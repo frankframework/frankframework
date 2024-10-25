@@ -17,11 +17,6 @@ package org.frankframework.extensions.ibm;
 
 import java.io.IOException;
 
-import org.frankframework.core.SenderException;
-import org.frankframework.jms.JmsSender;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
-
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageProducer;
@@ -30,6 +25,11 @@ import jakarta.jms.QueueSession;
 import jakarta.jms.Session;
 import jakarta.jms.Topic;
 import jakarta.jms.TopicSession;
+
+import org.frankframework.core.SenderException;
+import org.frankframework.jms.JmsSender;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 /**
  * JMS sender which will call IBM WebSphere MQ specific

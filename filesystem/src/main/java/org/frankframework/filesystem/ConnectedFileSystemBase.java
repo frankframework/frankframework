@@ -15,13 +15,15 @@
  */
 package org.frankframework.filesystem;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.util.ClassUtils;
 
 /**

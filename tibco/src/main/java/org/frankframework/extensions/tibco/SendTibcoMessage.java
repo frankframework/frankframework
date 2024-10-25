@@ -20,10 +20,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
-import com.tibco.tibjms.admin.QueueInfo;
-import com.tibco.tibjms.admin.TibjmsAdmin;
-import com.tibco.tibjms.admin.TibjmsAdminException;
-
 import jakarta.jms.BytesMessage;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
@@ -34,7 +30,13 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
+
 import org.apache.commons.lang3.StringUtils;
+
+import com.tibco.tibjms.admin.QueueInfo;
+import com.tibco.tibjms.admin.TibjmsAdmin;
+import com.tibco.tibjms.admin.TibjmsAdminException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;

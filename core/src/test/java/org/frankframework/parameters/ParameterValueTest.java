@@ -1,14 +1,5 @@
 package org.frankframework.parameters;
 
-import org.frankframework.configuration.ConfigurationException;
-
-import org.junit.jupiter.api.Test;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import static org.frankframework.parameters.AbstractParameter.TYPE_DATETIME_PATTERN;
 import static org.frankframework.parameters.AbstractParameter.TYPE_DATE_PATTERN;
 import static org.frankframework.parameters.AbstractParameter.TYPE_TIMESTAMP_PATTERN;
@@ -16,6 +7,15 @@ import static org.frankframework.parameters.AbstractParameter.TYPE_TIME_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
 
 public class ParameterValueTest {
 

@@ -7,10 +7,11 @@ import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 
-import org.junit.jupiter.api.Test;
-
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPException;
+
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.xml.StaxParserFactory;
 
 /**
