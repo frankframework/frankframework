@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Target(TYPE)
-@Label(name = "Element Type")
+@Label(name = "EIP")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ElementType {
