@@ -18,7 +18,7 @@
         <emptyLine />
         <package name="jakarta" withSubpackages="true" static="false" />
         <emptyLine />
-        <package name="org" withSubpackages="false" static="false" />
+        <package name="org" withSubpackages="true" static="false" />
         <emptyLine />
         <package name="com" withSubpackages="true" static="false" />
         <package name="" withSubpackages="true" static="false" />
