@@ -43,7 +43,7 @@ import org.leadpony.justify.api.ProblemHandler;
  *
  * @author Gerrit van Brakel
  */
-@Category(Category.Categories.BASIC)
+@Category(Category.Type.BASIC)
 public class JsonValidator extends ValidatorBase {
 
 	private @Getter String schema;

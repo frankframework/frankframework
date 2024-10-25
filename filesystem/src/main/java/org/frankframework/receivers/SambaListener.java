@@ -17,7 +17,7 @@ package org.frankframework.receivers;
 
 import org.frankframework.doc.Category;
 
-@Category(Category.Categories.ADVANCED)
+@Category(Category.Type.ADVANCED)
 public class SambaListener extends Samba2Listener {
 
 }

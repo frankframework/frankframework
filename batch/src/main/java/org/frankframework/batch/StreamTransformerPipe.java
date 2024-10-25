@@ -37,8 +37,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
@@ -54,7 +53,7 @@ import org.frankframework.util.StreamUtil;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey = "originalBlock";

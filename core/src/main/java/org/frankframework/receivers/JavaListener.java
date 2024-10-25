@@ -62,7 +62,7 @@ import org.frankframework.util.LogUtil;
  *
  * @author  Gerrit van Brakel
  */
-@Category(Category.Categories.BASIC)
+@Category(Category.Type.BASIC)
 public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter String domain = "JVM";

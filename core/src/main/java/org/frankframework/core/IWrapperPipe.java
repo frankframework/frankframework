@@ -15,19 +15,17 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Optional;
 
 /**
  * Marker interface for Wrappers
  * @author Gerrit van Brakel
  */
-@FrankDocGroup(FrankDocGroupValue.PIPE)
-@FrankDocGroup(FrankDocGroupValue.WRAPPER)
-@ElementType(ElementTypes.WRAPPER)
+@Component(Component.Type.PIPE)
+@Component(Component.Type.WRAPPER)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.WRAPPER)
 public interface IWrapperPipe extends IPipe {
 
 	enum Direction {WRAP, UNWRAP}

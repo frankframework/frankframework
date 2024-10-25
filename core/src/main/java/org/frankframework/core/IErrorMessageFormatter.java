@@ -15,8 +15,7 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 import org.frankframework.stream.Message;
 
 /**
@@ -26,7 +25,7 @@ import org.frankframework.stream.Message;
  *
  * @author Johan Verrips
  */
-@FrankDocGroup(FrankDocGroupValue.ERROR_MESSAGE_FORMATTER)
+@Component(Component.Type.ERROR_MESSAGE_FORMATTER)
 public interface IErrorMessageFormatter {
 
 	Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

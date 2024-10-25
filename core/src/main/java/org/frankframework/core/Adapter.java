@@ -35,6 +35,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+
+import org.frankframework.doc.Component;
+
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
@@ -44,8 +47,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -90,8 +91,8 @@ import org.frankframework.util.StringUtil;
  *
  * @author Johan Verrips
  */
-@Category(Category.Categories.BASIC)
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Category(Category.Type.BASIC)
+@Component(Component.Type.OTHER)
 public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 

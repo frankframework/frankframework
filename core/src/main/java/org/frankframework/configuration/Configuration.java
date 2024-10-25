@@ -27,9 +27,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
+import org.frankframework.doc.Component;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -75,7 +73,7 @@ import org.frankframework.util.RunState;
  *
  * @author Johan Verrips
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Component(Component.Type.OTHER)
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");

@@ -21,6 +21,6 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FrankDocGroups {
-	FrankDocGroup[] value();
+public @interface Components {
+	Component[] value();
 }

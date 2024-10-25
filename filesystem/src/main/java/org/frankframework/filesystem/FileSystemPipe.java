@@ -29,8 +29,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -58,7 +57,7 @@ import org.frankframework.util.SpringUtils;
 @Forward(name = "folderNotFound", description = "the folder does not exist")
 @Forward(name = "fileAlreadyExists", description = "a file that should have been created as new already exists, or if a file already exists when it should have been created as folder")
 @Forward(name = "folderAlreadyExists", description = "a folder is to be created that already exists.")
-@ElementType(ElementTypes.ENDPOINT)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
 
 	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();

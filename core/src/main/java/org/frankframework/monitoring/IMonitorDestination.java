@@ -17,8 +17,7 @@ package org.frankframework.monitoring;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.XmlBuilder;
 
@@ -28,7 +27,7 @@ import org.frankframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@FrankDocGroup(FrankDocGroupValue.MONITORING)
+@Component(Component.Type.MONITORING)
 public interface IMonitorDestination extends INamedObject {
 
 	void configure() throws ConfigurationException;

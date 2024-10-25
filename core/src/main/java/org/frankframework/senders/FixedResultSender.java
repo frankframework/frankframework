@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category(Category.Categories.BASIC)
+@Category(Category.Type.BASIC)
 public class FixedResultSender extends SenderWithParametersBase {
 
 	private @Getter String filename;

@@ -17,13 +17,13 @@ package org.frankframework.batch;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+
+import org.frankframework.doc.Component;
 
 /**
  * @author John Dekker
  */
-@FrankDocGroup(FrankDocGroupValue.BATCH)
+@Component(Component.Type.BATCH)
 public class OutputfieldsPart {
 
 	private @Getter @Setter String value;

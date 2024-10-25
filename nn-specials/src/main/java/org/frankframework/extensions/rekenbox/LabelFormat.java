@@ -71,7 +71,7 @@ import org.frankframework.util.XmlUtils;
  * </p>
  * @author Gerrit van Brakel
  */
-@Category(Category.Categories.NN_SPECIAL)
+@Category(Category.Type.NN_SPECIAL)
 public class LabelFormat extends FixedForwardPipe {
 
 	private String direction=null;

@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.doc.Component;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -32,8 +35,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
@@ -58,7 +59,7 @@ import org.frankframework.util.XmlBuilder;
  * @version 2.0
  * @author Niels Meijer
  */
-@FrankDocGroup(FrankDocGroupValue.MONITORING)
+@Component(Component.Type.MONITORING)
 public class Monitor implements IConfigurable, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

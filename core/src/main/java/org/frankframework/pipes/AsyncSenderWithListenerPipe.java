@@ -22,6 +22,9 @@ import javax.xml.transform.TransformerException;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+
 import org.xml.sax.SAXException;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -38,8 +41,7 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Reintroduce;
 import org.frankframework.processors.ListenerProcessor;
@@ -52,8 +54,8 @@ import org.frankframework.util.TransformerPool.OutputType;
  * 
  * {@inheritDoc}
  */
-@Category(Category.Categories.BASIC)
-@ElementType(ElementTypes.ENDPOINT)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(Type.ENDPOINT)
 public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	private @Getter ICorrelatedPullingListener<M> listener = null;
 	private @Setter ListenerProcessor<M> listenerProcessor;

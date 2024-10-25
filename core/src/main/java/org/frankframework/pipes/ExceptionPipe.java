@@ -25,8 +25,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
@@ -37,7 +36,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
-@ElementType(ElementTypes.ERRORHANDLING)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ERRORHANDLING)
 @Forward(name = "success", description = "success Forward is deprecated and will be removed. Invoked when {@literal throwException} is false")
 public class ExceptionPipe extends AbstractPipe {
 

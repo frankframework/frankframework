@@ -26,11 +26,11 @@ import java.lang.annotation.Target;
 @Label(name = "EIP")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ElementType {
+public @interface EnterpriseIntegrationPattern {
 
-	ElementTypes value();
+	Type value();
 
-	enum ElementTypes {
+	enum Type {
 		@EnumLabel("Listener")
 		LISTENER,
 		@EnumLabel("Endpoint")

@@ -237,7 +237,7 @@ import org.frankframework.util.StringUtil;
  * </p>
  * @author Peter Leeuwenburgh
  */
-@Category(Category.Categories.NN_SPECIAL)
+@Category(Category.Type.NN_SPECIAL)
 public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationValidator {
 	protected static final String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
 	protected static final String BUSINESSDOMAIN_PARAMETER_NAME = "businessDomain";

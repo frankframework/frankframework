@@ -26,8 +26,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
@@ -49,8 +48,8 @@ import lombok.Getter;
  */
 @Forward(name = "notInRole", description = "user does not have the required role")
 @Forward(name = "*", description = "the first matched role which the user has")
-@Category(Category.Categories.ADVANCED)
-@ElementType(ElementTypes.ROUTER)
+@Category(Category.Type.ADVANCED)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {
 
 	private String role=null;

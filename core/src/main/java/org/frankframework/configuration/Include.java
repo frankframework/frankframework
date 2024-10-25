@@ -17,10 +17,9 @@ package org.frankframework.configuration;
 
 import lombok.Getter;
 
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Component(Component.Type.OTHER)
 public class Include {
 
 	private @Getter String ref;

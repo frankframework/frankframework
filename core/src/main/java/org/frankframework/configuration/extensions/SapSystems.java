@@ -15,10 +15,9 @@
 */
 package org.frankframework.configuration.extensions;
 
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Component(Component.Type.OTHER)
 public class SapSystems {
 
 	public void addSapSystem(ISapSystem sapSystem) {

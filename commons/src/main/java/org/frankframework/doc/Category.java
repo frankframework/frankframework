@@ -24,9 +24,9 @@ import java.lang.annotation.Target;
 @Label(name = "Category")
 @Documented
 public @interface Category {
-	Categories value();
+	Type value();
 
-	enum Categories {
+	enum Type {
 		@EnumLabel("Basic")
 		BASIC,
 		@EnumLabel("Advanced")

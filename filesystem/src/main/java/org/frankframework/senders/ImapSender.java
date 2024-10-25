@@ -21,7 +21,7 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.ImapFileSystem;
 
-@Category(Category.Categories.ADVANCED)
+@Category(Category.Type.ADVANCED)
 public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
 
 	public ImapSender() {

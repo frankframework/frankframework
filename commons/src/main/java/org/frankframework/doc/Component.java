@@ -22,8 +22,36 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Label(name = "Components")
-@Repeatable(FrankDocGroups.class)
+@Repeatable(Components.class)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FrankDocGroup {
-	FrankDocGroupValue value();
+public @interface Component {
+	Type value();
+
+	enum Type {
+		@EnumLabel("Pipes")
+		PIPE,
+		@EnumLabel("Senders")
+		SENDER,
+		@EnumLabel("Listeners")
+		LISTENER,
+		@EnumLabel("Validators")
+		VALIDATOR,
+		@EnumLabel("Wrappers")
+		WRAPPER,
+		@EnumLabel("TransactionalStorages")
+		TRANSACTIONAL_STORAGE,
+		@EnumLabel("ErrorMessageFormatters")
+		ERROR_MESSAGE_FORMATTER,
+		@EnumLabel("Batch")
+		BATCH,
+		@EnumLabel("Monitoring")
+		MONITORING,
+		@EnumLabel("Scheduling")
+		JOB,
+		@EnumLabel("Parameters")
+		PARAMETER,
+		// This label is automatically added to the Module element.
+		@EnumLabel("Other")
+		OTHER,
+	}
 }

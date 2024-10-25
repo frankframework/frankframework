@@ -26,8 +26,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -51,7 +50,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Gerrit van Brakel
  */
-@ElementType(ElementTypes.ENDPOINT)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 @Forward(name = "fileNotFound", description = "if the input file was expected to exist, but was not found")
 @Forward(name = "folderNotFound", description = "if the folder does not exist")
 @Forward(name = "fileAlreadyExists", description = "if a file that should have been created as new already exists, or if a file already exists when it should have been created as folder")

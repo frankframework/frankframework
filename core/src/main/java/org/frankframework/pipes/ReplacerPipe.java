@@ -28,8 +28,7 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -55,7 +54,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> is substituted by the parameter's value.
  * @since 4.2
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class ReplacerPipe extends FixedForwardPipe {
 
 	private boolean allowUnicodeSupplementaryCharacters = false;

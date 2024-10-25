@@ -49,6 +49,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
+
+import org.frankframework.doc.Component;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -95,8 +98,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
@@ -202,8 +203,8 @@ import org.frankframework.util.XmlUtils;
  * requests.
  *
  */
-@Category(Category.Categories.BASIC)
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Category(Category.Type.BASIC)
+@Component(Component.Type.OTHER)
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

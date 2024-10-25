@@ -19,8 +19,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 import org.frankframework.pipes.FixedResultPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
@@ -32,7 +31,7 @@ import org.frankframework.util.Locker;
  *
  * @ff.defaultElement org.frankframework.pipes.SenderPipe
  */
-@FrankDocGroup(FrankDocGroupValue.PIPE)
+@Component(Component.Type.PIPE)
 public interface IPipe extends IConfigurable, IForwardTarget {
 
 	String LONG_DURATION_MONITORING_EVENT = "Pipe Long Processing Duration";

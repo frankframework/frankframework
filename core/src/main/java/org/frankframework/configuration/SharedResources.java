@@ -16,11 +16,10 @@
 package org.frankframework.configuration;
 
 import org.frankframework.core.SharedResource;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 import org.frankframework.http.HttpSession;
 
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Component(Component.Type.OTHER)
 public class SharedResources {
 
 	public void addSharedResource(SharedResource<?> resource) {

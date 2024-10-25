@@ -269,7 +269,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  */
 @Forward(name = "*", description = "Exit code")
-@Category(Category.Categories.BASIC)
+@Category(Category.Type.BASIC)
 public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 
 	public static final String TARGET_PARAM_NAME = "target";

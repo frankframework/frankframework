@@ -58,7 +58,7 @@ import org.frankframework.util.MessageUtils;
  * @author Niels Meijer
  * @since 7.9
  */
-@Category(Category.Categories.BASIC)
+@Category(Category.Type.BASIC)
 public class JwtPipe extends FixedForwardPipe {
 	static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
 

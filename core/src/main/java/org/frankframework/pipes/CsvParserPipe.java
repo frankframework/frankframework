@@ -28,8 +28,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.xml.SaxDocumentBuilder;
@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * @author Gerrit van Brakel
  *
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class CsvParserPipe extends FixedForwardPipe {
 
 	private @Getter Boolean fileContainsHeader;

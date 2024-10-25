@@ -22,8 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -33,7 +32,7 @@ import org.frankframework.util.LogUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@FrankDocGroup(FrankDocGroupValue.BATCH)
+@Component(Component.Type.BATCH)
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

@@ -34,7 +34,7 @@ import org.frankframework.filesystem.MailListener;
  *
  * @author Gerrit van Brakel
  */
-@Category(Category.Categories.ADVANCED)
+@Category(Category.Type.ADVANCED)
 public class ExchangeMailListener extends MailListener<ExchangeMessageReference, ExchangeAttachmentReference,ExchangeFileSystem> {
 
 	@Override

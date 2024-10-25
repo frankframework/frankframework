@@ -34,7 +34,7 @@ import org.frankframework.util.SpringUtils;
  * @author Peter Leeuwenburgh
  */
 
-@Category(Category.Categories.NN_SPECIAL)
+@Category(Category.Type.NN_SPECIAL)
 public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected static final String DESTINATION = "destination";
 	protected static final String CMHVERSION = "cmhVersion";

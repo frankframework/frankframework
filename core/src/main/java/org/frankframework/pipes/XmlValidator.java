@@ -78,7 +78,7 @@ import org.frankframework.xml.RootElementToSessionKeyFilter;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-@Category(Category.Categories.BASIC)
+@Category(Category.Type.BASIC)
 public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
 
 	private @Getter String schemaLocation;

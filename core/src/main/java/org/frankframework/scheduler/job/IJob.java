@@ -17,14 +17,13 @@ package org.frankframework.scheduler.job;
 
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Component;
 import org.frankframework.scheduler.ConfiguredJob;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
 import org.quartz.JobDetail;
 
-@FrankDocGroup(FrankDocGroupValue.JOB)
+@Component(Component.Type.JOB)
 public interface IJob extends IConfigurable {
 
 	/**
