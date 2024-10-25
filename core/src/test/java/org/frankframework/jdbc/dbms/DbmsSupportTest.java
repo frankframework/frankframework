@@ -24,9 +24,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
-
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;

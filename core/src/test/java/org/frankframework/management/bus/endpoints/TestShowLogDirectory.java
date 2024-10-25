@@ -6,6 +6,10 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
 import org.frankframework.lifecycle.ShowLogDirectory;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
@@ -14,9 +18,6 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.JsonDirectoryInfoTest;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestShowLogDirectory extends BusTestBase {

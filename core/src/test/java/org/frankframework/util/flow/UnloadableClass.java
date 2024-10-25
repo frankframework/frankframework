@@ -1,9 +1,10 @@
 package org.frankframework.util.flow;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IConfigurable;
 
 public class UnloadableClass implements IConfigurable {
 	static String fail = null;

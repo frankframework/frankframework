@@ -9,12 +9,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 
+import lombok.SneakyThrows;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-
-import lombok.SneakyThrows;
 
 public class TestFileUtils {
 	private static final Logger LOG = LogUtil.getLogger(TestFileUtils.class);

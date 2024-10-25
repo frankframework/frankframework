@@ -5,11 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import org.apache.logging.log4j.Level;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.TestAppender;

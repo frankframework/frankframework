@@ -11,6 +11,15 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.util.FileSystemUtils;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -26,14 +35,6 @@ import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TemporaryDirectoryUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.util.FileSystemUtils;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe //should be picked up by surefire
 public class InputOutputPipeProcessorTest {

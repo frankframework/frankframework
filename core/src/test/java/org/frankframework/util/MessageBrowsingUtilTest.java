@@ -21,10 +21,9 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import org.junit.jupiter.api.Test;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 

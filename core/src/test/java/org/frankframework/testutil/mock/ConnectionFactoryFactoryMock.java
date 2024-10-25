@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.naming.NamingException;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ConnectionMetaData;
@@ -29,14 +31,13 @@ import jakarta.jms.Queue;
 import jakarta.jms.QueueBrowser;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
-import javax.naming.NamingException;
-
-import org.frankframework.jms.IConnectionFactoryFactory;
-import org.frankframework.jms.JmsTransactionalStorage;
-import org.mockito.Mockito;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.mockito.Mockito;
+
+import org.frankframework.jms.IConnectionFactoryFactory;
+import org.frankframework.jms.JmsTransactionalStorage;
 
 public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 	private final Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();

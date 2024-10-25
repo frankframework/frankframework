@@ -18,12 +18,11 @@ package org.frankframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.IListener;

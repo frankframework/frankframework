@@ -12,7 +12,6 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.TextMessage;
 
 import com.mockrunner.mock.jms.MockQueue;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

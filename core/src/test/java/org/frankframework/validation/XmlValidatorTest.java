@@ -2,11 +2,12 @@ package org.frankframework.validation;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.params.provider.Arguments;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
-import org.junit.jupiter.params.provider.Arguments;
 
 /**
  * @author Gerrit van Brakel

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.frankframework.testutil.TransactionManagerType;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -26,7 +26,7 @@ import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 
-import lombok.extern.log4j.Log4j2;
+import org.frankframework.testutil.TransactionManagerType;
 
 class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 

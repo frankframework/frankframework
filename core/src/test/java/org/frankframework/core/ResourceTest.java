@@ -9,14 +9,15 @@ import java.util.jar.JarFile;
 
 import javax.xml.transform.TransformerException;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.ClassLoaderURIResolver;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 public class ResourceTest {
 

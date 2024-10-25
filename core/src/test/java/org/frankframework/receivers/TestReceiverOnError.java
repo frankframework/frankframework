@@ -29,6 +29,7 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -37,8 +38,6 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;

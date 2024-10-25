@@ -15,12 +15,13 @@
 */
 package org.frankframework.management.bus;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
+import jakarta.annotation.security.RolesAllowed;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
 
 @BusAware("frank-management-bus")
 public class BusTestEndpoints {

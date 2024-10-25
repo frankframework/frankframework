@@ -3,6 +3,11 @@ package org.frankframework.xslt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
@@ -13,11 +18,6 @@ import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class XsltExceptionTest {

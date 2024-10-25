@@ -24,10 +24,10 @@ import static org.mockito.Mockito.when;
 
 import java.security.Principal;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
