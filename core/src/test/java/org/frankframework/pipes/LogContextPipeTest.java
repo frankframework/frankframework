@@ -11,12 +11,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
+import org.apache.logging.log4j.CloseableThreadContext;
+import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.apache.logging.log4j.CloseableThreadContext;
-import org.apache.logging.log4j.ThreadContext;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;

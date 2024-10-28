@@ -18,9 +18,16 @@ package org.frankframework.extensions.afm;
 import java.text.DecimalFormat;
 
 import jakarta.annotation.Nonnull;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -31,10 +38,6 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
@@ -66,16 +69,11 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 	}
 
 	@Override
-	public void close() {
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
+	public void stop() {
 	}
 
 	@Override

@@ -36,6 +36,12 @@ import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.ws.WebServiceContext;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.w3c.dom.Element;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.mime.MultipartUtils;
@@ -44,11 +50,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.w3c.dom.Element;
 
 public class SoapProviderTest {
 

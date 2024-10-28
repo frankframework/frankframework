@@ -50,7 +50,7 @@ public class MessageStoreListenerTest {
 	@AfterEach
 	public void teardown() throws Exception {
 		if(listener != null) {
-			listener.close(); //does this trigger an exception
+			listener.stop(); //does this trigger an exception
 		}
 	}
 
@@ -64,7 +64,7 @@ public class MessageStoreListenerTest {
 	@DatabaseTest
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
-		listener.open();
+		listener.start();
 	}
 
 	@DatabaseTest
@@ -204,7 +204,7 @@ public class MessageStoreListenerTest {
 	@DatabaseTest
 	public void testMessageBrowserContainsMessageId() throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		String message ="fakeMessage";
 		insertARecord(message, 'M');
@@ -217,7 +217,7 @@ public class MessageStoreListenerTest {
 	@DatabaseTest
 	public void testMessageBrowserContainsCorrelationId() throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		String message ="fakeMessage";
 		insertARecord(message, 'M');
@@ -230,7 +230,7 @@ public class MessageStoreListenerTest {
 	@DatabaseTest
 	public void testMessageBrowserBrowseMessage() throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		String message ="fakeMessage";
 		String storageKey = insertARecord(message, 'M');
@@ -253,7 +253,7 @@ public class MessageStoreListenerTest {
 	@DatabaseTest
 	public void testMessageBrowserIterator() throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		String message ="fakeMessage";
 		String storageKey = insertARecord(message, 'M');
@@ -278,11 +278,11 @@ public class MessageStoreListenerTest {
 	private String insertARecord(String message, char type) throws SenderException, ConfigurationException {
 		storage.setType(type+"");
 		storage.configure();
-		storage.open();
+		storage.start();
 		try {
 			return storage.storeMessage("fakeMid", "fakeCid", new Date(), "fakeComments", "fakeLabel", message);
 		} finally {
-			storage.close();
+			storage.stop();
 		}
 	}
 

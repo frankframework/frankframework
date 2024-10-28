@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 
+import jakarta.json.JsonStructure;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import jakarta.json.JsonStructure;
 
 /**
  * @author Gerrit van Brakel

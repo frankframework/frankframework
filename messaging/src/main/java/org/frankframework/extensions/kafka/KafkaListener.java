@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -37,6 +38,12 @@ import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IListener;
@@ -48,11 +55,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StringUtil;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Experimental {@link IListener} for listening to a topic in
@@ -117,7 +119,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		lock.lock();
 		try {
 			consumer = buildConsumer();
@@ -139,7 +141,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		lock.lock();
 		try {
 			consumer.close();

@@ -6,14 +6,17 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 
 import lombok.Getter;
-import org.apache.commons.lang3.NotImplementedException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -25,8 +28,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManager> {
 
@@ -141,7 +142,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		fs1.setName("fs1");
 		fs1.setDatasourceName(datasourceName);
 		fs1.configure();
-		fs1.open();
+		fs1.start();
 		try {
 			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),null);
 		} catch (Exception e) {
@@ -149,7 +150,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		}
 
 		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
-		fs1.close();
+		fs1.stop();
 	}
 
 	private class ConcurrentXATransactionTester extends ConcurrentActionTester {
@@ -174,8 +175,8 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 			fs2.setDatasourceName(SECONDARY_PRODUCT);
 			fs2.configure();
 
-			fs1.open();
-			fs2.open();
+			fs1.start();
+			fs2.start();
 
 			TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
 			TransactionStatus txStatus = txManager.getTransaction(txDef);

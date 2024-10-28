@@ -10,6 +10,13 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Stream;
 
+import jakarta.xml.soap.SOAPConstants;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IWrapperPipe.Direction;
 import org.frankframework.core.PipeForward;
@@ -26,12 +33,6 @@ import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestAssertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import jakarta.xml.soap.SOAPConstants;
 
 public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 

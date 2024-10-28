@@ -17,8 +17,11 @@
 package org.frankframework.extensions.mqtt;
 
 import jakarta.annotation.Nonnull;
-import lombok.extern.log4j.Log4j2;
+
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
@@ -51,17 +54,13 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public void open() throws SenderException {
-		try {
-			super.open();
-		} catch (Exception e) {
-			throw new SenderException("Could not publish to topic", e);
-		}
+	public void start() {
+		super.start();
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 	}
 
 	@Override
@@ -84,15 +83,15 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException {
 		try {
-			if(!client.isConnected()) {
-				super.open();
+			if (!client.isConnected()) {
+				super.start();
 			}
 
 			log.debug(message);
-			MqttMessage MqttMessage = new MqttMessage();
-			MqttMessage.setPayload(message.asByteArray());
-			MqttMessage.setQos(getQos());
-			client.publish(getTopic(), MqttMessage);
+			MqttMessage mqttMessage = new MqttMessage();
+			mqttMessage.setPayload(message.asByteArray());
+			mqttMessage.setQos(getQos());
+			client.publish(getTopic(), mqttMessage);
 		}
 		catch (Exception e) {
 			throw new SenderException(e);

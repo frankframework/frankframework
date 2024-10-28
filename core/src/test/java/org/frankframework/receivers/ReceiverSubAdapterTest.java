@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
+
 import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 
@@ -110,7 +111,7 @@ public class ReceiverSubAdapterTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		listener.open();
+		listener.start();
 		return listener;
 	}
 

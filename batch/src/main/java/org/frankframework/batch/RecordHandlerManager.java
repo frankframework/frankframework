@@ -18,8 +18,9 @@ package org.frankframework.batch;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;

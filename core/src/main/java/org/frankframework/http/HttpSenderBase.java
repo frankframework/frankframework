@@ -54,6 +54,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.encryption.KeystoreType;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
@@ -224,46 +225,42 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	@Override
-	public void open() throws SenderException {
-		try {
-			start();
-		} catch (Exception e) {
-			throw new SenderException("unable to create HttpClient", e);
-		}
-
-		if (transformerPool!=null) {
-			try {
-				transformerPool.open();
-			} catch (Exception e) {
-				throw new SenderException("cannot start TransformerPool", e);
-			}
-		}
-	}
-
-	@Override
 	public Class<HttpSession> getObjectType() {
 		return HttpSession.class;
 	}
 
 	@Override
 	public void start() {
-		if(StringUtils.isNotBlank(sharedResourceRef)) {
-			HttpSession session = getSharedResource(sharedResourceRef);
-			setHttpClient(session.getHttpClient());
-			setHttpContext(session.getDefaultHttpClientContext());
+		if (StringUtils.isNotBlank(sharedResourceRef)) {
+			try {
+
+				HttpSession session = getSharedResource(sharedResourceRef);
+				setHttpClient(session.getHttpClient());
+				setHttpContext(session.getDefaultHttpClientContext());
+			} catch (Exception e) {
+				throw new LifecycleException("unable to create HttpClient", e);
+			}
 		} else {
 			log.debug("starting local HttpSession");
 			super.start();
+
+			if (transformerPool != null) {
+				try {
+					transformerPool.open();
+				} catch (Exception e) {
+					throw new LifecycleException("cannot start TransformerPool", e);
+				}
+			}
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		if(StringUtils.isBlank(sharedResourceRef)) {
 			super.stop();
 		}
 
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			transformerPool.close();
 		}
 	}

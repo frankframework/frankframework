@@ -130,7 +130,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import org.frankframework.core.PipeLineSession;
-
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.util.AppConstants;

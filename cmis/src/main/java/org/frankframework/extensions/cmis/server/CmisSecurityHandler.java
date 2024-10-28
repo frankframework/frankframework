@@ -19,6 +19,7 @@ import java.security.Principal;
 
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.NotImplementedException;
+
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.util.CredentialFactory;
 

@@ -20,6 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.util.LogUtil;
 
 /**

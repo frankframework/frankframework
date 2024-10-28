@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,8 +41,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.springframework.mock.web.DelegatingServletOutputStream;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.internet.MimeMultipart;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.util.LogUtil;

@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -86,6 +87,26 @@ public class SchemaUtils {
 
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
+	/**
+	 * Check if the StartElement is one of given qnames.
+	 */
+	public static boolean isElement(StartElement el, QName... names) {
+		return isName(el.getName(), names);
+	}
+
+	/**
+	 * Check if the EndElement is one of given qnames.
+	 */
+	public static boolean isElement(EndElement el, QName... names) {
+		return isName(el.getName(), names);
+	}
+
+	/**
+	 * Check if the elementName is one of given qnames.
+	 */
+	public static boolean isName(QName elementName, QName... names) {
+		return Arrays.asList(names).contains(elementName);
+	}
 
 	/**
 	 * Group a set of XSDs by namespace. To recursively load all XSDs that are referenced from a starting set of XSDs, first call {@link XSD#getXsdsRecursive(Set)}.
@@ -303,11 +324,11 @@ public class SchemaUtils {
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_ELEMENT:
 						StartElement startElement = event.asStartElement();
-						if (startElement.getName().equals(SCHEMA)) {
+						if (isElement(startElement, SCHEMA)) {
 							event = fixupSchemaStartEvent(xsd, startElement, namespacesToCorrect);
-						} else if (startElement.getName().equals(IMPORT)) {
+						} else if (isElement(startElement, IMPORT)) {
 							event = fixupImportStartElement(xsd, startElement);
-						} else if (startElement.getName().equals(INCLUDE)) {
+						} else if (isElement(startElement, INCLUDE)) {
 							// Don't output the includes
 							break;
 						}
@@ -316,7 +337,7 @@ public class SchemaUtils {
 					case XMLStreamConstants.END_ELEMENT:
 						EndElement endElement = event.asEndElement();
 						// Don't output the includes
-						if (!endElement.getName().equals(INCLUDE)) {
+						if (!isElement(endElement, INCLUDE)) {
 							streamEventWriter.add(event);
 						}
 						break;
@@ -473,12 +494,12 @@ public class SchemaUtils {
 				// No-op
 				if (event.getEventType() == XMLStreamConstants.START_ELEMENT) {
 					StartElement startElement = event.asStartElement();
-					if (startElement.getName().equals(SCHEMA)) {
+					if (isElement(startElement, SCHEMA)) {
 						xsdPrefix = startElement.getName().getPrefix();
 						// Collect or write attributes of schema element.
 						rootAttributes.addAll(xsd, startElement.getAttributes());
 						rootNamespaceAttributes.addAll(xsd, startElement.getNamespaces());
-					} else if (startElement.getName().equals(IMPORT)) {
+					} else if (isElement(startElement, IMPORT)) {
 						// Collecting import elements.
 						imports.add(new StartElementWrapper(stripSchemaLocation(startElement), xsd));
 					}
@@ -535,7 +556,7 @@ public class SchemaUtils {
 					case XMLStreamConstants.START_ELEMENT,
 						 XMLStreamConstants.END_ELEMENT:
 						QName elementName = getQName(event);
-						if (!elementName.equals(SCHEMA) && !elementName.equals(INCLUDE) && !elementName.equals(IMPORT)) {
+						if (!isName(elementName, SCHEMA, INCLUDE, IMPORT)) {
 							streamEventWriter.add(event);
 						}
 						break;

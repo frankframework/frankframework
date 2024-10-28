@@ -9,12 +9,13 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 public class Stub4TesttoolTest {
 

@@ -11,10 +11,11 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamUtil;
 
 import lombok.SneakyThrows;
+
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamUtil;
 
 public class TestFileUtils {
 	private static final Logger LOG = LogUtil.getLogger(TestFileUtils.class);

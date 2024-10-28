@@ -23,10 +23,6 @@ import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 import jakarta.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
-import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.UUIDUtil;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +36,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.SecuritySettings;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.UUIDUtil;
 
 
 public class ServletManagerTest {

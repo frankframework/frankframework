@@ -11,10 +11,11 @@ import javax.sql.DataSource;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.mockito.Mockito;
+
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.mockito.Mockito;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
 	private final Map<String, DataSource> objects = new HashMap<>();

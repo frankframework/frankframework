@@ -124,7 +124,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		if (StringUtils.isNotEmpty(getAddress())) {
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
@@ -150,12 +150,12 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); // Deprecated backwards compatibility
 		}
 
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 
 		if(endpoint != null && endpoint.isPublished()) {
 			endpoint.stop();

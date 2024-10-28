@@ -7,7 +7,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.SenderException;
-
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.stream.Message;
 

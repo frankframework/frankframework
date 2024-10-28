@@ -18,9 +18,9 @@ package org.frankframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.Message;
 
-import jakarta.annotation.Nonnull;
 import org.frankframework.core.IPullingListener;
 
 public class SlowPullingListener extends SlowListenerBase implements IPullingListener<jakarta.jms.Message> {

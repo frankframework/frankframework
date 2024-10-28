@@ -15,9 +15,9 @@
 */
 package org.frankframework.http;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
@@ -41,7 +41,7 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter String serviceName;
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		if (StringUtils.isEmpty(getServiceName())) {
 			log.debug("registering listener [{}] with ServiceDispatcher", getName());
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
@@ -50,12 +50,12 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceName(), this);
 		}
 
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 
 		if (StringUtils.isEmpty(getServiceName())) {
 			log.debug("unregistering listener [{}] from ServiceDispatcher", getName());

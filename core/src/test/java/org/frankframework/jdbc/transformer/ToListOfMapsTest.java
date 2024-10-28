@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.frankframework.stream.FileMessage;
-import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,6 +15,9 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.stream.FileMessage;
+import org.frankframework.testutil.TestFileUtils;
 
 @Log4j2
 class ToListOfMapsTest {

@@ -1,6 +1,5 @@
 package org.frankframework.http.rest;
 
-import static org.frankframework.http.rest.ApiListener.HttpMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,14 +17,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineExits;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.Json2XmlValidator;
 

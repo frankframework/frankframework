@@ -5,24 +5,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.Date;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
 
 public class MessageStoreSenderInputProcessingTest extends SenderTestBase<MessageStoreSender> {
 
 	@Override
 	public MessageStoreSender createSender() throws Exception {
 		return new MessageStoreSender() {
-			@Override public void configure() { } //Suppress configure as it's will do a JNDI lookup
-			@Override public void open() { } //Suppress open as it's will do a JNDI lookup
+			@Override public void configure() { } // Suppress configure as it's will do a JNDI lookup
+			@Override public void start() { } // Suppress start as it's will do a JNDI lookup
 
 			@Override
 			public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, String message) throws SenderException {
-				return message; //We don't actually want/need to store anything, return the input to validate the message 'to-store'
+				return message; // We don't actually want/need to store anything, return the input to validate the message 'to-store'
 			}
 		};
 	}
@@ -30,7 +31,7 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 	@Test
 	public void basic() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
@@ -46,7 +47,7 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 
 		sender.setSessionKeys("sessionKey1,sessionKey2,sessionKey3");
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy/>";
 		Message message = new Message(input);

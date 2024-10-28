@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ISenderWithParameters;
@@ -70,11 +71,11 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() {
 	}
 
 	@Override

@@ -34,11 +34,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.extensions.idin.IdinSender.Action;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -47,6 +42,12 @@ import net.bankid.merchant.library.CommunicatorException;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.IMessenger;
 import net.bankid.merchant.library.SigningKeyPair;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.extensions.idin.IdinSender.Action;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
 
 /**
  * Initially I thought, hey lets add some unittests...

@@ -25,6 +25,7 @@ import java.util.Set;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -127,7 +128,7 @@ public class CleanupDatabaseJob extends JobDef {
 				param.setFormatType(DateFormatType.TIMESTAMP);
 				qs.addParameter(param);
 				qs.configure();
-				qs.open();
+				qs.start();
 
 				int numberOfRowsAffected;
 				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
@@ -142,7 +143,7 @@ public class CleanupDatabaseJob extends JobDef {
 				log.error("{}{}", getLogPrefix(), msg, e);
 			} finally {
 				if (qs != null) {
-					qs.close();
+					qs.stop();
 				}
 			}
 		}
@@ -176,7 +177,7 @@ public class CleanupDatabaseJob extends JobDef {
 				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows, qs.getDbmsSupport().getDbms());
 				qs.setQuery(query);
 				qs.configure();
-				qs.open();
+				qs.start();
 
 				boolean deletedAllRecords = false;
 				while (!deletedAllRecords) {
@@ -202,7 +203,7 @@ public class CleanupDatabaseJob extends JobDef {
 				log.error("{} {}", getLogPrefix(), msg);
 			} finally {
 				if (qs != null) {
-					qs.close();
+					qs.stop();
 				}
 			}
 		}

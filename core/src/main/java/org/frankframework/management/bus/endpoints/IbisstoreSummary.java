@@ -26,7 +26,11 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
@@ -45,8 +49,6 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class IbisstoreSummary extends BusEndpointBase {
@@ -73,14 +75,14 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setBlobSmartGet(true);
 				qs.setAvoidLocking(true);
 				qs.configure(true);
-				qs.open();
+				qs.start();
 				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), session)) {
 					result = message.asString();
 				}
 			} catch (Throwable t) {
 				throw new BusException("An error occurred on executing jdbc query", t);
 			} finally {
-				qs.close();
+				qs.stop();
 			}
 		} catch (Exception e) {
 			throw new BusException("An error occurred on creating or closing the connection", e);

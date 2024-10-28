@@ -76,7 +76,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.configure();
 
 		if(!STUBBED) {
-			sender.open();
+			sender.start();
 		}
 	}
 

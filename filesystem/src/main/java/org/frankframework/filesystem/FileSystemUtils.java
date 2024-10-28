@@ -16,6 +16,7 @@
 package org.frankframework.filesystem;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
@@ -26,10 +27,14 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
-import lombok.Lombok;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
+import lombok.Lombok;
+
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.INodeBuilder;
@@ -41,7 +46,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
-import org.xml.sax.SAXException;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
@@ -293,15 +297,13 @@ public class FileSystemUtils {
 
 
 	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
-		try {
-			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
-			try(builder) {
-				getFileInfo(fileSystem, f, builder);
-			}
-			return builder.toString();
-		} catch (SAXException e) {
+		StringWriter writer = new StringWriter();
+		try (StringWriter w = writer; INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file", w)) {
+			getFileInfo(fileSystem, f, builder);
+		} catch (IOException | SAXException e) {
 			throw new FileSystemException("Cannot get FileInfo", e);
 		}
+		return writer.toString();
 	}
 
 	public static <F, FS extends IBasicFileSystem<F>> void getFileInfo(FS fileSystem, F f, INodeBuilder nodeBuilder) throws FileSystemException, SAXException {

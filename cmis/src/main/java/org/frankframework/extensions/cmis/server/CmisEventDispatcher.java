@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.frankframework.extensions.cmis.CmisEventListener;
-import org.frankframework.extensions.cmis.CmisUtils;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
@@ -32,6 +30,8 @@ import org.w3c.dom.Element;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.extensions.cmis.CmisEventListener;
+import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;

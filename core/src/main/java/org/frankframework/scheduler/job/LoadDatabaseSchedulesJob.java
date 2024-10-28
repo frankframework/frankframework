@@ -24,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -35,10 +40,6 @@ import org.frankframework.scheduler.JobDef;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
 
 /**
  * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
@@ -85,7 +86,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 		try {
 			qs.configure();
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
@@ -164,7 +165,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!

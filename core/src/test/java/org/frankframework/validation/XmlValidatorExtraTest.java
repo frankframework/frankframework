@@ -7,13 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 

@@ -25,17 +25,20 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
@@ -45,6 +48,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
@@ -59,7 +63,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
-import org.xml.sax.SAXException;
 
 /**
  * This class sends messages with JMS.
@@ -150,12 +153,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 	 * Starts the sender
 	 */
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
-			super.open();
-		}
-		catch (Exception e) {
-			throw new SenderException(e);
+			super.start();
+		} catch (Exception e) {
+			throw new LifecycleException(e);
 		}
 	}
 
@@ -218,7 +220,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 			if (isSynchronous()) {
 				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
-			return new Message(messageToSend.getJMSMessageID());
+			return new Message(messageToSend.getJMSMessageID(), getContext(messageToSend));
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
 			throw new SenderException(e);
 		} finally {

@@ -67,6 +67,7 @@ import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,14 +81,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 
-import lombok.Lombok;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import lombok.Lombok;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -244,7 +245,7 @@ public class ReceiverTest {
 		doReturn(false).when(listener).hasRawMessageAvailable();
 
 		doNothing().when(listener).configure();
-		doNothing().when(listener).open();
+		doNothing().when(listener).start();
 
 		return listener;
 	}
@@ -285,7 +286,7 @@ public class ReceiverTest {
 		configuration = configurationSupplier.get();
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
-		doNothing().when(listener).open();
+		doNothing().when(listener).start();
 		doNothing().when(listener).configure();
 
 		@SuppressWarnings("unchecked")
@@ -411,7 +412,7 @@ public class ReceiverTest {
 		configuration = configurationSupplier.get();
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
-		doNothing().when(listener).open();
+		doNothing().when(listener).start();
 		doNothing().when(listener).configure();
 
 		@SuppressWarnings("unchecked")
@@ -551,7 +552,7 @@ public class ReceiverTest {
 		listener.setJmsTransacted(false);
 		listener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE);
 		doReturn(mock(Destination.class)).when(listener).getDestination();
-		doNothing().when(listener).open();
+		doNothing().when(listener).start();
 		doNothing().when(listener).configure();
 
 		createMessagingSource(listener);
@@ -609,7 +610,7 @@ public class ReceiverTest {
 		configuration = buildConfiguration(null);
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
-		doNothing().when(listener).open();
+		doNothing().when(listener).start();
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
@@ -685,7 +686,7 @@ public class ReceiverTest {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
-		doNothing().when(listener).open();
+		doNothing().when(listener).start();
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);

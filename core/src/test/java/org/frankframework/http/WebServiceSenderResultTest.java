@@ -33,14 +33,15 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class WebServiceSenderResultTest extends Mockito {
 
@@ -86,7 +87,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	@AfterEach
 	public void setDown() {
 		if (sender != null) {
-			sender.close();
+			sender.stop();
 			sender = null;
 		}
 	}
@@ -107,7 +108,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result);
@@ -135,7 +136,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 	}
@@ -147,7 +148,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 		assertTrue(exception.getMessage().contains("Missing start boundary"));
@@ -160,7 +161,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls));
 		assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
@@ -173,7 +174,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result.trim());

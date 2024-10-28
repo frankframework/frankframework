@@ -25,12 +25,13 @@ import java.util.Map;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unchecked")
 public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStoreListener<M>> {
@@ -71,7 +72,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 	@Test
 	void basic() throws Exception {
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		String input = "test-message";
 		RawMessageWrapper<M> rawMessage = getRawMessage(input);
@@ -83,7 +84,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 	void withSessionKeys() throws Exception {
 		listener.setSessionKeys("sessionKey1,sessionKey2,sessionKey3");
 		listener.configure();
-		listener.open();
+		listener.start();
 
 		String input = "test-message,\"value1\",value2,value3";
 		RawMessageWrapper<M> rawMessage = getRawMessage(input);

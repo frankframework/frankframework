@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Setter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -30,6 +29,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Setter;
+
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.http.HttpMessageEntity;

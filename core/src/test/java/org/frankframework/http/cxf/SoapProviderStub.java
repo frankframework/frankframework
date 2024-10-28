@@ -2,10 +2,10 @@ package org.frankframework.http.cxf;
 
 import jakarta.xml.ws.WebServiceContext;
 
+import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-
-import lombok.Getter;
 
 public class SoapProviderStub extends SOAPProviderBase {
 
