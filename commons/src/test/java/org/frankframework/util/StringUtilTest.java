@@ -214,6 +214,7 @@ class StringUtilTest {
 				arguments(null, "\\/", List.of()),
 				arguments("", "\\/", List.of()),
 				arguments("                             ", " ", List.of()),
+				arguments("a,b; c    ", ",", List.of("a", "b; c")),
 				arguments("a,b;c", ";,", List.of("a", "b", "c")),
 				arguments("a,b;c d", ";,", List.of("a", "b", "c d")),
 				arguments("a b c", " ", List.of("a", "b", "c")),
