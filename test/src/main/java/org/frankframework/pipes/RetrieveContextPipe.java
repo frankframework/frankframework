@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.ThreadContext;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -28,7 +30,6 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.xml.sax.SAXException;
 
 public class RetrieveContextPipe extends FixedForwardPipe {
 

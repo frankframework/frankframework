@@ -6,15 +6,16 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import lombok.Getter;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;

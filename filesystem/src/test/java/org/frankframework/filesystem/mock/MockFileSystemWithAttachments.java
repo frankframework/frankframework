@@ -5,11 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.xml.sax.SAXException;
+
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.IMailFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IMailFileSystem<MockFileWithAttachments, MockAttachment> {
 

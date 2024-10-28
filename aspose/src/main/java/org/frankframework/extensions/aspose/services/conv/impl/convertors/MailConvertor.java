@@ -26,9 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.springframework.http.MediaType;
 
 import com.aspose.email.Attachment;
@@ -53,6 +50,9 @@ import com.aspose.words.Shape;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.ConversionOption;
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;

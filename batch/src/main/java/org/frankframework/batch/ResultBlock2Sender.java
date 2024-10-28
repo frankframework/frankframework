@@ -19,8 +19,9 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;

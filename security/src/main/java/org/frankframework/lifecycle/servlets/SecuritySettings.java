@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.PropertyResolver;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.EnumUtils;
 
 @Log4j2

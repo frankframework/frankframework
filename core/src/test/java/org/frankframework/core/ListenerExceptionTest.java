@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.NoSuchElementException;
 
-import org.frankframework.pipes.FixedResultPipe;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.pipes.FixedResultPipe;
 
 public class ListenerExceptionTest {
 

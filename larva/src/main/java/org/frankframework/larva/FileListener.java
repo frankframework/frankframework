@@ -23,15 +23,17 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
-import org.springframework.context.ApplicationContext;
 
 /**
  * File listener for the Test Tool.

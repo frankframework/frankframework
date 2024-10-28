@@ -1,24 +1,23 @@
 package org.frankframework.ldap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
+import java.io.IOException;
+import java.util.LinkedHashSet;
+
+import javax.naming.NamingException;
+
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
-
 import org.frankframework.stream.Message;
-
-import org.junit.jupiter.api.Test;
-
-import javax.naming.NamingException;
-
-import java.io.IOException;
-import java.util.LinkedHashSet;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroupMembershipsPipe> {
 

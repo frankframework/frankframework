@@ -15,6 +15,9 @@
 */
 package org.frankframework.filesystem.sftp;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -29,12 +32,11 @@ import com.jcraft.jsch.SftpException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Helper class for sftp.

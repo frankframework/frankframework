@@ -23,9 +23,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import lombok.Setter;
 
 import org.frankframework.batch.IResultHandler;
 import org.frankframework.batch.ResultWriter;

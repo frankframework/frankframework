@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import oracle.jdbc.xa.OracleXAException;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
 
 public class IbisExceptionTest {
 

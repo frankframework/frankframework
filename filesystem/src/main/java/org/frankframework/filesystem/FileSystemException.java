@@ -16,6 +16,7 @@
 package org.frankframework.filesystem;
 
 import lombok.Getter;
+
 import org.frankframework.core.IbisException;
 import org.frankframework.core.PipeForward;
 

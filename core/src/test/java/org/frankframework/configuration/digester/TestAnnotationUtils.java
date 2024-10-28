@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.ClassUtils;
-import org.frankframework.configuration.IbisManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -27,6 +27,8 @@ import org.springframework.core.annotation.AnnotationFilter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.ClassMetadata;
 import org.springframework.util.Assert;
+
+import org.frankframework.configuration.IbisManager;
 
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);

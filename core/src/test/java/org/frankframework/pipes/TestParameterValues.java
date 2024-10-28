@@ -2,11 +2,12 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
-import org.junit.jupiter.api.Test;
 
 public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 

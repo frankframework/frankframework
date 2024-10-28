@@ -1,18 +1,19 @@
 package org.frankframework.pipes;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ISecurityHandler;
-import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ISecurityHandler;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunResult;
 
 /**
  * IsUserInRolePipe unit tests.

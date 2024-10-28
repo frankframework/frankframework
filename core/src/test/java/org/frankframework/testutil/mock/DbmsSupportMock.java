@@ -2,11 +2,12 @@ package org.frankframework.testutil.mock;
 
 import java.sql.Connection;
 
+import org.mockito.Mockito;
+
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.IDbmsSupport;
-import org.mockito.Mockito;
 
 public abstract class DbmsSupportMock extends GenericDbmsSupport implements IDbmsSupport {
 

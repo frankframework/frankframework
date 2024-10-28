@@ -3,10 +3,11 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
-import org.junit.jupiter.api.Test;
 
 public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 

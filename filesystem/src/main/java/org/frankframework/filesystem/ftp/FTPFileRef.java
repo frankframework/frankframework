@@ -15,10 +15,11 @@
 */
 package org.frankframework.filesystem.ftp;
 
-import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPFile;
+
+import lombok.Getter;
 
 /**
  * Wrapper around a FTPFile to allow for relative path operations

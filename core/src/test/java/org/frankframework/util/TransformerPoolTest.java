@@ -10,8 +10,9 @@ import java.util.Map;
 import javax.xml.transform.Source;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.Resource;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.Resource;
 
 public class TransformerPoolTest {
 	protected Logger log = LogUtil.getLogger(this);

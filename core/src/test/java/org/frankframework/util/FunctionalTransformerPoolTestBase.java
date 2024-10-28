@@ -5,8 +5,9 @@ import java.io.IOException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import org.frankframework.testutil.TestAssertions;
 import org.xml.sax.SAXException;
+
+import org.frankframework.testutil.TestAssertions;
 
 public class FunctionalTransformerPoolTestBase {
 

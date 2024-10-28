@@ -28,6 +28,7 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class KubernetesCredentialFactoryTest {

@@ -37,7 +37,21 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.util.FileSystemUtils;
+import org.springframework.util.MimeType;
+
+import com.testautomationguru.utility.CompareMode;
+import com.testautomationguru.utility.ImageUtil;
+import com.testautomationguru.utility.PDFUtil;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -51,19 +65,6 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.MessageUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.util.FileSystemUtils;
-import org.springframework.util.MimeType;
-
-import com.testautomationguru.utility.CompareMode;
-import com.testautomationguru.utility.ImageUtil;
-import com.testautomationguru.utility.PDFUtil;
-
-import jakarta.annotation.Nonnull;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.

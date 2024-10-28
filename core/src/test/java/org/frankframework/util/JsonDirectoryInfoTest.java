@@ -13,17 +13,18 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+
+import org.apache.commons.io.FilenameUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestFileUtils;
 
 public class JsonDirectoryInfoTest {
 	private String basePath;

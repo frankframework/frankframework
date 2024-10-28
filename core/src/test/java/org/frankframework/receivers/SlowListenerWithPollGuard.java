@@ -8,9 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.jms.Message;
 
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListenerConnector;

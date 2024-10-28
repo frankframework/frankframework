@@ -31,6 +31,7 @@ import org.apache.chemistry.opencmis.commons.spi.RelationshipService;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.apache.chemistry.opencmis.commons.spi.VersioningService;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.extensions.cmis.CmisSessionBuilder;
 import org.frankframework.extensions.cmis.CmisSessionException;
 import org.frankframework.extensions.cmis.server.impl.IbisDiscoveryService;

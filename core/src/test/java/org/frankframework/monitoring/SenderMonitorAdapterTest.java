@@ -6,15 +6,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+import lombok.Getter;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
-import lombok.Getter;
 
 public class SenderMonitorAdapterTest implements EventThrowing {
 	private @Getter Adapter adapter;

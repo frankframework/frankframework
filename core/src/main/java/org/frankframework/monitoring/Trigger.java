@@ -45,8 +45,9 @@ import org.frankframework.util.XmlBuilder;
 public class Trigger implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static final String CLASS_NAME_ALARM = Alarm.class.getName();
-	private static final String CLASS_NAME_CLEARING = Clearing.class.getName();
+	// The element names, which can be used as a Trigger.
+	private static final String ALARM_NAME = "AlarmTrigger";
+	private static final String CLEARING_NAME = "ClearingTrigger";
 
 	private @Getter Monitor monitor;
 	private @Getter @Setter Severity severity;
@@ -149,8 +150,7 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void toXml(XmlBuilder monitor) {
-		XmlBuilder trigger=new XmlBuilder("trigger");
-		trigger.addAttribute("className", isAlarm() ? CLASS_NAME_ALARM : CLASS_NAME_CLEARING);
+		XmlBuilder trigger=new XmlBuilder(isAlarm() ? ALARM_NAME : CLEARING_NAME);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity", getSeverity().name());
@@ -162,14 +162,14 @@ public class Trigger implements ITrigger {
 			trigger.addAttribute("period",getPeriod());
 		}
 		for (String eventCode : eventCodes) {
-			XmlBuilder event = new XmlBuilder("event");
+			XmlBuilder event = new XmlBuilder("Event");
 			trigger.addSubElement(event);
 			event.setValue(eventCode);
 		}
 		if (getAdapterFilters()!=null && getSourceFiltering() != SourceFiltering.NONE) {
 			for (String adapterName : getAdapterFilters().keySet()) {
 				AdapterFilter af = getAdapterFilters().get(adapterName);
-				XmlBuilder adapter = new XmlBuilder("adapterfilter");
+				XmlBuilder adapter = new XmlBuilder("Adapterfilter");
 				trigger.addSubElement(adapter);
 				adapter.addAttribute("adapter", adapterName);
 				if (isFilterOnLowerLevelObjects()) {
@@ -253,6 +253,7 @@ public class Trigger implements ITrigger {
 			setSourceFiltering(SourceFiltering.ADAPTER);
 		}
 	}
+
 	public boolean isFilterOnAdapters() {
 		return sourceFiltering == SourceFiltering.ADAPTER;
 	}

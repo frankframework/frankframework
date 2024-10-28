@@ -20,14 +20,15 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.util.PropertyLoader;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.DefaultNodeContext;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.instance.impl.MobyNames;
+
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.util.PropertyLoader;
 
 public class HazelcastConfig {
 	private static final AtomicInteger FACTORY_ID_GEN = new AtomicInteger();

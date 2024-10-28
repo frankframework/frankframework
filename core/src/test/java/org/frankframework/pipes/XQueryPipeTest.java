@@ -1,15 +1,14 @@
 package org.frankframework.pipes;
 
-import org.frankframework.configuration.ConfigurationException;
-
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 
 public class XQueryPipeTest extends PipeTestBase<XQueryPipe> {
 
