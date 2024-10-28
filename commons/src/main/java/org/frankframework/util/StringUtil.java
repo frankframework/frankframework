@@ -35,7 +35,7 @@ public class StringUtil {
 
 	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
 	private static final String DEFAULT_DELIMITER = ",";
-	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*?" + DEFAULT_DELIMITER + "+\\s*");
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("(\\s++)?" + DEFAULT_DELIMITER + "+(\\s++)?");
 
 	/**
 	 * Private constructor for utility class, for Sonar
@@ -297,7 +297,7 @@ public class StringUtil {
 		if (input == null) {
 			return Stream.empty();
 		}
-		Pattern splitPattern = Pattern.compile("\\s*[" + delim + "]+\\s*");
+		Pattern splitPattern = Pattern.compile("(\\s++)?[" + delim + "]+(\\s++)?");
 		return splitPattern.splitAsStream(input.trim())
 				.filter(StringUtils::isNotBlank);
 	}
