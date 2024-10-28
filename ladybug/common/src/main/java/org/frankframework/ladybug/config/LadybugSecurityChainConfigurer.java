@@ -15,13 +15,11 @@
 */
 package org.frankframework.ladybug.config;
 
-import java.lang.reflect.Method;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletContext;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,14 +43,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.context.ServletContextAware;
 
+import lombok.Setter;
+
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.AuthenticationType;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
 import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
 
 /**
  * Enables WebSecurity, still depends on the existence of the {@link AbstractSecurityWebApplicationInitializer#DEFAULT_FILTER_NAME}.
@@ -86,38 +84,13 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 	private static final String STANDALONE_PROPERTY_PREFIX = "application.security.testtool.authentication.";
 	private static final String CONSOLE_PROPERTY_PREFIX = "application.security.console.authentication.";
 
-	private IAuthenticator createAuthenticator(String properyPrefix) {
-		String type = environment.getProperty(properyPrefix+"type", AuthenticationType.SEALED.name());
-		AuthenticationType auth = null;
-		try {
-			auth = EnumUtils.parse(AuthenticationType.class, type);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException("invalid authenticator type", e);
-		}
-		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
-		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
-
-		for(Method method: clazz.getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
-				continue;
-
-			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isNotEmpty(value)) {
-				ClassUtils.invokeSetter(authenticator, method, value);
-			}
-		}
-
-		return authenticator;
-	}
-
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http) throws Exception {
 		final IAuthenticator authenticator;
 		if(StringUtils.isNotBlank(environment.getProperty(STANDALONE_PROPERTY_PREFIX+"type"))) {
-			authenticator = createAuthenticator(STANDALONE_PROPERTY_PREFIX);
+			authenticator = AuthenticationType.createAuthenticator(applicationContext, STANDALONE_PROPERTY_PREFIX);
 		} else {
-			authenticator = createAuthenticator(CONSOLE_PROPERTY_PREFIX);
+			authenticator = AuthenticationType.createAuthenticator(applicationContext, CONSOLE_PROPERTY_PREFIX);
 		}
 
 		return configureChain(authenticator);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,22 @@
 */
 package org.frankframework.lifecycle.servlets;
 
+import java.lang.reflect.Method;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 
 // LdapAuthenticationProvider
+@Log4j2
 public enum AuthenticationType {
 	AD(ActiveDirectoryAuthenticator.class),
 	CONTAINER(JeeAuthenticator.class),
@@ -35,5 +48,43 @@ public enum AuthenticationType {
 
 	AuthenticationType(Class<? extends IAuthenticator> clazz) {
 		authenticator = clazz;
+	}
+
+	/** 
+	 * Disable login on endpoints when using local setup.
+	 * 
+	 * @param environment set of properties used to determine the dtap stage.
+	 * @return the default `AuthenticationType` name.
+	 */
+	private static String getDefaultAuthenticationType(Environment environment) {
+		AuthenticationType defaultAuthenticator = SecuritySettings.isWebSecurityEnabled() ? AuthenticationType.SEALED : AuthenticationType.NONE;
+		return defaultAuthenticator.name();
+	}
+
+	public static IAuthenticator createAuthenticator(ApplicationContext applicationContext, String properyPrefix) {
+		Environment environment = applicationContext.getEnvironment();
+		String type = environment.getProperty(properyPrefix+"type", getDefaultAuthenticationType(environment));
+		AuthenticationType auth = null;
+		try {
+			auth = EnumUtils.parse(AuthenticationType.class, type);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalStateException("invalid authenticator type", e);
+		}
+		log.debug("creating Authenticator [{}]", auth);
+		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
+		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
+
+		for(Method method: clazz.getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
+			String value = environment.getProperty(properyPrefix+setter);
+			if(StringUtils.isNotEmpty(value)) {
+				ClassUtils.invokeSetter(authenticator, method, value);
+			}
+		}
+
+		return authenticator;
 	}
 }
