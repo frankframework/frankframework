@@ -35,7 +35,12 @@ public class StringUtil {
 
 	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
 	private static final String DEFAULT_DELIMITER = ",";
-	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*" + DEFAULT_DELIMITER + "+\\s*");
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*?" + DEFAULT_DELIMITER + "+\\s*");
+
+	/**
+	 * Private constructor for utility class, for Sonar
+	 */
+	private StringUtil() {}
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
