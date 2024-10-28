@@ -39,7 +39,7 @@
     "rxjs": "~7.8.0",
     "simple-datatables": "^8.0.0",
     "sockjs-client": "^1.6.1",
-    "sweetalert2": "^11.14.1",
+    "sweetalert2": "^11.14.4",
     "tinycon": "0.6.8",
     "tslib": "^2.3.0",
     "ws": "^8.17.0",
