@@ -34,8 +34,9 @@ import org.apache.logging.log4j.LogManager;
 public class StringUtil {
 
 	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
-	private static final String DEFAULT_DELIMITER = ",";
-	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("(\\s++)?" + DEFAULT_DELIMITER + "+(\\s++)?");
+	public static final String DEFAULT_STRING_SPLIT_DELIMITER = ",";
+	public static final String MATCH_OPTIONAL_WHITESPACE = "(\\s++)?";
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile(MATCH_OPTIONAL_WHITESPACE + DEFAULT_STRING_SPLIT_DELIMITER + "+" + MATCH_OPTIONAL_WHITESPACE);
 
 	/**
 	 * Private constructor for utility class, for Sonar
@@ -238,7 +239,7 @@ public class StringUtil {
 	}
 
 	/**
-	 * Splits a string into a list of substrings using default delimiter {@value DEFAULT_DELIMITER}.
+	 * Splits a string into a list of substrings using default delimiter {@value DEFAULT_STRING_SPLIT_DELIMITER}.
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
 	 *
 	 * @param input the string to split, can be {@literal null}.
@@ -251,7 +252,7 @@ public class StringUtil {
 	}
 
 	/**
-	 * Splits a string into a stream of substrings using default delimiter {@value DEFAULT_DELIMITER}.
+	 * Splits a string into a stream of substrings using default delimiter {@value DEFAULT_STRING_SPLIT_DELIMITER}.
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
 	 *
 	 * @param input the string to split, can be {@literal null}.
@@ -285,19 +286,19 @@ public class StringUtil {
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
 	 *
 	 * @param input the string to split, can be {@literal null}.
-	 * @param delim the delimiters to split the string by
+	 * @param delim the delimiters to split the string by. Each character in the string is a potential delimiter, so if you want to split strings by for instance a space, {@code ,} or {@code ;} then pass {@code " ,;"}.
 	 * @return a Stream of strings. An empty stream if the input was {@literal null}.
 	 */
 	@Nonnull
 	public static Stream<String> splitToStream(@Nullable final String input, @Nonnull final String delim) {
-		if (DEFAULT_DELIMITER.equals(delim)) {
+		if (DEFAULT_STRING_SPLIT_DELIMITER.equals(delim)) {
 			// This version of the method uses a pre-compiled pattern, instead of compiling on every invocation.
 			return splitToStream(input);
 		}
 		if (input == null) {
 			return Stream.empty();
 		}
-		Pattern splitPattern = Pattern.compile("(\\s++)?[" + delim + "]+(\\s++)?");
+		Pattern splitPattern = Pattern.compile(MATCH_OPTIONAL_WHITESPACE + "[" + delim + "]+" + MATCH_OPTIONAL_WHITESPACE);
 		return splitPattern.splitAsStream(input.trim())
 				.filter(StringUtils::isNotBlank);
 	}
