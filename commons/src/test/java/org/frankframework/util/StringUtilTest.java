@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -194,8 +195,11 @@ class StringUtilTest {
 				arguments(null, List.of()),
 				arguments("", List.of()),
 				arguments("      ", List.of()),
+				arguments("   ,   ", List.of()),
 				arguments(",,,,,", List.of()),
-				arguments(",,      ,,,", List.of())
+				arguments(",,      ,,,", List.of()),
+				// Oversized input to stress the regex-engine, catch any potential runaway regex searching.
+				arguments(StringUtils.repeat("," + StringUtils.repeat(" ", 10_000), 1_000), Collections.emptyList())
 		);
 	}
 
@@ -214,6 +218,9 @@ class StringUtilTest {
 				arguments(null, "\\/", List.of()),
 				arguments("", "\\/", List.of()),
 				arguments("                             ", " ", List.of()),
+				arguments("            :                 ", ":", List.of()),
+				arguments(StringUtils.repeat("                             ", 1_000_000), " ", List.of()),
+				arguments(";" + StringUtils.repeat("                             ", 1_000_000), ";", List.of()),
 				arguments("a,b; c    ", ",", List.of("a", "b; c")),
 				arguments("a,b;c", ";,", List.of("a", "b", "c")),
 				arguments("a,b;c d", ";,", List.of("a", "b", "c d")),
@@ -223,7 +230,9 @@ class StringUtilTest {
 				arguments(";a,b;,c,", ";,", List.of("a", "b", "c")),
 				arguments(" a , ;  b;,c ; ", ";,", List.of("a", "b", "c")),
 				arguments(" a , ;  b  c  ", " ;,", List.of("a", "b", "c")),
-				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", List.of("a", "b", "c", "d", "e", "f", "g"))
+				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", List.of("a", "b", "c", "d", "e", "f", "g")),
+				// Oversized input to stress the regex-engine, catch any potential runaway regex searching.
+				arguments(StringUtils.repeat(";" + StringUtils.repeat(" ", 10_000), 1_000), ";,|", List.of())
 		);
 	}
 
