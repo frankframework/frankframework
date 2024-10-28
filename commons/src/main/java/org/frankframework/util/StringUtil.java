@@ -35,8 +35,7 @@ public class StringUtil {
 
 	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
 	public static final String DEFAULT_STRING_SPLIT_DELIMITER = ",";
-	public static final String MATCH_OPTIONAL_WHITESPACE = "(\\s++)?";
-	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile(MATCH_OPTIONAL_WHITESPACE + DEFAULT_STRING_SPLIT_DELIMITER + "+" + MATCH_OPTIONAL_WHITESPACE);
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile(DEFAULT_STRING_SPLIT_DELIMITER + "+");
 
 	/**
 	 * Private constructor for utility class, for Sonar
@@ -263,7 +262,8 @@ public class StringUtil {
 		if (input == null) {
 			return Stream.empty();
 		}
-		return DEFAULT_SPLIT_PATTERN.splitAsStream(input.trim())
+		return DEFAULT_SPLIT_PATTERN.splitAsStream(input)
+				.map(String::trim)
 				.filter(StringUtils::isNotBlank);
 	}
 
@@ -298,8 +298,9 @@ public class StringUtil {
 		if (input == null) {
 			return Stream.empty();
 		}
-		Pattern splitPattern = Pattern.compile(MATCH_OPTIONAL_WHITESPACE + "[" + delim + "]+" + MATCH_OPTIONAL_WHITESPACE);
-		return splitPattern.splitAsStream(input.trim())
+		Pattern splitPattern = Pattern.compile("[" + delim + "]+");
+		return splitPattern.splitAsStream(input)
+				.map(String::trim)
 				.filter(StringUtils::isNotBlank);
 	}
 
