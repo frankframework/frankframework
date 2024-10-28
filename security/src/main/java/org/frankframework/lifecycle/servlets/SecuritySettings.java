@@ -34,6 +34,7 @@ public class SecuritySettings {
 	// package private for testing purposes
 	static void resetSecuritySettings() {
 		webSecurityEnabled = null;
+		defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 	}
 
 	public static void setupDefaultSecuritySettings(PropertyResolver properties) {

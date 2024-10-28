@@ -1,6 +1,11 @@
 package org.frankframework.lifecycle.servlets;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +37,6 @@ public class AuthenticationTypeTest {
 		ENV.add(SecuritySettings.AUTH_ENABLED_KEY, () -> authEnabled);
 		SecuritySettings.resetSecuritySettings();
 		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
-
 	}
 
 	@ParameterizedTest
@@ -40,6 +44,14 @@ public class AuthenticationTypeTest {
 	@DisplayName("When AUTH_ENABLED_KEY has been set to true, always use SEALED authentication")
 	public void createAuthenticatorWhenTrueAlwaysSEALED(String stage) {
 		setEnvironment(stage, true);
+
+		assertTrue(SecuritySettings.isWebSecurityEnabled());
+		if(stage.equals("LOC")) {
+			assertEquals(TransportGuarantee.NONE, SecuritySettings.getDefaultTransportGuarantee());
+		}
+		else {
+			assertEquals(TransportGuarantee.CONFIDENTIAL, SecuritySettings.getDefaultTransportGuarantee());
+		}
 
 		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(SealedAuthenticator.class, authenticator);
@@ -51,6 +63,14 @@ public class AuthenticationTypeTest {
 	public void createAuthenticatorWhenAuthEnabledFalseAlwaysNOOP(String stage) {
 		setEnvironment(stage, false);
 
+		assertFalse(SecuritySettings.isWebSecurityEnabled());
+		if(stage.equals("LOC")) {
+			assertEquals(TransportGuarantee.NONE, SecuritySettings.getDefaultTransportGuarantee());
+		}
+		else {
+			assertEquals(TransportGuarantee.CONFIDENTIAL, SecuritySettings.getDefaultTransportGuarantee());
+		}
+
 		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(NoOpAuthenticator.class, authenticator);
 	}
@@ -61,6 +81,8 @@ public class AuthenticationTypeTest {
 	public void createAuthenticatorWhenAuthEnabledNotSpecified(String stage) {
 		setEnvironment(stage, null);
 
+		assertTrue(SecuritySettings.isWebSecurityEnabled());
+		assertEquals(TransportGuarantee.CONFIDENTIAL, SecuritySettings.getDefaultTransportGuarantee());
 		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(SealedAuthenticator.class, authenticator);
 	}
@@ -70,6 +92,8 @@ public class AuthenticationTypeTest {
 	public void createAuthenticatorWhenLocNoAuthentication() {
 		setEnvironment("LOC", null);
 
+		assertFalse(SecuritySettings.isWebSecurityEnabled());
+		assertEquals(TransportGuarantee.NONE, SecuritySettings.getDefaultTransportGuarantee());
 		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(NoOpAuthenticator.class, authenticator);
 	}
