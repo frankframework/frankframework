@@ -11,11 +11,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.SortedSet;
 
-import org.frankframework.core.ListenerException;
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.ListenerException;
+import org.frankframework.stream.Message;
 
 public class ServiceDispatcherTest {
 

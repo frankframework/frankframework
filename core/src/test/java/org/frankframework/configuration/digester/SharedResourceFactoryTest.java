@@ -9,15 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.digester3.Digester;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.CanUseSharedResource;
-import org.frankframework.core.SharedResource;
-import org.frankframework.testutil.TestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.CanUseSharedResource;
+import org.frankframework.core.SharedResource;
+import org.frankframework.testutil.TestConfiguration;
 
 public class SharedResourceFactoryTest {
 

@@ -20,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import lombok.Getter;
+
 import org.frankframework.stream.Message;
 import org.frankframework.util.UUIDUtil;
 

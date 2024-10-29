@@ -19,11 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.pipes.FixedForwardPipe;

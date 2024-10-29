@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.net.URL;
 import java.util.Map;
 
-import org.frankframework.testutil.MatchUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.testutil.MatchUtils;
 
 /**
  * @author Gerrit van Brakel

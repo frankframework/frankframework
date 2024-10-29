@@ -20,9 +20,10 @@ import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class URLRequestMatcher implements RequestMatcher {

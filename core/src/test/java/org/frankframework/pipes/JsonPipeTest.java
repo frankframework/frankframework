@@ -5,11 +5,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.JsonPipe.Direction;
 import org.frankframework.testutil.MatchUtils;
-import org.junit.jupiter.api.Test;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 

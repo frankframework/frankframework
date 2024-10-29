@@ -19,8 +19,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.springframework.http.MediaType;
 
 import com.aspose.cells.LoadOptions;
@@ -29,6 +27,9 @@ import com.aspose.cells.Style;
 import com.aspose.cells.Workbook;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 
 @Log4j2

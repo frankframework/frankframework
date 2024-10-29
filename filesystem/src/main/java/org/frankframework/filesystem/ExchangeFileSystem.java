@@ -36,10 +36,14 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nullable;
 import jakarta.mail.internet.InternetAddress;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
+
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -82,8 +86,6 @@ import microsoft.exchange.webservices.data.search.FindItemsResults;
 import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.HasKeystore;

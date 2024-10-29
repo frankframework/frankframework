@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.http.MediaType;
 
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
@@ -29,7 +30,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
-import org.springframework.http.MediaType;
 
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {

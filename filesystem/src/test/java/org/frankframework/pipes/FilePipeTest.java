@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 
-import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 
 /**
  * FilePipe Tester. This class is due to be removed! Do not add more tests

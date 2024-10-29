@@ -20,8 +20,10 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -44,7 +46,7 @@ import org.frankframework.util.XmlBuilder;
  * filename which will be wrapped into an ESB SOAP message. Please note: When
  * writing files which need to be send through FxF they should be written to
  * ${fxf.dir}/NNX00000/out. The property ${fxf.dir} will automatically be
- * available on the OTAP environment (define it in StageSpecifics_LOC.properties
+ * available on the DTAP environment (define it in StageSpecifics_LOC.properties
  * only). Replace NNX00000 with the specific flowId and generate a unique
  * filename (files will automatically be cleaned after 30 days or any other
  * value specified by ${fxf.retention}).

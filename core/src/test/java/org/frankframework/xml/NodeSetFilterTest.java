@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.XmlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
+
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.XmlUtils;
 
 public class NodeSetFilterTest {
 

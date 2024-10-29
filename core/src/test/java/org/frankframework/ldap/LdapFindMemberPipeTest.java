@@ -1,26 +1,25 @@
 package org.frankframework.ldap;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.pipes.PipeTestBase;
-
-import org.frankframework.stream.Message;
-
-import org.junit.jupiter.api.Test;
-
-import javax.naming.NamingException;
-
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+
+import java.io.IOException;
+
+import javax.naming.NamingException;
+
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.pipes.PipeTestBase;
+import org.frankframework.stream.Message;
 
 public class LdapFindMemberPipeTest extends PipeTestBase<LdapFindMemberPipe> {
 

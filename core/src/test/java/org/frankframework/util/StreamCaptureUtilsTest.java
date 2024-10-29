@@ -7,10 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
-
-import org.junit.jupiter.api.Test;
 
 class StreamCaptureUtilsTest {
 

@@ -13,12 +13,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.junit.jupiter.api.Test;
-
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -27,6 +23,10 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
+
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
 	private final  Logger log = LogUtil.getLogger(this);

@@ -19,10 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringWriter;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.filters.OnlyActiveFilter;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
 
 public class OnlyActiveFilterTest {
 

@@ -15,7 +15,6 @@ import java.util.zip.ZipInputStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import org.springframework.util.MimeType;
 
 import org.frankframework.collection.Collection;

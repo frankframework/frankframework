@@ -27,12 +27,6 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.security.JwtSecurityFilter;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StreamUtil;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -72,6 +66,13 @@ import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.security.JwtSecurityFilter;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StreamUtil;
 
 @Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE-1)

@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
