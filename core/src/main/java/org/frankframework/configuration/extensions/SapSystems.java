@@ -17,14 +17,14 @@ package org.frankframework.configuration.extensions;
 
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
-import static org.frankframework.util.GlobalListItem.registerItem;
+import static org.frankframework.util.SapSystemListItem.registerItem;
 
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class SapSystems {
 
-	public void addSapSystem(GlobalListItem sapSystem) {
+	public void addSapSystem(SapSystemListItem sapSystem) {
 		registerItem(sapSystem);
 		SapSystemFactory.getInstance().addSapSystem(sapSystem, sapSystem.getName());
 	}

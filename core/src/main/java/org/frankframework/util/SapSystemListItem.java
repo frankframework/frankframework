@@ -36,10 +36,10 @@ import org.frankframework.core.INamedObject;
  * <br/>
  * @author Gerrit van Brakel
  */
-public abstract class GlobalListItem implements INamedObject {
+public abstract class SapSystemListItem implements INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static final Hashtable<String, GlobalListItem> items = new Hashtable<>();
+	private static final Hashtable<String, SapSystemListItem> items = new Hashtable<>();
 	private String name;
 	private String aliasFor;
 
@@ -53,8 +53,8 @@ public abstract class GlobalListItem implements INamedObject {
 	 * Get an item by Name. Descender classes should implement a similar method,
 	 * that returns an object of its own type.
 	 */
-	protected static GlobalListItem getItem(String itemName) {
-		GlobalListItem result = null;
+	protected static SapSystemListItem getItem(String itemName) {
+		SapSystemListItem result = null;
 
 		result = items.get(itemName);
 		if (result==null) {
@@ -95,7 +95,7 @@ public abstract class GlobalListItem implements INamedObject {
 	/**
 	 * Register an item in the list
 	 */
-	public static void registerItem(GlobalListItem item) {
+	public static void registerItem(SapSystemListItem item) {
 		if(StringUtils.isEmpty(item.getAliasFor())) {
 			item.configure();
 		}

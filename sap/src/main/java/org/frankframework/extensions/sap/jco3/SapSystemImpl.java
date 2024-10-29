@@ -35,7 +35,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
@@ -45,7 +45,7 @@ import org.frankframework.util.GlobalListItem;
  * @author  Niels Meijer
  * @since   5.0
  */
-public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem {
+public abstract class SapSystemImpl extends SapSystemListItem implements ISapSystem {
 
 	private String host;
 	private String ashost;
