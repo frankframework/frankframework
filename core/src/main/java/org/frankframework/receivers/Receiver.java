@@ -39,9 +39,6 @@ import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -56,6 +53,10 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -928,12 +929,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 *
 	 * @param rawMessageWrapper Wrapper for the raw message, may be an instance of {@link RawMessageWrapper} or {@link MessageWrapper}. If an instance of {@link RawMessageWrapper} then
 	 *                          the {@link IListener} will be used to extract the full {@link Message} object to be sent to the error storage.
-	 * @param context Context of the process. Can be either the thread context of a {@link IPullingListener}, or the current {@link PipeLineSession}.
+	 * @param session Context of the process. Can be either the thread context of a {@link IPullingListener}, or the current {@link PipeLineSession}.
 	 * @param receivedDate Timestamp of when the message was received.
 	 * @param comments Processing comments and error message regarding the reason the message was rejected.
 	 * @param txDef {@link TransactionDefinition} for the transaction to be used for moving the message to error state / storage.
 	 */
-	public void moveInProcessToError(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> context, Instant receivedDate, String comments, TransactionDefinition txDef) {
+	public void moveInProcessToError(RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session, Instant receivedDate, String comments, TransactionDefinition txDef) {
 		if (getListener() instanceof IHasProcessState && !knownProcessStates.isEmpty()) {
 			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 			try {
@@ -948,7 +949,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (rawMessageWrapper.getCorrelationId() != null) {
 			correlationId = rawMessageWrapper.getCorrelationId();
 		} else {
-			correlationId = (String) context.get(PipeLineSession.CORRELATION_ID_KEY);
+			correlationId = (String) session.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
 
 		final ISender errorSender = getErrorSender();
@@ -978,11 +979,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (rawMessageWrapper instanceof MessageWrapper) {
 				message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
 			} else {
-				message = getListener().extractMessage(rawMessageWrapper, context);
+				message = getListener().extractMessage(rawMessageWrapper, session);
 			}
 			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
 			if (errorSender != null) {
-				try(PipeLineSession session = new PipeLineSession(); Message senderResult = errorSender.sendMessageOrThrow(message, session)) {
+				try(PipeLineSession senderSession = new PipeLineSession(); Message senderResult = errorSender.sendMessageOrThrow(message, senderSession)) {
 					log.debug("error-sender result [{}]", senderResult);
 				}
 			}
@@ -1553,7 +1554,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * @param messageWrapper Message for which to check delivery count
 	 * @return {@code true} if message should stil be retried, {@code false} if not.
 	 */
-	protected boolean isDeliveryCountBelowRetryLimitAfterMessageProcessed(@Nonnull final MessageWrapper<M> messageWrapper) {
+	protected boolean isDeliveryCountBelowRetryLimitAfterMessageProcessed(@Nonnull final RawMessageWrapper<M> messageWrapper) {
 		if (getMaxRetries() < 0) {
 			log.debug("{} Receiver has no retry limit so message will be retried", this::getLogPrefix);
 			return true;

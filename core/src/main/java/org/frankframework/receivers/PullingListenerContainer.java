@@ -21,9 +21,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -33,6 +30,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.INamedObject;
@@ -223,7 +224,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					threadContext = listener.openThread();
 					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
-					int deliveryCount=0;
 					boolean messageHandled = false;
 					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
@@ -312,19 +312,16 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 						try {
 							messageId = rawMessage.getId();
-							if (receiver.getMaxRetries()>=0) {
-								deliveryCount = receiver.getDeliveryCount(rawMessage);
-							}
-							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
-								try (PipeLineSession session = new PipeLineSession()) {
-									session.putAll(threadContext);
+							try (PipeLineSession session = new PipeLineSession()) {
+								session.putAll(threadContext);
+								if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
 									receiver.processRawMessage(listener, rawMessage, session, true);
+								} else {
+									Instant receivedDate = Instant.now();
+									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
+									receiver.moveInProcessToError(rawMessage, session, receivedDate, errorMessage, Receiver.TXREQUIRED);
+									receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 								}
-							} else {
-								Instant receivedDate = Instant.now();
-								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
-								receiver.moveInProcessToError(rawMessage, threadContext, receivedDate, errorMessage, Receiver.TXREQUIRED);
-								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 							}
 							messageHandled = true;
 							if (txStatus != null) {
@@ -368,11 +365,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
-						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
+						boolean noMoreRetries = !receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(rawMessage);
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
 						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
-						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
+						inProcessStateManager.changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);
 							txStatus = null;
