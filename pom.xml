@@ -19,7 +19,7 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.18.0</jackson.version>
+		<jackson.version>2.18.1</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
 		<spring.version>6.1.14</spring.version>
 		<spring-security.version>6.3.4</spring-security.version>
