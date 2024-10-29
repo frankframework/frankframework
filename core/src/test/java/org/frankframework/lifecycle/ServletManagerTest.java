@@ -223,7 +223,7 @@ public class ServletManagerTest {
 		return (DynamicServletRegistration) manager.getServletContext().getServletRegistration(name);
 	}
 
-	// Mock classes used to test the ServletManagers functionality
+	// Mock classes used to test the ServletManager functionality
 
 	private static class DummyServletImpl extends HttpServlet implements DynamicRegistration.Servlet {
 		private @Getter @Setter String name;

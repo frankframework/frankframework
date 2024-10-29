@@ -46,7 +46,7 @@ import org.springframework.web.context.ServletContextAware;
 import lombok.Setter;
 
 import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.ClassUtils;
@@ -88,9 +88,9 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http) throws Exception {
 		final IAuthenticator authenticator;
 		if(StringUtils.isNotBlank(environment.getProperty(STANDALONE_PROPERTY_PREFIX+"type"))) {
-			authenticator = AuthenticationType.createAuthenticator(applicationContext, STANDALONE_PROPERTY_PREFIX);
+			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, STANDALONE_PROPERTY_PREFIX);
 		} else {
-			authenticator = AuthenticationType.createAuthenticator(applicationContext, CONSOLE_PROPERTY_PREFIX);
+			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, CONSOLE_PROPERTY_PREFIX);
 		}
 
 		return configureChain(authenticator);

@@ -53,7 +53,7 @@ public class AuthenticationTypeTest {
 			assertEquals(TransportGuarantee.CONFIDENTIAL, SecuritySettings.getDefaultTransportGuarantee());
 		}
 
-		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(SealedAuthenticator.class, authenticator);
 	}
 
@@ -71,7 +71,7 @@ public class AuthenticationTypeTest {
 			assertEquals(TransportGuarantee.CONFIDENTIAL, SecuritySettings.getDefaultTransportGuarantee());
 		}
 
-		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(NoOpAuthenticator.class, authenticator);
 	}
 
@@ -83,7 +83,7 @@ public class AuthenticationTypeTest {
 
 		assertTrue(SecuritySettings.isWebSecurityEnabled());
 		assertEquals(TransportGuarantee.CONFIDENTIAL, SecuritySettings.getDefaultTransportGuarantee());
-		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(SealedAuthenticator.class, authenticator);
 	}
 
@@ -94,7 +94,7 @@ public class AuthenticationTypeTest {
 
 		assertFalse(SecuritySettings.isWebSecurityEnabled());
 		assertEquals(TransportGuarantee.NONE, SecuritySettings.getDefaultTransportGuarantee());
-		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, "dummy.");
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, "dummy.");
 		assertInstanceOf(NoOpAuthenticator.class, authenticator);
 	}
 

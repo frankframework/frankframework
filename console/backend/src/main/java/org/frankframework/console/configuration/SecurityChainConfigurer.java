@@ -43,7 +43,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import lombok.Setter;
 
-import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
 import org.frankframework.util.ClassUtils;
@@ -113,7 +113,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	@Bean
 	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
 		String properyPrefix = "application.security.console.authentication.";
-		IAuthenticator authenticator = AuthenticationType.createAuthenticator(applicationContext, properyPrefix);
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
 		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
