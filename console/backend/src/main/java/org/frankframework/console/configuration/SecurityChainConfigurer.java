@@ -15,12 +15,9 @@
 */
 package org.frankframework.console.configuration;
 
-import java.lang.reflect.Method;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,13 +41,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
-import org.frankframework.lifecycle.servlets.AuthenticationType;
+import lombok.Setter;
+
+import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
 
 @Configuration
 @EnableWebSecurity // Enables Spring Security
@@ -59,42 +55,13 @@ import org.frankframework.util.StringUtil;
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private @Setter ApplicationContext applicationContext;
-	private Environment environment;
 	private boolean csrfEnabled;
 	private String csrfCookiePath;
 
 	@Override
 	public void setEnvironment(Environment env) {
-		this.environment = env;
 		csrfEnabled = env.getProperty("csrf.enabled", boolean.class, true);
 		csrfCookiePath = env.getProperty("csrf.cookie.path", String.class);
-	}
-
-	private IAuthenticator createAuthenticator() {
-		String properyPrefix = "application.security.console.authentication.";
-		String type = environment.getProperty(properyPrefix + "type", AuthenticationType.SEALED.name());
-		AuthenticationType auth = null;
-		try {
-			auth = EnumUtils.parse(AuthenticationType.class, type);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException("invalid authenticator type", e);
-		}
-		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
-		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
-
-		for (Method method : clazz.getMethods()) {
-			if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
-				continue;
-			}
-
-			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = environment.getProperty(properyPrefix + setter);
-			if (StringUtils.isNotEmpty(value)) {
-				ClassUtils.invokeSetter(authenticator, method, value);
-			}
-		}
-
-		return authenticator;
 	}
 
 	private SecurityFilterChain configureHttpSecurity(IAuthenticator authenticator, HttpSecurity http) throws Exception {
@@ -145,7 +112,8 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	@Bean
 	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
-		IAuthenticator authenticator = createAuthenticator();
+		String properyPrefix = "application.security.console.authentication.";
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
 		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
