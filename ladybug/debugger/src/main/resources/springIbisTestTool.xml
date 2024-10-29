@@ -117,7 +117,7 @@
 			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
 		</bean>
 
-		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName"
+		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseLogStorage" autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="DatabaseDebugStorage"/>
