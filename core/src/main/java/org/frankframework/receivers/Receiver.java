@@ -420,21 +420,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		try {
 			try {
 				if (getSender()!=null) {
-					getSender().open();
+					getSender().start();
 				}
 				if (getErrorSender()!=null) {
-					getErrorSender().open();
+					getErrorSender().start();
 				}
 				if (getErrorStorage()!=null) {
-					getErrorStorage().open();
+					getErrorStorage().start();
 				}
 				if (getMessageLog()!=null) {
-					getMessageLog().open();
+					getMessageLog().start();
 				}
 			} catch (Exception e) {
 				throw new ListenerException(e);
 			}
-			getListener().open();
+			getListener().start();
 		} finally {
 			if (timeoutGuard.cancel()) {
 				throw new TimeoutException("timeout exceeded while starting receiver");
@@ -470,34 +470,34 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		log.debug("{}closing", getLogPrefix());
 		try {
 			try {
-				getListener().close();
+				getListener().stop();
 			} catch (Exception e) {
 				error("error closing listener", e);
 			}
 			if (getSender()!=null) {
 				try {
-					getSender().close();
+					getSender().stop();
 				} catch (Exception e) {
 					error("error closing sender", e);
 				}
 			}
 			if (getErrorSender()!=null) {
 				try {
-					getErrorSender().close();
+					getErrorSender().stop();
 				} catch (Exception e) {
 					error("error closing error sender", e);
 				}
 			}
 			if (getErrorStorage()!=null) {
 				try {
-					getErrorStorage().close();
+					getErrorStorage().stop();
 				} catch (Exception e) {
 					error("error closing error storage", e);
 				}
 			}
 			if (getMessageLog()!=null) {
 				try {
-					getMessageLog().close();
+					getMessageLog().stop();
 				} catch (Exception e) {
 					error("error closing message log", e);
 				}

@@ -8,7 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 
-import com.mockrunner.mock.jms.MockQueue;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import jakarta.jms.BytesMessage;
-import jakarta.jms.TextMessage;
+import com.mockrunner.mock.jms.MockQueue;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
@@ -54,13 +55,13 @@ class JmsSenderTest {
 		jmsSender.setApplicationContext(configuration.getApplicationContext());
 
 		jmsSender.configure();
-		jmsSender.open();
+		jmsSender.start();
 	}
 
 	@AfterEach
 	void tearDown() {
 		pipeLineSession.close();
-		jmsSender.close();
+		jmsSender.stop();
 	}
 
 	@Test

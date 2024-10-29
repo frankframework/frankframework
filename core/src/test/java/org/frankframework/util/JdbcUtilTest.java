@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsSupportFactory;
@@ -40,7 +41,6 @@ import org.frankframework.testutil.VirtualReader;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
-import org.xml.sax.SAXException;
 
 public class JdbcUtilTest {
 	private static final String H2_CONNECTION_STRING = "jdbc:h2:mem:test";

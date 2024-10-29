@@ -9,16 +9,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeansException;
+import org.springframework.context.support.AbstractApplicationContext;
+
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.lifecycle.MessageEventListener;
 import org.frankframework.testutil.TestClassLoader;
 import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.MessageKeeperMessage;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.BeansException;
-import org.springframework.context.support.AbstractApplicationContext;
 
 public class IbisContextTest {
 

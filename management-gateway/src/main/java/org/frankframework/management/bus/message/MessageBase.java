@@ -18,10 +18,11 @@ package org.frankframework.management.bus.message;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.MimeType;
+
+import org.frankframework.management.bus.BusMessageUtils;
 
 public abstract class MessageBase<T> implements Message<T> {
 	public static final String STATUS_KEY = "status";

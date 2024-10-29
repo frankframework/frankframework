@@ -2,8 +2,9 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.util.AppConstants;
 
 public class JndiContextPrefixFactoryTest {
 	private enum ApplicationServer {

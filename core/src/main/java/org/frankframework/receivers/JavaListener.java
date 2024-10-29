@@ -21,11 +21,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 
-import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
@@ -42,12 +48,6 @@ import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/frankframework/servicedispatcher
@@ -89,7 +89,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public synchronized void open() throws ListenerException {
+	public synchronized void start() throws ListenerException {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me
 			registerListener();
@@ -106,7 +106,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public synchronized void close() throws ListenerException {
+	public synchronized void stop() throws ListenerException {
 		open=false;
 		try {
 			// unregister from local list

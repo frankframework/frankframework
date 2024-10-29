@@ -21,20 +21,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.jdbc.FixedQuerySender;
-
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
@@ -197,7 +195,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		try {
-			qs.open();
+			qs.start();
 		} catch (Throwable t) {
 			PipeStartException pse = new PipeStartException("could not start", t);
 			pse.setPipeNameInError(getName());
@@ -207,7 +205,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	@Override
 	public void stop() {
-		qs.close();
+		qs.stop();
 	}
 
 	@Deprecated(forRemoval = true, since = "7.8.0")

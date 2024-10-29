@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IListener;
@@ -45,6 +46,7 @@ import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.SenderThread;
 import org.frankframework.larva.XsltProviderListener;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
@@ -246,12 +248,12 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	public void open() throws ConfigurationException {
 		try {
 			if(get() instanceof ISender) {
-				((ISender) get()).open();
+				((ISender) get()).start();
 			}
 			else if(get() instanceof IListener<?>) {
-				((IListener<?>) get()).open();
+				((IListener<?>) get()).start();
 			}
-		} catch (SenderException | ListenerException e) {
+		} catch (LifecycleException | ListenerException e) {
 			throw new ConfigurationException("error opening [" + get() + "]", e);
 		}
 	}
@@ -261,10 +263,10 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			((AutoCloseable) get()).close();
 		}
 		else if(get() instanceof ISender) {
-			((ISender) get()).close();
+			((ISender) get()).stop();
 		}
 		else if(get() instanceof IListener<?>) {
-			((IListener<?>) get()).close();
+			((IListener<?>) get()).stop();
 		}
 	}
 

@@ -16,10 +16,10 @@
 package org.frankframework.extensions.cmis;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
-
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.PushingListenerAdapter;
@@ -39,15 +39,15 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 	}
 
 	@Override
-	public void open() throws ListenerException {
-		super.open();
+	public void start() throws ListenerException {
+		super.start();
 		CmisEventDispatcher.getInstance().registerEventListener(this);
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		CmisEventDispatcher.getInstance().unregisterEventListener(this);
-		super.close();
+		super.stop();
 	}
 
 	@Override

@@ -9,20 +9,23 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.Difference;
+import org.custommonkey.xmlunit.DifferenceConstants;
+import org.custommonkey.xmlunit.DifferenceListener;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
 
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.Difference;
-import org.custommonkey.xmlunit.DifferenceConstants;
-import org.custommonkey.xmlunit.DifferenceListener;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.frankframework.ldap.LdapSender.Operation;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
@@ -31,9 +34,6 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;
@@ -92,7 +92,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.setAttributesToReturn("gidNumber,mail");
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("cn=LEA Administrator,ou=groups,ou=development," + baseDNs).asString();
 
@@ -105,7 +105,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("<dummy/>").asString();
 
@@ -118,7 +118,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("<attributes><attribute name=\"mail\"><value>info@frankframework.org</value></attribute></attributes>").asString();
 
@@ -133,7 +133,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.addParameter(new Parameter("newEntryName", "cn=LEA Administrator,ou=people,ou=development," + baseDNs));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("<dummy/>").asString();
 
@@ -147,7 +147,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.addParameter(new Parameter("entryName", "cn=Application Developer,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("<attributes><attribute name=\"department\"><value>Java Developers</value></attribute></attributes>").asString();
 
@@ -161,7 +161,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("<attributes><attribute name=\"mail\"><value>leaadministrator@frankframework.org</value></attribute></attributes>").asString();
 
@@ -179,7 +179,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.setMaxEntriesReturned(3);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sendMessage("<dummy />").asString();
 
@@ -194,7 +194,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.addParameter(new Parameter("entryName", baseDNs));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		return sendMessage("dummy").asString();
 	}

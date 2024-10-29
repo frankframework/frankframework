@@ -18,11 +18,14 @@ package org.frankframework.http;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -36,7 +39,6 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
@@ -67,11 +69,12 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		setRunning(true);
 	}
+
 	@Override
-	public void close() {
+	public void stop() {
 		setRunning(false);
 	}
 

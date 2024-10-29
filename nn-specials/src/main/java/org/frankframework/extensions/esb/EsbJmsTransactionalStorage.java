@@ -21,10 +21,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.transform.TransformerConfigurationException;
+
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
-import javax.xml.transform.TransformerConfigurationException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
@@ -101,9 +102,9 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() throws ListenerException {
 		try {
-			super.open();
+			super.start();
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -124,8 +125,8 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 		if (exceptionLogTp != null) {
 			exceptionLogTp.close();
 		}
@@ -183,8 +184,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			rawMessageText = message.toString();
 		} else {
 			try {
-				TextMessage textMessage = null;
-				textMessage = (TextMessage) message;
+				TextMessage textMessage = (TextMessage) message;
 				rawMessageText = textMessage.getText();
 			} catch (ClassCastException e) {
 				log.error("message was not of type TextMessage, but [{}]", message.getClass().getName(), e);
@@ -196,7 +196,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public int getMessageCount() throws ListenerException {
+	public int getMessageCount() {
 		return -1;
 	}
 }

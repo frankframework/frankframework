@@ -11,6 +11,10 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.management.bus.BusAction;
@@ -20,9 +24,6 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })

@@ -82,7 +82,7 @@
 			>
 				<param name="securityClassDocument" sessionKey="securityClassDocument" type="domdoc"/>
 				<param name="Magdat" 	sessionKey="Magdat" type="domdoc"/>
-				<param name="otap"      value="${otap.stage}"/>
+				<param name="dtap"      value="${dtap.stage}"/>
 
 				<forward name="exception" path="error2json" />
 				<forward name="success" path="Check_Security_Class_Against_Rules_Result" />

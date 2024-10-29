@@ -18,11 +18,13 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
@@ -32,6 +34,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.statistics.FrankMeterType;
@@ -77,7 +80,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(configurationMetrics != null) {
-			//The metrics are not always autowired, as this class is also (ab)used by ConfigurationUtils.
+			// The metrics are not always autowired, as this class is also (ab)used by ConfigurationUtils.
 			connectionStatistics = configurationMetrics.createSubDistributionSummary(this, "getConnection", FrankMeterType.PIPE_DURATION);
 		}
 
@@ -87,25 +90,25 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			connection = getConnection();
-			connection.getMetaData(); //We have to perform some DB action, it could be stale or not present (yet)
-		} catch (Throwable t) {
+			connection.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
+		} catch (Exception e) {
 			JdbcUtil.close(connection);
 			connection = null;
 
-			throw new SenderException(t);
+			throw new LifecycleException(e);
 		}
 
-		//When we use pooling connections we need to ask for a new connection every time we want to use it
+		// When we use pooling connections we need to ask for a new connection every time we want to use it
 		if (isConnectionsArePooled()) {
-			close();
+			this.stop();
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		try {
 			if (connection != null) {
 				connection.close();
@@ -114,7 +117,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 			log.warn("caught exception stopping sender", e);
 		} finally {
 			connection = null;
-			super.close();
+			super.stop();
 		}
 	}
 

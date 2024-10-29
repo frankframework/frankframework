@@ -25,16 +25,19 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.DynamicRegistration.Servlet;
-import org.frankframework.util.EnumUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.lifecycle.DynamicRegistration.Servlet;
+import org.frankframework.util.EnumUtils;
 
 //servlets:
 //  IAF-API:
@@ -64,7 +67,9 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	@Override
 	public void afterPropertiesSet() {
-		defaultSecuritySettings();
+		transportGuarantee = SecuritySettings.getDefaultTransportGuarantee();
+		String defaultAuthenticatorName = environment.getProperty("application.security.http.authenticator");
+		authenticatorName = SecuritySettings.isWebSecurityEnabled() ? defaultAuthenticatorName : AuthenticationType.NONE.name();
 	}
 
 	public void setSecurityRoles(String[] accessGrantingRoles) {
@@ -112,12 +117,6 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	public boolean isAuthenticationEnabled() {
 		return !securityRoles.isEmpty() && !"NONE".equals(authenticatorName);
-	}
-
-	private void defaultSecuritySettings() {
-		transportGuarantee = SecuritySettings.getDefaultTransportGuarantee();
-		AuthenticationType defaultType = SecuritySettings.isWebSecurityEnabled() ? AuthenticationType.CONTAINER : AuthenticationType.NONE;
-		authenticatorName = defaultType.name();
 	}
 
 	/**

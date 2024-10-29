@@ -15,8 +15,6 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -46,12 +44,14 @@ import org.filesys.smb.server.SMBConfigSection;
 import org.filesys.smb.server.SMBServer;
 import org.filesys.smb.server.SMBSrvSession;
 import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.element.GenericConfigElement;
+
 import org.frankframework.filesystem.smb.Samba2FileSystemTest;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Will create a local FS with share 'home' @ 'localhost' : 'automatically-calculated-port'.

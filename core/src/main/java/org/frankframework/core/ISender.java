@@ -16,7 +16,9 @@
 package org.frankframework.core;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
@@ -45,12 +47,12 @@ public interface ISender extends IConfigurable {
 	 * This method will be called to start the sender. After this method is called the sendMessage method may be called.
 	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(Message, PipeLineSession) sendMessage()} method.
 	 */
-	void open() throws SenderException;
+	void start();
 
 	/**
 	 * Stop/close the sender and deallocate resources.
 	 */
-	void close() throws SenderException;
+	void stop();
 
 	/**
 	 * When <code>true</code>, the result of sendMessage is the reply of the request.

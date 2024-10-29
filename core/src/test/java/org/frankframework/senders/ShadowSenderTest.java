@@ -12,14 +12,18 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collection;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
-import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -29,8 +33,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class ShadowSenderTest extends ParallelSendersTest {
 
@@ -90,7 +92,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	public void testWithDefaultResultSender() throws Exception {
 		((ShadowSender)sender).setResultSender(null);
 		sender.configure();
-		sender.open();
+		sender.start();
 		assertEquals("resultSender", ((ShadowSender)sender).getResultSenderName());
 	}
 
@@ -98,7 +100,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	public void testWithoutDefaultOriginalSender() throws Exception {
 		((ShadowSender)sender).setOriginalSender(null);
 		sender.configure();
-		sender.open();
+		sender.start();
 		assertEquals("originalSender", ((ShadowSender)sender).getOriginalSenderName());
 	}
 
@@ -107,7 +109,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
 			sender.addSender(createResultSender());
 			sender.configure();
-			sender.open();
+			sender.start();
 		});
 		assertEquals("resultSender can only be defined once", exception.getMessage());
 	}
@@ -117,7 +119,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
 			sender.addSender(createOriginalSender());
 			sender.configure();
-			sender.open();
+			sender.start();
 		});
 		assertEquals("originalSender can only be defined once", exception.getMessage());
 	}
@@ -127,7 +129,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
 			ShadowSender ps = new ShadowSender();
 			ps.configure();
-			ps.open();
+			ps.start();
 		});
 		assertEquals("ShadowSender should contain at least 2 Senders, none found", exception.getMessage());
 	}
@@ -137,7 +139,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	public void testNoShadowSenders(boolean waitForCompletionOfShadows) throws Exception {
 		((ShadowSender)sender).setWaitForShadowsToFinish(waitForCompletionOfShadows);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
@@ -177,7 +179,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		sender.addSender(new TestSender("shadowSenderWithDelay3"));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 		String result = sender.sendMessageOrThrow(new Message(INPUT_MESSAGE), session).asString();
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
@@ -222,7 +224,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		((ShadowSender)sender).setWaitForShadowsToFinish(false);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message inputMessage = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
 

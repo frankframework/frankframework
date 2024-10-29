@@ -16,8 +16,10 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -27,7 +29,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.XercesXmlValidator;
-
 
 /**
  * Sender that validates the input message against a XML Schema.
@@ -47,10 +48,11 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() {
 	}
+
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 	}
 
 	@Override

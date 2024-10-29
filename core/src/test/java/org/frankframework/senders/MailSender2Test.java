@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Enumeration;
 
-import org.frankframework.stream.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -14,8 +16,7 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import org.frankframework.stream.Message;
 
 class MailSender2Test extends SenderTestBase<MailSender> {
 
@@ -68,7 +69,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 			+ "</email>";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 
 		MimeMessage[] messages = greenMail.getReceivedMessages();
@@ -87,7 +88,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 		sender.setUseSsl(true);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertTrue(Boolean.parseBoolean(sender.getProperties().getProperty("mail.smtp.starttls.enable")));
 
@@ -112,7 +113,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 			+ "</email>";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 
 		MimeMessage[] messages = greenMail.getReceivedMessages();
@@ -144,7 +145,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 			+ "</email>";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 
 		MimeMessage[] messages = greenMail.getReceivedMessages();
@@ -182,7 +183,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 			+ "</email>";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 
 		MimeMessage[] messages = greenMail.getReceivedMessages();
@@ -204,7 +205,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 			+ "</email>";
 
 		sender.configure();
-		sender.open();
+		sender.start();
 		sender.sendMessageOrThrow(new Message(mailInput), session);
 
 		MimeMessage[] messages = greenMail.getReceivedMessages();

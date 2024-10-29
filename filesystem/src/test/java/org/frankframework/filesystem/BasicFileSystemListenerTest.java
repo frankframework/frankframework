@@ -65,7 +65,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	@AfterEach
 	public void tearDown() {
 		try {
-			fileSystemListener.close();
+			fileSystemListener.stop();
 		} catch (ListenerException e) {
 			log.warn("Error closing filesystem listener", e);
 		}
@@ -78,9 +78,9 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	}
 
 	@Test
-	public void fileListenerTestOpen() {
+	public void fileListenerTestStart() {
 		assertDoesNotThrow(() -> fileSystemListener.configure());
-		assertDoesNotThrow(() -> fileSystemListener.open());
+		assertDoesNotThrow(() -> fileSystemListener.start());
 	}
 
 	@Test
@@ -89,7 +89,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setInputFolder(folder);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
 
-		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::start);
 		if (testFullErrorMessages) {
 			assertThat(e.getMessage(), startsWith("The value for inputFolder [" + folder + "], canonical name ["));
 			assertThat(e.getMessage(), endsWith("It is not a folder."));
@@ -104,7 +104,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setInProcessFolder(folder);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
 
-		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::start);
 		if (testFullErrorMessages) {
 			assertThat(e.getMessage(), startsWith("The value for inProcessFolder [" + folder + "], canonical name ["));
 			assertThat(e.getMessage(), endsWith("It is not a folder."));
@@ -119,7 +119,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setProcessedFolder(folder);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
 
-		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::start);
 		if (testFullErrorMessages) {
 			assertThat(e.getMessage(), startsWith("The value for processedFolder [" + folder + "], canonical name ["));
 			assertThat(e.getMessage(), endsWith("It is not a folder."));
@@ -133,7 +133,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setInputFolder(fileAndFolderPrefix + "xxx1");
 		fileSystemListener.setCreateFolders(true);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
-		assertDoesNotThrow(() -> fileSystemListener.open());
+		assertDoesNotThrow(() -> fileSystemListener.start());
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + "xxx2");
 		fileSystemListener.setCreateFolders(true);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
-		assertDoesNotThrow(() -> fileSystemListener.open());
+		assertDoesNotThrow(() -> fileSystemListener.start());
 	}
 
 	@Test
@@ -149,7 +149,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + "xxx3");
 		fileSystemListener.setCreateFolders(true);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
-		assertDoesNotThrow(() -> fileSystemListener.open());
+		assertDoesNotThrow(() -> fileSystemListener.start());
 	}
 
 	@Test
@@ -157,7 +157,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setLogFolder(fileAndFolderPrefix + "xxx4");
 		fileSystemListener.setCreateFolders(true);
 		assertDoesNotThrow(() -> fileSystemListener.configure());
-		assertDoesNotThrow(() -> fileSystemListener.open());
+		assertDoesNotThrow(() -> fileSystemListener.start());
 	}
 
 	/**
@@ -179,7 +179,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 			waitForActionToFinish();
 		}
 		assertDoesNotThrow(() -> fileSystemListener.configure());
-		assertDoesNotThrow(() -> fileSystemListener.open());
+		assertDoesNotThrow(() -> fileSystemListener.start());
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
@@ -217,7 +217,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 
@@ -236,7 +236,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setMessageType(FileSystemListener.MessageType.CONTENTS);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 
@@ -258,7 +258,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 
@@ -281,7 +281,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setMessageType(FileSystemListener.MessageType.NAME);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 
@@ -303,7 +303,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setStoreMetadataInSessionKey("metadata");
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 
@@ -330,7 +330,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setFileTimeSensitive(true);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 
@@ -360,7 +360,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setLogFolder(fileAndFolderPrefix + logFolder);
 		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
@@ -394,7 +394,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + processedFolder);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
@@ -430,7 +430,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + processedFolder);
 		fileSystemListener.setOverwrite(true);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
@@ -455,7 +455,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		createFile(null, filename, "maakt niet uit");
 		waitForActionToFinish();
@@ -491,7 +491,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + processedFolder);
 		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
@@ -526,7 +526,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + processedFolder);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));

@@ -15,6 +15,9 @@
 */
 package org.frankframework.senders;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
@@ -24,9 +27,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
@@ -55,14 +55,14 @@ public class SenderWrapper extends SenderWrapperBase {
 		getSender().configure();
 	}
 	@Override
-	public void open() throws SenderException {
-		getSender().open();
-		super.open();
+	public void start() {
+		getSender().start();
+		super.start();
 	}
 	@Override
-	public void close() throws SenderException {
-		super.close();
-		getSender().close();
+	public void stop() {
+		super.stop();
+		getSender().stop();
 	}
 
 	@Override

@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
-import org.junit.jupiter.api.Test;
 
 public abstract class AlignTestBase {
 	protected final Logger LOG = LogUtil.getLogger(AlignTestBase.class);

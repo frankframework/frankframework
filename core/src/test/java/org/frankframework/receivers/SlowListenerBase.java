@@ -18,17 +18,19 @@ package org.frankframework.receivers;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public abstract class SlowListenerBase implements IListener<jakarta.jms.Message> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -55,7 +57,7 @@ public abstract class SlowListenerBase implements IListener<jakarta.jms.Message>
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 		if (startupDelay > 0) {
 			try {
 				Thread.sleep(startupDelay);
@@ -66,7 +68,7 @@ public abstract class SlowListenerBase implements IListener<jakarta.jms.Message>
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		if (shutdownDelay > 0) {
 			try {
 				Thread.sleep(shutdownDelay);

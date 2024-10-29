@@ -21,7 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.util.MimeType;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -38,10 +43,6 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.LogUtil;
-
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-import org.springframework.util.MimeType;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC)
@@ -105,7 +106,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			qs.setBlobSmartGet(true);
 			qs.setPrettyPrint(true);
 			qs.configure(true);
-			qs.open();
+			qs.start();
 
 			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session);
 
@@ -129,7 +130,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			log.debug("error executing query", e);
 			throw new BusException("error executing query: "+e.getMessage(), 400);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		return new StringMessage(result, mimetype);

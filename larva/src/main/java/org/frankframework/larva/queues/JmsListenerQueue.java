@@ -46,7 +46,7 @@ public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 	@Override
 	public void open() throws ConfigurationException {
 		try {
-			jmsListener.open();
+			jmsListener.start();
 		} catch (ListenerException e) {
 			throw new ConfigurationException(e);
 		}

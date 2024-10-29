@@ -1,5 +1,4 @@
-ARG WILDFLY_VERSION=33.0.0.Final-jdk21
-FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION}
+FROM quay.io/wildfly/wildfly:34.0.0.Final-jdk21
 
 COPY target/dependencies/secrets/ /opt/frank/secrets/
 # use * when copying into existing folders

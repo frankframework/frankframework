@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
-import org.junit.jupiter.api.Test;
 
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 

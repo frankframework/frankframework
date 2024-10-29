@@ -16,9 +16,11 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -67,17 +69,17 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		if (cache!=null) {
 			cache.open();
 		}
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() {
 		try {
-			super.close();
+			super.stop();
 		} finally {
 			if (cache!=null) {
 				cache.close();

@@ -20,18 +20,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
-import org.frankframework.core.IListener;
-import org.frankframework.core.PipeLineResult;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.receivers.MessageWrapper;
-import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.core.IListener;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.stream.Message;
 
 public class MessageBrowsingUtilTest {
 
@@ -121,12 +123,12 @@ public class MessageBrowsingUtilTest {
 		}
 
 		@Override
-		public void open() {
+		public void start() {
 			// No-op
 		}
 
 		@Override
-		public void close() {
+		public void stop() {
 			// No-op
 		}
 

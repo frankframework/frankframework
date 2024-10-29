@@ -19,14 +19,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
-import org.frankframework.http.HttpServletBase;
-import org.frankframework.lifecycle.DynamicRegistration;
-
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+
+import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
+
+import org.frankframework.http.HttpServletBase;
+import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
  * It is important that we register the correct CXF bus, or else

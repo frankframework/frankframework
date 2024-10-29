@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -53,6 +53,11 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -70,6 +75,7 @@ import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.HttpSessionBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -80,8 +86,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -224,8 +228,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private @Getter boolean getDocumentContent = true;
 	private @Getter boolean useRootFolder = true;
 	private @Getter String resultOnNotFound;
-
-
 	private boolean runtimeSession = false;
 	private @Getter boolean keepSession = true;
 
@@ -297,20 +299,19 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
 			try {
 				globalSession = getSessionBuilder().build();
-			}
-			catch (CmisSessionException e) {
-				throw new SenderException("unable to create cmis session", e);
+			} catch (CmisSessionException e) {
+				throw new LifecycleException("unable to create cmis session", e);
 			}
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		if (globalSession != null) {
 			log.debug("Closing global CMIS session");
 			globalSession.close();

@@ -19,9 +19,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.xml.sax.SAXException;
+
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 public interface IMailFileSystem<M,A> extends IBasicFileSystem<M> {
 

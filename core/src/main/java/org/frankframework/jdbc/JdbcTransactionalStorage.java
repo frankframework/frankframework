@@ -40,9 +40,13 @@ import java.util.zip.ZipException;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -56,6 +60,7 @@ import org.frankframework.core.TransactionAttributes;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -64,8 +69,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RenamingObjectInputStream;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Implements a message log (<code>JdbcMessageLog</code>) or error store (<code>JdbcErrorStorage</code>) that uses database
@@ -137,8 +140,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
 	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";
-
-	private static final boolean DOCUMENT_QUERIES = false;
 
 	protected @Getter @Setter PlatformTransactionManager txManager;
 
@@ -344,13 +345,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			initialize(getDbmsSupport());
 		} catch (JdbcException e) {
-			throw new SenderException(e);
+			throw new LifecycleException(e);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
+			throw new LifecycleException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
 		}
 	}
 
@@ -423,14 +424,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		 */
 	}
 
-	private String documentQuery(String name, String query, String purpose) {
-		return "\n"+name+(purpose!=null?"\n"+purpose:"")+"\n"+query+"\n";
-	}
-
 	/**
 	 *	Checks if table exists, and creates when necessary.
 	 */
-	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
+	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException {
 		try (Connection conn = getConnection()) {
 			boolean tableMustBeCreated;
 
@@ -438,7 +435,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				try {
 					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
 					if (!isCreateTable() && tableMustBeCreated) {
-						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
+						throw new LifecycleException("table ["+getPrefix()+getTableName()+"] does not exist");
 					}
 					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated?"NOT ":""));
 				} catch (JdbcException e) {

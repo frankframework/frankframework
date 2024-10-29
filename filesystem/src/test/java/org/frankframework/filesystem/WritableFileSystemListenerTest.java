@@ -48,7 +48,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		waitForActionToFinish();
 
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
@@ -78,7 +78,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		waitForActionToFinish();
 
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
@@ -113,7 +113,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + inProcessFolder);
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertThrows(ListenerException.class, () -> fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test"));
@@ -136,7 +136,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		waitForActionToFinish();
 
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
@@ -182,7 +182,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		waitForActionToFinish();
 
 		fileSystemListener.configure();
-		fileSystemListener.open();
+		fileSystemListener.start();
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");

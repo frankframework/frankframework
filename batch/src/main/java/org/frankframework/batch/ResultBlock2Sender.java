@@ -19,8 +19,9 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
@@ -67,13 +68,13 @@ public class ResultBlock2Sender extends Result2StringWriter {
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sender.open();
+		sender.start();
 	}
 
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();
+		sender.stop();
 		counters.clear();
 		levels.clear();
 	}

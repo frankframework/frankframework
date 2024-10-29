@@ -29,26 +29,12 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.doc.Mandatory;
-import org.frankframework.senders.SenderWithParametersBase;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlEncodingUtils;
-import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import net.bankid.merchant.library.AssuranceLevel;
@@ -64,6 +50,22 @@ import net.bankid.merchant.library.ServiceId;
 import net.bankid.merchant.library.StatusRequest;
 import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlEncodingUtils;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Requires the net.bankid.merchant.library V1.2.9

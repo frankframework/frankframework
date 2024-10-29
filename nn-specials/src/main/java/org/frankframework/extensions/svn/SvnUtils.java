@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -63,13 +64,13 @@ public class SvnUtils {
 			httpSender.setXhtml(true);
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
-			httpSender.open();
+			httpSender.start();
 			try (PipeLineSession session = new PipeLineSession();
 				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session)) {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 
@@ -83,7 +84,7 @@ public class SvnUtils {
 			httpSender.setXhtml(true);
 			httpSender.setMethodType(HttpMethod.REPORT);
 			httpSender.configure();
-			httpSender.open();
+			httpSender.start();
 
 			String logReportRequest = "<S:log-report xmlns:S=\"svn:\">"
 					+ "<S:start-revision>" + revision + "</S:start-revision>"
@@ -96,7 +97,7 @@ public class SvnUtils {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 

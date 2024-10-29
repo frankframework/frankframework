@@ -16,7 +16,9 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
@@ -90,7 +92,6 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 			throw new SenderException("cannot determine parameter values", e);
 		}
 	}
-
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {

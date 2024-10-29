@@ -1,28 +1,5 @@
 package org.frankframework.extensions.sap.jco3;
 
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoException;
-import com.sap.conn.jco.JCoFunction;
-
-import com.sap.conn.jco.JCoFunctionTemplate;
-
-import org.frankframework.configuration.ConfigurationException;
-
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.extensions.sap.SapException;
-import org.frankframework.parameters.Parameter;
-
-import org.frankframework.stream.Message;
-import org.frankframework.util.SapSystemListItem;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,6 +9,26 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+
+import java.io.IOException;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
+import com.sap.conn.jco.JCoFunction;
+import com.sap.conn.jco.JCoFunctionTemplate;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.extensions.sap.SapException;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.Message;
+import org.frankframework.util.SapSystemListItem;
 
 public class SapSenderTest {
 
@@ -106,7 +103,7 @@ public class SapSenderTest {
 		sender.setSapSystemName(sapSystemName);
 
 		assertDoesNotThrow(() -> sender.configure());
-		assertDoesNotThrow(() -> sender.open());
+		assertDoesNotThrow(() -> sender.start());
 
 		PipeLineSession session = new PipeLineSession();
 		Message message = assertDoesNotThrow(() -> sender.sendMessageOrThrow(Message.asMessage(""), session));

@@ -30,11 +30,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -92,7 +93,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -121,7 +122,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.setScalar(true);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -147,7 +148,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(parameter);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -180,7 +181,7 @@ public class StoredProcedureQuerySenderTest {
 		session.put("data", new ByteArrayInputStream(TEST_DATA_STRING.getBytes(StandardCharsets.UTF_8)));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -213,7 +214,7 @@ public class StoredProcedureQuerySenderTest {
 		session.put("data", new StringReader(TEST_DATA_STRING));
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -248,7 +249,7 @@ public class StoredProcedureQuerySenderTest {
 		session.put("data", message1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -283,7 +284,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -316,7 +317,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -372,7 +373,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -406,7 +407,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -440,7 +441,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -478,7 +479,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam1);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -516,7 +517,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam2);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -564,7 +565,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(outParam3);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -598,7 +599,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(parameter);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -632,7 +633,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(parameter);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -670,7 +671,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(count);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -711,7 +712,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(cursorParam);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -754,7 +755,7 @@ public class StoredProcedureQuerySenderTest {
     	sender.addParameter(cursorParam);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -792,7 +793,7 @@ public class StoredProcedureQuerySenderTest {
     	sender.addParameter(cursorParam);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message message = Message.nullMessage();
 
@@ -821,7 +822,7 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(p2);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		// Act
 		SenderResult result = sender.sendMessage(Message.nullMessage(), session);

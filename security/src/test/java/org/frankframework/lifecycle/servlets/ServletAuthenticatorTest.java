@@ -3,17 +3,20 @@ package org.frankframework.lifecycle.servlets;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -23,6 +26,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
@@ -62,6 +67,15 @@ abstract class ServletAuthenticatorTest {
 		httpSecurity = createHttpSecurity();
 	}
 
+	protected final ServletConfiguration createServletConfiguration() {
+		ServletConfiguration config = new ServletConfiguration();
+		Environment environment = mock(Environment.class);
+		when(environment.getProperty(anyString())).thenReturn("CONTAINER");
+		config.setEnvironment(environment);
+		config.afterPropertiesSet();
+		return config;
+	}
+
 	protected abstract ServletAuthenticatorBase createAuthenticator();
 
 	private HttpSecurity createHttpSecurity() {
@@ -80,8 +94,7 @@ abstract class ServletAuthenticatorTest {
 	@Test
 	void testRequestMatchersMultilineUrl() throws Exception {
 		// Arrange
-		ServletConfiguration config = new ServletConfiguration();
-		config.afterPropertiesSet();
+		ServletConfiguration config = createServletConfiguration();
 		config.setUrlMapping("/iaf/api/*, !/iaf/api/server/health");
 		config.setSecurityRoles(new String[] {"IbisTester"});
 		authenticator.registerServlet(config);

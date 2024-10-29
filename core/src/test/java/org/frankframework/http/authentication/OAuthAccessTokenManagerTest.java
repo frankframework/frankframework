@@ -10,15 +10,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.frankframework.http.HttpSender;
-import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
-import org.frankframework.util.CredentialFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.nimbusds.oauth2.sdk.Scope;
+
+import org.frankframework.http.HttpSender;
+import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
+import org.frankframework.util.CredentialFactory;
 
 public class OAuthAccessTokenManagerTest {
 
@@ -32,7 +33,7 @@ public class OAuthAccessTokenManagerTest {
 		httpSender = new HttpSender();
 		httpSender.setUrl("https://dummy");
 		httpSender.configure();
-		httpSender.open();
+		httpSender.start();
 
 		MockTokenServer.createStubs(tokenServer);
 	}

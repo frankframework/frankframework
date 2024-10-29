@@ -32,10 +32,14 @@ import java.util.stream.Collectors;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -43,6 +47,7 @@ import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -55,10 +60,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.messaging.Message;
-import org.xml.sax.SAXException;
-
-import jakarta.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
@@ -137,7 +138,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		} catch (Exception t) {
 			throw new BusException("an error occurred while determining query to execute", t);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		List<Map<String, String>> resultMap = null;
@@ -205,9 +206,9 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			qs.setBlobSmartGet(true);
 			qs.setIncludeFieldDefinition(true);
 			qs.configure(true);
-			qs.open();
+			qs.start();
 			return qs;
-		} catch (ConfigurationException | SenderException e) {
+		} catch (ConfigurationException | LifecycleException e) {
 			throw new BusException("unable to create QuerySender", e);
 		}
 	}

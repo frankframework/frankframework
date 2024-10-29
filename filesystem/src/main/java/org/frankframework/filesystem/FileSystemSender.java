@@ -18,6 +18,7 @@ package org.frankframework.filesystem;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
@@ -30,6 +31,7 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -73,22 +75,22 @@ public abstract class FileSystemSender<F, S extends IBasicFileSystem<F>> extends
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			S fileSystem=getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot open fileSystem",e);
+			throw new LifecycleException("Cannot open fileSystem",e);
 		}
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() {
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot close fileSystem",e);
+			throw new LifecycleException("Cannot close fileSystem",e);
 		}
 	}
 

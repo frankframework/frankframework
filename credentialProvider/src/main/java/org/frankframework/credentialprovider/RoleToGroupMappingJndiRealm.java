@@ -30,8 +30,6 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -41,10 +39,14 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.file.ConfigFileLoader;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.credentialprovider.rolemapping.RoleGroupMapper;
 import org.frankframework.credentialprovider.rolemapping.RoleGroupMappingRuleSet;
 import org.frankframework.credentialprovider.util.Cache;
-import org.xml.sax.SAXException;
 
 
 /**
