@@ -217,10 +217,6 @@ class StringUtilTest {
 		return Stream.of(
 				arguments(null, "\\/", List.of()),
 				arguments("", "\\/", List.of()),
-				arguments("                             ", " ", List.of()),
-				arguments("            :                 ", ":", List.of()),
-				arguments(StringUtils.repeat("                             ", 1_000_000), " ", List.of()),
-				arguments(";" + StringUtils.repeat("                             ", 1_000_000), ";", List.of()),
 				arguments("a,b; c    ", ",", List.of("a", "b; c")),
 				arguments("a,b;c", ";,", List.of("a", "b", "c")),
 				arguments("a,b;c d", ";,", List.of("a", "b", "c d")),
@@ -230,9 +226,14 @@ class StringUtilTest {
 				arguments(";a,b;,c,", ";,", List.of("a", "b", "c")),
 				arguments(" a , ;  b;,c ; ", ";,", List.of("a", "b", "c")),
 				arguments(" a , ;  b  c  ", " ;,", List.of("a", "b", "c")),
+				arguments("filename.txt", ".", List.of("filename", "txt")), // Check that the dot character works as separator in the regexes
 				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", List.of("a", "b", "c", "d", "e", "f", "g")),
-				// Oversized input to stress the regex-engine, catch any potential runaway regex searching.
-				arguments(StringUtils.repeat(";" + StringUtils.repeat(" ", 10_000), 1_000), ";,|", List.of())
+				// Oversized inputs to stress the regex-engine, catch any potential regex performance issues.
+				arguments("                                             ", " ", List.of()), // Short-ish input with only whitespace and whitespace as separator
+				arguments("                   :                 ", ":", List.of()), // Short-ish input with spaces and single separator
+				arguments(StringUtils.repeat("                             ", 1_000_000), " ", List.of()), // Long empty string
+				arguments(";" + StringUtils.repeat("                             ", 1_000_000), ";", List.of()), // Long nearly empty string with single separator
+				arguments(StringUtils.repeat(";" + StringUtils.repeat(" ", 10_000), 1_000), ";,|", List.of()) // Very long string with mostly spaces and many separators
 		);
 	}
 
