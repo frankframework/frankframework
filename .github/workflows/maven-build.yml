@@ -14,6 +14,7 @@ on:
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
     paths-ignore:
       - "**.md"
       - "**.yml"
@@ -27,6 +28,7 @@ on:
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
     paths-ignore:
       - "**.md"
       - "**.yml"
