@@ -24,8 +24,8 @@ import static org.frankframework.util.SapSystemListItem.registerItem;
 @FrankDocGroup(value = FrankDocGroupValue.OTHER)
 public class SapSystems {
 
-	public void addSapSystem(SapSystemListItem sapSystem) {
-		registerItem(sapSystem);
+	public void addSapSystem(ISapSystem sapSystem) {
+		registerItem((SapSystemListItem) sapSystem);
 		SapSystemFactory.getInstance().addSapSystem(sapSystem, sapSystem.getName());
 	}
 
