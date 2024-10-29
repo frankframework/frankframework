@@ -35,8 +35,6 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.testutil.SerializationTester;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +42,9 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.testutil.SerializationTester;
 
 @Log4j2
 public class SerializableFileReferenceTest {

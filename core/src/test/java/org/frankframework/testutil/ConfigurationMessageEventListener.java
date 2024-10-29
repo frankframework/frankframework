@@ -3,10 +3,11 @@ package org.frankframework.testutil;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.ApplicationListener;
+
 import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.util.MessageKeeperMessage;
-import org.springframework.context.ApplicationListener;
 
 public class ConfigurationMessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
 	private final List<MessageKeeperMessage> configurationMessages = new ArrayList<>();

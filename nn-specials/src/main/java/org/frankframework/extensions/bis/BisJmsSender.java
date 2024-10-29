@@ -18,8 +18,12 @@ package org.frankframework.extensions.bis;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
+
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -32,7 +36,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
 
 /**
  * Bis (Business Integration Services) extension of JmsSender.

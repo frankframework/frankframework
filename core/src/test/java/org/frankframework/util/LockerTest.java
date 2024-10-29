@@ -17,8 +17,11 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.dbms.Dbms;
@@ -30,8 +33,6 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/CreateLockTable.xml", tableName = LockerTest.TABLENAME)

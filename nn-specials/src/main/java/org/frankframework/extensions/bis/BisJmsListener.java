@@ -22,6 +22,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ListenerException;
@@ -32,7 +34,6 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.

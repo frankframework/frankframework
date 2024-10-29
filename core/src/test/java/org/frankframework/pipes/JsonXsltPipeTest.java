@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -13,10 +18,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
 
 public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 

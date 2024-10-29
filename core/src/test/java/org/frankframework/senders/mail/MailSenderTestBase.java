@@ -22,9 +22,8 @@ import java.util.regex.Pattern;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 
-import org.junit.jupiter.api.Test;
-
 import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;

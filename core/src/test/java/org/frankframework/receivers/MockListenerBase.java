@@ -8,9 +8,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.Nonnull;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;

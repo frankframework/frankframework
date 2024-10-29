@@ -23,13 +23,13 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Setter;
 
-import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-
 import org.frankframework.stream.Message;
 
 public class LargeBlockTester extends FixedForwardPipe {

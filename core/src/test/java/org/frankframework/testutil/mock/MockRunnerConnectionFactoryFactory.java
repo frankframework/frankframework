@@ -9,6 +9,10 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageListener;
+
 import com.mockrunner.jms.ConfigurationManager;
 import com.mockrunner.jms.DestinationManager;
 import com.mockrunner.mock.jms.JMSMockObjectFactory;
@@ -16,11 +20,9 @@ import com.mockrunner.mock.jms.MockMessage;
 import com.mockrunner.mock.jms.MockQueue;
 import com.mockrunner.mock.jms.MockSession;
 
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageListener;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.jms.IConnectionFactoryFactory;
 
 @Log4j2

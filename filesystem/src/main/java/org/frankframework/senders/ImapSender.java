@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import jakarta.mail.Message;
+
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.FileSystemSender;

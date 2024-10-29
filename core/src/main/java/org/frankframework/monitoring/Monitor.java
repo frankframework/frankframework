@@ -171,7 +171,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public XmlBuilder toXml() {
-		XmlBuilder monitor=new XmlBuilder("monitor");
+		XmlBuilder monitor=new XmlBuilder("Monitor");
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType().name());
 		monitor.addAttribute("destinations",getDestinationsAsString());

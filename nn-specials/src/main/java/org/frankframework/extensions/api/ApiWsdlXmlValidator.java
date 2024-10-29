@@ -16,6 +16,7 @@
 package org.frankframework.extensions.api;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.pipes.WsdlXmlValidator;
 

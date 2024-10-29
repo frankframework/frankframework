@@ -22,15 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.frankframework.core.PipeLineSession;
-
-import org.frankframework.extensions.cmis.CmisUtils;
-import org.frankframework.extensions.cmis.server.CmisEvent;
-import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlUtils;
-
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
 import org.apache.chemistry.opencmis.commons.data.BulkUpdateObjectIdAndChangeToken;
@@ -54,6 +45,14 @@ import org.apache.chemistry.opencmis.commons.spi.ObjectService;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.extensions.cmis.CmisUtils;
+import org.frankframework.extensions.cmis.server.CmisEvent;
+import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Wrapper that delegates when a matching CmisEvent is present.

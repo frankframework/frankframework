@@ -9,8 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.testutil.ParameterBuilder;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.testutil.ParameterBuilder;
 
 public class ParameterValueListTest {
 

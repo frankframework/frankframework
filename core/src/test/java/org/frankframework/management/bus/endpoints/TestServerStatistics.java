@@ -3,12 +3,13 @@ package org.frankframework.management.bus.endpoints;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTestBase;
-import org.frankframework.management.bus.BusTopic;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTestBase;
+import org.frankframework.management.bus.BusTopic;
 
 public class TestServerStatistics extends BusTestBase {
 

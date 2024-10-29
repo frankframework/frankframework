@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
@@ -48,7 +50,6 @@ import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
-import org.apache.logging.log4j.Logger;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IFileSystemTestHelper;

@@ -18,11 +18,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;

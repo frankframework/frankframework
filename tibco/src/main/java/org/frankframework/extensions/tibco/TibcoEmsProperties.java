@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;

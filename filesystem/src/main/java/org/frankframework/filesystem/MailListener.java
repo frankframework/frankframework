@@ -20,9 +20,10 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ListenerException;

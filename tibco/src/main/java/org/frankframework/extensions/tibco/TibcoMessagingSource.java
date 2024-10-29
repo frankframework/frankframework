@@ -17,13 +17,14 @@ package org.frankframework.extensions.tibco;
 
 import java.util.Map;
 
+import javax.naming.Context;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
 import jakarta.jms.TopicSession;
-import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
 
