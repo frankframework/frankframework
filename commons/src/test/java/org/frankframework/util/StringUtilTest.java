@@ -1,6 +1,5 @@
 package org.frankframework.util;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +18,7 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -189,11 +189,17 @@ class StringUtilTest {
 
 	public static Stream<Arguments> testSplitStringDefaultDelimiter() {
 		return Stream.of(
-				arguments("a,b", asList("a", "b")),
-				arguments(",a,,b,", asList("a", "b")),
-				arguments(" a , b ", asList("a", "b")),
-				arguments(null, Collections.emptyList()),
-				arguments("", Collections.emptyList())
+				arguments("a,b", List.of("a", "b")),
+				arguments(",a,,b,", List.of("a", "b")),
+				arguments("  a  , b ", List.of("a", "b")),
+				arguments(null, List.of()),
+				arguments("", List.of()),
+				arguments("      ", List.of()),
+				arguments("   ,   ", List.of()),
+				arguments(",,,,,", List.of()),
+				arguments(",,      ,,,", List.of()),
+				// Oversized input to stress the regex-engine, catch any potential runaway regex searching.
+				arguments(StringUtils.repeat("," + StringUtils.repeat(" ", 10_000), 1_000), Collections.emptyList())
 		);
 	}
 
@@ -204,18 +210,30 @@ class StringUtilTest {
 		List<String> result = StringUtil.split(input);
 
 		// Assert
-		assertIterableEquals(expected, result);
+		assertIterableEquals(expected, result, () -> "With input [" + escapeUnprintable(input) + "] and default delimiter [,] expected result [" + String.join("|", expected) + "] but instead got [" + String.join("|", result) + "]");
 	}
 
 	public static Stream<Arguments> testSplitStringCustomDelimiters() {
 		return Stream.of(
-				arguments(null, "\\/", Collections.emptyList()),
-				arguments("", "\\/", Collections.emptyList()),
-				arguments("a,b;c", ";,", asList("a", "b", "c")),
-				arguments(";a,b;,c,", ";,", asList("a", "b", "c")),
-				arguments(" a , ;  b;,c ; ", ";,", asList("a", "b", "c")),
-				arguments(" a , ;  b  c  ", " ;,", asList("a", "b", "c")),
-				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", asList("a", "b", "c", "d", "e", "f", "g"))
+				arguments(null, "\\/", List.of()),
+				arguments("", "\\/", List.of()),
+				arguments("a,b; c    ", ",", List.of("a", "b; c")),
+				arguments("a,b;c", ";,", List.of("a", "b", "c")),
+				arguments("a,b;c d", ";,", List.of("a", "b", "c d")),
+				arguments("a b c", " ", List.of("a", "b", "c")),
+				arguments("a,b c", " ", List.of("a,b", "c")),
+				arguments("a, b c", ", ", List.of("a", "b", "c")),
+				arguments(";a,b;,c,", ";,", List.of("a", "b", "c")),
+				arguments(" a , ;  b;,c ; ", ";,", List.of("a", "b", "c")),
+				arguments(" a , ;  b  c  ", " ;,", List.of("a", "b", "c")),
+				arguments("filename.txt", ".", List.of("filename", "txt")), // Check that the dot character works as separator in the regexes
+				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", List.of("a", "b", "c", "d", "e", "f", "g")),
+				// Oversized inputs to stress the regex-engine, catch any potential regex performance issues.
+				arguments("                                             ", " ", List.of()), // Short-ish input with only whitespace and whitespace as separator
+				arguments("                   :                 ", ":", List.of()), // Short-ish input with spaces and single separator
+				arguments(StringUtils.repeat("                             ", 1_000_000), " ", List.of()), // Long empty string
+				arguments(";" + StringUtils.repeat("                             ", 1_000_000), ";", List.of()), // Long nearly empty string with single separator
+				arguments(StringUtils.repeat(";" + StringUtils.repeat(" ", 10_000), 1_000), ";,|", List.of()) // Very long string with mostly spaces and many separators
 		);
 	}
 
@@ -229,7 +247,7 @@ class StringUtilTest {
 		LOG.debug("result [{}]", () -> String.join("|", result));
 
 		// Assert
-		assertIterableEquals(expected, result);
+		assertIterableEquals(expected, result, () -> "With input [" + escapeUnprintable(input) + "] and custom delimiters [" + escapeUnprintable(delimiters) + "] expected result [" + String.join("|", expected) + "] but instead got [" + String.join("|", result) + "]");
 	}
 
 	static String escapeUnprintable(String input) {
