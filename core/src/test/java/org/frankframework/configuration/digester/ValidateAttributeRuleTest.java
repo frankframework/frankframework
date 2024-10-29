@@ -10,6 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -20,8 +23,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.PropertyUtils;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -39,10 +43,10 @@ import org.frankframework.util.ClassUtils;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
-public class ValidateAttributeRuleTest extends Mockito {
+public class ValidateAttributeRuleTest {
 	private TestConfiguration configuration;
 
-	//Convenience method to create an Attribute list to be parsed
+	// Convenience method to create an Attribute list to be parsed
 	private Attributes copyMapToAttrs(Map<String, String> map) {
 		List<String[]> attList = new LinkedList<>();
 		for (String key : map.keySet()) {
@@ -68,7 +72,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		return attrs;
 	}
 
-	//Run the ValidateAttributeRule, returns the beanClass to validate setters being called
+	// Run the ValidateAttributeRule, returns the beanClass to validate setters being called
 	private <T> T runRule(Class<T> beanClass, Map<String, String> attributes) throws Exception {
 		configuration = new TestConfiguration();
 		T topBean = ClassUtils.newInstance(beanClass);
@@ -82,7 +86,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		rule.begin(null, beanClass.getSimpleName(), copyMapToAttrs(attributes));
 
-		//Test the bean name with and without INamedObject interface
+		// Test the bean name with and without INamedObject interface
 		if (topBean instanceof ConfigWarningTestClass) {
 			assertEquals("ConfigWarningTestClass [name here]", rule.getObjectName());
 		}
@@ -139,7 +143,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
 
 		assertEquals("", bean.getTestString(), "empty string value should be empty string");
-		assertEquals(1234, bean.getTestInteger(), "empty int value should be ignored"); //may trigger cannot be converted to int exception
+		assertEquals(1234, bean.getTestInteger(), "empty int value should be ignored"); // May trigger cannot be converted to int exception
 		assertFalse(bean.isTestBoolean(), "empty bool value should be ignored"); //may trigger a default warning exception
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
@@ -254,6 +258,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
+	@DisplayName("All attributes should be resolved")
 	public void testAttributeWithPropertyRef() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("name", "${instance.name}");
@@ -261,8 +266,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
 
-		assertEquals("${instance.name}", bean.getName()); //Does not resolve
-		assertEquals(TestConfiguration.TEST_CONFIGURATION_NAME, bean.getTestString()); //Does resolve
+		assertEquals(TestConfiguration.TEST_CONFIGURATION_NAME, bean.getName());
+		assertEquals(TestConfiguration.TEST_CONFIGURATION_NAME, bean.getTestString());
 	}
 
 	@Test
@@ -330,8 +335,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 	public void testAttributeWithoutGetterNumberFormatException() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 
-		attr.put("testStringWithoutGetter", "a String"); //Should work
-		attr.put("testIntegerWithoutGetter", "a String"); //Throws Exception
+		attr.put("testStringWithoutGetter", "a String"); // Should work
+		attr.put("testIntegerWithoutGetter", "a String"); // Throws Exception
 
 		runRule(ClassWithEnum.class, attr);
 
@@ -428,7 +433,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		Map<String, String> attr = new HashMap<>();
 
 		attr.put("testStringWithoutGetter", "text");
-		attr.put("testSuppressAttribute", "text"); //Should fail
+		attr.put("testSuppressAttribute", "text"); // Should fail
 
 		runRule(ClassWithEnum.class, attr);
 
