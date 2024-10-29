@@ -54,7 +54,7 @@ public abstract class ClassUtils {
 	}
 
 	/**
-	 * Attemps to locate the resource, first on the local class-path, if no match, it attempts to find the resource as file-path.
+	 * Attempts to locate the resource, first on the local class-path, if no match, it attempts to find the resource as file-path.
 	 *
 	 * @throws FileNotFoundException in case the resource name is invalid
 	 */
