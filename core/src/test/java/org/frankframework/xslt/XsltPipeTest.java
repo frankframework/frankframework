@@ -91,6 +91,10 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		assertEquals(result, input);
 	}
 
+	/**
+	 * @see <a href="https://github.com/frankframework/frankframework/issues/3934">for the issue describing this problem</a>
+	 * @throws Exception
+	 */
 	@Test
 	@DisplayName("Assert that we get a PipeRunException when using type = NODE and an xpathExpression on the XmlParameter")
 	void test3934WithXpathExpressionParameter() throws Exception {
