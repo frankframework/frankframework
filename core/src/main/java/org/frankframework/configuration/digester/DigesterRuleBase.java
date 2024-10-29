@@ -58,7 +58,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private @Setter ConfigurationWarnings configurationWarnings;
 	private @Setter ApplicationWarnings applicationWarnings;
 	private final boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
-	private final boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
+	private final boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse); // True when pre-parsed
 
 	/**
 	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.
@@ -149,10 +149,12 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		Object top = getBean();
 
 		Map<String, String> map = copyAttrsToMap(attributes);
-		if(top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
-			String name = map.remove("name");
+		if(top instanceof INamedObject) { // We must set the name first, to improve logging and configuration warnings
+			final String name = map.remove("name");
 			if(StringUtils.isNotEmpty(name)) {
-				ClassUtils.invokeSetter(top, "setName", name);
+				final String resolvedName = resolveValue(name);
+				log.debug("resolved NamedObject from [{}] to [{}]", name, resolvedName);
+				ClassUtils.invokeSetter(top, "setName", resolvedName);
 			}
 		}
 
@@ -160,14 +162,14 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			currentAdapter = adapter;
 		}
 
-		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
-		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
+		// Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
+		// They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof ActionJob)) {
 			map.remove("function");
 		}
 
-		//Since we are directly instantiating the correct param (by className), types are no longer required by the digester's attribute handler.
-		//They are however still required for the ParameterFactory to determine the correct type class, in order to avoid ConfigurationWarnings.
+		// Since we are directly instantiating the correct param (by className), types are no longer required by the digester's attribute handler.
+		// They are however still required for the ParameterFactory to determine the correct type class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IParameter && !(top instanceof Parameter)) {
 			map.remove("type");
 		}
