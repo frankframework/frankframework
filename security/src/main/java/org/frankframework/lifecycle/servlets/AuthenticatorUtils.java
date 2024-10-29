@@ -38,14 +38,14 @@ public class AuthenticatorUtils {
 	 * @param environment set of properties used to determine the dtap stage.
 	 * @return the default `AuthenticationType` name.
 	 */
-	private static String getDefaultAuthenticationType(Environment environment) {
+	private static String getDefaultAuthenticationType() {
 		AuthenticationType defaultAuthenticator = SecuritySettings.isWebSecurityEnabled() ? AuthenticationType.SEALED : AuthenticationType.NONE;
 		return defaultAuthenticator.name();
 	}
 
 	public static IAuthenticator createAuthenticator(ApplicationContext applicationContext, String properyPrefix) {
 		Environment environment = applicationContext.getEnvironment();
-		String type = environment.getProperty(properyPrefix+"type", getDefaultAuthenticationType(environment));
+		String type = environment.getProperty(properyPrefix+"type", getDefaultAuthenticationType());
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
