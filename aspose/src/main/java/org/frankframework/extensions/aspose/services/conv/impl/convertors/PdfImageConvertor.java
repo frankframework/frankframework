@@ -88,11 +88,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
-		Document doc = new Document();
-		try {
+		try (Document doc = new Document(); Page page = doc.getPages().add()) {
 			// Set borders on 0.5cm.
 			float marginInCm = 0.0f;
-			Page page = doc.getPages().add();
 			page.getPageInfo().getMargin().setTop(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setBottom(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
@@ -149,11 +147,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 
 		} finally {
-			doc.freeMemory();
-			doc.close();
-
 			// Delete always the temporary file.
-
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				int length = ((TiffImage)image).getFrames().length;
 				for(int i=0; i<length; i++) {
