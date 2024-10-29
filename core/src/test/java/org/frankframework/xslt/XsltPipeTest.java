@@ -92,8 +92,8 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Test
-	@DisplayName("Assert that we get a PipeRunException when using xpathExpression on the XmlParameter")
-	void test3934WithParameter() throws Exception {
+	@DisplayName("Assert that we get a PipeRunException when using type = NODE and an xpathExpression on the XmlParameter")
+	void test3934WithXpathExpressionParameter() throws Exception {
 		String parameterContents = TestFileUtils.getTestFile("/Xslt/3934/param.xml");
 
 		session.put("keyXmlParameter", parameterContents);
@@ -108,11 +108,38 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		pipe.addParameter(parameter);
 		pipe.setXsltVersion(1);
 		pipe.setIndentXml(true);
-		pipe.setStyleSheetName("/Xslt/3934/template_node.xsl");
+		pipe.setStyleSheetName("/Xslt/3934/template_with_xpath_parameter.xsl");
 		pipe.configure();
 		pipe.start();
 
 		assertThrows(PipeRunException.class, () -> doPipe(pipe, "<test/>", session));
+	}
+
+	@Test
+	@DisplayName("Assert that we get a PipeRunException with type = NODE and no xpathExpression")
+	void test3934WithParameter() throws Exception {
+		String parameterContents = TestFileUtils.getTestFile("/Xslt/3934/param.xml");
+
+		session.put("keyXmlParameter", parameterContents);
+
+		XmlParameterBuilder parameter = XmlParameterBuilder.create()
+				.withName("parNode")
+				.withType(ParameterType.NODE);
+		parameter.setSessionKey("keyXmlParameter");
+		parameter.setXsltVersion(1);
+
+		pipe.addParameter(parameter);
+		pipe.setXsltVersion(1);
+		pipe.setIndentXml(true);
+		pipe.setStyleSheetName("/Xslt/3934/template_without_xpath_parameter_node.xsl");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult result = doPipe(pipe, "<test/>", session);
+		assertNotNull(result);
+
+		String expected = TestFileUtils.getTestFile("/Xslt/3934/expected.xml");
+		assertEquals(expected, result.getResult().asString());
 	}
 
 	@Test
@@ -131,7 +158,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		pipe.addParameter(parameter);
 		pipe.setXsltVersion(1);
 		pipe.setIndentXml(true);
-		pipe.setStyleSheetName("/Xslt/3934/template_domdoc.xsl");
+		pipe.setStyleSheetName("/Xslt/3934/template_without_xpath_parameter.xsl");
 		pipe.configure();
 		pipe.start();
 
