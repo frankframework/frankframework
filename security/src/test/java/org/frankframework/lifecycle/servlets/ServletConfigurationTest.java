@@ -18,6 +18,7 @@ public class ServletConfigurationTest {
 	private ServletConfiguration createServletConfiguration() {
 		ServletConfiguration config = new ServletConfiguration();
 		Environment environment = mock(Environment.class);
+		SecuritySettings.setupDefaultSecuritySettings(environment);
 		when(environment.getProperty(anyString())).thenReturn("CONTAINER");
 		config.setEnvironment(environment);
 		config.afterPropertiesSet();
