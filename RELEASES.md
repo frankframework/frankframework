@@ -9,6 +9,7 @@ Upcoming (9.0)
 [Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)
 
 - The SenderPipe no longer accepts a `Listener`, when using asychronous messaging (sender/listener combination) please use the `AsyncSenderWithListenerPipe` instead. No other attributes need to be modified!
+- The default `ldap-role-mapping.properties` file and `ldap.auth.<role name>` properties have been removed.
 
 8.3.0 - Oct 10th, 2024
 --------------
