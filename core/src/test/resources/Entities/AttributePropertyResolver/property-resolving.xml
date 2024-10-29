@@ -1,0 +1,3 @@
+<root attr="${name-one}">
+	<element name="${name-two}" attr="${name-two}" fubar="foo${bar}" />
+</root>
