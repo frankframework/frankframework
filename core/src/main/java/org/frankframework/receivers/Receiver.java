@@ -1505,7 +1505,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	@SuppressWarnings("synthetic-access")
-	public synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Instant receivedDate) {
+	private synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Instant receivedDate) {
 		final ProcessResultCacheItem prci = processResultCache.computeIfAbsent(messageId, key -> {
 			log.debug("{} caching first result for messageId [{}]", this::getLogPrefix, ()->messageId);
 			ProcessResultCacheItem item = new ProcessResultCacheItem();

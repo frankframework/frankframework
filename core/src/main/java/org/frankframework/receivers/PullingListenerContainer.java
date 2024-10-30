@@ -320,7 +320,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									Instant receivedDate = Instant.now();
 									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 									receiver.moveInProcessToError(rawMessage, session, receivedDate, errorMessage, Receiver.TXREQUIRED);
-									receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 								}
 							}
 							messageHandled = true;
