@@ -598,7 +598,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				pl.setExceptionListener(this);
 			}
 			if (getListener() instanceof IPullingListener) {
-				setListenerContainer(createListenerContainer());
+				listenerContainer = createListenerContainer();
 			}
 			if (getListener() instanceof JdbcFacade) {
 				((JdbcFacade)getListener()).setTransacted(isTransacted());
@@ -1823,15 +1823,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return l;
 	}
 
-	public PullingListenerContainer<M> getListenerContainer() {
-		return listenerContainer;
-	}
-
-	public void setListenerContainer(PullingListenerContainer<M> listenerContainer) {
-		this.listenerContainer = listenerContainer;
-	}
-
-	public PullingListenerContainer<M> createListenerContainer() {
+	private PullingListenerContainer<M> createListenerContainer() {
 		@SuppressWarnings("unchecked")
 		PullingListenerContainer<M> plc = applicationContext.getBean("listenerContainer", PullingListenerContainer.class);
 		plc.setReceiver(this);
