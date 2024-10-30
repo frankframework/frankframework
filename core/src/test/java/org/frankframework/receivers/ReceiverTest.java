@@ -647,35 +647,39 @@ public class ReceiverTest {
 		// Act / Assert
 		assertAll(
 				()-> assertEquals(5, receiver.getDeliveryCount(rawMessage)),
-				()-> assertFalse(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		doAnswer(invocation -> receiver.getMaxRetries()).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertTrue(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		doAnswer(invocation -> receiver.getMaxRetries()-1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertTrue(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		doAnswer(invocation -> receiver.getMaxRetries()+1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertFalse(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		doAnswer(invocation -> receiver.getMaxRetries()+2).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertFalse(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
 				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
 		);
 	}
@@ -732,7 +736,7 @@ public class ReceiverTest {
 		assertAll(
 				()-> assertEquals(1, result2),
 				()-> assertEquals(1, receiver.getMaxRetries()),
-				()-> assertTrue(receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)),
+				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
 				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessageWrapper, new PipeLineSession(), false))
 		);
 	}

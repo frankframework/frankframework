@@ -18,7 +18,6 @@ package org.frankframework.receivers;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -312,7 +311,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 
 						try {
-							messageId = Objects.requireNonNull(rawMessage.getId(),"Message must have an ID!");
 							try (PipeLineSession session = new PipeLineSession()) {
 								session.putAll(threadContext);
 								receiver.updateMessageReceiveCount(rawMessage);
@@ -320,7 +318,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								} else {
 									Instant receivedDate = Instant.now();
-									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
+									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(rawMessage));
 									receiver.moveInProcessToError(rawMessage, session, receivedDate, errorMessage, Receiver.TXREQUIRED);
 								}
 							}
@@ -366,9 +364,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
-						boolean noMoreRetries = !receiver.isDeliveryCountBelowRetryLimitAfterMessageProcessed(rawMessage);
+						boolean noMoreRetries = receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(rawMessage);
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
+						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(rawMessage));
 						inProcessStateManager.changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);

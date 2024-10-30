@@ -15,6 +15,8 @@
 */
 package org.frankframework.receivers;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static org.frankframework.functional.FunctionalUtil.logValue;
 import static org.frankframework.functional.FunctionalUtil.supplier;
 
@@ -335,23 +337,23 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
 	/**
-	 * The processResultCache acts as a sort of poor-mans error
+	 * The processStatusCache acts as a sort of poor-mans error
 	 * storage and is always available, even if an error-storage is not.
-	 * Thus messages might be lost if they cannot be put in the error
-	 * storage, but unless the server crashes, a message that has been
-	 * put in the processResultCache will not be reprocessed even if it's
+	 * Thus, messages might be lost if they cannot be put in the error
+	 * storage, but unless the server crashes or the processResultCacheSize = 0, a message that has been
+	 * put in the processStatusCache will not be reprocessed even if it's
 	 * offered again.
 	 */
-	private final Map<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<>() {
+	private final Map<String, ProcessStatusCacheItem> processStatusCache = new LinkedHashMap<>() {
 
 		@Override
-		protected boolean removeEldestEntry(Entry<String,ProcessResultCacheItem> eldest) {
+		protected boolean removeEldestEntry(Entry<String, ProcessStatusCacheItem> eldest) {
 			return size() > getProcessResultCacheSize();
 		}
 
 	};
 
-	protected static class ProcessResultCacheItem {
+	protected static class ProcessStatusCacheItem {
 		private int receiveCount;
 		private Instant receiveDate;
 		private String comments;
@@ -878,8 +880,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			throw new IllegalStateException("Cannot change process state for listener of type [" + getListener().getClass().getSimpleName() + "] because it does not support process states");
 		}
 		if (toState == ProcessState.AVAILABLE) {
-			String id = message.getId();
-			resetProblematicHistory(id);
+			resetProblematicHistory(message);
 		}
 		//noinspection unchecked
 		return ((IHasProcessState<M>)getListener()).changeProcessState(message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
@@ -903,7 +904,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		log.debug("{} finishes processing message", this::getLogPrefix);
 	}
 
-	private void moveInProcessToErrorAndDoPostProcessing(IListener<M> origin, MessageWrapper<M> messageWrapper, PipeLineSession session, ProcessResultCacheItem prci, String comments) throws ListenerException {
+	private void moveInProcessToErrorAndDoPostProcessing(IListener<M> origin, MessageWrapper<M> messageWrapper, PipeLineSession session, ProcessStatusCacheItem prci, String comments) throws ListenerException {
 		String messageId = messageWrapper.getId();
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
@@ -1282,7 +1283,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
 						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
-							errorMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
+							errorMessage += resultString.substring(0, min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
 						} else {
 							errorMessage += result;
 						}
@@ -1335,7 +1336,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					}
 				}
 			} finally {
-				ProcessResultCacheItem prci = cacheProcessResult(messageId, errorMessage, Instant.ofEpochMilli(startProcessingTimestamp));
+				ProcessStatusCacheItem prci = cacheProcessResult(messageWrapper, errorMessage, Instant.ofEpochMilli(startProcessingTimestamp));
 				try {
 					if (!isTransacted() && messageInError && !manualRetry
 							&& !(getListener() instanceof IRedeliveringListener<?> redeliveringListener && redeliveringListener.messageWillBeRedeliveredOnExitStateError())) {
@@ -1377,7 +1378,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && !duplicatesAlreadyChecked && isDeliveryCountBelowRetryLimitAfterMessageProcessed(messageWrapper)) {
+						if (messageInError && !duplicatesAlreadyChecked && !isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
@@ -1433,11 +1434,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
 
-			ProcessResultCacheItem cachedProcessResult;
+			ProcessStatusCacheItem cachedProcessResult;
 			if (!duplicatesAlreadyChecked) {
 				cachedProcessResult = updateMessageReceiveCount(messageWrapper);
 			} else {
-				cachedProcessResult = getCachedProcessResult(messageId);
+				cachedProcessResult = getCachedProcessStatus(messageWrapper);
 			}
 			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageWrapper, session, manualRetry)) {
 				if (!isTransacted()) {
@@ -1529,11 +1530,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 *
 	 * @param rawMessageWrapper The raw message for which to set the receiveCount.
 	 */
-	protected synchronized @Nonnull ProcessResultCacheItem updateMessageReceiveCount(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+	protected synchronized @Nonnull ProcessStatusCacheItem updateMessageReceiveCount(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
 		String messageId = Objects.requireNonNull(rawMessageWrapper.getId(), () -> "Message must have an ID! No ID for raw message [" + rawMessageWrapper + "]");
-		final ProcessResultCacheItem prci = processResultCache.computeIfAbsent(messageId, key -> {
-			log.debug("{} caching first result for messageId [{}]", this::getLogPrefix, ()->messageId);
-			ProcessResultCacheItem item = new ProcessResultCacheItem();
+		// We need to know here if a result was previously cached, otherwise we cannot reliably maintain the receiveCount for listeners that don't know the deliveryCount.
+		final ProcessStatusCacheItem prci = processStatusCache.computeIfAbsent(messageId, key -> {
+			log.debug("{} caching first status for messageId [{}]", this::getLogPrefix, ()->messageId);
+			ProcessStatusCacheItem item = new ProcessStatusCacheItem();
 			item.receiveCount = 0;
 			item.receiveDate = Instant.now();
 			return item;
@@ -1547,11 +1549,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	@SuppressWarnings("synthetic-access")
-	private synchronized @Nonnull ProcessResultCacheItem cacheProcessResult(@Nonnull String messageId, @Nullable String errorMessage, @Nonnull Instant receivedDate) {
-		final ProcessResultCacheItem prci = getCachedProcessResult(messageId);
-		if (prci.receiveCount > 1) {
-			log.debug("{} increased try count for messageId [{}] to [{}]", this::getLogPrefix, ()->messageId, ()->prci.receiveCount);
-		} else {
+	private synchronized @Nonnull ProcessStatusCacheItem cacheProcessResult(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nullable String errorMessage, @Nonnull Instant receivedDate) {
+		final ProcessStatusCacheItem prci = getCachedProcessStatus(rawMessageWrapper);
+		if (prci.receiveCount == 1) {
 			// Set the receiveDate only on first processing of message, to the original receiveDate.
 			prci.receiveDate = receivedDate;
 		}
@@ -1559,12 +1559,24 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return prci;
 	}
 
-	private synchronized @Nonnull ProcessResultCacheItem getCachedProcessResult(@Nonnull String messageId) {
-		return Objects.requireNonNull(processResultCache.get(messageId), ()-> "At this stage in the process, process result state for message ID [" + messageId + "] must have been cached already");
+	private synchronized @Nonnull ProcessStatusCacheItem getCachedProcessStatus(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+		// We should have already put an item in the cache at this point, but if the cache is small (or 0-sized) we may not have access to it anymore so we need to create one here.
+		return processStatusCache.computeIfAbsent(rawMessageWrapper.getId(), k -> {
+					log.debug("{} recreating cached process status for messageId [{}]", this::getLogPrefix, rawMessageWrapper::getId);
+					ProcessStatusCacheItem item = new ProcessStatusCacheItem();
+					item.receiveDate = Instant.now();
+					if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+						item.receiveCount = knowsDeliveryCount.getDeliveryCount(rawMessageWrapper);
+					} else {
+						item.receiveCount = 1;
+					}
+					return item;
+				}
+		);
 	}
 
-	public @Nullable String getCachedErrorMessage(String messageId) {
-		return getCachedProcessResult(messageId).comments;
+	public @Nullable String getCachedErrorMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+		return getCachedProcessStatus(rawMessageWrapper).comments;
 	}
 
 	/**
@@ -1576,12 +1588,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * @return Number of times the message has been delivered, minimum is always 1 (for the first delivery of the message).
 	 */
 	public int getDeliveryCount(RawMessageWrapper<M> rawMessage) {
-		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		log.debug("{} checking delivery count for messageId [{}]", this::getLogPrefix, rawMessage::getId);
-		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
-			return knowsDeliveryCount.getDeliveryCount(rawMessage);
-		}
-		return getCachedProcessResult(rawMessage.getId()).receiveCount;
+		return getCachedProcessStatus(rawMessage).receiveCount;
 	}
 
 	/**
@@ -1590,16 +1598,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * @param messageWrapper Message for which to check delivery count
 	 * @return {@code true} if message should stil be retried, {@code false} if not.
 	 */
-	protected boolean isDeliveryCountBelowRetryLimitAfterMessageProcessed(@Nonnull final RawMessageWrapper<M> messageWrapper) {
+	protected boolean isDeliveryRetryLimitExceededAfterMessageProcessed(@Nonnull final RawMessageWrapper<M> messageWrapper) {
 		if (getMaxRetries() < 0) {
 			log.debug("{} Receiver has no retry limit so message will be retried", this::getLogPrefix);
-			return true;
+			return false;
 		}
 		int deliveryCount = getDeliveryCount(messageWrapper);
 		// After message has been processed the first delivery also counts as a try so if maxRetries == 0, message has now failed but if maxReties == 1, and deliveryCount == 1, the message should get another try.
-		boolean deliveryCountBelowLimit = deliveryCount <= maxRetries;
-		log.debug("{} Check delivery count in message post processing: Message with messageId [{}] has deliveryCount {}, maxRetries {}, limit reached: {}", this::getLogPrefix, messageWrapper::getId, ()->deliveryCount, this::getMaxRetries, ()->deliveryCountBelowLimit);
-		return deliveryCountBelowLimit;
+		boolean retryLimitExceeded = deliveryCount > maxRetries;
+		log.debug("{} Check delivery count in message post processing: Message with messageId [{}] has deliveryCount {}, maxRetries {}, limit reached: {}", this::getLogPrefix, messageWrapper::getId, ()->deliveryCount, this::getMaxRetries, ()-> retryLimitExceeded);
+		return retryLimitExceeded;
 	}
 
 	/**
@@ -1637,10 +1645,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return true;
 	}
 
-	private void resetProblematicHistory(String messageId) {
-		if (processResultCache.containsKey(messageId)) {
-			getCachedProcessResult(messageId).receiveCount = 0;
-		}
+	private void resetProblematicHistory(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+		getCachedProcessStatus(rawMessageWrapper).receiveCount = 0;
 	}
 
 	/*
@@ -1721,25 +1727,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
-	private int getActualTransactionTimeout() {
-		if (getTransactionTimeout() != 0) {
-			return getTransactionTimeout();
-		}
-		if (txManager instanceof AbstractPlatformTransactionManager platformTransactionManager) {
-			return platformTransactionManager.getDefaultTimeout();
-		}
-		return 0;
-	}
-
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
-		int maxRetryInterval;
-		int actualTransactionTimeout = getActualTransactionTimeout();
-		if (isTransacted() && actualTransactionTimeout > 0) {
-			maxRetryInterval = Math.min(MAX_RETRY_INTERVAL, actualTransactionTimeout >> 1); // Fast divide-by-two
-			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->maxRetryInterval);
-		} else {
-			maxRetryInterval = MAX_RETRY_INTERVAL;
-		}
+		int maxRetryInterval = getActualMaxRetryInterval();
 		int currentInterval;
 		synchronized (this) {
 			currentInterval = retryInterval;
@@ -1760,6 +1749,28 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 		}
 		suspendReceiver(currentInterval);
+	}
+
+	private int getActualTransactionTimeout() {
+		if (getTransactionTimeout() != 0) {
+			return getTransactionTimeout();
+		}
+		if (txManager instanceof AbstractPlatformTransactionManager platformTransactionManager) {
+			return platformTransactionManager.getDefaultTimeout();
+		}
+		return 0;
+	}
+
+	private int getActualMaxRetryInterval() {
+		int maxRetryInterval;
+		int actualTransactionTimeout = getActualTransactionTimeout();
+		if (isTransacted() && actualTransactionTimeout > 0) {
+			maxRetryInterval = min(MAX_RETRY_INTERVAL, actualTransactionTimeout / 2);
+			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->maxRetryInterval);
+		} else {
+			maxRetryInterval = MAX_RETRY_INTERVAL;
+		}
+		return maxRetryInterval;
 	}
 
 	/**
@@ -2127,7 +2138,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (maxRetries == null) {
 			maxRetries = i;
 		} else {
-			maxRetries = Math.max(maxRetries, i);
+			maxRetries = max(maxRetries, i);
 		}
 	}
 
