@@ -32,12 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -351,7 +351,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	};
 
-	private static class ProcessResultCacheItem {
+	protected static class ProcessResultCacheItem {
 		private int receiveCount;
 		private Instant receiveDate;
 		private String comments;
@@ -860,8 +860,23 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return targetProcessStates;
 	}
 
+	/**
+	 * Change message process state, via the listener of the receiver. The listener must support {@link IHasProcessState}.
+	 * As an extra side-effect of this method implementation, if the {@code toState} is {@link ProcessState#AVAILABLE} then
+	 * any recorded processing history status is reset so that a message can be manually retried.
+	 *
+	 * @param message Message for which to change state.
+	 * @param toState Desired state of the message
+	 * @param reason Reason for changing the state
+	 * @return Updated message
+	 * @throws ListenerException thrown if changing the state by the listener fails.
+	 * @throws IllegalStateException thrown if the listener does not support changing process states.
+	 */
 	@Override
 	public RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> message, ProcessState toState, String reason) throws ListenerException {
+		if (!(getListener() instanceof IHasProcessState<?>)) {
+			throw new IllegalStateException("Cannot change process state for listener of type [" + getListener().getClass().getSimpleName() + "] because it does not support process states");
+		}
 		if (toState == ProcessState.AVAILABLE) {
 			String id = message.getId();
 			resetProblematicHistory(id);
@@ -1417,16 +1432,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		String messageId = messageWrapper.getId();
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
-			Optional<ProcessResultCacheItem> cachedProcessResult = getCachedProcessResult(messageId);
+
+			ProcessResultCacheItem cachedProcessResult;
+			if (!duplicatesAlreadyChecked) {
+				cachedProcessResult = updateMessageReceiveCount(messageWrapper);
+			} else {
+				cachedProcessResult = getCachedProcessResult(messageId);
+			}
 			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageWrapper, session, manualRetry)) {
 				if (!isTransacted()) {
 					log.warn("{} received message with messageId [{}] which has a problematic history; aborting processing", logPrefix, messageId);
 				}
 				if (!isSupportProgrammaticRetry()) {
-					cachedProcessResult.ifPresent(prci -> prci.receiveCount++);
-					ProcessResultCacheItem prci = cachedProcessResult.orElse(null);
 					IListener<M> origin = getListener();
-					moveInProcessToErrorAndDoPostProcessing(origin, messageWrapper, session, prci, "too many redeliveries or retries");
+					moveInProcessToErrorAndDoPostProcessing(origin, messageWrapper, session, cachedProcessResult, "too many redeliveries or retries");
 				}
 				numRejected.increment();
 				session.setExitState(ExitState.REJECTED, 500);
@@ -1436,7 +1455,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				session.setExitState(ExitState.SUCCESS, 304);
 				return true;
 			}
-			if (cachedProcessResult.isPresent()) {
+			if (cachedProcessResult.receiveCount > 1) {
 				numRetried.increment();
 			}
 		} catch (Exception e) {
@@ -1504,30 +1523,48 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return msgBuilder.build();
 	}
 
-	@SuppressWarnings("synthetic-access")
-	private synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Instant receivedDate) {
+	/**
+	 * Call this method exactly once per every try to process a message to initialize the internally cached receive-count for the messageId.
+	 * If the listener implements {@link IKnowsDeliveryCount} then the receiveCount will be set to the {@link IKnowsDeliveryCount#getDeliveryCount(RawMessageWrapper)}.
+	 *
+	 * @param rawMessageWrapper The raw message for which to set the receiveCount.
+	 */
+	protected synchronized @Nonnull ProcessResultCacheItem updateMessageReceiveCount(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+		String messageId = Objects.requireNonNull(rawMessageWrapper.getId(), () -> "Message must have an ID! No ID for raw message [" + rawMessageWrapper + "]");
 		final ProcessResultCacheItem prci = processResultCache.computeIfAbsent(messageId, key -> {
 			log.debug("{} caching first result for messageId [{}]", this::getLogPrefix, ()->messageId);
 			ProcessResultCacheItem item = new ProcessResultCacheItem();
-			item.receiveDate = receivedDate;
+			item.receiveCount = 0;
+			item.receiveDate = Instant.now();
 			return item;
 		});
-		prci.receiveCount++;
-		if (prci.receiveCount > 1) {
-			log.debug("{} increased try count for messageId [{}] to [{}]", this::getLogPrefix, ()->messageId, ()->prci.receiveCount);
+		if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+			prci.receiveCount = knowsDeliveryCount.getDeliveryCount(rawMessageWrapper);
+		} else {
+			prci.receiveCount++;
 		}
-		prci.comments = errorMessage;
-		processResultCache.put(messageId, prci);
 		return prci;
 	}
 
-	private synchronized Optional<ProcessResultCacheItem> getCachedProcessResult(String messageId) {
-		return Optional.ofNullable(processResultCache.get(messageId));
+	@SuppressWarnings("synthetic-access")
+	private synchronized @Nonnull ProcessResultCacheItem cacheProcessResult(@Nonnull String messageId, @Nullable String errorMessage, @Nonnull Instant receivedDate) {
+		final ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		if (prci.receiveCount > 1) {
+			log.debug("{} increased try count for messageId [{}] to [{}]", this::getLogPrefix, ()->messageId, ()->prci.receiveCount);
+		} else {
+			// Set the receiveDate only on first processing of message, to the original receiveDate.
+			prci.receiveDate = receivedDate;
+		}
+		prci.comments = errorMessage;
+		return prci;
 	}
 
-	public String getCachedErrorMessage(String messageId) {
-		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(messageId);
-		return oprci.map(prci -> prci.comments).orElse(null);
+	private synchronized @Nonnull ProcessResultCacheItem getCachedProcessResult(@Nonnull String messageId) {
+		return Objects.requireNonNull(processResultCache.get(messageId), ()-> "At this stage in the process, process result state for message ID [" + messageId + "] must have been cached already");
+	}
+
+	public @Nullable String getCachedErrorMessage(String messageId) {
+		return getCachedProcessResult(messageId).comments;
 	}
 
 	/**
@@ -1544,8 +1581,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (origin instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
 			return knowsDeliveryCount.getDeliveryCount(rawMessage);
 		}
-		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(rawMessage.getId());
-		return oprci.map(prci -> prci.receiveCount).orElse(1);
+		return getCachedProcessResult(rawMessage.getId()).receiveCount;
 	}
 
 	/**
@@ -1602,7 +1638,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	private void resetProblematicHistory(String messageId) {
-		getCachedProcessResult(messageId).ifPresent(prci -> prci.receiveCount = 0);
+		if (processResultCache.containsKey(messageId)) {
+			getCachedProcessResult(messageId).receiveCount = 0;
+		}
 	}
 
 	/*

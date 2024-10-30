@@ -18,6 +18,7 @@ package org.frankframework.receivers;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -311,9 +312,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 
 						try {
-							messageId = rawMessage.getId();
+							messageId = Objects.requireNonNull(rawMessage.getId(),"Message must have an ID!");
 							try (PipeLineSession session = new PipeLineSession()) {
 								session.putAll(threadContext);
+								receiver.updateMessageReceiveCount(rawMessage);
 								if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								} else {
