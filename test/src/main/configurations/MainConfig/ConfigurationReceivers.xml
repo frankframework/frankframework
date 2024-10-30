@@ -100,13 +100,17 @@
 
 			<pipe name="IbisLocalSender" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-ReceiverTest-child-local" />
-				<forward name="ready" path="READY"/>
+				<forward name="success" path="READY"/>
 			</pipe>
 
 			<pipe name="IbisJavaSender" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReceiverTest-child-service" />
-				<forward name="ready" path="READY"/>
-				<!-- managed exception, not caught in the sender! -->
+				<forward name="success" path="READY"/>
+				<!-- managed exceptions, are not caught in the sender! -->
+			</pipe>
+
+			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe" getInputFromFixedValue="managed-exception in subadapter which is unmanaged in this adapter">
+				<forward name="success" path="ERROR"/>
 			</pipe>
 
 			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe"/>
