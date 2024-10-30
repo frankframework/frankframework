@@ -16,7 +16,7 @@
             <field name="TKEY">56826</field>
             <field name="TCHAR">E</field>
             <field name="TTIMESTAMP">2024-10-15 15:14:00</field>
-            <field name="TVARCHAR">Pipe [CallbackTesttool] caught exception: IbisJavaSender [CallbackTesttool-sender] exception processing message using request processor [testtool-receivertest]: (RequestProcessorException) RequestProc</field>
+			<field name="TVARCHAR">Pipe [CallbackTesttool] caught exception: exception processing message using request processor [testtool-receivertest]: (RequestProcessorException) RequestProcessor [testtool-receivertest] caught exce</field>
           </row>
           <row number="1">
             <field name="TKEY">56827</field>
