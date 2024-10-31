@@ -485,20 +485,15 @@ public class XmlTypeToJsonSchemaConverter  {
 	// Currently commented out because builder param isnt used
 	// private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
 	private void handleWildcard(XSWildcard wildcard){
-		String processContents;
 		switch (wildcard.getProcessContents()) {
-		case XSWildcard.PC_LAX: processContents="LAX"; break;
-		case XSWildcard.PC_SKIP: processContents="SKIP"; break;
-		case XSWildcard.PC_STRICT: processContents="STRICT"; break;
-		default:
+			case XSWildcard.PC_LAX, XSWildcard.PC_SKIP, XSWildcard.PC_STRICT: break;
+			default:
 				throw new IllegalStateException("handleWildcard wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
 		}
-		String namespaceConstraint;
+
 		switch (wildcard.getConstraintType()) {
-		case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
-		case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
-		case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
-		default:
+			case XSWildcard.NSCONSTRAINT_ANY, XSWildcard.NSCONSTRAINT_LIST, XSWildcard.NSCONSTRAINT_NOT : break;
+			default:
 				throw new IllegalStateException("handleWildcard wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
 		}
 	}

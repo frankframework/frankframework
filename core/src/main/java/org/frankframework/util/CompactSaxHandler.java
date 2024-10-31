@@ -139,6 +139,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 			try {
 				message.preserve();
 			} catch (IOException e) {
+				message.close();
 				throw new SAXException(e);
 			}
 
