@@ -225,7 +225,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
 					boolean messageHandled = false;
-					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {

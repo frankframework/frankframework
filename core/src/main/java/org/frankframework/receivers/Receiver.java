@@ -113,6 +113,7 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
@@ -230,9 +231,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
-	// Should be smaller than the transaction timeout as the delay takes place
-	// within the transaction. WebSphere default transaction timeout is 120.
-	public static final int MAX_RETRY_INTERVAL=100;
+	public static final String DEFAULT_MAX_RETRY_DELAY_KEY = "receiver.defaultMaxRetryDelay";
+	/**
+	 * Should be smaller than the transaction timeout as the delay takes place
+	 * within the transaction. WebSphere default transaction timeout is 120.
+	 */
+	public static final int DEFAULT_MAX_RETRY_DELAY=100;
 	public static final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
 	public enum OnError {
@@ -267,6 +271,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
 	private @Getter Integer maxRetries = null;
+	private Integer maxRetryDelay = null;
 	private @Getter int processResultCacheSize = 100;
 	private @Getter boolean supportProgrammaticRetry=false;
 
@@ -725,6 +730,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				} else {
 					maxRetries = 1;
 				}
+			}
+			if (maxRetryDelay == null) {
+				maxRetryDelay = AppConstants.getInstance().getInt(DEFAULT_MAX_RETRY_DELAY_KEY, DEFAULT_MAX_RETRY_DELAY);
 			}
 		} catch (Throwable t) {
 			ConfigurationException e;
@@ -1724,7 +1732,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
-		int maxRetryInterval = getActualMaxRetryInterval();
+		int maxRetryInterval = getActualMaxRetryDelay();
 		int currentInterval;
 		synchronized (this) {
 			currentInterval = retryInterval;
@@ -1757,16 +1765,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return 0;
 	}
 
-	private int getActualMaxRetryInterval() {
-		int maxRetryInterval;
+	private int getActualMaxRetryDelay() {
+		int actualMaxRetryDelay;
 		int actualTransactionTimeout = getActualTransactionTimeout();
 		if (isTransacted() && actualTransactionTimeout > 0) {
-			maxRetryInterval = min(MAX_RETRY_INTERVAL, actualTransactionTimeout / 2);
-			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->maxRetryInterval);
+			actualMaxRetryDelay = min(maxRetryDelay, actualTransactionTimeout / 2);
+			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->actualMaxRetryDelay);
 		} else {
-			maxRetryInterval = MAX_RETRY_INTERVAL;
+			actualMaxRetryDelay = maxRetryDelay;
 		}
-		return maxRetryInterval;
+		return actualMaxRetryDelay;
 	}
 
 	/**
@@ -1774,7 +1782,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
 	 */
 	protected void suspendReceiver(int delayTimeInSeconds) {
-		log.error("In unit testing should not call suspendReceiver");
 		int currentInterval = delayTimeInSeconds;
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
@@ -2233,5 +2240,31 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {
 		this.numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = number;
+	}
+
+	/**
+	 * After a message has an error in processing, there is a small delay before processing the next
+	 * message before processing the next message or retrying the failed message.
+	 * This is so that errors coming from external systems so not overload those external systems.
+	 * <p>
+	 *     The delay doubles after every failure, until the maximum set here is reached. If the transaction
+	 *     timeout can be determined, then the retry-delay is capped by half the transaction timeout to
+	 *     avoid messages automatically timing out.
+	 * </p>
+	 * <p>
+	 *     There is no delay after a message is successfully processed. After a message is successfully processed,
+	 *     the actual retry-delay is reset to 1 second.
+	 * </p>
+	 * <p>
+	 *     If set to 0, then there is no delay after messages that had an error.
+	 * </p>
+	 * <p>
+	 *     If this is not set on the receiver, then a default is taken from the configuration property {@code receiver.defaultMaxRetryDelay} which
+	 *     defaults to 100 seconds.
+	 * </p>
+	 * @param maxRetryDelay Maximum delay in seconds before retrying a message, after an error occurred during processing.
+	 */
+	public void setMaxRetryDelay(Integer maxRetryDelay) {
+		this.maxRetryDelay = maxRetryDelay;
 	}
 }
