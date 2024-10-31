@@ -22,11 +22,13 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import com.nimbusds.jose.proc.SecurityContext;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.proc.SecurityContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -41,6 +43,7 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
+import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
@@ -75,7 +78,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author Niels Meijer
  */
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 
@@ -98,7 +101,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter MimeType contentType;
 	private String multipartBodyName = null;
 
-	private @Getter @Setter Receiver<String> receiver;
+	private @Getter @Setter Receiver<Message> receiver;
 
 	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
 	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
