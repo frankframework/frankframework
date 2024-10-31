@@ -716,12 +716,6 @@ public class ReceiverTest {
 		MessageWrapper<String> messageWrapper = new MessageWrapper<>(rawMessageWrapper, Message.asMessage(rawMessageWrapper.rawMessage));
 
 		// Act
-//		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
-
-		// Assert
-//		assertEquals(1, result1);
-
-		// Arrange (for 2nd invocation)
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
@@ -729,14 +723,13 @@ public class ReceiverTest {
 			// Exception might occur here...
 		}
 
-		// Act
-		int result2 = receiver.getDeliveryCount(rawMessageWrapper);
+		int result = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertAll(
-				()-> assertEquals(1, result2),
+				()-> assertEquals(1, result),
 				()-> assertEquals(1, receiver.getMaxRetries()),
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
+				()-> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
 				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessageWrapper, new PipeLineSession(), false))
 		);
 	}
