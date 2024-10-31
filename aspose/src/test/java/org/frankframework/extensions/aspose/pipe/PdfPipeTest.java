@@ -41,7 +41,6 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -82,15 +81,10 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Override
 	public PdfPipe createPipe() {
-		return new PdfPipe();
-	}
-
-	@Override
-	@BeforeEach
-	public void setUp() throws Exception {
-		super.setUp();
+		PdfPipe pipe = new PdfPipe();
 		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
 		pipe.setUnpackCommonFontsArchive(true);
+		return pipe;
 	}
 
 	@Override

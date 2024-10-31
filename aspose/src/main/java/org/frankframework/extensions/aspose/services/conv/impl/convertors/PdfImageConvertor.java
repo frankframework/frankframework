@@ -88,7 +88,8 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
-		try (Document doc = new Document(); Page page = doc.getPages().add()) {
+		try (Document doc = new Document()) {
+			Page page = doc.getPages().add();
 			// Set borders on 0.5cm.
 			float marginInCm = 0.0f;
 			page.getPageInfo().getMargin().setTop(PageConvertUtil.convertCmToPoints(marginInCm));
@@ -97,7 +98,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
 			// Temporary file (because first we need to get image information (the size) and than load it into
-			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
+			// the pdf. The image itself can not be loaded into the pdf because it will be blurred with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
 			try(InputStream is = message.asInputStream()) {
 				image = com.aspose.imaging.Image.load(is);
