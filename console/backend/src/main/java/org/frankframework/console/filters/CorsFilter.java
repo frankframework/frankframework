@@ -16,6 +16,8 @@
 package org.frankframework.console.filters;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import jakarta.servlet.Filter;
@@ -25,6 +27,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
@@ -40,12 +43,12 @@ public class CorsFilter implements Filter {
 	private final Logger log = LogManager.getLogger(this);
 
 	@Value("${iaf-api.cors.allowOrigin:*}")
-	private String allowedCorsOrigins; //Defaults to ALL allowed
+	private String allowedCorsOrigins; // Defaults to ALL allowed
 
 	@Value("${iaf-api.cors.exposeHeaders:Allow, ETag, Content-Disposition}")
 	private String exposedCorsHeaders;
 
-	//TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods
+	// TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods
 	@Value("${iaf-api.cors.allowMethods:GET, POST, PUT, DELETE, OPTIONS, HEAD}")
 	private String allowedCorsMethods;
 
@@ -91,13 +94,13 @@ public class CorsFilter implements Filter {
 				// Allow caching cross-domain permission
 				response.setHeader("Access-Control-Max-Age", "3600");
 			} else {
-				//If origin has been set, but has not been whitelisted, report the request in security log.
+				// If origin has been set, but has not been whitelisted, report the request in security log.
 				secLog.info("host[{}] tried to access uri[{}] with origin[{}] but was blocked due to CORS restrictions", request.getRemoteHost(), request.getPathInfo(), originHeader);
 				log.warn("blocked request with origin [{}]", originHeader);
 				response.setStatus(400);
-				return; //actually block the request
+				return; // Actually block the request
 			}
-			//If we pass one of the valid domains, it can be used to spoof the connection
+			// If we pass one of the valid domains, it can be used to spoof the connection
 		}
 
 		/**
@@ -108,7 +111,8 @@ public class CorsFilter implements Filter {
 			response.setHeader("Allow", allowedCorsMethods);
 			response.setStatus(200);
 		} else {
-			chain.doFilter(request, response);
+			OriginOverwritingHttpServletRequestWrapper requestWrapper = new OriginOverwritingHttpServletRequestWrapper(request);
+			chain.doFilter(requestWrapper, response);
 		}
 	}
 
@@ -117,4 +121,45 @@ public class CorsFilter implements Filter {
 		// nothing to destroy
 	}
 
+	private static class OriginOverwritingHttpServletRequestWrapper extends HttpServletRequestWrapper {
+		private final boolean secure;
+
+		public OriginOverwritingHttpServletRequestWrapper(HttpServletRequest request) {
+			super(request);
+			secure = "https".equalsIgnoreCase(request.getScheme());
+		}
+
+		/**
+		 * If the endpoint is not secure (http) but the origin header is (mis-configured reverse proxy!)
+		 * Rewrite the only the `origin` header to HTTP.
+		 */
+		@Override
+		public String getHeader(String name) {
+			if(!secure && "origin".equalsIgnoreCase(name)) {
+				String originalValue = super.getHeader(name);
+				if(originalValue != null) {
+					return originalValue.replace("https:", "http:");
+				}
+			}
+			return super.getHeader(name);
+		}
+
+		@Override
+		public Enumeration<String> getHeaders(String name) {
+			if (!secure && "origin".equalsIgnoreCase(name)) {
+				Enumeration<String> originHeaders = super.getHeaders(name);
+				if (originHeaders != null) {
+					return Collections.enumeration(mapOriginHeaders(originHeaders));
+				}
+			}
+			return super.getHeaders(name);
+		}
+
+		private List<String> mapOriginHeaders(Enumeration<String> originHeaders) {
+			return Collections.list(originHeaders).stream()
+					.map(header -> header.replace("https:", "http:"))
+					.toList();
+		}
+
+	}
 }
