@@ -662,6 +662,8 @@ public class Json2Xml extends XmlAligner {
 			return Set.of(name);
 		} else {
 			if (isMultipleOccurringChildElement(name) && node instanceof JsonArray jsonArray) {
+				// this usecase seems to be for Multivalued-Parameters (See Json2XmlValidatorTest#testMultivaluedParameters)
+				// a mapping from a multivalued json array (in a json input) does not seem to be working?
 				Set<String> result = new HashSet<>();
 				for(JsonValue n: jsonArray) {
 					result.addAll(doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes));

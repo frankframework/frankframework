@@ -1,5 +1,6 @@
 package org.frankframework.align;
 
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -192,5 +193,19 @@ public class TestJson2Xml extends AlignTestBase {
 		Json2Xml j2x = Json2Xml.create(schemaUrl, false, null, false, false, "urn:test", null);
 		SAXException e = assertThrows(SAXException.class, ()-> j2x.translate(jsonStructure, xmlWriter));
 		assertEquals("Cannot determine XML root element, too many names [MetaData,intLabel,location] in JSON", e.getMessage());
+	}
+
+	@Test
+	public void testMultidimensionalArray() throws Exception {
+		URL schemaUrl = TestFileUtils.getTestFileURL("/Align/MultidimensionalArray/schema.xsd");
+		String jsonIn = TestFileUtils.getTestFile("/Align/MultidimensionalArray/input.json");
+		String xmlOut = TestFileUtils.getTestFile("/Align/MultidimensionalArray/output.xml");
+
+		XmlWriter xmlWriter = new XmlWriter();
+
+		JsonStructure jsonStructure = Json.createReader(new StringReader(jsonIn)).read();
+		Json2Xml j2x = Json2Xml.create(schemaUrl, false, "arrays", false, false, "urn:test", null);
+		j2x.translate(jsonStructure, xmlWriter);
+		assertXmlEquals(xmlOut, xmlWriter.toString());
 	}
 }
