@@ -23,21 +23,29 @@ import jakarta.annotation.Nonnull;
 import lombok.extern.log4j.Log4j2;
 import org.w3c.dom.Document;
 
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
 @Log4j2
 public class XmlParameter extends AbstractParameter {
+	private XmlType xmlType;
+
 	public XmlParameter() {
-		setType(ParameterType.XML);
+		setXmlType(XmlType.DOMDOC);
+	}
+
+	public enum XmlType {
+		NODE, DOMDOC
 	}
 
 	@Override
 	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
-		boolean isTypeNode = ParameterType.NODE.equals(getType());
+		boolean isTypeNode = XmlType.NODE.equals(xmlType);
 
 		if (isTypeNode) {
 			log.warn("Parameter [{}] uses parameterType NODE, falling back to DOMDOC instead", this::getName);
@@ -55,5 +63,18 @@ public class XmlParameter extends AbstractParameter {
 		} catch (DomBuilderException | IOException | XmlException e) {
 			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to XML document", e);
 		}
+	}
+
+	@Override
+	@Deprecated
+	@ConfigurationWarning("use element XmlParameter with attribute xmlType instead")
+	public void setType(ParameterType type) {
+		this.xmlType = EnumUtils.parse(XmlType.class, type.name());
+		super.setType(type);
+	}
+
+	public void setXmlType(XmlType xmlType) {
+		this.xmlType = xmlType;
+		super.setType(EnumUtils.parse(ParameterType.class, xmlType.name()));
 	}
 }
