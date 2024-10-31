@@ -219,11 +219,15 @@
                   [ngClass]="{ 'text-danger': receiver.state === 'error' }"
                 >
                   <td>{{ receiver.name }}</td>
-                  <td #listenerDestination [title]="receiver.listener.destination">
-                    {{ receiver.listener.class }} ({{
-                      receiver.listener.destination | truncate: 150 : listenerDestination
-                    }})
-                  </td>
+                  <ng-container *ngIf="receiver.listener && receiver.listener.destination; else noListener">
+                    <td #listenerDestination [title]="receiver.listener.destination">
+                      {{ receiver.listener.class }} ({{ receiver.listener.destination | truncate: 150 : listenerDestination }})
+                    </td>
+                  </ng-container>
+                  
+                  <ng-template #noListener>
+                    <td>No listener found</td>
+                  </ng-template>
                   <td>{{ receiver.messages.retried }}</td>
                   <td>{{ receiver.messages.received }}</td>
                   <td>{{ receiver.messages.rejected }}</td>
