@@ -485,16 +485,14 @@ public class XmlTypeToJsonSchemaConverter  {
 	// Currently commented out because builder param isnt used
 	// private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
 	private void handleWildcard(XSWildcard wildcard){
-		switch (wildcard.getProcessContents()) {
-			case XSWildcard.PC_LAX, XSWildcard.PC_SKIP, XSWildcard.PC_STRICT: break;
-			default:
-				throw new IllegalStateException("handleWildcard wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
+		short processContents = wildcard.getProcessContents();
+		if (processContents != XSWildcard.PC_LAX && processContents != XSWildcard.PC_SKIP && processContents != XSWildcard.PC_STRICT) {
+			throw new IllegalStateException("handleWildcard wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but [" + wildcard.getProcessContents() + "]");
 		}
 
-		switch (wildcard.getConstraintType()) {
-			case XSWildcard.NSCONSTRAINT_ANY, XSWildcard.NSCONSTRAINT_LIST, XSWildcard.NSCONSTRAINT_NOT : break;
-			default:
-				throw new IllegalStateException("handleWildcard wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
+		short constraintType = wildcard.getConstraintType();
+		if (constraintType != XSWildcard.NSCONSTRAINT_ANY && constraintType != XSWildcard.NSCONSTRAINT_LIST && constraintType != XSWildcard.NSCONSTRAINT_NOT) {
+			throw new IllegalStateException("handleWildcard wildcard.namespaceConstraint is not ANY, LIST or NOT, but [" + wildcard.getConstraintType() + "]");
 		}
 	}
 
