@@ -2126,7 +2126,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	/**
 	 * The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite
-	 * @ff.default 1, or 3 for JMS Listeners
+	 * @ff.default 1, or 3 for JMS Listeners or other listeners implementing {@link IKnowsDeliveryCount}.
 	 */
 	public void setMaxRetries(Integer i) {
 		// TODO: when setMaxDeliveries is removed, no need to check for max value.
@@ -2151,12 +2151,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		// no longer used
 	}
 
-	/** XPath expression to extract correlationid from message */
+	/** XPath expression to extract correlationId from message */
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
 
-	/** Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
+	/** Namespace definitions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
@@ -2171,7 +2171,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		labelXPath = string;
 	}
 
-	/** Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
+	/** Namespace definitions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
