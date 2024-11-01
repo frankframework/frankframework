@@ -43,8 +43,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.ResourceLimiter;
@@ -86,7 +85,7 @@ import org.xml.sax.SAXException;
  */
 @Forward(name = "maxItemsReached", description = "the iteration stopped when the configured maximum number of items was processed")
 @Forward(name = "stopConditionMet", description = "the iteration stopped when the configured condition expression became true")
-@ElementType(ElementTypes.ITERATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ITERATOR)
 public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";

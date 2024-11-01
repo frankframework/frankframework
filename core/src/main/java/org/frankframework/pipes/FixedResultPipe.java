@@ -22,6 +22,8 @@ import javax.xml.transform.TransformerException;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+
 import org.xml.sax.SAXException;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -32,8 +34,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
@@ -218,8 +218,8 @@ import org.frankframework.util.TransformerPool;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
-@ElementType(ElementTypes.TRANSLATOR)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 @Forward(name = "filenotfound", description = "the configured file was not found (when this forward isn't specified an exception will be thrown)")
 public class FixedResultPipe extends FixedForwardPipe {
 

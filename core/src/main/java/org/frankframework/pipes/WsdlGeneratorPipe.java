@@ -24,8 +24,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.http.RestListenerUtils;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.stream.Message;
@@ -37,7 +36,7 @@ import org.frankframework.util.StreamUtil;
 
  * @author Jaco de Groot
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
 

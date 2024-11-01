@@ -101,7 +101,7 @@ import org.frankframework.util.XmlUtils;
  * @author Gerrit van Brakel
  */
 
-@Category("Advanced")
+@Category(Category.Type.ADVANCED)
 public class MailSender extends MailSenderBase implements HasPhysicalDestination {
 
 	private @Getter String smtpHost;

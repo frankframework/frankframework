@@ -40,8 +40,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -94,7 +93,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * @since   4.9
  * @author  Gerrit van Brakel
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;

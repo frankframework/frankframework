@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
-@Label(name = "FrankDocGroup")
+@Label(name = "Components")
 @Repeatable(FrankDocGroups.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FrankDocGroup {

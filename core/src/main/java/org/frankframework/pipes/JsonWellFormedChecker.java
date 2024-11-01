@@ -22,13 +22,14 @@ import jakarta.json.Json;
 import jakarta.json.JsonException;
 import jakarta.json.JsonReader;
 
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+
 import org.springframework.http.MediaType;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
@@ -38,7 +39,7 @@ import org.frankframework.stream.Message;
  * @author  Tom van der Heijden
  */
 @Forward(name = "failure", description = "a validation error occurred, probably caused by non-well-formed JSON")
-@ElementType(ElementTypes.VALIDATOR)
+@EnterpriseIntegrationPattern(Type.VALIDATOR)
 public class JsonWellFormedChecker extends FixedForwardPipe {
 
 	@Override
