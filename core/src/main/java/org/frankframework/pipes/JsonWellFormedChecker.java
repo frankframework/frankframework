@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.io.Reader;
 
 import jakarta.json.Json;
 import jakarta.json.JsonException;
@@ -46,7 +47,7 @@ public class JsonWellFormedChecker extends FixedForwardPipe {
 			return new PipeRunResult(findForward("failure"), message);
 		}
 
-		try(JsonReader jr = Json.createReader(message.asReader())) {
+		try(Reader reader = message.asReader(); JsonReader jr = Json.createReader(reader)) {
 			jr.read();
 			message.getContext().withMimeType(MediaType.APPLICATION_JSON);
 		} catch (JsonException e) {

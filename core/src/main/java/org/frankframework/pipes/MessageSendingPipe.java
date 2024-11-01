@@ -631,7 +631,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			output = wrapResult.getResult();
 
-			log.debug("response after wrapping ({}) [{}]", () -> ClassUtils.nameOf(wrapResult.getResult()), wrapResult::getResult);
+			log.debug("response after wrapping [{}]", wrapResult::getResult);
 		}
 
 		if (outputValidator != null && outputWrapper != null) {
