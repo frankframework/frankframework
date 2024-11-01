@@ -284,7 +284,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsOldWithInvalidAttribute() throws Exception{
+	public void substituteVarsOldWithInvalidAttribute() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -296,7 +296,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsOldWithFileAndParam() throws Exception{
+	public void substituteVarsOldWithFileAndParam() throws Exception{
 		pipe.addParameter(ParameterBuilder.create().withName("myprop").withValue("Sinatra"));
 
 		pipe.setFilename("/FixedResult/fixedResultPipeInput_oldStyle.txt");
@@ -309,7 +309,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsOldWithFileAndProperties() throws Exception{
+	public void substituteVarsOldWithFileAndProperties() throws Exception{
 		pipe.setFilename("/FixedResult/fixedResultPipeInput_oldStyle.txt");
 		pipe.setUseOldSubstitutionStartDelimiter(true);
 		pipe.setSubstituteVars(true);
