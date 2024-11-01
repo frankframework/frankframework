@@ -26,7 +26,7 @@ import org.xml.sax.Attributes;
 public class NamespaceRemovingAttributesWrapper extends AttributesWrapper {
 
 	public NamespaceRemovingAttributesWrapper(Attributes source) {
-		super(source,"xmlns");
+		super(source, "xmlns");
 	}
 
 	public int findIndexByLocalName(String localName) {
