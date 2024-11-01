@@ -12,7 +12,8 @@
 	<context:property-placeholder />
 
 	<context:component-scan base-package="org.frankframework.console">
-		<!-- make sure only load the Spring MVC controllers ;) -->
+		<!-- disable package scanning in this package as it attempts to load this XML file, again. -->
+		<context:exclude-filter type="regex" expression="org\.frankframework\.console\.runner\..*"/>
 	</context:component-scan>
 
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->

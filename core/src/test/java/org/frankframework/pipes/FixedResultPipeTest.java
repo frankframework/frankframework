@@ -284,6 +284,31 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
+	public void substitudeVarsOldWithInvalidAttribute() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("param");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+
+		pipe.setReturnString("This is ${param}");
+		pipe.setUseOldSubstitutionStartDelimiter(true);
+		ConfigurationException ce = assertThrows(ConfigurationException.class, pipe::configure);
+		assertEquals("attribute [useOldSubstitutionStartDelimiter] may only be used in combination with attribute [filename]", ce.getMessage());
+	}
+
+	@Test
+	public void substitudeVarsOldWithFilename() throws Exception{
+		pipe.addParameter(ParameterBuilder.create().withName("myprop").withValue("Sinatra"));
+
+		pipe.setFilename("/FixedResult/fixedResultPipeInput_oldStyle.txt");
+		pipe.setUseOldSubstitutionStartDelimiter(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("Hello Sinatra", res.getResult().asString());
+	}
+
+	@Test
 	@DisplayName("Proves that an unused param will not be replaced")
 	public void testUnusedParam() throws Exception {
 		// Arguments.of("?", Map.of("param", "parameterValue"), "hello ?{param} world ?{unusedParam}.", "hello parameterValue world ?{unusedParam}."),
