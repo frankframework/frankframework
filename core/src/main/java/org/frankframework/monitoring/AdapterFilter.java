@@ -18,14 +18,14 @@ package org.frankframework.monitoring;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 /**
  * Filter on Adapters, used by Triggers.
  *
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
-@Component(Component.Type.MONITORING)
+@ElementType(ElementType.Type.MONITORING)
 public class AdapterFilter {
 
 	private String adapter;

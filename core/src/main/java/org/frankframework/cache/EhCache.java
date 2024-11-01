@@ -22,7 +22,7 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 
@@ -34,7 +34,7 @@ import org.frankframework.util.AppConstants;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class EhCache<V> extends CacheAdapterBase<V> {
 
 	private static final String KEY_PREFIX = "cache.default.";

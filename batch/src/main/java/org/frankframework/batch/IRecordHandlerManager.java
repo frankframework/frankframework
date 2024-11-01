@@ -20,7 +20,7 @@ import java.util.Map;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
 /**
  * Interface for handling a transformed record.
@@ -32,7 +32,7 @@ import org.frankframework.doc.Component;
  *
  * @author John Dekker
  */
-@Component(Component.Type.BATCH)
+@ElementType(ElementType.Type.BATCH)
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;

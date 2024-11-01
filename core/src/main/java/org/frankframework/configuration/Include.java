@@ -17,9 +17,9 @@ package org.frankframework.configuration;
 
 import lombok.Getter;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class Include {
 
 	private @Getter String ref;

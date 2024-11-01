@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
@@ -31,7 +31,7 @@ import org.frankframework.receivers.Receiver;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-@Component(Component.Type.TRANSACTIONAL_STORAGE)
+@ElementType(ElementType.Type.TRANSACTIONAL_STORAGE)
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	int MAXCOMMENTLEN = 1000;

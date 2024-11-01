@@ -20,7 +20,7 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 
@@ -29,7 +29,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
-@Component(Component.Type.SENDER)
+@ElementType(ElementType.Type.SENDER)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 public interface ISender extends IConfigurable {
 

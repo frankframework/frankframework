@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -59,7 +59,7 @@ import org.frankframework.util.XmlBuilder;
  * @version 2.0
  * @author Niels Meijer
  */
-@Component(Component.Type.MONITORING)
+@ElementType(ElementType.Type.MONITORING)
 public class Monitor implements IConfigurable, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

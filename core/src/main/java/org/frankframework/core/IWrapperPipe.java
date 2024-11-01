@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Optional;
 
@@ -23,8 +23,8 @@ import org.frankframework.doc.Optional;
  * Marker interface for Wrappers
  * @author Gerrit van Brakel
  */
-@Component(Component.Type.PIPE)
-@Component(Component.Type.WRAPPER)
+@ElementType(ElementType.Type.PIPE)
+@ElementType(ElementType.Type.WRAPPER)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.WRAPPER)
 public interface IWrapperPipe extends IPipe {
 

@@ -20,14 +20,14 @@ import java.io.File;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 /**
  * Cleans up a directory.
  *
  *
  * @author Peter Leeuwenburgh
  */
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class DirectoryCleaner {
 	protected Logger log = LogUtil.getLogger(this);
 

@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.scheduler.SchedulerHelper;
@@ -43,7 +43,7 @@ import lombok.Setter;
  * @author Niels Meijer
  *
  */
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class ScheduleManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;

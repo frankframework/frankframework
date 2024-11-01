@@ -20,14 +20,14 @@ import java.util.List;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
 /**
  * Interface for transforming a record (= structured ASCII line).
  *
  * @author John Dekker
  */
-@Component(Component.Type.BATCH)
+@ElementType(ElementType.Type.BATCH)
 public interface IRecordHandler extends IConfigurable {
 
 	public void open() throws SenderException;

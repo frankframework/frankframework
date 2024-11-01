@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -33,7 +33,7 @@ import org.frankframework.util.LogUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Component(Component.Type.BATCH)
+@ElementType(ElementType.Type.BATCH)
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

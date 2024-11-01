@@ -19,7 +19,7 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
 /**
  * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
@@ -35,7 +35,7 @@ import org.frankframework.doc.Component;
  * @author Niels Meijer
  */
 @Category(Category.Type.BASIC)
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class PipeLineExit implements IForwardTarget {
 
 	private @Getter String name;

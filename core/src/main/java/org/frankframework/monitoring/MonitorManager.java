@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.monitoring.events.Event;
 import org.frankframework.monitoring.events.RegisterMonitorEvent;
@@ -46,7 +46,7 @@ import lombok.Setter;
  * @author Niels Meijer
  * @version 2.0
  */
-@Component(Component.Type.MONITORING)
+@ElementType(ElementType.Type.MONITORING)
 public class MonitorManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;

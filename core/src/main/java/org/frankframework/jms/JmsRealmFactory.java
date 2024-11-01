@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -35,7 +35,7 @@ import org.frankframework.util.LogUtil;
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class JmsRealmFactory {
 	private final Logger log = LogUtil.getLogger(this);
 

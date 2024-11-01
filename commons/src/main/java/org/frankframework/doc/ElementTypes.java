@@ -1,5 +1,5 @@
 /*
-Copyright 2021, 2024 WeAreFrank!
+Copyright 2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,42 +16,11 @@ limitations under the License.
 package org.frankframework.doc;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
-@Label(name = "Components")
-@Repeatable(Components.class)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Component {
-	Type value();
-
-	enum Type {
-		@EnumLabel("Pipes")
-		PIPE,
-		@EnumLabel("Senders")
-		SENDER,
-		@EnumLabel("Listeners")
-		LISTENER,
-		@EnumLabel("Validators")
-		VALIDATOR,
-		@EnumLabel("Wrappers")
-		WRAPPER,
-		@EnumLabel("TransactionalStorages")
-		TRANSACTIONAL_STORAGE,
-		@EnumLabel("ErrorMessageFormatters")
-		ERROR_MESSAGE_FORMATTER,
-		@EnumLabel("Batch")
-		BATCH,
-		@EnumLabel("Monitoring")
-		MONITORING,
-		@EnumLabel("Scheduling")
-		JOB,
-		@EnumLabel("Parameters")
-		PARAMETER,
-		// This label is automatically added to the Module element.
-		@EnumLabel("Other")
-		OTHER,
-	}
+public @interface ElementTypes {
+	ElementType[] value();
 }

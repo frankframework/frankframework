@@ -50,7 +50,7 @@ import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -204,7 +204,7 @@ import org.frankframework.util.XmlUtils;
  *
  */
 @Category(Category.Type.BASIC)
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

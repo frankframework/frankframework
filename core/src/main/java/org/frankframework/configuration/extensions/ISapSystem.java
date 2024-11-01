@@ -15,9 +15,9 @@
 */
 package org.frankframework.configuration.extensions;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public interface ISapSystem {
 
 	public void registerItem(Object dummyParent);

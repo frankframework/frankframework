@@ -16,11 +16,11 @@
 package org.frankframework.http;
 
 import org.frankframework.core.SharedResource;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 /**
  * Shared HTTPSession, implements {@link SharedResource} so it can be set in the Configuration.xml
  */
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class HttpSession extends HttpSessionBase implements SharedResource<HttpSession> {
 
 	@Override

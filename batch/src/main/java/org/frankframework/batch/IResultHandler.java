@@ -21,7 +21,7 @@ import java.util.Map;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.pipes.AbstractPipe;
 
 /**
@@ -29,7 +29,7 @@ import org.frankframework.pipes.AbstractPipe;
  *
  * @author  John Dekker
  */
-@Component(Component.Type.BATCH)
+@ElementType(ElementType.Type.BATCH)
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);

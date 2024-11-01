@@ -15,9 +15,9 @@
 */
 package org.frankframework.configuration.extensions;
 
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 
-@Component(Component.Type.OTHER)
+@ElementType(ElementType.Type.OTHER)
 public class SapSystems {
 
 	public void addSapSystem(ISapSystem sapSystem) {

@@ -20,7 +20,7 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Component;
+import org.frankframework.doc.ElementType;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -33,7 +33,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-@Component(Component.Type.LISTENER)
+@ElementType(ElementType.Type.LISTENER)
 @EnterpriseIntegrationPattern(Type.LISTENER)
 public interface IListener<M> extends IConfigurable {
 
