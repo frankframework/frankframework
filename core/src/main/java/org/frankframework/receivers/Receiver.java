@@ -732,7 +732,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 			if (maxRetryDelay == null) {
-				maxRetryDelay = AppConstants.getInstance().getInt(DEFAULT_MAX_RETRY_DELAY_KEY, DEFAULT_MAX_RETRY_DELAY);
+				maxRetryDelay = AppConstants.getInstance(configurationClassLoader).getInt(DEFAULT_MAX_RETRY_DELAY_KEY, DEFAULT_MAX_RETRY_DELAY);
 			}
 		} catch (Throwable t) {
 			ConfigurationException e;
@@ -1755,6 +1755,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		suspendReceiver(currentInterval);
 	}
 
+	/**
+	 * Get the transaction timeout in seconds for this receiver, or 0 if it is not possible to determine this.
+	 *
+	 * @return The transaction timeout in seconds configured on the Receiver, or from the TransactionManager if it was not
+	 * configured on the receiver.
+	 */
 	private int getActualTransactionTimeout() {
 		if (getTransactionTimeout() != 0) {
 			return getTransactionTimeout();
@@ -1762,9 +1768,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (txManager instanceof AbstractPlatformTransactionManager platformTransactionManager) {
 			return platformTransactionManager.getDefaultTimeout();
 		}
-		return 0;
+		return AppConstants.getInstance(configurationClassLoader).getInt("transactionmanager.defaultTransactionTimeout", 0);
 	}
 
+	/**
+	 * Derive the maximum retry delay to use for this receiver, based on the configured max retry
+	 * delay for the receiver, the global default max retry delay, and the transaction timeout.
+	 * The actual maximum retry delay can never be more than half the {@link #getActualTransactionTimeout()}.
+	 *
+	 * @return Maximum retry delay in seconds.
+	 */
 	private int getActualMaxRetryDelay() {
 		int actualMaxRetryDelay;
 		int actualTransactionTimeout = getActualTransactionTimeout();
