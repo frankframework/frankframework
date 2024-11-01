@@ -1,6 +1,7 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.stream.Message;
 
 public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker> {
 	public String input = null;
@@ -40,8 +42,12 @@ public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecke
 		pipe.addForward( new PipeForward("failure", "path") );
 		pipe.configure();
 		pipe.start();
-		PipeRunResult pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(forward, pipeRunResult.getPipeForward().getName());
+
+		try (Message inputMessage = new Message(input)) {
+			PipeRunResult pipeRunResult = doPipe(pipe, inputMessage, session);
+			assertEquals(forward, pipeRunResult.getPipeForward().getName());
+			assertFalse(inputMessage.isClosed(), "pipe may close the reader but not the input (with is the output) message");
+		}
 	}
 
 	public void initJsonWellFormedCheckerTestData(String input, String forward) {

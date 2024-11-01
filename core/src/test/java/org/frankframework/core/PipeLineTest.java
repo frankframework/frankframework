@@ -3,6 +3,7 @@ package org.frankframework.core;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -273,7 +274,10 @@ public class PipeLineTest {
 		session.put("k3", "v3");
 
 		// Act // Assert
-		assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+		try (Message message = Message.nullMessage()) {
+			assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", message, session));
+			assertFalse(message.isClosed());
+		}
 	}
 
 	@Test
@@ -285,10 +289,13 @@ public class PipeLineTest {
 		session.put("k1", "v1");
 
 		// Act // Assert
-		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+		try (Message message = Message.nullMessage()) {
+			ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", message, session));
 
-		// Assert
-		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+			// Assert
+			assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+			assertFalse(message.isClosed());
+		}
 	}
 
 	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {

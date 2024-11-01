@@ -187,7 +187,7 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	public boolean isMultipleOccurringChildElement(String name) {
-		return isPresentInSet(multipleOccurringChildElements,name);
+		return isPresentInSet(multipleOccurringChildElements, name);
 	}
 
 	private ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
