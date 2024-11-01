@@ -454,7 +454,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		replaceFixedParams = b;
 	}
 
-	@Deprecated(since = "8.1")
+	@Deprecated(since = "8.1", forRemoval = true)
 	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
 	public void setUseOldSubstitutionStartDelimiter(boolean old) {
 		useOldSubstitutionStartDelimiter = old;
