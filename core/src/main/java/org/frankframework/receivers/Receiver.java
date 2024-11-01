@@ -949,7 +949,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 *
 	 * @param rawMessageWrapper Wrapper for the raw message, may be an instance of {@link RawMessageWrapper} or {@link MessageWrapper}. If an instance of {@link RawMessageWrapper} then
 	 *                          the {@link IListener} will be used to extract the full {@link Message} object to be sent to the error storage.
-	 * @param session Context of the process. Can be either the thread context of a {@link IPullingListener}, or the current {@link PipeLineSession}.
+	 * @param session {@link PipeLineSession} of the process.
 	 * @param receivedDate Timestamp of when the message was received.
 	 * @param comments Processing comments and error message regarding the reason the message was rejected.
 	 * @param txDef {@link TransactionDefinition} for the transaction to be used for moving the message to error state / storage.
@@ -1597,10 +1597,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/**
-	 * Returns true if the message should go for another try after it fails in processing.
+	 * Returns true if the message should no longer be retried after it has failed in processing.
 	 *
 	 * @param messageWrapper Message for which to check delivery count
-	 * @return {@code true} if message should stil be retried, {@code false} if not.
+	 * @return {@code true} if message should no longer be retried, {@code false} if it should.
 	 */
 	protected boolean isDeliveryRetryLimitExceededAfterMessageProcessed(@Nonnull final RawMessageWrapper<M> messageWrapper) {
 		if (getMaxRetries() < 0) {
