@@ -20,13 +20,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.LazyLoadingEventListener;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.XmlBuilder;
 import org.springframework.beans.factory.DisposableBean;
 
-@ElementType(ElementType.Type.MONITORING)
+@FrankDocGroup(FrankDocGroupValue.MONITORING)
 public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	enum TriggerType {
 		ALARM,

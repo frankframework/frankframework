@@ -18,12 +18,13 @@ package org.frankframework.batch;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * @author  John Dekker
  */
-@ElementType(ElementType.Type.BATCH)
+@FrankDocGroup(FrankDocGroupValue.BATCH)
 public class InputfieldsPart {
 
 	private @Getter @Setter String value;

@@ -22,7 +22,8 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 
@@ -37,7 +38,7 @@ import org.frankframework.util.StringUtil;
  * @see JMSFacade#setJmsRealm
  * @author Johan Verrips IOS
  */
-@ElementType(ElementType.Type.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealm {
 	//TODO: change to J2eeRealm
 	private final Logger log = LogUtil.getLogger(this);

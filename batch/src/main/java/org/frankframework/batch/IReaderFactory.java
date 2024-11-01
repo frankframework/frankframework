@@ -21,13 +21,14 @@ import java.io.Reader;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * @author  Gerrit van Brakel
  * @since
  */
-@ElementType(ElementType.Type.BATCH)
+@FrankDocGroup(FrankDocGroupValue.BATCH)
 public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;

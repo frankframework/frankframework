@@ -37,7 +37,8 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 import org.springframework.context.ApplicationContext;
 
@@ -99,7 +100,7 @@ import org.frankframework.util.StringUtil;
  * @author  Johan Verrips
  */
 @Category(Category.Type.BASIC)
-@ElementType(ElementType.Type.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

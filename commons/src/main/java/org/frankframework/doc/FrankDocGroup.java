@@ -1,5 +1,5 @@
 /*
-Copyright 2024 WeAreFrank!
+Copyright 2021, 2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@ limitations under the License.
 package org.frankframework.doc;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
+@Label(name = "Components")
+@Repeatable(FrankDocGroups.class)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ElementTypes {
-	ElementType[] value();
+public @interface FrankDocGroup {
+	FrankDocGroupValue value();
 }

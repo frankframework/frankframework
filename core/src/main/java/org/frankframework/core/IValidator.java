@@ -15,7 +15,8 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Optional;
 import org.frankframework.stream.Message;
@@ -25,8 +26,8 @@ import org.frankframework.stream.Message;
  *
  * @author Gerrit van Brakel
  */
-@ElementType(ElementType.Type.PIPE)
-@ElementType(ElementType.Type.VALIDATOR)
+@FrankDocGroup(FrankDocGroupValue.PIPE)
+@FrankDocGroup(FrankDocGroupValue.VALIDATOR)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.VALIDATOR)
 public interface IValidator extends IPipe {
 

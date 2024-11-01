@@ -20,7 +20,8 @@ import java.util.List;
 
 import lombok.Getter;
 
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * Pipeline exit container in which all (required) {@link PipeLineExit Exit}s must be defined.
@@ -43,7 +44,7 @@ import org.frankframework.doc.ElementType;
  * }</pre>
  *
  */
-@ElementType(ElementType.Type.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLineExits {
 
 	private final @Getter List<PipeLineExit> exits = new ArrayList<>();

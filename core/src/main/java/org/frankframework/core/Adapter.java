@@ -36,7 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
@@ -92,7 +93,7 @@ import org.frankframework.util.StringUtil;
  * @author Johan Verrips
  */
 @Category(Category.Type.BASIC)
-@ElementType(ElementType.Type.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 

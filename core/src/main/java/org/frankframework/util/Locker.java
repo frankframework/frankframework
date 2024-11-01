@@ -27,7 +27,8 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -74,7 +75,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  *
  * @author  Peter Leeuwenburgh
  */
-@ElementType(ElementType.Type.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private static final String LOCK_IGNORED="%null%";
 	private static final String LOCK_OBJECT_QUERY = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
