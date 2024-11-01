@@ -131,7 +131,7 @@ public class CorsFilter implements Filter {
 
 		/**
 		 * If the endpoint is not secure (http) but the origin header is (mis-configured reverse proxy!)
-		 * Rewrite the only the `origin` header to HTTP.
+		 * Rewrite only the `origin` header to HTTP.
 		 */
 		@Override
 		public String getHeader(String name) {
