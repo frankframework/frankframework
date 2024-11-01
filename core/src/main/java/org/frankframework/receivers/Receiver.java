@@ -1093,11 +1093,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * The method assumes that a transaction has been started where necessary.
 	 */
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		processRawMessage(rawMessage, session, false, duplicatesAlreadyChecked);
+		processRawMessage(rawMessage, session, false, retryStatusAlreadyChecked);
 	}
 
 	/**
@@ -1105,7 +1105,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
 			return;
@@ -1136,7 +1136,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 
-			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, duplicatesAlreadyChecked);
+			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
 			output.close();
 			log.debug("Closing result message [{}]", output);
 
@@ -1227,7 +1227,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
@@ -1244,7 +1244,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 			MessageWrapper<M> messageWrapper = new MessageWrapper<>(messageWrapperOriginal, messageWrapperOriginal.getMessage(), messageId, businessCorrelationId);
 
-			boolean exitWithoutProcessing = checkMessageHistory(messageWrapper, session, manualRetry, duplicatesAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
@@ -1382,7 +1382,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && !duplicatesAlreadyChecked && !isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)) {
+						if (messageInError && !retryStatusAlreadyChecked && !isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
@@ -1428,23 +1428,23 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * @param messageWrapper            Wrapped message object
 	 * @param session                  {@link PipeLineSession} in which message is processed
 	 * @param manualRetry              Indicator if this is a manually retried message.
-	 * @param duplicatesAlreadyChecked Indicator if duplicates have already been previously checked
+	 * @param retryStatusAlreadyChecked Indicator if duplicates have already been previously checked
 	 * @return {@code true} if message has history and should not be processed; {@code false} if the message should be processed.
 	 * @throws ListenerException If an exception happens during processing.
 	 */
-	private boolean checkMessageHistory(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private boolean checkMessageHistory(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
 		String logPrefix = getLogPrefix();
 		String messageId = messageWrapper.getId();
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
 
 			ProcessStatusCacheItem cachedProcessResult;
-			if (!duplicatesAlreadyChecked) {
+			if (!retryStatusAlreadyChecked) {
 				cachedProcessResult = updateMessageReceiveCount(messageWrapper);
 			} else {
 				cachedProcessResult = getCachedProcessStatus(messageWrapper);
 			}
-			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageWrapper, session, manualRetry)) {
+			if (!retryStatusAlreadyChecked && isDeliveryRetryLimitExceededBeforeMessageProcessing(messageWrapper, session, manualRetry)) {
 				if (!isTransacted()) {
 					log.warn("{} received message with messageId [{}] which has a problematic history; aborting processing", logPrefix, messageId);
 				}
