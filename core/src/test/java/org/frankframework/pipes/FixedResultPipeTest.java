@@ -296,7 +296,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsOldWithFilename() throws Exception{
+	public void substitudeVarsOldWithFileAndParam() throws Exception{
 		pipe.addParameter(ParameterBuilder.create().withName("myprop").withValue("Sinatra"));
 
 		pipe.setFilename("/FixedResult/fixedResultPipeInput_oldStyle.txt");
@@ -305,7 +305,19 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 
 		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
 		assertEquals("success", res.getPipeForward().getName());
-		assertEquals("Hello Sinatra", res.getResult().asString());
+		assertEquals("Hello Sinatra ${instance.name}", res.getResult().asString());
+	}
+
+	@Test
+	public void substitudeVarsOldWithFileAndProperties() throws Exception{
+		pipe.setFilename("/FixedResult/fixedResultPipeInput_oldStyle.txt");
+		pipe.setUseOldSubstitutionStartDelimiter(true);
+		pipe.setSubstituteVars(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("Hello  TestConfiguration", res.getResult().asString());
 	}
 
 	@Test

@@ -319,9 +319,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				resultString = replaceParameters(resultString, message, session);
 			}
 
-			if (substituteVars) {
-				resultString = substituteVars(resultString, session);
-			}
+			resultString = substituteVars(resultString, session);
 
 			if (transformerPool != null) {
 				try {
