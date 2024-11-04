@@ -42,14 +42,15 @@ import jakarta.jms.Topic;
 import jakarta.jms.TopicPublisher;
 import jakarta.jms.TopicSession;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -62,6 +63,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jndi.JndiBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -309,7 +311,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Obtains a connection and a serviceQueue.
 	 */
-	public void start() throws Exception {
+	public void start() {
 		try {
 			getMessagingSource(); // obtain and cache connection, then start it.
 			if (StringUtils.isNotEmpty(getDestinationName())) {
@@ -317,7 +319,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			}
 		} catch (Exception e) {
 			stop();
-			throw e;
+			throw new LifecycleException(e);
 		}
 	}
 

@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.frankframework.core.ListenerException;
+import org.frankframework.lifecycle.LifecycleException;
 
 public class ApiDispatchConfig {
 	private final String uriPattern;
@@ -32,9 +32,11 @@ public class ApiDispatchConfig {
 		this.uriPattern = uriPattern;
 	}
 
-	public synchronized void register(ApiListener.HttpMethod method, ApiListener listener) throws ListenerException {
-		if(methods.containsKey(method))
-			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
+	public synchronized void register(ApiListener.HttpMethod method, ApiListener listener)  {
+		if (methods.containsKey(method)) {
+			throw new LifecycleException("ApiListener for uriPattern [" + uriPattern + "] method [" + method + "] has already registered");
+		}
+
 		methods.put(method, listener);
 	}
 

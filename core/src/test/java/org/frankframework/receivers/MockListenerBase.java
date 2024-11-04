@@ -19,6 +19,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 public abstract class MockListenerBase implements IListener<String> {
@@ -41,16 +42,16 @@ public abstract class MockListenerBase implements IListener<String> {
 	abstract void offerMessage(String text) throws Exception;
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		if(!isOpen.compareAndSet(false, true)) {
-			throw new ListenerException("not in state closed");
+			throw new LifecycleException("not in state closed");
 		}
 	}
 
 	@Override
-	public void stop() throws ListenerException {
+	public void stop() {
 		if(!isOpen.compareAndSet(true, false)) {
-			throw new ListenerException("not in state open");
+			throw new LifecycleException("not in state open");
 		}
 	}
 

@@ -49,6 +49,7 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.documentbuilder.XmlDocumentBuilder;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -160,7 +161,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		log.debug("Opening FileSystemListener");
 		try {
 			getFileSystem().open();
@@ -173,46 +174,40 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			checkForExistenceOfFolder("errorFolder",getErrorFolder());
 			checkForExistenceOfFolder("logFolder",getLogFolder());
 		} catch (FileSystemException e) {
-			throw new ListenerException("Cannot open fileSystem",e);
+			throw new LifecycleException("Cannot open fileSystem", e);
 		}
 	}
 
-	protected boolean checkForExistenceOfFolder(String attributeName, String folderName) throws ListenerException {
+	protected boolean checkForExistenceOfFolder(String attributeName, String folderName) throws FileSystemException {
 		FS fileSystem = getFileSystem();
 		if (StringUtils.isNotEmpty(folderName)) {
-			try {
-				if (fileSystem.folderExists(folderName)) {
-					return true;
-				}
-			} catch (FileSystemException e) {
-				throw new ListenerException("Cannot determine presence of  " +attributeName + " [" + folderName + "]",e);
-			}
-			if (isCreateFolders()) {
-				try {
-					fileSystem.createFolder(folderName);
-				} catch (FileSystemException e) {
-					throw new ListenerException("Cannot create " +attributeName + " [" + folderName + "]",e);
-				}
+			if (fileSystem.folderExists(folderName)) {
 				return true;
 			}
+
+			if (isCreateFolders()) {
+				fileSystem.createFolder(folderName);
+				return true;
+			}
+
 			String canonicalNameClause;
 			try {
 				canonicalNameClause=", canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(folderName))+"],";
 			} catch (FileSystemException e) {
 				canonicalNameClause=", (no canonical name: "+e.getMessage()+"),";
 			}
-			throw new ListenerException("The value for " +attributeName + " [" + folderName + "]"+canonicalNameClause+" is invalid. It is not a folder.");
+			throw new FileSystemException("The value for " +attributeName + " [" + folderName + "]"+canonicalNameClause+" is invalid. It is not a folder.");
 		}
 		return false;
 	}
 
 	@Override
-	public void stop() throws ListenerException {
+	public void stop() {
 		log.debug("Closing the FS");
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			throw new ListenerException("Cannot close fileSystem",e);
+			throw new LifecycleException("Cannot close fileSystem",e);
 		}
 	}
 

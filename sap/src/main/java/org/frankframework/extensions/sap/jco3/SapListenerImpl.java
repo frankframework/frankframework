@@ -18,11 +18,12 @@ package org.frankframework.extensions.sap.jco3;
 import java.io.IOException;
 import java.util.Map;
 
-import com.sap.conn.idoc.IDocDocumentIterator;
-
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.sap.conn.idoc.IDocDocument;
+import com.sap.conn.idoc.IDocDocumentIterator;
 import com.sap.conn.idoc.IDocDocumentList;
 import com.sap.conn.idoc.IDocXMLProcessor;
 import com.sap.conn.idoc.jco.JCoIDoc;
@@ -45,7 +46,6 @@ import com.sap.conn.jco.server.JCoServerFunctionHandler;
 import com.sap.conn.jco.server.JCoServerTIDHandler;
 
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
@@ -57,6 +57,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.extensions.sap.ISapListener;
 import org.frankframework.extensions.sap.SapException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -99,7 +100,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		try {
 			openFacade();
 			SapServerDataProvider serverDataProvider = SapServerDataProvider.getInstance();
@@ -119,12 +120,13 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 			} catch (Exception e2) {
 				e.addSuppressed(e2);
 			}
-			throw new ListenerException(getLogPrefix()+"could not start", e);
+
+			throw new LifecycleException(getLogPrefix()+"could not start", e);
 		}
 	}
 
 	@Override
-	public void stop() throws ListenerException {
+	public void stop() {
 		try {
 			log.debug("{}stop server", getLogPrefix());
 			SapServerDataProvider.getInstance().getServerDataEventListener().deleted(getName());
@@ -133,7 +135,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 			server.stop();
 
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"could not stop", e);
+			throw new LifecycleException(getLogPrefix()+"could not stop", e);
 		} finally {
 			closeFacade();
 		}

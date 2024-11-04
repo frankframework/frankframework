@@ -34,11 +34,11 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.ListenerException;
 import org.frankframework.doc.Default;
 import org.frankframework.http.HttpSenderBase;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.jwt.JwtValidator;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
@@ -184,14 +184,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			try {
 				jwtValidator = new JwtValidator<>();
 				jwtValidator.init(getJwksUrl(), getRequiredIssuer());
 			} catch (Exception e) {
-				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
+				throw new LifecycleException("unable to initialize jwtSecurityHandler", e);
 			}
 		}
 		super.start();

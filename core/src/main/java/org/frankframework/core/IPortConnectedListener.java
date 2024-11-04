@@ -33,8 +33,6 @@ public interface IPortConnectedListener<M> extends IPushingListener<M>, Receiver
 
 	IMessageHandler<M> getHandler();
 
-	IListenerConnector<M> getListenerPortConnector();
-
 	default void checkTransactionManagerValidity() {
 	}
 }

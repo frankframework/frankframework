@@ -32,5 +32,6 @@ public interface IPeekableListener<M> extends IPullingListener<M> {
 	 * @ff.default true
 	 */
 	void setPeekUntransacted(boolean b);
+
 	boolean isPeekUntransacted();
 }

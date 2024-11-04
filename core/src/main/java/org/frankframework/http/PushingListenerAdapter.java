@@ -19,12 +19,13 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
@@ -58,6 +59,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -69,7 +71,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		setRunning(true);
 	}
 

@@ -39,12 +39,12 @@ public interface IListenerConnector<M> {
 	/**
 	 * Start Listener-port to which the Listener is connected.
 	 */
-	void start() throws ListenerException;
+	void start();
 
 	/**
 	 * Stop Listener-port to which the Listener is connected.
 	 */
-	void stop() throws ListenerException;
+	void stop();
 
 	enum CacheMode {
 		CACHE_NONE,
@@ -52,5 +52,4 @@ public interface IListenerConnector<M> {
 		CACHE_SESSION,
 		CACHE_CONSUMER
 	}
-
 }

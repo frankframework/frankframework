@@ -28,13 +28,14 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.IPipe;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.openapi.OpenApiGenerator;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.Json2XmlValidator;
 
 /**
@@ -237,10 +238,12 @@ public class ApiServiceDispatcher {
 		return !matchFullPattern && !"**".equals(patternSegments[patternSegments.length - 1]);
 	}
 
-	public void registerServiceClient(ApiListener listener) throws ListenerException {
+	public void registerServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
-		if (StringUtils.isBlank(uriPattern))
-			throw new ListenerException("uriPattern cannot be null or empty");
+
+		if (StringUtils.isBlank(uriPattern)) {
+			throw new LifecycleException("uriPattern cannot be null or empty");
+		}
 
 		synchronized(patternClients) {
 			for(ApiListener.HttpMethod method : listener.getAllMethods()){

@@ -19,13 +19,11 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.doc.EnterpriseIntegrationPattern;
-
-import org.xml.sax.SAXException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -41,9 +39,11 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Reintroduce;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
@@ -180,7 +180,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
 				listener.start();
-			} catch (ListenerException t) {
+			} catch (LifecycleException t) {
 				PipeStartException pse = new PipeStartException("could not start", t);
 				pse.setPipeNameInError(getName());
 				throw pse;
@@ -194,7 +194,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			try {
 				listener.stop();
 				log.info("closed listener");
-			} catch (ListenerException e) {
+			} catch (LifecycleException e) {
 				log.warn("Exception closing listener", e);
 			}
 		}

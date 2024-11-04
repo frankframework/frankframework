@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.ListenerException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 public class ServiceDispatcherTest {
@@ -108,13 +109,13 @@ public class ServiceDispatcherTest {
 	}
 
 	@Test
-	public void registerServiceClientWhichAlreadyExists() throws ListenerException {
+	public void registerServiceClientWhichAlreadyExists() {
 		// Arrange
 		assertTrue(serviceDispatcher.isRegisteredServiceListener("TEST-CLIENT-1"), "Expected to have service-name [TEST-CLIENT-1] before registration");
 
 		// Act
 		// This should not throw exception
-		assertThrows(ListenerException.class, ()->serviceDispatcher.registerServiceClient("TEST-CLIENT-1", ((message, session) -> null)));
+		assertThrows(LifecycleException.class, ()->serviceDispatcher.registerServiceClient("TEST-CLIENT-1", ((message, session) -> null)));
 
 		// Assert
 		assertTrue(serviceDispatcher.isRegisteredServiceListener("TEST-CLIENT-1"), "Expected to have service-name [TEST-CLIENT-1] after registration");

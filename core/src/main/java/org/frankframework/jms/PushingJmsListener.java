@@ -20,9 +20,10 @@ import java.util.Map;
 import jakarta.jms.Destination;
 import jakarta.jms.Message;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -128,7 +129,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		super.start();
 		jmsConnector.start();
 	}
@@ -142,12 +143,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		} finally {
 			super.stop();
 		}
-	}
-
-
-	@Override
-	public IListenerConnector<Message> getListenerPortConnector() {
-		return jmsConnector;
 	}
 
 	@Override

@@ -28,8 +28,9 @@ import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -103,17 +104,17 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		try {
 			super.start();
-		} catch (Exception e) {
-			throw new ListenerException("error opening listener [" + getName() + "]", e);
+		} catch (LifecycleException e) {
+			throw new LifecycleException("error opening listener [" + getName() + "]", e);
 		}
 		try {
 			if (getSender() != null)
 				getSender().start();
 		} catch (LifecycleException e) {
-			throw new ListenerException("error opening sender [" + getSender().getName() + "]", e);
+			throw new LifecycleException("error opening sender [" + getSender().getName() + "]", e);
 		}
 	}
 

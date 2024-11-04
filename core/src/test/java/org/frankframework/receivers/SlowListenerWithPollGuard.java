@@ -14,7 +14,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IbisExceptionListener;
@@ -78,10 +77,5 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
     @Override
     public Receiver<Message> getReceiver() {
         return receiver;
-    }
-
-    @Override
-    public IListenerConnector<Message> getListenerPortConnector() {
-        return null;
     }
 }

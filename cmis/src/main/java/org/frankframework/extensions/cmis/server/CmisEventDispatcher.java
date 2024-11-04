@@ -32,6 +32,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.extensions.cmis.CmisEventListener;
 import org.frankframework.extensions.cmis.CmisUtils;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -54,10 +55,12 @@ public class CmisEventDispatcher {
 		return self;
 	}
 
-	public void registerEventListener(CmisEventListener listener) throws ListenerException {
+	public void registerEventListener(CmisEventListener listener)  {
 		CmisEvent event = listener.getEvent();
-		if(event == null)
-			throw new ListenerException("cannot register EventListener without event to listen on");
+
+		if (event == null) {
+			throw new LifecycleException("cannot register EventListener without event to listen on");
+		}
 
 		log.info("registering CmisEvent [{}] on dispatcher", event::name);
 		eventListeners.put(event, listener);
