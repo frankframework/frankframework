@@ -23,23 +23,31 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Target(TYPE)
-@Label(name = "Element Type")
+@Label(name = "EIP")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ElementType {
+public @interface EnterpriseIntegrationPattern {
 
-	@LabelValue ElementTypes value();
+	Type value();
 
-	enum ElementTypes {
-		UNKNOWN,
+	enum Type {
+		@EnumLabel("Listener")
 		LISTENER,
+		@EnumLabel("Endpoint")
 		ENDPOINT,
+		@EnumLabel("Validator")
 		VALIDATOR,
+		@EnumLabel("Wrapper")
 		WRAPPER,
+		@EnumLabel("Router")
 		ROUTER,
+		@EnumLabel("Iterator")
 		ITERATOR,
+		@EnumLabel("Session")
 		SESSION,
+		@EnumLabel("Errorhandling")
 		ERRORHANDLING,
+		@EnumLabel("Translator")
 		TRANSLATOR
 	}
 }

@@ -58,7 +58,7 @@ import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private @Getter @Setter String sessionKey = "file";

@@ -39,6 +39,8 @@ import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.springframework.http.MediaType;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -293,10 +295,15 @@ public class SoapWrapper {
 				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(messageContent)
 				+ "</soapenv:Body>" + "</soapenv:Envelope>");
-		if (wsscf != null) {
-			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
+		result.getContext().withMimeType(MediaType.TEXT_XML); // soap mimetype is text/xml
+
+		if (wsscf == null) {
+			return result;
 		}
-		return result;
+
+		try (Message ignore = result) {
+			return signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
+		}
 	}
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {

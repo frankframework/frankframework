@@ -25,7 +25,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
@@ -67,7 +67,7 @@ import java.util.regex.PatternSyntaxException;
  */
 @Forward(name = RegExPipe.THEN_FORWARD, description = "When a match is found.")
 @Forward(name = RegExPipe.ELSE_FORWARD, description = "When no match is found.")
-@ElementType(ElementType.ElementTypes.ROUTER)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class RegExPipe extends AbstractPipe {
 
 	protected final static String THEN_FORWARD = "then";

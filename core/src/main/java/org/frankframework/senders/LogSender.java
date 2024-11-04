@@ -39,7 +39,7 @@ import org.frankframework.util.LogUtil;
  * @author Gerrit van Brakel
  * @since  4.9
  */
-@Category("Advanced")
+@Category(Category.Type.ADVANCED)
 public class LogSender extends SenderWithParametersBase {
 	private @Getter String logLevel = "info";
 	private Level defaultLogLevel = Level.DEBUG;

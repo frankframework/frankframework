@@ -44,7 +44,7 @@ import lombok.Setter;
  * @author Niels Meijer
  *
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class ScheduleManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;

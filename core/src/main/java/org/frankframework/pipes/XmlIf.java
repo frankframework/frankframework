@@ -28,8 +28,8 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
@@ -47,7 +47,7 @@ import org.frankframework.util.XmlUtils;
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
 @Forward(name = "else", description = "the configured condition is not met")
-@ElementType(ElementTypes.ROUTER)
+@EnterpriseIntegrationPattern(Type.ROUTER)
 public class XmlIf extends AbstractPipe {
 
 	private @Getter String namespaceDefs = null;

@@ -20,10 +20,10 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -35,7 +35,7 @@ import org.frankframework.stream.Message;
  * @since   4.2
  */
 @FrankDocGroup(FrankDocGroupValue.LISTENER)
-@ElementType(ElementTypes.LISTENER)
+@EnterpriseIntegrationPattern(Type.LISTENER)
 public interface IListener<M> extends IConfigurable {
 
 	/**

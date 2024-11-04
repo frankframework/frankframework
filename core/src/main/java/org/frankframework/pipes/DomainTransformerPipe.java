@@ -30,8 +30,8 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
@@ -52,7 +52,7 @@ import org.frankframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  * @since   4.9
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private static final String DT_START = "%![DT{";

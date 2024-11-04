@@ -52,7 +52,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class RekenBoxCaller extends FixedForwardPipe {
 
 	private String runPath="";

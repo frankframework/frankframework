@@ -125,7 +125,7 @@ public class WebServiceSender extends HttpSender {
 			throw new SenderException("error reading message", e);
 		}
 
-		if (wsscf!=null) {
+		if (wsscf != null) {
 			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
 		log.debug("SOAPMSG [{}]", soapmsg);

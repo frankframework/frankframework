@@ -28,6 +28,8 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
 import lombok.Getter;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+
 import org.springframework.http.MediaType;
 import org.xml.sax.SAXException;
 
@@ -35,8 +37,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -54,7 +54,7 @@ import org.frankframework.util.TransformerPool;
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
 	private Boolean addXmlRootElement = null;

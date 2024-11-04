@@ -46,7 +46,7 @@ import org.frankframework.pipes.FixedResultPipe;
  *
  */
 // Looking up the next pipe or exit is done by method AbstractPipe.findForward(String)
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeForward {
 
 	public static final String SUCCESS_FORWARD_NAME = "success";

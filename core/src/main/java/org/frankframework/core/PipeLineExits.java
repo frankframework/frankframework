@@ -44,7 +44,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  * }</pre>
  *
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLineExits {
 
 	private final @Getter List<PipeLineExit> exits = new ArrayList<>();

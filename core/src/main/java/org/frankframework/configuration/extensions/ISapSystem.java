@@ -18,7 +18,7 @@ package org.frankframework.configuration.extensions;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public interface ISapSystem {
 
 	public void registerItem(Object dummyParent);

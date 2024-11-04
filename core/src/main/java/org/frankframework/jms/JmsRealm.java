@@ -38,7 +38,7 @@ import org.frankframework.util.StringUtil;
  * @see JMSFacade#setJmsRealm
  * @author Johan Verrips IOS
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealm {
 	//TODO: change to J2eeRealm
 	private final Logger log = LogUtil.getLogger(this);

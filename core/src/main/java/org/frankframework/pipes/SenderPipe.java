@@ -25,8 +25,7 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IWrapperPipe;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Reintroduce;
 import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.senders.IbisLocalSender;
@@ -37,8 +36,8 @@ import org.frankframework.util.AppConstants;
  *
  * {@inheritDoc}
  */
-@Category("Basic")
-@ElementType(ElementTypes.ENDPOINT)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 public class SenderPipe extends MessageSendingPipe {
 
 	@Override

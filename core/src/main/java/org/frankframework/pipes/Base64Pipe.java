@@ -27,8 +27,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 
 /**
@@ -38,8 +37,8 @@ import org.frankframework.stream.Message;
  * @author  Niels Meijer
  * @version 2.0
  */
-@Category("Basic")
-@ElementType(ElementTypes.TRANSLATOR)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class Base64Pipe extends FixedForwardPipe {
 
 	private @Getter Direction direction = Direction.ENCODE;

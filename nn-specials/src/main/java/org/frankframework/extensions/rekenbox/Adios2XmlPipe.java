@@ -70,7 +70,7 @@ import org.frankframework.util.XmlUtils;
  * @author Gerrit van Brakel
  */
 @Forward(name = "noConversionForwardName", description = "when successful, but no conversion took place")
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class Adios2XmlPipe extends FixedForwardPipe {
 
 	private Hashtable rubriek2nummer;

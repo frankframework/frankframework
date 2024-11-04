@@ -73,27 +73,24 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 
 	@Override
 	public IHttpResponse send(HttpRequest httpRequest) throws Exception {
-		PipeLineSession session = prepareSession(httpRequest);
-		Message request = new Message(httpRequest.body());
+		try (PipeLineSession session = prepareSession(httpRequest); Message request = new Message(httpRequest.body())) {
 
-		try {
 			Message response = sendMessageOrThrow(request, session);
+			session.scheduleCloseOnSessionExit(response, "MsalClient-response");
 			return new MsalResponse(response, session);
 		} catch (Exception e) {
 			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [{}]", httpRequest.url().toString(), e);
 			throw e;
-		} finally {
-			session.close();
 		}
 	}
 
 	private PipeLineSession prepareSession(HttpRequest httpRequest) {
 		PipeLineSession session = new PipeLineSession();
 		session.put(URL_SESSION_KEY, httpRequest.url().toString());
-		log.debug("Put request URL [{}] in session under key [{}]", ()->httpRequest.url().toString(), ()->URL_SESSION_KEY);
+		log.debug("Put request URL [{}] in session under key [{}]", httpRequest::url, ()->URL_SESSION_KEY);
 
 		session.put(METHOD_SESSION_KEY, httpRequest.httpMethod().name());
-		log.debug("Put http method [{}] in session under key [{}]", ()->httpRequest.httpMethod().name(), ()->METHOD_SESSION_KEY);
+		log.debug("Put http method [{}] in session under key [{}]", httpRequest::httpMethod, ()->METHOD_SESSION_KEY);
 
 		session.put(REQUEST_HEADERS_SESSION_KEY, httpRequest.headers());
 		if(log.isDebugEnabled()) log.debug("Put http headers [{}] in session under key [{}]", httpRequest::headers, ()->REQUEST_HEADERS_SESSION_KEY);
@@ -117,7 +114,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 			return appendHeaders(headers, getMethod);
 		case POST:
 			HttpEntityEnclosingRequestBase method = new HttpPost(uri.toString());
-			HttpEntity entity = new HttpMessageEntity(message); //No need to set the content-type, MSAL sets it to application/soap+xml later on
+			HttpEntity entity = new HttpMessageEntity(message); // No need to set the content-type, MSAL sets it to application/soap+xml later on
 
 			method.setEntity(entity);
 			return appendHeaders(headers, method);
