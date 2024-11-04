@@ -88,12 +88,11 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 
 		LifecycleException e = assertThrows(LifecycleException.class, fileSystemListener::start);
 		String message = e.getCause().getMessage();
+
 		if (testFullErrorMessages) {
 			assertThat(message, startsWith("The value for inputFolder [" + folder + "], canonical name ["));
-			assertThat(message, endsWith("It is not a folder."));
-		} else {
-			assertThat(message, endsWith("It is not a folder."));
 		}
+		assertThat(message, endsWith("It is not a folder."));
 	}
 
 	@Test
@@ -104,12 +103,11 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 
 		LifecycleException e = assertThrows(LifecycleException.class, fileSystemListener::start);
 		String message = e.getCause().getMessage();
+
 		if (testFullErrorMessages) {
 			assertThat(message, startsWith("The value for inProcessFolder [" + folder + "], canonical name ["));
-			assertThat(message, endsWith("It is not a folder."));
-		} else {
-			assertThat(message, endsWith("It is not a folder."));
 		}
+		assertThat(message, endsWith("It is not a folder."));
 	}
 
 	@Test
@@ -120,12 +118,11 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 
 		LifecycleException e = assertThrows(LifecycleException.class, fileSystemListener::start);
 		String message = e.getCause().getMessage();
+
 		if (testFullErrorMessages) {
 			assertThat(message, startsWith("The value for processedFolder [" + folder + "], canonical name ["));
-			assertThat(message, endsWith("It is not a folder."));
-		} else {
-			assertThat(message, endsWith("It is not a folder."));
 		}
+		assertThat(message, endsWith("It is not a folder."));
 	}
 
 	@Test
