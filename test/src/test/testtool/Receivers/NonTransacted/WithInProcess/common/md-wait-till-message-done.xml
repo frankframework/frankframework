@@ -15,7 +15,7 @@
 				<name>TVARCHAR</name>
 			</column>
 		</columns>
-		<where>TNUMBER=${jdbc.receivertest.key}2 AND TCHAR='E'</where>
+		<where>TNUMBER=${jdbc.receivertest.key}1 AND TCHAR='D'</where>
 		<order>TKEY</order>
 	</select>
 </manageDatabaseREQ>
