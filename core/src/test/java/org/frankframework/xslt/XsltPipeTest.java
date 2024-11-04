@@ -147,7 +147,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Test
-	@DisplayName("Assert that we don't get a PipeRunException when using DOMDOC and another XSL")
+	@DisplayName("Assert that we don't get a PipeRunException when using DOMDOC and an XSL without xpath parameter")
 	void test3934WithDomDoc() throws Exception {
 		String paramContents = TestFileUtils.getTestFile("/Xslt/3934/param.xml");
 

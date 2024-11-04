@@ -26,7 +26,7 @@ public enum ParameterType {
 	STRING,
 
 	/** Renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags */
-	XML(XmlParameter.class, false),
+	XML,
 
 	/** Renders the CONTENTS of the first node as a nodeset
 	 * that can be used as such when passed as xslt-parameter (only for XSLT 1.0).
@@ -34,7 +34,7 @@ public enum ParameterType {
 	 * N.B. The result is the set of children of what you might expect it to be... */
 	@ConfigurationWarning("ParameterType NODE is deprecated, use DOMDOC instead")
 	@Deprecated(since = "9.0.0", forRemoval = true)
-	NODE(true),
+	NODE(XmlParameter.class, true),
 
 	/** Renders XML as a DOM document; similar to <code>node</code>
 		with the distinction that there is always a common root node (required for XSLT 2.0) */
