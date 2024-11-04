@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.apache.xalan.xsltc.DOM;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -16,7 +15,6 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.XmlParameterBuilder;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
