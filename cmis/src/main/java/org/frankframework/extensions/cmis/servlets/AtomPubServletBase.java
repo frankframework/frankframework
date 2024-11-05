@@ -28,7 +28,7 @@ import org.frankframework.lifecycle.DynamicRegistration;
  *
  * @author Niels Meijer
  */
-public abstract class AbstractAtomPubServlet extends CmisAtomPubServlet implements DynamicRegistration.ServletWithParameters {
+public abstract class AtomPubServletBase extends CmisAtomPubServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 1L;
 	protected abstract String getCmisVersionStr();

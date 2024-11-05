@@ -35,7 +35,7 @@ import org.frankframework.lifecycle.DynamicRegistration;
  *
  * @author Niels Meijer
  */
-public abstract class AbstractWebServicesServlet extends AbstractHttpServlet implements DynamicRegistration.ServletWithParameters {
+public abstract class WebServicesServletBase extends AbstractHttpServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 2L;
 

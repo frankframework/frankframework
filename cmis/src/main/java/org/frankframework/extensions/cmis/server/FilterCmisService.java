@@ -63,7 +63,7 @@ import org.apache.chemistry.opencmis.server.support.wrapper.CallContextAwareCmis
 /**
  * Forwards incoming calls to a CMIS repository.
  */
-public abstract class AbstractFilterCmisService extends AbstractCmisService implements CallContextAwareCmisService,
+public abstract class FilterCmisService extends AbstractCmisService implements CallContextAwareCmisService,
 		Serializable {
 
 	private static final long serialVersionUID = 1L;

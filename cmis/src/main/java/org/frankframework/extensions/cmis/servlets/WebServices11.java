@@ -18,7 +18,7 @@ package org.frankframework.extensions.cmis.servlets;
 import org.frankframework.lifecycle.IbisInitializer;
 
 @IbisInitializer
-public class WebServices11 extends AbstractWebServicesServlet {
+public class WebServices11 extends WebServicesServletBase {
 
 	private static final long serialVersionUID = 1L;
 

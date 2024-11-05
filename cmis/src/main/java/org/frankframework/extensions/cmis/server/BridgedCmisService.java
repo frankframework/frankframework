@@ -47,7 +47,7 @@ import org.frankframework.util.StringUtil;
  * After each request the CallContext is removed.
  * The CmisBinding is kept, unless property cmisbridge.closeConnection = true
  */
-public class BridgedCmisService extends AbstractFilterCmisService {
+public class BridgedCmisService extends FilterCmisService {
 
 	private static final long serialVersionUID = 2L;
 	private final Logger log = LogUtil.getLogger(this);

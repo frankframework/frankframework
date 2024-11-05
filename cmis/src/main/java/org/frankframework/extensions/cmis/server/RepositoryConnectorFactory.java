@@ -85,7 +85,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		return service;
 	}
 
-	protected AbstractFilterCmisService createService(CallContext context) {
+	protected FilterCmisService createService(CallContext context) {
 		BridgedCmisService service = null;
 		try {
 			service = new BridgedCmisService(context);
