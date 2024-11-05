@@ -87,19 +87,17 @@ public class CorsFilter implements Filter {
 		 */
 		if (CorsUtils.isCorsRequest(request)) {
 			String originHeader = request.getHeader(HttpHeaders.ORIGIN);
+			String origin = config.checkOrigin(originHeader);
 			if (enforceCORS) {
-				if (config.checkOrigin(originHeader) != null) {
-					setResponseHeaders(request, response);
-				} else {
-					// If origin has been set, but has not been whitelisted, report the request in security log.
+				if (origin != null) { // Happy Flow
+					setResponseHeaders(request, response, origin);
+				} else { // If origin has been set, but has not been whitelisted, report the request in security log.
 					secLog.info(SEC_LOG_MESSAGE, request::getRemoteHost, request::getPathInfo, () -> originHeader, () -> "BLOCKED", () -> allowedCorsOrigins);
 					log.warn("blocked request with origin [{}]", originHeader);
 					response.setStatus(400);
-					return;
-					// Actually block the request
-					// If we pass one of the valid domains, it can be used to spoof the connection
+					return; // Actually block the request
 				}
-			} else if (config.checkOrigin(originHeader) == null) { // FLAG the request
+			} else if (origin == null) { // FLAG the request
 				secLog.info(SEC_LOG_MESSAGE, request::getRemoteHost, request::getPathInfo, () -> originHeader, () -> "FLAGGED", () -> allowedCorsOrigins);
 				log.warn("flagged request with origin [{}]", originHeader);
 			}
@@ -118,9 +116,9 @@ public class CorsFilter implements Filter {
 	}
 
 	/** Set the CORS headers on the HTTP response */
-	private void setResponseHeaders(HttpServletRequest request, HttpServletResponse response) {
-		String originHeader = request.getHeader(HttpHeaders.ORIGIN);
-		response.setHeader("Access-Control-Allow-Origin", originHeader);
+	private void setResponseHeaders(HttpServletRequest request, HttpServletResponse response, String origin) {
+		// If we pass one of the valid domains, it can be used to spoof the connection
+		response.setHeader("Access-Control-Allow-Origin", origin);
 
 		String requestHeaders = request.getHeader("Access-Control-Request-Headers");
 		if (requestHeaders != null) {
