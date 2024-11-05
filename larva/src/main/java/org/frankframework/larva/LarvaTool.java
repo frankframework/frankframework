@@ -1715,7 +1715,7 @@ public class LarvaTool {
 		String printableExpectedResult;
 		String printableActualResult;
 		String diffType = properties.getProperty(step + ".diffType");
-		if ((".json".equals(diffType)) || (diffType == null && fileName.endsWith(".json"))) {
+		if (".json".equals(diffType) || (diffType == null && fileName.endsWith(".json"))) {
 			try {
 				printableExpectedResult = Misc.jsonPretty(expectedResult);
 			} catch (JsonException e) {
@@ -1740,8 +1740,8 @@ public class LarvaTool {
 		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);
 
 
-		if (((".xml".equals(diffType) || ".wsdl".equals(diffType)))
-				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
+		if (".xml".equals(diffType) || ".wsdl".equals(diffType)
+				|| diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl"))) {
 			// xml diff
 			Diff diff = null;
 			boolean identical = false;
@@ -1837,7 +1837,7 @@ public class LarvaTool {
 		return ok;
 	}
 
-	public String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap) {
+	public String prepareResultForCompare(String input, Properties properties, Map<String, HashMap<String, HashMap<String, String>>> ignoreMap) {
 		String result = input;
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
@@ -1879,7 +1879,7 @@ public class LarvaTool {
 		String format(String value, Function<String, String> propertyProvider, String key1);
 	}
 
-	public String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
+	public String doActionBetweenKeys(String key, String value, Properties properties, Map<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
 		debugMessage("Check " + key + " properties");
 		boolean lastKeyIndexProcessed = false;
@@ -1919,7 +1919,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	public String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
+	public String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
 		debugMessage("Check " + keyName + " properties");
 		boolean lastKeyIndexProcessed = false;
