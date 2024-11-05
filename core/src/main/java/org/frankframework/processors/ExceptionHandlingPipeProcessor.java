@@ -32,7 +32,7 @@ import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.ExceptionPipe;
 import org.frankframework.stream.Message;
 
-public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
+public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {

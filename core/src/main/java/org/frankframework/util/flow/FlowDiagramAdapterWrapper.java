@@ -17,13 +17,13 @@ package org.frankframework.util.flow;
 
 import java.io.IOException;
 
-import org.frankframework.configuration.AdapterLifecycleWrapperBase;
+import org.frankframework.configuration.AbstractAdapterLifecycleWrapper;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
 import org.frankframework.util.AppConstants;
 
-public class FlowDiagramAdapterWrapper extends AdapterLifecycleWrapperBase {
+public class FlowDiagramAdapterWrapper extends AbstractAdapterLifecycleWrapper {
 	private FlowDiagramManager flowDiagramManager;
 	private final boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 

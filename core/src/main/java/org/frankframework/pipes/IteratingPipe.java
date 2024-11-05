@@ -59,9 +59,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
 /**
- * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
- *
- * <br/>
+ * Base class to send a message to a Sender for each item returned by a configurable iterator.
+* <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
@@ -70,7 +69,6 @@ import org.xml.sax.SAXException;
  *       ...
  *  &lt;/results&gt;
  * </pre>
- *
  *
  * For more configuration options, see {@link MessageSendingPipe}.
  * <br/>
@@ -86,7 +84,7 @@ import org.xml.sax.SAXException;
 @Forward(name = "maxItemsReached", description = "the iteration stopped when the configured maximum number of items was processed")
 @Forward(name = "stopConditionMet", description = "the iteration stopped when the configured condition expression became true")
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ITERATOR)
-public abstract class IteratingPipe<I> extends MessageSendingPipe {
+public class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
 	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";

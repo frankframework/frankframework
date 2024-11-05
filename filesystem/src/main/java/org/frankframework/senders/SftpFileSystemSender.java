@@ -15,12 +15,12 @@
 */
 package org.frankframework.senders;
 
-import org.frankframework.filesystem.FileSystemSender;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.sftp.SftpFileRef;
 import org.frankframework.filesystem.sftp.SftpFileSystem;
 import org.frankframework.filesystem.sftp.SftpFileSystemDelegator;
 
-public class SftpFileSystemSender extends FileSystemSender<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
+public class SftpFileSystemSender extends AbstractFileSystemSender<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
 
 	public SftpFileSystemSender() {
 		setFileSystem(new SftpFileSystem());

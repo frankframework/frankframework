@@ -18,12 +18,13 @@ package org.frankframework.management.gateway.events;
 import jakarta.annotation.Nonnull;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
 
 import lombok.Getter;
 
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 
-public class ClusterMemberEvent extends AbstractGatewayEvent {
+public class ClusterMemberEvent extends ApplicationEvent {
 
 	public enum EventType {
 		ADD_MEMBER, REMOVE_MEMBER

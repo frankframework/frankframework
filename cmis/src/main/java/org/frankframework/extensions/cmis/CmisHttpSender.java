@@ -42,8 +42,8 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpResponseHandler;
-import org.frankframework.http.HttpSenderBase;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
@@ -51,7 +51,7 @@ import org.frankframework.stream.Message;
  * Abstract class to prevent Frank!Developers from including/using this Sender in their configurations.
  * It should solely be used by the @{link CmisHttpInvoker}.
  */
-public abstract class CmisHttpSender extends HttpSenderBase {
+public abstract class CmisHttpSender extends AbstractHttpSender {
 
 	@Override
 	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {

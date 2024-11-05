@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import com.mongodb.client.MongoClient;
 
-import org.frankframework.jdbc.datasource.ObjectFactoryBase;
+import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -28,7 +28,7 @@ import org.frankframework.util.AppConstants;
  *
  * @author Gerrit van Brakel
  */
-public class JndiMongoClientFactory extends ObjectFactoryBase<MongoClient> implements IMongoClientFactory {
+public class JndiMongoClientFactory extends ObjectFactory<MongoClient> implements IMongoClientFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";

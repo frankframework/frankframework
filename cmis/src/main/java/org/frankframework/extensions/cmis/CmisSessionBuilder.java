@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.http.HttpSessionBase;
+import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -453,7 +453,7 @@ public class CmisSessionBuilder {
 
 	/**
 	 * READ_TIMEOUT timeout in MS.
-	 * Defaults to 10000, inherited from {@link HttpSessionBase#setTimeout(int)}.
+	 * Defaults to 10000, inherited from {@link AbstractHttpSession#setTimeout(int)}.
 	 */
 	public CmisSessionBuilder setTimeout(int i) {
 		if(i < 1)

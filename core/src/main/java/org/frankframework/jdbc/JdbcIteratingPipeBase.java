@@ -38,7 +38,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.SpringUtils;
 
-
 /**
  * Base class for JDBC iterating pipes.
  *
@@ -194,19 +193,19 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setAvoidLocking(avoidLocking);
 	}
 
-	@ReferTo(JdbcQuerySenderBase.class)
+	@ReferTo(AbstractJdbcQuerySender.class)
 	@Deprecated(forRemoval = true, since = "7.9.0")
 	//BLOBs are binary, they should not contain character data!
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
-	@ReferTo(JdbcQuerySenderBase.class)
+	@ReferTo(AbstractJdbcQuerySender.class)
 	public void setBlobSmartGet(boolean isSmartBlob) {
 		querySender.setBlobSmartGet(isSmartBlob);
 	}
 
-	@ReferTo(JdbcQuerySenderBase.class)
+	@ReferTo(AbstractJdbcQuerySender.class)
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

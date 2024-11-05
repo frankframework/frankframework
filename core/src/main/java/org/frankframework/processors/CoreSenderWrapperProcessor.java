@@ -19,7 +19,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.senders.SenderWrapperBase;
+import org.frankframework.senders.AbstractSenderWrapper;
 import org.frankframework.stream.Message;
 
 /**
@@ -29,8 +29,8 @@ import org.frankframework.stream.Message;
 public class CoreSenderWrapperProcessor implements SenderWrapperProcessor {
 
 	@Override
-	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return senderWrapperBase.doSendMessage(message, session);
+	public SenderResult sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return abstractSenderWrapper.doSendMessage(message, session);
 	}
 
 }

@@ -18,7 +18,7 @@ package org.frankframework.extensions.cmis.servlets;
 import org.frankframework.lifecycle.IbisInitializer;
 
 @IbisInitializer
-public class AtomPub10 extends AtomPubServletBase {
+public class AtomPub10 extends AbstractAtomPubServlet {
 
 	private static final long serialVersionUID = 1L;
 

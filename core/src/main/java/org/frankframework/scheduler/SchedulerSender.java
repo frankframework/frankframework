@@ -31,7 +31,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
@@ -41,7 +41,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author John Dekker
  */
-public class SchedulerSender extends SenderWithParametersBase {
+public class SchedulerSender extends AbstractSenderWithParameters {
 
 	private String javaListener;
 	private String cronExpressionPattern;

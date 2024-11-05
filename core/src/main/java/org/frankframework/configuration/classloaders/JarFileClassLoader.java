@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.frankframework.configuration.ClassLoaderException;
 
-public class JarFileClassLoader extends JarBytesClassLoader {
+public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	private String jarFileName;
 
 	public JarFileClassLoader(ClassLoader parent) {

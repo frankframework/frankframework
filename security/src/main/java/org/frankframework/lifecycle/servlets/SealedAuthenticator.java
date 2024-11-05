@@ -30,7 +30,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Sealed authenticator, all requests are blocked.
  */
-public class SealedAuthenticator extends ServletAuthenticatorBase {
+public class SealedAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {

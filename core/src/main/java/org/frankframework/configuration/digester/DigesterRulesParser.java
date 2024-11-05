@@ -27,13 +27,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Setter;
+
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
 
 /**
  * @author Niels Meijer
  */
-public class DigesterRulesParser extends DigesterRulesHandler {
+public class DigesterRulesParser extends AbstractDigesterRulesHandler {
 	private final Digester digester;
 	private final RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType

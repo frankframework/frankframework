@@ -65,10 +65,10 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
@@ -85,7 +85,7 @@ import org.frankframework.util.StringResolver;
  * @author Gerrit van Brakel
  *
  */
-public class MongoDbSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class MongoDbSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Mongo";
 	public static final String PARAM_DATABASE="database";
@@ -93,8 +93,8 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	public static final String PARAM_FILTER="filter";
 	public static final String PARAM_LIMIT="limit";
 
-	public static final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
-	public static final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
+	public static final String NAMED_PARAM_START= AbstractJdbcQuerySender.UNP_START;
+	public static final String NAMED_PARAM_END= AbstractJdbcQuerySender.UNP_END;
 
 
 	private @Getter String datasourceName;

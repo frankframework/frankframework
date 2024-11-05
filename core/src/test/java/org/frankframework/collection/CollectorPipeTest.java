@@ -7,19 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.collection.CollectorPipeBase.Action;
+import org.frankframework.collection.AbstractCollectorPipe.Action;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 
-public class CollectorPipeTest extends PipeTestBase<CollectorPipeBase<TestCollector, TestCollectorPart>> {
+public class CollectorPipeTest extends PipeTestBase<AbstractCollectorPipe<TestCollector, TestCollectorPart>> {
 	private final TestCollector collector = new TestCollector();
 
 	@Override
-	public CollectorPipeBase<TestCollector, TestCollectorPart> createPipe() throws ConfigurationException {
-		return new CollectorPipeBase<>() {
+	public AbstractCollectorPipe<TestCollector, TestCollectorPart> createPipe() throws ConfigurationException {
+		return new AbstractCollectorPipe<>() {
 
 			@Override
 			protected TestCollector createCollector(Message input, PipeLineSession session) throws CollectionException {

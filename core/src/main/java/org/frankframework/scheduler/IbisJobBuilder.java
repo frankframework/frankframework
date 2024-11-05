@@ -65,12 +65,12 @@ public class IbisJobBuilder {
 		return this;
 	}
 
-	public IbisJobBuilder setJobDef(JobDef jobDef) {
+	public IbisJobBuilder setJobDef(AbstractJobDef jobDef) {
 		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, jobDef);
 		return this;
 	}
 
-	public static IbisJobBuilder fromJobDef(JobDef jobDef) {
+	public static IbisJobBuilder fromJobDef(AbstractJobDef jobDef) {
 		IbisJobBuilder builder = new IbisJobBuilder();
 
 		builder.setJobDef(jobDef);

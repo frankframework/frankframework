@@ -33,7 +33,7 @@ import org.frankframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderMonitorAdapter extends MonitorDestinationBase {
+public class SenderMonitorAdapter extends AbstractMonitorDestination {
 
 	private @Getter @Setter ISender sender;
 	private boolean senderConfigured=false;

@@ -33,7 +33,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  * @author Gerrit van Brakel
  */
-public abstract class StringIteratorPipe extends IteratingPipe<String> {
+public class StringIteratorPipe extends IteratingPipe<String> {
 
 	private @Getter int stringIteratorPipeBlockSize=0;
 	private @Getter int startPosition=-1;

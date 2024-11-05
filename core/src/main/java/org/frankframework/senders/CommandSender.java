@@ -40,7 +40,7 @@ import org.frankframework.util.ProcessUtil;
  * @since   4.8
  * @author  Gerrit van Brakel
  */
-public class CommandSender extends SenderWithParametersBase {
+public class CommandSender extends AbstractSenderWithParameters {
 
 	private String command;
 	@Getter private int timeout = 0;

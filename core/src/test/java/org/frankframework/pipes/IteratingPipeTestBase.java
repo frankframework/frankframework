@@ -18,7 +18,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.senders.BlockEnabledSenderBase;
+import org.frankframework.senders.AbstractBlockEnabledSender;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
@@ -53,7 +53,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		}
 	}
 
-	protected class BlockEnabledRenderer extends BlockEnabledSenderBase<String> {
+	protected class BlockEnabledRenderer extends AbstractBlockEnabledSender<String> {
 
 		@Override
 		public String openBlock(PipeLineSession session) throws SenderException, TimeoutException {
