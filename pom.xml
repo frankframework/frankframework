@@ -992,6 +992,7 @@
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
 						<logViolationsToConsole>true</logViolationsToConsole>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
 					</configuration>
 					<executions>
 						<execution>
