@@ -115,7 +115,7 @@ public class LarvaTool {
 	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	// dirty solution by Marco de Reus:
-	private static String zeefVijlNeem = "";
+	private String stepOutputFilename = "";
 	private static boolean autoSaveDiffs = false;
 	private final TestConfig config = new TestConfig();
 
@@ -658,7 +658,7 @@ public class LarvaTool {
 
 		writeLog("<div class='expectedContainer'>", method, false);
 		writeLog(writeCommands(expectedBoxId, true, null), method, true);
-		writeLog("<input type='hidden' name='expectedFileName' value='" + zeefVijlNeem + "' />", method, false);
+		writeLog("<input type='hidden' name='expectedFileName' value='" + stepOutputFilename + "' />", method, false);
 		writeLog("<input type='hidden' name='cmd' />", method, false);
 		writeLog("<h5>Expected (raw):</h5>", method, false);
 		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, false);
@@ -712,7 +712,7 @@ public class LarvaTool {
 		config.incrementMessageCounter();
 		writeLog("<div class='expectedContainer'>", method, false);
 		writeLog(writeCommands(expectedBoxId, true, null), method, false);
-		writeLog("<input type='hidden' name='expectedFileName' value='" + zeefVijlNeem + "' />", method, false);
+		writeLog("<input type='hidden' name='expectedFileName' value='" + stepOutputFilename + "' />", method, false);
 		writeLog("<input type='hidden' name='cmd' />", method, false);
 		writeLog("<h5>Expected (prepared for diff):</h5>", method, false);
 		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, false);
@@ -1498,10 +1498,10 @@ public class LarvaTool {
 		int i = step.indexOf('.');
 		String queueName;
 		String fileContent;
-		// vul globale var
-		zeefVijlNeem = fileNameAbsolutePath;
+		// Set output filename, dirty old solution to pass the name on to the HTML-generating functions.
+		stepOutputFilename = fileNameAbsolutePath;
 
-		//inlezen file voor deze stap
+		// Read the scenario file for this step
 		if ("".equals(fileName)) {
 			errorMessage("No file specified for step '" + step + "'");
 		} else {
