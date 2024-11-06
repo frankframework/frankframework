@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
+import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
-import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.parameters.NumberParameter;
 import org.frankframework.parameters.ParameterList;
 
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.NumberParameterBuilder;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeRunResult;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 @Tag("mytag")
 public class DelayPipeTest extends PipeTestBase<DelayPipe> {
@@ -29,21 +29,22 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setSuperclass(DelayPipe.class);
 
+		var ref = new Object() {
+			Message message;
+			PipeLineSession session;
+		};
+
 		MethodHandler handler = (self, method, proceed, args) -> {
 			ValueFromParameter valueFromParameter = method.getAnnotation(ValueFromParameter.class);
 
-			if (valueFromParameter != null) {
+			if (valueFromParameter != null && ref.session != null) {
 				String methodName = method.getName().replaceFirst("^get", "");
 				methodName = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
 
-				final var defaultValue = proceed.invoke(self, args);
+				final Object defaultValue = proceed.invoke(self, args);
 
-				ParameterList parameterList = null;
-				for (Method classMethod : self.getClass().getMethods()) {
-					if (classMethod.getName().equals("getParameterList")) {
-						parameterList = (ParameterList) classMethod.invoke(self);
-					}
-				}
+				IWithParameters selfWithParameters = (IWithParameters) self;
+				ParameterList parameterList = selfWithParameters.getParameterList();
 
 				if (parameterList == null) {
 					return defaultValue;
@@ -54,9 +55,7 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 						return defaultValue;
 					}
 
-					Message message = Message.asMessage("");
-					PipeLineSession s = session;
-					final var value = parameterList.getValue(null, parameterList.findParameter(methodName), message, s, true);
+					final ParameterValue value = parameterList.getValue(null, parameterList.findParameter(methodName), ref.message, ref.session, true);
 
 					return value.asLongValue((Long) defaultValue);
 				} catch (ParameterException e) {
@@ -64,10 +63,22 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 				}
 			}
 
+			if (method.getName().equals("doPipe")) {
+				ref.message = (Message) args[0];
+				ref.session = (PipeLineSession) args[1];
+
+				final Object result = proceed.invoke(self, args);
+
+				ref.message = null;
+				ref.session = null;
+
+				return result;
+			}
+
 			return proceed.invoke(self, args);
 		};
 
-		DelayPipe pipe = null;
+		DelayPipe pipe;
 		try {
 			pipe = (DelayPipe) factory.create(new Class<?>[0], new Object[0], handler);
 		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
@@ -89,7 +100,15 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 		Object input = "dummyInput";
 
 		pipe.setDelayTime(1000);
-		pipe.addParameter(NumberParameterBuilder.create("delayTime", 2000L));
+
+
+		session.put("delayTimeValue", 3000L);
+		var parameter = new NumberParameter();
+		parameter.setName("delayTime");
+		parameter.setSessionKey("delayTimeValue");
+		pipe.addParameter(parameter);
+
+//		pipe.addParameter(NumberParameterBuilder.create("delayTime", 2000L));
 
 		pipe.configure();
 		pipe.start();
@@ -97,6 +116,6 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 		String result = prr.getResult().asString();
 		assertEquals(input, result);
 
-		assertEquals(2000L, pipe.getDelayTime());
+		assertEquals(1000L, pipe.getDelayTime());
 	}
 }
