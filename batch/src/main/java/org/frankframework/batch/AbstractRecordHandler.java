@@ -82,11 +82,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 	@Deprecated
-	public void registerChild(InputfieldsPart part) {
-		registerInputFields(part);
+	public void addChild(InputfieldsPart part) {
+		addInputFields(part);
 	}
 
-	public void registerInputFields(InputfieldsPart part) {
+	public void addInputFields(InputfieldsPart part) {
 		setInputFields(part.getValue());
 	}
 

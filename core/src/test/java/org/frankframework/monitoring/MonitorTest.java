@@ -42,7 +42,7 @@ public class MonitorTest {
 		monitor.setName("monitorName");
 
 		Alarm trigger = configuration.createBean(Alarm.class);
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		monitor.addTrigger(trigger);
 

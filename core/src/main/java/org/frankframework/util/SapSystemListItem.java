@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.INamedObject;
 
 /**
@@ -35,25 +36,25 @@ import org.frankframework.core.INamedObject;
  * <br/>
  * @author Gerrit van Brakel
  */
-public class GlobalListItem implements INamedObject {
+public abstract class SapSystemListItem implements INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static final Hashtable<String, GlobalListItem> items = new Hashtable<>();
+	private static final Hashtable<String, SapSystemListItem> items = new Hashtable<>();
 	private String name;
 	private String aliasFor;
 
 	/**
 	 * configure() will be called once for each item registered, except for the aliasses.
 	 */
-	protected void configure() {
+	public void configure() {
 	}
 
 	/**
 	 * Get an item by Name. Descender classes should implement a similar method,
 	 * that returns an object of its own type.
 	 */
-	protected static GlobalListItem getItem(String itemName) {
-		GlobalListItem result = null;
+	protected static SapSystemListItem getItem(String itemName) {
+		SapSystemListItem result = null;
 
 		result = items.get(itemName);
 		if (result==null) {
@@ -94,12 +95,11 @@ public class GlobalListItem implements INamedObject {
 	/**
 	 * Register an item in the list
 	 */
-	public void registerItem(Object dummyParent) {
-		if(StringUtils.isEmpty(getAliasFor())) {
-			configure();
+	public static void registerItem(SapSystemListItem item) {
+		if(StringUtils.isEmpty(item.getAliasFor())) {
+			item.configure();
 		}
-		items.put(getName(), this);
-		log.debug("globalItemList registered item [{}]", this);
+		items.put(item.getName(), item);
 	}
 
 	public static void clear() {

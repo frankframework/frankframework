@@ -1,17 +1,17 @@
 package org.frankframework.extensions.sap;
 
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GlobalListItemTest {
+public class SapSystemListItemTest {
 
 	@BeforeEach
 	public void setUp() {
-		GlobalListItem.clear();
+		SapSystemListItem.clear();
 	}
 
 	@Test
@@ -21,10 +21,10 @@ public class GlobalListItemTest {
 		sapSystem1.setName("sapSystem1");
 
 		//Act
-		sapSystem1.registerItem(null);
+		SapSystemListItem.registerItem(sapSystem1);
 
 		//Assert
-		assertEquals(1, GlobalListItem.getRegisteredNamesAsList().size());
+		assertEquals(1, SapSystemListItem.getRegisteredNamesAsList().size());
 	}
 
 }

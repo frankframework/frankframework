@@ -386,7 +386,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an {@link IJob job} for scheduling at the configuration.
+	 * Add an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
 	 * information from the parameters, after checking the
 	 * parameters of the job. (basically, it checks whether the adapter and the
@@ -397,8 +397,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @since 4.0
 	 */
 	@Deprecated // deprecated to force use of Scheduler element
-	public void registerScheduledJob(IJob jobdef) {
-		scheduleManager.registerScheduledJob(jobdef);
+	public void addScheduledJob(IJob jobdef) {
+		scheduleManager.addScheduledJob(jobdef);
 	}
 
 	/**

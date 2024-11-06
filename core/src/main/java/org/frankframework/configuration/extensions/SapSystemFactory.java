@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.extensions.sap;
+package org.frankframework.configuration.extensions;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -22,10 +22,9 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.sap.conn.jco.JCoException;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.util.LogUtil;
 
 /**
@@ -56,13 +55,8 @@ public class SapSystemFactory {
 			log.error("no SapSystem found under name [{}], factory contents [{}]", sapSystem, this);
 			return null;
 		}
-		SapSystem sapSystem3 = (SapSystem) sapSystem;
-		try {
-			return sapSystem3.getDestination().toString();
-		} catch (JCoException e) {
-			log.warn("Exception determining sapsytem info", e);
-			return null;
-		}
+		ISapSystem sapSystem3 = (ISapSystem) sapSystem;
+		return sapSystem3.getDestinationAsString();
 	}
 
 	public Iterator<String> getRegisteredSapSystemNames() {

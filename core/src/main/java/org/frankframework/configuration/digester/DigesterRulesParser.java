@@ -78,9 +78,6 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		if(rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
 			ruleBuilder.setNext(rule.getRegisterMethod());
 		}
-		if(rule.getSelfRegisterMethod() != null) { //set the register method (set-top-rule)
-			ruleBuilder.setTop(rule.getSelfRegisterMethod());
-		}
 		ruleBuilder.addRule(getAttributeChecker()); //Add the attribute checker, which implements the set-properties-rule
 	}
 
