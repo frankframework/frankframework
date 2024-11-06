@@ -16,8 +16,8 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.XmlParameterBuilder;
 import org.frankframework.util.CloseUtils;
 
 public class XmlIfTest extends PipeTestBase<XmlIf> {
@@ -250,7 +250,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	}
 
 	@Test
-	void someXMLInputNotEqualtoExpressionValue() throws Exception {
+	void someXMLInputNotEqualToExpressionValue() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
@@ -419,7 +419,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	}
 
 	@Test
-	void namespaceDefsTestEmptyBooleanCheck() throws Exception {
+	void namespaceDefsTestEmptyBooleanCheck() {
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
 		pipe.addForward(new PipeForward(pipeName, null));
@@ -467,9 +467,9 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		pipe.setThenForwardName(thenPipeName);
 		pipe.addForward(new PipeForward(elsePipeName, null));
 		pipe.addForward(new PipeForward(thenPipeName, null));
-		Parameter p = new Parameter("param", "<root><test>value</test></root>");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		XmlParameterBuilder parameter = XmlParameterBuilder.create("param", "<root><test>value</test></root>")
+				.withType(ParameterType.DOMDOC);
+		pipe.addParameter(parameter);
 		pipe.setXpathExpression("$param/root/test='value'");
 
 		configureAndStartPipe();
@@ -486,13 +486,19 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		pipe.setThenForwardName(thenPipeName);
 		pipe.addForward(new PipeForward(elsePipeName, null));
 		pipe.addForward(new PipeForward(thenPipeName, null));
-		Parameter p = new Parameter("param", "<root><test>value</test></root>");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
 
-		p = new Parameter("param2", "<root><test>value2</test></root>");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		XmlParameterBuilder parameter1 = XmlParameterBuilder.create()
+				.withName("param")
+				.withValue("<root><test>value</test></root>")
+				.withType(ParameterType.DOMDOC);
+		pipe.addParameter(parameter1);
+
+		XmlParameterBuilder parameter2 = XmlParameterBuilder.create()
+				.withName("param2")
+				.withValue("<root><test>value2</test></root>")
+				.withType(ParameterType.DOMDOC);
+
+		pipe.addParameter(parameter2);
 		pipe.setXpathExpression("$param2/root/test='value2'");
 
 		configureAndStartPipe();
@@ -509,12 +515,12 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		pipe.setThenForwardName(thenPipeName);
 		pipe.addForward(new PipeForward(elsePipeName, null));
 		pipe.addForward(new PipeForward(thenPipeName, null));
-		Parameter p = ParameterBuilder.create("param", "<root><test>value</test></root>").withType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		XmlParameterBuilder parameter = XmlParameterBuilder.create("param", "<root><test>value</test></root>").withType(ParameterType.DOMDOC);
+		pipe.addParameter(parameter);
 
-		p = ParameterBuilder.create().withName("param2").withType(ParameterType.DOMDOC);
-		p.setXpathExpression("/request/b");
-		pipe.addParameter(p);
+		parameter = XmlParameterBuilder.create().withName("param2").withType(ParameterType.DOMDOC);
+		parameter.setXpathExpression("/request/b");
+		pipe.addParameter(parameter);
 
 		pipe.setXpathExpression("/request/b=$param2");
 
