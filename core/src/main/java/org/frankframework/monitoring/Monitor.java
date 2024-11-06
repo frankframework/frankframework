@@ -23,6 +23,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -32,8 +36,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;

@@ -14,6 +14,7 @@ on:
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
     paths-ignore:
       - "**.md"
       - "**.yml"
@@ -27,6 +28,7 @@ on:
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
     paths-ignore:
       - "**.md"
       - "**.yml"
@@ -127,13 +129,13 @@ jobs:
 
     - name: Store Test Results
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Store FrankDoc XSD
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd

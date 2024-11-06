@@ -29,8 +29,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
@@ -47,8 +46,8 @@ import org.frankframework.util.XmlUtils;
  */
 @Forward(name = "*", description = "name of the root-element")
 @Forward(name = "*", description = "result of transformation, when <code>styleSheetName</code> or <code>xpathExpression</code> is specified")
-@Category("Basic")
-@ElementType(ElementTypes.ROUTER)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class XmlSwitch extends AbstractPipe {
 
 	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";

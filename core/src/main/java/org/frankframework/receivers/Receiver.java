@@ -40,15 +40,16 @@ import java.util.regex.Pattern;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -56,6 +57,10 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -73,7 +78,6 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.INamedObject;
-import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -95,8 +99,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
@@ -202,8 +204,8 @@ import org.frankframework.util.XmlUtils;
  * requests.
  *
  */
-@Category("Basic")
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Category(Category.Type.BASIC)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -590,18 +592,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
 				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 			}
-			if (getListener() instanceof ReceiverAware) {
-				((ReceiverAware)getListener()).setReceiver(this);
+			if (getListener() instanceof ReceiverAware<M> ra) {
+				ra.setReceiver(this);
 			}
 			if (getListener() instanceof IPushingListener<M> pl) {
 				pl.setHandler(this);
 				pl.setExceptionListener(this);
 			}
-			if (getListener() instanceof IPortConnectedListener<M> pcl) {
-				pcl.setReceiver(this);
-			}
 			if (getListener() instanceof IPullingListener) {
-				setListenerContainer(createListenerContainer());
+				listenerContainer = createListenerContainer();
 			}
 			if (getListener() instanceof JdbcFacade) {
 				((JdbcFacade)getListener()).setTransacted(isTransacted());
@@ -1826,15 +1825,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return l;
 	}
 
-	public PullingListenerContainer<M> getListenerContainer() {
-		return listenerContainer;
-	}
-
-	public void setListenerContainer(PullingListenerContainer<M> listenerContainer) {
-		this.listenerContainer = listenerContainer;
-	}
-
-	public PullingListenerContainer<M> createListenerContainer() {
+	private PullingListenerContainer<M> createListenerContainer() {
 		@SuppressWarnings("unchecked")
 		PullingListenerContainer<M> plc = applicationContext.getBean("listenerContainer", PullingListenerContainer.class);
 		plc.setReceiver(this);

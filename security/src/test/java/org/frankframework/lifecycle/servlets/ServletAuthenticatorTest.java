@@ -43,7 +43,7 @@ abstract class ServletAuthenticatorTest {
 
 		@Override
 		public void initialize(ConfigurableApplicationContext applicationContext) {
-			// Empty method, nothing to initialize
+			SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 		}
 
 	}

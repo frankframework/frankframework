@@ -19,7 +19,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public interface ISapSystem extends INamedObject {
 	String getDestinationAsString();
 }

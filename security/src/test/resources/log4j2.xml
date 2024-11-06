@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j2:Configuration xmlns:log4j2="log4j-config.xsd" name="${ctx:instance.name}-test">
+	<Appenders>
+		<Console name="stdout">
+			<PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p %C{1}.%M():%L%x %m%n"/>
+		</Console>
+	</Appenders>
+
+	<Loggers>
+		<Logger name="org.frankframework" level="DEBUG" />
+		<Logger name="org.frankframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
+		<Logger name="org.frankframework.management.bus" level="DEBUG" />
+
+		<Root level="INFO">
+			<AppenderRef ref="stdout"/>
+		</Root>
+	</Loggers>
+</log4j2:Configuration>

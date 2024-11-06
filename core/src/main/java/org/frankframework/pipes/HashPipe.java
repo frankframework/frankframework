@@ -31,8 +31,7 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -53,7 +52,7 @@ import org.frankframework.util.StreamUtil;
  * @see Algorithm
  * @author Niels Meijer
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class HashPipe extends FixedForwardPipe {
 
 	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;

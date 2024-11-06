@@ -183,23 +183,7 @@ public class ServletManagerTest {
 	}
 
 	@Test
-	public void testTransportGuaranteeGlobal1() {
-		MockEnvironment properties = new MockEnvironment();
-		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "none");
-		SecuritySettings.setupDefaultSecuritySettings(properties);
-
-		String name = UUIDUtil.createNumericUUID();
-
-		DummyServletImpl servlet = new DummyServletImpl();
-		servlet.setUrlMapping(name);
-		DynamicServletRegistration sdr = createAndRegister(name, servlet);
-
-		assertEquals("[/"+name+"]", sdr.getMappings().toString());
-		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
-	}
-
-	@Test
-	public void testTransportGuaranteeGlobal2() {
+	public void testTransportGuaranteeGlobal() {
 		MockEnvironment properties = new MockEnvironment();
 		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
 		SecuritySettings.setupDefaultSecuritySettings(properties);
@@ -211,19 +195,7 @@ public class ServletManagerTest {
 	}
 
 	@Test
-	public void testTransportGuaranteeGlobalLOC1() {
-		MockEnvironment properties = new MockEnvironment();
-		properties.setProperty("dtap.stage", "LOC");
-		SecuritySettings.setupDefaultSecuritySettings(properties);
-
-		DummyServletImpl servlet = new DummyServletImpl();
-		DynamicServletRegistration sdr = createAndRegister(servlet);
-
-		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
-	}
-
-	@Test
-	public void testTransportGuaranteeGlobalLOC2() {
+	public void testTransportGuaranteeGlobalLOC() {
 		MockEnvironment properties = new MockEnvironment();
 		properties.setProperty("dtap.stage", "LOC");
 		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
@@ -251,7 +223,7 @@ public class ServletManagerTest {
 		return (DynamicServletRegistration) manager.getServletContext().getServletRegistration(name);
 	}
 
-	//Mock classes used to test the ServletManagers functionality
+	// Mock classes used to test the ServletManager functionality
 
 	private static class DummyServletImpl extends HttpServlet implements DynamicRegistration.Servlet {
 		private @Getter @Setter String name;

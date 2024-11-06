@@ -28,7 +28,7 @@ public class Verify extends PGPAction {
 	private final String[] senders;
 
 	public Verify(String[] publicKey, String secretKey, String secretPassword, String[] senders) throws ConfigurationException {
-		super(publicKey, secretKey, secretPassword);
+		super(publicKey, secretKey, secretPassword, null);
 		if (publicKey == null || secretKey == null || secretPassword == null)
 			throw new ConfigurationException("For verification the fields [publicKey, secretKey, secretPassword] have to be set.");
 		this.senders = senders;

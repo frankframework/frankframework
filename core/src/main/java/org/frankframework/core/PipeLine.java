@@ -36,6 +36,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.cache.ICache;
@@ -44,8 +48,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
@@ -96,8 +99,8 @@ import org.frankframework.util.StringUtil;
  *
  * @author  Johan Verrips
  */
-@Category("Basic")
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@Category(Category.Type.BASIC)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -637,9 +640,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * exists under that name, the pipe is NOT added, allowing globalForwards
 	 * to prevail.
 	 *
-	 * @ff.mandatory
 	 * @see AbstractPipe
 	 **/
+	@Mandatory
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -648,8 +651,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (StringUtils.isEmpty(name)) {
 			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe) + "] to be added has no name, pipelineTable size [" + pipesByName.size() + "]");
 		}
-		IPipe current = getPipe(name);
-		if (current != null) {
+		if (getPipe(name) != null) {
 			throw new ConfigurationException("pipe [" + name + "] defined more then once");
 		}
 		pipesByName.put(name, pipe);

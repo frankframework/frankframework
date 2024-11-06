@@ -85,8 +85,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * </ul>
  * In the Adapter to be called:
  * <ul>
- *   <li>The adapter does not need to have a receiver configured to be called from a FrankSender,</li>
- *   <li>The adapter will run in the same transaction as the calling adapter,</li>
+ *   <li>The adapter does not need to have a dedicated receiver configured to be called from a FrankSender.</li>
+ *   <li>The adapter will run in the same transaction as the calling adapter.</li>
  *   <li>If the called adapter does not to run in its own transaction, set the transaction attributes on the {@link PipeLine} attribute of this adapter
  *   or on the {@link SenderPipe} that contains this {@code FrankSender}.</li>
  * </ul>
@@ -269,7 +269,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  */
 @Forward(name = "*", description = "Exit code")
-@Category("Basic")
+@Category(Category.Type.BASIC)
 public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 
 	public static final String TARGET_PARAM_NAME = "target";

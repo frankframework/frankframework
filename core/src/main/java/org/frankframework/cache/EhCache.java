@@ -35,7 +35,7 @@ import org.frankframework.util.AppConstants;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class EhCache<V> extends CacheAdapterBase<V> {
 
 	private static final String KEY_PREFIX = "cache.default.";

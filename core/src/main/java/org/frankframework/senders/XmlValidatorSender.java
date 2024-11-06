@@ -37,7 +37,7 @@ import org.frankframework.validation.XercesXmlValidator;
  *
  * @author  Gerrit van Brakel
  */
-@Category("Advanced")
+@Category(Category.Type.ADVANCED)
 public class XmlValidatorSender extends XercesXmlValidator implements ISender {
 
 	private @Getter @Setter String name;

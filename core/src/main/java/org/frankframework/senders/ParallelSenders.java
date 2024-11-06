@@ -48,7 +48,7 @@ import lombok.Getter;
  * @author Gerrit van Brakel
  * @since 4.9
  */
-@Category("Advanced")
+@Category(Category.Type.ADVANCED)
 public class ParallelSenders extends SenderSeries {
 
 	private @Getter int maxConcurrentThreads = 0;

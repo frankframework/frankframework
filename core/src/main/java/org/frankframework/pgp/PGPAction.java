@@ -47,16 +47,16 @@ public abstract class PGPAction implements IScopeProvider {
 	private final String secretKey, secretPassword;
 
 	/**
-	 * A general constructor. It checks if any of the vars are null.
+	 * A general constructor. It checks if any of the requiredObjects are null.
 	 *
 	 * @param publicKey      Array of path strings that point to public keys.
 	 * @param secretKey      String that contains the path to the secret key.
 	 * @param secretPassword String that contains the password for the secret key.
-	 * @param vars           Objects that should not be null for the action to be performed.
-	 * @throws ConfigurationException When any of the given vars is null.
+	 * @param requiredObjects Objects that should not be null for the action to be performed.
+	 * @throws ConfigurationException When any of the given requiredObjects is null.
 	 */
-	PGPAction(String[] publicKey, String secretKey, String secretPassword, Object... vars) throws ConfigurationException {
-		verifyNotNull(vars);
+	PGPAction(String[] publicKey, String secretKey, String secretPassword, Object[] requiredObjects) throws ConfigurationException {
+		verifyObjectsNotNull(requiredObjects);
 		this.publicKeys = publicKey;
 		this.secretPassword = secretPassword;
 		this.secretKey = secretKey;
@@ -104,13 +104,17 @@ public abstract class PGPAction implements IScopeProvider {
 	public abstract void run(InputStream inputStream, OutputStream outputStream) throws Exception;
 
 	/**
-	 * Verifies that given parameters are not null.
+	 * Verifies that given objects are not null.
 	 *
-	 * @param vars Parameters to be verified.
+	 * @param requiredObjects Objects to be verified.
 	 * @throws ConfigurationException When one of the parameters is null.
 	 */
-	private void verifyNotNull(Object... vars) throws ConfigurationException {
-		for (Object s : vars) {
+	private void verifyObjectsNotNull(Object[] requiredObjects) throws ConfigurationException {
+		if (requiredObjects == null) {
+			return;
+		}
+
+		for (Object s : requiredObjects) {
 			if (s == null)
 				throw new ConfigurationException("All of the required fields should be filled for " +
 						"the selected action [" + this.getClass() + "]. Please check documentation for further details.");

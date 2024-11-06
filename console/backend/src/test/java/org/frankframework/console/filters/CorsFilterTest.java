@@ -47,7 +47,7 @@ public class CorsFilterTest {
 	public void testCorsDisabled(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "false");
+		properties.setProperty("cors.enforced", "false");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -67,8 +67,8 @@ public class CorsFilterTest {
 	public void testCorsFilterWithoutOrigin(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "https://domain.com:2345");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -88,8 +88,8 @@ public class CorsFilterTest {
 	public void testCorsFilterWithOrigin(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "https://domain.com:2345");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -110,8 +110,8 @@ public class CorsFilterTest {
 	public void testCorsFilterWithMultipleAllowedOrigins(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345,http://torpedo.schrim.com,https://foo.bar/");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "https://domain.com:2345,http://torpedo.schrim.com,https://foo.bar/");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -132,8 +132,8 @@ public class CorsFilterTest {
 	public void testCorsWildcardOrigins(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345,http://*.schrim.com");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "https://domain.com:2345,http://*.schrim.com");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -155,8 +155,8 @@ public class CorsFilterTest {
 	public void testCorsWildcardOriginsAndPort(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "http://*.schrim.com:2345");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "http://*.schrim.com:2345");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -177,8 +177,8 @@ public class CorsFilterTest {
 	public void testCorsAllOrigins(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "*");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "*");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
@@ -199,8 +199,8 @@ public class CorsFilterTest {
 	public void testOptionsRequest(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
-		properties.setProperty("iaf-api.cors.enforced", "true");
-		properties.setProperty("iaf-api.cors.allowOrigin", "*");
+		properties.setProperty("cors.enforced", "true");
+		properties.setProperty("cors.origin", "*");
 		CorsFilter filter = createFilter(properties);
 
 		MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/dummy");

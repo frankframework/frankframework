@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.springframework.beans.factory.InitializingBean;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -26,8 +27,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
@@ -45,8 +44,8 @@ import org.frankframework.util.TransformerPool.OutputType;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
-@ElementType(ElementTypes.TRANSLATOR)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	private String sessionKey=null;

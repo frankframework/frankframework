@@ -174,7 +174,7 @@ public class LarvaServlet extends HttpServletBase {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {
-					new LarvaTool().windiff(getServletContext(), request, request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
+					new LarvaTool().windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);
 					resp.sendError(500, "unable to save file");

@@ -26,7 +26,7 @@ import org.frankframework.configuration.ConfigurationException;
 public class Decrypt extends PGPAction{
 
 	public Decrypt(String secretKey, String secretPassword) throws ConfigurationException {
-		super(null, secretKey, secretPassword);
+		super(null, secretKey, secretPassword, null);
 		if(secretKey == null || secretPassword == null)
 			throw new ConfigurationException("For decryption, fields [secretKey, secretPassword] have to be set.");
 	}

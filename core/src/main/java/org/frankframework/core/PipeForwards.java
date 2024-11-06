@@ -27,7 +27,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  * Optional element in a pipeline. Global forwards that will be added to every pipe, when the forward name has not been explicitly set.
  * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the '<code>exception</code>' forward to every pipe in the pipeline.
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeForwards {
 
 	private final @Getter List<PipeForward> forwards = new ArrayList<>();

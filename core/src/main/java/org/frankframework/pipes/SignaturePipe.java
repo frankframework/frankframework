@@ -35,8 +35,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.EncryptionException;
@@ -51,7 +50,7 @@ import org.frankframework.stream.Message;
  * @ff.parameter signature the signature to verify
  */
 @Forward(name = "failure", description = "verification has failed")
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	public static final String PARAMETER_SIGNATURE="signature";

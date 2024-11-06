@@ -31,7 +31,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author  Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class EsbJmsSender extends JmsSender {
 
 	public enum MessageProtocol {

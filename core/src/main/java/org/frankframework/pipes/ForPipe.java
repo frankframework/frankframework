@@ -27,8 +27,8 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -56,7 +56,7 @@ import org.frankframework.stream.Message;
  */
 @Forward(name = "stop", description = "exit for loop")
 @Forward(name = "continue", description = "continue in for loop")
-@ElementType(ElementTypes.ITERATOR)
+@EnterpriseIntegrationPattern(Type.ITERATOR)
 public class ForPipe extends AbstractPipe {
 
 	static final String STOP_FORWARD_NAME = "stop";
