@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
