@@ -15,7 +15,7 @@
 	<rule pattern="*/sharedResources/httpSession" registerMethod="addHttpSession" factory="org.frankframework.configuration.digester.SharedResourceFactory"/> <!-- Hack to make the frankdoc look nice -->
 
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="org.frankframework.configuration.extensions.SapSystems"/>
-	<rule pattern="*/sapSystem" registerMethod="addSapSystem" beanClass="org.frankframework.extensions.sap.extensions.SapSystem"/>
+	<rule pattern="*/sapSystem" registerMethod="addSapSystem" beanClass="org.frankframework.extensions.sap.SapSystem"/>
 
 	<rule pattern="*/adapter" registerMethod="addAdapter" beanClass="org.frankframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="org.frankframework.core.PipeLine"/>

@@ -208,7 +208,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 				pvl = paramList.getValues(input, session);
 			}
 		} catch (ParameterException e) {
-			throw new TransformerException("unable to resolve input parameters for transformerHandler");
+			throw new TransformerException("unable to resolve input parameters for transformerHandler", e);
 		}
 
 		try {
