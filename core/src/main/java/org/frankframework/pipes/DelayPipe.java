@@ -52,9 +52,10 @@ public class DelayPipe extends FixedForwardPipe {
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}
+
+	@ValueFromParameter
 	public long getDelayTime() {
 		return delayTime;
 	}
-
 
 }
