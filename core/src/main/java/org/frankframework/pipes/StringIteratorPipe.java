@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IBlockEnabledSender;
@@ -33,7 +34,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  * @author Gerrit van Brakel
  */
-public class StringIteratorPipe extends IteratingPipe<String> {
+public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	private @Getter int stringIteratorPipeBlockSize=0;
 	private @Getter int startPosition=-1;

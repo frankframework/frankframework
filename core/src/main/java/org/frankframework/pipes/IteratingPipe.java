@@ -27,12 +27,16 @@ import java.util.concurrent.Phaser;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
@@ -55,8 +59,6 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
 
 /**
  * Base class to send a message to a Sender for each item returned by a configurable iterator.
@@ -84,7 +86,7 @@ import org.xml.sax.SAXException;
 @Forward(name = "maxItemsReached", description = "the iteration stopped when the configured maximum number of items was processed")
 @Forward(name = "stopConditionMet", description = "the iteration stopped when the configured condition expression became true")
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ITERATOR)
-public class IteratingPipe<I> extends MessageSendingPipe {
+public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
 	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";

@@ -47,7 +47,7 @@ import org.frankframework.util.XmlBuilder;
 public class MultipartUtils {
 
 	private MultipartUtils() {
-		throw new IllegalStateException("Don't construict utility class");
+		throw new IllegalStateException("Don't construct utility class");
 	}
 
 	public static final String FORM_DATA = "form-data";
