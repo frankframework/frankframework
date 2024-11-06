@@ -13,13 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.pipes;
+package org.frankframework.parameters;
+
+import org.frankframework.core.IPipe;
+import org.frankframework.core.IWithParameters;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Used to annotate a getter, so that the value can also be derived from a parameter with the attribute name.
+ * A parameter has priority over an attribute. A getter annotated with this annotation should not contain
+ * any logic, because there are no guarantees that it will be called. The pipe should implement {@link IWithParameters} and {@link IPipe}
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ValueFromParameter {
