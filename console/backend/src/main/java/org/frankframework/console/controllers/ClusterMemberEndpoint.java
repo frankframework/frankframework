@@ -31,6 +31,7 @@ import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
+import org.frankframework.util.Environment;
 import org.frankframework.util.JacksonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,6 +55,8 @@ import jakarta.annotation.security.RolesAllowed;
 @RestController
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberEvent> {
+
+	private static final String VERSION = Environment.getModuleVersion("frankframework-console-backend");
 
 	@Autowired
 	private ClientSession session;
@@ -84,7 +87,12 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		}
 
 		for(ClusterMember member : members) {
-			member.setSelectedMember(session.getMemberTarget().equals(member.getId()));
+
+			if(member.isLocalMember()) {
+				member.getAttributes().put("version", VERSION);
+			}
+
+			member.setSelectedMember((session.getMemberTarget() != null && session.getMemberTarget().equals(member.getId())));
 		}
 
 		JsonMessage response = new JsonMessage(members);
