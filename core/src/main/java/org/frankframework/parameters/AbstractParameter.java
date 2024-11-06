@@ -339,7 +339,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					ParameterValueList pvl = paramList == null ? null : paramList.getValues(message, session, namespaceAware);
 					switch (getType()) {
 						case NODE:
-							LOG.warn("Parameter [{}] uses parameterType NODE, use DOMDOC instead", this::getName);
 							return transformToDocument(source, pvl).getFirstChild();
 						case DOMDOC:
 							return transformToDocument(source, pvl);
