@@ -109,14 +109,14 @@ final String x = (condition) ? "value" : null;
 	This can become less readable when using the return type of a method. To keep code as readable as possible, we only use 
 	this when the type is clear, such as a direct assignment of a string or scalar value or constructor. Try to avoid using `var` for variables assigned from method return values, this makes code less readable
 	when not using an IDE.
-9. Java Optionals.
+9. Abstract classes	
+   
+	When creating abstract classes, name them like `AbstractClass` and don't use `ClassBase`. When using a base/abstract super class, combined with interfaces, see if a `default` interface method might suffice.
+10. Java Optionals.
 
 	You can use Java `Optional` to indicate that the return value of a method can be `null`.
-	It is not custom to use this for parameters, only for return-values.
-	However I find that code is not necessarily more readable when using `Optional` so use
-	them at your own discretion, and see if you find the code calling your methods becomes
-	either more readable, or safer (as in, less likely to do the wrong thing when a value
-	could be null).
+	Optional should not be used for parameters.
+	When working with streams and extracting methods to integrate in the streams, working with Optional return values makes code easier to understand. Refactoring existing code might not be that easy. 
 	If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
 	and companions.
 	One good scenario for using `Optional` is for avoiding re-assigning variables which could
