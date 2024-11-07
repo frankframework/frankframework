@@ -36,13 +36,13 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
 /**
- * Registers a trigger in the scheduler so that the message is send to a javalistener
+ * Registers a trigger in the scheduler so that the message is sent to a {@link org.frankframework.receivers.JavaListener}
  * at a scheduled time.
  *
  * @author John Dekker
  */
+@Deprecated(forRemoval = true, since = "9.0")
 public class SchedulerSender extends SenderWithParametersBase {
-
 	private String javaListener;
 	private String cronExpressionPattern;
 	private String jobGroup = null;
@@ -107,7 +107,6 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
-
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put(ServiceJob.JAVALISTENER_KEY, javaListener);
 		jobDataMap.put(ServiceJob.MESSAGE_KEY, message);
