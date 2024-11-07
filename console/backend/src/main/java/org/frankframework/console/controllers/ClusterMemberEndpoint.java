@@ -92,7 +92,7 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 				member.getAttributes().put("version", VERSION);
 			}
 
-			member.setSelectedMember((session.getMemberTarget() != null && session.getMemberTarget().equals(member.getId())));
+			member.setSelectedMember(member.getId().equals(session.getMemberTarget()));
 		}
 
 		JsonMessage response = new JsonMessage(members);
