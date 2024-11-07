@@ -15,6 +15,9 @@
 */
 package org.frankframework.jdbc;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -38,13 +41,13 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IMessageBrowser.SortOrder;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsException;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -71,7 +74,7 @@ public class JdbcTableListenerTest {
 	private final boolean testNegativePeekWhileGet = false;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws Exception {
+	public void setup(DatabaseTestEnvironment env) {
 		listener = env.createBean(JdbcTableListener.class);
 		listener.setTableName(TEST_TABLE);
 		listener.setKeyField("TKEY");
@@ -83,14 +86,14 @@ public class JdbcTableListenerTest {
 	}
 
 	@AfterEach
-	public void teardown() throws Exception {
+	public void teardown() {
 		if(listener != null) {
 			listener.stop();
 		}
 	}
 
-	private JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
-		JdbcTableMessageBrowser browser = (JdbcTableMessageBrowser)listener.getMessageBrowser(state);
+	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
+		JdbcTableMessageBrowser<?> browser = (JdbcTableMessageBrowser<?>)listener.getMessageBrowser(state);
 		browser.configure();
 		return browser;
 	}
@@ -129,6 +132,21 @@ public class JdbcTableListenerTest {
 		String expected = "SELECT TKEY FROM " + TEST_TABLE + " t WHERE TINT='1' AND (t.TVARCHAR='x')";
 
 		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@DatabaseTest
+	public void testSelectConditionWithForbiddenField() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("t.TTIMESTAMP IS NULL");
+		listener.setTimestampField("TTIMESTAMP");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
+		assertFalse(warnings.isEmpty());
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TTIMESTAMP]")));
 	}
 
 	@DatabaseTest

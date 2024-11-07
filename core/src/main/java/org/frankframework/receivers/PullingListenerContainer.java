@@ -21,9 +21,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -33,6 +30,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.INamedObject;
@@ -408,7 +409,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
-				if (inProcessStateManager!=null) {
+				if (false && inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
 					try {
 						log.debug("Changing message state back to AVAILABLE in rollback, reason: {}", reason);
