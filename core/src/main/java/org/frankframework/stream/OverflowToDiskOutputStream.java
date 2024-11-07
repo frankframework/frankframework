@@ -26,12 +26,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.LogManager;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Writes to an in-memory buffer until it 'overflows', after which a file on disk will be created and the in-memory buffer will be flushed to it.
@@ -91,19 +94,37 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	private static class CleanupFileAction implements Runnable {
+		private static final AtomicInteger leakCounter = new AtomicInteger();
+
+		static {
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				System.gc();
+				Thread.yield();
+				try {
+					Thread.sleep(500L);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed OverflowToDiskOutputStream instances: " + leakCounter.get());
+			}));
+		}
+
 		private final Path fileToClean;
 		private final Closeable closable;
+		private final Exception creationTrace;
 		private boolean shouldClean = true;
 
 		private CleanupFileAction(Path fileToClean, Closeable closable) {
 			this.fileToClean = fileToClean;
 			this.closable = closable;
+			this.creationTrace = new Exception("If you see this, owning OverflowToDiskOutputStream created in location of stacktrace was not closed correctly");
 		}
 
 		@Override
 		public void run() {
 			if (shouldClean) {
-				log.info("Leak detection: File [{}] was never converted to a Message", fileToClean);
+				LogManager.getLogger("LEAK_LOG").info("Leak detection: File [{}] was never converted to a Message", fileToClean, creationTrace);
+				leakCounter.incrementAndGet();
 
 				CloseUtils.closeSilently(closable);
 				try {

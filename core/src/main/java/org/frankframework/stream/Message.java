@@ -43,6 +43,7 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -51,8 +52,6 @@ import javax.xml.transform.dom.DOMSource;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.Lombok;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +61,9 @@ import org.apache.logging.log4j.util.Supplier;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Lombok;
 
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
@@ -198,17 +200,35 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private static class MessageNotClosedAction implements Runnable {
+		private static final AtomicInteger leakCounter = new AtomicInteger();
+
+		static {
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				System.gc();
+				Thread.yield();
+				try {
+					Thread.sleep(500L);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed Message instances: " + leakCounter.get());
+			}));
+		}
+
 		private boolean calledByClose = false;
+		private final Exception creationTrace;
 		private final String content;
 
 		private MessageNotClosedAction(String content) {
 			this.content = StringUtils.substring(content, 0, 80);
+			this.creationTrace = new Exception("If you see this, owning Message created in location of stacktrace was not closed correctly");
 		}
 
 		@Override
 		public void run() {
 			if (!calledByClose) {
-				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", content);
+				LogManager.getLogger("LEAK_LOG").info("Leak detection: Message was not closed properly! Content: [{}]", content, creationTrace);
+				leakCounter.incrementAndGet();
 			}
 		}
 	}

@@ -30,11 +30,14 @@ import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
@@ -167,17 +170,35 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	private static class CleanupFileAction implements Runnable {
+		private static final AtomicInteger leakCounter = new AtomicInteger();
+
+		static {
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				System.gc();
+				Thread.yield();
+				try {
+					Thread.sleep(500L);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed SerializableFileReference instances: " + leakCounter.get());
+			}));
+		}
+
 		private final Path fileToClean;
+		private final Exception creationTrace;
 		private boolean calledByClose = false;
 
 		private CleanupFileAction(Path fileToClean) {
 			this.fileToClean = fileToClean;
+			this.creationTrace = new Exception("If you see this, owning SerializableFileReference created in location of stacktrace was not closed correctly");
 		}
 
 		@Override
 		public void run() {
 			if (!calledByClose) {
-				log.info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean);
+				LogManager.getLogger("LEAK_LOG").info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean, creationTrace);
+				leakCounter.incrementAndGet();
 			}
 			try {
 				Files.deleteIfExists(fileToClean);

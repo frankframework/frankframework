@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,21 +24,24 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.SneakyThrows;
+
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.DateFormatUtils;
 
 
@@ -49,6 +53,7 @@ import org.frankframework.util.DateFormatUtils;
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
+	private static final Cleaner CLEANER = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 
 	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
 
@@ -72,19 +77,25 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private ISecurityHandler securityHandler = null;
 
+	private transient Cleaner.Cleanable cleanable;
+	private transient PipeLineSessionCloseAction closeAction;
+
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
 	private final @Getter Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
+		createCloseAction();
 	}
 
 	public PipeLineSession(int initialCapacity) {
 		super(initialCapacity);
+		createCloseAction();
 	}
 
 	public PipeLineSession(int initialCapacity, float loadFactor) {
 		super(initialCapacity, loadFactor);
+		createCloseAction();
 	}
 
 	/**
@@ -94,6 +105,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
+		createCloseAction();
+	}
+
+	private void createCloseAction() {
+		closeAction = new PipeLineSessionCloseAction(this.getClass().getName());
+		cleanable = CLEANER.register(this, closeAction);
 	}
 
 	public void setExitState(PipeLine.ExitState state, Integer code) {
@@ -209,9 +226,13 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return message;
 		}
 		if(obj != null) {
-			return Message.asMessage(obj);
+			Message message = Message.asMessage(obj);
+			message.closeOnCloseOf(this, "Message for key [" + key + "]");
+			return message;
 		}
-		return Message.nullMessage();
+		Message nullMessage = Message.nullMessage();
+		nullMessage.closeOnCloseOf(this, "NullMessage for key [" + key + "]");
+		return nullMessage;
 	}
 
 	public Instant getTsReceived() {
@@ -447,6 +468,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
+		closeAction.calledByClose = true;
+		cleanable.clean();
 		// We create a copy of the instance variable so that we are protected from changes done in other methods.
 		Map<AutoCloseable, String> copy = new HashMap<>(closeables);
 		closeables.clear();
@@ -457,6 +480,50 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				closeable.close();
 			} catch (Exception e) {
 				LOG.warn("Exception closing resource, messageId [{}], resource [{}] {}", (Supplier<?>) this::getMessageId, (Supplier<?>) entry::getKey, (Supplier<?>) entry::getValue, e);
+			}
+		}
+	}
+
+	private static class PipeLineSessionCloseAction implements Runnable {
+		private static final AtomicInteger leakCounter = new AtomicInteger();
+		private static final AtomicInteger closedCounter = new AtomicInteger();
+		private static final AtomicInteger proxyInstanceCounter = new AtomicInteger();
+		static {
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				System.gc();
+				Thread.yield();
+				try {
+					Thread.sleep(500L);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed PipeLineSession instances: " + leakCounter.get() + "; properly closed instances: " + closedCounter.get() + "; unclosed instances of proxy classes: " + proxyInstanceCounter.get());
+			}));
+		}
+		private final String className;
+		private final boolean isProxyClass;
+		private final Exception creationTrace;
+		private boolean calledByClose = false;
+
+		public PipeLineSessionCloseAction(String className) {
+			this.className = className;
+			this.isProxyClass = className.contains("$$");
+			this.creationTrace = new Exception("If you see this, owning PipeLineSession created in location of stacktrace was not closed correctly");
+			this.creationTrace.fillInStackTrace();
+		}
+
+		@Override
+		public void run() {
+			if (!calledByClose) {
+				if (isProxyClass) {
+					LOG.debug("Cleaning instance of proxy class [{}]", className);
+					proxyInstanceCounter.incrementAndGet();
+					return;
+				}
+				LogManager.getLogger("LEAK_LOG").info("Leak detection: PipeLineSession was not closed properly!", creationTrace);
+				leakCounter.incrementAndGet();
+			} else {
+				closedCounter.incrementAndGet();
 			}
 		}
 	}

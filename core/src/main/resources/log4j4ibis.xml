@@ -50,6 +50,14 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
+		<Appender name="leak-log-appender" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<OnStartupTriggeringPolicy />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
+		</Appender>
 		<Appender name="heartbeat" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
 			<Layout type="PatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n</Pattern>
@@ -124,6 +132,10 @@
 		</Logger>
 		<Logger name="APPLICATION" additivity="true" level="DEBUG">
 			<AppenderRef ref="application-log-appender"/>
+		</Logger>
+		<Logger name="LEAK_LOG" additivity="true" level="DEBUG">
+			<AppenderRef ref="leak-log-appender"/>
+			<AppenderRef ref="stdout"/>
 		</Logger>
 
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
