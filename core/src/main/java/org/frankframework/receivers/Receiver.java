@@ -66,6 +66,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
@@ -152,21 +153,20 @@ import org.frankframework.util.XmlUtils;
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
  * <table border="1">
- * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
- * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
- * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>
- * <tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
- * <tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
- * <tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>
+ * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>summary of effect</th></tr>
+ * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>message processed</td></tr>
+ * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message only transferred from listener to errroSender</td></tr>
+ * <tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
+ * <tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
  * </table>
  * If the application or the server crashes in the middle of one or more transactions, these transactions
  * will be recovered and rolled back after the server/application is restarted. Then always exactly one of
  * the following applies for any message touched at any time by Ibis by a transacted receiver:
  * <ul>
  * <li>It is processed correctly by the pipeline and removed from the input-queue,
- *     not present in inProcess storage and not send to the errorSender</li>
+ *     not present in inProcess storage</li>
  * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
- *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
+ *     the message is removed from the input queue and either (one of) still in inProcess storage</li>
  * </ul>
  *
  * <p><b>commit or rollback</b><br/>
@@ -319,11 +319,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter @Setter Adapter adapter;
 
 	private @Getter IListener<M> listener;
-	private @Getter ISender errorSender=null;
+
 	// See configure() for explanation on this field
-	private @Getter ITransactionalStorage<Serializable> messageLog=null;
-	private @Getter ITransactionalStorage<Serializable> errorStorage=null;
-	private @Getter ISender sender=null; // reply-sender
+	private @Getter ITransactionalStorage<Serializable> messageLog = null;
+	private @Getter ITransactionalStorage<Serializable> errorStorage = null;
+	private @Getter ICorrelatedSender sender = null; // reply-sender
 	private final Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
 
 	private TransformerPool correlationIDTp=null;
@@ -417,7 +417,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
-
 	protected void openAllResources() throws ListenerException, TimeoutException {
 		// on exit resources must be in a state that runstate is or can be set to 'STARTED'
 		TimeoutGuard timeoutGuard = new TimeoutGuard(getStartTimeout(), "starting receiver ["+getName()+"]");
@@ -426,12 +425,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				if (getSender()!=null) {
 					getSender().start();
 				}
-				if (getErrorSender()!=null) {
-					getErrorSender().start();
-				}
+
 				if (getErrorStorage()!=null) {
 					getErrorStorage().start();
 				}
+
 				if (getMessageLog()!=null) {
 					getMessageLog().start();
 				}
@@ -485,13 +483,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					error("error closing sender", e);
 				}
 			}
-			if (getErrorSender()!=null) {
-				try {
-					getErrorSender().stop();
-				} catch (Exception e) {
-					error("error closing error sender", e);
-				}
-			}
 			if (getErrorStorage()!=null) {
 				try {
 					getErrorStorage().stop();
@@ -535,10 +526,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		IListener<M> listener=getListener();
 		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
 			listener.setName("listener of ["+getName()+"]");
-		}
-		ISender errorSender = getErrorSender();
-		if (errorSender != null) {
-			errorSender.setName("errorSender of ["+getName()+"]");
 		}
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		if (errorStorage != null) {
@@ -635,20 +622,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 
-			ISender errorSender = getErrorSender();
-			if (errorSender!=null) {
-				if (errorSender instanceof HasPhysicalDestination destination) {
-					info("has errorSender to "+destination.getPhysicalDestinationName());
-				}
-				errorSender.configure();
-			}
-
 			if (getListener() instanceof IHasProcessState) {
 				knownProcessStates.addAll(((IHasProcessState<?>)getListener()).knownProcessStates());
 				targetProcessStates = ((IHasProcessState<?>)getListener()).targetProcessStates();
 				supportProgrammaticRetry = knownProcessStates.contains(ProcessState.INPROCESS);
 			}
-
 
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
 			if (messageLog!=null) {
@@ -701,8 +679,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 			}
 
-			if (isTransacted() && errorSender==null && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
-				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
+			if (isTransacted() && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
+				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
@@ -978,23 +956,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			correlationId = (String) session.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
 
-		final ISender errorSender = getErrorSender();
 		final ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 
 		// Bail out now if we have no error sender/storage, so we do not have to create a TX and get message from supplier.
-		if (errorSender==null && errorStorage==null) {
+		if (errorStorage==null) {
 			if (!(getListener() instanceof IHasProcessState) || knownProcessStates.isEmpty()) {
-				log.debug("{} has no errorSender, errorStorage or knownProcessStates, will not move message with id [{}] correlationId [{}] to errorSender/errorStorage", this::getLogPrefix, () -> originalMessageId, () -> correlationId);
+				log.debug("{} has no errorStorage or knownProcessStates, will not move message with id [{}] correlationId [{}] to errorStorage", this::getLogPrefix, () -> originalMessageId, () -> correlationId);
 			}
 			return;
 		}
-		log.debug("{} moves message with id [{}] correlationId [{}] to errorSender/errorStorage", this::getLogPrefix, ()->originalMessageId, ()->correlationId);
+		log.debug("{} moves message with id [{}] correlationId [{}] to errorStorage", this::getLogPrefix, () -> originalMessageId, () -> correlationId);
 		TransactionStatus txStatus;
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (RuntimeException e) {
 			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", getLogPrefix(), originalMessageId, correlationId, e);
-			// no use trying again to send message on errorSender, will cause same exception!
 
 			// NB: Why does this case return, instead of re-throwing?
 			return;
@@ -1008,11 +984,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				message = getListener().extractMessage(rawMessageWrapper, session);
 			}
 			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
-			if (errorSender != null) {
-				try(PipeLineSession senderSession = new PipeLineSession(); Message senderResult = errorSender.sendMessageOrThrow(message, senderSession)) {
-					log.debug("error-sender result [{}]", senderResult);
-				}
-			}
+
 			if (errorStorage!=null) {
 				Serializable sobj = serializeMessageObject(rawMessageWrapper, message);
 				errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, sobj);
@@ -2013,17 +1985,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * has an asynchronous listener.
 	 * N.B. Sending correlated responses via this sender is not supported.
 	 */
-	public void setSender(ISender sender) {
+	public void setSender(ICorrelatedSender sender) {
 		this.sender = sender;
-	}
-
-	/**
-	 * Sender that will send the result in case the PipeLineExit state was not <code>SUCCESS</code>.
-	 * Applies if the receiver has an asynchronous listener.
-	 */
-	public void setErrorSender(ISender errorSender) {
-		this.errorSender = errorSender;
-		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
 	/** Storage to keep track of messages that failed processing */
