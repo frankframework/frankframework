@@ -15,31 +15,13 @@
 */
 package org.frankframework.management.gateway.events;
 
-import jakarta.annotation.Nonnull;
-
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
 
-import lombok.Getter;
+public abstract class AbstractGatewayEvent extends ApplicationEvent {
 
-import org.frankframework.management.bus.OutboundGateway.ClusterMember;
-
-public class ClusterMemberEvent extends AbstractGatewayEvent {
-
-	public enum EventType {
-		ADD_MEMBER, REMOVE_MEMBER
-	}
-
-	private @Getter final EventType type;
-	private @Getter final ClusterMember member;
-
-	public ClusterMemberEvent(@Nonnull ApplicationContext source, @Nonnull EventType type, @Nonnull ClusterMember member) {
+	public AbstractGatewayEvent(ApplicationContext source) {
 		super(source);
-		this.type = type;
-		this.member = member;
 	}
 
-	@Override
-	public String toString() {
-		return "Member " + member.getId() + " has been " + (type == EventType.ADD_MEMBER ? "added" : "removed");
-	}
 }
