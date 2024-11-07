@@ -15,8 +15,6 @@
 */
 package org.frankframework.receivers;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static org.frankframework.functional.FunctionalUtil.logValue;
 import static org.frankframework.functional.FunctionalUtil.supplier;
 
@@ -47,10 +45,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -101,6 +95,8 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
@@ -233,13 +229,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
-	public static final String DEFAULT_MAX_RETRY_DELAY_KEY = "receiver.defaultMaxRetryDelay";
+	public static final String DEFAULT_MAX_BACKOFF_DELAY_KEY = "receiver.defaultMaxBackoffDelay";
 	/**
 	 * Should be smaller than the transaction timeout as the delay takes place
 	 * within the transaction. WebSphere default transaction timeout is 120.
 	 */
-	public static final int DEFAULT_MAX_RETRY_DELAY=100;
-	public static final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
+	public static final int DEFAULT_MAX_BACKOFF_DELAY = 60;
+	public static final String RETRY_FLAG_SESSION_KEY = "retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
 	public enum OnError {
 		/** Don't stop the receiver when an error occurs.*/
@@ -273,7 +269,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
 	private @Getter Integer maxRetries = null;
-	private Integer maxRetryDelay = null;
+	private Integer maxBackoffDelay = null;
 	private @Getter int processResultCacheSize = 100;
 	private @Getter boolean supportProgrammaticRetry=false;
 
@@ -300,7 +296,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
-	private int retryInterval=1;
+	private int currentBackoffDelay =1;
 
 	private boolean suspensionMessagePending=false;
 	private boolean configurationSucceeded = false;
@@ -527,7 +523,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
 					throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-					resetRetryInterval();
+					resetBackoffDelay();
 
 					info("stopped");
 				}
@@ -733,9 +729,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 					maxRetries = 1;
 				}
 			}
-			if (maxRetryDelay == null) {
-				maxRetryDelay = AppConstants.getInstance(configurationClassLoader).getInt(DEFAULT_MAX_RETRY_DELAY_KEY, DEFAULT_MAX_RETRY_DELAY);
-			}
+			maxBackoffDelay = calculateAdjustedMaxBackoffDelay(maxBackoffDelay);
 		} catch (Throwable t) {
 			ConfigurationException e;
 			if (t instanceof ConfigurationException exception) {
@@ -758,6 +752,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if(isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
+	}
+
+	protected int calculateAdjustedMaxBackoffDelay(Integer configuredMaxBackoffDelay) {
+		int backoffDelay = configuredMaxBackoffDelay != null ? configuredMaxBackoffDelay : AppConstants.getInstance(configurationClassLoader).getInt(DEFAULT_MAX_BACKOFF_DELAY_KEY, DEFAULT_MAX_BACKOFF_DELAY);
+		int transactionTimeoutCap = getActualTransactionTimeout() / 2;
+		if (backoffDelay > transactionTimeoutCap) {
+			ConfigurationWarnings.add(this.getAdapter(), log, "Maximum backoff delay reduced to %d from %d to avoid the delay causing transaction timeouts".formatted(transactionTimeoutCap, backoffDelay), SuppressKeys.CONFIGURATION_VALIDATION);
+			return transactionTimeoutCap;
+		}
+		return backoffDelay;
 	}
 
 	@Override
@@ -941,7 +945,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			origin.afterMessageProcessed(plr, messageWrapper, session);
 		} catch (ListenerException e) {
 			String errorDescription = getLogPrefix() + "received message with messageId [" + messageId + "] too many times [" + getDeliveryCount(messageWrapper) + "]; maxRetries=[" + getMaxRetries() + "]. Error occurred while moving message to error store.";
-			increaseRetryIntervalAndWait(e, errorDescription);
+			increaseBackoffIntervalAndWait(e, errorDescription);
 			throw e;
 		}
 	}
@@ -1289,7 +1293,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
 						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
-							errorMessage += resultString.substring(0, min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
+							errorMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
 						} else {
 							errorMessage += result;
 						}
@@ -1387,9 +1391,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						if (messageInError && !retryStatusAlreadyChecked && !isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
-							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
+							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
 						} else if (!messageInError) {
-							resetRetryInterval();
+							resetBackoffDelay();
 						}
 					}
 				}
@@ -1720,41 +1724,40 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
-	public void resetRetryInterval() {
+	public void resetBackoffDelay() {
 		synchronized (this) {
 			if (suspensionMessagePending) {
 				suspensionMessagePending=false;
 				throwEvent(RCV_RESUMED_MONITOR_EVENT);
 			}
-			if (retryInterval > 1) {
-				log.info("Resetting retry-delay from {} seconds to 1 second", retryInterval);
-				retryInterval = 1;
+			if (currentBackoffDelay > 1) {
+				log.info("Resetting retry-delay from {} seconds to 1 second", currentBackoffDelay);
+				currentBackoffDelay = 1;
 			}
 		}
 	}
 
-	public void increaseRetryIntervalAndWait(Throwable t, String description) {
-		int maxRetryInterval = getActualMaxRetryDelay();
-		int currentInterval;
+	public void increaseBackoffIntervalAndWait(Throwable t, String description) {
+		int currentDelay;
 		synchronized (this) {
-			currentInterval = retryInterval;
-			retryInterval = retryInterval * 2;
-			if (retryInterval > maxRetryInterval) {
-				retryInterval = maxRetryInterval;
+			currentDelay = currentBackoffDelay;
+			currentBackoffDelay = currentBackoffDelay * 2;
+			if (currentBackoffDelay > maxBackoffDelay) {
+				currentBackoffDelay = maxBackoffDelay;
 			}
 		}
-		if (currentInterval>1) {
-			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		if (currentDelay>1) {
+			error(description+", will continue retrieving messages in [" + currentDelay + "] seconds", t);
 		} else {
-			log.info("{}, will continue retrieving messages in [{}] seconds. Details: {}", description, currentInterval, t != null ? t.getMessage() : "NA");
+			log.info("{}, will continue retrieving messages in [{}] seconds. Details: {}", description, currentDelay, t != null ? t.getMessage() : "NA");
 		}
 		synchronized (this) {
-			if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
+			if (currentDelay*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
 				suspensionMessagePending=true;
 				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			}
 		}
-		suspendReceiver(currentInterval);
+		suspendReceiverThread(currentDelay);
 	}
 
 	/**
@@ -1768,35 +1771,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			return getTransactionTimeout();
 		}
 		if (txManager instanceof AbstractPlatformTransactionManager platformTransactionManager) {
+			// In practice this condition will always be true, but in theory it could be false so I don't do the cast always.
 			return platformTransactionManager.getDefaultTimeout();
 		}
+		// Default for the rare case the above cast might fail.
 		return AppConstants.getInstance(configurationClassLoader).getInt("transactionmanager.defaultTransactionTimeout", 0);
-	}
-
-	/**
-	 * Derive the maximum retry delay to use for this receiver, based on the configured max retry
-	 * delay for the receiver, the global default max retry delay, and the transaction timeout.
-	 * The actual maximum retry delay can never be more than half the {@link #getActualTransactionTimeout()}.
-	 *
-	 * @return Maximum retry delay in seconds.
-	 */
-	private int getActualMaxRetryDelay() {
-		int actualMaxRetryDelay;
-		int actualTransactionTimeout = getActualTransactionTimeout();
-		if (isTransacted() && actualTransactionTimeout > 0) {
-			actualMaxRetryDelay = min(maxRetryDelay, actualTransactionTimeout / 2);
-			log.debug("{} Max retry delay set to {} seconds to avoid automatic transaction timeout due to delay", this::getLogPrefix, ()->actualMaxRetryDelay);
-		} else {
-			actualMaxRetryDelay = maxRetryDelay;
-		}
-		return actualMaxRetryDelay;
 	}
 
 	/**
 	 * Suspend the receiver for {@code delayTimeInSeconds} seconds
 	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
 	 */
-	protected void suspendReceiver(int delayTimeInSeconds) {
+	protected void suspendReceiverThread(int delayTimeInSeconds) {
 		int currentInterval = delayTimeInSeconds;
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
@@ -2148,7 +2134,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (maxRetries == null) {
 			maxRetries = i;
 		} else {
-			maxRetries = max(maxRetries, i);
+			maxRetries = Math.max(maxRetries, i);
 		}
 	}
 
@@ -2262,24 +2248,27 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * message before processing the next message or retrying the failed message.
 	 * This is so that errors coming from external systems so not overload those external systems.
 	 * <p>
-	 *     The delay doubles after every failure, until the maximum set here is reached. If the transaction
-	 *     timeout can be determined, then the retry-delay is capped by half the transaction timeout to
+	 *     The delay doubles after every failure, until the maximum set here is reached. See:
+	 *     <a href="https://en.wikipedia.org/wiki/Exponential_backoff">https://en.wikipedia.org/wiki/Exponential_backoff</a>.
+	 * </p>
+	 * <p>
+	 *     If the transaction timeout can be determined, then the backoff-delay is capped by half the transaction timeout to
 	 *     avoid messages automatically timing out.
 	 * </p>
 	 * <p>
-	 *     There is no delay after a message is successfully processed. After a message is successfully processed,
-	 *     the actual retry-delay is reset to 1 second.
+	 *     There is no backoff-time after a message is successfully processed. After a message is successfully processed,
+	 *     the actual backoff-time is reset to 1 second.
 	 * </p>
 	 * <p>
 	 *     If set to 0, then there is no delay after messages that had an error.
 	 * </p>
 	 * <p>
-	 *     If this is not set on the receiver, then a default is taken from the configuration property {@code receiver.defaultMaxRetryDelay} which
-	 *     defaults to 100 seconds.
+	 *     If this is not set on the receiver, then a default is taken from the configuration property {@literal ${receiver.defaultMaxBackoffDelay}} which
+	 *     defaults to 60 seconds.
 	 * </p>
-	 * @param maxRetryDelay Maximum delay in seconds before retrying a message, after an error occurred during processing.
+	 * @param maxBackoffDelaySeconds Maximum backoff-time in seconds before retrying a message, after an error occurred during processing.
 	 */
-	public void setMaxRetryDelay(Integer maxRetryDelay) {
-		this.maxRetryDelay = maxRetryDelay;
+	public void setMaxBackoffDelay(Integer maxBackoffDelaySeconds) {
+		this.maxBackoffDelay = maxBackoffDelaySeconds;
 	}
 }

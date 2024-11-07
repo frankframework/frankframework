@@ -77,10 +77,12 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -89,6 +91,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Lombok;
 
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
@@ -181,7 +184,7 @@ public class ReceiverTest {
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
-		doNothing().when(receiver).suspendReceiver(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		DummySender sender = configuration.createBean(DummySender.class);
 		receiver.setSender(sender);
 		return receiver;
@@ -229,7 +232,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setNumThreads(2);
 		// To speed up test, we don't actually sleep
-		doNothing().when(receiver).suspendReceiver(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		return receiver;
 	}
 
@@ -1335,5 +1338,42 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(result, message);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"500, 50, true",
+			"50, 50, false",
+			"40, 40, false"
+	})
+	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) throws Exception {
+		// Arrange
+		Adapter adapter = new Adapter();
+		adapter.setName("adapter");
+		ConfigurationWarnings configWarnings = new ConfigurationWarnings();
+		ApplicationContext applicationContext = mock();
+		when(applicationContext.getClassLoader()).thenReturn(this.getClass().getClassLoader());
+		when(applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class)).thenReturn(configWarnings);
+		adapter.setApplicationContext(applicationContext);
+		configWarnings.setApplicationContext(applicationContext);
+		configWarnings.afterPropertiesSet();
+
+		Receiver<String> receiver = new Receiver<>();
+
+		receiver.setAdapter(adapter);
+		receiver.setMaxBackoffDelay(maxBackoffDelay);
+		receiver.setTransactionTimeout(100);
+
+		// Act
+		int actualBackoffDelay = receiver.calculateAdjustedMaxBackoffDelay(maxBackoffDelay);
+
+		// Assert
+		assertEquals(expectedBackoffDelay, actualBackoffDelay);
+		if (expectConfigWarning) {
+			assertEquals(1, configWarnings.size(), "There should have been exactly 1 config warning");
+			assertThat(configWarnings.get(0), containsString("Maximum backoff delay reduced"));
+		} else {
+			assertTrue(configWarnings.isEmpty(), "There should not have been any config warnings");
+		}
 	}
 }

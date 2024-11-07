@@ -12,7 +12,7 @@ Upcoming (9.0)
 - The default `ldap-role-mapping.properties` file and `ldap.auth.<role name>` properties have been removed.
 - Receiver configuration property `maxDeliveries` has been deprecated. Instead, configure `maxRetries`. For backwards compatibility, if you have configured `maxDeliveries` this will set `maxRetries` to the same value. See the Frank!Doc for these properties in the Receiver for more information.
 - Fix the exponential delay after errors in message processing. This feature has not worked for an unknown time. There might be potential problems with transactions having an unexpected timeout due to this increased delay, which could result in an unrecoverable error situation. For this reason the delay is maximum half of the configured transaction timeout duration. However, this might not always be sufficient for each process and the transaction timeout can not always be determined so please watch out for transaction timeout errors that might happen after a number of retries and see the next bullet point for remediation.
-- To avoid the above unexpected transaction timeouts, the maximum delay after errors has been made configurable. This can be configured for the whole configuration with the property `receiver.defaultMaxRetryDelay`, or per receiver with the attribute `maxRetryDelay`. The value is in seconds. The default is 100 seconds.
+- To avoid the above unexpected transaction timeouts, the maximum delay after errors has been made configurable. This can be configured for the whole configuration with the property `receiver.defaultMaxBackoffDelay`, or per receiver with the attribute `maxBackoffDelay`. The value is in seconds. The default is 100 seconds.
 
 
 8.3.0 - Oct 10th, 2024

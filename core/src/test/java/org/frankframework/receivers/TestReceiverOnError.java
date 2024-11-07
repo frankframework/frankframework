@@ -85,7 +85,7 @@ public class TestReceiverOnError {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
 		configuration.autowireByName(listener);
-		doNothing().when(receiver).suspendReceiver(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);

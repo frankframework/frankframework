@@ -15,10 +15,11 @@
 */
 package org.frankframework.core;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -65,10 +66,10 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	/**
 	 * Set transactionTimeout in seconds.
 	 *
-	 * @param i Time in seconds after which a transaction will fail.
+	 * @param transactionTimeoutSeconds Time in seconds after which a transaction will fail.
 	 */
 	@Override
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
+	public void setTransactionTimeout(int transactionTimeoutSeconds) {
+		transactionTimeout = transactionTimeoutSeconds;
 	}
 }
