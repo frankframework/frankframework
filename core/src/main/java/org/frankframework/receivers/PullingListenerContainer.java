@@ -223,9 +223,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					threadContext = listener.openThread();
 					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
-					int deliveryCount=0;
 					boolean messageHandled = false;
-					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {
@@ -311,20 +309,16 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 
 						try {
-							messageId = rawMessage.getId();
-							if (receiver.getMaxRetries()>=0) {
-								deliveryCount = receiver.getDeliveryCount(rawMessage);
-							}
-							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
-								try (PipeLineSession session = new PipeLineSession()) {
-									session.putAll(threadContext);
+							try (PipeLineSession session = new PipeLineSession()) {
+								session.putAll(threadContext);
+								receiver.updateMessageReceiveCount(rawMessage);
+								if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
 									receiver.processRawMessage(listener, rawMessage, session, true);
+								} else {
+									Instant receivedDate = Instant.now();
+									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(rawMessage));
+									receiver.moveInProcessToError(rawMessage, session, receivedDate, errorMessage, Receiver.TXREQUIRED);
 								}
-							} else {
-								Instant receivedDate = Instant.now();
-								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
-								receiver.moveInProcessToError(rawMessage, threadContext, receivedDate, errorMessage, Receiver.TXREQUIRED);
-								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 							}
 							messageHandled = true;
 							if (txStatus != null) {
@@ -368,11 +362,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
-						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
+						boolean noMoreRetries = receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(rawMessage);
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
-						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
-						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
+						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(rawMessage));
+						inProcessStateManager.changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);
 							txStatus = null;

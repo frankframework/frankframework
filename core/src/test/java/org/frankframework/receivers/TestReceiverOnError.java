@@ -23,8 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
@@ -81,8 +83,9 @@ public class TestReceiverOnError {
 
 	private Receiver<String> setupReceiver(MockListenerBase listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
 		configuration.autowireByName(listener);
+		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
