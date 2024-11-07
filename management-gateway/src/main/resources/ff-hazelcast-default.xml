@@ -295,6 +295,7 @@
                 <package>org.springframework.security.authentication</package>
                 <package>org.springframework.security.core.authority</package>
                 <package>org.springframework.security.web.authentication</package>
+                <package>org.springframework.security.core.userdetails</package>
             </whitelist>
         </java-serialization-filter>
     </serialization>
