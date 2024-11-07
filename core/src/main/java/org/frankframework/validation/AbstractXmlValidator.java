@@ -127,7 +127,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		}
 	}
 
-	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public AbstractValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug("{} removing contents of sessionKey [{}]", logPrefix, getReasonSessionKey());
@@ -150,7 +150,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
 	 * @throws XmlValidatorException, when configured to do so
 	 */
-	public ValidationResult finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
+	public ValidationResult finalizeValidation(AbstractValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = context.getErrorHandler();
 		ValidationResult result;
 		if (t != null) {
@@ -184,7 +184,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return result;
 	}
 
-	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException, PipeRunException;
 	public abstract List<XSModel> getXSModels();
 
 	/**
@@ -194,12 +194,12 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	public ValidationResult validate(Object input, PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
+		AbstractValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, validatorHandler, null, context);
 	}
 
-	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException {
+	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, AbstractValidationContext context) throws XmlValidatorException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -216,7 +216,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return validate(is, validatorHandler, session, context);
 	}
 
-	public ValidationResult validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public ValidationResult validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, AbstractValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {

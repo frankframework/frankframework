@@ -29,7 +29,7 @@ import org.frankframework.util.LogUtil;
 @Tag("slow")
 @Tag("unstable")
 @Timeout(value = 180, unit = TimeUnit.SECONDS)
-public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
+public abstract class StatusRecordingTransactionManagerTestBase<S extends AbstractStatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public String STATUS_FILE = "status.txt";

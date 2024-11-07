@@ -18,16 +18,18 @@ package org.frankframework.configuration;
 import java.util.List;
 
 import jakarta.annotation.Priority;
+
 import org.apache.logging.log4j.Logger;
-import org.frankframework.lifecycle.IbisInitializer;
-import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+
+import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.util.LogUtil;
 
 @IbisInitializer
 @Priority(Integer.MAX_VALUE)
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class ApplicationWarnings extends ApplicationWarningsBase {
+public class ApplicationWarnings extends AbstractApplicationWarnings {
 	private static final Logger LOG = LogUtil.getLogger(ApplicationWarnings.class);
 
 	//Only allow static references to this class to ensure no objects are stored elsewhere

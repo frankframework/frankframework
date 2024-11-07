@@ -35,7 +35,7 @@ import org.frankframework.stream.Message;
  * Processor that limits the number of parallel pipe threads.
  * @author Jaco de Groot
  */
-public class LimitingParallelExecutionPipeProcessor extends PipeProcessorBase {
+public class LimitingParallelExecutionPipeProcessor extends AbstractPipeProcessor {
 
 	private final Map<IPipe, ResourceLimiter> pipeThreadCounts = new ConcurrentHashMap<>();
 

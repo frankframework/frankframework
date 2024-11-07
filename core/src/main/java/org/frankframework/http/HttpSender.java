@@ -30,7 +30,6 @@ import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 
-import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -56,6 +55,8 @@ import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -79,7 +80,7 @@ import org.frankframework.util.XmlUtils;
  * @since 7.0
  * @version 2.0
  */
-public class HttpSender extends HttpSenderBase {
+public class HttpSender extends AbstractHttpSender {
 
 	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;

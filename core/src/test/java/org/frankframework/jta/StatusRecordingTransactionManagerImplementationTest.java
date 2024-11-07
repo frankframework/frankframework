@@ -29,12 +29,12 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 
-public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManager> {
+public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<AbstractStatusRecordingTransactionManager> {
 
 	private static final String SECONDARY_PRODUCT = "H2";
 
 	protected SpringTxManagerProxy txManager;
-	protected StatusRecordingTransactionManager txManagerReal;
+	protected AbstractStatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
 	protected DatabaseTestEnvironment env;
 
@@ -53,10 +53,10 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	}
 
 	@Override
-	protected StatusRecordingTransactionManager createTransactionManager() {
+	protected AbstractStatusRecordingTransactionManager createTransactionManager() {
 		configuration = env.getConfiguration();
 		txManager = (SpringTxManagerProxy) env.getTxManager();
-		txManagerReal = configuration.getBean(StatusRecordingTransactionManager.class, "txReal");
+		txManagerReal = configuration.getBean(AbstractStatusRecordingTransactionManager.class, "txReal");
 		statusFile = txManagerReal.getStatusFile();
 		tmUidFile = txManagerReal.getUidFile();
 		log.debug("statusFile [{}], tmUidFile [{}]", statusFile, tmUidFile);

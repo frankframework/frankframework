@@ -23,7 +23,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.management.Action;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.EnumUtils;
 
 /**
@@ -31,7 +31,7 @@ import org.frankframework.util.EnumUtils;
  * 
  * {@inheritDoc}
  */
-public class ActionJob extends JobDef {
+public class ActionJob extends AbstractJobDef {
 	private @Getter @Setter AdapterManager adapterManager;
 	private @Getter String configurationName;
 	private @Getter String adapterName;

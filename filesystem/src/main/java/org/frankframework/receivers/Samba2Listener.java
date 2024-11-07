@@ -15,12 +15,12 @@
 */
 package org.frankframework.receivers;
 
-import org.frankframework.filesystem.FileSystemListener;
+import org.frankframework.filesystem.AbstractFileSystemListener;
 import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Listener extends FileSystemListener<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
+public class Samba2Listener extends AbstractFileSystemListener<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	@Override
 	protected Samba2FileSystem createFileSystem() {

@@ -20,7 +20,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
@@ -31,15 +39,9 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-public class TestServiceListener extends FrankApiBase {
+public class TestServiceListener extends AbstractFrankApi {
 
 	@AllowAllIbisUserRoles
 	@Relation("testing")

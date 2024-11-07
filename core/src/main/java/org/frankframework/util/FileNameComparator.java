@@ -23,7 +23,7 @@ import java.io.File;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class FileNameComparator extends NameComparatorBase<File> {
+public class FileNameComparator extends AbstractNameComparator<File> {
 
 	public static int compareFilenames(File f0, File f1) {
 		if (f0.isDirectory()!=f1.isDirectory()) {

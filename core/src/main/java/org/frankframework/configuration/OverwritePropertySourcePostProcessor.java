@@ -17,7 +17,7 @@ package org.frankframework.configuration;
 
 import java.util.Properties;
 
-import org.frankframework.lifecycle.CustomPropertySourcePostProcessor;
+import org.frankframework.lifecycle.AbstractPropertySourcePostProcessor;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -26,7 +26,7 @@ import org.frankframework.util.AppConstants;
  *
  * @author Jaco de Groot
  */
-public class OverwritePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
+public class OverwritePropertySourcePostProcessor extends AbstractPropertySourcePostProcessor {
 	private String propertyName;
 	private String propertyValue;
 

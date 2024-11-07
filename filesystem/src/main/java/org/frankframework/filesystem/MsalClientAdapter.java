@@ -40,7 +40,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.HttpResponseHandler;
-import org.frankframework.http.HttpSenderBase;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -53,7 +53,7 @@ import org.frankframework.util.LogUtil;
  *
  */
 @Protected
-public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
+public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient {
 	private static final String METHOD_SESSION_KEY = "HTTP_METHOD";
 	private static final String REQUEST_HEADERS_SESSION_KEY = "HTTP_REQUEST_HEADERS";
 	private static final String RESPONSE_HEADERS_SESSION_KEY = "HTTP_RESPONSE_HEADERS";

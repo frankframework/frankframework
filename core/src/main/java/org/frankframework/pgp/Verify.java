@@ -24,7 +24,7 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildDecryptionInputStreamAPI;
 import org.frankframework.configuration.ConfigurationException;
 
-public class Verify extends PGPAction {
+public class Verify extends AbstractPGPAction {
 	private final String[] senders;
 
 	public Verify(String[] publicKey, String secretKey, String secretPassword, String[] senders) throws ConfigurationException {

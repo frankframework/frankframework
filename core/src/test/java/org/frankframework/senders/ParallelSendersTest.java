@@ -140,7 +140,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertFalse(result.isSuccess());
 	}
 
-	private static class ExceptionThrowingSender extends SenderBase {
+	private static class ExceptionThrowingSender extends AbstractSender {
 		@Override
 		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			throw new SenderException("fakeException");
