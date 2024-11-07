@@ -33,8 +33,9 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(cmisEvent == null)
+		if (cmisEvent == null) {
 			throw new ConfigurationException("no event has been defined to listen on");
+		}
 	}
 
 	@Override

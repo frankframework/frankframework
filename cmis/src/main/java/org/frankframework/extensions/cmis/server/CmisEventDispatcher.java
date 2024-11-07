@@ -18,6 +18,7 @@ package org.frankframework.extensions.cmis.server;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
@@ -32,7 +33,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.extensions.cmis.CmisEventListener;
 import org.frankframework.extensions.cmis.CmisUtils;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -58,9 +58,8 @@ public class CmisEventDispatcher {
 	public void registerEventListener(CmisEventListener listener)  {
 		CmisEvent event = listener.getEvent();
 
-		if (event == null) {
-			throw new LifecycleException("cannot register EventListener without event to listen on");
-		}
+		// This is already checked in CmisEventListener#configure()
+		Objects.requireNonNull(event);
 
 		log.info("registering CmisEvent [{}] on dispatcher", event::name);
 		eventListeners.put(event, listener);

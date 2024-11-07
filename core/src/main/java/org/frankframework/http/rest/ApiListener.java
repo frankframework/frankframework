@@ -182,7 +182,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-
 	@Override
 	public void start() {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);

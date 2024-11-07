@@ -105,16 +105,10 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	@Override
 	public void start() {
-		try {
-			super.start();
-		} catch (LifecycleException e) {
-			throw new LifecycleException("error opening listener [" + getName() + "]", e);
-		}
-		try {
-			if (getSender() != null)
-				getSender().start();
-		} catch (LifecycleException e) {
-			throw new LifecycleException("error opening sender [" + getSender().getName() + "]", e);
+		super.start();
+
+		if (getSender() != null) {
+			getSender().start();
 		}
 	}
 

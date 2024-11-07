@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -28,14 +29,11 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.openapi.OpenApiGenerator;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.Json2XmlValidator;
 
 /**
@@ -241,9 +239,8 @@ public class ApiServiceDispatcher {
 	public void registerServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
 
-		if (StringUtils.isBlank(uriPattern)) {
-			throw new LifecycleException("uriPattern cannot be null or empty");
-		}
+		// This is already checked in ApiListener#configure()
+		Objects.requireNonNull(uriPattern);
 
 		synchronized(patternClients) {
 			for(ApiListener.HttpMethod method : listener.getAllMethods()){
