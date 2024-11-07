@@ -65,6 +65,10 @@ public class RuntimeAttributeAdvice {
 			Message message = doPipeInformation.message;
 			PipeLineSession session = doPipeInformation.session;
 
+			if (session == null) {
+				return defaultValue;
+			}
+
 			final ParameterValue value = parameterList.getValue(null, parameterList.findParameter(methodName), message, session, true);
 
 			return value.asLongValue((Long) defaultValue);
@@ -80,7 +84,7 @@ public class RuntimeAttributeAdvice {
 
 		this.executions.put(pjp.getThis(), new DoPipeInformation(message, session));
 		final Object result = pjp.proceed();
-//		this.executions.remove(pjp.getThis());
+		this.executions.remove(pjp.getThis());
 
 		return result;
 	}
