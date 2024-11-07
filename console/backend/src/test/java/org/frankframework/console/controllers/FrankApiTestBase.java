@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.frankframework.management.bus.message.MessageBase;
+import jakarta.annotation.Nullable;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import jakarta.annotation.Nullable;
+import org.frankframework.management.bus.message.MessageBase;
 
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)

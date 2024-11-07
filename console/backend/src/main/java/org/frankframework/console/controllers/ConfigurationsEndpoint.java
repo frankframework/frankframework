@@ -22,18 +22,8 @@ import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.ApiException;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.management.Action;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.util.HttpUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,12 +37,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.ApiException;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.management.Action;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.HttpUtils;
+
 @RestController
-public class ConfigurationsEndpoint extends FrankApiBase {
+public class ConfigurationsEndpoint {
+
+	private final FrankApiService frankApiService;
 
 	private static final String PATH_VARIABLE_VERSION = "version";
 
 	private static final String BUS_HEADER_VERSION = "version";
+
+	public ConfigurationsEndpoint(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("application")
@@ -62,14 +70,14 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 												 @RequestParam(value = "flow", required = false) String flow) throws ApiException {
 		if (StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-			return callSyncGateway(builder);
+			return frankApiService.callSyncGateway(builder);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		if (loaded) {
 			builder.addHeader("loaded", true);
 		}
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
@@ -82,7 +90,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.FULLRELOAD.name());
-			callAsyncGateway(builder);
+			frankApiService.callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}
 
@@ -102,7 +110,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 			builder.addHeader("loaded", true);
 		}
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@PermitAll
@@ -112,7 +120,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	public ResponseEntity<?> getConfigurationHealth(@PathVariable("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -122,7 +130,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 	public ResponseEntity<?> getConfigurationFlow(@PathVariable("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -136,7 +144,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.RELOAD.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-			callAsyncGateway(builder);
+			frankApiService.callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}
 
@@ -152,7 +160,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
@@ -183,8 +191,10 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 				throw new ApiException("autoreload must be of type boolean");
 			}
 		}
+
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
-		return callSyncGateway(builder);
+
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
@@ -225,7 +235,7 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -238,7 +248,8 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BUS_HEADER_VERSION, version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
-		return callSyncGateway(builder);
+
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -251,7 +262,8 @@ public class ConfigurationsEndpoint extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BUS_HEADER_VERSION, version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
-		return callAsyncGateway(builder);
+
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	public record ConfigurationMultipartBody(
