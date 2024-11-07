@@ -16,5 +16,4 @@
 
 	<partition-group enabled="true" group-type="ZONE_AWARE" />
 
-	
 </hazelcast>
