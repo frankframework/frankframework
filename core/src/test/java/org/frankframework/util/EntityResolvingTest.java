@@ -22,7 +22,7 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.AbstractXmlValidator;
 import org.frankframework.validation.DummySchemasProviderImpl;
 import org.frankframework.validation.JavaxXmlValidator;
-import org.frankframework.validation.ValidationContext;
+import org.frankframework.validation.AbstractValidationContext;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorErrorHandler;
 
@@ -127,7 +127,7 @@ public class EntityResolvingTest {
 		instance.start();
 
 		PipeLineSession session = new PipeLineSession();
-		ValidationContext context = instance.createValidationContext(session, null, null);
+		AbstractValidationContext context = instance.createValidationContext(session, null, null);
 		ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
 		StringReader sr = new StringReader(xmlIn);
 		InputSource is = new InputSource(sr);

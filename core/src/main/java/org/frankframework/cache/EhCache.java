@@ -21,6 +21,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -36,7 +37,7 @@ import org.frankframework.util.AppConstants;
  * @since   4.11
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class EhCache<V> extends CacheAdapterBase<V> {
+public class EhCache<V> extends AbstractCacheAdapter<V> {
 
 	private static final String KEY_PREFIX = "cache.default.";
 	private static final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";

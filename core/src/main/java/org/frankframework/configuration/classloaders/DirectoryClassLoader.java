@@ -23,7 +23,7 @@ import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.AppConstants;
 
-public class DirectoryClassLoader extends ClassLoaderBase {
+public class DirectoryClassLoader extends AbstractClassLoader {
 	private File directory = null;
 
 	public DirectoryClassLoader(ClassLoader parent) {

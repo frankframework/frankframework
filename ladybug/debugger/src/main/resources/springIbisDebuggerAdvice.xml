@@ -145,7 +145,7 @@
 					execution(
 						*
 						org.frankframework.processors.CacheSenderWrapperProcessor.sendMessage(
-							org.frankframework.senders.SenderWrapperBase,
+							org.frankframework.senders.AbstractSenderWrapper,
 							org.frankframework.stream.Message,
 							org.frankframework.core.PipeLineSession
 						)

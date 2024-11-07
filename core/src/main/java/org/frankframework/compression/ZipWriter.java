@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+
+import org.frankframework.collection.AbstractCollectorPipe.Action;
 import org.frankframework.collection.CollectionException;
-import org.frankframework.collection.CollectorPipeBase.Action;
 import org.frankframework.collection.ICollector;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -30,7 +32,6 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.springframework.http.MediaType;
 
 public class ZipWriter implements ICollector<MessageZipEntry> {
 

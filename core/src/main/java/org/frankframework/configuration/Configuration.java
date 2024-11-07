@@ -22,13 +22,8 @@ import java.util.List;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -42,10 +37,15 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
@@ -54,7 +54,7 @@ import org.frankframework.lifecycle.LazyLoadingEventListener;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -386,19 +386,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an {@link IJob job} for scheduling at the configuration.
+	 * Add an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
 	 * information from the parameters, after checking the
 	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
 	 * <p>See the <a href="https://www.quartz-scheduler.org/">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object
-	 * @see JobDef for a description of Cron triggers
+	 * @see AbstractJobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
 	@Deprecated // deprecated to force use of Scheduler element
-	public void registerScheduledJob(IJob jobdef) {
-		scheduleManager.registerScheduledJob(jobdef);
+	public void addScheduledJob(IJob jobdef) {
+		scheduleManager.addScheduledJob(jobdef);
 	}
 
 	/**

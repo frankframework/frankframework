@@ -18,19 +18,21 @@ package org.frankframework.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.pipes.ValidatorBase;
+import org.frankframework.pipes.AbstractValidator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Wrapper for the response validator. It has its own name and forwards, but delegates the actual work to the original validator.
  * It overrides the stop and start method to prevent the original validator from being started and stopped.
  */
-public abstract class AbstractResponseValidatorWrapper<V extends ValidatorBase> implements IValidator {
+public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidator> implements IValidator {
 
 	private @Getter @Setter String name;
 

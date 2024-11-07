@@ -270,7 +270,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  */
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
-public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
+public class FrankSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator {
 
 	public static final String TARGET_PARAM_NAME = "target";
 	public static final String SCOPE_PARAM_NAME = "scope";

@@ -27,12 +27,16 @@ import java.util.concurrent.Phaser;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
@@ -55,13 +59,10 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
 
 /**
- * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
- *
- * <br/>
+ * Base class to send a message to a Sender for each item returned by a configurable iterator.
+* <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
@@ -70,7 +71,6 @@ import org.xml.sax.SAXException;
  *       ...
  *  &lt;/results&gt;
  * </pre>
- *
  *
  * For more configuration options, see {@link MessageSendingPipe}.
  * <br/>

@@ -292,9 +292,9 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	/**
-	 * The query type. For stored procedures, valid query types are {@link JdbcQuerySenderBase.QueryType#SELECT} and {@link JdbcQuerySenderBase.QueryType#OTHER}.
-	 * Use {@link JdbcQuerySenderBase.QueryType#SELECT} when your stored procedure returns a row set (not supported by Oracle and PostgreSQL).
-	 * Use {@link JdbcQuerySenderBase.QueryType#OTHER} when your stored procedure returns values via <code>OUT</code> or <code>INOUT</code> parameters, or does not return
+	 * The query type. For stored procedures, valid query types are {@link AbstractJdbcQuerySender.QueryType#SELECT} and {@link AbstractJdbcQuerySender.QueryType#OTHER}.
+	 * Use {@link AbstractJdbcQuerySender.QueryType#SELECT} when your stored procedure returns a row set (not supported by Oracle and PostgreSQL).
+	 * Use {@link AbstractJdbcQuerySender.QueryType#OTHER} when your stored procedure returns values via <code>OUT</code> or <code>INOUT</code> parameters, or does not return
 	 * anything at all.
 	 * <p>
 	 * Using any other value will be rejected.

@@ -4,7 +4,7 @@
 		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
 	>
 		<receiver
-			transactionTimeout="2"
+			transactionTimeout="20"
 			transactionAttribute="Required"
 		>
 			<listener

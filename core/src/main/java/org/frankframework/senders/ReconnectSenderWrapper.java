@@ -43,7 +43,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Niels Meijer
  */
-public class ReconnectSenderWrapper extends SenderWrapperBase {
+public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 
 	/** specification of sender to send messages with */
 	private @Setter ISender sender;

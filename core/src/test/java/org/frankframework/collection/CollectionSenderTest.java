@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.SenderTestBase;
 
-class CollectionSenderTest extends SenderTestBase<CollectorSenderBase<TestCollector, TestCollectorPart>> {
+class CollectionSenderTest extends SenderTestBase<AbstractCollectorSender<TestCollector, TestCollectorPart>> {
 
 	private final TestCollector collector = new TestCollector();
 
 	@Override
-	public CollectorSenderBase<TestCollector, TestCollectorPart> createSender() {
-		return new CollectorSenderBase<>() {
+	public AbstractCollectorSender<TestCollector, TestCollectorPart> createSender() {
+		return new AbstractCollectorSender<>() {
 			@Override
 			protected Collection<TestCollector, TestCollectorPart> getCollection(PipeLineSession session) {
 				return new Collection<>(collector);

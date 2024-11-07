@@ -67,7 +67,7 @@ import org.frankframework.xml.XmlWriter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends SenderWithParametersBase implements IThreadCreator {
+public class XsltSender extends AbstractSenderWithParameters implements IThreadCreator {
 
 	public final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD= TransformerPool.OutputType.XML;
 	public final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD= TransformerPool.OutputType.TEXT;
@@ -208,7 +208,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 				pvl = paramList.getValues(input, session);
 			}
 		} catch (ParameterException e) {
-			throw new TransformerException("unable to resolve input parameters for transformerHandler");
+			throw new TransformerException("unable to resolve input parameters for transformerHandler", e);
 		}
 
 		try {

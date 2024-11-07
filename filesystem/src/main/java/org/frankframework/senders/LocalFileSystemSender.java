@@ -18,7 +18,7 @@ package org.frankframework.senders;
 import java.nio.file.Path;
 
 import org.frankframework.doc.ReferTo;
-import org.frankframework.filesystem.FileSystemSender;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.LocalFileSystem;
 
 /**
@@ -33,7 +33,7 @@ import org.frankframework.filesystem.LocalFileSystem;
  *     The string value of these parameters will be used as value of the custom metadata attribute.
  * </p>
  */
-public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
+public class LocalFileSystemSender extends AbstractFileSystemSender<Path, LocalFileSystem> {
 
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());

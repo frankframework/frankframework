@@ -30,7 +30,7 @@ import org.frankframework.stream.Message;
  * @since   4.9
  */
 @Category(Category.Type.BASIC)
-public class EchoSender extends SenderWithParametersBase {
+public class EchoSender extends AbstractSenderWithParameters {
 
 	private boolean synchronous=true;
 

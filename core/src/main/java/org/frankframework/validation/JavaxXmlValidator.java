@@ -122,7 +122,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException, PipeRunException {
 		Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
 		return schema.newValidatorHandler();
 	}
@@ -200,7 +200,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 }
 
-class JavaxValidationContext extends ValidationContext {
+class JavaxValidationContext extends AbstractValidationContext {
 
 	String schemasId;
 	Schema schema;

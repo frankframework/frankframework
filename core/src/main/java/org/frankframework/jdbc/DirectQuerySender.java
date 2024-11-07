@@ -42,7 +42,7 @@ import org.frankframework.util.ClassUtils;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
+public class DirectQuerySender extends AbstractJdbcQuerySender<Connection> {
 
 	@Override
 	public void configure() throws ConfigurationException {

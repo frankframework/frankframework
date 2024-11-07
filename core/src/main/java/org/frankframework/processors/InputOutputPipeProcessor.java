@@ -51,7 +51,7 @@ import jakarta.annotation.Nullable;
  *
  * @author Jaco de Groot
  */
-public class InputOutputPipeProcessor extends PipeProcessorBase {
+public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	/**

@@ -54,7 +54,7 @@ import org.frankframework.stream.PathMessage;
  * @author Gerrit van Brakel
  *
  */
-public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
+public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	private final @Getter String domain = "LocalFilesystem";
 
 	private @Getter boolean createRootFolder = false;

@@ -4,9 +4,9 @@ import java.net.URL;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.configuration.classloaders.ClassLoaderBase;
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
 
-public class TestClassLoader extends ClassLoaderBase {
+public class TestClassLoader extends AbstractClassLoader {
 
 	public TestClassLoader(ClassLoader parent) {
 		super(parent);

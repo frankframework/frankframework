@@ -42,7 +42,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderSeries extends SenderWrapperBase {
+public class SenderSeries extends AbstractSenderWrapper {
 
 	private final List<ISender> senderList = new ArrayList<>();
 	private final Map<ISender, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();

@@ -29,7 +29,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.util.XmlUtils;
 
 public class FrankDigesterRulesTest extends Mockito {
-	private class DummyDigesterRulesParser extends DigesterRulesHandler {
+	private class DummyDigesterRulesParser extends AbstractDigesterRulesHandler {
 		private List<DigesterRule> rules = new ArrayList<>();
 
 		@Override

@@ -33,7 +33,7 @@ import org.frankframework.util.LogUtil;
 /**
  * @author Jaco de Groot
  */
-public class MonitoringPipeProcessor extends PipeProcessorBase {
+public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
