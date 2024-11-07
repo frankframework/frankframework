@@ -46,11 +46,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.ServletContextAware;
 
 import lombok.Setter;
+
+import org.frankframework.lifecycle.servlets.AbstractServletAuthenticator;
 import org.frankframework.lifecycle.servlets.AuthenticationType;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.JeeAuthenticator;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletAuthenticatorBase;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -87,7 +88,7 @@ import org.frankframework.util.StringUtil;
 public class ServletManager implements ApplicationContextAware, InitializingBean, ServletContextAware {
 
 	private ServletContext servletContext = null;
-	private final List<String> registeredRoles = new ArrayList<>(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES); // Add the default IBIS roles
+	private final List<String> registeredRoles = new ArrayList<>(AbstractServletAuthenticator.DEFAULT_IBIS_ROLES); // Add the default IBIS roles
 	private final Logger log = LogUtil.getLogger(this);
 	private final Map<String, ServletConfiguration> servlets = new HashMap<>();
 	private final Map<String, IAuthenticator> authenticators = new HashMap<>();
@@ -121,7 +122,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		Environment env = applicationContext.getEnvironment();
 		SecuritySettings.setupDefaultSecuritySettings(env);
-		allowUnsecureOptionsRequest = env.getProperty(ServletAuthenticatorBase.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
+		allowUnsecureOptionsRequest = env.getProperty(AbstractServletAuthenticator.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
 
 		addDefaultAuthenticator(AuthenticationType.CONTAINER);
 		addDefaultAuthenticator(AuthenticationType.NONE);

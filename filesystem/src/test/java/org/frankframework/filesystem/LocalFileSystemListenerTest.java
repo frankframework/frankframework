@@ -12,7 +12,7 @@ public class LocalFileSystemListenerTest extends FileSystemListenerExtraTest<Pat
 	public Path folder;
 
 	@Override
-	public FileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
+	public AbstractFileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
 		DirectoryListener result=new DirectoryListener();
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;

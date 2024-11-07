@@ -15,12 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,8 +22,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class ClassInfo extends FrankApiBase {
+public class ClassInfo extends AbstractFrankApi {
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/classinfo/{className}", produces = MediaType.APPLICATION_JSON_VALUE)

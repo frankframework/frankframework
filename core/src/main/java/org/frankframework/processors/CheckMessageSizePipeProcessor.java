@@ -29,7 +29,7 @@ import io.micrometer.core.instrument.DistributionSummary;
 /**
  * @author Jaco de Groot
  */
-public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
+public class CheckMessageSizePipeProcessor extends AbstractPipeProcessor {
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {

@@ -58,7 +58,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
- * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
+ * Worker class for {@link AbstractFileSystemPipe} and {@link AbstractFileSystemSender}.
  *
  * @ff.parameter action Overrides attribute <code>action</code>
  * @ff.parameter filename Overrides attribute <code>filename</code>. If not present, the input message is used.

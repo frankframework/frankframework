@@ -43,7 +43,7 @@ import org.quartz.JobExecutionException;
  * @see Adapter
  * @see Configuration
   */
-public class ConfiguredJob extends BaseJob {
+public class ConfiguredJob extends AbstractJob {
 
 	public static final String JOBDEF_KEY = "jobdef";
 

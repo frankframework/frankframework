@@ -48,7 +48,7 @@ import org.frankframework.util.TransformerErrorListener;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.ExceptionCatchingFilter;
+import org.frankframework.xml.AbstractExceptionCatchingFilter;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.IXmlDebugger;
 import org.frankframework.xml.NamespaceRemovingFilter;
@@ -334,7 +334,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 		result.inputHandler = new StopSensor(result.itemHandler, result.inputHandler);
 
-		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
+		result.inputHandler = new AbstractExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
 				if (e instanceof SaxTimeoutException exception) {

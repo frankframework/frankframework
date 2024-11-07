@@ -33,7 +33,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
@@ -271,7 +271,7 @@ public class QueueCreator {
 
 					try {
 						QueueUtils.invokeSetters(deleteQuerySender, queueProperties);
-						deleteQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+						deleteQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 						deleteQuerySender.setQuery("delete from " + preDelete);
 
 						deleteQuerySender.configure();
@@ -307,7 +307,7 @@ public class QueueCreator {
 					try {
 						QueueUtils.invokeSetters(prePostFixedQuerySender, queueProperties);
 						prePostFixedQuerySender.setQuery(prePostQuery);
-						prePostFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+						prePostFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 						prePostFixedQuerySender.configure();
 					} catch(Exception e) {
 						closeQueues(queues, properties, correlationId);
@@ -350,7 +350,7 @@ public class QueueCreator {
 					readQueryFixedQuerySender.setName("Test Tool query sender");
 
 					try {
-						readQueryFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+						readQueryFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 						QueueUtils.invokeSetters(readQueryFixedQuerySender, queueProperties);
 						readQueryFixedQuerySender.setQuery(readQuery);
 						readQueryFixedQuerySender.configure();

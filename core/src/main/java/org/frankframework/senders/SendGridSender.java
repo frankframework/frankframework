@@ -45,7 +45,7 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.HttpSession;
-import org.frankframework.http.HttpSessionBase;
+import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.XmlUtils;
 
@@ -55,10 +55,10 @@ import org.frankframework.util.XmlUtils;
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
-public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
+public class SendGridSender extends AbstractMailSender implements HasKeystore, HasTruststore {
 
 	private SendGrid sendGrid;
-	private HttpSessionBase httpSession;
+	private AbstractHttpSession httpSession;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -248,55 +248,55 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	//Properties inherited from HttpSessionBase
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTimeout(int i) {
 		super.setTimeout(i);
 		httpSession.setTimeout(i);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setMaxConnections(int i) {
 		httpSession.setMaxConnections(i);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setMaxExecuteRetries(int i) {
 		httpSession.setMaxExecuteRetries(i);
 	}
 
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyHost(String string) {
 		httpSession.setProxyHost(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyPort(int i) {
 		httpSession.setProxyPort(i);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyAuthAlias(String string) {
 		httpSession.setProxyAuthAlias(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyUsername(String string) {
 		httpSession.setProxyUsername(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyPassword(String string) {
 		httpSession.setProxyPassword(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyRealm(String string) {
 		httpSession.setProxyRealm(string);
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystore(String keystore) {
 		httpSession.setKeystore(keystore);
 	}
@@ -307,7 +307,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSession.setKeystoreType(keystoreType);
 	}
@@ -318,7 +318,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -329,7 +329,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystorePassword(String keystorePassword) {
 		httpSession.setKeystorePassword(keystorePassword);
 	}
@@ -340,7 +340,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSession.setKeystoreAlias(keystoreAlias);
 	}
@@ -351,7 +351,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -362,7 +362,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -373,7 +373,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
@@ -384,7 +384,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststore(String truststore) {
 		httpSession.setTruststore(truststore);
 	}
@@ -395,7 +395,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
 		httpSession.setTruststoreType(truststoreType);
 	}
@@ -406,7 +406,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		httpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
@@ -417,7 +417,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststorePassword(String truststorePassword) {
 		httpSession.setTruststorePassword(truststorePassword);
 	}
@@ -428,7 +428,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		httpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
@@ -438,7 +438,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setVerifyHostname(boolean verifyHostname) {
 		httpSession.setVerifyHostname(verifyHostname);
 	}
@@ -448,7 +448,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		httpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
@@ -458,7 +458,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
@@ -467,23 +467,23 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSession.isIgnoreCertificateExpiredException();
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setFollowRedirects(boolean b) {
 		httpSession.setFollowRedirects(b);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setStaleChecking(boolean b) {
 		httpSession.setStaleChecking(b);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setStaleTimeout(int timeout) {
 		httpSession.setStaleTimeout(timeout);
 	}
 
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProtocol(String protocol) {
 		httpSession.setProtocol(protocol);
 	}

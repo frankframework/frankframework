@@ -20,7 +20,7 @@ public class ResolveConfigurationFileTest {
 	private String configurationName;
 	private String basePath;
 	private String configurationFile;
-	private ClassLoaderBase classLoader;
+	private AbstractClassLoader classLoader;
 	private AppConstants appConstants;
 
 	private static Stream<Arguments> data() {
@@ -68,7 +68,7 @@ public class ResolveConfigurationFileTest {
 		return configurationName;
 	}
 
-	private ClassLoaderBase createClassLoader(ClassLoader parent) throws Exception {
+	private AbstractClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource("/ClassLoader/DirectoryClassLoaderRoot");
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);

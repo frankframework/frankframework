@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
  * @since   4.9
  */
 @Category(Category.Type.ADVANCED)
-public class DelaySender extends SenderBase {
+public class DelaySender extends AbstractSender {
 
 	private long delayTime=5000;
 

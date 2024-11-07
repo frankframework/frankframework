@@ -18,8 +18,10 @@ package org.frankframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
-import net.sf.ehcache.Cache;
 import org.apache.commons.lang3.StringUtils;
+
+import net.sf.ehcache.Cache;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -132,7 +134,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
  * class.
  *
  */
-class KeyTransformer extends CacheAdapterBase {
+class KeyTransformer extends AbstractCacheAdapter {
 
 	@Override
 	public void close() {

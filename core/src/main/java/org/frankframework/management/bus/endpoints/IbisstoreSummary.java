@@ -38,9 +38,9 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -71,7 +71,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 			try(PipeLineSession session = new PipeLineSession()) {
 				qs.setName("QuerySender");
 				qs.setDatasourceName(datasource);
-				qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+				qs.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 				qs.setBlobSmartGet(true);
 				qs.setAvoidLocking(true);
 				qs.configure(true);

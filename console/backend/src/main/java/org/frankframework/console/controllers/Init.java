@@ -25,8 +25,6 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,8 +36,11 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.pattern.PathPattern;
 
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+
 @RestController
-public class Init extends FrankApiBase {
+public class Init extends AbstractFrankApi {
 
 	private final RequestMappingHandlerMapping handlerMapping;
 
