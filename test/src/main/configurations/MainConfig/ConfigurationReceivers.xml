@@ -92,11 +92,51 @@
 			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
 				<forward name="ready" path="READY"/>
 				<forward name="error" path="ERROR"/>
+				<forward name="exception" path="ThrowException"/>
+				<forward name="local-sender" path="IbisLocalSender"/>
+				<forward name="java-sender" path="IbisJavaSender"/>
 			</pipe>
 
+			<pipe name="IbisLocalSender" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-ReceiverTest-child-local" />
+				<forward name="success" path="READY"/>
+			</pipe>
+
+			<pipe name="IbisJavaSender" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReceiverTest-child-service" />
+				<forward name="success" path="READY"/>
+				<!-- managed exceptions, are not caught in the sender! -->
+			</pipe>
+
+			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe" getInputFromFixedValue="managed-exception in subadapter which is unmanaged in this adapter">
+				<forward name="success" path="ERROR"/>
+			</pipe>
+
+			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe"/>
 
 		</pipeline>
 	</adapter>
 
+	<adapter name="ReceiverTest-Child" description="Test the functioning of the error-flow in ReceiverTest">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReceiverTest-child-service" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ibis4test-ReceiverTest-child-local" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+				<exit path="ERROR" state="error"/> <!-- managed exception, not caught in the sender, as it does not have this forward specified! -->
+			</exits>
+
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@child-forward" >
+				<forward name="ready" path="READY"/>
+				<forward name="error" path="ERROR"/>
+				<forward name="exception" path="ThrowException"/>
+			</pipe>
+			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe"/>
+		</pipeline>
+	</adapter>
 
 </module>
