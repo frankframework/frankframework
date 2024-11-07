@@ -44,7 +44,7 @@ public class HazelcastConfig {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		String resource = "ff-hazelcast.xml";
-		Properties properties = new PropertyLoader("hazelcast.properties");
+		Properties properties = new PropertyLoader(classLoader, "hazelcast.properties");
 		Config config = Config.loadFromClasspath(classLoader, resource, properties);
 
 		// Not recommended for production environments, and frankly better to configure one's cluster properly to begin with.
