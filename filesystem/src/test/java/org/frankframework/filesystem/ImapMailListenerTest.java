@@ -37,10 +37,10 @@ public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, G
 	}
 
 	@Override
-	public MailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> createFileSystemListener() {
+	public AbstractMailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> createFileSystemListener() {
 		greenMail.setUser(user.email, user.username, user.password);
 
-		MailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> listener = new MailListener<>() {
+		AbstractMailListener<Message, MimeBodyPart, GreenmailImapTestFileSystem> listener = new AbstractMailListener<>() {
 			@Override
 			protected GreenmailImapTestFileSystem createFileSystem() {
 				return getImapFileSystem();

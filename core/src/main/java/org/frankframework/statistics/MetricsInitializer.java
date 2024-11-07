@@ -48,7 +48,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.HttpSession;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
@@ -204,7 +204,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 			return "adapter";
 		} else if (frankElement instanceof ISender) {
 			return "sender";
-		} else if (frankElement instanceof JobDef) {
+		} else if (frankElement instanceof AbstractJobDef) {
 			return "schedule";
 		} else if (frankElement instanceof HttpSession) {
 			// See `org.frankframework.http.HttpSessionBase.buildHttpClient` where this might use the HttpSession as frankElement

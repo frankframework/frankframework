@@ -17,6 +17,12 @@ package org.frankframework.console.controllers;
 
 import java.util.Map;
 
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
@@ -24,14 +30,9 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class IbisstoreSummary extends FrankApiBase {
+public class IbisstoreSummary extends AbstractFrankApi {
 
 	@AllowAllIbisUserRoles
 	@Relation("jdbc")

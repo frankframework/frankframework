@@ -24,11 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.Nonnull;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
-import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
-import org.frankframework.util.RunState;
-import org.frankframework.util.StringUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
@@ -36,6 +31,12 @@ import org.springframework.context.LifecycleProcessor;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.core.Adapter;
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
+import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
+import org.frankframework.util.RunState;
+import org.frankframework.util.StringUtil;
 
 /**
  * Manager which holds all adapters within a {@link Configuration}.
@@ -48,7 +49,7 @@ import lombok.Setter;
 public class AdapterManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
+	private List<? extends AbstractAdapterLifecycleWrapper> adapterLifecycleWrappers;
 
 	private final List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 	private final List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
@@ -89,7 +90,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		}
 
 		if(adapterLifecycleWrappers != null) {
-			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
+			for (AbstractAdapterLifecycleWrapper adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.removeAdapter(adapter);
 			}
 		}
@@ -99,7 +100,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		log.debug("removed adapter [{}] from AdapterManager [{}]", name, this);
 	}
 
-	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
+	public void setAdapterLifecycleWrappers(List<? extends AbstractAdapterLifecycleWrapper> adapterLifecycleWrappers) {
 		this.adapterLifecycleWrappers = adapterLifecycleWrappers;
 	}
 
@@ -144,7 +145,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		for (Adapter adapter : getAdapterList()) {
 			try {
 				if(adapterLifecycleWrappers != null) {
-					for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
+					for (AbstractAdapterLifecycleWrapper adapterProcessor : adapterLifecycleWrappers) {
 						adapterProcessor.addAdapter(adapter);
 					}
 				}

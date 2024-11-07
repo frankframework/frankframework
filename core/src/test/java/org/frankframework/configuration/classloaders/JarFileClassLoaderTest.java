@@ -103,7 +103,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	@Test
 	public void loadCustomClassUsingForName() throws Exception {
-		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
 		classLoader.configure(ibisContext, "myConfig");
 
@@ -112,7 +112,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Class<?> clazz = Class.forName("org.frankframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
 		ClassUtils.newInstance(clazz);
 
-		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
 		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
@@ -121,7 +121,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	@Test
 	public void loadCustomClassUsingLoadClass() throws Exception {
-		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
 		classLoader.configure(ibisContext, "myConfig");
 
@@ -130,7 +130,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Class<?> clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); //With inner-class
 		ClassUtils.newInstance(clazz);
 
-		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
 		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes

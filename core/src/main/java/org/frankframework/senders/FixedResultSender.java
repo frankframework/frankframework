@@ -49,7 +49,7 @@ import org.xml.sax.SAXException;
  * @since   4.9
  */
 @Category(Category.Type.BASIC)
-public class FixedResultSender extends SenderWithParametersBase {
+public class FixedResultSender extends AbstractSenderWithParameters {
 
 	private @Getter String filename;
 	private @Getter String returnString;

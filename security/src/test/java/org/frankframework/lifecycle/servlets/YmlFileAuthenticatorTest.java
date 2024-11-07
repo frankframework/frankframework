@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 class YmlFileAuthenticatorTest extends ServletAuthenticatorTest {
 
 	@Override
-	protected ServletAuthenticatorBase createAuthenticator() {
+	protected AbstractServletAuthenticator createAuthenticator() {
 		YmlFileAuthenticator auth = new YmlFileAuthenticator();
 		auth.setFile("localUsers.yml");
 		return auth;

@@ -39,7 +39,7 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
-import org.frankframework.filesystem.FileSystemBase;
+import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -54,7 +54,7 @@ import org.frankframework.util.CredentialFactory;
  * <br/>
  * Only supports NTLM authentication.
  */
-public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
+public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWritableFileSystem<SmbFile> {
 	private final @Getter String domain = "SMB";
 
 	private @Getter String share = null;

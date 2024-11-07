@@ -13,7 +13,7 @@ public class DirectoryListenerTest extends WritableFileSystemListenerTest<Path, 
 	public Path folder;
 
 	@Override
-	public FileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
+	public AbstractFileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
 		DirectoryListener result=new DirectoryListener();
 		result.setInputFolder(folder.toAbsolutePath().toString());
 		fileAndFolderPrefix=folder.toAbsolutePath()+"/";

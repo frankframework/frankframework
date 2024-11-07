@@ -45,8 +45,11 @@ import org.frankframework.core.INamedObject;
  * @author Johan Verrips
  */
 @Log4j2
-public abstract class ClassUtils {
+public class ClassUtils {
 
+	private ClassUtils() {
+		throw new IllegalStateException("Don't construct utility class");
+	}
 	/**
 	 * Return the context ClassLoader.
 	 */

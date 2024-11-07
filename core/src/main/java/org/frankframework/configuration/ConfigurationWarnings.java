@@ -17,11 +17,12 @@ package org.frankframework.configuration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurationAware;
 import org.springframework.context.ApplicationContext;
 
-public class ConfigurationWarnings extends ApplicationWarningsBase {
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IConfigurationAware;
+
+public class ConfigurationWarnings extends AbstractApplicationWarnings {
 
 	/**
 	 * Add a ConfigurationWarning with INamedObject prefix

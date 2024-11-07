@@ -38,8 +38,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import com.nimbusds.jose.util.JSONObjectUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
@@ -47,9 +45,11 @@ import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpSecurityHandler;
-import org.frankframework.http.HttpServletBase;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -76,7 +76,7 @@ import org.frankframework.util.XmlBuilder;
  *
  */
 @IbisInitializer
-public class ApiListenerServlet extends HttpServletBase {
+public class ApiListenerServlet extends AbstractHttpServlet {
 	private static final Logger LOG = LogUtil.getLogger(ApiListenerServlet.class);
 	private static final long serialVersionUID = 1L;
 

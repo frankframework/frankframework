@@ -32,7 +32,7 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
-public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
+public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FSP fileSystemPipe;
 	protected PipeRunResult prr;

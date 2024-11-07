@@ -108,7 +108,7 @@ import org.frankframework.threading.ThreadLifeCycleEventListener;
  */
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
+public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator {
 
 	private final @Getter String domain = "Local";
 

@@ -49,7 +49,12 @@ import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
-public abstract class MessageUtils {
+public class MessageUtils {
+
+	private MessageUtils() {
+		throw new IllegalStateException("Don't construct utility class");
+	}
+
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final TikaConfig TIKA_CONFIG = createTikaConfig();

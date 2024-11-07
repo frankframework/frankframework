@@ -29,27 +29,23 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 
-
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 abstract class ServletAuthenticatorTest {
 
 	@Autowired
 	public ApplicationContext applicationContext;
 
-	protected ServletAuthenticatorBase authenticator;
+	protected AbstractServletAuthenticator authenticator;
 	protected HttpSecurity httpSecurity;
 
 	public static class SpringRootInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
 		@Override
 		public void initialize(ConfigurableApplicationContext applicationContext) {
 			SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 		}
-
 	}
 
 	private static class AllAuthenticatedProvider implements AuthenticationProvider {
-
 		@Override
 		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 			return authentication;
@@ -76,7 +72,7 @@ abstract class ServletAuthenticatorTest {
 		return config;
 	}
 
-	protected abstract ServletAuthenticatorBase createAuthenticator();
+	protected abstract AbstractServletAuthenticator createAuthenticator();
 
 	private HttpSecurity createHttpSecurity() {
 		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<>() {

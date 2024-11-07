@@ -20,6 +20,13 @@ import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
 
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
@@ -29,15 +36,9 @@ import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class ExecuteJdbcQuery extends FrankApiBase {
+public class ExecuteJdbcQuery extends AbstractFrankApi {
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jdbc", produces = MediaType.APPLICATION_JSON_VALUE)

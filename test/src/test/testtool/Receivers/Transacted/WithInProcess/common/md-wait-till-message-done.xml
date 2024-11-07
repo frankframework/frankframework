@@ -1,0 +1,21 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>TKEY</name>
+			</column>
+			<column>
+				<name>TCHAR</name>
+			</column>
+			<column>
+				<name>TTIMESTAMP</name>
+			</column>
+			<column>
+				<name>TVARCHAR</name>
+			</column>
+		</columns>
+		<where>TNUMBER=${jdbc.receivertest.key}3 AND TCHAR='D'</where>
+		<order>TKEY</order>
+	</select>
+</manageDatabaseREQ>

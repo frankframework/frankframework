@@ -24,7 +24,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
@@ -37,16 +46,9 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-public class TestPipeline extends FrankApiBase {
+public class TestPipeline extends AbstractFrankApi {
 
 	@RolesAllowed("IbisTester")
 	@Relation("testing")

@@ -75,12 +75,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		ftpClient = null;
 	}
 
-
 	@Override
 	public boolean isOpen() {
 		return ftpClient != null && ftpClient.isConnected();
 	}
-
 
 	@Override
 	public FTPFileRef toFile(@Nullable String filename) throws FileSystemException {

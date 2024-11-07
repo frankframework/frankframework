@@ -39,10 +39,10 @@ import org.frankframework.util.XmlUtils;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public abstract class WsdlGeneratorUtils {
+public class WsdlGeneratorUtils {
 
 	private WsdlGeneratorUtils() {
-		// this class has no instances
+		throw new IllegalStateException("Don't construct utility class");
 	}
 
 	public static Collection<IListener<?>> getListeners(Adapter adapter) {

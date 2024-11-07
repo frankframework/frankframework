@@ -91,7 +91,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("success", promiseResult.asString());
 	}
 
-	private static class PromiseResultSender extends SenderWithParametersBase {
+	private static class PromiseResultSender extends AbstractSenderWithParameters {
 		private @Getter Message promiseResult = null;
 
 		@Override

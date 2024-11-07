@@ -15,12 +15,12 @@
 */
 package org.frankframework.pipes;
 
-import org.frankframework.filesystem.FileSystemPipe;
+import org.frankframework.filesystem.AbstractFileSystemPipe;
 import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Pipe extends FileSystemPipe<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
+public class Samba2Pipe extends AbstractFileSystemPipe<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	public Samba2Pipe() {
 		setFileSystem(new Samba2FileSystem());
