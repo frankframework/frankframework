@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -251,14 +251,18 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	public void close() throws Exception {
-		if(get() instanceof AutoCloseable) {
-			((AutoCloseable) get()).close();
+		IConfigurable configurable = get();
+		if(configurable instanceof AutoCloseable autoCloseable) {
+			autoCloseable.close();
 		}
-		else if(get() instanceof ISender) {
-			((ISender) get()).stop();
+		else if(configurable instanceof ISender sender) {
+			sender.stop();
 		}
-		else if(get() instanceof IListener<?>) {
-			((IListener<?>) get()).stop();
+		else if(configurable instanceof IListener<?> listener) {
+			listener.stop();
+		}
+		if (containsKey(PIPELINESESSION_KEY)) {
+			getSession().close();
 		}
 	}
 
@@ -269,8 +273,8 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof DelaySender delaySender) {
-			try (PipeLineSession session = new PipeLineSession()) {
-				SenderResult senderResult = delaySender.sendMessage(new Message(fileContent), session);
+			try (PipeLineSession session = new PipeLineSession(); Message message = new Message(fileContent); ) {
+				SenderResult senderResult = delaySender.sendMessage(message, session);
 				CloseUtils.closeSilently(senderResult.getResult());
 			}
 			return LarvaTool.RESULT_OK;
@@ -293,10 +297,12 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
-			PipeLineSession context = new PipeLineSession();
+			PipeLineSession context;
 			ListenerMessage requestListenerMessage = (ListenerMessage) get("listenerMessage");
 			if (requestListenerMessage != null) {
 				context = requestListenerMessage.getContext();
+			} else {
+				context = new PipeLineSession();
 			}
 			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
 			listenerMessageHandler.putResponseMessage(listenerMessage);

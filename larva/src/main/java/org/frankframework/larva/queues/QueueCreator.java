@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.AbstractJdbcQuerySender;
+import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
@@ -326,11 +326,12 @@ public class QueueCreator {
 					if (queues != null) {
 						try (PipeLineSession session = new PipeLineSession()) {
 							session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(prePostFixedQuerySender), session);
-							String result = message.asString();
+							String result;
+							try (Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(prePostFixedQuerySender), session)) {
+								result = message.asString();
+							}
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
-							message.close();
 						} catch(TimeoutException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;

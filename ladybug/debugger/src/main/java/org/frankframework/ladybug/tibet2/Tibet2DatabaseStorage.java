@@ -32,6 +32,10 @@ import java.util.Map;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -40,9 +44,6 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -578,21 +579,22 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
 		}
 
-		PipeLineSession pipeLineSession = new PipeLineSession();
-		if(securityContext.getUserPrincipal() != null)
-			pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-		PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
-		if (!processResult.isSuccessful()) {
-			throw new StorageException("Delete failed (see logging for more details)");
-		}
-
-		try {
-			String result = processResult.getResult().asString();
-			if (!"<ok/>".equalsIgnoreCase(result)) {
-				throw new StorageException("Delete failed: " + result);
+		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+			if (securityContext.getUserPrincipal() != null)
+				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
+			PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
+			if (!processResult.isSuccessful()) {
+				throw new StorageException("Delete failed (see logging for more details)");
 			}
-		} catch (IOException e) {
-			throw new StorageException("Delete failed", e);
+
+			try {
+				String result = processResult.getResult().asString();
+				if (!"<ok/>".equalsIgnoreCase(result)) {
+					throw new StorageException("Delete failed: " + result);
+				}
+			} catch (IOException e) {
+				throw new StorageException("Delete failed", e);
+			}
 		}
 	}
 
