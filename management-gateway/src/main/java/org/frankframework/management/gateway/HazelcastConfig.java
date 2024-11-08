@@ -22,8 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.PartitionGroupConfig;
-import com.hazelcast.config.PartitionGroupConfig.MemberGroupType;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.DefaultNodeContext;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
@@ -52,24 +50,9 @@ public class HazelcastConfig {
 		// Not recommended for production environments, and frankly better to configure one's cluster properly to begin with.
 		config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
 
-		// When running on K8S, AWS, Azure or GCP use a node-aware partition table.
-		if (!isRunningLocally(properties)) {
-			PartitionGroupConfig partitionGroup = config.getPartitionGroupConfig();
-			partitionGroup.setEnabled(true);
-			partitionGroup.setGroupType(MemberGroupType.NODE_AWARE);
-			config.setPartitionGroupConfig(partitionGroup);
-		}
-
 		return config;
 	}
 
-	/**
-	 * Assume Hazelcast is running locally when using either the default 'multicast', or the 'local' configuration.
-	 */
-	private static boolean isRunningLocally(Properties properties) {
-		String networkConfig = properties.getProperty("hazelcast.network.file", "");
-		return networkConfig.contains("multicast") || networkConfig.contains("local");
-	}
 
 	private static String computeName() {
 		int instanceNum = FACTORY_ID_GEN.incrementAndGet();

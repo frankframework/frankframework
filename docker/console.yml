@@ -7,7 +7,7 @@ services:
     environment:
       management.gateway.inbound.class: "org.frankframework.management.gateway.HazelcastInboundGateway"
   console:
-    image: private.docker.nexus.frankframework.org/frankframework-console:${VERSION:-latest}
+    image: private.docker.nexus.frankframework.org/frank-console:${VERSION:-latest}
     build: embedded/console
     ports:
       - "8081:8080"
