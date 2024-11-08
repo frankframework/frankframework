@@ -15,20 +15,27 @@
 */
 package org.frankframework.console.controllers;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class Logging extends FrankApiBase {
+public class Logging {
+
+	private final FrankApiService frankApiService;
+
+	public Logging(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("logging")
@@ -39,7 +46,6 @@ public class Logging extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
 		builder.addHeader("wildcard", wildcard);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

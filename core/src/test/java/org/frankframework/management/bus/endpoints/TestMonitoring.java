@@ -72,14 +72,14 @@ public class TestMonitoring extends BusTestBase {
 		Trigger trigger = new Trigger();
 		AdapterFilter filter = new AdapterFilter();
 		filter.setAdapter("dummyAdapterName");
-		filter.registerSubObject("dummySubObjectName");
+		filter.addSubObjectText("dummySubObjectName");
 		trigger.setPeriod(42);
 		trigger.setThreshold(1337);
 		trigger.setSeverity(Severity.HARMLESS);
 		trigger.setTriggerType(TriggerType.ALARM);
 		trigger.addAdapterFilter(filter);
 		trigger.setSourceFiltering(SourceFiltering.ADAPTER);
-		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
+		trigger.addEventCodeText(TEST_TRIGGER_EVENT_NAME);
 		monitor.addTrigger(trigger);
 		manager.addMonitor(monitor);
 		IMonitorDestination ima = new IMonitorDestination() {

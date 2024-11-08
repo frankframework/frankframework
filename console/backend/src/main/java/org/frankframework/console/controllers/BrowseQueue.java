@@ -18,6 +18,13 @@ package org.frankframework.console.controllers;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
@@ -27,22 +34,22 @@ import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class BrowseQueue extends FrankApiBase {
+public class BrowseQueue {
+
+	private final FrankApiService frankApiService;
+
+	public BrowseQueue(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jms", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of all JMS QueueConnectionFactories")
 	public ResponseEntity<?> getQueueConnectionFactories() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.GET));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.GET));
 	}
 
 	@AllowAllIbisUserRoles
@@ -75,7 +82,6 @@ public class BrowseQueue extends FrankApiBase {
 		if (lookupDestination != null) {
 			builder.addHeader("lookupDestination", lookupDestination);
 		}
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

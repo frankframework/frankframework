@@ -69,7 +69,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileAlreadyExistsException;
-import org.frankframework.filesystem.FileSystemBase;
+import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -94,7 +94,7 @@ import org.frankframework.util.CredentialFactory;
  * @author Niels Meijer
  *
  */
-public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
+public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
 	private final @Getter String domain = "SMB";
 
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;

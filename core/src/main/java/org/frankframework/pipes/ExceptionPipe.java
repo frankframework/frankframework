@@ -31,10 +31,10 @@ import org.frankframework.stream.Message;
 
 /**
  * Pipe that throws an exception, based on the input message.
+ * <br/>
+ * The {@literal success} forward is only used when the (deprecated) attribute {@literal throwException} has been set to {@literal false}, otherwise the (default) {@literal exception} forward will be used.
  *
- * {@literal success} forward is used when {@literal throwException} is false, {@literal exception} is used otherwise.
- *
- * @author  Gerrit van Brakel
+ * @ff.warning The attribute {@literal throwException} has been deprecated and thus the {@literal success} forward will be removed along with the {@literal throwException} attribute.
  */
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ERRORHANDLING)
 @Forward(name = "success", description = "success Forward is deprecated and will be removed. Invoked when {@literal throwException} is false")

@@ -26,7 +26,7 @@ import org.frankframework.util.Locker;
 /**
  * @author Jaco de Groot
  */
-public class LockerPipeLineProcessor extends PipeLineProcessorBase {
+public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {

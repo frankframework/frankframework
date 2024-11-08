@@ -47,10 +47,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	protected String fileAndFolderPrefix = "";
 	protected boolean testFullErrorMessages = true;
 
-	protected FileSystemListener<F, S> fileSystemListener;
+	protected AbstractFileSystemListener<F, S> fileSystemListener;
 	protected Map<String, Object> threadContext;
 
-	public abstract FileSystemListener<F, S> createFileSystemListener();
+	public abstract AbstractFileSystemListener<F, S> createFileSystemListener();
 
 	@Override
 	@BeforeEach
@@ -231,7 +231,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String contents = "Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType(FileSystemListener.MessageType.CONTENTS);
+		fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.CONTENTS);
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
@@ -276,7 +276,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String contents = "Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType(FileSystemListener.MessageType.NAME);
+		fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.NAME);
 		fileSystemListener.configure();
 		fileSystemListener.start();
 

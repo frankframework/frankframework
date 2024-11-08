@@ -18,6 +18,7 @@ package org.frankframework.console.runner;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
@@ -27,10 +28,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.context.WebApplicationContext;
+
+import lombok.Setter;
 
 /**
  * Spring Boot entrypoint when running as a normal WAR application.
@@ -42,8 +49,20 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	@Configuration
-	public static class WarConfiguration {
+	public static class WarConfiguration implements ApplicationContextAware {
 		// NO OP required for Spring Boot. Used when running an Annotation Based config, which we are not, see setSources(...) in run(SpringApplication).
+
+		private @Setter ApplicationContext applicationContext;
+
+		@Bean
+		public FilterRegistrationBean<Filter> getFilterRegistrationBean() {
+			FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
+			Filter filter = applicationContext.getBean("springSecurityFilterChain", Filter.class);
+			bean.setFilter(filter);
+			bean.setEnabled(false);
+			return bean;
+		}
+
 	}
 
 	// Purely here for some debug info

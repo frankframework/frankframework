@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 
 	private void mapParameters(Properties properties) {
 		if(get() instanceof IWithParameters) {
-			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, true, getSession());
+			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, getSession());
 			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 			while (parameterNameIterator.hasNext()) {
 				String parameterName = parameterNameIterator.next();
@@ -139,7 +139,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		}
 	}
 
-	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, boolean createParameterObjects, PipeLineSession session) {
+	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {
 		final String _name = ".name";
 		final String _param = "param";
 		final String _type = ".type";
@@ -191,32 +191,24 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 					}
 					value = map;
 				}
-				if (createParameterObjects) {
-					String pattern = properties.getProperty(_param + i + ".pattern");
-					if (value == null && pattern == null) {
-						throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
-					} else {
-						try {
-							Parameter parameter = new Parameter();
-							parameter.setName(name);
-							if (value != null && !(value instanceof String)) {
-								parameter.setSessionKey(name);
-								session.put(name, value);
-							} else {
-								parameter.setValue((String) value);
-								parameter.setPattern(pattern);
-							}
-							parameter.configure();
-							result.put(name, parameter);
-						} catch (ConfigurationException e) {
-							throw new IllegalStateException("Parameter '" + name + "' could not be configured");
-						}
-					}
+				String pattern = properties.getProperty(_param + i + ".pattern");
+				if (value == null && pattern == null) {
+					throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
 				} else {
-					if (value == null) {
-						throw new IllegalStateException("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
-					} else {
-						result.put(name, value);
+					try {
+						Parameter parameter = new Parameter();
+						parameter.setName(name);
+						if (value != null && !(value instanceof String)) {
+							parameter.setSessionKey(name);
+							session.put(name, value);
+						} else {
+							parameter.setValue((String) value);
+							parameter.setPattern(pattern);
+						}
+						parameter.configure();
+						result.put(name, parameter);
+					} catch (ConfigurationException e) {
+						throw new IllegalStateException("Parameter '" + name + "' could not be configured");
 					}
 				}
 				i++;
@@ -259,14 +251,18 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	public void close() throws Exception {
-		if(get() instanceof AutoCloseable) {
-			((AutoCloseable) get()).close();
+		IConfigurable configurable = get();
+		if(configurable instanceof AutoCloseable autoCloseable) {
+			autoCloseable.close();
 		}
-		else if(get() instanceof ISender) {
-			((ISender) get()).stop();
+		else if(configurable instanceof ISender sender) {
+			sender.stop();
 		}
-		else if(get() instanceof IListener<?>) {
-			((IListener<?>) get()).stop();
+		else if(configurable instanceof IListener<?> listener) {
+			listener.stop();
+		}
+		if (containsKey(PIPELINESESSION_KEY)) {
+			getSession().close();
 		}
 	}
 
@@ -277,8 +273,8 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof DelaySender delaySender) {
-			try (PipeLineSession session = new PipeLineSession()) {
-				SenderResult senderResult = delaySender.sendMessage(new Message(fileContent), session);
+			try (PipeLineSession session = new PipeLineSession(); Message message = new Message(fileContent); ) {
+				SenderResult senderResult = delaySender.sendMessage(message, session);
 				CloseUtils.closeSilently(senderResult.getResult());
 			}
 			return LarvaTool.RESULT_OK;
@@ -301,10 +297,12 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
-			PipeLineSession context = new PipeLineSession();
+			PipeLineSession context;
 			ListenerMessage requestListenerMessage = (ListenerMessage) get("listenerMessage");
 			if (requestListenerMessage != null) {
 				context = requestListenerMessage.getContext();
+			} else {
+				context = new PipeLineSession();
 			}
 			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
 			listenerMessageHandler.putResponseMessage(listenerMessage);

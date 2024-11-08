@@ -17,13 +17,6 @@ package org.frankframework.console.controllers;
 
 import java.util.Map;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,11 +29,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
 @RequestMapping("/configurations/{configuration}/monitors")
-public class Monitors extends FrankApiBase {
+public class Monitors {
+
+	private final FrankApiService frankApiService;
+
 	private static final String MONITOR_HEADER = "monitor";
 	private static final String TRIGGER_HEADER = "trigger";
+
+	public Monitors(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	private static void addDefaultHeaders(String configName, String monitorName, RequestMessageBuilder builder) {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
@@ -56,7 +64,7 @@ public class Monitors extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("xml", showConfigXml);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -72,7 +80,7 @@ public class Monitors extends FrankApiBase {
 		json.put("name", monitor);
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -84,7 +92,7 @@ public class Monitors extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader("xml", showConfigXml);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -102,7 +110,7 @@ public class Monitors extends FrankApiBase {
 		}
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -113,7 +121,7 @@ public class Monitors extends FrankApiBase {
 										   @PathVariable(value = "monitorName", required = false) String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
 		addDefaultHeaders(configurationName, monitorName, builder);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -124,7 +132,7 @@ public class Monitors extends FrankApiBase {
 										 @PathVariable(value = "monitorName", required = false) String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		addDefaultHeaders(configurationName, monitorName, builder);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -137,7 +145,7 @@ public class Monitors extends FrankApiBase {
 		addDefaultHeaders(configName, monitorName, builder);
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -150,7 +158,7 @@ public class Monitors extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, id);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -165,7 +173,7 @@ public class Monitors extends FrankApiBase {
 		builder.addHeader(TRIGGER_HEADER, index);
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -177,6 +185,6 @@ public class Monitors extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
 		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, id);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 }

@@ -65,7 +65,7 @@ import org.frankframework.util.StringUtil;
 @Deprecated(forRemoval = false)
 @ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
-public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
+public class KafkaListener extends AbstractKafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 
 	private static final Predicate<String> TOPIC_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
 

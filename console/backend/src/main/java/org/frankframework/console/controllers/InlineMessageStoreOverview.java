@@ -15,25 +15,31 @@
 */
 package org.frankframework.console.controllers;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class InlineMessageStoreOverview extends FrankApiBase {
+public class InlineMessageStoreOverview {
+
+	private final FrankApiService frankApiService;
+
+	public InlineMessageStoreOverview(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("messagebrowser")
 	@Description("view available messagebrowsers")
 	@GetMapping(value = "inlinestores/overview", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getMessageBrowsers() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.INLINESTORAGE_SUMMARY));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.INLINESTORAGE_SUMMARY));
 	}
-
 }

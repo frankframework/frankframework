@@ -46,7 +46,7 @@ public class NumberParameter extends AbstractParameter {
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 
 	public NumberParameter() {
-		setType(ParameterType.INTEGER); //Defaults to integer
+		setType(ParameterType.INTEGER); // Defaults to integer
 	}
 
 	@Override

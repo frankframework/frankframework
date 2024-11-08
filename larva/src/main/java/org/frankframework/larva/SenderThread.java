@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,9 +58,6 @@ public class SenderThread extends Thread {
 
 	@Override
 	public void run() {
-		if (session==null) {
-			session = new PipeLineSession();
-		}
 		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		try (Message input = new Message(request); SenderResult result = sender.sendMessage(input, session)) {

@@ -256,7 +256,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/*
 	 * Override this method in descender classes.
 	 */
-	protected MessagingSourceFactory getMessagingSourceFactory() {
+	protected AbstractMessagingSourceFactory getMessagingSourceFactory() {
 		return new JmsMessagingSourceFactory(this);
 	}
 
@@ -270,7 +270,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			synchronized (this) {
 				if (messagingSource == null) {
 					log.debug("instantiating MessagingSourceFactory");
-					MessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
+					AbstractMessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
 					try {
 						String connectionFactoryName = getConnectionFactoryName();
 						log.debug("creating MessagingSource");

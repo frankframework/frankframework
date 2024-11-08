@@ -44,11 +44,11 @@ import org.frankframework.util.LogUtil;
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
- * </table>
+ *
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;

@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.management.Action;
-import org.frankframework.management.bus.message.StringMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,6 +20,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.console.ApiException;
+import org.frankframework.management.Action;
+import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationsEndpoint.class})
 public class ConfigurationsEndpointTest extends FrankApiTestBase {

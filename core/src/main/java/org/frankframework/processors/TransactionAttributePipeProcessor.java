@@ -42,7 +42,7 @@ import lombok.Setter;
 /**
  * @author Jaco de Groot
  */
-public class TransactionAttributePipeProcessor extends PipeProcessorBase {
+public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 

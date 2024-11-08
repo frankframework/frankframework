@@ -32,7 +32,7 @@ import org.frankframework.stream.Message;
 
 @ServiceMode(value=jakarta.xml.ws.Service.Mode.MESSAGE)
 @BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
-public class MessageProvider extends SOAPProviderBase {
+public class MessageProvider extends AbstractSOAPProvider {
 
 	private PushingListenerAdapter listener;
 

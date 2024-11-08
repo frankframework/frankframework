@@ -33,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -57,11 +58,13 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	private @Setter ApplicationContext applicationContext;
 	private boolean csrfEnabled;
 	private String csrfCookiePath;
+	private boolean corsEnabled;
 
 	@Override
 	public void setEnvironment(Environment env) {
 		csrfEnabled = env.getProperty("csrf.enabled", boolean.class, true);
 		csrfCookiePath = env.getProperty("csrf.cookie.path", String.class);
+		corsEnabled = env.getProperty("cors.enforced", boolean.class, false);
 	}
 
 	private SecurityFilterChain configureHttpSecurity(IAuthenticator authenticator, HttpSecurity http) throws Exception {
@@ -82,6 +85,10 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 			http.csrf(CsrfConfigurer::disable);
 		}
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
+
+		if(!corsEnabled) {
+			http.cors(CorsConfigurer::disable);
+		}
 
 		// logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));

@@ -33,7 +33,7 @@ public class MockPullingListener extends MockListenerBase implements IPullingLis
 			if("getRawMessageException".equals(message)) {
 				throw new ListenerException(message);
 			}
-			return new RawMessageWrapper<>(message);
+			return new RawMessageWrapper<>(message, Integer.toString(message.hashCode()), Integer.toString(message.hashCode()));
 		}
 		return null;
 	}

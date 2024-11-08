@@ -61,7 +61,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
 
-public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
+public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
 
 	private @Getter String host;

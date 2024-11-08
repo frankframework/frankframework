@@ -20,17 +20,8 @@ import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.ApiException;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.management.Action;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +32,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.ApiException;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.management.Action;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class ConfigurationStatus extends FrankApiBase {
+public class ConfigurationStatus {
+
+	private final FrankApiService frankApiService;
+
+	public ConfigurationStatus(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("adapter")
@@ -52,7 +60,7 @@ public class ConfigurationStatus extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
 		builder.addHeader("expanded", expanded);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -67,7 +75,7 @@ public class ConfigurationStatus extends FrankApiBase {
 
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
 		builder.addHeader("expanded", expanded);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@PermitAll
@@ -78,10 +86,10 @@ public class ConfigurationStatus extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 		addConfigurationAndAdapterNameHeaders(configuration, name, builder);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
-	//Normally you don't use the PUT method on a collection...
+	// Normally you don't use the PUT method on a collection...
 	@SuppressWarnings("unchecked")
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
@@ -106,7 +114,7 @@ public class ConfigurationStatus extends FrankApiBase {
 		builder.addHeader("action", action.name());
 		if (adapters.isEmpty()) {
 			addConfigurationAndAdapterNameHeaders("*ALL*", "*ALL*", builder);
-			callAsyncGateway(builder);
+			frankApiService.callAsyncGateway(builder);
 		} else {
 			for (String adapterNameWithPossibleConfigurationName : adapters) {
 				int slash = adapterNameWithPossibleConfigurationName.indexOf("/");
@@ -119,7 +127,7 @@ public class ConfigurationStatus extends FrankApiBase {
 					adapterName = adapterNameWithPossibleConfigurationName;
 				}
 				builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-				callAsyncGateway(builder);
+				frankApiService.callAsyncGateway(builder);
 			}
 		}
 
@@ -136,7 +144,7 @@ public class ConfigurationStatus extends FrankApiBase {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		addHeaders(builder, configuration, adapter, action);
-		callAsyncGateway(builder);
+		frankApiService.callAsyncGateway(builder);
 
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
@@ -162,6 +170,7 @@ public class ConfigurationStatus extends FrankApiBase {
 				action = Action.DECTHREADS;
 			}
 		}
+
 		if (action == null) {
 			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 		}
@@ -169,7 +178,8 @@ public class ConfigurationStatus extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		addHeaders(builder, configuration, adapter, action);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
-		callAsyncGateway(builder);
+
+		frankApiService.callAsyncGateway(builder);
 
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
@@ -181,7 +191,7 @@ public class ConfigurationStatus extends FrankApiBase {
 	public ResponseEntity<?> getAdapterFlow(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 		addConfigurationAndAdapterNameHeaders(configuration, adapter, builder);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	private void addHeaders(RequestMessageBuilder builder, String configuration, String adapter, Action action) {

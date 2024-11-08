@@ -15,9 +15,9 @@
 */
 package org.frankframework.parameters;
 
-import org.frankframework.configuration.ConfigurationWarning;
-
 import lombok.Getter;
+
+import org.frankframework.configuration.ConfigurationWarning;
 
 public enum ParameterType {
 
@@ -32,11 +32,13 @@ public enum ParameterType {
 	 * that can be used as such when passed as xslt-parameter (only for XSLT 1.0).
 	 * Please note that the nodeset may contain multiple nodes, without a common root node.
 	 * N.B. The result is the set of children of what you might expect it to be... */
-	NODE(true),
+	@ConfigurationWarning("ParameterType NODE is deprecated, use DOMDOC instead")
+	@Deprecated(since = "9.0.0", forRemoval = true)
+	NODE(XmlParameter.class, true),
 
 	/** Renders XML as a DOM document; similar to <code>node</code>
 		with the distinction that there is always a common root node (required for XSLT 2.0) */
-	DOMDOC(true),
+	DOMDOC(XmlParameter.class, true),
 
 	/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>.
 	 * When applied as a JDBC parameter, the method setDate() is used */
@@ -96,15 +98,15 @@ public enum ParameterType {
 	private final @Getter Class<? extends IParameter> typeClass;
 	public final boolean requiresTypeConversion;
 
-	private ParameterType() {
+	ParameterType() {
 		this(false);
 	}
 
-	private ParameterType(boolean requiresTypeConverion) {
+	ParameterType(boolean requiresTypeConverion) {
 		this(Parameter.class, requiresTypeConverion);
 	}
 
-	private ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConverion) {
+	ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConverion) {
 		this.requiresTypeConversion = requiresTypeConverion;
 		this.typeClass = typeClass;
 	}

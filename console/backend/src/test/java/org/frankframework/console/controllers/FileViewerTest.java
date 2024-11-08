@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
-import org.frankframework.management.bus.message.BinaryMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
@@ -17,6 +16,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.management.bus.message.BinaryMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, FileViewer.class})
 public class FileViewerTest extends FrankApiTestBase {

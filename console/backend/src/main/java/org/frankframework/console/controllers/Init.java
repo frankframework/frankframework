@@ -25,8 +25,6 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,17 +36,23 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.pattern.PathPattern;
 
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+
 @RestController
-public class Init extends FrankApiBase {
+public class Init {
+
+	private final FrankApiService frankApiService;
 
 	private final RequestMappingHandlerMapping handlerMapping;
 
-	public Init(RequestMappingHandlerMapping handlerMapping) {
+	public Init(FrankApiService frankApiService, RequestMappingHandlerMapping handlerMapping) {
+		this.frankApiService = frankApiService;
 		this.handlerMapping = handlerMapping;
 	}
 
 	private boolean isMonitoringEnabled() {
-		return getProperty("monitoring.enabled", false);
+		return frankApiService.getProperty("monitoring.enabled", false);
 	}
 
 	@GetMapping(value = {"", "/"}, produces = "application/json")
@@ -80,7 +84,7 @@ public class Init extends FrankApiBase {
 			final Method method = handlerMethod.getMethod();
 			boolean deprecated = method.getAnnotation(Deprecated.class) != null;
 
-			if (deprecated && !allowDeprecatedEndpoints()) {
+			if (deprecated && !frankApiService.allowDeprecatedEndpoints()) {
 				continue;
 			}
 

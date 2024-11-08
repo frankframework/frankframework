@@ -19,7 +19,7 @@ import org.frankframework.threading.ThreadConnector;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-public class ThreadConnectingFilter extends ExceptionCatchingFilter {
+public class ThreadConnectingFilter extends AbstractExceptionCatchingFilter {
 
 	private final ThreadConnector threadConnector;
 

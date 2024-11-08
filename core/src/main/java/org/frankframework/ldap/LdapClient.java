@@ -44,6 +44,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -482,7 +483,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public Set<String> getAttributeSet(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Set<String> result=new LinkedHashSet<>();
-    	mapMultiValuedAttribute(searchResultEnum, new ObjectCallback<>(result) {
+    	mapMultiValuedAttribute(searchResultEnum, new AbstractObjectCallback<>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {
@@ -498,7 +499,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public Map<String,String> getAttributeMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Map<String,String> result=new LinkedHashMap<>();
-    	mapMultipleAttributes(searchResultEnum, new ObjectCallback<>(result) {
+    	mapMultipleAttributes(searchResultEnum, new AbstractObjectCallback<>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {
@@ -514,7 +515,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public Map<String,List<String>> getAttributeMultiMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Map<String,List<String>> result=new LinkedHashMap<>();
-    	mapMultiValuedAttribute(searchResultEnum, new ObjectCallback<>(result) {
+    	mapMultiValuedAttribute(searchResultEnum, new AbstractObjectCallback<>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {

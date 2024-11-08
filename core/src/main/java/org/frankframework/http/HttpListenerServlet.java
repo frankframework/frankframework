@@ -21,8 +21,11 @@ import java.util.Enumeration;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.text.StringEscapeUtils;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -39,7 +42,7 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 @IbisInitializer
-public class HttpListenerServlet extends HttpServletBase {
+public class HttpListenerServlet extends AbstractHttpServlet {
 
 	public static final String SERVICE_ID_PARAM = "service";
 	public static final String MESSAGE_PARAM = "message";

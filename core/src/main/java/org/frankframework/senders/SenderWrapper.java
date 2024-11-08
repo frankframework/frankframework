@@ -36,7 +36,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderWrapper extends SenderWrapperBase {
+public class SenderWrapper extends AbstractSenderWrapper {
 
 	/** specification of sender to send messages with */
 	private @Getter @Setter ISender sender;
