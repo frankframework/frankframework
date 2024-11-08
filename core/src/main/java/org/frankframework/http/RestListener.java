@@ -19,8 +19,9 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -75,7 +76,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		super.start();
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}

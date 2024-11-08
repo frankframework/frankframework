@@ -104,17 +104,11 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	}
 
 	@Override
-	public void start() throws ListenerException {
-		try {
-			super.start();
-		} catch (Exception e) {
-			throw new ListenerException("error opening listener [" + getName() + "]", e);
-		}
-		try {
-			if (getSender() != null)
-				getSender().start();
-		} catch (LifecycleException e) {
-			throw new ListenerException("error opening sender [" + getSender().getName() + "]", e);
+	public void start() {
+		super.start();
+
+		if (getSender() != null) {
+			getSender().start();
 		}
 	}
 

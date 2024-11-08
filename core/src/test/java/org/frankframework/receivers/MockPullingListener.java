@@ -12,12 +12,12 @@ public class MockPullingListener extends MockListenerBase implements IPullingLis
 	private final BlockingQueue<String> value = new ArrayBlockingQueue<>(5);
 
 	@Override
-	public Map<String, Object> openThread() throws ListenerException {
+	public Map<String, Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(Map<String, Object> threadContext)  {
 		//No-op
 	}
 

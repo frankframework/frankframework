@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -29,10 +30,8 @@ import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
 
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.IPipe;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.openapi.OpenApiGenerator;
 import org.frankframework.pipes.Json2XmlValidator;
@@ -237,10 +236,11 @@ public class ApiServiceDispatcher {
 		return !matchFullPattern && !"**".equals(patternSegments[patternSegments.length - 1]);
 	}
 
-	public void registerServiceClient(ApiListener listener) throws ListenerException {
+	public void registerServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
-		if (StringUtils.isBlank(uriPattern))
-			throw new ListenerException("uriPattern cannot be null or empty");
+
+		// This is already checked in ApiListener#configure()
+		Objects.requireNonNull(uriPattern);
 
 		synchronized(patternClients) {
 			for(ApiListener.HttpMethod method : listener.getAllMethods()){

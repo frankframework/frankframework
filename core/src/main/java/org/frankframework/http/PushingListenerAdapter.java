@@ -59,6 +59,7 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -70,7 +71,7 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		setRunning(true);
 	}
 

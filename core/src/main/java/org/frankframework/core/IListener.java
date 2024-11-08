@@ -20,10 +20,10 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -51,13 +51,13 @@ public interface IListener<M> extends IConfigurable {
 	 * Prepares the listener for receiving messages.
 	 * <code>open()</code> is called once each time the listener is started.
 	 */
-	void start() throws ListenerException;
+	void start();
 
 	/**
 	 * Close all resources used for listening.
 	 * Called once each time the listener is stopped.
 	 */
-	void stop() throws ListenerException;
+	void stop();
 
 	/**
 	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)} or

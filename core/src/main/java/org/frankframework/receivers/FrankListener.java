@@ -22,11 +22,12 @@ import java.util.concurrent.ConcurrentMap;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -38,6 +39,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 
@@ -103,10 +105,10 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		FrankListener putResult = listeners.putIfAbsent(fullName, this);
 		if (putResult != null && putResult != this) {
-			throw new ListenerException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
+			throw new LifecycleException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
 		}
 		open = true;
 	}

@@ -245,7 +245,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			else if(get() instanceof IListener<?>) {
 				((IListener<?>) get()).start();
 			}
-		} catch (LifecycleException | ListenerException e) {
+		} catch (LifecycleException e) {
 			throw new ConfigurationException("error opening [" + get() + "]", e);
 		}
 	}

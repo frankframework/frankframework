@@ -45,7 +45,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -158,6 +158,6 @@ public class KafkaReceiverTest {
 	void throwsErrorOnBadConnection() {
 		Assertions.assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
 		Mockito.when(mockListener.metrics()).thenReturn(new HashMap<>());
-		Assertions.assertThrows(ListenerException.class, listener::start, "should throw on (simulated) bad connection");
+		Assertions.assertThrows(LifecycleException.class, listener::start, "should throw on (simulated) bad connection");
 	}
 }

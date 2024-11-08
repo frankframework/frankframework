@@ -156,7 +156,6 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 		}
 	}
 
-
 	@Override
 	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		try {
@@ -172,7 +171,6 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 		}
 	}
 
-
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
@@ -183,7 +181,6 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 			}
 		}
 	}
-
 
 	@Override
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, JMSException, IOException {
@@ -199,8 +196,6 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 			send(session, replyTo, replyCid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 		}
 	}
-
-
 
 	/**
      * Retrieves messages from queue or other channel, but does no processing on it.
@@ -222,12 +217,11 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 		return msg;
 	}
 
-
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result) {
-		return isJmsTransacted() &&
-				!isTransacted() &&
-				isSessionsArePooled()&&
-				result != null;
+		return isJmsTransacted()
+				&& !isTransacted()
+				&& isSessionsArePooled()
+				&& result != null;
 	}
 
 	/**
@@ -236,7 +230,8 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 	private RawMessageWrapper<Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		Message msg = null;
-		String messageId = null;
+		String messageId;
+
 		checkTransactionManagerValidity();
 		try {
 			session = getSession(threadContext);
@@ -295,7 +290,6 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 		}
 	}
 
-
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
@@ -304,5 +298,4 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
-
 }

@@ -129,7 +129,7 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		super.start();
 		jmsConnector.start();
 	}
@@ -143,12 +143,6 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 		} finally {
 			super.stop();
 		}
-	}
-
-
-	@Override
-	public IListenerConnector<Message> getListenerPortConnector() {
-		return jmsConnector;
 	}
 
 	@Override

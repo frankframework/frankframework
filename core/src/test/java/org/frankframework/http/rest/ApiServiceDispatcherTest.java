@@ -78,18 +78,14 @@ public class ApiServiceDispatcherTest {
 			try {
 				Thread.sleep((long) timeout);
 			} catch (InterruptedException e1) {
-				//Failed to sleep? unsure why, but doesn't matter much
+				// Failed to sleep? unsure why, but doesn't matter much
 			}
 			ApiListener listener = new ApiListener();
 			listener.setName(name);
 			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
 
-			try {
-				dispatcher.registerServiceClient(listener);
-			} catch (ListenerException e) {
-				throw new RuntimeException(e);
-			}
+			dispatcher.registerServiceClient(listener);
 		}
 	}
 

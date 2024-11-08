@@ -29,9 +29,10 @@ import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
@@ -42,6 +43,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -111,18 +113,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		if (!isConnectionsArePooled()) {
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
-				throw new ListenerException(e);
+				throw new LifecycleException(e);
 			}
 		} else {
 			try (Connection c = getConnection()) {
 				//do nothing, eat a connection from the pool to validate connectivity
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
+			} catch (JdbcException | SQLException e) {
+				throw new LifecycleException(e);
 			}
 		}
 	}

@@ -18,6 +18,7 @@ package org.frankframework.extensions.cmis.server;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
@@ -54,10 +55,11 @@ public class CmisEventDispatcher {
 		return self;
 	}
 
-	public void registerEventListener(CmisEventListener listener) throws ListenerException {
+	public void registerEventListener(CmisEventListener listener)  {
 		CmisEvent event = listener.getEvent();
-		if(event == null)
-			throw new ListenerException("cannot register EventListener without event to listen on");
+
+		// This is already checked in CmisEventListener#configure()
+		Objects.requireNonNull(event);
 
 		log.info("registering CmisEvent [{}] on dispatcher", event::name);
 		eventListeners.put(event, listener);
