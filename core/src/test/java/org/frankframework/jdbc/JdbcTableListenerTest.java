@@ -18,6 +18,7 @@ package org.frankframework.jdbc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -153,7 +154,7 @@ public class JdbcTableListenerTest {
 	public void testSelectConditionWithForbiddenField2() throws ConfigurationException {
 		// Arrange
 		listener.setSelectCondition("t.TCMNT2 IS NULL");
-		listener.setTimestampField("TCMNT2");
+		listener.setCommentField("TCMNT2");
 
 		// Act
 		listener.configure();
@@ -162,6 +163,22 @@ public class JdbcTableListenerTest {
 		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
 		assertFalse(warnings.isEmpty());
 		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT2]")));
+	}
+
+	@DatabaseTest
+	public void testSelectConditionWithFieldSimilarToForbiddenFields() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("TCMNT2 IS NULL AND t.T_TIMESTAMP2 IS NULL");
+		listener.setCommentField("TCMNT");
+		listener.setTimestampField("T_TIMESTAMP");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
+		assertThat(warnings.getWarnings(), not(hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT]"))));
+		assertThat(warnings.getWarnings(), not(hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP]"))));
 	}
 
 	@DatabaseTest
