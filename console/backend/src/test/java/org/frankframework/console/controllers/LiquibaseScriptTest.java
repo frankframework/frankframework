@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.management.bus.BusMessageUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
@@ -19,6 +17,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.console.ApiException;
+import org.frankframework.management.bus.BusMessageUtils;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, LiquibaseScript.class})
 public class LiquibaseScriptTest extends FrankApiTestBase {

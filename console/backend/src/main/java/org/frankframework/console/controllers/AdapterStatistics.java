@@ -30,7 +30,13 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class AdapterStatistics extends AbstractFrankApi {
+public class AdapterStatistics {
+
+	private final FrankApiService frankApiService;
+
+	public AdapterStatistics(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("statistics")
@@ -40,7 +46,6 @@ public class AdapterStatistics extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

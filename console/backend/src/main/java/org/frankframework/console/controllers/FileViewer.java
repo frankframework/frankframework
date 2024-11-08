@@ -36,7 +36,13 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class FileViewer extends AbstractFrankApi {
+public class FileViewer {
+
+	private final FrankApiService frankApiService;
+
+	public FileViewer(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@GetMapping(value = "/file-viewer", produces = {"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
 	@AllowAllIbisUserRoles
@@ -51,7 +57,7 @@ public class FileViewer extends AbstractFrankApi {
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
 
-		Message<InputStream> inputStreamMessage = (Message<InputStream>) sendSyncMessage(builder);
+		Message<InputStream> inputStreamMessage = (Message<InputStream>) frankApiService.sendSyncMessage(builder);
 		return ResponseUtils.convertToSpringStreamingResponse(inputStreamMessage);
 	}
 

@@ -40,16 +40,19 @@ import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 
 @RestController
-public class Init extends AbstractFrankApi {
+public class Init {
+
+	private final FrankApiService frankApiService;
 
 	private final RequestMappingHandlerMapping handlerMapping;
 
-	public Init(RequestMappingHandlerMapping handlerMapping) {
+	public Init(FrankApiService frankApiService, RequestMappingHandlerMapping handlerMapping) {
+		this.frankApiService = frankApiService;
 		this.handlerMapping = handlerMapping;
 	}
 
 	private boolean isMonitoringEnabled() {
-		return getProperty("monitoring.enabled", false);
+		return frankApiService.getProperty("monitoring.enabled", false);
 	}
 
 	@GetMapping(value = {"", "/"}, produces = "application/json")
@@ -81,7 +84,7 @@ public class Init extends AbstractFrankApi {
 			final Method method = handlerMethod.getMethod();
 			boolean deprecated = method.getAnnotation(Deprecated.class) != null;
 
-			if (deprecated && !allowDeprecatedEndpoints()) {
+			if (deprecated && !frankApiService.allowDeprecatedEndpoints()) {
 				continue;
 			}
 

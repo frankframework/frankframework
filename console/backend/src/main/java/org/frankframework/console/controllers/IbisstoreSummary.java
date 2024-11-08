@@ -32,7 +32,13 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class IbisstoreSummary extends AbstractFrankApi {
+public class IbisstoreSummary {
+
+	private final FrankApiService frankApiService;
+
+	public IbisstoreSummary(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("jdbc")
@@ -45,7 +51,7 @@ public class IbisstoreSummary extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISSTORE_SUMMARY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("query", query);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 }

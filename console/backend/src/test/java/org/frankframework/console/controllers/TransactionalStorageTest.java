@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.frankframework.management.bus.message.StringMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -20,6 +19,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TransactionalStorage.class})
 public class TransactionalStorageTest extends FrankApiTestBase {

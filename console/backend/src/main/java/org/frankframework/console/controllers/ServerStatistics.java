@@ -34,19 +34,25 @@ import org.frankframework.management.bus.BusTopic;
 
 @RestController
 @RequestMapping("/server")
-public class ServerStatistics extends AbstractFrankApi {
+public class ServerStatistics {
+
+	private final FrankApiService frankApiService;
+
+	public ServerStatistics(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerInformation() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.GET));
 	}
 
 	@AllowAllIbisUserRoles
 	@Relation("configuration")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAllConfigurations() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND));
 	}
 
 	@AllowAllIbisUserRoles
@@ -57,19 +63,19 @@ public class ServerStatistics extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
 	@Description("view all configuration warnings")
 	@GetMapping(value = "/warnings", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerConfiguration() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
 	}
 
 	@PermitAll
 	@GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFrankHealth() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
 	}
 }

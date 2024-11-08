@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.awaitility.Awaitility;
-import org.frankframework.management.Action;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,6 +21,8 @@ import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.management.Action;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationStatus.class})
 public class ConfigurationStatusTest extends FrankApiTestBase {

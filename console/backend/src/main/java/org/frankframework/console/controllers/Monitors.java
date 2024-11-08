@@ -39,9 +39,16 @@ import org.frankframework.management.bus.BusTopic;
 
 @RestController
 @RequestMapping("/configurations/{configuration}/monitors")
-public class Monitors extends AbstractFrankApi {
+public class Monitors {
+
+	private final FrankApiService frankApiService;
+
 	private static final String MONITOR_HEADER = "monitor";
 	private static final String TRIGGER_HEADER = "trigger";
+
+	public Monitors(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	private static void addDefaultHeaders(String configName, String monitorName, RequestMessageBuilder builder) {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
@@ -57,7 +64,7 @@ public class Monitors extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("xml", showConfigXml);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -73,7 +80,7 @@ public class Monitors extends AbstractFrankApi {
 		json.put("name", monitor);
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -85,7 +92,7 @@ public class Monitors extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader("xml", showConfigXml);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -103,7 +110,7 @@ public class Monitors extends AbstractFrankApi {
 		}
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -114,7 +121,7 @@ public class Monitors extends AbstractFrankApi {
 										   @PathVariable(value = "monitorName", required = false) String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
 		addDefaultHeaders(configurationName, monitorName, builder);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -125,7 +132,7 @@ public class Monitors extends AbstractFrankApi {
 										 @PathVariable(value = "monitorName", required = false) String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		addDefaultHeaders(configurationName, monitorName, builder);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -138,7 +145,7 @@ public class Monitors extends AbstractFrankApi {
 		addDefaultHeaders(configName, monitorName, builder);
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -151,7 +158,7 @@ public class Monitors extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, id);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -166,7 +173,7 @@ public class Monitors extends AbstractFrankApi {
 		builder.addHeader(TRIGGER_HEADER, index);
 		builder.setJsonPayload(json);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -178,6 +185,6 @@ public class Monitors extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
 		addDefaultHeaders(configurationName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, id);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 }

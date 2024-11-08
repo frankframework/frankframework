@@ -29,7 +29,13 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class Logging extends AbstractFrankApi {
+public class Logging {
+
+	private final FrankApiService frankApiService;
+
+	public Logging(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("logging")
@@ -40,7 +46,6 @@ public class Logging extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
 		builder.addHeader("wildcard", wildcard);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

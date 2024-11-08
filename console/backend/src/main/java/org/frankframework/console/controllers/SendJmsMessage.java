@@ -44,7 +44,13 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
 @RestController
-public class SendJmsMessage extends AbstractFrankApi {
+public class SendJmsMessage {
+
+	private final FrankApiService frankApiService;
+
+	public SendJmsMessage(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -109,7 +115,7 @@ public class SendJmsMessage extends AbstractFrankApi {
 		}
 
 		builder.setPayload(message);
-		return synchronous ? callSyncGateway(builder) : callAsyncGateway(builder);
+		return synchronous ? frankApiService.callSyncGateway(builder) : frankApiService.callAsyncGateway(builder);
 	}
 
 	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
@@ -130,7 +136,7 @@ public class SendJmsMessage extends AbstractFrankApi {
 				String currentMessage = XmlEncodingUtils.readXml(b, null);
 
 				builder.setPayload(currentMessage);
-				callAsyncGateway(builder);
+				frankApiService.callAsyncGateway(builder);
 			}
 			archive.closeEntry();
 		}
