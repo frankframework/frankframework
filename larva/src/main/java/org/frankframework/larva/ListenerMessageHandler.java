@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,12 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			requestMessages.add(requestMessage);
 
 			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
-			return new Message(responseMessage.getMessage());
+			Message responseAsMessage = new Message(responseMessage.getMessage());
+			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
+				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
+				responseMessage.getContext().close();
+			}
+			return responseAsMessage;
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert message to string", e);
 		} catch (TimeoutException e) {

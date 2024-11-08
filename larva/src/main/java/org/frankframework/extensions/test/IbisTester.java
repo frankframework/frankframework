@@ -92,7 +92,9 @@ public class IbisTester {
 			LarvaTool.runScenarios(ibisContext, request, writer, silent);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer + "</body></html>";
-				return XmlUtils.toXhtml(new Message(htmlString));
+				try (Message message = new Message(htmlString)) {
+					return XmlUtils.toXhtml(message);
+				}
 			} else {
 				return writer.toString();
 			}

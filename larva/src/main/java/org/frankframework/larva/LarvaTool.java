@@ -1091,14 +1091,13 @@ public class LarvaTool {
 				Queue querySendersInfo = entry.getValue();
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
 				if (prePostFixedQuerySender != null) {
-					try {
+					try (PipeLineSession session = new PipeLineSession()) {
 						/* Check if the preResult and postResult are not equal. If so, then there is a
 						 * database change that has not been read in the scenario.
 						 * So set remainingMessagesFound to true and show the entry.
 						 * (see also executeFixedQuerySenderRead() )
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						PipeLineSession session = new PipeLineSession();
 						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 						String postResult = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session).asString();
 						if (!preResult.equals(postResult)) {
@@ -1156,6 +1155,9 @@ public class LarvaTool {
 					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
+						if (listenerMessage.getContext() != null) {
+							listenerMessage.getContext().close();
+						}
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message);
 						remainingMessagesFound = true;
 						listenerMessage = listenerMessageHandler.getRequestMessage();
@@ -1163,6 +1165,9 @@ public class LarvaTool {
 					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
+						if (listenerMessage.getContext() != null) {
+							listenerMessage.getContext().close();
+						}
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message);
 						remainingMessagesFound = true;
 						listenerMessage = listenerMessageHandler.getResponseMessage();
@@ -1254,7 +1259,9 @@ public class LarvaTool {
 			}
 			try (PipeLineSession session = new PipeLineSession()) {
 				session.put(PipeLineSession.CORRELATION_ID_KEY, providedCorrelationId);
-				try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), session)) {
+				Message requestMessage = new Message(fileContent);
+				requestMessage.closeOnCloseOf(session, "Larva");
+				try (Message ignored = jmsSender.sendMessageOrThrow(requestMessage, session)) {
 					debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
 					result = RESULT_OK;
 				}
@@ -1441,9 +1448,9 @@ public class LarvaTool {
 				String postResult;
 				try (PipeLineSession session = new PipeLineSession()) {
 					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-					Message message = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session);
-					postResult = message.asString();
-					message.close();
+					try (Message message = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session)) {
+						postResult = message.asString();
+					}
 				}
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult);
 				if (preResult.equals(postResult)) {
