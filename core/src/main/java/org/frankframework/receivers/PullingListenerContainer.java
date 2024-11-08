@@ -399,7 +399,21 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
 				log.debug("Rolling back TX, reason: {}, stack:{}", reason, stackTrace);
 			}
-			txManager.rollback(txStatus);
+			try {
+				txManager.rollback(txStatus);
+			} finally {
+				// TODO: Check if we do, or do not, need the change in process state below or if it will always be done in other part of the PullingListenerContainer code anyway
+				if (inProcessStateManager!=null) {
+					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
+					try {
+						log.debug("Changing message state back to AVAILABLE in rollback, reason: {}", reason);
+						inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
+						txManager.commit(txStatusRevert);
+					} catch (Exception e) {
+						log.error("Error in post-rollback actions", e);
+					}
+				}
+			}
 		}
 	}
 
