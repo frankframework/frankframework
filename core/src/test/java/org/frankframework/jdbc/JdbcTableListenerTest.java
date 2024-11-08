@@ -135,10 +135,10 @@ public class JdbcTableListenerTest {
 	}
 
 	@DatabaseTest
-	public void testSelectConditionWithForbiddenField() throws ConfigurationException {
+	public void testSelectConditionWithForbiddenField1() throws ConfigurationException {
 		// Arrange
-		listener.setSelectCondition("t.TTIMESTAMP IS NULL");
-		listener.setTimestampField("TTIMESTAMP");
+		listener.setSelectCondition("t.T_TIMESTAMP IS NULL");
+		listener.setTimestampField("T_TIMESTAMP");
 
 		// Act
 		listener.configure();
@@ -146,7 +146,22 @@ public class JdbcTableListenerTest {
 		// Assert
 		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
 		assertFalse(warnings.isEmpty());
-		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TTIMESTAMP]")));
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP]")));
+	}
+
+	@DatabaseTest
+	public void testSelectConditionWithForbiddenField2() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("t.TCMNT2 IS NULL");
+		listener.setTimestampField("TCMNT2");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
+		assertFalse(warnings.isEmpty());
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT2]")));
 	}
 
 	@DatabaseTest
