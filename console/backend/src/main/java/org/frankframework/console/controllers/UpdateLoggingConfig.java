@@ -18,14 +18,8 @@ package org.frankframework.console.controllers;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.logging.log4j.Level;
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,15 +29,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class UpdateLoggingConfig extends FrankApiBase {
+public class UpdateLoggingConfig {
+
+	private final FrankApiService frankApiService;
+
+	public UpdateLoggingConfig(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("logging")
 	@Description("view the application log configuration")
 	@GetMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getLogConfiguration() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.GET));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -61,7 +69,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
 		builder.addHeader("maxMessageLength", maxMessageLength);
 		builder.addHeader("enableDebugger", enableDebugger);
-		return callAsyncGateway(builder);
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -71,7 +79,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	public ResponseEntity<?> getLogDefinitions(@RequestParam(value = "filter", required = false) String filter) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.GET);
 		request.addHeader("filter", filter);
-		return callSyncGateway(request);
+		return frankApiService.callSyncGateway(request);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -85,7 +93,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
 		request.addHeader("logPackage", logger);
 		request.addHeader("level", level);
-		return callSyncGateway(request);
+		return frankApiService.callSyncGateway(request);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -112,7 +120,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 			}
 		}
 
-		return callSyncGateway(request);
+		return frankApiService.callSyncGateway(request);
 	}
 
 	public record LogDefinitionMultipartBody(

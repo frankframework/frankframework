@@ -270,7 +270,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException {
 		ValidatorHandler validatorHandler;
 
 		try {
@@ -308,7 +308,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
-	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public XMLReader createValidatingParser(PipeLineSession session, AbstractValidationContext context) throws XmlValidatorException {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 
@@ -354,7 +354,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 }
 
 
-class XercesValidationContext extends ValidationContext {
+class XercesValidationContext extends AbstractValidationContext {
 
 	private final PreparseResult preparseResult;
 

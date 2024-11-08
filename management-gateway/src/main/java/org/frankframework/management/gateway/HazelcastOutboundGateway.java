@@ -56,13 +56,14 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private HazelcastInstance hzInstance;
 	private ApplicationContext applicationContext;
 
+	private static final RandomStringUtils NUMBER_GENERATOR = RandomStringUtils.insecure();
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
 
 	@Override
 	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
-		String tempReplyChannelName = "__tmp."+ RandomStringUtils.randomAlphanumeric(32);
+		String tempReplyChannelName = "__tmp."+ NUMBER_GENERATOR.nextAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);
 		log.debug("sending synchronous request to topic [{}] message [{}] reply-queue [{}] receiveTimeout [{}]", requestTopicName, in, tempReplyChannelName, receiveTimeout);
 
@@ -76,11 +77,20 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		requestTopic.publish(requestMessage);
 
 		Message<O> replyMessage = doReceive(responseQueue, receiveTimeout);
+		silentylyRemoveQueue(responseQueue);
 		if (replyMessage != null) {
 			return replyMessage;
 		}
 
 		throw new BusException("no reponse found on temporary reply-queue ["+tempReplyChannelName+"] within receiveTimeout ["+receiveTimeout+"]");
+	}
+
+	private void silentylyRemoveQueue(IQueue<?> responseQueue) {
+		try {
+			responseQueue.destroy();
+		} catch (Exception e) {
+			log.info("error closing response queue", e);
+		}
 	}
 
 	@Nullable
@@ -94,8 +104,6 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-		} finally {
-			responseQueue.destroy();
 		}
 
 		log.trace("did not receive response within timeout of [{}] ms", receiveTimeout);

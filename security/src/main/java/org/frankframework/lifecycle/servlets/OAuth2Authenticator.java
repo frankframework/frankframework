@@ -61,7 +61,7 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  *
  */
-public class OAuth2Authenticator extends ServletAuthenticatorBase {
+public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	/** eg. openid, profile, email */
 	private @Setter String scopes;

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.frankframework.console.ApiException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -23,12 +22,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import org.frankframework.console.ApiException;
+
 /**
- * This is a test class to test the {@link FrankApiBase} class.
- * It tests path parameters, query parameters and json convertions
+ * This is a test class to test the {@link FrankApiService} class.
+ * It tests path parameters, query parameters and json conversion
  */
 @Controller
-public class ApiTestBaseTest extends FrankApiBase {
+public class ApiTestBaseTest {
 
 	@GetMapping(value = "/test/{path}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getWithPathAndQueryParam(@PathVariable("path") String path, @RequestParam(value = "bool", required = false) boolean bool) throws ApiException {

@@ -42,14 +42,15 @@ import jakarta.jms.Topic;
 import jakarta.jms.TopicPublisher;
 import jakarta.jms.TopicSession;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -254,7 +255,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/*
 	 * Override this method in descender classes.
 	 */
-	protected MessagingSourceFactory getMessagingSourceFactory() {
+	protected AbstractMessagingSourceFactory getMessagingSourceFactory() {
 		return new JmsMessagingSourceFactory(this);
 	}
 
@@ -268,7 +269,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			synchronized (this) {
 				if (messagingSource == null) {
 					log.debug("instantiating MessagingSourceFactory");
-					MessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
+					AbstractMessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
 					try {
 						String connectionFactoryName = getConnectionFactoryName();
 						log.debug("creating MessagingSource");

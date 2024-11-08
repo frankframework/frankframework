@@ -27,7 +27,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.pgp.Decrypt;
 import org.frankframework.pgp.Encrypt;
-import org.frankframework.pgp.PGPAction;
+import org.frankframework.pgp.AbstractPGPAction;
 import org.frankframework.pgp.Sign;
 import org.frankframework.pgp.Verify;
 import org.frankframework.stream.Message;
@@ -87,9 +87,9 @@ public class PGPPipe extends FixedForwardPipe {
 	private String[] publicKeys;
 
 	/**
-	 * This is the {@link PGPAction} object that executes the desired action.
+	 * This is the {@link AbstractPGPAction} object that executes the desired action.
 	 */
-	private PGPAction pgpAction;
+	private AbstractPGPAction pgpAction;
 
 	@Override
 	public void configure() throws ConfigurationException {

@@ -24,15 +24,6 @@ import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.util.HttpUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,8 +39,24 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import org.frankframework.console.ApiException;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.HttpUtils;
+
 @RestController
-public class TransactionalStorage extends FrankApiBase {
+public class TransactionalStorage {
+
+	private final FrankApiService frankApiService;
+
+	public TransactionalStorage(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -91,7 +98,7 @@ public class TransactionalStorage extends FrankApiBase {
 					String decodedMessageId = HttpUtils.urlDecode(messageId);
 
 					builder.addHeader("messageId", decodedMessageId);
-					Message<?> message = sendSyncMessage(builder);
+					Message<?> message = frankApiService.sendSyncMessage(builder);
 					String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY);
 
 					String filenameExtension = ".txt";
@@ -156,7 +163,7 @@ public class TransactionalStorage extends FrankApiBase {
 		builder.addHeader("sort", sort);
 		builder.addHeader("skip", skipMessages);
 		builder.addHeader("max", maxMessages);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -172,7 +179,7 @@ public class TransactionalStorage extends FrankApiBase {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		builder.addHeader("messageId", HttpUtils.urlDecode(messageId));
-		return callAsyncGateway(builder);
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -222,7 +229,7 @@ public class TransactionalStorage extends FrankApiBase {
 		messageId = HttpUtils.urlDecode(messageId);
 
 		builder.addHeader("messageId", messageId);
-		return callAsyncGateway(builder);
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -246,7 +253,7 @@ public class TransactionalStorage extends FrankApiBase {
 		for (String messageId : messageIds) {
 			try {
 				builder.addHeader("messageId", messageId);
-				callAsyncGateway(builder);
+				frankApiService.callAsyncGateway(builder);
 			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
 			} catch (Exception e) {
@@ -272,7 +279,7 @@ public class TransactionalStorage extends FrankApiBase {
 		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
 		builder.addHeader("messageId", messageId);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	private void addHeaders(String configuration, String adapterName, StorageSource storageSource, String storageSourceName, String processState, RequestMessageBuilder builder) {

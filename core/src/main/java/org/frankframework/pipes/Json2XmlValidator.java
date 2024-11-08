@@ -51,7 +51,7 @@ import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.RootValidations;
-import org.frankframework.validation.ValidationContext;
+import org.frankframework.validation.AbstractValidationContext;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.xml.NamespaceRemovingFilter;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
@@ -250,7 +250,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 	protected PipeRunResult alignXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
+		AbstractValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
@@ -277,7 +277,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
-		ValidationContext context;
+		AbstractValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
 			context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());

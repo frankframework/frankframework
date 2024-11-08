@@ -18,7 +18,7 @@ package org.frankframework.scheduler.job;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.DirectoryCleaner;
 
 /**
@@ -28,7 +28,7 @@ import org.frankframework.util.DirectoryCleaner;
  * 
  * {@inheritDoc}
  */
-public class CleanupFileSystemJob extends JobDef {
+public class CleanupFileSystemJob extends AbstractJobDef {
 
 	private final List<DirectoryCleaner> directoryCleaners = new ArrayList<>();
 

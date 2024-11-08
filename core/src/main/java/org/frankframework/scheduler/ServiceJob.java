@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
  *
  * @author John Dekker
  */
-public class ServiceJob extends BaseJob {
+public class ServiceJob extends AbstractJob {
 
 	public static final String JAVALISTENER_KEY = "javaListener";
 	public static final String CORRELATIONID_KEY = "correlationId";

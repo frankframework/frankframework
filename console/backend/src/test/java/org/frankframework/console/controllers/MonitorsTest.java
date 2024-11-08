@@ -13,8 +13,13 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.util.StreamUtil;
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
@@ -24,12 +29,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonStructure;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.util.StreamUtil;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, Monitors.class})
 public class MonitorsTest extends FrankApiTestBase {

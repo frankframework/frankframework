@@ -24,9 +24,9 @@ import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
-public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorBase<PrometheusConfig> {
+public class PrometheusRegistryConfigurator extends AbstractMetricsRegistryConfigurator<PrometheusConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements PrometheusConfig {}
+	private class Config extends AbstractMeterRegistryConfig implements PrometheusConfig {}
 
 	@Override
 	protected PrometheusConfig createConfig() {

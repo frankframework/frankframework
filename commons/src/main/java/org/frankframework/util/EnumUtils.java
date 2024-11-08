@@ -29,7 +29,11 @@ import org.frankframework.doc.DocumentedEnum;
 /**
  * @author Niels Meijer
  */
-public abstract class EnumUtils {
+public class EnumUtils {
+
+	private EnumUtils() {
+		throw new IllegalStateException("Don't constuct utility class");
+	}
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
 		return parse(enumClass, value, false);

@@ -2,10 +2,6 @@ package org.frankframework.console.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.console.configuration.SpringBusExceptionHandler;
-import org.frankframework.core.IbisException;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.util.JacksonUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +12,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.client.HttpClientErrorException;
+
+import org.frankframework.console.configuration.SpringBusExceptionHandler;
+import org.frankframework.core.IbisException;
+import org.frankframework.management.bus.BusException;
+import org.frankframework.util.JacksonUtils;
 
 public class SpringBusExceptionHandlerTest {
 

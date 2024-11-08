@@ -26,11 +26,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.frankframework.configuration.ConfigurationException;
 
 public class KafkaFacadeTest {
-	KafkaFacade facade;
+	AbstractKafkaFacade facade;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		facade = new KafkaFacade() {
+		facade = new AbstractKafkaFacade() {
 			@Override
 			public String getPhysicalDestinationName() {
 				return "";
@@ -51,7 +51,7 @@ public class KafkaFacadeTest {
 
 	@FunctionalInterface
 	interface KafkaFacadeConfigurer {
-		void configure(KafkaFacade kafkaFacade);
+		void configure(AbstractKafkaFacade kafkaFacade);
 	}
 
 	static Stream<Arguments> validateParameters() {

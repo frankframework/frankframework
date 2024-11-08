@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.Session;
 
-import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.HasSender;
@@ -86,7 +86,7 @@ import org.frankframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends AbstractJmsListener implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;

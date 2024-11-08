@@ -40,8 +40,8 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpResponseHandler;
-import org.frankframework.http.HttpSenderBase;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
@@ -54,7 +54,7 @@ import org.frankframework.util.XmlUtils;
 /**
  * Sender for Akamai NetStorage (HTTP based).
  *
- * <p>See {@link HttpSenderBase} for more arguments and parameters!</p>
+ * <p>See {@link AbstractHttpSender} for more arguments and parameters!</p>
  *
  *
  * <p><b>AuthAlias:</b></p>
@@ -66,7 +66,7 @@ import org.frankframework.util.XmlUtils;
  * @author	Niels Meijer
  * @since	7.0-B4
  */
-public class NetStorageSender extends HttpSenderBase {
+public class NetStorageSender extends AbstractHttpSender {
 	private static final String URL_PARAM_KEY = "urlParameter";
 	public static final String DESTINATION_PARAM_KEY = "destination";
 	public static final String FILE_PARAM_KEY = "file";

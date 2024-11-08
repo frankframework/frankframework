@@ -30,14 +30,14 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 
 import org.frankframework.core.SenderException;
-import org.frankframework.http.HttpServletBase;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 @IbisInitializer
-public class LarvaServlet extends HttpServletBase {
+public class LarvaServlet extends AbstractHttpServlet {
 	private static final URL INDEX_TEMPLATE = getResource("/index.html.template");
 	private static final String SERVLET_PATH = "/iaf/larva/";
 	private final transient Logger log = LogUtil.getLogger(this);
@@ -174,7 +174,7 @@ public class LarvaServlet extends HttpServletBase {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {
-					new LarvaTool().windiff(getServletContext(), request, request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
+					new LarvaTool().windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);
 					resp.sendError(500, "unable to save file");

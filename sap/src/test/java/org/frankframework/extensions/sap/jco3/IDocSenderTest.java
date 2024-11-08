@@ -1,6 +1,6 @@
 package org.frankframework.extensions.sap.jco3;
 
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,14 +16,14 @@ public class IDocSenderTest {
 
 	@BeforeEach
 	public void setUp() {
-		GlobalListItem.clear();
+		SapSystemListItem.clear();
 
 		sender = new IdocSender();
 		sender.setName(sender.getClass().getSimpleName()+" under test");
 
 		sapSystem = new SapSystem();
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(sender);
+		SapSystemListItem.registerItem(sapSystem);
 	}
 
 	@Test

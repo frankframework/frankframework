@@ -35,8 +35,8 @@ public class MapCredentials extends Credentials {
 	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
 		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 		this.aliases = aliases;
-		this.usernameSuffix = StringUtils.isNotEmpty(usernameSuffix) ? usernameSuffix : MapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
-		this.passwordSuffix = StringUtils.isNotEmpty(passwordSuffix) ? passwordSuffix : MapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
+		this.usernameSuffix = StringUtils.isNotEmpty(usernameSuffix) ? usernameSuffix : AbstractMapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
+		this.passwordSuffix = StringUtils.isNotEmpty(passwordSuffix) ? passwordSuffix : AbstractMapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.XmlParameterBuilder;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
@@ -69,10 +69,11 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.addForward(new PipeForward("1","Path1"));
 		pipe.addForward(new PipeForward("2","Path2"));
 
-		Message input=MessageTestUtils.getMessage("/XmlSwitch/in.xml");
-		Parameter inputParameter = new Parameter();
-		inputParameter.setName("source");
-		inputParameter.setType(ParameterType.DOMDOC);
+		Message input = MessageTestUtils.getMessage("/XmlSwitch/in.xml");
+
+		XmlParameterBuilder inputParameter = XmlParameterBuilder.create()
+				.withName("source")
+				.withType(ParameterType.DOMDOC);
 		inputParameter.setRemoveNamespaces(true);
 
 		pipe.addParameter(inputParameter);
@@ -87,11 +88,12 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.addForward(new PipeForward("1","Path1"));
 		pipe.addForward(new PipeForward("2","Path2"));
 
-		Message input=MessageTestUtils.getMessage("/XmlSwitch/in.xml");
-		pipe.addParameter(ParameterBuilder.create().withName("source").withType(ParameterType.DOMDOC));
+		Message input = MessageTestUtils.getMessage("/XmlSwitch/in.xml");
 
+		pipe.addParameter(XmlParameterBuilder.create().withName("source").withType(ParameterType.DOMDOC));
 		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");
 		pipe.setNamespaceAware(false);
+
 		testSwitch(input,"2");
 	}
 
@@ -100,8 +102,9 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.addForward(new PipeForward("1","Path1"));
 		pipe.addForward(new PipeForward("2","Path2"));
 
-		Message input=MessageTestUtils.getMessage("/XmlSwitch/in.xml");
-		pipe.addParameter(ParameterBuilder.create().withName("source").withType(ParameterType.DOMDOC));
+		Message input = MessageTestUtils.getMessage("/XmlSwitch/in.xml");
+
+		pipe.addParameter(XmlParameterBuilder.create().withName("source").withType(ParameterType.DOMDOC));
 		pipe.setXpathExpression("$source/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
 		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
 

@@ -1,18 +1,19 @@
 package org.frankframework.console.controllers;
 
-import org.frankframework.console.ApiException;
+import jakarta.servlet.ServletException;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.ServletException;
+import org.frankframework.console.ApiException;
 
 /**
  * Test controller to replicate throwing of Exceptions in controller methods to test the ApiExceptionHandler
  */
 @RestController
-public class TestController extends FrankApiBase {
+public class TestController {
 
 	@GetMapping(value = "/test/apiexception", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String testApiException() {

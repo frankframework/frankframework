@@ -21,7 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.core.annotation.AnnotationUtils;
+
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
@@ -30,18 +35,14 @@ import org.frankframework.doc.Unsafe;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringResolver;
-import org.springframework.beans.BeanUtils;
-import org.springframework.core.annotation.AnnotationUtils;
-
-import jakarta.annotation.Nullable;
 
 /**
  * @author Niels Meijer
  */
-public class ValidateAttributeRule extends DigesterRuleBase {
+public class ValidateAttributeRule extends AbstractDigesterRule {
 
 	/**
-	 * @see DigesterRuleBase#handleBean()
+	 * @see AbstractDigesterRule#handleBean()
 	 */
 	@Override
 	protected void handleBean() {
@@ -49,7 +50,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	}
 
 	/**
-	 * @see DigesterRuleBase#handleAttribute(String, String, Map)
+	 * @see AbstractDigesterRule#handleAttribute(String, String, Map)
 	 *
 	 * @param name Name of attribute
 	 * @param value Attribute Value

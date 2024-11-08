@@ -22,7 +22,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 
@@ -32,7 +32,7 @@ import org.frankframework.util.RunState;
  * 
  * @ff.info This is a default job that can be controlled with the property {@literal recover.adapters.interval}.
  */
-public class RecoverAdaptersJob extends JobDef {
+public class RecoverAdaptersJob extends AbstractJobDef {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	@Override

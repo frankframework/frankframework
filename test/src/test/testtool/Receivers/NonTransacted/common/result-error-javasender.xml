@@ -1,0 +1,31 @@
+<manageDatabaseRLY>
+  <completionInformation>
+    <returnCode>OK</returnCode>
+  </completionInformation>
+  <results>
+    <result item="1">
+      <result>
+        <fielddefinition>
+          <field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="32" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+          <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.String"/>
+          <field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+          <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="200" precision="200" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+        </fielddefinition>
+        <rowset>
+          <row number="0">
+            <field name="TKEY">57440</field>
+            <field name="TCHAR">E</field>
+            <field name="TTIMESTAMP">2022-01-20 17:49:03</field>
+			<field name="TVARCHAR">Pipe [IbisJavaSender] caught exception: exception processing message using request processor [ibis4test-ReceiverTest-child-service]: (RequestProcessorException) RequestProcessor [ibis4test-ReceiverTes</field>
+          </row>
+          <row number="1">
+            <field name="TKEY">57441</field>
+            <field name="TCHAR">T</field>
+            <field name="TTIMESTAMP" null="true"/>
+            <field name="TVARCHAR" null="true"/>
+          </row>
+        </rowset>
+      </result>
+    </result>
+  </results>
+</manageDatabaseRLY>

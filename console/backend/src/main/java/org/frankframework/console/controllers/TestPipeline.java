@@ -24,7 +24,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
@@ -37,16 +46,15 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-public class TestPipeline extends FrankApiBase {
+public class TestPipeline {
+
+	private final FrankApiService frankApiService;
+
+	public TestPipeline(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@RolesAllowed("IbisTester")
 	@Relation("testing")
@@ -92,7 +100,7 @@ public class TestPipeline extends FrankApiBase {
 		}
 
 		builder.setPayload(message);
-		Message<?> response = sendSyncMessage(builder);
+		Message<?> response = frankApiService.sendSyncMessage(builder);
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
 		return testPipelineResponse(ResponseUtils.convertPayload(response.getPayload()), state, message);
 	}
@@ -117,7 +125,7 @@ public class TestPipeline extends FrankApiBase {
 				String currentMessage = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(StreamUtil.dontClose(archive)), null);
 
 				builder.setPayload(currentMessage);
-				Message<?> response = sendSyncMessage(builder);
+				Message<?> response = frankApiService.sendSyncMessage(builder);
 				result.append(name);
 				result.append(": ");
 				result.append(BusMessageUtils.getHeader(response, MessageBase.STATE_KEY));

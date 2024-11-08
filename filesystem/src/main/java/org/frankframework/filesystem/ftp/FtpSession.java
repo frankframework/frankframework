@@ -50,7 +50,7 @@ import org.frankframework.util.LogUtil;
  *
  * @author John Dekker
  */
-public abstract class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
+public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private static final Logger LOG = LogUtil.getLogger(FtpSession.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -373,8 +373,6 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	public void setKeystoreAliasPassword(String string) {
 		keystoreAliasPassword = string;
 	}
-
-
 
 	/** (ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	@Override
