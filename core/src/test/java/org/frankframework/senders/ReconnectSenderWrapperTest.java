@@ -63,7 +63,7 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		verify(senderMock, Mockito.times(2)).stop();
 	}
 
-	private static class TestOpenAndConfigureSender extends SenderWithParametersBase {
+	private static class TestOpenAndConfigureSender extends AbstractSenderWithParameters {
 		private final AtomicBoolean opened = new AtomicBoolean(false);
 		private final AtomicBoolean configured = new AtomicBoolean(false);
 

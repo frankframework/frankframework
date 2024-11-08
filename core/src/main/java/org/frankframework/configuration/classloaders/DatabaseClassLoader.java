@@ -17,11 +17,12 @@ package org.frankframework.configuration.classloaders;
 
 import java.util.Map;
 
-import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.springframework.context.ApplicationContext;
 
-public class DatabaseClassLoader extends JarBytesClassLoader {
+import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.ConfigurationUtils;
+
+public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 
 	private Map<String, Object> configuration;
 	private String datasourceName = null;

@@ -15,7 +15,7 @@
 */
 package org.frankframework.senders;
 
-import org.frankframework.filesystem.FileSystemSender;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
@@ -31,7 +31,7 @@ import org.frankframework.filesystem.smb.SmbFileRef;
 *
 * @author Niels Meijer
 */
-public class Samba2Sender extends FileSystemSender<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
+public class Samba2Sender extends AbstractFileSystemSender<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	public Samba2Sender() {
 		setFileSystem(new Samba2FileSystem());

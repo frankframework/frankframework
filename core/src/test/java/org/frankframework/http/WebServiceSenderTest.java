@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 

@@ -24,7 +24,7 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
 import org.frankframework.configuration.ConfigurationException;
 
-public class Encrypt extends PGPAction {
+public class Encrypt extends AbstractPGPAction {
 	private final String[] recipients;
 
 	public Encrypt(String[] publicKey, String[] recipients) throws ConfigurationException {

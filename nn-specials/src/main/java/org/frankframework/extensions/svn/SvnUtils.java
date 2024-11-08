@@ -25,7 +25,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.HttpSender;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlException;

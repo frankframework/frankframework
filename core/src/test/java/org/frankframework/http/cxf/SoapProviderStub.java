@@ -7,7 +7,7 @@ import lombok.Getter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
-public class SoapProviderStub extends SOAPProviderBase {
+public class SoapProviderStub extends AbstractSOAPProvider {
 
 	final @Getter PipeLineSession session;
 

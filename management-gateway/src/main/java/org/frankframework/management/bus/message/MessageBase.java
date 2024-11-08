@@ -24,7 +24,7 @@ import org.springframework.util.MimeType;
 
 import org.frankframework.management.bus.BusMessageUtils;
 
-public abstract class MessageBase<T> implements Message<T> {
+public class MessageBase<T> implements Message<T> {
 	public static final String STATUS_KEY = "status";
 	public static final String MIMETYPE_KEY = "type";
 	public static final String CONTENT_DISPOSITION_KEY = "contentdisposition";

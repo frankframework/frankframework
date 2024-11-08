@@ -20,6 +20,21 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
+
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
@@ -38,22 +53,7 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.Credentials;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
-
-import org.frankframework.http.HttpSessionBase;
+import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
@@ -68,7 +68,7 @@ public class OAuthAccessTokenManager {
 	private final Scope scope;
 	private final CredentialFactory clientCredentialFactory;
 	private final boolean useClientCredentials;
-	private final HttpSessionBase httpSession;
+	private final AbstractHttpSession httpSession;
 	private final int expiryMs;
 	private final AuthenticationType authenticationType;
 
@@ -79,7 +79,7 @@ public class OAuthAccessTokenManager {
 		AUTHENTICATION_HEADER, REQUEST_PARAMETER
 	}
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentials, AuthenticationType authType, HttpSessionBase httpSession, int expiry) throws HttpAuthenticationException {
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentials, AuthenticationType authType, AbstractHttpSession httpSession, int expiry) throws HttpAuthenticationException {
 		try {
 			this.tokenEndpoint = new URI(tokenEndpoint);
 		} catch (URISyntaxException e) {

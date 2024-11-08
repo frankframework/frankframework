@@ -28,9 +28,9 @@ import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
 import org.frankframework.jdbc.transformer.QueryOutputToCSV;
 import org.frankframework.jdbc.transformer.QueryOutputToJson;
 import org.frankframework.management.bus.ActionSelector;

@@ -24,6 +24,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import lombok.Getter;
+
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -59,7 +60,7 @@ import org.frankframework.util.XmlBuilder;
  *
  * @author Gerrit van Brakel
  */
-public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
+public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implements ICacheEnabled<String,Set<String>> {
 
 	private @Getter boolean recursiveSearch = true;
 

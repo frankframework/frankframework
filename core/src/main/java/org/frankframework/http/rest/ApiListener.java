@@ -36,7 +36,7 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.doc.Default;
-import org.frankframework.http.HttpSenderBase;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.jwt.JwtValidator;
 import org.frankframework.lifecycle.ServletManager;
@@ -103,8 +103,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter @Setter Receiver<Message> receiver;
 
-	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
-	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
+	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", AbstractHttpSender.MESSAGE_ID_HEADER);
+	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", AbstractHttpSender.CORRELATION_ID_HEADER);
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
@@ -386,7 +386,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Name of the header which contains the Message-Id.
 	 */
-	@Default(HttpSenderBase.MESSAGE_ID_HEADER)
+	@Default(AbstractHttpSender.MESSAGE_ID_HEADER)
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
@@ -394,7 +394,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Name of the header which contains the Correlation-Id.
 	 */
-	@Default(HttpSenderBase.CORRELATION_ID_HEADER)
+	@Default(AbstractHttpSender.CORRELATION_ID_HEADER)
 	public void setCorrelationIdHeader(String correlationIdHeader) {
 		this.correlationIdHeader = correlationIdHeader;
 	}

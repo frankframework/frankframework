@@ -16,6 +16,9 @@
 package org.frankframework.jms;
 
 import jakarta.annotation.Nonnull;
+
+import org.w3c.dom.Element;
+
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -23,12 +26,11 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jms.JMSFacade.DestinationType;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
 
 /**
  * Sender for browsing and removing queue messages (with input and output in a XML message).
@@ -81,7 +83,7 @@ import org.w3c.dom.Element;
  *
  * @author  Peter Leeuwenburgh
  */
-public class XmlJmsBrowserSender extends SenderWithParametersBase {
+public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 
 	@SuppressWarnings("unchecked")
 	public JmsBrowser<jakarta.jms.Message> createJmsBrowser() {

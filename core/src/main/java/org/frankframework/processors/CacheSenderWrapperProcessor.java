@@ -22,7 +22,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.senders.SenderWrapperBase;
+import org.frankframework.senders.AbstractSenderWrapper;
 import org.frankframework.stream.Message;
 
 /**
@@ -31,13 +31,13 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
+public class CacheSenderWrapperProcessor extends AbstractSenderWrapperProcessor {
 
 	@Override
-	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		ICache<String,String> cache=senderWrapperBase.getCache();
+	public SenderResult sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		ICache<String,String> cache= abstractSenderWrapper.getCache();
 		if (cache==null) {
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
+			return senderWrapperProcessor.sendMessage(abstractSenderWrapper, message, session);
 		}
 
 		String key;
@@ -48,7 +48,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 		}
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
+			return senderWrapperProcessor.sendMessage(abstractSenderWrapper, message, session);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key [{}]", key);
 		SenderResult result;
@@ -58,7 +58,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			result = new SenderResult(cacheResult);
 		} else {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key [{}]", key);
-			result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
+			result = senderWrapperProcessor.sendMessage(abstractSenderWrapper, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key [{}]", key);
 			if (result.isSuccess()) {
 				String cacheValue = cache.transformValue(result.getResult(), session);

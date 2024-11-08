@@ -27,7 +27,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Optional;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.FrankListener;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -39,7 +39,7 @@ import org.frankframework.util.UUIDUtil;
  * 
  * {@inheritDoc}
  */
-public class SendMessageJob extends JobDef {
+public class SendMessageJob extends AbstractJobDef {
 	private @Setter IbisLocalSender localSender = null;
 	private @Getter String javaListener;
 	private @Getter String message = null;

@@ -32,7 +32,7 @@ import org.frankframework.util.ClassUtils;
 /**
  * @author Jaco de Groot
  */
-public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase {
+public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 
