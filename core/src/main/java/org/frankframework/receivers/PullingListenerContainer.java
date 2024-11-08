@@ -326,7 +326,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (txStatus.isRollbackOnly()) {
 									messageHandled = false;
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, "Pipeline processing ended with status RollbackOnly");
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
 									log.debug("Message processed successfully, committing transaction");
 									txManager.commit(txStatus);
@@ -339,7 +339,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (txStatus != null && !txStatus.isCompleted()) {
 									messageHandled = false;
 									log.debug("Rollback because exception occurred and message handling transaction was not completed yet.");
-									rollBack(txStatus, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
+									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
 									txStatus = null;
 								}
 							} catch (Exception e2) {
@@ -356,7 +356,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						if (txStatus != null && !txStatus.isCompleted()) {
 							log.debug("Rollback because in finally-clause, message handling transaction was not completed.");
 							messageHandled = false;
-							rollBack(txStatus, "Rollback because transaction has terminated unexpectedly");
+							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
 							txStatus = null;
 						}
 					}
@@ -392,7 +392,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, String reason) {
+		private void rollBack(TransactionStatus txStatus, RawMessageWrapper<M> rawMessage, String reason) {
 			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
 					.map(StackTraceElement::toString)
