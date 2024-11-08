@@ -13,7 +13,7 @@ import org.frankframework.console.ApiException;
  * Test controller to replicate throwing of Exceptions in controller methods to test the ApiExceptionHandler
  */
 @RestController
-public class TestController extends AbstractFrankApi {
+public class TestController {
 
 	@GetMapping(value = "/test/apiexception", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String testApiException() {

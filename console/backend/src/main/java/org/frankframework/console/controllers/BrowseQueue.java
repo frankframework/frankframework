@@ -36,14 +36,20 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class BrowseQueue extends AbstractFrankApi {
+public class BrowseQueue {
+
+	private final FrankApiService frankApiService;
+
+	public BrowseQueue(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jms", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of all JMS QueueConnectionFactories")
 	public ResponseEntity<?> getQueueConnectionFactories() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.GET));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.GET));
 	}
 
 	@AllowAllIbisUserRoles
@@ -76,7 +82,6 @@ public class BrowseQueue extends AbstractFrankApi {
 		if (lookupDestination != null) {
 			builder.addHeader("lookupDestination", lookupDestination);
 		}
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

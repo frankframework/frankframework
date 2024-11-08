@@ -50,11 +50,17 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.HttpUtils;
 
 @RestController
-public class ConfigurationsEndpoint extends AbstractFrankApi {
+public class ConfigurationsEndpoint {
+
+	private final FrankApiService frankApiService;
 
 	private static final String PATH_VARIABLE_VERSION = "version";
 
 	private static final String BUS_HEADER_VERSION = "version";
+
+	public ConfigurationsEndpoint(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("application")
@@ -64,14 +70,14 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 												 @RequestParam(value = "flow", required = false) String flow) throws ApiException {
 		if (StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-			return callSyncGateway(builder);
+			return frankApiService.callSyncGateway(builder);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		if (loaded) {
 			builder.addHeader("loaded", true);
 		}
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
@@ -84,7 +90,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 		if ("reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.FULLRELOAD.name());
-			callAsyncGateway(builder);
+			frankApiService.callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}
 
@@ -104,7 +110,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 			builder.addHeader("loaded", true);
 		}
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@PermitAll
@@ -114,7 +120,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 	public ResponseEntity<?> getConfigurationHealth(@PathVariable("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -124,7 +130,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 	public ResponseEntity<?> getConfigurationFlow(@PathVariable("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -138,7 +144,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 			builder.addHeader("action", Action.RELOAD.name());
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-			callAsyncGateway(builder);
+			frankApiService.callAsyncGateway(builder);
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 		}
 
@@ -154,7 +160,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
@@ -185,8 +191,10 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 				throw new ApiException("autoreload must be of type boolean");
 			}
 		}
+
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
-		return callSyncGateway(builder);
+
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
@@ -227,7 +235,7 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -240,7 +248,8 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BUS_HEADER_VERSION, version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
-		return callSyncGateway(builder);
+
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -253,7 +262,8 @@ public class ConfigurationsEndpoint extends AbstractFrankApi {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BUS_HEADER_VERSION, version);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
-		return callAsyncGateway(builder);
+
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	public record ConfigurationMultipartBody(

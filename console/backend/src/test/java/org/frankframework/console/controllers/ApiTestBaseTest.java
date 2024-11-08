@@ -25,11 +25,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.frankframework.console.ApiException;
 
 /**
- * This is a test class to test the {@link AbstractFrankApi} class.
- * It tests path parameters, query parameters and json convertions
+ * This is a test class to test the {@link FrankApiService} class.
+ * It tests path parameters, query parameters and json conversion
  */
 @Controller
-public class AbstractFrankApiTest extends AbstractFrankApi {
+public class ApiTestBaseTest {
 
 	@GetMapping(value = "/test/{path}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getWithPathAndQueryParam(@PathVariable("path") String path, @RequestParam(value = "bool", required = false) boolean bool) throws ApiException {
@@ -53,7 +53,7 @@ public class AbstractFrankApiTest extends AbstractFrankApi {
 	}
 
 	@Nested
-	@ContextConfiguration(classes = {WebTestConfiguration.class, AbstractFrankApiTest.class})
+	@ContextConfiguration(classes = {WebTestConfiguration.class, ApiTestBaseTest.class})
 	public class TestApi extends FrankApiTestBase {
 
 		@Test

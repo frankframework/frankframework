@@ -41,14 +41,20 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.StreamUtil;
 
 @RestController
-public class LiquibaseScript extends AbstractFrankApi {
+public class LiquibaseScript {
+
+	private final FrankApiService frankApiService;
+
+	public LiquibaseScript(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadScript(@RequestParam(value = "configuration", required = false) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@AllowAllIbisUserRoles
@@ -74,7 +80,7 @@ public class LiquibaseScript extends AbstractFrankApi {
 			throw new ApiException("uploading zip files is not supported!");
 		}
 		builder.addHeader("filename", filename);
-		Message<?> response = sendSyncMessage(builder);
+		Message<?> response = frankApiService.sendSyncMessage(builder);
 		String result = (String) response.getPayload();
 
 		if (StringUtils.isEmpty(result)) {

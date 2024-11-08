@@ -5,9 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.UUID;
 
-import org.frankframework.management.bus.BusTopic;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import org.frankframework.management.bus.BusTopic;
 
 public class MessageCacheStoreTest {
 

@@ -48,7 +48,13 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
 @RestController
-public class TestPipeline extends AbstractFrankApi {
+public class TestPipeline {
+
+	private final FrankApiService frankApiService;
+
+	public TestPipeline(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@RolesAllowed("IbisTester")
 	@Relation("testing")
@@ -94,7 +100,7 @@ public class TestPipeline extends AbstractFrankApi {
 		}
 
 		builder.setPayload(message);
-		Message<?> response = sendSyncMessage(builder);
+		Message<?> response = frankApiService.sendSyncMessage(builder);
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
 		return testPipelineResponse(ResponseUtils.convertPayload(response.getPayload()), state, message);
 	}
@@ -119,7 +125,7 @@ public class TestPipeline extends AbstractFrankApi {
 				String currentMessage = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(StreamUtil.dontClose(archive)), null);
 
 				builder.setPayload(currentMessage);
-				Message<?> response = sendSyncMessage(builder);
+				Message<?> response = frankApiService.sendSyncMessage(builder);
 				result.append(name);
 				result.append(": ");
 				result.append(BusMessageUtils.getHeader(response, MessageBase.STATE_KEY));

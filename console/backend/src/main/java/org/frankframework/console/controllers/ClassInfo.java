@@ -30,7 +30,13 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class ClassInfo extends AbstractFrankApi {
+public class ClassInfo {
+
+	private final FrankApiService frankApiService;
+
+	public ClassInfo(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/classinfo/{className}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -40,7 +46,6 @@ public class ClassInfo extends AbstractFrankApi {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.DEBUG, BusAction.GET);
 		builder.addHeader("className", className);
 		builder.addHeader("baseClassName", baseClassName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

@@ -38,7 +38,13 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class ExecuteJdbcQuery extends AbstractFrankApi {
+public class ExecuteJdbcQuery {
+
+	private final FrankApiService frankApiService;
+
+	public ExecuteJdbcQuery(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/jdbc", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,7 +52,7 @@ public class ExecuteJdbcQuery extends AbstractFrankApi {
 	@Description("view a list of all JDBC DataSources")
 	public ResponseEntity<?> getJdbcDataSources() throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.GET);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisTester"})
@@ -83,7 +89,6 @@ public class ExecuteJdbcQuery extends AbstractFrankApi {
 
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("queryType", queryType);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
-
 }

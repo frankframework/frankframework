@@ -19,12 +19,12 @@ import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.stereotype.Service;
 
 import lombok.Getter;
 
@@ -35,13 +35,17 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
 
-public abstract class AbstractFrankApi implements ApplicationContextAware, InitializingBean {
+@Service
+public class FrankApiService implements ApplicationContextAware, InitializingBean {
 
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Environment environment;
 
-	@Autowired
-	private ClientSession session;
+	private final ClientSession session;
+
+	public FrankApiService(ClientSession session) {
+		this.session = session;
+	}
 
 	protected final OutboundGateway getGateway() {
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);

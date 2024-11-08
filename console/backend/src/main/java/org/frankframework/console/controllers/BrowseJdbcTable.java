@@ -35,7 +35,13 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class BrowseJdbcTable extends AbstractFrankApi {
+public class BrowseJdbcTable {
+
+	private final FrankApiService frankApiService;
+
+	public BrowseJdbcTable(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,6 +71,6 @@ public class BrowseJdbcTable extends AbstractFrankApi {
 		builder.addHeader("numberOfRowsOnly", numberOfRowsOnly);
 		builder.addHeader("minRow", minRow);
 		builder.addHeader("maxRow", maxRow);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 }

@@ -41,7 +41,13 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
 @RestController
-public class TestServiceListener extends AbstractFrankApi {
+public class TestServiceListener {
+
+	private final FrankApiService frankApiService;
+
+	public TestServiceListener(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("testing")
@@ -49,7 +55,7 @@ public class TestServiceListener extends AbstractFrankApi {
 	@GetMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServiceListeners() throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SERVICE_LISTENER, BusAction.GET);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed("IbisTester")
@@ -82,7 +88,7 @@ public class TestServiceListener extends AbstractFrankApi {
 		}
 
 		builder.setPayload(message);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	public record TestServiceListenerModel(

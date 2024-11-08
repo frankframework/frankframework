@@ -26,13 +26,19 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class SecurityItems extends AbstractFrankApi {
+public class SecurityItems {
+
+	private final FrankApiService frankApiService;
+
+	public SecurityItems(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SECURITY_ITEMS);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 }

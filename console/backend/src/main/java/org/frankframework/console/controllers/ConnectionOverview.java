@@ -25,12 +25,18 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class ConnectionOverview extends AbstractFrankApi {
+public class ConnectionOverview {
+
+	private final FrankApiService frankApiService;
+
+	public ConnectionOverview(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/connections", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getConnections() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.CONNECTION_OVERVIEW));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.CONNECTION_OVERVIEW));
 	}
 
 }
