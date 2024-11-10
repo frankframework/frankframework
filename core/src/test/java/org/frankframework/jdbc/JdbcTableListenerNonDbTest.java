@@ -36,7 +36,7 @@ class JdbcTableListenerNonDbTest {
 			"F3 = A_FIELD",
 			"F = TRUE AND A_FIELD IS NULL"
 	})
-	public void testVerifyFieldNotInQuery_Match(String queryText) {
+	public void testVerifyFieldNotInQueryMatch(String queryText) {
 		// Act
 		jdbcTableListener.verifyFieldNotInQuery("A_FIELD", queryText);
 
@@ -51,7 +51,7 @@ class JdbcTableListenerNonDbTest {
 			"F3 = B_A_FIELD",
 			"F = TRUE AND A_FIELD_2 IS NULL"
 	})
-	public void testVerifyFieldNotInQuery_NoMatch(String queryText) {
+	public void testVerifyFieldNotInQueryNoMatch(String queryText) {
 		// Act
 		jdbcTableListener.verifyFieldNotInQuery("A_FIELD", queryText);
 
