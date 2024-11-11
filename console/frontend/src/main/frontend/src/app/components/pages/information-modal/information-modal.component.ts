@@ -8,7 +8,6 @@ import { ToDateDirective } from '../../to-date.directive';
 import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
 import { ServerInfoService } from '../../../services/server-info.service';
 import { Subscription } from 'rxjs';
-import { AppService } from '../../../app.service';
 
 @Component({
   selector: 'app-information-modal',
@@ -18,8 +17,7 @@ import { AppService } from '../../../app.service';
   imports: [CommonModule, TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
-  protected error = false;
-
+  protected initialized: boolean = false;
   protected framework: {
     name: string;
     version: string;
@@ -57,7 +55,6 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     private activeModal: NgbActiveModal,
     private toastService: ToastService,
     private serverInfoService: ServerInfoService,
-    private appService: AppService,
   ) {}
 
   ngOnInit(): void {
@@ -80,9 +77,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
         this.machineName = data.machineName;
         this.processMetrics = data.processMetrics;
         this.uptime = data.uptime;
-      },
-      error: () => {
-        this.error = true;
+        this.initialized = true;
       },
     });
   }

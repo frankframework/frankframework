@@ -50,8 +50,9 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
   ) {}
 
   ngOnInit(): void {
+    this.updateServerInfo();
     this.serverInfoService.serverInfo$.subscribe(() => {
-      this.encodedServerInfo = encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
+      this.updateServerInfo();
     });
   }
 
@@ -130,5 +131,9 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
       this.collapseItem(this.expandedItem.element, this.expandedItem.accordionItem);
       this.expandedItem = null;
     }
+  }
+
+  private updateServerInfo(): void {
+    this.encodedServerInfo = encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
   }
 }

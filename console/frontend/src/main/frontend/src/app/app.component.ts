@@ -329,8 +329,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
       const newVersion = release.tag_name.slice(0, 1) == 'v' ? release.tag_name.slice(1) : release.tag_name;
       const currentVersion = this.appConstants['application.version'] as string;
-      const version = this.miscService.compare_version(newVersion, currentVersion) || 0;
-      console.log(`Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`);
+      const version = this.miscService.compare_version(newVersion, currentVersion) ?? 0;
+      if (!currentVersion || currentVersion === '') {
+        this.debugService.warn(`Latest version is '${newVersion}' but can't retrieve current version.`);
+        return;
+      }
+
+      this.debugService.log(`Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`);
       this.sessionService.remove('IAF-Release');
 
       if (+version > 0) {
