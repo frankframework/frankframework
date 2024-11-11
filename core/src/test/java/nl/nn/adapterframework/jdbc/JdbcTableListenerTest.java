@@ -16,6 +16,9 @@
 package nl.nn.adapterframework.jdbc;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -38,7 +41,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import lombok.Getter;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -130,6 +135,36 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		String expected = "SELECT TKEY FROM "+TEST_TABLE+" t WHERE TINT='1' AND (t.TVARCHAR='x')";
 
 		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@Test
+	public void testSelectConditionWithForbiddenField1() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("t.T_TIMESTAMP IS NULL");
+		listener.setTimestampField("T_TIMESTAMP");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		assertFalse(warnings.isEmpty());
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP]")));
+	}
+
+	@Test
+	public void testSelectConditionWithForbiddenField2() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("t.TCMNT2 IS NULL");
+		listener.setCommentField("TCMNT2");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		assertFalse(warnings.isEmpty());
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT2]")));
 	}
 
 	@Test
