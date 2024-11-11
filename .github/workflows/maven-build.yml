@@ -106,13 +106,13 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: Surefire-java-${{ matrix.java }}
+        name: java${{ matrix.java }}/Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Store FrankDoc XSD
       uses: actions/upload-artifact@v4
       with:
-        name: FrankDoc-java-${{ matrix.java }}
+        name: java${{ matrix.java }}/FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
 
     - name: Print commit sha
