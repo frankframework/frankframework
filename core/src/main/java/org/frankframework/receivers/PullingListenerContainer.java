@@ -402,6 +402,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
+				// TODO: Check if we do, or do not, need the change in process state below or if it will always be done in other part of the PullingListenerContainer code anyway
 				if (inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
 					try {

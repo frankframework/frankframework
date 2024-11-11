@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -363,16 +364,16 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
-		return execute(connection, query, key) ? rawMessage : null;
+		return execute(connection, query, List.of(key)) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
+	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
-				int i=1;
-				for(String parameter:parameters) {
+				int i = 1;
+				for (String parameter : parameters) {
 					log.debug("setting parameter {} to [{}]", i, parameter);
 					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
