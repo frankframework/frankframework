@@ -19,18 +19,11 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.SchedulingAwareRunnable;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPeekableListener;
@@ -46,6 +39,12 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.Semaphore;
 import org.frankframework.util.StringUtil;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.SchedulingAwareRunnable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 
 /**
