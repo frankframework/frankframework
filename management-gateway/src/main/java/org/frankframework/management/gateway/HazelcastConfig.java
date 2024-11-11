@@ -74,7 +74,9 @@ public class HazelcastConfig {
 
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type);
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, name);
-		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_VERSION_KEY, VERSION);
+		if(VERSION != null) { // this value will be present once the artifact has been created, tests will fail otherwise.
+			config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_VERSION_KEY, VERSION);
+		}
 		if(attributes != null) {
 			attributes.entrySet().stream()
 				.filter(e -> StringUtils.isNotBlank(e.getValue()))
