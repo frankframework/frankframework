@@ -24,14 +24,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
@@ -39,7 +39,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
@@ -358,17 +357,17 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
-		return execute(connection, query, key) ? rawMessage : null;
+		return execute(connection, query, List.of(key)) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
+	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
-				int i=1;
-				for(String parameter:parameters) {
-					log.debug("setting parameter "+i+" to ["+parameter+"]");
+				int i = 1;
+				for (String parameter : parameters) {
+					log.debug("setting parameter {} to [{}]", i, parameter);
 					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 

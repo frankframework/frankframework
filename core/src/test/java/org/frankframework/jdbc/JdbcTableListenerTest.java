@@ -16,6 +16,10 @@
 package org.frankframework.jdbc;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -32,7 +36,14 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IMessageBrowser.SortOrder;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -46,12 +57,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Semaphore;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import lombok.Getter;
 
 public class JdbcTableListenerTest extends JdbcTestBase {
 
@@ -133,6 +138,52 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		String expected = "SELECT TKEY FROM " + TEST_TABLE + " t WHERE TINT='1' AND (t.TVARCHAR='x')";
 
 		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@Test
+	public void testSelectConditionWithForbiddenField1() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("t.T_TIMESTAMP IS NULL");
+		listener.setTimestampField("T_TIMESTAMP");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		assertFalse(warnings.isEmpty());
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP]")));
+	}
+
+	@Test
+	public void testSelectConditionWithForbiddenField2() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("t.TCMNT2 IS NULL");
+		listener.setCommentField("TCMNT2");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		assertFalse(warnings.isEmpty());
+		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT2]")));
+	}
+
+	@Test
+	public void testSelectConditionWithFieldSimilarToForbiddenFields() throws ConfigurationException {
+		// Arrange
+		listener.setSelectCondition("TCMNT32 IS NULL AND t.T_TIMESTAMP32 IS NULL");
+		listener.setCommentField("TCMNT3");
+		listener.setTimestampField("T_TIMESTAMP3");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		assertThat(warnings.getWarnings(), not(hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT3]"))));
+		assertThat(warnings.getWarnings(), not(hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP3]"))));
 	}
 
 	@Test
