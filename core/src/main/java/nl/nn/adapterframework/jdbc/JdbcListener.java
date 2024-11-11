@@ -22,16 +22,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IPeekableListener;
@@ -355,17 +357,17 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
-		return execute(connection, query, key) ? rawMessage : null;
+		return execute(connection, query, Collections.singletonList(key)) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
+	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
-				int i=1;
-				for(String parameter:parameters) {
-					log.debug("setting parameter "+i+" to ["+parameter+"]");
+				int i = 1;
+				for (String parameter : parameters) {
+					log.debug("setting parameter {} to [{}]", i, parameter);
 					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 
