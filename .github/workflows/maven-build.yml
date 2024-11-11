@@ -21,6 +21,7 @@ on:
       - "**.png"
       - "**.toml"
       - ".github/**"
+      - "!.github/workflows/maven-build.yml"
       - "docker/**"
       - "webapp/src/main/webapp/iaf/**"
   pull_request:
@@ -34,6 +35,7 @@ on:
       - "**.png"
       - "**.toml"
       - ".github/**"
+      - "!.github/workflows/maven-build.yml"
       - "docker/**"
       - "webapp/src/main/webapp/iaf/**"
 
@@ -104,13 +106,13 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: Surefire
+        name: java${{ matrix.java }}_Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Store FrankDoc XSD
       uses: actions/upload-artifact@v4
       with:
-        name: FrankDoc
+        name: java${{ matrix.java }}_FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
 
     - name: Print commit sha
