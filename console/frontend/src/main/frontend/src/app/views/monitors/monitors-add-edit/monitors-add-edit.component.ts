@@ -152,7 +152,7 @@ export class MonitorsAddEditComponent implements OnInit {
       }
     }
 
-    if (this.triggerId && this.triggerId > -1) {
+    if (this.triggerId > -1) {
       this.monitorsService
         .putTriggerUpdate(this.selectedConfiguration, this.monitor, this.triggerId, trigger)
         .subscribe(() => {
