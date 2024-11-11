@@ -28,6 +28,7 @@ import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.instance.impl.MobyNames;
 
 import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.util.Environment;
 import org.frankframework.util.PropertyLoader;
 
 public class HazelcastConfig {
@@ -36,9 +37,11 @@ public class HazelcastConfig {
 	public static final String ATTRIBUTE_TYPE_KEY = "type";
 	public static final String ATTRIBUTE_NAME_KEY = "name";
 	public static final String ATTRIBUTE_APPLICATION_KEY = "application";
+	public static final String ATTRIBUTE_VERSION_KEY = "version";
 
 	public static final String REQUEST_TOPIC_NAME = "frank_integration_request_topic";
 	public static final String AUTHENTICATION_HEADER_KEY = BusMessageUtils.HEADER_PREFIX+"user";
+	private static final String VERSION = Environment.getModuleVersion("frankframework-management-gateway");
 
 	static Config createHazelcastConfig() {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
@@ -71,6 +74,7 @@ public class HazelcastConfig {
 
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type);
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, name);
+		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_VERSION_KEY, VERSION);
 		if(attributes != null) {
 			attributes.entrySet().stream()
 				.filter(e -> StringUtils.isNotBlank(e.getValue()))
