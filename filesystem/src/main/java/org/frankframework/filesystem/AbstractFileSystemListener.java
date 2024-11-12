@@ -213,12 +213,12 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	@Nonnull
 	@Override
-	public Map<String,Object> openThread() throws ListenerException {
+	public Map<String,Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) {
 		// nothing special here
 	}
 
@@ -437,20 +437,13 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	public String getStateFolder(ProcessState state) {
-		switch (state) {
-		case AVAILABLE:
-			return getInputFolder();
-		case INPROCESS:
-			return getInProcessFolder();
-		case DONE:
-			return getProcessedFolder();
-		case ERROR:
-			return getErrorFolder();
-		case HOLD:
-			return getHoldFolder();
-		default:
-			throw new IllegalStateException("Unknown state ["+state+"]");
-		}
+		return switch (state) {
+			case AVAILABLE -> getInputFolder();
+			case INPROCESS -> getInProcessFolder();
+			case DONE -> getProcessedFolder();
+			case ERROR -> getErrorFolder();
+			case HOLD -> getHoldFolder();
+		};
 	}
 
 	@Override

@@ -81,7 +81,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	 */
 	private @Getter @Setter TaskExecutor taskExecutor;
 
-	private PullingListenerContainer() {
+	public PullingListenerContainer() {
 		super();
 	}
 

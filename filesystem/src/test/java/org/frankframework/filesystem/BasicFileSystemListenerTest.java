@@ -26,6 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +37,23 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+
+import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.ProcessState;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
@@ -505,6 +520,74 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
 		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
 		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+	}
+
+	@Test
+	public void fileListenerTestAfterMessageProcessedErrorMoveFileToErrorFolderThenRetry() throws Exception {
+		// Arrange
+		String fileName = "fileTobeMoved.txt";
+		String processedFolder = "destinationFolder";
+		String errorFolder = "errorFolder";
+		String inProcessFolder = "inProcessFolder";
+
+		createFile(null, fileName, "");
+		waitForActionToFinish();
+
+		assertTrue(_fileExists(fileName));
+
+		_createFolder(processedFolder);
+		_createFolder(errorFolder);
+		_createFolder(inProcessFolder);
+		waitForActionToFinish();
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setProcessedFolder(fileAndFolderPrefix + processedFolder);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + inProcessFolder);
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.setWildcard("*.txt");
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		assertTrue(_fileExists(fileName));
+		assertTrue(_folderExists(processedFolder));
+
+		Receiver<F> receiver = new Receiver<>();
+		receiver.setListener(fileSystemListener);
+		MetricsInitializer metrics = mock();
+		when(metrics.createCounter(any(), any())).thenAnswer(invocation -> mock(Counter.class));
+		when(metrics.createDistributionSummary(any(), any())).thenAnswer(invocation -> mock(DistributionSummary.class));
+		when(metrics.createThreadBasedDistributionSummary(any(), any(), anyInt())).thenAnswer(invocation -> mock(DistributionSummary.class));
+		receiver.setConfigurationMetrics(metrics);
+		PlatformTransactionManager transactionManager = mock();
+		when(transactionManager.getTransaction(any())).thenAnswer(invocation -> mock(TransactionStatus.class));
+		ApplicationContext applicationContext = mock();
+		when(applicationContext.getBean("listenerContainer", PullingListenerContainer.class)).thenAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>());
+		when(applicationContext.getBean("transactionManager")).thenReturn(transactionManager);
+		receiver.setApplicationContext(applicationContext);
+		receiver.setAdapter(adapter);
+		receiver.setTxManager(transactionManager);
+		receiver.configure();
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.ERROR);
+
+		// Act 1 -- Move to ErrorStorage
+		RawMessageWrapper<F> resultFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");// this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		waitForActionToFinish();
+
+		// Assert 1
+		assertTrue(_folderExists(processedFolder), "Error folder must exist");
+		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
+		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+
+		// Act 2 -- Retry
+		IMessageBrowsingIteratorItem item = fileSystemListener.getMessageBrowser(ProcessState.ERROR).getIterator().next();
+		receiver.retryMessage(item.getId());
 	}
 
 	@Test
