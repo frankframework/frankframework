@@ -31,10 +31,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
@@ -166,6 +167,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		cleanable = cleaner.register(this, cleanupFileAction);
 	}
 
+	/**
+	 * Cleanup action for SerializableFileReference, should only be executed for
+	 * temporary files owned by the SerializableFileReference.
+	 */
 	private static class CleanupFileAction implements Runnable {
 		private final Path fileToClean;
 		private boolean calledByClose = false;
@@ -217,6 +222,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	@Override
 	public void close() {
+		// When we do not own the file, there is no cleanup-action to delete it.
 		if (cleanupFileAction != null) {
 			cleanupFileAction.calledByClose = true;
 			cleanable.clean();
