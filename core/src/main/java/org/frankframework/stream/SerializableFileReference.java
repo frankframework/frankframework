@@ -172,19 +172,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	private static class CleanupFileAction implements Runnable {
 		private static final AtomicInteger leakCounter = new AtomicInteger();
 
-		static {
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				System.gc();
-				Thread.yield();
-				try {
-					Thread.sleep(500L);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed SerializableFileReference instances: " + leakCounter.get());
-			}));
-		}
-
 		private final Path fileToClean;
 		private final Exception creationTrace;
 		private boolean calledByClose = false;
@@ -197,8 +184,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		@Override
 		public void run() {
 			if (!calledByClose) {
-				LogManager.getLogger("LEAK_LOG").info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean, creationTrace);
 				leakCounter.incrementAndGet();
+				LogManager.getLogger("LEAK_LOG").info("Leak detection [#{}]: File [{}] was not closed properly, cleaning up", leakCounter.get(), fileToClean, creationTrace);
 			}
 			try {
 				Files.deleteIfExists(fileToClean);

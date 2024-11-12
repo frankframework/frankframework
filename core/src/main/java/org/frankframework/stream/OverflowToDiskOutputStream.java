@@ -96,19 +96,6 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private static class CleanupFileAction implements Runnable {
 		private static final AtomicInteger leakCounter = new AtomicInteger();
 
-		static {
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				System.gc();
-				Thread.yield();
-				try {
-					Thread.sleep(500L);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed OverflowToDiskOutputStream instances: " + leakCounter.get());
-			}));
-		}
-
 		private final Path fileToClean;
 		private final Closeable closable;
 		private final Exception creationTrace;
@@ -123,8 +110,8 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		@Override
 		public void run() {
 			if (shouldClean) {
-				LogManager.getLogger("LEAK_LOG").info("Leak detection: File [{}] was never converted to a Message", fileToClean, creationTrace);
 				leakCounter.incrementAndGet();
+				LogManager.getLogger("LEAK_LOG").info("Leak detection[#{}]: File [{}] was never converted to a Message", leakCounter.get(), fileToClean, creationTrace);
 
 				CloseUtils.closeSilently(closable);
 				try {

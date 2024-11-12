@@ -486,44 +486,20 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private static class PipeLineSessionCloseAction implements Runnable {
 		private static final AtomicInteger leakCounter = new AtomicInteger();
-		private static final AtomicInteger closedCounter = new AtomicInteger();
-		private static final AtomicInteger proxyInstanceCounter = new AtomicInteger();
-		static {
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				System.gc();
-				Thread.yield();
-				try {
-					Thread.sleep(500L);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed PipeLineSession instances: " + leakCounter.get() + "; properly closed instances: " + closedCounter.get() + "; unclosed instances of proxy classes: " + proxyInstanceCounter.get());
-			}));
-		}
-		private final String className;
 		private final boolean isProxyClass;
 		private final Exception creationTrace;
 		private boolean calledByClose = false;
 
 		public PipeLineSessionCloseAction(String className) {
-			this.className = className;
 			this.isProxyClass = className.contains("$$");
 			this.creationTrace = new Exception("If you see this, owning PipeLineSession created in location of stacktrace was not closed correctly");
-			this.creationTrace.fillInStackTrace();
 		}
 
 		@Override
 		public void run() {
-			if (!calledByClose) {
-				if (isProxyClass) {
-					LOG.debug("Cleaning instance of proxy class [{}]", className);
-					proxyInstanceCounter.incrementAndGet();
-					return;
-				}
-				LogManager.getLogger("LEAK_LOG").info("Leak detection: PipeLineSession was not closed properly!", creationTrace);
+			if (!calledByClose && !isProxyClass) {
 				leakCounter.incrementAndGet();
-			} else {
-				closedCounter.incrementAndGet();
+				LogManager.getLogger("LEAK_LOG").info("Leak detection[#{}]: PipeLineSession was not closed properly!", leakCounter.get(), creationTrace);
 			}
 		}
 	}

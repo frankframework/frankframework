@@ -202,19 +202,6 @@ public class Message implements Serializable, Closeable {
 	private static class MessageNotClosedAction implements Runnable {
 		private static final AtomicInteger leakCounter = new AtomicInteger();
 
-		static {
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				System.gc();
-				Thread.yield();
-				try {
-					Thread.sleep(500L);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-				LogManager.getLogger("LEAK_LOG").warn("Leaks in unclosed Message instances: " + leakCounter.get());
-			}));
-		}
-
 		private boolean calledByClose = false;
 		private final Exception creationTrace;
 		private final String content;
@@ -227,8 +214,8 @@ public class Message implements Serializable, Closeable {
 		@Override
 		public void run() {
 			if (!calledByClose) {
-				LogManager.getLogger("LEAK_LOG").info("Leak detection: Message was not closed properly! Content: [{}]", content, creationTrace);
 				leakCounter.incrementAndGet();
+				LogManager.getLogger("LEAK_LOG").info("Leak detection[#{}]: Message was not closed properly! Content: [{}]", leakCounter.get(), content, creationTrace);
 			}
 		}
 	}

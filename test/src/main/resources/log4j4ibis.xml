@@ -2,6 +2,9 @@
 <log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 
+	<!--
+		Override the default log4j4ibis.xml file to replace the leak-log NULL appender with a file appender
+	-->
 	<Appenders>
 		<Appender name="stdout" type="Console">
 			<Layout type="IbisPatternLayout">
@@ -13,7 +16,14 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender name="leak-log-appender" type="Null" />
+		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log.%i">
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<OnStartupTriggeringPolicy />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
+		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
@@ -128,6 +138,7 @@
 		</Logger>
 		<Logger name="LEAK_LOG" additivity="false" level="DEBUG">
 			<AppenderRef ref="leak-log-appender"/>
+			<AppenderRef ref="stdout"/>
 		</Logger>
 
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
