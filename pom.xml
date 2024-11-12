@@ -30,7 +30,7 @@
 
 		<narayana.version>7.1.0.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.13.6</micrometer.version>
+		<micrometer.version>1.13.7</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2</frankdoc.version>
