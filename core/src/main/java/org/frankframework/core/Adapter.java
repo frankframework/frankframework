@@ -26,28 +26,27 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -540,6 +539,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 				result = processMessageWithExceptions(messageId, message, pipeLineSession);
 				success = true;
 			} catch (Throwable t) {
+				log.warn("Adapter [{}] Error processing message with ID [{}], exception: ", name, messageId, t);
 				result.setState(ExitState.ERROR);
 				String msg = "Illegal exception ["+t.getClass().getName()+"]";
 				INamedObject objectInError = null;
