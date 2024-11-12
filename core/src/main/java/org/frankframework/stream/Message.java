@@ -34,7 +34,6 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -43,7 +42,6 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -80,7 +78,6 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 public class Message implements Serializable, Closeable {
-	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
 	public static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
@@ -88,7 +85,6 @@ public class Message implements Serializable, Closeable {
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final @Serial long serialVersionUID = 437863352486501445L;
-	private transient Cleaner.Cleanable cleanable;
 	private transient MessageNotClosedAction messageNotClosedAction;
 
 	private @Nullable Object request;
@@ -111,7 +107,7 @@ public class Message implements Serializable, Closeable {
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 
 		messageNotClosedAction = new MessageNotClosedAction(this.toString());
-		cleanable = cleaner.register(this, messageNotClosedAction);
+		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
 	private Message(@Nonnull MessageContext context, Object request) {
@@ -200,23 +196,16 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private static class MessageNotClosedAction implements Runnable {
-		private static final AtomicInteger leakCounter = new AtomicInteger();
-
-		private boolean calledByClose = false;
-		private final Exception creationTrace;
 		private final String content;
-
+		private boolean closed = false;
 		private MessageNotClosedAction(String content) {
 			this.content = StringUtils.substring(content, 0, 80);
-			this.creationTrace = new Exception("If you see this, owning Message created in location of stacktrace was not closed correctly");
 		}
 
 		@Override
 		public void run() {
-			if (!calledByClose) {
-				leakCounter.incrementAndGet();
-				LogManager.getLogger("LEAK_LOG").info("Leak detection[#{}]: Message was not closed properly! Content: [{}]", leakCounter.get(), content, creationTrace);
-			}
+			// No-op for now
+			closed = true;
 		}
 	}
 
@@ -389,13 +378,12 @@ public class Message implements Serializable, Closeable {
 
 	@Override
 	public void close() {
-		messageNotClosedAction.calledByClose = true;
-		cleanable.clean();
 		if (request instanceof AutoCloseable closeable) {
 			CloseUtils.closeSilently(closeable);
 		}
 		request = null;
 		CloseUtils.closeSilently(resourcesToClose);
+		CleanerProvider.clean(messageNotClosedAction);
 	}
 
 	private void closeOnClose(@Nonnull AutoCloseable resource) {
@@ -955,11 +943,11 @@ public class Message implements Serializable, Closeable {
 		context = contextFromStream;
 		// Register the message for cleaning later
 		messageNotClosedAction = new MessageNotClosedAction(this.toString());
-		cleanable = cleaner.register(this, messageNotClosedAction);
+		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
 	public boolean isClosed() {
-		return messageNotClosedAction.calledByClose;
+		return messageNotClosedAction.closed;
 	}
 
 	public void assertNotClosed() {

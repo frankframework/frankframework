@@ -16,7 +16,6 @@
 package org.frankframework.core;
 
 import java.io.IOException;
-import java.lang.ref.Cleaner;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -53,7 +51,6 @@ import org.frankframework.util.DateFormatUtils;
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
-	private static final Cleaner CLEANER = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 
 	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
 
@@ -77,7 +74,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private ISecurityHandler securityHandler = null;
 
-	private transient Cleaner.Cleanable cleanable;
 	private transient PipeLineSessionCloseAction closeAction;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
@@ -109,8 +105,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private void createCloseAction() {
-		closeAction = new PipeLineSessionCloseAction(this.getClass().getName());
-		cleanable = CLEANER.register(this, closeAction);
+		closeAction = new PipeLineSessionCloseAction(this.closeables);
+		CleanerProvider.register(this, closeAction);
 	}
 
 	public void setExitState(PipeLine.ExitState state, Integer code) {
@@ -468,8 +464,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		closeAction.calledByClose = true;
-		cleanable.clean();
 		// We create a copy of the instance variable so that we are protected from changes done in other methods.
 		Map<AutoCloseable, String> copy = new HashMap<>(closeables);
 		closeables.clear();
@@ -482,24 +476,26 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				LOG.warn("Exception closing resource, messageId [{}], resource [{}] {}", (Supplier<?>) this::getMessageId, (Supplier<?>) entry::getKey, (Supplier<?>) entry::getValue, e);
 			}
 		}
+		CleanerProvider.clean(closeAction);
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {
-		private static final AtomicInteger leakCounter = new AtomicInteger();
-		private final boolean isProxyClass;
-		private final Exception creationTrace;
-		private boolean calledByClose = false;
+		private final Map<AutoCloseable, String> closeables;
 
-		public PipeLineSessionCloseAction(String className) {
-			this.isProxyClass = className.contains("$$");
-			this.creationTrace = new Exception("If you see this, owning PipeLineSession created in location of stacktrace was not closed correctly");
+		private PipeLineSessionCloseAction(Map<AutoCloseable, String> closeables) {
+			this.closeables = closeables;
 		}
 
 		@Override
 		public void run() {
-			if (!calledByClose && !isProxyClass) {
-				leakCounter.incrementAndGet();
-				LogManager.getLogger("LEAK_LOG").info("Leak detection[#{}]: PipeLineSession was not closed properly!", leakCounter.get(), creationTrace);
+			for (Entry<AutoCloseable, String> entry : closeables.entrySet()) {
+				AutoCloseable closeable = entry.getKey();
+				String value = entry.getValue();
+				try {
+					closeable.close();
+				} catch (Exception e) {
+					LOG.debug("Exception closing session resource [{}]", value, e);
+				}
 			}
 		}
 	}

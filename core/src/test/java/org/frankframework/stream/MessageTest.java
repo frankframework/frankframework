@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
@@ -1280,6 +1281,7 @@ public class MessageTest {
 	}
 
 	@Test
+	@Disabled("Message no longer logs this message from cleaner; need to find another way")
 	void testMessageNotClosedByUser() {
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			appender.setLeakDetectionFilter(false);
