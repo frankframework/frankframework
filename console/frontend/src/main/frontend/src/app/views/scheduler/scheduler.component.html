@@ -122,6 +122,26 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12 tabs-container">
+      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+        <li [ngClass]="{ active: selectedJobGroup === 'All' }">
+          <a (click)="selectedJobGroup = 'All'">All</a>
+        </li>
+        <li *ngFor="let jobGroupKV of jobGroups | keyvalue" [ngClass]="{ active: selectedJobGroup === jobGroupKV.key }">
+          <a (click)="selectedJobGroup = jobGroupKV.key">{{ jobGroupKV.key }}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title summary">
+          <h4>Search Jobs</h4>
+        </div>
+        <div class="ibox-content">
           <div class="col-md-12 space-15">
             <div class="input-group" id="searchbar">
               <input
@@ -146,7 +166,11 @@
       </div>
     </div>
 
-    <div class="col-lg-12" *ngFor="let jobGroupKV of jobGroups | keyvalue; let count = count">
+    <div
+      class="col-lg-12"
+      *ngFor="let jobGroupKV of jobGroups | keyvalue; let count = count"
+      [ngClass]="{ hidden: jobGroupKV.key !== selectedJobGroup && selectedJobGroup !== 'All' }"
+    >
       <div class="ibox float-e-margins" *ngIf="count > 0">
         <div (click)="jobShowContent[jobGroupKV.key] = !showContent(jobGroupKV.key)" class="ibox-title pointer">
           <div class="ibox-tools pull-right">
