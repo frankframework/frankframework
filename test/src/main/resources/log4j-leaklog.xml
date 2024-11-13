@@ -3,7 +3,7 @@
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 
 	<Loggers>
-		<Logger name="LEAK_LOG" additivity="false" level="INFO">
+		<Logger name="LEAK_LOG" additivity="false" level="DEBUG">
 			<AppenderRef ref="leak-log-appender"/>
 			<AppenderRef ref="stdout"/>
 		</Logger>
