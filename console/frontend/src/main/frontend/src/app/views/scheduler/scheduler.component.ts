@@ -59,6 +59,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   protected refreshing: boolean = false;
   protected databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
+  protected selectedJobGroup: string = 'All';
 
   private initialized = false;
 
