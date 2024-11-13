@@ -201,15 +201,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private static class MessageNotClosedAction implements Runnable {
-		private boolean closed = false;
-		private MessageNotClosedAction() {
-			// TODO: Should close message resources here, really.
-		}
-
 		@Override
 		public void run() {
 			// No-op for now
-			closed = true;
 		}
 	}
 
