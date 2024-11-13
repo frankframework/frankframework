@@ -104,7 +104,7 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 
-		messageCleanupAction = new MessageCleanupAction(this, request);
+		messageCleanupAction = new MessageCleanupAction(request);
 		cleanable = cleaner.register(this, messageCleanupAction);
 	}
 
@@ -195,20 +195,15 @@ public class Message implements Serializable, Closeable {
 
 	private static class MessageCleanupAction implements Runnable {
 		private boolean calledByClose = false;
-		private final String contentDescription;
 		private Set<AutoCloseable> resourcesToClose;
 		private Object request;
 
-		private MessageCleanupAction(Message message, Object request) {
+		private MessageCleanupAction(Object request) {
 			this.request = request;
-			this.contentDescription = StringUtils.substring(message.requestClass + ":" + request, 0, 80);
 		}
 
 		@Override
 		public void run() {
-			if (!calledByClose) {
-				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", contentDescription);
-			}
 			if (this.request instanceof AutoCloseable closeableRequest) {
 				CloseUtils.closeSilently(closeableRequest);
 			}
@@ -946,7 +941,7 @@ public class Message implements Serializable, Closeable {
 		}
 		context = contextFromStream;
 		// Register the message for cleaning later
-		messageCleanupAction = new MessageCleanupAction(this, request);
+		messageCleanupAction = new MessageCleanupAction(request);
 		cleanable = cleaner.register(this, messageCleanupAction);
 	}
 
