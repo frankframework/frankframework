@@ -1,18 +1,8 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-        <li [ngClass]="{ active: selectedJobGroup === 'All' }">
-          <a (click)="selectedJobGroup = 'All'">All</a>
-        </li>
-        <li *ngFor="let jobGroupKV of jobGroups | keyvalue" [ngClass]="{ active: selectedJobGroup === jobGroupKV.key }">
-          <a (click)="selectedJobGroup = jobGroupKV.key">{{ jobGroupKV.key }}</a>
-        </li>
-      </ul>
-    </div>
     <div class="col-lg-12" [hidden]="!scheduler.name">
       <div class="ibox float-e-margins">
-        <div class="ibox-title summary">
+        <div class="ibox-title">
           <div *ngIf="databaseSchedulesEnabled" class="pull-right">
             <button routerLink="new" class="btn btn-xs btn-info pull-right" type="button">
               <i class="fa fa-plus-circle" aria-hidden="true"></i>
@@ -132,6 +122,26 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12 tabs-container">
+      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+        <li [ngClass]="{ active: selectedJobGroup === 'All' }">
+          <a (click)="selectedJobGroup = 'All'">All</a>
+        </li>
+        <li *ngFor="let jobGroupKV of jobGroups | keyvalue" [ngClass]="{ active: selectedJobGroup === jobGroupKV.key }">
+          <a (click)="selectedJobGroup = jobGroupKV.key">{{ jobGroupKV.key }}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title summary">
+          <h4>Search Jobs</h4>
+        </div>
+        <div class="ibox-content">
           <div class="col-md-12 space-15">
             <div class="input-group" id="searchbar">
               <input
