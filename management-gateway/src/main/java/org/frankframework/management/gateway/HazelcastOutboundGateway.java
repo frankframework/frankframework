@@ -27,20 +27,19 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 
 import lombok.extern.log4j.Log4j2;
@@ -49,6 +48,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
+import org.frankframework.management.security.JwtKeyGenerator;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -59,6 +59,9 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private static final RandomStringUtils NUMBER_GENERATOR = RandomStringUtils.insecure();
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
+
+	@Autowired
+	private JwtKeyGenerator jwtGenerator;
 
 	@Override
 	@Nonnull
@@ -127,12 +130,8 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		return cm;
 	}
 
-	private @Nonnull Authentication getAuthentication() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication == null) {
-			throw new AuthenticationServiceException("no Authentication object found in SecurityContext"); //This should technically not be possible but...
-		}
-		return authentication;
+	private @Nonnull String getAuthentication() {
+		return jwtGenerator.create();
 	}
 
 	private long receiveTimeout(Message<?> requestMessage) {
@@ -169,6 +168,9 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	public void afterPropertiesSet() throws Exception {
 		hzInstance = HazelcastConfig.newHazelcastInstance("console");
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
+
+		IMap<String, String> config = hzInstance.getMap("frank-configuration");
+		config.set("jwks", jwtGenerator.getPublicJwkSet());
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
