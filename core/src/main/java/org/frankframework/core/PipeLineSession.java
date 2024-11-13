@@ -85,16 +85,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		createCloseAction();
 	}
 
-	public PipeLineSession(int initialCapacity) {
-		super(initialCapacity);
-		createCloseAction();
-	}
-
-	public PipeLineSession(int initialCapacity, float loadFactor) {
-		super(initialCapacity, loadFactor);
-		createCloseAction();
-	}
-
 	/**
 	 * Create new PipeLineSession from existing map or session. This may not be null!
 	 *
@@ -227,9 +217,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			message.closeOnCloseOf(this, "Message for key [" + key + "]");
 			return message;
 		}
-		Message nullMessage = Message.nullMessage();
-		nullMessage.closeOnCloseOf(this, "NullMessage for key [" + key + "]");
-		return nullMessage;
+		return Message.nullMessage();
 	}
 
 	public Instant getTsReceived() {
