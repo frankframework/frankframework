@@ -49,7 +49,7 @@
 		<mongodb.driver.version>5.2.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.1.3</activemq.driver.version>
+		<activemq.driver.version>6.1.4</activemq.driver.version>
 		<artemis.driver.version>2.38.0</artemis.driver.version>
 
 		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
