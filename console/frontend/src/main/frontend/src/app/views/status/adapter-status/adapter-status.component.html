@@ -219,8 +219,8 @@
                   [ngClass]="{ 'text-danger': receiver.state === 'error' }"
                 >
                   <td>{{ receiver.name }}</td>
-                  <td #listenerDestination 
-                    *ngIf="receiver.listener && receiver.listener.destination; else noListener" 
+                  <td #listenerDestination
+                    *ngIf="receiver.listener && receiver.listener.destination; else noListener"
                     [title]="receiver.listener.destination"
                   >
                     {{ receiver.listener.class }} ({{ receiver.listener.destination | truncate: 150 : listenerDestination }})
