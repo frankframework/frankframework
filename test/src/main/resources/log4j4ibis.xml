@@ -16,14 +16,6 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log.%i">
-			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
-			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
-				<OnStartupTriggeringPolicy />
-			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
-		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
@@ -135,10 +127,6 @@
 		</Logger>
 		<Logger name="APPLICATION" additivity="true" level="DEBUG">
 			<AppenderRef ref="application-log-appender"/>
-		</Logger>
-		<Logger name="LEAK_LOG" additivity="false" level="DEBUG">
-			<AppenderRef ref="leak-log-appender"/>
-			<AppenderRef ref="stdout"/>
 		</Logger>
 
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">

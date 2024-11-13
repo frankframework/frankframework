@@ -180,7 +180,8 @@ public class CleanerProvider {
 						&& (element.getClassName().startsWith("org.frankframework.") || element.getClassName().startsWith("nl.nn."))
 				// Some special-case exceptions
 						&& !element.getClassName().endsWith("Message") && !element.getClassName().endsWith("OverflowToDiskOutputStream")
-				&& !element.getClassName().endsWith("Result") && !element.getClassName().endsWith("MessageBuilder") && !element.getMethodName().endsWith("createResultMessage")) {
+				&& !element.getClassName().endsWith("Result") && !element.getClassName().endsWith("MessageBuilder") && !element.getMethodName().endsWith("createResultMessage")
+				&& !(element.getClassName().endsWith("TransformerPool") && element.getMethodName().endsWith("transform"))) {
 					return i;
 				}
 			}

@@ -18,12 +18,12 @@ package org.frankframework.core;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -40,6 +40,7 @@ import lombok.SneakyThrows;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 
 
@@ -464,18 +465,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		// We create a copy of the instance variable so that we are protected from changes done in other methods.
-		Map<AutoCloseable, String> copy = new HashMap<>(closeables);
-		closeables.clear();
-		for (Entry<AutoCloseable, String> entry : copy.entrySet()) {
-			AutoCloseable closeable = entry.getKey();
-			try {
-				LOG.debug("messageId [{}] auto closing resource [{}]", this::getMessageId, entry::getValue);
-				closeable.close();
-			} catch (Exception e) {
-				LOG.warn("Exception closing resource, messageId [{}], resource [{}] {}", (Supplier<?>) this::getMessageId, (Supplier<?>) entry::getKey, (Supplier<?>) entry::getValue, e);
-			}
-		}
 		CleanerProvider.clean(closeAction);
 	}
 
@@ -488,15 +477,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 		@Override
 		public void run() {
-			for (Entry<AutoCloseable, String> entry : closeables.entrySet()) {
-				AutoCloseable closeable = entry.getKey();
-				String value = entry.getValue();
-				try {
-					closeable.close();
-				} catch (Exception e) {
-					LOG.debug("Exception closing session resource [{}]", value, e);
-				}
-			}
+			// Create a copy to safeguard against side-effects
+			Set<AutoCloseable> closeableItems = new LinkedHashSet<>(closeables.keySet());
+			closeables.clear();
+			CloseUtils.closeSilently(closeableItems);
 		}
 	}
 }
