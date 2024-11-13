@@ -93,6 +93,7 @@ public class Message implements Serializable, Closeable {
 	private @Getter @Nonnull MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
+	private boolean closed = false;
 	private Set<AutoCloseable> resourcesToClose;
 
 	private Message(@Nonnull MessageContext context, @Nullable Object request, @Nullable Class<?> requestClass) {
@@ -106,8 +107,12 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 
-		messageNotClosedAction = new MessageNotClosedAction(this.toString());
-		CleanerProvider.register(this, messageNotClosedAction);
+		if (request != null) {
+			messageNotClosedAction = new MessageNotClosedAction();
+			CleanerProvider.register(this, messageNotClosedAction);
+		} else {
+			messageNotClosedAction = null;
+		}
 	}
 
 	private Message(@Nonnull MessageContext context, Object request) {
@@ -196,10 +201,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private static class MessageNotClosedAction implements Runnable {
-		private final String content;
 		private boolean closed = false;
-		private MessageNotClosedAction(String content) {
-			this.content = StringUtils.substring(content, 0, 80);
+		private MessageNotClosedAction() {
+			// TODO: Should close message resources here, really.
 		}
 
 		@Override
@@ -383,6 +387,7 @@ public class Message implements Serializable, Closeable {
 		}
 		request = null;
 		CloseUtils.closeSilently(resourcesToClose);
+		closed = true;
 		CleanerProvider.clean(messageNotClosedAction);
 	}
 
@@ -942,12 +947,12 @@ public class Message implements Serializable, Closeable {
 		}
 		context = contextFromStream;
 		// Register the message for cleaning later
-		messageNotClosedAction = new MessageNotClosedAction(this.toString());
+		messageNotClosedAction = new MessageNotClosedAction();
 		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
 	public boolean isClosed() {
-		return messageNotClosedAction.closed;
+		return closed;
 	}
 
 	public void assertNotClosed() {
