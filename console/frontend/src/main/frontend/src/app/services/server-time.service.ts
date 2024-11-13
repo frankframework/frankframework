@@ -26,18 +26,13 @@ export class ServerTimeService {
   }
 
   getCurrentTimeFormatted(): string {
-    if (this.currentTime)
-      return formatDate(
-        this.currentTime,
-        this.appConstants['console.dateFormat'] as string,
-        this.locale,
-        this.timezone,
-      );
-    return '';
+    const zonedTime = this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
+    return formatDate(zonedTime, this.appConstants['console.dateFormat'] as string, this.locale, this.timezone);
   }
 
   toServerTime(value: number | Date): string {
-    return formatDate(value, this.appConstants['console.dateFormat'] as string, this.locale, this.timezone);
+    const zonedTime = new Date(value).toLocaleString(this.locale, { timeZone: this.timezone });
+    return formatDate(zonedTime, this.appConstants['console.dateFormat'] as string, this.locale, this.timezone);
   }
 
   setServerTime(serverTime: number, timezone: string): void {
