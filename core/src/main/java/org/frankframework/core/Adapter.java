@@ -539,7 +539,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 				result = processMessageWithExceptions(messageId, message, pipeLineSession);
 				success = true;
 			} catch (Throwable t) {
-				log.warn("Adapter [{}] Error processing message with ID [{}], exception: ", name, messageId, t);
+				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
 				result.setState(ExitState.ERROR);
 				String msg = "Illegal exception ["+t.getClass().getName()+"]";
 				INamedObject objectInError = null;
