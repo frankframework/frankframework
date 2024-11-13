@@ -1,0 +1,49 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+  <div class="row">
+    <div class="col-lg-12 table-responsive">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <div class="pull-right">
+            <button [routerLink]="['/monitors']" class="btn btn-xs pull-right btn-info" type="button">
+              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+              <span> Back</span>
+            </button>
+          </div>
+          <h4>Create new Monitor</h4>
+        </div>
+        <div class="ibox-content">
+          <form role="form">
+            <div class="row form-group">
+              <label class="col-sm-3 control-label">Configuration</label>
+              <div class="col-sm-9">
+                <input
+                  list="configurations"
+                  autocomplete="off"
+                  [(ngModel)]="selectedConfiguration"
+                  name="configuration"
+                  class="form-control"
+                />
+                <datalist id="configurations">
+                  <option *ngFor="let config of configurations" [value]="config.name">
+                    {{ config.name }}
+                  </option>
+                </datalist>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Monitor Name</label>
+              <div class="col-sm-9">
+                <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitorName" />
+              </div>
+            </div>
+            <div class="col-lg-9 m-t-md">
+              <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="ladda" (click)="submit()">
+                Create
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
