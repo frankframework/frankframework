@@ -360,7 +360,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 										Thread.currentThread().getName(),
 										Tibet2DatabaseStorage.class.getName(),
 										"Column " + reportColumnNames.get(i),
-										Checkpoint.TYPE_INPUTPOINT, 0);
+										CheckpointType.INPUTPOINT.toInt(), 0);
 								checkpoint.setMessage(value);
 								checkpoints.add(checkpoint);
 							}
