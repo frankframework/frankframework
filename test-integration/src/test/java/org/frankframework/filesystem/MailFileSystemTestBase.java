@@ -34,8 +34,8 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 
 	protected String PROPERTY_FILE = "ExchangeMail.properties";
 
-	protected String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
-	protected String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+//	protected String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+//	protected String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	protected String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
 	protected String expectdBestReplyAddress = PropertyUtil.getProperty(PROPERTY_FILE, "bestReplyAddress");
 
@@ -235,7 +235,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		M orgItem = getFirstFileFromFolder(folderName);
 		if (orgItem == null) {
 			M seedItem = getFirstFileFromFolder(sourceFolder);
-			orgItem = fileSystem.copyFile(seedItem, folderName, false, true);
+			orgItem = fileSystem.copyFile(seedItem, folderName, false);
 		}
 		return orgItem;
 	}
@@ -249,13 +249,13 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 
 		System.out.println("moving item...");
-		M movedItem1 = fileSystem.moveFile(orgItem, folderName2, true, true);
+		M movedItem1 = fileSystem.moveFile(orgItem, folderName2, true);
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 		System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
 
 		System.out.println("tring to move same item again...");
 		try {
-			M movedItem2 = fileSystem.moveFile(orgItem, folderName2, true, true);
+			M movedItem2 = fileSystem.moveFile(orgItem, folderName2, true);
 			System.out.println("Item original ["+fileSystem.getName(orgItem));
 			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
 			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem2));

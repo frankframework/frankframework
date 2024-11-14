@@ -37,6 +37,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	protected abstract FS createFileSystem() throws ConfigurationException;
 
 
+	@Override
 	@BeforeEach
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		log.debug("setUp start");
@@ -49,11 +50,17 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		log.debug("setUp finished");
 	}
 
+	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		log.debug("tearDown start");
-		fileSystem.close();
+		try {
+			fileSystem.close();
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
 		log.debug("tearDown finished");
+		super.tearDown();
 	}
 
 	@Test
@@ -62,7 +69,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	}
 
 	protected F getFirstFileFromFolder(String folder) throws Exception {
-		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try (DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			if (it == null) {
 				return null;
@@ -81,7 +88,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		Set<F> files = new HashSet<>();
 		Set<String> filenames = new HashSet<>();
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {
