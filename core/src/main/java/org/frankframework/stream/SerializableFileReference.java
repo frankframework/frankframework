@@ -168,7 +168,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	private static class CleanupFileAction implements Runnable {
 		private final Path fileToClean;
-		private boolean calledByClose = false;
 
 		private CleanupFileAction(Path fileToClean) {
 			this.fileToClean = fileToClean;
@@ -176,9 +175,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 		@Override
 		public void run() {
-			if (!calledByClose) {
-				log.info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean);
-			}
 			try {
 				Files.deleteIfExists(fileToClean);
 			} catch (Exception e) {
@@ -218,7 +214,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	@Override
 	public void close() {
 		if (cleanupFileAction != null) {
-			cleanupFileAction.calledByClose = true;
 			cleanable.clean();
 		}
 	}
