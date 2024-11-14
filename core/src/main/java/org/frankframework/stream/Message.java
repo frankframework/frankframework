@@ -93,7 +93,7 @@ public class Message implements Serializable, Closeable {
 	private @Getter @Nonnull MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
-	private boolean closed = false;
+	private @Getter boolean closed = false;
 	private Set<AutoCloseable> resourcesToClose;
 
 	private Message(@Nonnull MessageContext context, @Nullable Object request, @Nullable Class<?> requestClass) {
@@ -943,10 +943,6 @@ public class Message implements Serializable, Closeable {
 		// Register the message for cleaning later
 		messageNotClosedAction = new MessageNotClosedAction();
 		CleanerProvider.register(this, messageNotClosedAction);
-	}
-
-	public boolean isClosed() {
-		return closed;
 	}
 
 	public void assertNotClosed() {
