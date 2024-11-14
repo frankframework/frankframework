@@ -41,24 +41,28 @@ public class CleanerProvider {
 
 	static {
 		 // Shutdown hook to generate report of leaks at end of process
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			// Force system to run garbage collection to clean up as much as possible
-			System.runFinalization();
-			System.gc();
-			try {
-				// Give time to GC thread.
-				Thread.sleep(1000L);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-			// Count total leaks and write a log message with each stack-trace, for finding the traces where problems originate.
-			int totalLeaks = LEAK_MAP.entrySet().stream()
-					.sorted(Comparator.comparingInt(entry -> entry.getValue().get()))
-					.peek(entry -> LEAK_LOG.warn("Class [{}] has {} leaks recorded from instances created at:", entry.getKey().owningClassName, entry.getValue().get(), entry.getKey()))
-					.map(entry -> entry.getValue().get())
-					.reduce(0, Integer::sum);
-			LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
-		}));
+		Runtime.getRuntime().addShutdownHook(new Thread(CleanerProvider::logLeakStatistics));
+	}
+
+	private static void logLeakStatistics() {
+		// Force system to run garbage collection to clean up as much as possible and collect as much leak-info before logging it
+		System.gc();
+		try {
+			// Give time to GC thread.
+			Thread.sleep(1000L);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		// Write a log message with each stack-trace, for finding the traces where problems originate. Order by largest nr of leaks from origin, ascending.
+		LEAK_MAP.entrySet().stream()
+				.sorted(Comparator.comparingInt(entry -> entry.getValue().get()))
+				.forEachOrdered(entry -> LEAK_LOG.warn("Class [{}] has {} leaks recorded from instances created at:", entry.getKey().owningClassName, entry.getValue().get(), entry.getKey()));
+
+		// Count total leaks and write a log message with each stack-trace, for finding the traces where problems originate.
+		int totalLeaks = LEAK_MAP.values().stream()
+				.map(AtomicInteger::get)
+				.reduce(0, Integer::sum);
+		LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
 	}
 
 	/**
