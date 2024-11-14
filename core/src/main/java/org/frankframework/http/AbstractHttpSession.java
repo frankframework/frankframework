@@ -198,6 +198,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String scope;
 
 	private @Getter AuthenticationMethod authenticationMethod;
+	private @Getter IAuthenticator authenticator;
 
 	public enum AuthenticationMethod {
 		CLIENT_CREDENTIALS_BASIC_AUTH,
@@ -309,6 +310,12 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		if (authenticationMethod == null) {
 			ConfigurationWarnings.add(this, log, "Use authenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
 			authenticationMethod = AuthenticationMethod.determineAuthenticationMethod(this);
+		}
+		try {
+			authenticator = authenticationMethod.newAuthenticator(this);
+			authenticator.configure();
+		} catch (HttpAuthenticationException e) {
+			throw new ConfigurationException(e);
 		}
 
 		validateProtocolsAndCiphers();
@@ -512,8 +519,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
-				IAuthenticator authenticator = authenticationMethod.newAuthenticator(this);
-
 				defaultHttpClientContext.setAttribute(AUTHENTICATION_METHOD_KEY, authenticator);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}

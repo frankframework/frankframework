@@ -17,9 +17,9 @@ package org.frankframework.http.authentication;
 
 import org.apache.http.auth.Credentials;
 
-import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.configuration.ConfigurationException;
 
 public interface IAuthenticator {
-	boolean validate(AbstractHttpSession session);
+	void configure() throws ConfigurationException;
 	String getOrRefreshAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException;
 }

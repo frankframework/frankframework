@@ -22,6 +22,8 @@ import org.apache.http.client.methods.HttpPost;
 
 import org.apache.http.message.BasicHeader;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.AbstractHttpSession;
 
 import java.io.UnsupportedEncodingException;
@@ -35,8 +37,22 @@ public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator
 	}
 
 	@Override
-	public boolean validate(AbstractHttpSession session) {
-		return false;
+	public void configure() throws ConfigurationException {
+		if (session.getClientId() == null) {
+			throw new ConfigurationException("clientId is required");
+		}
+
+		if (session.getClientSecret() == null) {
+			throw new ConfigurationException("clientSecret is required");
+		}
+
+		if (session.getUsername() != null) {
+			ConfigurationWarnings.add(session, log, "Username should not be set");
+		}
+
+		if (session.getPassword() != null) {
+			ConfigurationWarnings.add(session, log, "Password should not be set");
+		}
 	}
 
 	@Override

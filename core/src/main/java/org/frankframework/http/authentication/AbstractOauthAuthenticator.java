@@ -56,7 +56,6 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 		this.expiryMs = session.getTokenExpiry() * 1000;
 	}
 
-	abstract public boolean validate(AbstractHttpSession session);
 	abstract protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {

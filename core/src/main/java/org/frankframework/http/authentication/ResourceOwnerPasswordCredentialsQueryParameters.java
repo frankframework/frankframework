@@ -22,6 +22,7 @@ import org.apache.http.client.methods.HttpPost;
 
 import org.apache.http.message.BasicHeader;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 
 import java.io.UnsupportedEncodingException;
@@ -35,8 +36,8 @@ public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractOau
 	}
 
 	@Override
-	public boolean validate(AbstractHttpSession session) {
-		return false;
+	public void configure() throws ConfigurationException {
+
 	}
 
 	@Override

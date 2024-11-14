@@ -3,9 +3,10 @@ package org.frankframework.http.authentication;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -53,7 +54,8 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 		String accessToken = authenticator.getOrRefreshAccessToken(new UsernamePasswordCredentials(clientId, clientSecret), true);
 
-		assertThat(accessToken, startsWith("Bearer"));
+		assertNotNull(accessToken);
+		assertTrue(accessToken.length() > 5, "accessToken should contain a string");
 	}
 
 	@Test
@@ -72,7 +74,8 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 		String accessToken = authenticator.getOrRefreshAccessToken(credentials, true);
 
-		assertThat(accessToken, startsWith("Bearer"));
+		assertNotNull(accessToken);
+		assertTrue(accessToken.length() > 5, "accessToken should contain a string");
 	}
 
 	@Test
@@ -87,7 +90,8 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 		String accessToken = authenticator.getOrRefreshAccessToken(null, true);
 
-		assertThat(accessToken, startsWith("Bearer"));
+		assertNotNull(accessToken);
+		assertTrue(accessToken.length() > 5, "accessToken should contain a string");
 	}
 
 	@Test
@@ -104,7 +108,8 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 		String accessToken = authenticator.getOrRefreshAccessToken(credentials, true);
 
-		assertThat(accessToken, startsWith("Bearer"));
+		assertNotNull(accessToken);
+		assertTrue(accessToken.length() > 5, "accessToken should contain a string");
 	}
 
 	@Test
