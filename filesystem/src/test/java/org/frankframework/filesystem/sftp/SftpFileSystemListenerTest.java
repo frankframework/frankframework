@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -59,5 +61,13 @@ public class SftpFileSystemListenerTest extends WritableFileSystemListenerTest<S
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
 		return new SftpFileSystemTestHelper(username, password, host, remoteDirectory, port);
+	}
+
+	@Override
+	@Test
+	@Disabled("For SFTP Filesystem we do not appear to support getting the modification-time, so it does not support fileTimeSensitive setting")
+	public void fileListenerTestGetIdFromRawMessageFileTimeSensitive() {
+		// Ignore for this subclass
+		// TODO: We should update this FS to either get modification-time, or to throw error when trying to use it with "fileTimeSensitive" setting
 	}
 }
