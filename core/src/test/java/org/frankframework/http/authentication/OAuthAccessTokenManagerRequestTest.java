@@ -16,7 +16,6 @@ import org.frankframework.http.HttpSender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -131,9 +130,5 @@ public class OAuthAccessTokenManagerRequestTest {
 		assertNotNull(headers);
 		assertEquals(1, headers.length, "Header must exist");
 		assertEquals(expectedValue, headers[0].getValue());
-	}
-
-	private TestableOAuthAccessTokenManager getTokenManager(boolean useClientCredentials, AuthenticationType authenticationType) throws Exception {
-		return new TestableOAuthAccessTokenManager(useClientCredentials, authenticationType, CLIENT_ID, CLIENT_SECRET, TOKEN_ENDPOINT);
 	}
 }

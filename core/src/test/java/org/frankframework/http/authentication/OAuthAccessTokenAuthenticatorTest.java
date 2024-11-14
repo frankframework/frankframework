@@ -64,6 +64,8 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.PATH);
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope("email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		Credentials credentials = new UsernamePasswordCredentials(username, password);
 		var authenticator = AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
@@ -75,17 +77,15 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 	@Test
 	public void testRetrieveAccessTokenWithAuthHeader() throws Exception {
-		String clientId = MockTokenServer.CLIENT_ID;
-		String clientSecret = MockTokenServer.CLIENT_SECRET;
-
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.PATH);
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope("email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 		var authenticator = AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
-		String accessToken = authenticator.getOrRefreshAccessToken(credentials, true);
+		String accessToken = authenticator.getOrRefreshAccessToken(null, true);
 
 		assertThat(accessToken, startsWith("Bearer"));
 	}
@@ -109,54 +109,48 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 	@Test
 	public void testRetrieveAccessTokenWrongTokenEndpoint() throws Exception {
-		String clientId = MockTokenServer.CLIENT_ID;
-		String clientSecret = MockTokenServer.CLIENT_SECRET;
-
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.PATH + "/xxxxx");
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope("email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 		var authenticator = AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 
-		assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(credentials, true));
+		assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(null, true));
 	}
 
 	@Test
 	public void testRetrieveAccessTokenFirstExpiredForced() throws Exception {
-		String clientId = MockTokenServer.CLIENT_ID;
-		String clientSecret = MockTokenServer.CLIENT_SECRET;
-
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.EXPIRED_PATH);
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope("email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 		var authenticator = AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 
 		tokenServer.resetScenarios();
-		assertThat(authenticator.getOrRefreshAccessToken(credentials, true), containsString("Expired"));
+		assertThat(authenticator.getOrRefreshAccessToken(null, true), containsString("Expired"));
 
-		assertThat(authenticator.getOrRefreshAccessToken(credentials, true), not(containsString("Expired")));
+		assertThat(authenticator.getOrRefreshAccessToken(null, true), not(containsString("Expired")));
 	}
 
 	@Test
 	public void testRetrieveAccessTokenFirstExpiredAutomatic() throws Exception {
-		String clientId = MockTokenServer.CLIENT_ID;
-		String clientSecret = MockTokenServer.CLIENT_SECRET;
-
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.EXPIRED_PATH);
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope("read, email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 		var authenticator = AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
 		tokenServer.resetScenarios();
-		assertThat(authenticator.getOrRefreshAccessToken(credentials, true), containsString("Expired"));
+		assertThat(authenticator.getOrRefreshAccessToken(null, true), containsString("Expired"));
 
 		Thread.sleep(100);
-		assertThat(authenticator.getOrRefreshAccessToken(credentials, true), not(containsString("Expired")));
+		assertThat(authenticator.getOrRefreshAccessToken(null, true), not(containsString("Expired")));
 	}
 
 }

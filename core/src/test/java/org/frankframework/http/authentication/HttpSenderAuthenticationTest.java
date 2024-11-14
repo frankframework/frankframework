@@ -20,7 +20,6 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -35,7 +34,6 @@ import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 
-@Tag("mytag")
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private final boolean useMockServer = true;
 

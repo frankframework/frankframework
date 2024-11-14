@@ -1,8 +1,8 @@
 package org.frankframework.http.authentication;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
 
@@ -52,7 +52,8 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 				Arguments.of(AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS, true),
 
 				// Keycloak does not store passwords directly, so resource owner password credentials is impossible.
-				Arguments.of(AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH, false)
+				Arguments.of(AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH, false),
+				Arguments.of(AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS, false)
 		);
 	}
 
@@ -85,7 +86,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 			String accessToken = authenticator.getOrRefreshAccessToken(credentials, false);
 
 			assertNotNull(accessToken);
-			assertNotEquals(0, accessToken.length());
+			assertTrue(accessToken.length() > 50, "Length of accessToken is short, which could indicate that it failed");
 		} else {
 			assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(credentials, false));
 		}

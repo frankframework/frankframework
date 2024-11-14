@@ -81,7 +81,7 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 
 			OauthResponseDto dto = JacksonUtils.convertToDTO(responseBody, OauthResponseDto.class);
 
-			accessToken = "Bearer " + dto.getAccess_token();
+			accessToken = dto.getAccess_token();
 			long accessTokenLifetime = Long.parseLong(dto.getExpires_in());
 
 			// accessToken will be refreshed when it is half way expiration

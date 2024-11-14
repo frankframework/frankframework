@@ -708,6 +708,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		this.authenticatedTokenRequest = authenticatedTokenRequest;
 	}
 
+	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
+		this.authenticationMethod = authenticationMethod;
+	}
+
 
 	/** Proxy host */
 	public void setProxyHost(String string) {
