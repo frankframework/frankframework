@@ -64,7 +64,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	@Override
 	@AfterEach
 	public void tearDown() {
-		fileSystemListener.stop();
+		if (fileSystemListener != null) {
+			fileSystemListener.stop();
+			fileSystemListener = null;
+		}
 
 		super.tearDown();
 	}
