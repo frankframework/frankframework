@@ -66,7 +66,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		pipe.setExpressionValue(expressionValue);
 		configureAndStartPipe();
 
-		pipeRunResult = doPipe(pipe, IfPipeTest.getJsonMessage(input), session);
+		pipeRunResult = doPipe(pipe, input, session);
 		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
 	}
 

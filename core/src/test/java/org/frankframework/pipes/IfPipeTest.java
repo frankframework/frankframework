@@ -128,12 +128,19 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		pipeRunResult = doPipe(pipe, input, session);
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 
+		// do the same for mediatype json
+		pipeRunResult = doPipe(pipe, getJsonMessage(input), session);
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
+
+
 		// Act & Assert 2: Test with non-matching regex
 		pipe.setRegex("(test3)+");
 		pipeRunResult = doPipe(pipe, input, session);
 		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
 
-		// TODO check with application/json
+		// do the same for mediatype json
+		pipeRunResult = doPipe(pipe, getJsonMessage(input), session);
+		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
@@ -194,7 +201,11 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		pipe.setRegex("test123");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
+
 		pipeRunResult = doPipe(pipe, "test123", session);
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
+
+		pipeRunResult = doPipe(pipe, getJsonMessage("test123"), session);
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -206,7 +217,8 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		pipeRunResult = doPipe(pipe, "test123", session);
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 
-		// todo check with applicaton/json
+		pipeRunResult = doPipe(pipe, getJsonMessage("test123"), session);
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
 	@MethodSource("messageSource")
