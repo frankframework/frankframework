@@ -1,4 +1,4 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.mail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,6 +22,8 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
+
+import org.frankframework.filesystem.IFileSystemTestHelper;
 
 /**
  * Greenmail based mail file system helper.
