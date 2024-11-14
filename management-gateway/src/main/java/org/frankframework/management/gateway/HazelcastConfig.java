@@ -43,6 +43,9 @@ public class HazelcastConfig {
 	public static final String AUTHENTICATION_HEADER_KEY = BusMessageUtils.HEADER_PREFIX+"user";
 	private static final String VERSION = Environment.getModuleVersion("frankframework-management-gateway");
 
+	public static final String FRANK_APPLICATION_CONFIG = "frank-configuration";
+	public static final String FRANK_APPLICATION_KEYSET = "jwks";
+
 	static Config createHazelcastConfig() {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

@@ -72,8 +72,8 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
-		IMap<String, String> config = hzInstance.getMap("frank-configuration");
-		jwtVerifier = new JwtVerifier(() -> config.get("jwks"));
+		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+		jwtVerifier = new JwtVerifier(() -> config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET));
 
 		setRequestChannel(getRequestChannel(getApplicationContext()));
 		setErrorChannel(null); // no ErrorChannel means throw the exception, we catch it later in #processMessage(Message, String)
@@ -165,7 +165,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		}
 	}
 
-	/**5
+	/**
 	 * Fetch the {@link Authentication} object out of the {@link HazelcastConfig#AUTHENTICATION_HEADER_KEY} header.
 	 * Register the auth object in the current {@link SecurityContext} so Spring-Security can apply JSR250 authentication.
 	 * @param headers Request MessageHeaders which should contain the {@link Authentication} object.

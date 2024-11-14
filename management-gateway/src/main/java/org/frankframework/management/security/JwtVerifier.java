@@ -86,8 +86,7 @@ public class JwtVerifier extends DefaultJWTProcessor<SecurityContext> {
 
 		@Override
 		public void close() throws IOException {
-			// TODO Auto-generated method stub
-			
+			// Nothing to do here
 		}
 	}
 }

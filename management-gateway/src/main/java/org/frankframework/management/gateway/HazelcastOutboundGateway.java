@@ -80,7 +80,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		requestTopic.publish(requestMessage);
 
 		Message<O> replyMessage = doReceive(responseQueue, receiveTimeout);
-		silentylyRemoveQueue(responseQueue);
+		silentlyRemoveQueue(responseQueue);
 		if (replyMessage != null) {
 			return replyMessage;
 		}
@@ -88,7 +88,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		throw new BusException("no reponse found on temporary reply-queue ["+tempReplyChannelName+"] within receiveTimeout ["+receiveTimeout+"]");
 	}
 
-	private void silentylyRemoveQueue(IQueue<?> responseQueue) {
+	private void silentlyRemoveQueue(IQueue<?> responseQueue) {
 		try {
 			responseQueue.destroy();
 		} catch (Exception e) {
@@ -169,8 +169,8 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		hzInstance = HazelcastConfig.newHazelcastInstance("console");
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
-		IMap<String, String> config = hzInstance.getMap("frank-configuration");
-		config.set("jwks", jwtGenerator.getPublicJwkSet());
+		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
