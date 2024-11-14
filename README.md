@@ -19,7 +19,7 @@ Frank!Framework
 
 
 ## Open-Source, Low-Code & Stateless
-The Frank!Framework is a framework that is completely configurable through XML configurations. Each Frank!Application may contain multiple configurations, and each configuration can consist of multiple end-to-end connections which we call 'adapters'. Configurations may be (re)loaded conditionally or individiually for optimal performance and customizability.
+The Frank!Framework is a framework that is completely configurable through XML configurations. Each Frank!Application may contain multiple configurations, and each configuration can consist of multiple end-to-end connections which we call 'adapters'. Configurations may be (re)loaded conditionally or individually for optimal performance and customizability.
 The application may be managed and monitored through a web interface or REST API.
 See it in action: https://frank2example.frankframework.org
 
