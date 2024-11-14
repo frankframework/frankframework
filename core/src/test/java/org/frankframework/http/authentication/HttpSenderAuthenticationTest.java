@@ -225,7 +225,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
 
 		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
-		MatcherAssert.assertThat(exception.getMessage(), CoreMatchers.containsString("clientAuthAlias or ClientId and ClientSecret must be specifie"));
+		MatcherAssert.assertThat(exception.getMessage(), CoreMatchers.containsString("clientId is required"));
 	}
 
 	@Test
