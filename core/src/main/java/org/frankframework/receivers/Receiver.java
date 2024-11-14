@@ -1146,9 +1146,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
 				try {
-					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
 					//noinspection unchecked
-					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+					RawMessageWrapper<M> msg = (RawMessageWrapper<M>) errorStorageBrowser.browseMessage(storageKey);
+					if (listener instanceof IHasProcessState<?>) {
+						//noinspection unchecked
+						IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
+						if (hasProcessState.knownProcessStates().contains(ProcessState.INPROCESS)) {
+
+							msg = hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
+						}
+					}
+					processRawMessage(msg, session, true, false);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
 					throw e;

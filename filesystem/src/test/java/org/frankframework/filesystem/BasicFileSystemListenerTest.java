@@ -46,6 +46,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 
 import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.ProcessState;
@@ -580,14 +581,25 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		waitForActionToFinish();
 
 		// Assert 1
-		assertTrue(_folderExists(processedFolder), "Error folder must exist");
+		assertTrue(_folderExists(errorFolder), "Error folder must exist");
 		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
+		assertFalse(_fileExists(inProcessFolder, fileName), "Destination must not exist in in-process folder");
 		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
 		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 
 		// Act 2 -- Retry
 		IMessageBrowsingIteratorItem item = fileSystemListener.getMessageBrowser(ProcessState.ERROR).getIterator().next();
-		receiver.retryMessage(item.getId());
+		ListenerException listenerException = assertThrows(ListenerException.class, () -> receiver.retryMessage(item.getId()));
+
+		// Assert 2
+		assertThat(listenerException.getMessage(), containsString(" in state [STOPPED]"));
+		String fileNameWithTimeStamp = resultFile.getId().replace(':', '_');
+		assertTrue(_fileExists(errorFolder, fileNameWithTimeStamp), "Destination must exist in error folder");
+		assertFalse(_fileExists(inProcessFolder, fileName), "Destination must not exist in in-process folder");
+		assertFalse(_fileExists(inProcessFolder, fileNameWithTimeStamp), "Destination must not exist in in-process folder");
+		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
+		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 
 	@Test

@@ -290,7 +290,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
-		if (rawMessage instanceof MessageWrapper wrapper) {
+		if (rawMessage instanceof MessageWrapper<?> wrapper) {
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
 				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", wrapper.getId());
 			}
