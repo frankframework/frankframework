@@ -170,8 +170,8 @@ public class StringResolver {
 	}
 
 	private static String extractNextExpression(String val, SubstitutionContext ctx) {
-		if (val.contains(VALUE_SEPARATOR)) {
-			ctx.tail = val.indexOf(VALUE_SEPARATOR);
+		if (val.substring(ctx.pointer).contains(VALUE_SEPARATOR)) {
+			ctx.tail = val.substring(ctx.pointer).indexOf(VALUE_SEPARATOR) + ctx.pointer;
 			ctx.providedDefaultValue = val.substring(ctx.tail + VALUE_SEPARATOR.length(), indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop));
 			ctx.containsDefault = true;
 		} else {
