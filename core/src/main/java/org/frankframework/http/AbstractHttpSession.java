@@ -32,6 +32,8 @@ import javax.net.ssl.SSLParameters;
 
 import jakarta.annotation.Nonnull;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -215,7 +217,12 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			};
 		}
 
+		@Nullable
 		public static AuthenticationMethod determineAuthenticationMethod(AbstractHttpSession session) {
+			if (session.getTokenEndpoint() == null) {
+				return null;
+			}
+
 			if (session.isAuthenticatedTokenRequest()) {
 				if (StringUtils.isNotEmpty(session.getAuthAlias()) || StringUtils.isNotEmpty(session.getUsername())) {
 					return RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH;
@@ -308,14 +315,19 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 
 		if (authenticationMethod == null) {
-			ConfigurationWarnings.add(this, log, "Use authenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
+			if (getTokenEndpoint() != null) {
+				ConfigurationWarnings.add(this, log, "Use authenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
+			}
 			authenticationMethod = AuthenticationMethod.determineAuthenticationMethod(this);
 		}
-		try {
-			authenticator = authenticationMethod.newAuthenticator(this);
-			authenticator.configure();
-		} catch (HttpAuthenticationException e) {
-			throw new ConfigurationException(e);
+
+		if (authenticationMethod != null) {
+			try {
+				authenticator = authenticationMethod.newAuthenticator(this);
+				authenticator.configure();
+			} catch (HttpAuthenticationException e) {
+				throw new ConfigurationException(e);
+			}
 		}
 
 		validateProtocolsAndCiphers();
