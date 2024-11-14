@@ -44,7 +44,7 @@ public class CleanerProvider {
 		Runtime.getRuntime().addShutdownHook(new Thread(CleanerProvider::logLeakStatistics));
 	}
 
-	private static void logLeakStatistics() {
+	public static void logLeakStatistics() {
 		// Force system to run garbage collection to clean up as much as possible and collect as much leak-info before logging it
 		System.gc();
 		try {
@@ -113,11 +113,6 @@ public class CleanerProvider {
 		}
 	}
 
-	private static int recordLeak(LeakedResourceException leakedResourceException) {
-		AtomicInteger counter = LEAK_MAP.computeIfAbsent(leakedResourceException, key -> new AtomicInteger());
-		return counter.incrementAndGet();
-	}
-
 	private static class CleaningActionWrapper implements Runnable {
 		private final Runnable cleaningAction;
 		private final int actionId;
@@ -143,6 +138,11 @@ public class CleanerProvider {
 			}
 			cleaningAction.run();
 			CLEANER_MAP.remove(actionId);
+		}
+
+		private static int recordLeak(LeakedResourceException leakedResourceException) {
+			AtomicInteger counter = LEAK_MAP.computeIfAbsent(leakedResourceException, key -> new AtomicInteger());
+			return counter.incrementAndGet();
 		}
 	}
 
