@@ -21,10 +21,11 @@ import org.apache.http.auth.AUTH;
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.message.BufferedHeader;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
-import org.apache.http.util.CharArrayBuffer;
+
+import static org.frankframework.http.AbstractHttpSession.AUTHENTICATION_METHOD_KEY;
 
 /**
  * HttpClient AuthScheme that uses OAuthAccessTokenManager to obtain an access token (via Client Credentials flow).
@@ -36,7 +37,6 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 
 	public static final String SCHEME_NAME_AUTO = "OAUTH2";
 	public static final String SCHEME_NAME_FORCE_REFRESH = "OAUTH2-REFRESHED";
-	public static final String ACCESSTOKEN_MANAGER_KEY="AccessTokenManager";
 
 	private boolean forceRefresh;
 
@@ -59,23 +59,23 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 		Args.notNull(credentials, "Credentials");
 		Args.notNull(request, "HTTP request");
 
-		OAuthAccessTokenManager accessTokenManager = (OAuthAccessTokenManager)context.getAttribute(ACCESSTOKEN_MANAGER_KEY);
-		if (accessTokenManager==null) {
-			throw new AuthenticationException("no accessTokenManager found");
+		IAuthenticator oauthAuthentication = (IAuthenticator) context.getAttribute(AUTHENTICATION_METHOD_KEY);
+
+		if (oauthAuthentication == null) {
+			throw new AuthenticationException("no oauthAuthentication found");
 		}
 
 		try {
-			String accessToken = accessTokenManager.getAccessToken(credentials, forceRefresh);
-			final CharArrayBuffer buffer = new CharArrayBuffer(32);
-			if (isProxy()) {
-				buffer.append(AUTH.PROXY_AUTH_RESP);
-			} else {
-				buffer.append(AUTH.WWW_AUTH_RESP);
-			}
-			buffer.append(": ");
-			buffer.append(accessToken);
+			String accessToken = oauthAuthentication.getOrRefreshAccessToken(credentials, forceRefresh);
 
-			return new BufferedHeader(buffer);
+			String headerName;
+			if (isProxy()) {
+				headerName = AUTH.PROXY_AUTH_RESP;
+			} else {
+				headerName = AUTH.WWW_AUTH_RESP;
+			}
+
+			return new BasicHeader(headerName, "Bearer " + accessToken);
 		} catch (HttpAuthenticationException e) {
 			throw new AuthenticationException(e.getMessage(), e);
 		}

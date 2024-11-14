@@ -69,6 +69,18 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
+
+import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
+import org.frankframework.http.authentication.IAuthenticator;
+import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
+
+import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
+
+import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -88,10 +100,6 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.HttpAuthenticationException;
-import org.frankframework.http.authentication.OAuthAccessTokenManager;
-import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
-import org.frankframework.http.authentication.OAuthAuthenticationScheme;
-import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
@@ -156,6 +164,8 @@ import org.frankframework.util.StringUtil;
 public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics, AdapterAware {
 	protected final Logger log = LogUtil.getLogger(this);
 
+	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
+
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -186,6 +196,40 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String clientId;
 	private @Getter String clientSecret;
 	private @Getter String scope;
+
+	private @Getter AuthenticationMethod authenticationMethod;
+
+	public enum AuthenticationMethod {
+		CLIENT_CREDENTIALS_BASIC_AUTH,
+		CLIENT_CREDENTIALS_QUERY_PARAMETERS,
+		RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH,
+		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS;
+
+		public IAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
+			return switch (this) {
+				case CLIENT_CREDENTIALS_BASIC_AUTH -> new ClientCredentialsBasicAuth(session);
+				case CLIENT_CREDENTIALS_QUERY_PARAMETERS -> new ClientCredentialsQueryParameters(session);
+				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH -> new ResourceOwnerPasswordCredentialsBasicAuth(session);
+				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS -> new ResourceOwnerPasswordCredentialsQueryParameters(session);
+			};
+		}
+
+		public static AuthenticationMethod determineAuthenticationMethod(AbstractHttpSession session) {
+			if (session.isAuthenticatedTokenRequest()) {
+				if (StringUtils.isNotEmpty(session.getAuthAlias()) || StringUtils.isNotEmpty(session.getUsername())) {
+					return RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH;
+				} else {
+					return CLIENT_CREDENTIALS_BASIC_AUTH;
+				}
+			} else {
+				if (StringUtils.isNotEmpty(session.getAuthAlias()) || StringUtils.isNotEmpty(session.getUsername())) {
+					return RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS;
+				} else {
+					return CLIENT_CREDENTIALS_QUERY_PARAMETERS;
+				}
+			}
+		}
+	}
 
 	private @Getter boolean authenticatedTokenRequest;
 
@@ -227,8 +271,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private boolean disableCookies = false;
 
 	private CredentialFactory credentials;
-	private CredentialFactory userCf;
-	private CredentialFactory clientCf;
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -264,17 +306,20 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 
+		if (authenticationMethod == null) {
+			ConfigurationWarnings.add(this, log, "Use authenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
+			authenticationMethod = AuthenticationMethod.determineAuthenticationMethod(this);
+		}
+
 		validateProtocolsAndCiphers();
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
 		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-			userCf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			credentials = userCf;
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
-		clientCf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
 		if (credentials==null) {
-			credentials = clientCf;
+			credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
 		}
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
@@ -467,9 +512,9 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
-				AuthenticationType authType = isAuthenticatedTokenRequest() ? AuthenticationType.AUTHENTICATION_HEADER : AuthenticationType.REQUEST_PARAMETER;
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), clientCf, userCf == null, authType, this, getTokenExpiry());
-				defaultHttpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
+				IAuthenticator authenticator = authenticationMethod.newAuthenticator(this);
+
+				defaultHttpClientContext.setAttribute(AUTHENTICATION_METHOD_KEY, authenticator);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
@@ -509,7 +554,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 	}
 
-	private Credentials getCredentials() {
+	public Credentials getCredentials() {
 		String uname;
 		if (StringUtils.isNotEmpty(getAuthDomain())) {
 			uname = getAuthDomain() + "\\" + credentials.getUsername();

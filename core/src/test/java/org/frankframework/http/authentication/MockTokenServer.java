@@ -20,23 +20,24 @@ public class MockTokenServer {
 	public static final String accessTokenResponseExpired = "{\"access_token\":\""+EXPIRED_TOKEN+"\",\"refresh_expires_in\":0,\"scope\":\"profile email\",\"not-before-policy\":0,\"token_type\":\"Bearer\",\"expires_in\":0}";
 
 	public static final String PATH = "/token";
+
 	public static final String EXPIRED_PATH = "/firstExpired";
 
 	public static final String CLIENT_ID = "testiaf-client";
 	public static final String CLIENT_SECRET = "testiaf-client-pwd";
 
 	public static void createStubs(WireMockExtension extension) {
-		extension.stubFor(any(urlEqualTo(PATH))
+		extension.stubFor(any(urlPathMatching(PATH))
 					.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody(accessTokenResponseValid)));
-		extension.stubFor(any(urlEqualTo("/firstExpired"))
+		extension.stubFor(any(urlPathMatching(EXPIRED_PATH))
 					.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody(accessTokenResponseValid)));
-		extension.stubFor(any(urlEqualTo(EXPIRED_PATH)).inScenario("expiration")
+		extension.stubFor(any(urlPathMatching(EXPIRED_PATH)).inScenario("expiration")
 					.whenScenarioStateIs(Scenario.STARTED)
 					.willSetStateTo("valid")
 					.willReturn(aResponse()
