@@ -65,9 +65,8 @@ public class SftpFileSystemListenerTest extends WritableFileSystemListenerTest<S
 
 	@Override
 	@Test
-	@Disabled("For SFTP Filesystem we do not appear to support getting the modification-time, so it does not support fileTimeSensitive setting")
+	@Disabled("Our SFTP test server does not appear to support getting the modification-time, so we cannot do this test")
 	public void fileListenerTestGetIdFromRawMessageFileTimeSensitive() {
 		// Ignore for this subclass
-		// TODO: We should update this FS to either get modification-time, or to throw error when trying to use it with "fileTimeSensitive" setting
 	}
 }
