@@ -84,8 +84,21 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 			return ResponseUtils.convertToSpringResponse(response);
 		}
 
+		boolean hasSelectedMember = false;
+
 		for(ClusterMember member : members) {
-			member.setSelectedMember(member.getId().equals(session.getMemberTarget()));
+			if (member.getId().equals(session.getMemberTarget())) {
+				hasSelectedMember = true;
+				member.setSelectedMember(true);
+			}
+		}
+
+		if(!hasSelectedMember) {
+			ClusterMember firstWorker = members.stream().filter(m -> "worker".equals(m.getType())).findFirst().orElse(null);
+			if (firstWorker != null) {
+				setMemberTarget(String.valueOf(firstWorker.getId()));
+				firstWorker.setSelectedMember(true);
+			}
 		}
 
 		JsonMessage response = new JsonMessage(members);
@@ -102,22 +115,22 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		return ResponseEntity.accepted().build();
 	}
 
-	private void setMemberTarget(String id) {
-		List<ClusterMember> members = outboundGateway.getMembers();
-		UUID uuid = UUID.fromString(id);
-		members.stream()
-			.filter(m -> "worker".equals(m.getType()))
-			.filter(m -> uuid.equals(m.getId()))
-			.findAny()
-			.orElseThrow(() -> new ApiException("member target with id ["+id+"] not found"));
-
-		session.setMemberTarget(uuid);
-	}
-
 	@Override
 	public void onApplicationEvent(ClusterMemberEvent event) {
 		String jsonResponse = JacksonUtils.convertToJson(new EventWrapper(event.getType(), event.getMember()));
 		this.messagingTemplate.convertAndSend("/event/cluster", jsonResponse);
+	}
+
+	private void setMemberTarget(String id) {
+		List<ClusterMember> members = outboundGateway.getMembers();
+		UUID uuid = UUID.fromString(id);
+		members.stream()
+				.filter(m -> "worker".equals(m.getType()))
+				.filter(m -> uuid.equals(m.getId()))
+				.findAny()
+				.orElseThrow(() -> new ApiException("member target with id ["+id+"] not found"));
+
+		session.setMemberTarget(uuid);
 	}
 
 	private static record EventWrapper(EventType type, ClusterMember member) {}
