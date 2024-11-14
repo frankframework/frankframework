@@ -15,14 +15,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
@@ -53,13 +54,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	@Override
 	@AfterEach
 	public void tearDown() {
-		log.debug("tearDown start");
-		try {
-			fileSystem.close();
-		} catch (FileSystemException e) {
-			e.printStackTrace();
-		}
-		log.debug("tearDown finished");
+		CloseUtils.closeSilently(fileSystem);
 		super.tearDown();
 	}
 

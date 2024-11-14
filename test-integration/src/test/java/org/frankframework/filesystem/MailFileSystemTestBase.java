@@ -228,14 +228,14 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		MatchUtils.assertXmlEquals(expected,xml.toString());
 	}
 
-	protected M prepareFolderAndGetFirstMessage(String folderName, String sourceFolder) throws Exception {
+	protected M prepareFolderAndGetFirstMessage(String folderName) throws Exception {
 		if (!fileSystem.folderExists(folderName)) {
 			fileSystem.createFolder(folderName);
 		}
 		M orgItem = getFirstFileFromFolder(folderName);
 		if (orgItem == null) {
-			M seedItem = getFirstFileFromFolder(sourceFolder);
-			orgItem = fileSystem.copyFile(seedItem, folderName, false);
+			//TODO put message here!
+			throw new IllegalStateException("TODO, there is no message!");
 		}
 		return orgItem;
 	}
@@ -245,7 +245,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		String folderName1 = "RaceFolder1";
 		String folderName2 = "RaceFolder2";
 
-		M orgItem = prepareFolderAndGetFirstMessage(folderName1, null);
+		M orgItem = prepareFolderAndGetFirstMessage(folderName1);
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 
 		System.out.println("moving item...");

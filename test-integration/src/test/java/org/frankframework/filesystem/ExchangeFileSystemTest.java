@@ -50,6 +50,9 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		ExchangeMailListener listener = new ExchangeMailListener();
 		autowireByName(listener);
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
+		listener.setClientId(client_id);
+		listener.setClientSecret(client_secr);
+		listener.setTenantId(tenantId);
 		listener.setMailAddress(mailaddress);
 		listener.setBaseFolder(basefolder1);
 		listener.setInputFolder(sourceFolder);
@@ -64,7 +67,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		String sourceFolder = "SourceFolder";
 		String inProcessFolder = "InProcessFolder";
 
-		ExchangeMessageReference orgMsg = prepareFolderAndGetFirstMessage(sourceFolder, null);
+		ExchangeMessageReference orgMsg = prepareFolderAndGetFirstMessage(sourceFolder);
 		if (!fileSystem.folderExists(inProcessFolder)) {
 			fileSystem.createFolder(inProcessFolder);
 		}
@@ -86,7 +89,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		RawMessageWrapper<ExchangeMessageReference> msg2 = listener2.getRawMessage(threadContext2);
 		Map<String,Object> messageContext2 = listener2.extractMessageProperties(msg2.getRawMessage(), originalFilename);
 		String msgId2 = (String) messageContext2.get(PipeLineSession.MESSAGE_ID_KEY);
-		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg1.getRawMessage())+"]");
+		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2.getRawMessage())+"]");
 
 		assertEquals(msgId1, msgId2);
 		assertEquals(msg1.getId(), msgId1);
