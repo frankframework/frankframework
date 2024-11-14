@@ -96,6 +96,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		pipe.setXpathExpression("someexpression");
 		configureAndStartPipe();
 
+		// TODO test
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "test", session));
 		assertThat(e.getMessage(), Matchers.containsString("cannot evaluate expression"));
 	}

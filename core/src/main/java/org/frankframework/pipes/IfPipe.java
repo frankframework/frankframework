@@ -25,6 +25,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
@@ -105,6 +108,7 @@ public class IfPipe extends AbstractPipe {
 		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
+
 	private MimeType getMimeType(Message message) {
 		MimeType computedType = MessageUtils.computeMimeType(message);
 
@@ -122,28 +126,13 @@ public class IfPipe extends AbstractPipe {
 		return defaultMediaType.mediaType;
 	}
 
-	private String getInputString(Message message) throws PipeRunException {
-		if (Message.isEmpty(message)) {
-			return "";
-		} else {
-			try {
-				return message.asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "cannot open stream", e);
-			}
-		}
-	}
-
+	/**
+	 * Based on the pipe settings, tries to evaluate the expression and determine the correct forward
+	 */
 	private String determineForward(Message message, PipeLineSession session) throws PipeRunException {
 		String inputString = getInputString(message);
 
-		if (xpathExpression != null) {
-
-		} else if (jsonPathExpression != null) {
-
-		}
-
-		if (transformerPool != null) {
+		if (xpathExpression != null && transformerPool != null) {
 			try {
 				Map<String, Object> parameterValues = null;
 				ParameterList parameterList = getParameterList();
@@ -154,8 +143,39 @@ public class IfPipe extends AbstractPipe {
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot evaluate expression", e);
 			}
+		} else if (StringUtils.isNotBlank(jsonPathExpression)) {
+			// Try to match the jsonPath expression on the given json string
+			try {
+				String jsonPathResult = JsonPath.read(inputString, jsonPathExpression);
+
+				// if we get to this point, we have a match (and no PathNotFoundException)
+
+				if (StringUtils.isEmpty(expressionValue)) {
+					return thenForwardName;
+				}
+
+				// If there's an expressionValue set, it needs to match with the jsonPath query result
+				return jsonPathResult.equals(expressionValue) ? thenForwardName : elseForwardName;
+
+			} catch (PathNotFoundException e) {
+				// No results found for path
+				return elseForwardName;
+			}
+		}
+
+		// if all else fails, this is the legacy behaviour
+		return getForward(inputString);
+	}
+
+	private String getInputString(Message message) throws PipeRunException {
+		if (Message.isEmpty(message)) {
+			return "";
 		} else {
-			return getForward(inputString);
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "cannot open stream", e);
+			}
 		}
 	}
 
