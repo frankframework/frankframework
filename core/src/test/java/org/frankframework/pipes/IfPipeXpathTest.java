@@ -125,7 +125,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 	}
 
 	@ParameterizedTest
-	@ValueSource(booleans = {true, false})
+	@ValueSource(booleans = { true, false })
 	void testInvalidForwards(boolean testThenForward) {
 		pipe.setXpathExpression("/root");
 		if (testThenForward) {

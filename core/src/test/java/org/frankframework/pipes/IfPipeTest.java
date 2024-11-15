@@ -57,7 +57,8 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	public static Stream<Arguments> messageSource() {
 		return Stream.of(
 				Arguments.of(getJsonMessage(), true),
-				Arguments.of(new Message(TEST_INPUT), false));
+				Arguments.of(new Message(TEST_INPUT), false)
+		);
 	}
 
 	@MethodSource("messageSource")
@@ -250,7 +251,8 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 				Arguments.of(getJsonMessage(" " + TEST_JSON_INPUT), true),
 				Arguments.of(getJsonMessage("	" + TEST_JSON_INPUT), true),
 				Arguments.of(new Message(" " + TEST_INPUT), false),
-				Arguments.of(new Message("	" + TEST_INPUT), false));
+				Arguments.of(new Message("	" + TEST_INPUT), false)
+		);
 	}
 
 	@ParameterizedTest

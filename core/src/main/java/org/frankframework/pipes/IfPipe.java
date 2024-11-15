@@ -39,7 +39,6 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -86,7 +85,7 @@ import org.frankframework.util.XmlUtils;
  *   }
  * }
  * }</pre>
- *
+ * <p>
  * With both expression languages you'll be able to select one or multiple nodes from this collection.
  * <br/>
  * Using this pipe there are two options. Use it only with an {@code expression} or combine it with an {@code expressionValue}. When using the expression,
@@ -136,7 +135,6 @@ import org.frankframework.util.XmlUtils;
  * </ul>
  *
  * @ff.note Some behaviour has been slightly modified compared to XmlIf! See 'Changes compared to the XmlIf pipe'.
- *
  * @see DataSonnetPipe
  */
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
@@ -182,8 +180,8 @@ public class IfPipe extends AbstractPipe {
 
 		if (StringUtils.isNotEmpty(xpathExpression)) {
 			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, xpathExpression, null,
-					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion);
-			// transformerPool = TransformerPool.getInstance(makeStylesheet(xpathExpression, expressionValue), xsltVersion, this);
+					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion
+			);
 		}
 	}
 
@@ -237,20 +235,7 @@ public class IfPipe extends AbstractPipe {
 					parameterValues = parameterList.getValues(message, session, namespaceAware).getValueMap();
 				}
 
-				// xpathExpression:
-				// * count iets > 1 = true/false
-				// * select iets /results
-
-				// niks/false else
-				// iets/true ..
-
-				// bekijken wat er uit een selector vs expression komt om then/else te bepalen
 				resultAsString = transformerPool.transform(inputString, parameterValues, namespaceAware);
-
-				// probleem:
-				// geen match, of lege match leveren allebei een lege string op
-
-				//resultAsString = XmlUtils.evaluateXPathNodeSetFirstElement(inputString, xpathExpression);
 
 				// If expressionValue is empty, determine the forward based on the result of the transformation
 				if (StringUtils.isEmpty(expressionValue)) {
@@ -330,17 +315,6 @@ public class IfPipe extends AbstractPipe {
 
 		// If the input is not empty, use then forward.
 		return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
-	}
-
-	private String makeStylesheet(String xpathExpression, String resultVal) {
-		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
-		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
-						"<xsl:when " + namespaceClause + " test=\"" + XmlEncodingUtils.encodeChars(x) + "\">" + thenForwardName + "</xsl:when>" +
-						"<xsl:otherwise>" + elseForwardName + "</xsl:otherwise>" +
-						"</xsl:choose>",
-				xpathExpression + (StringUtils.isEmpty(resultVal) ? "" : "='" + resultVal + "'"),
-				TransformerPool.OutputType.TEXT, false, getParameterList(), true, !namespaceAware, xsltVersion
-		);
 	}
 
 	private PipeForward assertExistsAndGetForward(String forwardName) throws ConfigurationException {

@@ -18,27 +18,6 @@ import org.frankframework.util.CloseUtils;
 
 public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 
-	private PipeRunResult pipeRunResult;
-
-	@Override
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(pipeRunResult);
-
-		super.tearDown();
-	}
-
-	@Override
-	public IfPipe createPipe() throws ConfigurationException {
-		IfPipe ifPipe = new IfPipe();
-
-		// Add default forwards
-		ifPipe.addForward(new PipeForward(PIPE_FORWARD_THEN, null));
-		ifPipe.addForward(new PipeForward(PIPE_FORWARD_ELSE, null));
-
-		return ifPipe;
-	}
-
 	static String testJson = """
 			{
 			    "store": {
@@ -73,6 +52,26 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 			    }
 			}
 			""";
+	private PipeRunResult pipeRunResult;
+
+	@Override
+	@AfterEach
+	public void tearDown() {
+		CloseUtils.closeSilently(pipeRunResult);
+
+		super.tearDown();
+	}
+
+	@Override
+	public IfPipe createPipe() throws ConfigurationException {
+		IfPipe ifPipe = new IfPipe();
+
+		// Add default forwards
+		ifPipe.addForward(new PipeForward(PIPE_FORWARD_THEN, null));
+		ifPipe.addForward(new PipeForward(PIPE_FORWARD_ELSE, null));
+
+		return ifPipe;
+	}
 
 	public static Stream<Arguments> messageSource() {
 		return Stream.of(
