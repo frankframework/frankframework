@@ -114,7 +114,7 @@ import org.frankframework.util.XmlUtils;
  *   </results>
  * }</pre>
  * Examples with complex expressions might be something like: {@code number(count(/results/result[contains(@name , 'test')])) > 1}, to test if there's more
- * than one node found containing the string 'test'. Please check if a simpler, less error prone expression like
+ * than one node found containing the string 'test'. Please check if a simpler, less error-prone expression like
  * {@code /results/result[contains(@name, 'test')]} can suffice.
  * <p></p>
  *
@@ -122,7 +122,7 @@ import org.frankframework.util.XmlUtils;
  * The XmlIf pipe used some constructs that were not compliant with the Xpath standard. For instance, given the input {@code <root>test</root>}, xpath selector
  * {@literal /root} would select that whole input, according to specs. So, if you wanted to match that exact value with an {@code expressionValue} parameter,
  * you should use that exact value. Well, in the XmlIf pipe, you should only pass {@literal test}. This is strange and has been changed.
- * You should use a different expressionValue to match the actual match ({@literal <root>test</root>}) or change the xpath expression to {@literal /root/text()}.
+ * You should use a different expressionValue to match the actual value ({@literal <root>test</root>}) or change the xpath expression to {@literal /root/text()}.
  * <p></p>
  *
  * <h4>Resources</h4>
