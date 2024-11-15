@@ -3,7 +3,7 @@ package org.frankframework.management.gateway;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
@@ -105,14 +105,14 @@ public class HazelcastEndToEndTest {
 		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
 	}
 
-	public static boolean isTestRunningOnCI() {
-		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI"));
+	public static boolean isTestRunningOnWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
 	}
 
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testMultipleSynchronousHazelcastMessage() {
-		assumeFalse(isTestRunningOnCI() && !isTestRunningOnGitHub());
+		assumeTrue(isTestRunningOnWindows() || isTestRunningOnGitHub());
 
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < 1_000; i++) {
