@@ -416,17 +416,14 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				.replace(":", "_");
 
 		String fullName = getFileSystem().getName(movedFile);
+		if (fullName.contains(fileModificationDate)) {
+			return movedFile;
+		}
 		String extension = FilenameUtils.getExtension(fullName);
 		if (StringUtils.isNotEmpty(extension)) {
 			extension = "." + extension;
 		}
-		String baseName = FilenameUtils.getBaseName(fullName);
-		String newName;
-		if (fullName.contains(fileModificationDate)) {
-			newName = baseName;
-		} else {
-			newName = baseName + "-" + fileModificationDate;
-		}
+		String newName = FilenameUtils.getBaseName(fullName) + "-" + fileModificationDate;
 
 		String parentFolder = getFileSystem().getParentFolder(movedFile);
 		F renamedFile = getFileSystem().toFile(parentFolder, newName + extension);

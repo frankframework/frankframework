@@ -17,6 +17,7 @@ package org.frankframework.filesystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -93,6 +94,8 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		String folderName = "inProcessFolder";
 
 		String filename = "rawMessageFile";
+		String extension = ".txt";
+		String fullName = filename + extension;
 		String contents = "Test Message Contents";
 
 		fileSystemListener.setFileTimeSensitive(true);
@@ -108,18 +111,20 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
 
-		createFile(null, filename, contents);
+		createFile(null, fullName, contents);
 
 		rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage, "raw message must be not null when a file is available");
 
 		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), endsWith(extension));
 
-		createFile(null, filename, contents);
+		createFile(null, fullName, contents);
 		RawMessageWrapper<F> rawMessage2 = fileSystemListener.getRawMessage(threadContext);
 		RawMessageWrapper<F> movedFile2 = fileSystemListener.changeProcessState(rawMessage2, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()).startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()), startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()), endsWith(extension));
 
 		assertNotEquals(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), fileSystemListener.getFileSystem()
 				.getName(movedFile2.getRawMessage()));
@@ -191,36 +196,43 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		receiver.setTxManager(transactionManager);
 		receiver.configure();
 
+		// Act 1 -- get message and move to InProcess state
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		PipeLineResult processResult = new PipeLineResult();
-		processResult.setState(PipeLine.ExitState.ERROR);
-
-		// Act 1 -- Move to ErrorStorage
-		RawMessageWrapper<F> resultFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");// this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		RawMessageWrapper<F> resultFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test");// this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		waitForActionToFinish();
 
 		// Assert 1
-		assertTrue(_folderExists(errorFolder), "Error folder must exist");
-		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
-		assertFalse(_fileExists(inProcessFolder, fileName), "Destination must not exist in in-process folder");
-		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
-		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+		String fileNameWithTimeStamp = getUpdatedFilename(fileName, rawMessage);
 
-		// Act 2 -- Retry
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+		assertTrue(_fileExists(inProcessFolder, fileNameWithTimeStamp), "Destination must exist in in-process folder");
+
+		// Act 2 -- Move to ErrorStorage
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(PipeLine.ExitState.ERROR);
+
+		fileSystemListener.changeProcessState(resultFile, ProcessState.ERROR, "test");// this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		waitForActionToFinish();
+
+		// Assert 2
+		assertTrue(_folderExists(errorFolder), "Error folder must exist");
+		assertTrue(_fileExists(errorFolder, fileNameWithTimeStamp), "Destination must exist in error folder");
+		assertFalse(_fileExists(inProcessFolder, fileNameWithTimeStamp), "Destination must not exist in in-process folder");
+		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
+
+		// Act 3 -- Retry
 		IMessageBrowsingIteratorItem item = fileSystemListener.getMessageBrowser(ProcessState.ERROR).getIterator().next();
 		ListenerException listenerException = assertThrows(ListenerException.class, () -> receiver.retryMessage(item.getId()));
 
-		// Assert 2
+		// Assert 3
 		assertThat(listenerException.getMessage(), containsString(" in state [STOPPED]"));
-		String fileNameWithTimeStamp = getUpdatedFilename(fileName, resultFile);
 		assertTrue(_fileExists(errorFolder, fileNameWithTimeStamp), "Destination must exist in error folder");
 		assertFalse(_fileExists(inProcessFolder, fileName), "Destination must not exist in in-process folder");
 		assertFalse(_fileExists(inProcessFolder, fileNameWithTimeStamp), "Destination must not exist in in-process folder");
 		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
 		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
-		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 
 	private static <F> @Nonnull String getUpdatedFilename(String originalFilename, RawMessageWrapper<F> fileMessage) {
