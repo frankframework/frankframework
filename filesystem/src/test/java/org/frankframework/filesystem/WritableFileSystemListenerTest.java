@@ -17,6 +17,7 @@ package org.frankframework.filesystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -31,6 +32,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Date;
 
+import jakarta.annotation.Nonnull;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
@@ -80,7 +85,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 
 		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
 
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), startsWith(filename + "-"));
 	}
 
 	@Test
@@ -209,13 +214,20 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 
 		// Assert 2
 		assertThat(listenerException.getMessage(), containsString(" in state [STOPPED]"));
-		String fileNameWithTimeStamp = resultFile.getId().replace(':', '_');
+		String fileNameWithTimeStamp = getUpdatedFilename(fileName, resultFile);
 		assertTrue(_fileExists(errorFolder, fileNameWithTimeStamp), "Destination must exist in error folder");
 		assertFalse(_fileExists(inProcessFolder, fileName), "Destination must not exist in in-process folder");
 		assertFalse(_fileExists(inProcessFolder, fileNameWithTimeStamp), "Destination must not exist in in-process folder");
 		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
 		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
 		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+	}
+
+	private static <F> @Nonnull String getUpdatedFilename(String originalFilename, RawMessageWrapper<F> fileMessage) {
+		String extension = FilenameUtils.getExtension(originalFilename);
+		String baseName = FilenameUtils.getBaseName(originalFilename);
+		String timeStamp = fileMessage.getId().replace(':', '_').replace(originalFilename, "");
+		return baseName + timeStamp + (StringUtils.isNotEmpty(extension) ? "." + extension : "");
 	}
 
 	@Disabled("TODO: mock getModificationTime (This fails in some operating systems since copying file may change the modification date)")

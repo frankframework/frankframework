@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -388,7 +389,6 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	// result is guaranteed if toState==ProcessState.INPROCESS
 	@Override
-	@SuppressWarnings("unchecked")
 	public RawMessageWrapper<F> changeProcessState(RawMessageWrapper<F> message, ProcessState toState, String reason) throws ListenerException {
 		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
@@ -400,23 +400,46 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
-				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).replace(":", "_"));
-				F renamedFile = getFileSystem().toFile(newName);
-				int i=1;
-				while(getFileSystem().exists(renamedFile)) {
-					renamedFile=getFileSystem().toFile(newName+"-"+i);
-					if(i>5) {
-						log.warn("Cannot rename file [{}] with the timestamp suffix. File moved to [{}] folder with the original name", ()->message, ()->getStateFolder(toState));
-						return wrap(movedFile, message);
-					}
-					i++;
-				}
-				return wrap(FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0), message);
+				return wrap(renameFileWithTimeStamp(message, toState, movedFile), message);
 			}
 			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false), message);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message.getRawMessage())+"]", e);
 		}
+	}
+
+	@Nonnull
+	@SuppressWarnings("unchecked")
+	private F renameFileWithTimeStamp(RawMessageWrapper<F> message, ProcessState toState, F movedFile) throws FileSystemException, ListenerException {
+
+		String fileModificationDate = DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER)
+				.replace(":", "_");
+
+		String fullName = getFileSystem().getName(movedFile);
+		String extension = FilenameUtils.getExtension(fullName);
+		if (StringUtils.isNotEmpty(extension)) {
+			extension = "." + extension;
+		}
+		String baseName = FilenameUtils.getBaseName(fullName);
+		String newName;
+		if (fullName.contains(fileModificationDate)) {
+			newName = baseName;
+		} else {
+			newName = baseName + "-" + fileModificationDate;
+		}
+
+		String parentFolder = getFileSystem().getParentFolder(movedFile);
+		F renamedFile = getFileSystem().toFile(parentFolder, newName + extension);
+		int i=1;
+		while(getFileSystem().exists(renamedFile)) {
+			renamedFile=getFileSystem().toFile(parentFolder, newName+"-"+i + extension);
+			if(i>5) {
+				log.warn("Cannot rename file [{}] with the timestamp suffix. File moved to [{}] folder with the original name", ()-> message, ()->getStateFolder(toState));
+				return movedFile;
+			}
+			i++;
+		}
+		return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
