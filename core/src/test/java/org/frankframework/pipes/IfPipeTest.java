@@ -224,21 +224,21 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	@MethodSource("messageSource")
 	@ParameterizedTest
 	void testWithCustomThenForward(Message message) throws Exception {
-		String pipeName = "someText";
-		pipe.setThenForwardName(pipeName);
-		pipe.addForward(new PipeForward(pipeName, null));
+		String forwardName = "someText";
+		pipe.setThenForwardName(forwardName);
+		pipe.addForward(new PipeForward(forwardName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, message, session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(forwardName, pipeRunResult.getPipeForward().getName());
 	}
 
 	@MethodSource("messageSource")
 	@ParameterizedTest
 	void testWithCustomElseForward(Message message) throws Exception {
-		String pipeName = "someText";
-		pipe.setElseForwardName(pipeName);
-		pipe.addForward(new PipeForward(pipeName, null));
+		String forwardName = "someText";
+		pipe.setElseForwardName(forwardName);
+		pipe.addForward(new PipeForward(forwardName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, message, session);
@@ -262,29 +262,15 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
-	@ParameterizedTest
-	@MethodSource("spacePrefixedMessageSource")
-	void whitespaceInputOnInvalidThenPipeTest(Message message) throws Exception {
-		String forwardName = "test1";
-		pipe.setThenForwardName(forwardName);
-		configureAndStartPipe();
-
-		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, message, session));
-		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test1]"));
-	}
-
 	@Test
 	void testNullInput() throws Exception {
-		String pipeName = "test1";
-		pipe.setElseForwardName(pipeName);
-		pipe.addForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, new Message((String) null), session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
 
 		pipeRunResult = doPipe(pipe, getJsonMessage(null), session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
 	}
 
 	@ParameterizedTest

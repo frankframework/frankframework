@@ -19,14 +19,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.xml.transform.TransformerConfigurationException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import net.minidev.json.JSONArray;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -43,6 +42,103 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
+/**
+ * Selects a forward based on an expression. The expression type is coupled to the mediaType:
+ * <ul>
+ *     <li>XML (application/xml) uses Xpath</li>
+ *     <li>JSON (application/json) uses jsonPath</li>
+ * </ul>
+ * The XML mediaType is the default type, if you want to use json, you need to set this using 'mimeType' in the Message.
+ *
+ * <h4>Expressions</h4>
+ * Expressions are used to select nodes in the given input document. Imagine a collection of books:
+ * <pre>{@code
+ * {
+ *   "store": {
+ *     "book": [
+ *       {
+ *         "category": "reference",
+ *         "author": "Nigel Rees",
+ *         "title": "Sayings of the Century",
+ *         "price": 8.95
+ *       },
+ *       {
+ *         "category": "fiction",
+ *         "author": "Evelyn Waugh",
+ *         "title": "Sword of Honour",
+ *         "price": 12.99
+ *       },
+ *       {
+ *         "category": "fiction",
+ *         "author": "Herman Melville",
+ *         "title": "Moby Dick",
+ *         "isbn": "0-553-21311-3",
+ *         "price": 8.99
+ *       },
+ *       {
+ *         "category": "fiction",
+ *         "author": "J. R. R. Tolkien",
+ *         "title": "The Lord of the Rings",
+ *         "isbn": "0-395-19395-8",
+ *         "price": 22.99
+ *       }
+ *     ]
+ *   }
+ * }
+ * }</pre>
+ *
+ * With both expression languages you'll be able to select one or multiple nodes from this collection.
+ * <br/>
+ * Using this pipe there are two options. Use it only with an {@code expression} or combine it with an {@code expressionValue}. When using the expression,
+ * the pipe evaluates to {@code thenForwardName} when <em>there is a match</em>, even it is empty. In the given example, this might be one of:
+ * <pre>{@code
+ *   $.store
+ *   $.store.book[1]
+ *   $.store.book[?(@.price == 22.99)].author
+ *   $.store.book[?(@.category == 'fiction')]
+ * }</pre>
+ *
+ * <h4>expressionValue</h4>
+ * When using expression combined with expressionValue, the pipe evaluates to {@code thenForwardName} when the <em>the matched value is equal to
+ * expressionValue</em>. This needs to be an exact match.
+ * <br/>
+ *
+ * <h4>XML/XPATH</h4>
+ * Xpath has been around a long time, information about the syntax can be found everywhere on the internet.
+ * The XML implementation wraps the Xpath expression in an XSL. This enables us to use complex expressions which evaluate to true or false instead
+ * being used only as a selector of nodes in the input XML. This is available to be backwards compatible with the {@link XmlIf} pipe.
+ * For instance, take the following example input:
+ * <pre>{@code
+ *   <results>
+ *     <result name="test"></result>
+ *     <result name="test"></result>
+ *   </results>
+ * }</pre>
+ * Examples with complex expressions might be something like: {@code number(count(/results/result[contains(@name , 'test')])) > 1}, to test if there's more
+ * than one node found containing the string 'test'. Please check if a simpler, less error prone expression like
+ * {@code /results/result[contains(@name, 'test')]} can suffice.
+ * <p></p>
+ *
+ * <h4>Changes compared to the XmlIf pipe</h4>
+ * The XmlIf pipe used some constructs that were not compliant with the Xpath standard. For instance, given the input {@code <root>test</root>}, xpath selector
+ * {@literal /root} would select that whole input, according to specs. So, if you wanted to match that exact value with an {@code expressionValue} parameter,
+ * you should use that exact value. Well, in the XmlIf pipe, you should only pass {@literal test}. This is strange and has been changed.
+ * You should use a different expressionValue to match the actual match ({@literal <root>test</root>}) or change the xpath expression to {@literal /root/text()}.
+ * <p></p>
+ *
+ * <h4>Resources</h4>
+ * <ul>
+ *     <li><a href="https://github.com/json-path/JsonPath">JsonPath / Jayway implementation including examples</a></li>
+ *     <li><a href="https://jsonpath.fly.dev/">JsonPath online evaluator</a></li>
+ *     <li><a href="https://www.w3schools.com/xml/xpath_syntax.asp">Xpath syntax</a></li>
+ *     <li><a href="https://www.freeformatter.com/xpath-tester.html">Xpath online evaluator</a></li>
+ *     <li><a href="https://en.wikipedia.org/wiki/XPath">Xpath information and history</a></li>
+ * </ul>
+ *
+ * @ff.note Some behaviour has been slightly modified compared to XmlIf! See 'Changes compared to the XmlIf pipe'.
+ *
+ * @see DataSonnetPipe
+ */
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
 @Forward(name = "else", description = "the configured condition is not met")
@@ -50,10 +146,20 @@ import org.frankframework.util.XmlUtils;
 public class IfPipe extends AbstractPipe {
 
 	private String elseForwardName = "else";
-	private String expressionValue = null;
-	private String namespaceDefs = null;
 	private String thenForwardName = "then";
+	private PipeForward elseForward;
+	private PipeForward thenForward;
+
+	private String namespaceDefs = null;
 	private boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
+	private TransformerPool transformerPool;
+	private String jsonPathExpression = null;
+	private String xpathExpression = null;
+	private String expressionValue = null;
+
+	private String regex = null;
+	private int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
+
 	private DefaultMediaType defaultMediaType = DefaultMediaType.XML;
 
 	public enum DefaultMediaType {
@@ -67,22 +173,17 @@ public class IfPipe extends AbstractPipe {
 		}
 	}
 
-	private TransformerPool transformerPool;
-	private String jsonPathExpression = null;
-	private String regex = null;
-	private String xpathExpression = null;
-	private int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
+		thenForward = assertExistsAndGetForward(thenForwardName);
+		elseForward = assertExistsAndGetForward(elseForwardName);
+
 		if (StringUtils.isNotEmpty(xpathExpression)) {
-			try {
-				transformerPool = TransformerPool.getInstance(makeStylesheet(xpathExpression, expressionValue), xsltVersion, this);
-			} catch (TransformerConfigurationException e) {
-				throw new ConfigurationException("could not create transformer from xpathExpression [" + xpathExpression + "], target expressionValue [" + expressionValue + "]", e);
-			}
+			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, xpathExpression, null,
+					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion);
+			// transformerPool = TransformerPool.getInstance(makeStylesheet(xpathExpression, expressionValue), xsltVersion, this);
 		}
 	}
 
@@ -96,16 +197,10 @@ public class IfPipe extends AbstractPipe {
 			throw new PipeRunException(this, "Incorrect pathExpression provided for given mediaType + " + mimeType);
 		}
 
-		String forward = determineForward(message, session);
+		PipeForward pipeForward = determineForward(message, session);
 
-		log.debug("determined forward [{}]", forward);
+		log.debug("resolved forward [{}] to path [{}]", pipeForward.getName(), pipeForward.getPath());
 
-		PipeForward pipeForward = findForward(forward);
-		if (pipeForward == null) {
-			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
-		}
-
-		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 
@@ -129,8 +224,10 @@ public class IfPipe extends AbstractPipe {
 	/**
 	 * Based on the pipe settings, tries to evaluate the expression and determine the correct forward
 	 */
-	private String determineForward(Message message, PipeLineSession session) throws PipeRunException {
+	private PipeForward determineForward(Message message, PipeLineSession session) throws PipeRunException {
 		String inputString = getInputString(message);
+
+		String resultAsString = null;
 
 		if (xpathExpression != null && transformerPool != null) {
 			try {
@@ -139,32 +236,77 @@ public class IfPipe extends AbstractPipe {
 				if (!parameterList.isEmpty()) {
 					parameterValues = parameterList.getValues(message, session, namespaceAware).getValueMap();
 				}
-				return transformerPool.transform(inputString, parameterValues, namespaceAware);
+
+				// xpathExpression:
+				// * count iets > 1 = true/false
+				// * select iets /results
+
+				// niks/false else
+				// iets/true ..
+
+				// bekijken wat er uit een selector vs expression komt om then/else te bepalen
+				resultAsString = transformerPool.transform(inputString, parameterValues, namespaceAware);
+
+				// probleem:
+				// geen match, of lege match leveren allebei een lege string op
+
+				//resultAsString = XmlUtils.evaluateXPathNodeSetFirstElement(inputString, xpathExpression);
+
+				// If expressionValue is empty, determine the forward based on the result of the transformation
+				if (StringUtils.isEmpty(expressionValue)) {
+					// if result is null (from selector) or equals 'false' (from expression)
+					if (StringUtils.isEmpty(resultAsString) || StringUtils.equalsIgnoreCase(resultAsString, "false")) {
+						return elseForward;
+					}
+
+					// If there's a value, there's a match
+					return thenForward;
+				}
+
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot evaluate expression", e);
 			}
 		} else if (StringUtils.isNotBlank(jsonPathExpression)) {
 			// Try to match the jsonPath expression on the given json string
 			try {
-				String jsonPathResult = JsonPath.read(inputString, jsonPathExpression);
+				Object jsonPathResult = JsonPath.read(inputString, jsonPathExpression);
 
 				// if we get to this point, we have a match (and no PathNotFoundException)
 
 				if (StringUtils.isEmpty(expressionValue)) {
-					return thenForwardName;
+					return thenForward;
 				}
 
-				// If there's an expressionValue set, it needs to match with the jsonPath query result
-				return jsonPathResult.equals(expressionValue) ? thenForwardName : elseForwardName;
-
+				resultAsString = getJsonPathResult(jsonPathResult);
 			} catch (PathNotFoundException e) {
 				// No results found for path
-				return elseForwardName;
+				return elseForward;
 			}
 		}
 
+		if (resultAsString != null) {
+			// If there's an expressionValue set, it needs to match with the jsonPath query result
+			return resultAsString.equals(expressionValue) ? thenForward : elseForward;
+		}
+
 		// if all else fails, this is the legacy behaviour
-		return getForward(inputString);
+		return getForwardForStringInput(inputString);
+	}
+
+	/**
+	 * When using expressions, jsonPath returns a JsonArray, even if there's only one match. make sure to get a String from it.
+	 */
+	private String getJsonPathResult(Object jsonPathResult) {
+		if (jsonPathResult instanceof String string) {
+			return string;
+		}
+
+		if (jsonPathResult instanceof JSONArray jsonArray
+				&& !jsonArray.isEmpty()) {
+			return jsonArray.get(0).toString();
+		}
+
+		return null;
 	}
 
 	private String getInputString(Message message) throws PipeRunException {
@@ -179,15 +321,15 @@ public class IfPipe extends AbstractPipe {
 		}
 	}
 
-	private String getForward(String inputString) {
+	private PipeForward getForwardForStringInput(String inputString) {
 		if (StringUtils.isNotEmpty(regex)) {
-			return inputString.matches(regex) ? thenForwardName : elseForwardName;
+			return inputString.matches(regex) ? thenForward : elseForward;
 		} else if (StringUtils.isNotEmpty(expressionValue)) {
-			return inputString.equals(expressionValue) ? thenForwardName : elseForwardName;
+			return inputString.equals(expressionValue) ? thenForward : elseForward;
 		}
 
-		// If the input is empty, use the else forward.
-		return StringUtils.isEmpty(inputString) ? elseForwardName : thenForwardName;
+		// If the input is not empty, use then forward.
+		return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
 	}
 
 	private String makeStylesheet(String xpathExpression, String resultVal) {
@@ -201,11 +343,23 @@ public class IfPipe extends AbstractPipe {
 		);
 	}
 
+	private PipeForward assertExistsAndGetForward(String forwardName) throws ConfigurationException {
+		PipeForward forward = findForward(forwardName);
+
+		if (forward != null) {
+			return forward;
+		}
+
+		throw new ConfigurationException("has no forward with name [" + forwardName + "]");
+	}
+
 	/**
 	 * forward returned when output is <code>true</code>
 	 *
 	 * @ff.default then
 	 */
+	@Deprecated(forRemoval = true, since = "9.0")
+	@ConfigurationWarning(value = "Use the 'then' forward in your configuration")
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
 	}
@@ -215,6 +369,8 @@ public class IfPipe extends AbstractPipe {
 	 *
 	 * @ff.default else
 	 */
+	@Deprecated(forRemoval = true, since = "9.0")
+	@ConfigurationWarning(value = "Use the 'else' forward in your configuration")
 	public void setElseForwardName(String elseForwardName) {
 		this.elseForwardName = elseForwardName;
 	}

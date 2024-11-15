@@ -69,13 +69,8 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 			                "isbn": "0-395-19395-8",
 			                "price": 22.99
 			            }
-			        ],
-			        "bicycle": {
-			            "color": "red",
-			            "price": 19.95
-			        }
-			    },
-			    "expensive": 10
+			        ]
+			    }
 			}
 			""";
 
@@ -90,11 +85,10 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 				Arguments.of(testJson, "$.store.book[1].author", "", PIPE_FORWARD_THEN),
 				Arguments.of(testJson, "$.store.book[1].author", "Evelyn Waugh", PIPE_FORWARD_THEN),
 				Arguments.of(testJson, "$.store.book[1].isbn", "", PIPE_FORWARD_ELSE),
-				Arguments.of(testJson, "$.store.book[1].category", "reference", PIPE_FORWARD_ELSE)
+				Arguments.of(testJson, "$.store.book[1].category", "reference", PIPE_FORWARD_ELSE),
+				Arguments.of(testJson, "$.store.book[?(@.price == 22.99)].author", "J. R. R. Tolkien", PIPE_FORWARD_THEN),
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')]", "", PIPE_FORWARD_THEN)
 		);
-
-		// TODO check if jsonPath is actually used expression based. Like if "priceOfAllBooks > x" evaluates to true? I'm not sure if jsonpath can do that
-		// $.sum($.store.book[?(@.price < 10)].price)
 	}
 
 	@ParameterizedTest

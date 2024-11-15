@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
@@ -54,7 +54,8 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 				Arguments.of("<root/>", "/root", "", PIPE_FORWARD_THEN),
 				Arguments.of("<root>test</root>", "/root", "", PIPE_FORWARD_THEN),
 				Arguments.of("<root/>", "/root", "test", PIPE_FORWARD_ELSE),
-				Arguments.of("<root>test</root>", "/root", "test", PIPE_FORWARD_THEN),
+				Arguments.of("<root>test</root>", "/root", "test", PIPE_FORWARD_ELSE),
+				Arguments.of("<root>test</root>", "/root/text()", "test", PIPE_FORWARD_THEN),
 				Arguments.of("<root>test123</root>", "/root", "test", PIPE_FORWARD_ELSE)
 		);
 	}
@@ -123,30 +124,22 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
-	@Test
-	void testInvalidElseForwardName() throws Exception {
-		pipe.setXpathExpression("/test");
-		pipe.setElseForwardName("test");
-		configureAndStartPipe();
-
-		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "<root>test123</root>", session));
-		assertThat(e.getMessage(), Matchers.containsString("cannot find forward or pipe named [test]"));
-	}
-
-	@Test
-	void testInvalidThenForwardName() throws Exception {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void testInvalidForwards(boolean testThenForward) {
 		pipe.setXpathExpression("/root");
-		pipe.setThenForwardName("test");
-		configureAndStartPipe();
+		if (testThenForward) {
+			pipe.setThenForwardName("test");
+		} else {
+			pipe.setElseForwardName("test");
+		}
 
-		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "<root>test123</root>", session));
-		assertThat(e.getMessage(), Matchers.containsString("cannot find forward or pipe named [test]"));
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.containsString("has no forward with name [test]"));
 	}
 
 	@Test
 	void emptyNamespaceDefsTest() {
-		String pipeName = "test1";
-		pipe.setThenForwardName(pipeName);
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -156,51 +149,41 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 	@Test
 	void namespaceDefsTestTrue() throws Exception {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
-		String pipeName = "test1";
-		pipe.setThenForwardName(pipeName);
-		pipe.addForward(new PipeForward(pipeName, null));
+
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	void namespaceDefsTestFalse() throws Exception {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
-		String pipeName = "test1";
-		pipe.setElseForwardName(pipeName);
-		pipe.addForward(new PipeForward(pipeName, null));
+
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 2)");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	void namespaceDefsTestEmptyBooleanCheck() {
-		String pipeName = "test1";
-		pipe.setElseForwardName(pipeName);
-		pipe.addForward(new PipeForward(pipeName, null));
 		pipe.setXpathExpression("xs:boolean()");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
-		assertThat(e.getMessage(), Matchers.containsString("could not create transformer from xpathExpression"));
+
+		assertThat(e.getMessage(), Matchers.containsString("Cannot create TransformerPool for XPath expression"));
 	}
 
 	@Test
 	void testWithParameter() throws Exception {
-		String elsePipeName = "test1";
-		String thenPipeName = "test2";
-		pipe.setElseForwardName(elsePipeName);
-		pipe.setThenForwardName(thenPipeName);
-		pipe.addForward(new PipeForward(elsePipeName, null));
-		pipe.addForward(new PipeForward(thenPipeName, null));
 		pipe.addParameter(new Parameter("param", "value"));
 		pipe.setXpathExpression("contains(/root/test, $param)");
 		String input = "<root><test>value is present</test></root>";
@@ -208,17 +191,11 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(thenPipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	void testWithParameterEquals() throws Exception {
-		String elsePipeName = "test1";
-		String thenPipeName = "test2";
-		pipe.setElseForwardName(elsePipeName);
-		pipe.setThenForwardName(thenPipeName);
-		pipe.addForward(new PipeForward(elsePipeName, null));
-		pipe.addForward(new PipeForward(thenPipeName, null));
 		XmlParameterBuilder parameter = XmlParameterBuilder.create("param", "<root><test>value</test></root>")
 				.withType(ParameterType.DOMDOC);
 		pipe.addParameter(parameter);
@@ -227,18 +204,11 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<dummy/>", session);
-		assertEquals(thenPipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	void testWithMultipleParameters() throws Exception {
-		String elsePipeName = "test1";
-		String thenPipeName = "test2";
-		pipe.setElseForwardName(elsePipeName);
-		pipe.setThenForwardName(thenPipeName);
-		pipe.addForward(new PipeForward(elsePipeName, null));
-		pipe.addForward(new PipeForward(thenPipeName, null));
-
 		XmlParameterBuilder parameter1 = XmlParameterBuilder.create()
 				.withName("param")
 				.withValue("<root><test>value</test></root>")
@@ -256,17 +226,11 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<dummy/>", session);
-		assertEquals(thenPipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	void testWithParameterThatGetsValueFromInput() throws Exception {
-		String elsePipeName = "test1";
-		String thenPipeName = "test2";
-		pipe.setElseForwardName(elsePipeName);
-		pipe.setThenForwardName(thenPipeName);
-		pipe.addForward(new PipeForward(elsePipeName, null));
-		pipe.addForward(new PipeForward(thenPipeName, null));
 		XmlParameterBuilder parameter = XmlParameterBuilder.create("param", "<root><test>value</test></root>").withType(ParameterType.DOMDOC);
 		pipe.addParameter(parameter);
 
@@ -279,6 +243,6 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml").openStream(), session);
-		assertEquals(thenPipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
 	}
 }
