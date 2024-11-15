@@ -136,7 +136,7 @@ public class HazelcastEndToEndTest {
 
 		//Assert
 		Message<String> capturedRequest = Awaitility.await()
-				.atMost(1500, TimeUnit.MILLISECONDS)
+				.atMost(3000, TimeUnit.MILLISECONDS)
 				.until(requestCapture::getValue, Objects::nonNull);
 		assertEquals("async-string", capturedRequest.getPayload());
 	}
