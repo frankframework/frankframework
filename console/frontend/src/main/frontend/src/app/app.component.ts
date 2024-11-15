@@ -622,7 +622,10 @@ export class AppComponent implements OnInit, OnDestroy {
           .then((result) => {
             if (result.isConfirmed) {
               if (this.clusterMembers.length > 0) {
-                this.appService.updateSelectedClusterMember(this.clusterMembers[0].id).subscribe();
+                this.appService.updateSelectedClusterMember(this.clusterMembers[0].id).subscribe(() => {
+                  this.appService.triggerReload();
+                });
+                return;
               }
               this.appService.triggerReload();
             }
