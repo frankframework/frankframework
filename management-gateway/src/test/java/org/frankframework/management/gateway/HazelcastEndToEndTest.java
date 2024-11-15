@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import org.apache.commons.lang3.StringUtils;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
