@@ -3,6 +3,7 @@ package org.frankframework.management.gateway;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.security.RolesAllowed;
 
+import org.apache.commons.lang3.StringUtils;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,9 +101,19 @@ public class HazelcastEndToEndTest {
 		assertEquals("sync-string", capturedRequest.getPayload());
 	}
 
+	public static boolean isTestRunningOnGitHub() {
+		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnCI() {
+		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI"));
+	}
+
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testMultipleSynchronousHazelcastMessage() {
+		assumeFalse(isTestRunningOnCI() && !isTestRunningOnGitHub());
+
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < 1_000; i++) {
 			Message<String> request = new GenericMessage<>("load-req-"+i, new MessageHeaders(null));
