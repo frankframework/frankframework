@@ -285,14 +285,32 @@ export class AppComponent implements OnInit, OnDestroy {
         this.initializeWarnings();
         this.checkIafVersions();
       },
+    });
+    this.serverInfoService.refresh().subscribe({
       error: (error: HttpErrorResponse) => {
         // HTTP 5xx error
         if (error.status.toString().startsWith('5')) {
           this.router.navigate(['error']);
+        } else if (error.status === 400) {
+          this.appService.getClusterMembers().subscribe({
+            next: (data) => {
+              this.clusterMembers = data;
+              if (data.length > 0) {
+                this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
+              }
+              if (this.selectedClusterMember != null) {
+                this.appService.triggerReload();
+              }
+            },
+            error: () => {
+              this.sweetAlertService
+                .Error("Couldn't initialize Frank!Console", 'Please make sure the Frank!Framework is setup correctly!')
+                .then(() => this.appService.triggerReload());
+            },
+          });
         }
       },
     });
-    this.serverInfoService.refresh();
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
@@ -603,9 +621,30 @@ export class AppComponent implements OnInit, OnDestroy {
     const memberExists = this.clusterMembers.some((m) => m.id === member.id);
     if (action === 'ADD_MEMBER' && !memberExists) {
       this.clusterMembers = [...this.clusterMembers, member];
-      console.log('ADDED');
     } else if (action === 'REMOVE_MEMBER' && memberExists) {
       this.clusterMembers = this.clusterMembers.filter((m) => m.id !== member.id);
+
+      if (this.selectedClusterMember?.id === member.id) {
+        this.sweetAlertService
+          .Warning({
+            title: 'Current cluster member has been removed',
+            text: 'Reload to a different member or stay in current unstable instance?',
+            showCancelButton: true,
+            cancelButtonText: 'Stay',
+            confirmButtonText: 'Reload',
+          })
+          .then((result) => {
+            if (result.isConfirmed) {
+              if (this.clusterMembers.length > 0) {
+                this.appService.updateSelectedClusterMember(this.clusterMembers[0].id).subscribe(() => {
+                  this.appService.triggerReload();
+                });
+                return;
+              }
+              this.appService.triggerReload();
+            }
+          });
+      }
     }
   }
 }
