@@ -224,7 +224,8 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 
 		// Act 3 -- Retry
 		IMessageBrowsingIteratorItem item = fileSystemListener.getMessageBrowser(ProcessState.ERROR).getIterator().next();
-		ListenerException listenerException = assertThrows(ListenerException.class, () -> receiver.retryMessage(item.getId()));
+		String messageId = item.getId();
+		ListenerException listenerException = assertThrows(ListenerException.class, () -> receiver.retryMessage(messageId));
 
 		// Assert 3
 		assertThat(listenerException.getMessage(), containsString(" in state [STOPPED]"));
