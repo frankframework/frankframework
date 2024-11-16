@@ -335,24 +335,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		String filename = fs.getName(rawMessage);
 		try {
 			Map <String,Object> attributes = fs.getAdditionalFileProperties(rawMessage);
-			String messageId = null;
-			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
-				if (attributes != null) {
-					messageId = (String)attributes.get(getMessageIdPropertyKey());
-				}
-				if (StringUtils.isEmpty(messageId)) {
-					log.warn("no attribute [{}] found, will use filename as messageId", getMessageIdPropertyKey());
-				}
-			}
-			if (StringUtils.isEmpty(messageId)) {
-				messageId = originalFilename;
-			}
-			if (StringUtils.isEmpty(messageId)) {
-				messageId = fs.getName(rawMessage);
-			}
-			if (isFileTimeSensitive()) {
-				messageId += "-" + getFormatFileModificationDate(rawMessage);
-			}
+			String messageId = deriveMessageId(rawMessage, originalFilename, attributes);
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId);
 			if (attributes!=null) {
 				messageProperties.putAll(attributes);
@@ -371,6 +354,28 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		} catch (Exception e) {
 			throw new ListenerException("Could not get properties for filename ["+filename+"]",e);
 		}
+	}
+
+	private String deriveMessageId(@Nonnull F rawMessage, @Nullable String originalFilename, Map<String, Object> attributes) throws FileSystemException {
+		String messageId = null;
+		if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
+			if (attributes != null) {
+				messageId = (String) attributes.get(getMessageIdPropertyKey());
+			}
+			if (StringUtils.isEmpty(messageId)) {
+				log.warn("no attribute [{}] found, will use filename as messageId", getMessageIdPropertyKey());
+			}
+		}
+		if (StringUtils.isEmpty(messageId)) {
+			messageId = originalFilename;
+		}
+		if (StringUtils.isEmpty(messageId)) {
+			messageId = getFileSystem().getName(rawMessage);
+		}
+		if (isFileTimeSensitive()) {
+			messageId += "-" + getFormatFileModificationDate(rawMessage);
+		}
+		return messageId;
 	}
 
 	private String buildAttributeXml(Map<String, Object> attributes) throws SAXException {
