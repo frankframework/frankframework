@@ -81,10 +81,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	 */
 	private @Getter @Setter TaskExecutor taskExecutor;
 
-	public PullingListenerContainer() {
-		super();
-	}
-
 	public void configure() {
 		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
 			pollToken = new ResourceLimiter(receiver.getNumThreadsPolling());
