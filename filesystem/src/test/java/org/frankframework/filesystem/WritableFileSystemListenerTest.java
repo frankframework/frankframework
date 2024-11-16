@@ -56,6 +56,7 @@ import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.util.StreamUtil;
 
 public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileSystem<F>> extends BasicFileSystemListenerTest<F, S> {
 
@@ -147,6 +148,77 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertThrows(ListenerException.class, () -> fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test"));
+	}
+
+	@Test
+	public void fileListenerTestMoveToErrorIfFileAlreadyExistsInErrorFolder() throws Exception {
+		String errorFolder = "errorFolder";
+		String filename = "rawMessageFile";
+		_createFolder(errorFolder);
+		waitForActionToFinish();
+		createFile(null, filename, "fakeNewFileContents");
+		createFile(errorFolder, filename, "fakeExistingFileContents");
+		waitForActionToFinish();
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertThrows(ListenerException.class, () -> fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test"));
+	}
+
+	@Test
+	public void fileListenerTestMoveToErrorIfFileAlreadyExistsInErrorFolderAndOverwriteIsSet() throws Exception {
+		String errorFolder = "errorFolder";
+		String filename = "rawMessageFile";
+		_createFolder(errorFolder);
+		waitForActionToFinish();
+		createFile(null, filename, "fakeNewFileContents");
+		createFile(errorFolder, filename, "fakeExistingFileContents");
+		waitForActionToFinish();
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setOverwrite(true);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> result = fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");
+
+		assertThat(fileSystemListener.getFileSystem().getCanonicalName(result.getRawMessage()), containsString(errorFolder));
+		assertFalse(_fileExists(filename));
+		assertTrue(_fileExists(errorFolder + "/" + filename));
+		assertEquals("fakeNewFileContents", StreamUtil.streamToString(_readFile(errorFolder, filename)));
+	}
+
+	@Test
+	public void fileListenerTestMoveToErrorIfFileAlreadyExistsInErrorFolderAndNrBackupsIsSet() throws Exception {
+		String errorFolder = "errorFolder";
+		String filename = "rawMessageFile";
+		_createFolder(errorFolder);
+		waitForActionToFinish();
+		createFile(null, filename, "fakeNewFileContents");
+		createFile(errorFolder, filename, "fakeExistingFileContents");
+		waitForActionToFinish();
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setNumberOfBackups(5);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> result = fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");
+
+		assertThat(fileSystemListener.getFileSystem().getCanonicalName(result.getRawMessage()), containsString(errorFolder));
+		assertFalse(_fileExists(filename));
+		assertTrue(_fileExists(errorFolder + "/" + filename));
+		assertEquals("fakeNewFileContents", StreamUtil.streamToString(_readFile(errorFolder, filename)));
+		assertTrue(_fileExists(errorFolder + "/" + filename + ".1"));
+		assertEquals("fakeExistingFileContents", StreamUtil.streamToString(_readFile(errorFolder, filename + ".1")));
 	}
 
 	@Test
