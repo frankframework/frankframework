@@ -331,10 +331,9 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	public @Nonnull Map<String, Object> extractMessageProperties(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
 		Map<String, Object> messageProperties = new HashMap<>();
-		String filename=null;
+		FS fs = getFileSystem();
+		String filename = fs.getName(rawMessage);
 		try {
-			FS fs = getFileSystem();
-			filename = fs.getName(rawMessage);
 			Map <String,Object> attributes = fs.getAdditionalFileProperties(rawMessage);
 			String messageId = null;
 			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
@@ -352,7 +351,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				messageId = fs.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId += "-" + DateFormatUtils.format(fs.getModificationTime(rawMessage), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
+				messageId += "-" + getFormatFileModificationDate(rawMessage);
 			}
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId);
 			if (attributes!=null) {
@@ -365,26 +364,30 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				messageProperties.put(FILENAME_KEY, fs.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
-				XmlWriter writer = new XmlWriter();
-				try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("metadata", writer, true)) {
-					if (attributes != null) {
-						ObjectBuilder metadataBuilder = xmlBuilder.startObject();
-						attributes.forEach((k,v) -> {
-							try {
-								metadataBuilder.add(k, v == null ? null : v.toString());
-							} catch (SAXException e) {
-								log.warn("cannot add property [{}] value [{}]", k, v, e);
-							}
-						});
-					}
-				}
-
-				messageProperties.put(getStoreMetadataInSessionKey(), writer.toString());
+				String xml = buildAttributeXml(attributes);
+				messageProperties.put(getStoreMetadataInSessionKey(), xml);
 			}
 			return messageProperties;
 		} catch (Exception e) {
-			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
+			throw new ListenerException("Could not get properties for filename ["+filename+"]",e);
 		}
+	}
+
+	private String buildAttributeXml(Map<String, Object> attributes) throws SAXException {
+		XmlWriter writer = new XmlWriter();
+		try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("metadata", writer, true)) {
+			if (attributes != null) {
+				ObjectBuilder metadataBuilder = xmlBuilder.startObject();
+				attributes.forEach((k, v) -> {
+					try {
+						metadataBuilder.add(k, v == null ? null : v.toString());
+					} catch (SAXException e) {
+						log.warn("cannot add property [{}] value [{}]", k, v, e);
+					}
+				});
+			}
+		}
+		return writer.toString();
 	}
 
 	// result is guaranteed if toState==ProcessState.INPROCESS
@@ -410,10 +413,9 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	@Nonnull
 	@SuppressWarnings("unchecked")
-	private F renameFileWithTimeStamp(RawMessageWrapper<F> message, ProcessState toState, F movedFile) throws FileSystemException, ListenerException {
+	private F renameFileWithTimeStamp(RawMessageWrapper<F> message, ProcessState toState, F movedFile) throws FileSystemException {
 
-		String fileModificationDate = DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER)
-				.replace(":", "_");
+		String fileModificationDate = getFormatFileModificationDate(movedFile).replace(":", "_");
 
 		String fullName = getFileSystem().getName(movedFile);
 		if (fullName.contains(fileModificationDate)) {
@@ -437,6 +439,11 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			i++;
 		}
 		return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
+	}
+
+	@Nonnull
+	private String getFormatFileModificationDate(F movedFile) throws FileSystemException {
+		return DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
