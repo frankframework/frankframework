@@ -178,6 +178,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		createFile(null, filename, "fakeNewFileContents");
 		createFile(errorFolder, filename, "fakeExistingFileContents");
 		waitForActionToFinish();
+		assertTrue(_fileExists(errorFolder, filename));
 
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setOverwrite(true);
@@ -190,7 +191,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 
 		assertThat(fileSystemListener.getFileSystem().getCanonicalName(result.getRawMessage()), containsString(errorFolder));
 		assertFalse(_fileExists(filename));
-		assertTrue(_fileExists(errorFolder + "/" + filename));
+		assertTrue(_fileExists(errorFolder, filename));
 		assertEquals("fakeNewFileContents", StreamUtil.streamToString(_readFile(errorFolder, filename)));
 	}
 
@@ -215,9 +216,9 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 
 		assertThat(fileSystemListener.getFileSystem().getCanonicalName(result.getRawMessage()), containsString(errorFolder));
 		assertFalse(_fileExists(filename));
-		assertTrue(_fileExists(errorFolder + "/" + filename));
+		assertTrue(_fileExists(errorFolder, filename));
 		assertEquals("fakeNewFileContents", StreamUtil.streamToString(_readFile(errorFolder, filename)));
-		assertTrue(_fileExists(errorFolder + "/" + filename + ".1"));
+		assertTrue(_fileExists(errorFolder, filename + ".1"));
 		assertEquals("fakeExistingFileContents", StreamUtil.streamToString(_readFile(errorFolder, filename + ".1")));
 	}
 
