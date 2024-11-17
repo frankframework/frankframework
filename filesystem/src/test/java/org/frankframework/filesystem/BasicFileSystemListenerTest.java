@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,13 +35,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.ProcessState;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
-import org.frankframework.util.DateFormatUtils;
 
 public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -72,6 +73,22 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	@Test
 	public void fileListenerTestConfigure() {
 		assertDoesNotThrow(() -> fileSystemListener.configure());
+	}
+
+	@Test
+	public void fileListenerTestConfigureThrows1() {
+		assumeFalse(fileSystemListener.getFileSystem() instanceof IWritableFileSystem<?>);
+		fileSystemListener.setFileTimeSensitive(true);
+
+		assertThrows(ConfigurationException.class, () -> fileSystemListener.configure());
+	}
+
+	@Test
+	public void fileListenerTestConfigureThrows2() {
+		assumeFalse(fileSystemListener.getFileSystem() instanceof IWritableFileSystem<?>);
+		fileSystemListener.setNumberOfBackups(2);
+
+		assertThrows(ConfigurationException.class, () -> fileSystemListener.configure());
 	}
 
 	@Test
@@ -313,37 +330,6 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String metadataAttribute = (String) threadContext.get("metadata");
 		System.out.println(metadataAttribute);
 		assertThat(metadataAttribute, startsWith("<metadata"));
-	}
-
-	/**
-	 * Test for proper id
-	 * Test for additionalProperties in session variables
-	 */
-	@Test
-	public void fileListenerTestGetIdFromRawMessageFileTimeSensitive() throws Exception {
-		String filename = "rawMessageFile";
-		String contents = "Test Message Contents";
-
-		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setFileTimeSensitive(true);
-		fileSystemListener.configure();
-		fileSystemListener.start();
-
-		createFile(null, filename, contents);
-
-		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
-		assertNotNull(rawMessage);
-
-		String id = rawMessage.getId();
-		assertThat(id, containsString(filename));
-
-		long currentDate = System.currentTimeMillis();
-		String currentDateFormatted = DateFormatUtils.format(currentDate, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
-		String timestamp = id.substring(id.length() - currentDateFormatted.length());
-		long timestampDate = DateFormatUtils.parseToInstant(timestamp, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).toEpochMilli();
-
-		log.debug("Current date formatted: {}, in Millis: {}, timestamp from file: {}, parsed to millis: {}, difference: {}", currentDateFormatted, currentDate, timestamp, timestampDate, timestampDate - currentDate);
-		assertTrue(Math.abs(timestampDate - currentDate) < 7300000); // less than two hours in milliseconds.
 	}
 
 	@Test

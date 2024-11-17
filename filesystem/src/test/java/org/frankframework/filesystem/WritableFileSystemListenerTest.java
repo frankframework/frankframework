@@ -16,8 +16,10 @@
 package org.frankframework.filesystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -39,6 +41,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -47,6 +51,7 @@ import org.springframework.transaction.TransactionStatus;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -56,9 +61,76 @@ import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StreamUtil;
 
 public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileSystem<F>> extends BasicFileSystemListenerTest<F, S> {
+
+
+	@Test
+	public void fileListenerTestConfigureWarningNoInProcess1() throws ConfigurationException {
+		// Arrange
+		fileSystemListener.setInProcessFolder(null);
+		fileSystemListener.setFileTimeSensitive(true);
+
+		// Act
+		fileSystemListener.configure();
+
+		// Assert
+		assertThat(getConfigurationWarnings().getWarnings(), hasItem(containsString("Configuring 'fileTimeSensitive' has no effect when no 'In Process' folder is configured.")));
+	}
+
+	@Test
+	public void fileListenerTestConfigureWarningNoInProcess2() throws ConfigurationException {
+		// Arrange
+		fileSystemListener.setInProcessFolder("inProcess");
+		fileSystemListener.setFileTimeSensitive(true);
+
+		// Act
+		fileSystemListener.configure();
+
+		// Assert
+		assertThat(getConfigurationWarnings().getWarnings(), not(hasItem(containsString("Configuring 'fileTimeSensitive' has no effect when no 'In Process' folder is configured."))));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			", false, false, 0",
+			"ipf, false, false, 0"
+	})
+	public void fileListenerTestConfigureWarningNoInProcess3(String inProcessFolder, boolean fileTimeSensitive, boolean overwrite, int nrBackups) throws ConfigurationException {
+		// Arrange
+		fileSystemListener.setInProcessFolder(inProcessFolder);
+		fileSystemListener.setFileTimeSensitive(fileTimeSensitive);
+		fileSystemListener.setOverwrite(overwrite);
+		fileSystemListener.setNumberOfBackups(nrBackups);
+
+		// Act
+		fileSystemListener.configure();
+
+		// Assert
+		assertThat(getConfigurationWarnings().getWarnings(), hasItem(containsString("It is recommended to configure an in-process folder and to set either 'fileTimeSensitive', 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.")));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"ipf, true, false, 0",
+			"ipf, false, true, 0",
+			"ipf, false, false, 10"
+	})
+	public void fileListenerTestConfigureWarningNoInProcess4(String inProcessFolder, boolean fileTimeSensitive, boolean overwrite, int nrBackups) throws ConfigurationException {
+		// Arrange
+		fileSystemListener.setInProcessFolder(inProcessFolder);
+		fileSystemListener.setFileTimeSensitive(fileTimeSensitive);
+		fileSystemListener.setOverwrite(overwrite);
+		fileSystemListener.setNumberOfBackups(nrBackups);
+
+		// Act
+		fileSystemListener.configure();
+
+		// Assert
+		assertThat(getConfigurationWarnings().getWarnings(), not(hasItem(containsString("It is recommended to configure an in-process folder and to set either 'fileTimeSensitive', 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed."))));
+	}
 
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcessTimeSensitive() throws Exception {
@@ -88,6 +160,37 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
 
 		assertThat(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), startsWith(filename + "-"));
+	}
+
+	/**
+	 * Test for proper id
+	 * Test for additionalProperties in session variables
+	 */
+	@Test
+	public void fileListenerTestGetIdFromRawMessageFileTimeSensitive() throws Exception {
+		String filename = "rawMessageFile";
+		String contents = "Test Message Contents";
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		createFile(null, filename, contents);
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+
+		String id = rawMessage.getId();
+		assertThat(id, containsString(filename));
+
+		long currentDate = System.currentTimeMillis();
+		String currentDateFormatted = DateFormatUtils.format(currentDate, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
+		String timestamp = id.substring(id.length() - currentDateFormatted.length());
+		long timestampDate = DateFormatUtils.parseToInstant(timestamp, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).toEpochMilli();
+
+		log.debug("Current date formatted: {}, in Millis: {}, timestamp from file: {}, parsed to millis: {}, difference: {}", currentDateFormatted, currentDate, timestamp, timestampDate, timestampDate - currentDate);
+		assertTrue(Math.abs(timestampDate - currentDate) < 7300000); // less than two hours in milliseconds.
 	}
 
 	@Test

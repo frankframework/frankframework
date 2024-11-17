@@ -141,6 +141,9 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
 			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
 		}
+		if (isFileTimeSensitive() && !(fileSystem instanceof IWritableFileSystem)) {
+			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'fileTimeSensitive'");
+		}
 		knownProcessStates = ProcessState.getMandatoryKnownStates();
 		for (ProcessState state: ProcessState.values()) {
 			if (StringUtils.isNotEmpty(getStateFolder(state))) {
@@ -148,7 +151,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			}
 		}
 		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
-		if ((!knownProcessStates.contains(ProcessState.INPROCESS) || !isFileTimeSensitive()) && !(isOverwrite() || getNumberOfBackups() > 0)) {
+		if (!(knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) && !(isOverwrite() || getNumberOfBackups() > 0)) {
 			ConfigurationWarnings.add(this, log, "It is recommended to configure an in-process folder and to set either 'fileTimeSensitive', 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.");
 		}
 		if (!knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) {
