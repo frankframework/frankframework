@@ -60,7 +60,7 @@
     "@types/lodash": "^4.17.13",
     "@types/markdown-it": "^13.0.7",
     "@types/sockjs-client": "^1.5.4",
-    "@types/tinycon": "^0.6.3",
+    "@types/tinycon": "^0.6.6",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",

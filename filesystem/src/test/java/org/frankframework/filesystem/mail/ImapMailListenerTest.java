@@ -1,4 +1,4 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.mail;
 
 import java.util.HashMap;
 
@@ -12,8 +12,13 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
+import org.frankframework.filesystem.AbstractMailListener;
+import org.frankframework.filesystem.BasicFileSystemListenerTest;
+import org.frankframework.filesystem.GreenmailImapTestFileSystem;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+
 public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, GreenmailImapTestFileSystem> {
-	static final String INPUT_FOLDER = "InputFolder";
+	public static final String INPUT_FOLDER = "InputFolder";
 	private static final ServerSetup serverSetup = ServerSetupTest.IMAP;
 	@RegisterExtension
 	static GreenMailExtension greenMail = new GreenMailExtension(serverSetup);
@@ -34,6 +39,11 @@ public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, G
 
 		autowireByName(fileSystemListener);
 		threadContext = new HashMap<>();
+	}
+
+	@Override
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		return new GreenmailImapTestFileSystemHelper(greenMail, user, INPUT_FOLDER);
 	}
 
 	@Override
@@ -65,11 +75,6 @@ public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, G
 		imapTestFileSystem.setReplyAddressFields("from,sender");
 
 		return imapTestFileSystem;
-	}
-
-	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new GreenmailImapTestFileSystemHelper(greenMail, user, INPUT_FOLDER);
 	}
 
 	// Simple container with user information to pass around

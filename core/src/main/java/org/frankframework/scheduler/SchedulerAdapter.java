@@ -232,7 +232,7 @@ public class SchedulerAdapter {
 			description = jobDetail.getDescription();
 
 		xbRoot.addAttribute("description", description);
-		xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExectionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
+		xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExecutionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
 		xbRoot.addAttribute("isDurable", jobDetail.isDurable());
 		xbRoot.addAttribute("jobClass", jobDetail.getJobClass().getName());
 

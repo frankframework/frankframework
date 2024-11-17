@@ -1,7 +1,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
     <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+      <ul class="nav nav-tabs" role="menu">
         <li
           *ngFor="let configuration of configurations"
           [ngClass]="{ active: selectedConfiguration === configuration.name }"
@@ -12,8 +12,15 @@
     </div>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
-        <div *ngIf="monitors.length > 0" class="ibox-title summary">
+        <div *ngIf="monitors.length > 0; else noMonitorsFound" class="ibox-title summary">
           <div class="pull-right">
+            <button
+              class="btn btn-primary btn-xs"
+              [routerLink]="['/monitors', 'new']"
+              [queryParams]="{ configuration: selectedConfiguration }"
+            >
+              <i class="fa fa-plus"></i> Add Monitor</button
+            >&nbsp;
             <button
               title="Download Monitor Configuration"
               class="btn btn-secondary btn-xs"
@@ -28,9 +35,20 @@
             monitors in state raised
           </h4>
         </div>
-        <div *ngIf="monitors.length === 0" class="ibox-title summary">
-          <h4>No monitors found in this configuration</h4>
-        </div>
+        <ng-template #noMonitorsFound>
+          <div class="ibox-title summary">
+            <div class="pull-right">
+              <button
+                class="btn btn-primary btn-xs"
+                [routerLink]="['/monitors', 'new']"
+                [queryParams]="{ configuration: selectedConfiguration }"
+              >
+                <i class="fa fa-plus"></i> Add Monitor
+              </button>
+            </div>
+            <h4>No monitors found in this configuration</h4>
+          </div>
+        </ng-template>
       </div>
     </div>
   </div>

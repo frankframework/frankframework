@@ -20,6 +20,8 @@ export type ServerInfo = {
   applicationServer: string;
   javaVersion: string;
   serverTime: number;
+  serverTimezone: string;
+  serverTimeISO: string;
   'dtap.stage': string;
   'dtap.side': string;
   processMetrics: {

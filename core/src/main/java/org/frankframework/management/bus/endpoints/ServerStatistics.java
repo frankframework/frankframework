@@ -17,8 +17,9 @@ package org.frankframework.management.bus.endpoints;
 
 import java.io.File;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,9 +93,11 @@ public class ServerStatistics extends BusEndpointBase {
 		fileSystem.put("freeSpace", getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
-		Date date = new Date();
-		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
+		ZonedDateTime zonedDateTime = ZonedDateTime.now();
+		returnMap.put("serverTime", zonedDateTime.toInstant().toEpochMilli());
+		returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		returnMap.put("serverTimeISO", zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 		try {
 			returnMap.put("uptime", getApplicationContext().getStartupDate());
 		} catch (Exception e) {
