@@ -109,7 +109,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		fileSystemListener.configure();
 
 		// Assert
-		assertThat(getConfigurationWarnings().getWarnings(), hasItem(containsString("It is recommended to configure an in-process folder and to set either 'fileTimeSensitive', 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.")));
+		assertThat(getConfigurationWarnings().getWarnings(), hasItem(containsString("It is recommended to configure either an in-process folder and to set 'fileTimeSensitive', or configure 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.")));
 	}
 
 	@ParameterizedTest
@@ -129,7 +129,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		fileSystemListener.configure();
 
 		// Assert
-		assertThat(getConfigurationWarnings().getWarnings(), not(hasItem(containsString("It is recommended to configure an in-process folder and to set either 'fileTimeSensitive', 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed."))));
+		assertThat(getConfigurationWarnings().getWarnings(), not(hasItem(containsString("It is recommended to configure either an in-process folder and to set 'fileTimeSensitive', or configure 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed."))));
 	}
 
 	@Test

@@ -152,7 +152,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		}
 		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 		if (!(knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) && !(isOverwrite() || getNumberOfBackups() > 0)) {
-			ConfigurationWarnings.add(this, log, "It is recommended to configure an in-process folder and to set either 'fileTimeSensitive', 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.");
+			ConfigurationWarnings.add(this, log, "It is recommended to configure either an in-process folder and to set 'fileTimeSensitive', or configure 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.");
 		}
 		if (!knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) {
 			ConfigurationWarnings.add(this, log, "Configuring 'fileTimeSensitive' has no effect when no 'In Process' folder is configured.");
