@@ -88,6 +88,6 @@ public class RawMessageWrapper<M> {
 
 	@Override
 	public String toString() {
-		return "ID[%s] CID[%s] context[%s] contents[%s]".formatted(id, correlationId, context, rawMessage);
+		return "id[%s] cid[%s] context[%s] message[%s]".formatted(id, correlationId, context, rawMessage);
 	}
 }

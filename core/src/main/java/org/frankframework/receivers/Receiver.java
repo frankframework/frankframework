@@ -1206,12 +1206,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 		// If the listener has process-states, then try to move the message back to "In Process" before retrying it.
 		// If we don't do that, and the message has again an error, some listeners might get confused trying to move a message from "Error" to "Error".
-		if (listener instanceof IHasProcessState<?>) {
+		if (isSupportProgrammaticRetry()) {
 			//noinspection unchecked
 			IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
-			if (hasProcessState.knownProcessStates().contains(ProcessState.INPROCESS)) {
-				return hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
-			}
+			return hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
 		}
 		return msg;
 	}

@@ -442,9 +442,10 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		String parentFolder = getFileSystem().getParentFolder(movedFile);
 		F renamedFile = getFileSystem().toFile(parentFolder, newName + extension);
 		int i=1;
+		int maxNrInBackups = getNumberOfBackups() > 0 ? getNumberOfBackups() : 5; // This should not fail when numberOfBackups is not configured but numberOfBackups originally did not apply here
 		while(getFileSystem().exists(renamedFile)) {
 			renamedFile=getFileSystem().toFile(parentFolder, newName+"-"+i + extension);
-			if(i>5) {
+			if (i > maxNrInBackups) {
 				log.warn("Cannot rename file [{}] with the timestamp suffix. File moved to [{}] folder with the original name", ()-> message, ()->getStateFolder(toState));
 				return movedFile;
 			}
