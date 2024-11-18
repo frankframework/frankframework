@@ -126,16 +126,7 @@
       </div>
     </div>
 
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-        <li [ngClass]="{ active: selectedJobGroup === 'All' }">
-          <a (click)="selectedJobGroup = 'All'">All</a>
-        </li>
-        <li *ngFor="let jobGroupKV of jobGroups | keyvalue" [ngClass]="{ active: selectedJobGroup === jobGroupKV.key }">
-          <a (click)="selectedJobGroup = jobGroupKV.key">{{ jobGroupKV.key }}</a>
-        </li>
-      </ul>
-    </div>
+    <app-tab-list [tabs]="jobGroupNames" (selectedTabChange)="selectedJobGroup = $event"></app-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">

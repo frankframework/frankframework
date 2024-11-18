@@ -9,13 +9,27 @@ import { NgClass, NgForOf } from '@angular/common';
   styleUrl: './tab-list.component.scss',
 })
 export class TabListComponent {
-  protected tabsList: string[] = ['All'];
-  @Input() protected selectedTab: string = 'All';
+  protected _allTabName: string = 'All';
+
+  @Input() selectedTab: string = this._allTabName;
+  @Input() showAllTab: boolean = true;
   @Output() selectedTabChange: EventEmitter<string> = new EventEmitter();
+
+  protected tabsList: string[] = [`${this._allTabName}`];
 
   @Input()
   set tabs(tabs: string[]) {
-    this.tabsList = ['All', ...tabs];
+    if (this.showAllTab) {
+      this.tabsList = [`${this._allTabName}`, ...tabs];
+      return;
+    }
+    this.tabsList = tabs;
+  }
+
+  @Input()
+  set allTabName(name: string) {
+    this._allTabName = name;
+    this.selectedTab = name;
   }
 
   protected changeTab(tab: string): void {

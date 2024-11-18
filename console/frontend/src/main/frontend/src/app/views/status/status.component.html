@@ -8,23 +8,11 @@
   ></app-server-warnings>
 
   <div class="row">
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-        <li [ngClass]="{ active: selectedConfiguration === 'All' }">
-          <a data-cy-status-select-configuration="All" (click)="changeConfiguration('All')">All</a>
-        </li>
-        <li
-          *ngFor="let configuration of configurations"
-          [ngClass]="{ active: selectedConfiguration === configuration.name }"
-        >
-          <a
-            [attr.data-cy-status-select-configuration]="configuration.name"
-            (click)="changeConfiguration(configuration.name)"
-            >{{ configuration.name }}</a
-          >
-        </li>
-      </ul>
-    </div>
+    <app-configuration-tab-list
+      queryParamName="configuration"
+      [configurations]="configurations"
+      (selectedTabChange)="changeConfiguration($event)"
+    ></app-configuration-tab-list>
     <div class="col-lg-12">
       <app-configuration-summary
         [isConfigStubbed]="isConfigStubbed"

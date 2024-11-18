@@ -41,6 +41,7 @@ export type Job = {
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
   protected jobGroups: Record<string, Job[]> = {};
+  protected jobGroupNames: string[] = [];
   protected scheduler: Scheduler = {
     name: '',
     version: '',
@@ -81,6 +82,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         };
         this.scheduler = result.scheduler;
         this.jobGroups = result.jobs;
+        this.jobGroupNames = Object.keys(this.jobGroups);
 
         this.refreshing = false;
         if (!this.initialized) {
