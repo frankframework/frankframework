@@ -62,10 +62,18 @@ import org.frankframework.xml.XmlWriter;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
- * When a file is found, it is moved to a process-folder, so that it isn't found more than once.
- * The name of the moved file is passed to the pipeline.
+ * When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ * <br/>
+ * The information specified by {@link #setMessageType(IMessageType)} is then passed to the pipeline.
  *
- * @author Gerrit van Brakel
+ * @ff.info To avoid problems with duplicate filenames in folders like the {@code errorFolder} or {@code processedFolder},
+ * you should configure either {@code overwrite="true"}, configure {@code numberOfBackups} to a value larger than 0, or
+ * configure an {@code inProcessFolder} and {@code fileTimeSensitive="true"}.
+ * These options can be used together as well.
+ *
+ * @ff.warning In addition to the above, prior to release 9.0 it was not sufficient to configure {@code inProcessFolder} and {@code fileTimeSensitive}
+ * to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure {@code numberOfBackups} to avoid these issues.
+ *
  */
 public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -563,7 +571,12 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	/**
-	 * If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before
+	 * If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen previously.
+	 * <br/>
+	 * This setting is only supported for filesystem listeners that implement {@link IWritableFileSystem}.
+	 *
+	 * @ff.info This setting is only effective when an {@code inProcessFolder} has been configured.
+	 *
 	 * @ff.default false
 	 */
 	public void setFileTimeSensitive(boolean b) {

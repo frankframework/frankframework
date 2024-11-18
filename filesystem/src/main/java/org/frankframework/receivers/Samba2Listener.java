@@ -20,6 +20,11 @@ import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 
+/**
+ * File listener for an SMB2 share.
+ *
+ * {@inheritDoc}
+ */
 public class Samba2Listener extends AbstractFileSystemListener<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	@Override
