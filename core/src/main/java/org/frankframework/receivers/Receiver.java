@@ -1143,19 +1143,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (errorStorage == null) {
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
-				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
 				try {
-					//noinspection unchecked
-					RawMessageWrapper<M> msg = (RawMessageWrapper<M>) errorStorageBrowser.browseMessage(storageKey);
-					if (listener instanceof IHasProcessState<?>) {
-						//noinspection unchecked
-						IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
-						if (hasProcessState.knownProcessStates().contains(ProcessState.INPROCESS)) {
-
-							msg = hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
-						}
-					}
+					RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
 					processRawMessage(msg, session, true, false);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
@@ -1206,6 +1196,24 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				throw e;
 			}
 		}
+	}
+
+	private RawMessageWrapper<M> getMessageToRetryFromErrorBrowser(String storageKey) throws ListenerException {
+		IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
+
+		//noinspection unchecked
+		RawMessageWrapper<M> msg = (RawMessageWrapper<M>) errorStorageBrowser.browseMessage(storageKey);
+
+		// If the listener has process-states, then try to move the message back to "In Process" before retrying it.
+		// If we don't do that, and the message has again an error, some listeners might get confused trying to move a message from "Error" to "Error".
+		if (listener instanceof IHasProcessState<?>) {
+			//noinspection unchecked
+			IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
+			if (hasProcessState.knownProcessStates().contains(ProcessState.INPROCESS)) {
+				return hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
+			}
+		}
+		return msg;
 	}
 
 	/*
