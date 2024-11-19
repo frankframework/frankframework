@@ -1378,53 +1378,53 @@ public class LarvaTool {
 
 
 	private int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, int parameterTimeout) {
-		int result = RESULT_ERROR;
 
 		Queue listenerInfo = queues.get(queueName);
 		ListenerMessageHandler<?> listenerMessageHandler = (ListenerMessageHandler<?>)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found");
-		} else {
-			String message = null;
-			ListenerMessage listenerMessage;
-			long timeout;
-			try {
-				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
-				debugMessage("Timeout set to '" + timeout + "'");
-			} catch (Exception e) {
-				timeout = parameterTimeout;
-			}
-			try {
-				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
-			} catch (TimeoutException e) {
-				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)");
-				return RESULT_ERROR;
-			}
+			return RESULT_ERROR;
+		}
 
-			if (listenerMessage != null) {
-				message = listenerMessage.getMessage();
-				listenerInfo.put("listenerMessage", listenerMessage);
-			}
-			if (message == null) {
-				if ("".equals(fileName)) {
-					result = RESULT_OK;
-				} else {
-					errorMessage("Could not read listenerMessageHandler message (null returned)");
-				}
+		String message = null;
+		ListenerMessage listenerMessage;
+		long timeout;
+		try {
+			timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+			debugMessage("Timeout set to '" + timeout + "'");
+		} catch (Exception e) {
+			timeout = parameterTimeout;
+		}
+		try {
+			listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
+		} catch (TimeoutException e) {
+			errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)");
+			return RESULT_ERROR;
+		}
+
+		if (listenerMessage != null) {
+			message = listenerMessage.getMessage();
+			listenerInfo.put("listenerMessage", listenerMessage);
+		}
+		int result = RESULT_ERROR;
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = RESULT_OK;
 			} else {
-				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
-				} else {
-					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
-					if (result!=RESULT_OK) {
-						// Send a cleanup reply because there is probably a thread waiting for a reply
-						listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, new PipeLineSession());
-						listenerMessageHandler.putResponseMessage(listenerMessage);
-					}
+				errorMessage("Could not read listenerMessageHandler message (null returned)");
+			}
+		} else {
+			if ("".equals(fileName)) {
+				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
+			} else {
+				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
+				if (result!=RESULT_OK) {
+					// Send a cleanup reply because there is probably a thread waiting for a reply
+					listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, new PipeLineSession());
+					listenerMessageHandler.putResponseMessage(listenerMessage);
 				}
 			}
 		}
-
 		return result;
 	}
 
