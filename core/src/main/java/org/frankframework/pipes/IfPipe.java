@@ -121,13 +121,7 @@ import org.frankframework.util.XmlUtils;
  * <h4>Without expression</h4>
  * Without an expression, the default behaviour is to assume the input is a string, the code will try to match the string to an optional regular expression
  * or tries to match the string value to the optional expressionValue.
- *
- * <h4>Changes compared to the XmlIf pipe</h4>
- * The XmlIf pipe used some constructs that were not compliant with the Xpath standard. For instance, given the input {@code <root>test</root>}, xpath selector
- * {@literal /root} would select that whole input, according to specs. So, if you wanted to match that exact value with an {@code expressionValue} parameter,
- * you should use that exact value. Well, in the XmlIf pipe, you should only pass {@literal test}. This is strange and has been changed.
- * You should use a different expressionValue to match the actual value ({@literal <root>test</root>}) or change the xpath expression to {@literal /root/text()}.
- * <p></p>
+  * <p></p>
  *
  * <h4>Resources</h4>
  * <ul>
@@ -164,6 +158,22 @@ public class IfPipe extends AbstractPipe {
 
 	private SupportedMediaType defaultMediaType = SupportedMediaType.XML;
 
+	public enum SupportedMediaType {
+		XML(MediaType.APPLICATION_XML),
+		JSON(MediaType.APPLICATION_JSON);
+
+		final MediaType mediaType;
+
+		SupportedMediaType(MediaType mediaType) {
+			this.mediaType = mediaType;
+		}
+
+		@Override
+		public String toString() {
+			return this.mediaType.toString();
+		}
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -172,20 +182,40 @@ public class IfPipe extends AbstractPipe {
 		elseForward = assertExistsAndGetForward(elseForwardName);
 
 		if (StringUtils.isNotEmpty(xpathExpression)) {
-			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, xpathExpression, null,
+			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, determineXpathExpression(), null,
 					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion
 			);
 		}
 	}
 
+	/**
+	 * Since XmlIf uses a construction which is essentially an XSLT expressions and not an xpath expression, we need to make sure that we can match
+	 * the same in this pipe. Meaning, for instance that xpathExpression '/root' and expressionValue 'test' on input <root>test</root> will actually match.i
+	 */
+	private String determineXpathExpression() {
+		if (StringUtils.isEmpty(expressionValue)) {
+			return xpathExpression;
+		}
+
+		String xpath = xpathExpression;
+
+		// Only append the value matching if the xpath selector doesn't use any expressions.
+		if (xpathExpression.matches("([\\w/]+)")) {
+			xpath = xpathExpression.endsWith("/") ? xpath : xpath + "/";
+			xpath += "text()";
+		}
+
+		return xpath;
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		MimeType mimeType = getMimeType(message);
+		SupportedMediaType mediaType = getSupportedMediaType(message);
 
 		// Determine the media type and if the correct *pathExpression was provided
-		if (jsonPathExpression != null && !MediaType.APPLICATION_JSON.equals(mimeType)
-				|| xpathExpression != null && !MediaType.APPLICATION_XML.equals(mimeType)) {
-			throw new PipeRunException(this, "Incorrect pathExpression provided for given mediaType + " + mimeType);
+		if (jsonPathExpression != null && !SupportedMediaType.JSON.equals(mediaType)
+				|| xpathExpression != null && !SupportedMediaType.XML.equals(mediaType)) {
+			throw new PipeRunException(this, "Incorrect pathExpression provided for given mediaType " + mediaType);
 		}
 
 		PipeForward pipeForward = determineForward(message, session);
@@ -195,21 +225,14 @@ public class IfPipe extends AbstractPipe {
 		return new PipeRunResult(pipeForward, message);
 	}
 
-	private MimeType getMimeType(Message message) {
+	private SupportedMediaType getSupportedMediaType(Message message) {
 		MimeType computedType = MessageUtils.computeMimeType(message);
 
-		if (computedType != null) {
-			// check if computedType is one of the supported types, if not, fall through
-			boolean matchesOneOfSupportedTypes = Arrays.stream(SupportedMediaType.values())
-					.anyMatch(supportedType -> supportedType.mediaType.equals(computedType));
-
-			if (matchesOneOfSupportedTypes) {
-				return computedType;
-			}
-		}
-
-		// Default to
-		return defaultMediaType.mediaType;
+		// check if computedType is one of the supported types, or else use the defaultMediaType
+		return Arrays.stream(SupportedMediaType.values())
+				.filter(supportedType -> supportedType.mediaType.equals(computedType))
+				.findFirst()
+				.orElse(defaultMediaType);
 	}
 
 	/**
@@ -396,16 +419,5 @@ public class IfPipe extends AbstractPipe {
 	 */
 	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
-	}
-
-	public enum SupportedMediaType {
-		XML(MediaType.APPLICATION_XML),
-		JSON(MediaType.APPLICATION_JSON);
-
-		final MediaType mediaType;
-
-		SupportedMediaType(MediaType mediaType) {
-			this.mediaType = mediaType;
-		}
 	}
 }

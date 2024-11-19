@@ -54,7 +54,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 				Arguments.of("<root/>", "/root", "", PIPE_FORWARD_THEN),
 				Arguments.of("<root>test</root>", "/root", "", PIPE_FORWARD_THEN),
 				Arguments.of("<root/>", "/root", "test", PIPE_FORWARD_ELSE),
-				Arguments.of("<root>test</root>", "/root", "test", PIPE_FORWARD_ELSE),
+				Arguments.of("<root>test</root>", "/root", "test", PIPE_FORWARD_THEN),
 				Arguments.of("<root>test</root>", "/root/text()", "test", PIPE_FORWARD_THEN),
 				Arguments.of("<root>test123</root>", "/root", "test", PIPE_FORWARD_ELSE)
 		);

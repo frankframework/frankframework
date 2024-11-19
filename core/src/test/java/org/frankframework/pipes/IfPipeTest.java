@@ -291,6 +291,21 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		assertThat(e.getMessage(), Matchers.containsString("Incorrect pathExpression provided for given mediaType"));
 	}
 
+	@ParameterizedTest
+	@MethodSource("messageSource")
+	void testWrongExpressionInput(Message message, boolean isJson) throws Exception {
+		pipe.setXpathExpression("/root");
+		pipe.setJsonPathExpression("$.root");
+
+		configureAndStartPipe();
+
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, message, session));
+		String expectedMessage = "Incorrect pathExpression provided for given mediaType ";
+		expectedMessage += (isJson) ? "application/json" : "application/xml";
+
+		assertThat(e.getMessage(), Matchers.containsString(expectedMessage));
+	}
+
 	private static Message getJsonMessage() {
 		return getJsonMessage(TEST_JSON_INPUT);
 	}
