@@ -271,6 +271,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter Integer maxRetries = null;
 	private Integer maxBackoffDelay = null;
 	private @Getter int processResultCacheSize = 100;
+
+	/**
+	 * supportProgrammaticRetry is set to {@code true} internally during configuration when the listener implements {@link IHasProcessState}, and is
+	 * configured with process state {@link ProcessState#INPROCESS}.
+	 * In all other circumstances, it is {@code false}.
+	 */
 	private @Getter boolean supportProgrammaticRetry=false;
 
 	private @Getter String correlationIDXPath;
