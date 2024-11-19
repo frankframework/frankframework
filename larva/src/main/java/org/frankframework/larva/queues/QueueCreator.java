@@ -53,6 +53,7 @@ import org.frankframework.util.EnumUtils;
 @Log4j2
 public class QueueCreator {
 
+	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final TestConfig config;
 	private final LarvaTool testTool;
 
@@ -79,13 +80,13 @@ public class QueueCreator {
 			Set<String> queueNames = properties.keySet()
 					.stream()
 					.map(o -> (String)o)
-					.filter(key -> key.endsWith(".className"))
+					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
 					.map(key -> key.substring(0, key.lastIndexOf(".")))
 					.collect(Collectors.toSet());
 
 			for (String queueName : queueNames) {
 				debugMessage("queuename openqueue: " + queueName);
-				String className = properties.getProperty(queueName + ".className");
+				String className = properties.getProperty(queueName + CLASS_NAME_PROPERTY_SUFFIX);
 				if ("org.frankframework.jms.JmsSender".equals(className) && !jmsSenders.contains(queueName)) {
 					debugMessage("Adding jmsSender queue: " + queueName);
 					jmsSenders.add(queueName);
