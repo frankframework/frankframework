@@ -30,14 +30,14 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
       if (tab) {
         this.setSelectedTab(tab);
       } else if (this.showAllTab) {
-        this.selectedTab = this._allTabName;
-        this.selectedTabChange.emit(this._allTabName);
+        this.setSelectedTab(this._allTabName);
       } else if (this.tabsList.length > 0) {
-        this.selectedTab = this.tabsList[0];
-        this.selectedTabChange.emit(this.tabsList[0]);
+        this.setSelectedTab(this.tabsList[0]);
       }
     });
-    this.appService.selectedConfigurationTab$.pipe(first()).subscribe((tab) => this.changeTab(tab ?? this._allTabName));
+    this.appService.selectedConfigurationTab$.pipe(first()).subscribe((tab) => {
+      if (tab !== null) this.changeTab(tab ?? this._allTabName);
+    });
   }
 
   protected override changeTab(tab: string): void {
