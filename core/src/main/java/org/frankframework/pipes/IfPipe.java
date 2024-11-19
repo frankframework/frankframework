@@ -104,7 +104,7 @@ import org.frankframework.util.XmlUtils;
  *
  * <h4>XML/XPATH</h4>
  * Xpath has been around a long time, information about the syntax can be found everywhere on the internet.
- * The XML implementation wraps the Xpath expression in an XSL. This enables us to use complex expressions which evaluate to true or false instead
+ * The XML implementation wraps the Xpath expression in an XSL. This enables us to use complex expressions which evaluate to true or false instead of
  * being used only as a selector of nodes in the input XML. This is available to be backwards compatible with the {@link XmlIf} pipe.
  * For instance, take the following example input:
  * <pre>{@code
@@ -117,6 +117,10 @@ import org.frankframework.util.XmlUtils;
  * than one node found containing the string 'test'. Please check if a simpler, less error-prone expression like
  * {@code /results/result[contains(@name, 'test')]} can suffice.
  * <p></p>
+ *
+ * <h4>Without expression</h4>
+ * Without an expression, the default behaviour is to assume the input is a string, the code will try to match the string to an optional regular expression
+ * or tries to match the string value to the optional expressionValue.
  *
  * <h4>Changes compared to the XmlIf pipe</h4>
  * The XmlIf pipe used some constructs that were not compliant with the Xpath standard. For instance, given the input {@code <root>test</root>}, xpath selector
@@ -158,18 +162,7 @@ public class IfPipe extends AbstractPipe {
 	private String regex = null;
 	private int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
 
-	private DefaultMediaType defaultMediaType = DefaultMediaType.XML;
-
-	public enum DefaultMediaType {
-		XML(MediaType.APPLICATION_XML),
-		JSON(MediaType.APPLICATION_JSON);
-
-		final MediaType mediaType;
-
-		DefaultMediaType(MediaType mediaType) {
-			this.mediaType = mediaType;
-		}
-	}
+	private SupportedMediaType defaultMediaType = SupportedMediaType.XML;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -206,8 +199,8 @@ public class IfPipe extends AbstractPipe {
 		MimeType computedType = MessageUtils.computeMimeType(message);
 
 		if (computedType != null) {
-			// check if computedType is one of JSON or XML, if not, fall through
-			boolean matchesOneOfSupportedTypes = Arrays.stream(DefaultMediaType.values())
+			// check if computedType is one of the supported types, if not, fall through
+			boolean matchesOneOfSupportedTypes = Arrays.stream(SupportedMediaType.values())
 					.anyMatch(supportedType -> supportedType.mediaType.equals(computedType));
 
 			if (matchesOneOfSupportedTypes) {
@@ -223,10 +216,34 @@ public class IfPipe extends AbstractPipe {
 	 * Based on the pipe settings, tries to evaluate the expression and determine the correct forward
 	 */
 	private PipeForward determineForward(Message message, PipeLineSession session) throws PipeRunException {
-		String inputString = getInputString(message);
+		if (transformationNeeded()) {
+			String resultAsString = getResultString(message, session);
 
-		String resultAsString = null;
+			// If there's an expressionValue, and the result string is not empty, try to match those
+			if (StringUtils.isNoneEmpty(expressionValue, resultAsString)) {
+				return resultAsString.equals(expressionValue) ? thenForward : elseForward;
+			}
 
+			if (StringUtils.isEmpty(expressionValue)) {
+				// if result is null (from selector) or equals 'false' (from expression)
+				if (resultAsString == null || StringUtils.equalsIgnoreCase(resultAsString, "false")) {
+					return elseForward;
+				}
+
+				// If there's a value, there's a match
+				return thenForward;
+			}
+		}
+
+		// if all else fails, this is the legacy behaviour
+		return getForwardForStringInput(message);
+	}
+
+	private boolean transformationNeeded() {
+		return transformerPool != null || StringUtils.isNotBlank(jsonPathExpression);
+	}
+
+	private String getResultString(Message message, PipeLineSession session) throws PipeRunException {
 		if (xpathExpression != null && transformerPool != null) {
 			try {
 				Map<String, Object> parameterValues = null;
@@ -235,47 +252,28 @@ public class IfPipe extends AbstractPipe {
 					parameterValues = parameterList.getValues(message, session, namespaceAware).getValueMap();
 				}
 
-				resultAsString = transformerPool.transform(inputString, parameterValues, namespaceAware);
+				String transform = transformerPool.transform(message.asString(), parameterValues, namespaceAware);
 
-				// If expressionValue is empty, determine the forward based on the result of the transformation
-				if (StringUtils.isEmpty(expressionValue)) {
-					// if result is null (from selector) or equals 'false' (from expression)
-					if (StringUtils.isEmpty(resultAsString) || StringUtils.equalsIgnoreCase(resultAsString, "false")) {
-						return elseForward;
-					}
-
-					// If there's a value, there's a match
-					return thenForward;
-				}
-
-			} catch (Exception e) {
-				throw new PipeRunException(this, "cannot evaluate expression", e);
+				return (StringUtils.isEmpty(transform)) ? null : transform;
+			} catch (Exception ioe) {
+				throw new PipeRunException(this, "error reading message", ioe);
 			}
 		} else if (StringUtils.isNotBlank(jsonPathExpression)) {
 			// Try to match the jsonPath expression on the given json string
 			try {
-				Object jsonPathResult = JsonPath.read(inputString, jsonPathExpression);
+				Object jsonPathResult = JsonPath.read(message.asInputStream(), jsonPathExpression);
 
 				// if we get to this point, we have a match (and no PathNotFoundException)
 
-				if (StringUtils.isEmpty(expressionValue)) {
-					return thenForward;
-				}
-
-				resultAsString = getJsonPathResult(jsonPathResult);
+				return getJsonPathResult(jsonPathResult);
 			} catch (PathNotFoundException e) {
 				// No results found for path
-				return elseForward;
+			} catch (IOException ioe) {
+				throw new PipeRunException(this, "error reading message");
 			}
 		}
 
-		if (resultAsString != null) {
-			// If there's an expressionValue set, it needs to match with the jsonPath query result
-			return resultAsString.equals(expressionValue) ? thenForward : elseForward;
-		}
-
-		// if all else fails, this is the legacy behaviour
-		return getForwardForStringInput(inputString);
+		return null;
 	}
 
 	/**
@@ -294,27 +292,22 @@ public class IfPipe extends AbstractPipe {
 		return null;
 	}
 
-	private String getInputString(Message message) throws PipeRunException {
-		if (Message.isEmpty(message)) {
-			return "";
-		} else {
-			try {
-				return message.asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "cannot open stream", e);
+	private PipeForward getForwardForStringInput(Message message) throws PipeRunException {
+		// if all else fails, this is the legacy behaviour
+		try {
+			String inputString = message.asString();
+
+			if (StringUtils.isNotEmpty(regex)) {
+				return inputString.matches(regex) ? thenForward : elseForward;
+			} else if (StringUtils.isNotEmpty(expressionValue)) {
+				return inputString.equals(expressionValue) ? thenForward : elseForward;
 			}
-		}
-	}
 
-	private PipeForward getForwardForStringInput(String inputString) {
-		if (StringUtils.isNotEmpty(regex)) {
-			return inputString.matches(regex) ? thenForward : elseForward;
-		} else if (StringUtils.isNotEmpty(expressionValue)) {
-			return inputString.equals(expressionValue) ? thenForward : elseForward;
+			// If the input is not empty, use then forward.
+			return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
+		} catch (IOException e) {
+			throw new PipeRunException(this, "error reading message");
 		}
-
-		// If the input is not empty, use then forward.
-		return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
 	}
 
 	private PipeForward assertExistsAndGetForward(String forwardName) throws ConfigurationException {
@@ -401,7 +394,18 @@ public class IfPipe extends AbstractPipe {
 	 * @param defaultMediaType the default media type to use when the media type of the message could not be determined.
 	 * @ff.default DefaultMediaType.XML
 	 */
-	public void setDefaultMediaType(DefaultMediaType defaultMediaType) {
+	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
+	}
+
+	public enum SupportedMediaType {
+		XML(MediaType.APPLICATION_XML),
+		JSON(MediaType.APPLICATION_JSON);
+
+		final MediaType mediaType;
+
+		SupportedMediaType(MediaType mediaType) {
+			this.mediaType = mediaType;
+		}
 	}
 }
