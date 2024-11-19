@@ -14,6 +14,7 @@ import { first } from 'rxjs';
 })
 export class ConfigurationTabListComponent extends TabListComponent implements OnInit {
   @Input() queryParamName: string = 'name';
+  @Input() showAll: boolean = false;
 
   private route: ActivatedRoute = inject(ActivatedRoute);
   private router: Router = inject(Router);
@@ -25,6 +26,12 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   }
 
   ngOnInit(): void {
+    if (!this.showAll) {
+      this.tabs = this.tabsList.filter((configuration) => {
+        return this.appService.configurationLengths[configuration] > 1;
+      });
+    }
+
     this.route.queryParamMap.subscribe((parameters) => {
       const tab = parameters.get(this.queryParamName);
       if (tab) {

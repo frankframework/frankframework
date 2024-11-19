@@ -268,6 +268,7 @@ export class AppService {
 
   adapters: Record<string, Adapter> = {};
   alerts: Alert[] = [];
+  configurationLengths: Record<string, number> = {};
 
   adapterSummary: Summary = {
     started: 0,
@@ -345,8 +346,21 @@ export class AppService {
     this.appConstantsSubject.next();
   }
 
+  updateConfigurationLengths(): void {
+    this.configurationLengths = {};
+    for (const adapter of Object.values(this.adapters)) {
+      const configuration = adapter.configuration;
+      if (this.configurationLengths[configuration]) {
+        this.configurationLengths[configuration] += 1;
+        continue;
+      }
+      this.configurationLengths[configuration] = 1;
+    }
+  }
+
   updateAdapters(adapters: Record<string, Partial<Adapter>>): void {
     this.adapters = deepMerge({}, this.adapters, adapters);
+    this.updateConfigurationLengths();
     this.adaptersSubject.next({ ...this.adapters });
   }
 
