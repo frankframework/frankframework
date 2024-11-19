@@ -17,6 +17,7 @@ package org.frankframework.http.authentication;
 
 import com.nimbusds.jose.util.Base64;
 
+import org.apache.http.HttpHeaders;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
+import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 public class ClientCredentialsBasicAuth extends AbstractOauthAuthenticator {
 
@@ -78,12 +80,12 @@ public class ClientCredentialsBasicAuth extends AbstractOauthAuthenticator {
 		}
 
 		try {
-			UrlEncodedFormEntity body = new UrlEncodedFormEntity(parameters, "utf-8");
+			UrlEncodedFormEntity body = new UrlEncodedFormEntity(parameters, DEFAULT_INPUT_STREAM_ENCODING);
 
 			HttpPost request = new HttpPost(authorizationEndpoint);
-			request.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+			request.addHeader(body.getContentType());
 			request.setEntity(body);
-			request.addHeader("Authorization", createAuthorizationHeaderValue());
+			request.addHeader(HttpHeaders.AUTHORIZATION, createAuthorizationHeaderValue());
 
 			return request;
 		} catch (UnsupportedEncodingException e) {

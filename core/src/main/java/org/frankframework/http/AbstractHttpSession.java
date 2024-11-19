@@ -203,9 +203,34 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter IAuthenticator authenticator;
 
 	public enum AuthenticationMethod {
+		/**
+		 * Requires {@literal tokenEndpoint}, {@literal clientId} and {@literal clientSecret} to be set.
+		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.4">rfc6749</a>. The {@literal clientId} and {@literal clientSecret} are sent as basic authorization
+		 * to the authorization server. The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
+		 */
 		CLIENT_CREDENTIALS_BASIC_AUTH,
+
+		/**
+		 * Requires {@literal tokenEndpoint}, {@literal clientId} and {@literal clientSecret} to be set.
+		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.4">rfc6749</a>. The {@literal clientId} and {@literal clientSecret} are sent in the form body
+		 * to the authorization server. The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
+		 */
 		CLIENT_CREDENTIALS_QUERY_PARAMETERS,
+
+		/**
+		 * Requires {@literal tokenEndpoint}, {@literal clientId}, {@literal clientSecret}, {@literal username} and {@literal password} to be set.
+		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.3">rfc6749</a>. The {@literal clientId} and {@literal clientSecret} are sent as basic authorization
+		 * to the authorization server. The {@literal username} and {@literal password} are sent in the form body to the authorization server.
+		 * The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
+		 */
 		RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH,
+
+		/**
+		 * Requires {@literal tokenEndpoint}, {@literal clientId}, {@literal clientSecret}, {@literal username} and {@literal password} to be set.
+		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.3">rfc6749</a>. The {@literal clientId}, {@literal clientSecret}, {@literal username}
+		 * and {@literal password} are sent in the form body to the authorization server.
+		 * The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
+		 */
 		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS;
 
 		public IAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
@@ -725,10 +750,12 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		this.authenticatedTokenRequest = authenticatedTokenRequest;
 	}
 
+	/**
+	 * Sets the authentication method. This controls which authentication flow should be used. Currently automatically determined, but that behaviour will be removed.
+	 */
 	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
 		this.authenticationMethod = authenticationMethod;
 	}
-
 
 	/** Proxy host */
 	public void setProxyHost(String string) {

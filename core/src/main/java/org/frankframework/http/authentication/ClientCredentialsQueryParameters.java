@@ -30,6 +30,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+
 public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator {
 
 	public ClientCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
@@ -68,10 +70,10 @@ public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator
 		parameters.add(new BasicHeader("client_id", session.getClientId()));
 
 		try {
-			UrlEncodedFormEntity body = new UrlEncodedFormEntity(parameters, "utf-8");
+			UrlEncodedFormEntity body = new UrlEncodedFormEntity(parameters, DEFAULT_INPUT_STREAM_ENCODING);
 
 			HttpPost request = new HttpPost(authorizationEndpoint);
-			request.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+			request.addHeader(body.getContentType());
 			request.setEntity(body);
 
 			return request;
