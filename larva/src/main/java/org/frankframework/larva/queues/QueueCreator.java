@@ -22,8 +22,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
@@ -46,6 +50,7 @@ import org.frankframework.senders.FrankSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 
+@Log4j2
 public class QueueCreator {
 
 	private final TestConfig config;
@@ -64,8 +69,6 @@ public class QueueCreator {
 		List<String> jmsListeners = new ArrayList<>();
 		List<String> jdbcFixedQuerySenders = new ArrayList<>();
 
-		List<String> manuallyCreatedQueues = new ArrayList<>();
-
 		try {
 			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
 			DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
@@ -73,49 +76,43 @@ public class QueueCreator {
 			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(null, "LarvaTool");
 
-			Iterator iterator = properties.keySet().iterator();
-			while (iterator.hasNext()) {
-				String key = (String)iterator.next();
-				int i = key.indexOf('.');
-				if (i != -1) {
-					int j = key.indexOf('.', i + 1);
-					if (j != -1) {
-						String queueName = key.substring(0, j);
-						if(manuallyCreatedQueues.contains(queueName)) continue;
-						manuallyCreatedQueues.add(queueName);
+			Set<String> queueNames = properties.keySet()
+					.stream()
+					.map(o -> (String)o)
+					.filter(key -> key.endsWith(".className"))
+					.map(key -> key.substring(0, key.lastIndexOf(".")))
+					.collect(Collectors.toSet());
 
-						debugMessage("queuename openqueue: " + queueName);
-						if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className")) && !jmsSenders.contains(queueName)) {
-							debugMessage("Adding jmsSender queue: " + queueName);
-							jmsSenders.add(queueName);
-						} else if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className")) && !jmsListeners.contains(queueName)) {
-							debugMessage("Adding jmsListener queue: " + queueName);
-							jmsListeners.add(queueName);
-						} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
-							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
-							jdbcFixedQuerySenders.add(queueName);
-						} else {
-							String className = properties.getProperty(queueName+".className");
-							if(StringUtils.isEmpty(className)) continue;
-							Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+			for (String queueName : queueNames) {
+				debugMessage("queuename openqueue: " + queueName);
+				String className = properties.getProperty(queueName + ".className");
+				if ("org.frankframework.jms.JmsSender".equals(className) && !jmsSenders.contains(queueName)) {
+					debugMessage("Adding jmsSender queue: " + queueName);
+					jmsSenders.add(queueName);
+				} else if ("org.frankframework.jms.JmsListener".equals(className) && !jmsListeners.contains(queueName)) {
+					debugMessage("Adding jmsListener queue: " + queueName);
+					jmsListeners.add(queueName);
+				} else if ("org.frankframework.jdbc.FixedQuerySender".equals(className) && !jdbcFixedQuerySenders.contains(queueName)) {
+					debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
+					jdbcFixedQuerySenders.add(queueName);
+				} else {
+					Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 
-							//Deprecation warning
-							if(queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
-								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout");
-							}
-
-							IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
-							if (configurable instanceof FrankSender frankSender) {
-								frankSender.setIbisManager(ibisContext.getIbisManager());
-							}
-							Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
-
-							queue.configure();
-							queue.open();
-							queues.put(queueName, queue);
-							debugMessage("Opened ["+className+"] '" + queueName + "'");
-						}
+					//Deprecation warning
+					if (queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
+						errorMessage("properties " + queueName + ".requestTimeOut/" + queueName + ".responseTimeOut have been replaced with " + queueName + ".timeout");
 					}
+
+					IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
+					if (configurable instanceof FrankSender frankSender) {
+						frankSender.setIbisManager(ibisContext.getIbisManager());
+					}
+					Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
+
+					queue.configure();
+					queue.open();
+					queues.put(queueName, queue);
+					debugMessage("Opened [" + className + "] '" + queueName + "'");
 				}
 			}
 
