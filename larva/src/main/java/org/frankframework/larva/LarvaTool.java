@@ -1238,13 +1238,17 @@ public class LarvaTool {
 	private int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map<?, ?> jmsSenderInfo = queues.get(queueName);
+		Queue jmsSenderInfo = queues.get(queueName);
+		if (jmsSenderInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
 			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
 			if (useCorrelationIdFrom != null) {
-				Map<?, ?> listenerInfo = queues.get(useCorrelationIdFrom);
+				Queue listenerInfo = queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
 					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from");
 				} else {
@@ -1303,7 +1307,11 @@ public class LarvaTool {
 	private int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map<String, Object> jmsListenerInfo = queues.get(queueName);
+		Queue jmsListenerInfo = queues.get(queueName);
+		if (jmsListenerInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
 		Map<String, Object> threadContext = null;
 		Message message = null;
@@ -1351,7 +1359,7 @@ public class LarvaTool {
 		int result = RESULT_ERROR;
 
 		Queue queue = queues.get(queueName);
-		if (queue==null) {
+		if (queue == null) {
 			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
@@ -1381,6 +1389,10 @@ public class LarvaTool {
 	private int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, int parameterTimeout) {
 
 		Queue listenerInfo = queues.get(queueName);
+		if (listenerInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		ListenerMessageHandler<?> listenerMessageHandler = (ListenerMessageHandler<?>)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found");
@@ -1433,6 +1445,10 @@ public class LarvaTool {
 		int result = RESULT_ERROR;
 
 		Queue querySendersInfo = queues.get(queueName);
+		if (querySendersInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
 		if (waitBeforeRead != null) {
