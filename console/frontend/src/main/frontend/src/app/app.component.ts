@@ -226,12 +226,13 @@ export class AppComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.serverInfo = data;
 
-        this.appService.dtapStage = data['dtap.stage'];
         this.dtapStage = data['dtap.stage'];
+        this.appService.updateDtapStage(data['dtap.stage']);
         this.dtapSide = data['dtap.side'];
-        // appService.userName = data["userName"];
         this.userName = data['userName'];
+        this.appService.updateInstanceName(data.instance.name);
         this.authService.setLoggedIn(this.userName);
+        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
         this.consoleState.init = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
@@ -239,21 +240,11 @@ export class AppComponent implements OnInit, OnDestroy {
           this.renderer.removeClass(document.body, 'gray-bg');
         }
 
-        this.appService.dtapStage = data['dtap.stage'];
-        this.dtapStage = data['dtap.stage'];
-        this.dtapSide = data['dtap.side'];
-        // appService.userName = data["userName"];
-        this.userName = data['userName'];
-
-        this.appService.updateInstanceName(data.instance.name);
-
         this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone']);
 
         const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
         if (iafInfoElement)
           iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
-
-        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
         if (this.appService.dtapStage == 'LOC') {
           this.debugService.setLevel(3);

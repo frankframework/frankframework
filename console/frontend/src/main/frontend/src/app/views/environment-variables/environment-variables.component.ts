@@ -31,10 +31,10 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
 
     this.configurations = this.appService.configurations;
-    this.configurationNames = Object.keys(this.configurations);
+    this.configurationNames = this.configurations.map((configuration) => configuration.name);
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
-      this.configurationNames = Object.keys(this.configurations);
+      this.configurationNames = this.configurations.map((configuration) => configuration.name);
     });
     this._subscriptions.add(configurationsSubscription);
 
