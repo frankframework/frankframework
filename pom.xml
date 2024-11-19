@@ -22,7 +22,7 @@
 		<jackson.version>2.18.1</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
 		<spring.version>6.1.14</spring.version>
-		<spring-security.version>6.3.4</spring-security.version>
+		<spring-security.version>6.4.0</spring-security.version>
 		<spring-integration.version>6.3.5</spring-integration.version>
 		<spring.boot.version>3.3.5</spring.boot.version>
 		<tomcat.version>10.1.33</tomcat.version>
