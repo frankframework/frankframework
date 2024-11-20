@@ -48,10 +48,8 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
         this.skipParamsUpdate = false;
         return;
       }
-      this.loadedConfiguration = parameters.get('loaded') !== 'false';
       this.selectedAdapter = parameters.get('adapter') ?? undefined;
-
-      this.getConfiguration();
+      this.loadedConfiguration = parameters.get('loaded') !== 'false';
     });
   }
 
@@ -62,6 +60,8 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
     this.fragment = undefined;
+
+    this.getConfiguration();
     this.updateQueryParams();
   }
 
@@ -71,6 +71,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       this.selectedAdapter = undefined;
       this.fragment = undefined; //unset hash anchor
     }
+    this.getConfiguration();
     this.updateQueryParams();
   }
 
