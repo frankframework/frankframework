@@ -1383,8 +1383,13 @@
  &lt;/p&gt;
 
  listener that looks in a FileSystem for files.
- When a file is found, it is moved to a process-folder, so that it isn't found more than once.
- The name of the moved file is passed to the pipeline.</xs:documentation>
+ When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ &lt;br/&gt;
+ The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
+ configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
+ These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
+ to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure &lt;code&gt;numberOfBackups&lt;/code&gt; to avoid these issues.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1435,6 +1440,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="FtpFileSystemListener">
+        <xs:annotation>
+          <xs:documentation>File listener for an FTP connection.
+
+ listener that looks in a FileSystem for files.
+ When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ &lt;br/&gt;
+ The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
+ configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
+ These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
+ to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure &lt;code&gt;numberOfBackups&lt;/code&gt; to avoid these issues.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="FtpFileSystemListenerType">
@@ -1753,6 +1770,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="Samba2Listener">
+        <xs:annotation>
+          <xs:documentation>File listener for an SMB2 or SMB3 share.
+
+ listener that looks in a FileSystem for files.
+ When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ &lt;br/&gt;
+ The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
+ configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
+ These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
+ to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure &lt;code&gt;numberOfBackups&lt;/code&gt; to avoid these issues.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="Samba2ListenerType">
@@ -1762,6 +1791,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="SambaListener">
+        <xs:annotation>
+          <xs:documentation>File listener for an SMB2 or SMB3 share.
+
+ listener that looks in a FileSystem for files.
+ When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ &lt;br/&gt;
+ The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
+ configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
+ These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
+ to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure &lt;code&gt;numberOfBackups&lt;/code&gt; to avoid these issues.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SambaListenerType">
@@ -1790,6 +1831,18 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="SftpFileSystemListener">
+        <xs:annotation>
+          <xs:documentation>File listener for an SFTP connection.
+
+ listener that looks in a FileSystem for files.
+ When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ &lt;br/&gt;
+ The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
+ configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
+ These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
+ to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure &lt;code&gt;numberOfBackups&lt;/code&gt; to avoid these issues.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SftpFileSystemListenerType">
@@ -2096,7 +2149,9 @@
     </xs:attribute>
     <xs:attribute name="fileTimeSensitive" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen before Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen previously.
+ &lt;br/&gt;
+ This setting is only supported for filesystem listeners that implement IWritableFileSystem. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="minStableTime" type="frankInt">

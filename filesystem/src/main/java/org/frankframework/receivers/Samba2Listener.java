@@ -21,7 +21,7 @@ import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 
 /**
- * File listener for an SMB2 share.
+ * File listener for an SMB2 or SMB3 share.
  *
  * {@inheritDoc}
  */

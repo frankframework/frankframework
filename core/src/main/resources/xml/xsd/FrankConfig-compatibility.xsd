@@ -6806,7 +6806,9 @@
     </xs:attribute>
     <xs:attribute name="fileTimeSensitive" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen before Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the file modification time is used in addition to the filename to determine if a file has been seen previously.
+ &lt;br/&gt;
+ This setting is only supported for filesystem listeners that implement IWritableFileSystem. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="minStableTime" type="frankInt">

@@ -18,8 +18,6 @@ package org.frankframework.receivers;
 import org.frankframework.doc.Category;
 
 /**
- * File listener for an SMB2 share.
- *
  * {@inheritDoc}
  */
 @Category(Category.Type.ADVANCED)
