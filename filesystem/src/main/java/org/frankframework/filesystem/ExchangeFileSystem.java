@@ -179,7 +179,6 @@ public class ExchangeFileSystem extends AbstractMailFileSystem<ExchangeMessageRe
 
 	@Override
 	public void configure() throws ConfigurationException {
-		log.debug("Configuring the ExchangeFileSystem spring bean");
 		if (StringUtils.isNotEmpty(getFilter())) {
 			if (!getFilter().equalsIgnoreCase("NDR")) {
 				throw new ConfigurationException("illegal value for filter [" + getFilter() + "], must be 'NDR' or empty");
@@ -236,10 +235,9 @@ public class ExchangeFileSystem extends AbstractMailFileSystem<ExchangeMessageRe
 
 	@Override
 	public void open() throws FileSystemException {
-		log.debug("Opening the ExchangeFileSystem");
 		super.open();
 		if (msalClientAdapter != null) {
-			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
+			executor = Executors.newSingleThreadExecutor(); // Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
 			CredentialFactory cf = getCredentials();
 
 			try {
@@ -261,7 +259,6 @@ public class ExchangeFileSystem extends AbstractMailFileSystem<ExchangeMessageRe
 
 	@Override
 	public void close() throws FileSystemException {
-		log.debug("Closing the ExchangeFileSystem");
 		try {
 			super.close();
 			if (msalClientAdapter != null) {

@@ -67,7 +67,7 @@
                 paths: 'exact',
                 queryParams: 'ignored',
                 matrixParams: 'exact',
-                fragment: 'ignored'
+                fragment: 'ignored',
               }"
             >
               <a routerLink="/logging">Log Files</a>
@@ -185,13 +185,13 @@
           tabindex="0"
           [attr.aria-expanded]="accordionItemOverview.expanded"
           [expanded]="
-            getExpandedByRoute(['connection-', 'ibisstore-', 'inlinestores'], {
+            getExpandedByRoute(['connections', 'ibisstore-', 'inlinestores'], {
               element: overview,
-              accordionItem: accordionItemOverview
+              accordionItem: accordionItemOverview,
             })
           "
           [ngClass]="
-            getClassByRoute('active', ['connection-', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
+            getClassByRoute('active', ['connections', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
           "
         >
           <a (click)="expandCollapse(accordionItemOverview, $event)"

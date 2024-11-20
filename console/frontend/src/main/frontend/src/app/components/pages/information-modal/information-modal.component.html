@@ -3,12 +3,9 @@
     <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
   </div>
   <div class="modal-body">
-    <ng-container *ngIf="error; else information">
-      <h3 class="text-center">Unable to fetch server information due to an unexpected error.</h3>
-    </ng-container>
-    <ng-template #information>
+    <ng-container *ngIf="initialized; else information">
       <h3 *ngIf="framework.name === ''">Loading...</h3>
-      <p #environmentInformation>
+      <p>
         <strong>{{ framework.name }}{{ framework.version ? ' ' + framework.version : '' }}</strong
         >: {{ instance.name }} {{ instance.version }}<br />
         Running on <strong>{{ machineName }}</strong> using <strong>{{ applicationServer }}</strong
@@ -30,6 +27,9 @@
         Up since:
         <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>)
       </p>
+    </ng-container>
+    <ng-template #information>
+      <h3 class="text-center">Server info not (yet) available.</h3>
     </ng-template>
   </div>
   <div class="modal-footer">

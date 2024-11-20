@@ -1,4 +1,4 @@
-package org.frankframework.senders;
+package org.frankframework.senders.mail;
 
 import jakarta.annotation.Nonnull;
 import jakarta.mail.Provider;
@@ -10,8 +10,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.senders.mail.MailSenderTestBase;
-import org.frankframework.senders.mail.TransportMock;
+import org.frankframework.senders.MailSender;
 import org.frankframework.stream.Message;
 
 public class MailSenderTest extends MailSenderTestBase<MailSender> {

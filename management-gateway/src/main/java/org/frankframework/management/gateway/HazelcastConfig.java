@@ -22,14 +22,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.PartitionGroupConfig;
-import com.hazelcast.config.PartitionGroupConfig.MemberGroupType;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.DefaultNodeContext;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.instance.impl.MobyNames;
 
 import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.util.Environment;
 import org.frankframework.util.PropertyLoader;
 
 public class HazelcastConfig {
@@ -38,9 +37,14 @@ public class HazelcastConfig {
 	public static final String ATTRIBUTE_TYPE_KEY = "type";
 	public static final String ATTRIBUTE_NAME_KEY = "name";
 	public static final String ATTRIBUTE_APPLICATION_KEY = "application";
+	public static final String ATTRIBUTE_VERSION_KEY = "version";
 
 	public static final String REQUEST_TOPIC_NAME = "frank_integration_request_topic";
 	public static final String AUTHENTICATION_HEADER_KEY = BusMessageUtils.HEADER_PREFIX+"user";
+	private static final String VERSION = Environment.getModuleVersion("frankframework-management-gateway");
+
+	public static final String FRANK_APPLICATION_CONFIG = "frank-configuration";
+	public static final String FRANK_APPLICATION_KEYSET = "jwks";
 
 	static Config createHazelcastConfig() {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
@@ -52,24 +56,9 @@ public class HazelcastConfig {
 		// Not recommended for production environments, and frankly better to configure one's cluster properly to begin with.
 		config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
 
-		// When running on K8S, AWS, Azure or GCP use a node-aware partition table.
-		if (!isRunningLocally(properties)) {
-			PartitionGroupConfig partitionGroup = config.getPartitionGroupConfig();
-			partitionGroup.setEnabled(true);
-			partitionGroup.setGroupType(MemberGroupType.NODE_AWARE);
-			config.setPartitionGroupConfig(partitionGroup);
-		}
-
 		return config;
 	}
 
-	/**
-	 * Assume Hazelcast is running locally when using either the default 'multicast', or the 'local' configuration.
-	 */
-	private static boolean isRunningLocally(Properties properties) {
-		String networkConfig = properties.getProperty("hazelcast.network.file", "");
-		return networkConfig.contains("multicast") || networkConfig.contains("local");
-	}
 
 	private static String computeName() {
 		int instanceNum = FACTORY_ID_GEN.incrementAndGet();
@@ -88,6 +77,9 @@ public class HazelcastConfig {
 
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type);
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, name);
+		if(VERSION != null) { // this value will be present once the artifact has been created, tests will fail otherwise.
+			config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_VERSION_KEY, VERSION);
+		}
 		if(attributes != null) {
 			attributes.entrySet().stream()
 				.filter(e -> StringUtils.isNotBlank(e.getValue()))

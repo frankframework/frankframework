@@ -26,15 +26,15 @@ import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
@@ -50,16 +50,13 @@ import org.frankframework.util.TemporaryDirectoryUtils;
 public class SerializableFileReference implements Serializable, AutoCloseable {
 	public static final String TEMP_MESSAGE_DIRECTORY = "temp-messages";
 
-	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
-
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 	private static final long customSerializationVersion = 1L;
 
 	private long size = Message.MESSAGE_SIZE_UNKNOWN;
 	@Getter private boolean binary;
 	private String charset;
 	@Getter private transient Path path;
-	private transient Cleaner.Cleanable cleanable;
 	private transient CleanupFileAction cleanupFileAction;
 
 
@@ -163,12 +160,11 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	private void createCleanerAction(final Path path) {
 		cleanupFileAction = new CleanupFileAction(path);
-		cleanable = cleaner.register(this, cleanupFileAction);
+		CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
 		private final Path fileToClean;
-		private boolean calledByClose = false;
 
 		private CleanupFileAction(Path fileToClean) {
 			this.fileToClean = fileToClean;
@@ -176,13 +172,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 		@Override
 		public void run() {
-			if (!calledByClose) {
-				log.info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean);
-			}
 			try {
 				Files.deleteIfExists(fileToClean);
 			} catch (Exception e) {
-				log.warn("failed to remove file reference {}", fileToClean);
+				log.warn("failed to remove file reference [{}]. Exception message: {}", fileToClean, e.getMessage());
 			}
 		}
 	}
@@ -218,8 +211,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	@Override
 	public void close() {
 		if (cleanupFileAction != null) {
-			cleanupFileAction.calledByClose = true;
-			cleanable.clean();
+			CleanerProvider.clean(cleanupFileAction);
 		}
 	}
 
