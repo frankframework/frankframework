@@ -121,6 +121,7 @@ public class QueueCreator {
 			createJmsListeners(queues, jmsListeners, properties, ibisContext, correlationId, config.getTimeout());
 			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, ibisContext, correlationId);
 		} catch (Exception e) {
+			log.warn("Error occurred while creating queues", e);
 			closeQueues(queues, properties, null);
 			queues = null;
 			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
@@ -163,13 +164,8 @@ public class QueueCreator {
 					debugMessage("Set deliveryMode to " + deliveryMode);
 					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
 				}
-				if ("true".equals(persistent)) {
-					debugMessage("Set persistent to true");
-					jmsSender.setPersistent(true);
-				} else {
-					debugMessage("Set persistent to false");
-					jmsSender.setPersistent(false);
-				}
+				jmsSender.setPersistent("true".equalsIgnoreCase(persistent));
+				debugMessage("Set persistent to " + jmsSender.isPersistent());
 				if (replyToName != null) {
 					debugMessage("Set replyToName to " + replyToName);
 					jmsSender.setReplyToName(replyToName);
