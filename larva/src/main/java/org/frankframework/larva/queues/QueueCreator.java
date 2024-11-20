@@ -79,7 +79,7 @@ public class QueueCreator {
 
 			Set<String> queueNames = properties.keySet()
 					.stream()
-					.map(o -> (String)o)
+					.map(String.class::cast)
 					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
 					.map(key -> key.substring(0, key.lastIndexOf(".")))
 					.collect(Collectors.toSet());
