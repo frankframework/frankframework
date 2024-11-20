@@ -359,12 +359,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		}
-		if (credentials==null) {
-			credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-		}
+		credentials = getCredentialFactory();
+
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
@@ -433,6 +429,14 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				throw new ConfigurationException("Unsupported CipherSuite(s), must be one (or more) of "+allowedCipherSuites);
 			}
 		}
+	}
+
+	private CredentialFactory getCredentialFactory() {
+		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+			return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		}
+
+		return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */

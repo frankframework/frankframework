@@ -39,7 +39,21 @@ public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractOau
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (session.getClientId() == null) {
+			throw new ConfigurationException("clientId is required");
+		}
 
+		if (session.getClientSecret() == null) {
+			throw new ConfigurationException("clientSecret is required");
+		}
+
+		if (session.getUsername() == null) {
+			throw new ConfigurationException("username is required");
+		}
+
+		if (session.getPassword() != null) {
+			throw new ConfigurationException("password is required");
+		}
 	}
 
 	@Override

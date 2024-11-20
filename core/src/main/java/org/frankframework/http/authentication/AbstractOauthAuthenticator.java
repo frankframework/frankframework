@@ -41,7 +41,7 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 
 	protected final AbstractHttpSession session;
 	protected final URI authorizationEndpoint;
-	protected final int expiryMs;
+	protected final int overwriteExpiryMs;
 
 	private String accessToken;
 	private long accessTokenRefreshTime;
@@ -53,10 +53,10 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 		} catch (URISyntaxException e) {
 			throw new HttpAuthenticationException(e);
 		}
-		this.expiryMs = session.getTokenExpiry() * 1000;
+		this.overwriteExpiryMs = session.getTokenExpiry() * 1000;
 	}
 
-	abstract protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
+	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		HttpRequestBase request = createRequest(credentials);
@@ -80,15 +80,15 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 
 			OauthResponseDto dto = JacksonUtils.convertToDTO(responseBody, OauthResponseDto.class);
 
-			accessToken = dto.getAccess_token();
-			long accessTokenLifetime = Long.parseLong(dto.getExpires_in());
+			accessToken = dto.getAccessToken();
+			long accessTokenLifetime = Long.parseLong(dto.getExpiresIn());
 
 			// accessToken will be refreshed when it is half way expiration
-			if (expiryMs < 0 && accessTokenLifetime == 0) {
+			if (overwriteExpiryMs < 0 && accessTokenLifetime == 0) {
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
 				accessTokenRefreshTime = -1;
 			} else {
-				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
+				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs <0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (IOException e) {

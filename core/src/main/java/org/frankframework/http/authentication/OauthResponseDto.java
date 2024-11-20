@@ -15,15 +15,25 @@
 */
 package org.frankframework.http.authentication;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class OauthResponseDto {
-	private String access_token;
-	private String token_type;
-	private String expires_in;
-	private String refresh_token;
+	@JsonProperty("access_token")
+	private String accessToken;
+
+	@JsonProperty("token_type")
+	private String tokenType;
+
+	@JsonProperty("expires_in")
+	private String expiresIn;
+
+	@JsonProperty("refresh_token")
+	private String refreshToken;
+
 	private String scope;
 }
