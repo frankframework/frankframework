@@ -17,11 +17,14 @@ package org.frankframework.http.authentication;
 
 import org.apache.http.auth.Credentials;
 
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -32,8 +35,12 @@ import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.LogUtil;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+
+import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 
@@ -46,7 +53,7 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 	private String accessToken;
 	private long accessTokenRefreshTime;
 
-	public AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
+	AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
 		this.session = session;
 		try {
 			this.authorizationEndpoint = new URI(session.getTokenEndpoint());
@@ -57,6 +64,20 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 	}
 
 	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
+
+	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<BasicHeader> formParameters) throws HttpAuthenticationException {
+		try {
+			UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, DEFAULT_INPUT_STREAM_ENCODING);
+
+			HttpPost request = new HttpPost(uri);
+			request.addHeader(body.getContentType());
+			request.setEntity(body);
+
+			return request;
+		} catch (UnsupportedEncodingException e) {
+			throw new HttpAuthenticationException(e);
+		}
+	}
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		HttpRequestBase request = createRequest(credentials);

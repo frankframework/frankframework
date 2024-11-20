@@ -16,9 +16,7 @@
 package org.frankframework.http.authentication;
 
 import org.apache.http.auth.Credentials;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
 
 import org.apache.http.message.BasicHeader;
 
@@ -26,11 +24,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.AbstractHttpSession;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator {
 
@@ -58,7 +53,7 @@ public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator
 	}
 
 	@Override
-	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) {
+	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
 		List<BasicHeader> parameters = new ArrayList<>();
 		parameters.add(new BasicHeader("grant_type", "client_credentials"));
 
@@ -69,16 +64,6 @@ public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator
 		parameters.add(new BasicHeader("client_secret", session.getClientSecret()));
 		parameters.add(new BasicHeader("client_id", session.getClientId()));
 
-		try {
-			UrlEncodedFormEntity body = new UrlEncodedFormEntity(parameters, DEFAULT_INPUT_STREAM_ENCODING);
-
-			HttpPost request = new HttpPost(authorizationEndpoint);
-			request.addHeader(body.getContentType());
-			request.setEntity(body);
-
-			return request;
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+		return createPostRequestWithForm(authorizationEndpoint, parameters);
 	}
 }

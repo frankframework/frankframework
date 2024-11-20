@@ -19,9 +19,7 @@ import com.nimbusds.jose.util.Base64;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.auth.Credentials;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
 
 import org.apache.http.message.BasicHeader;
 
@@ -29,13 +27,11 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.AbstractHttpSession;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
-import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 public class ClientCredentialsBasicAuth extends AbstractOauthAuthenticator {
 
@@ -63,15 +59,15 @@ public class ClientCredentialsBasicAuth extends AbstractOauthAuthenticator {
 	}
 
 	private String createAuthorizationHeaderValue() {
-		String sb = URLEncoder.encode(session.getClientId(), UTF8_CHARSET) +
+		String value = URLEncoder.encode(session.getClientId(), UTF8_CHARSET) +
 				':' +
 				URLEncoder.encode(session.getClientSecret(), UTF8_CHARSET);
 
-		return "Basic " + Base64.encode(sb.getBytes(UTF8_CHARSET));
+		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}
 
 	@Override
-	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) {
+	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
 		List<BasicHeader> parameters = new ArrayList<>();
 		parameters.add(new BasicHeader("grant_type", "client_credentials"));
 
@@ -79,17 +75,9 @@ public class ClientCredentialsBasicAuth extends AbstractOauthAuthenticator {
 			parameters.add(new BasicHeader("scope", session.getScope().replace(',', ' ')));
 		}
 
-		try {
-			UrlEncodedFormEntity body = new UrlEncodedFormEntity(parameters, DEFAULT_INPUT_STREAM_ENCODING);
+		HttpEntityEnclosingRequestBase request = createPostRequestWithForm(authorizationEndpoint, parameters);
+		request.addHeader(HttpHeaders.AUTHORIZATION, createAuthorizationHeaderValue());
 
-			HttpPost request = new HttpPost(authorizationEndpoint);
-			request.addHeader(body.getContentType());
-			request.setEntity(body);
-			request.addHeader(HttpHeaders.AUTHORIZATION, createAuthorizationHeaderValue());
-
-			return request;
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+		return request;
 	}
 }

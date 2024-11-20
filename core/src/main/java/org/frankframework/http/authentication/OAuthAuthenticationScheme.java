@@ -68,17 +68,18 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 		try {
 			String accessToken = oauthAuthentication.getOrRefreshAccessToken(credentials, forceRefresh);
 
-			String headerName;
-			if (isProxy()) {
-				headerName = AUTH.PROXY_AUTH_RESP;
-			} else {
-				headerName = AUTH.WWW_AUTH_RESP;
-			}
-
-			return new BasicHeader(headerName, "Bearer " + accessToken);
+			return new BasicHeader(getHeaderName(), "Bearer " + accessToken);
 		} catch (HttpAuthenticationException e) {
 			throw new AuthenticationException(e.getMessage(), e);
 		}
+	}
+
+	private String getHeaderName() {
+		if (isProxy()) {
+			return AUTH.PROXY_AUTH_RESP;
+		}
+
+		return AUTH.WWW_AUTH_RESP;
 	}
 
 	@Override
