@@ -381,7 +381,7 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * Regular expression to be applied to the input-message (ignored if <code>xpathExpression</code> is specified).
+	 * Regular expression to be applied to the input-message (ignored if either <code>xpathExpression</code> or <code>jsonPathExpression</code> is specified).
 	 * The input-message <b>fully</b> matching the given regular expression leads to the 'then'-forward
 	 */
 	@Deprecated(forRemoval = true, since = "9.0")
