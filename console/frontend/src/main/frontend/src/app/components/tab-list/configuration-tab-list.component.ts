@@ -1,9 +1,9 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { TabListComponent } from './tab-list.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from '../../app.service';
 import { NgClass, NgForOf } from '@angular/common';
-import { first } from 'rxjs';
+import { first, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-configuration-tab-list',
@@ -12,25 +12,28 @@ import { first } from 'rxjs';
   templateUrl: './tab-list.component.html',
   styleUrl: './tab-list.component.scss',
 })
-export class ConfigurationTabListComponent extends TabListComponent implements OnInit {
+export class ConfigurationTabListComponent extends TabListComponent implements OnInit, OnChanges, OnDestroy {
   @Input() queryParamName: string = 'name';
   @Input() showAll: boolean = false;
 
   private route: ActivatedRoute = inject(ActivatedRoute);
   private router: Router = inject(Router);
   private appService: AppService = inject(AppService);
+  private configurationsList: string[] = [];
+  private subscriptions: Subscription = new Subscription();
 
   @Input({ required: true })
   set configurations(configurations: Configuration[]) {
-    this.tabs = configurations.map((configuration) => configuration.name);
+    const tabs = configurations.map((configuration) => configuration.name);
+    this.tabs = tabs;
+    this.configurationsList = tabs;
   }
 
   ngOnInit(): void {
-    if (!this.showAll) {
-      this.tabs = this.tabsList.filter((configuration) => {
-        return this.appService.configurationLengths[configuration] > 1;
-      });
-    }
+    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
+      this.processTabList();
+    });
+    this.subscriptions.add(adaptersSubscription);
 
     this.route.queryParamMap.subscribe((parameters) => {
       const tab = parameters.get(this.queryParamName);
@@ -47,6 +50,14 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
     });
   }
 
+  ngOnChanges(): void {
+    this.processTabList();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
   protected override changeTab(tab: string): void {
     this.appService.updateSelectedConfigurationTab(tab);
     this.router.navigate([], {
@@ -59,5 +70,13 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   private setSelectedTab(tab: string): void {
     this.selectedTab = tab;
     this.selectedTabChange.emit(tab);
+  }
+
+  private processTabList(): void {
+    if (!this.showAll) {
+      this.tabs = this.configurationsList.filter((configuration) => {
+        return this.appService.configurationLengths[configuration] > 1;
+      });
+    }
   }
 }
