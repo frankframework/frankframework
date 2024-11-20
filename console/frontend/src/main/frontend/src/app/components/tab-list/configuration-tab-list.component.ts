@@ -15,6 +15,7 @@ import { first, Subscription } from 'rxjs';
 export class ConfigurationTabListComponent extends TabListComponent implements OnInit, OnChanges, OnDestroy {
   @Input() queryParamName: string = 'name';
   @Input() showAll: boolean = false;
+  @Input() filterIAF_Util: boolean = false;
 
   private route: ActivatedRoute = inject(ActivatedRoute);
   private router: Router = inject(Router);
@@ -77,6 +78,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   private processTabList(): void {
     if (!this.showAll) {
       this.tabs = this.configurationsList.filter((configuration) => {
+        if (configuration === 'IAF_Util' && this.filterIAF_Util) return false;
         return this.appService.configurationLengths[configuration] > 1;
       });
     }
