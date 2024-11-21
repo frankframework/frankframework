@@ -89,6 +89,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
@@ -335,6 +336,7 @@ public class LarvaTool {
 			config.setUseHtmlBuffer(false);
 		writeHtml("",  true);
 		config.flushWriters();
+		CleanerProvider.logLeakStatistics();
 		return scenariosFailed;
 	}
 

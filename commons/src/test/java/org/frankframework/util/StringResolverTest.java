@@ -73,6 +73,15 @@ public class StringResolverTest {
 	}
 
 	@Test
+	void resolveWithTwoDefaultValues() {
+		// Act
+		String result = StringResolver.substVars("${testMultipleDefaults}", properties);
+
+		// Assert
+		assertEquals("/dev/null | /dev/null", result);
+	}
+
+	@Test
 	public void resolveFromEnvironmentBeforeProps() {
 		// Arrange
 		String envVarName = System.getenv().containsKey("Path") ? "Path" : "PATH";

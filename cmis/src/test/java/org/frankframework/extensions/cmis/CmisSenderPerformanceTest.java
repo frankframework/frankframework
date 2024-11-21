@@ -8,17 +8,19 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.cmis.CmisSender.CmisAction;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.http.HttpSender;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 
-public class CmisSenderTest {
+@Disabled
+public class CmisSenderPerformanceTest {
 
 	private String url;
 	private String repo;
@@ -93,7 +95,7 @@ public class CmisSenderTest {
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
 		sender.configure();
-		sender.open();
+		sender.start();
 		return sender;
 	}
 
@@ -111,7 +113,7 @@ public class CmisSenderTest {
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
 		sender.configure();
-		sender.open();
+		sender.start();
 		return sender;
 	}
 

@@ -20,6 +20,8 @@ export type ServerInfo = {
   applicationServer: string;
   javaVersion: string;
   serverTime: number;
+  serverTimezone: string;
+  serverTimeISO: string;
   'dtap.stage': string;
   'dtap.side': string;
   processMetrics: {
@@ -62,6 +64,7 @@ export class ServerInfoService {
   }
 
   getMarkdownFormatedServerInfo(): string {
+    if (!this.serverInfo) return '**Server info not available**';
     const humanFileSize = new HumanFileSizePipe();
     return `**${this.serverInfo?.framework.name}${this.serverInfo?.framework.version ? ` ${this.serverInfo?.framework.version}` : ''}**: ${this.serverInfo?.instance.name} ${this.serverInfo?.instance.version}
 Running on **${this.serverInfo?.machineName}** using **${this.serverInfo?.applicationServer}**

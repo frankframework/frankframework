@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,7 @@ import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.ExchangeMailListener;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.testutil.TestAssertions;
@@ -39,9 +41,7 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 	protected String mailaddress;
 	protected String mailaddress_fancy;
-	protected String accessToken;
-	protected String username;
-	protected String password;
+//	protected String accessToken;
 	protected String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
 
 	protected String recipient;
@@ -49,7 +49,7 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 	private final String testProperties = "ExchangeMail.properties";
 
 	protected String basefolder1;
-	protected String basefolder2;
+//	protected String basefolder2;
 
 	private String senderSmtpHost;
 	private int senderSmtpPort;
@@ -62,10 +62,10 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 	protected ExchangeMailListener mailListener;
 
-	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, senderPassword);
-	}
+//	@Override
+//	protected IFileSystemTestHelper getFileSystemTestHelper() {
+//		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, senderPassword);
+//	}
 
 	@Override
 	public void setUp() throws FileSystemException, ConfigurationException, IOException {
@@ -73,12 +73,9 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
 		mailaddress_fancy = properties.getProperty("mailaddress.fancy");
-		accessToken = properties.getProperty("accessToken");
-		username = properties.getProperty("username");
-		password = properties.getProperty("password");
 		recipient=  properties.getProperty("recipient");
 		basefolder1 = properties.getProperty("basefolder1");
-		basefolder2 = properties.getProperty("basefolder2");
+//		basefolder2 = properties.getProperty("basefolder2");
 		senderSmtpHost = properties.getProperty("senderSmtpHost");
 		senderSmtpPort = Integer.parseInt(properties.getProperty("senderSmtpPort"));
 		senderSsl      = Boolean.parseBoolean(properties.getProperty("mailaddress"));
@@ -87,16 +84,20 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 		super.setUp();
 		mailListener=createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
-		mailListener.setUsername(username);
-		mailListener.setPassword(password);
+		mailListener.setMailAddress(mailaddress);
+		mailListener.setBaseFolder(basefolder1);
+//		mailListener.setClientId(client_id);
+//		mailListener.setClientSecret(client_secr);
+//		mailListener.setTenantId(tenantId);
 		mailListener.setUrl(baseurl);
-		mailListener.setBaseFolder(basefolder2);
+		mailListener.setBaseFolder(basefolder1);
 	}
 
+	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if (mailListener!=null) {
-			mailListener.close();
+			mailListener.stop();
 		}
 		super.tearDown();
 	}
@@ -106,19 +107,11 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 		if (folder!=null) mailListener.setInputFolder(folder);
 		if (filter!=null) mailListener.setFilter(filter);
 		mailListener.configure();
-		mailListener.open();
+		mailListener.start();
 	}
 
 	protected abstract ExchangeMailListener createExchangeMailListener();
 
-	@Override
-	public void waitForActionToFinish() throws FileSystemException {
-		try {
-			((MailSendingTestHelper)helper)._commitFile();
-		} catch (Exception e) {
-			throw new FileSystemException(e);
-		}
-	}
 
 //	public boolean folderContainsMessages(String subfolder) throws FileSystemException {
 //		Iterator<Item> fileIt = fileSystem.listFiles(subfolder);
@@ -275,9 +268,10 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<>();
 
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper<ExchangeMessageReference> rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		assertNotNull(rawMessage.getMessage());
+		assertNotNull(rawMessage.getRawMessage());
+		assertNotNull(rawMessage.getRawMessage().getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -301,7 +295,7 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 	@Test
 	@Disabled("skip NDR filter for now")
-	public void readFileBounce2() {
+	public void readFileBounce2() throws Exception {
 		String targetFolder="Bounce 2";
 		String originalRecipient="";
 		String originalFrom="";
@@ -321,9 +315,10 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<>();
 
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper<ExchangeMessageReference> rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		assertNotNull(rawMessage.getMessage());
+		assertNotNull(rawMessage.getRawMessage());
+		assertNotNull(rawMessage.getRawMessage().getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -352,7 +347,7 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 	@Test
 	@Disabled("skip NDR filter for now")
-	public void readFileBounce3WithAttachmentInOriginalMail() {
+	public void readFileBounce3WithAttachmentInOriginalMail() throws Exception {
 		String targetFolder="Bounce 3";
 		String originalRecipient="";
 		String originalFrom="";
@@ -373,9 +368,10 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<>();
 
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper<ExchangeMessageReference> rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		assertNotNull(rawMessage.getMessage());
+		assertNotNull(rawMessage.getRawMessage());
+		assertNotNull(rawMessage.getRawMessage().getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -404,7 +400,7 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 	@Test
 	@Disabled("skip NDR filter for now")
-	public void readFileBounce4() {
+	public void readFileBounce4() throws Exception {
 		String targetFolder="Bounce 4";
 		String originalRecipient="";
 		String originalFrom="";
@@ -425,9 +421,10 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<>();
 
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper<ExchangeMessageReference> rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		assertNotNull(rawMessage.getMessage());
+		assertNotNull(rawMessage.getRawMessage());
+		assertNotNull(rawMessage.getRawMessage().getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -455,14 +452,14 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 	}
 
 	@Test
-	public void readEmptyFolder() {
+	public void readEmptyFolder() throws Exception {
 		String targetFolder="Empty";
 		mailListener.setCreateFolders(true);
 		configureAndOpen(targetFolder,null);
 
 		Map<String,Object> threadContext=new HashMap<>();
 
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper<ExchangeMessageReference> rawMessage = mailListener.getRawMessage(threadContext);
 		assertNull(rawMessage);
 	}
 
@@ -560,10 +557,10 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 //	}
 
 	@Test
-	public void testMessageBrowserOpen() {
+	public void testMessageBrowserOpen() throws Exception {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
-		mailListener.open();
+		mailListener.start();
 
 		IMessageBrowser<ExchangeMessageReference> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
@@ -584,19 +581,19 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 			}
 		}
 		for (String id:itemIds) {
-			ExchangeMessageReference email = browser.browseMessage(id);
-			Message message = mailListener.getFileSystem().readFile(email, null);
+			RawMessageWrapper<ExchangeMessageReference> email = browser.browseMessage(id);
+			Message message = mailListener.getFileSystem().readFile(email.getRawMessage(), null);
 			log.debug("Id: "+id+"\nEmail: "+message.asString());
 		}
 		assertEquals(itemIds.size(), messageCount);
 	}
 
 	@Test // this happens when the receiver/listener is closed, but its storages are browsed
-	public void testMessageBrowserClosed() throws ListenerException {
+	public void testMessageBrowserClosed() throws Exception {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
-		mailListener.open();
-		mailListener.close();
+		mailListener.start();
+		mailListener.stop();
 
 		IMessageBrowser<ExchangeMessageReference> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
@@ -616,17 +613,17 @@ public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTes
 			}
 		}
 		for (String id:itemIds) {
-			ExchangeMessageReference email = browser.browseMessage(id);
-			Message message = mailListener.getFileSystem().readFile(email, null);
+			RawMessageWrapper<ExchangeMessageReference> email = browser.browseMessage(id);
+			Message message = mailListener.getFileSystem().readFile(email.getRawMessage(), null);
 			log.debug("Id: "+id+"\nEmail: "+message.asString());
 		}
 	}
 
 	@Test
-	public void testMessageBrowserFilterTest() throws ConfigurationException {
+	public void testMessageBrowserFilterTest() throws Exception {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
-		mailListener.open();
+		mailListener.start();
 
 		IMessageBrowser<ExchangeMessageReference> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);

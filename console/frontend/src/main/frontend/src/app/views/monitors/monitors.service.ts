@@ -17,6 +17,10 @@ export type Monitor = {
   alarm: Alarm;
 };
 
+export type NewMonitor = {
+  name: string;
+};
+
 export type Alarm = {
   source: string;
   severity: string;
@@ -83,6 +87,13 @@ export class MonitorsService {
 
   getTrigger(selectedConfiguration: string, monitorName: string, triggerId: number): Observable<TriggerResponse> {
     return this.http.get<TriggerResponse>(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId));
+  }
+
+  postMonitor(selectedConfiguration: string, monitor: NewMonitor): Observable<object> {
+    return this.http.post<object>(
+      `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors`,
+      monitor,
+    );
   }
 
   postTrigger(

@@ -19,20 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.console.ApiException;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.configuration.ClientSession;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.console.util.ResponseUtils;
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.OutboundGateway.ClusterMember;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.management.gateway.events.ClusterMemberEvent;
-import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.util.Environment;
-import org.frankframework.util.JacksonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
@@ -47,7 +36,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.frankframework.console.ApiException;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.configuration.ClientSession;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.console.util.ResponseUtils;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
+import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
+import org.frankframework.util.JacksonUtils;
 
 /**
  * Cluster in this sense does not directly mean a Kubernetes or similar cluster, but a Hazelcast cluster.
@@ -55,8 +55,6 @@ import jakarta.annotation.security.RolesAllowed;
 @RestController
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberEvent> {
-
-	private static final String VERSION = Environment.getModuleVersion("frankframework-console-backend");
 
 	@Autowired
 	private ClientSession session;
@@ -87,11 +85,6 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		}
 
 		for(ClusterMember member : members) {
-
-			if(member.isLocalMember()) {
-				member.getAttributes().put("version", VERSION);
-			}
-
 			member.setSelectedMember(member.getId().equals(session.getMemberTarget()));
 		}
 

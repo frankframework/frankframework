@@ -95,7 +95,7 @@ The image also contains the following files:
 
 Generated log files are stored in `/usr/local/tomcat/logs`.
 
-In some cases you might want to change the log appenders, for example to log to stdout. Refer to the [Frank!Framework Manual: Custom Logging](https://frank-manual.readthedocs.io/en/latest/deploying/customLogging.html#custom-logging) for more information.
+In some cases you might want to change the log-appenders, for example to log to stdout. Refer to the [Frank!Framework Manual: Custom Logging](https://frank-manual.readthedocs.io/en/latest/deploying/customLogging.html#custom-logging) for more information.
 
 ## Environment variables
 
@@ -108,8 +108,10 @@ Do not use environment variables for secrets! See [Secrets](#Secrets) for more i
 
 ## Health and readiness
 
-The health and readiness of the container can be monitored by polling the `/iaf/api/server/health` API endpoint. This endpoint will return a HTTP statuscode of 200 if the configurations are loaded and a HTTP statuscode of 503 if there are configurations in a non-running state.
-If you want to check the health of the adapters, you can poll the `/iaf/api/configurations/{configuration}/adapters/{name}/health` endpoint. This endpoint will return a HTTP statuscode of 200 if the adapter is running and a HTTP statuscode of 503 if the adapter is in a non-running state.
+The health and readiness of the container can be monitored by polling the `/iaf/api/server/health` API endpoint.
+This endpoint will return a HTTP statuscode of 200 if the configurations are loaded and a HTTP statuscode of 503 if there are configurations in a non-running state.
+If you want to check the health of the adapters, you can poll the `/iaf/api/configurations/{configuration}/adapters/{name}/health` endpoint.
+This endpoint will return a HTTP statuscode of 200 if the adapter is running and a HTTP statuscode of 503 if the adapter is in a non-running state.
 
 ## Considerations
 
@@ -118,26 +120,30 @@ provided images.
 
 ### HTTPS and authentication
 
-Frank!Framework Applications use HTTPS and require authentication unless `dtap.stage=LOC`, but the default server.xml of Tomcat is
-not configured for inbound HTTPS traffic and user authentication. To configure this, the server.xml file will need to be
-replaced by either building your own image or mounting it at runtime.
+The Frank!Framework runs on HTTP by default. It can be secured with a reverse proxy or by overriding the `application.security.http.transportGuarantee` property with a system property.
+Tomcat should be configured through the `server.xml` file, which needs to be mounted en overwritten in the container.
 
 ### Secrets
 
-Special consideration should be taken with secrets. As described on
-the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), secrets are stored in plain text in
-the container. To use secrets in your Tomcat and Frank!Framework Application configuration, you can take the following steps:
+Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), secrets are stored in plain text in the container.
+
+The Frank!Framework includes the `CredentialManager Capability`, this allows property substitution in configuration files, like `resources.yml` and in Tomcat settings, such as the `context.xml`.
+
+The default configuration for the `Frank!Framework CredentialManager`, is to load credentials from the `credentials.properties` file.
+
+To use secrets in your Frank!Framework Application configuration, you can take the following steps:
 
 - In your configuration, use the authAlias attribute with value `${<secret-name>}`
 - In cases where you need to use username or password separately (such as the Tomcat context.xml), you can set the
   values to `${<secret-name>/username}` and `${<secret-name>/password}` respectively
-- Mount the value for the username in the file `/opt/frank/secrets/<secret-name>/username`
-- Mount the value for the password in the file `/opt/frank/secrets/<secret-name>/password`
+- Insert the value for the username in the file `/opt/frank/secrets/credentials.properties` as `<secret-name>/username=<username>`
+- Insert the value for the password in the file `/opt/frank/secrets/<secret-name>/password` as `<secret-name>/password=<password>`
 
-See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and
-corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
+See the [credentials.properties](credentialProvider/src/test/resources/credentials.properties) of the test-project for an example.
+
+More information on credentials can be found in the [Frank!Framework Manual](https://frank-manual.readthedocs.io/en/latest/deploying/credentials.html#credentials).
 
 ### Non-root
 
-This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=2000` and `GID=2000` instead of `root`. If you need
-to run as `root`, you will need to set `USER root` in your Dockerfile.
+This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=2000` and `GID=2000` instead of `root`.
+Keep this in mind when copying or mounting files to the container, as the files need to be owned by `tomcat:tomcat` instead of `root`.

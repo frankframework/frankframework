@@ -1,4 +1,4 @@
-package org.frankframework.senders;
+package org.frankframework.senders.mail;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,6 +16,8 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
+import org.frankframework.senders.MailSender;
+import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 
 class MailSender2Test extends SenderTestBase<MailSender> {

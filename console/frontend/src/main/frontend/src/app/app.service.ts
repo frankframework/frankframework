@@ -227,7 +227,6 @@ export type AppInitState = (typeof appInitState)[keyof typeof appInitState];
 
 export type ConsoleState = {
   server: string;
-  timeOffset: number;
   init: AppInitState;
 };
 
@@ -316,7 +315,6 @@ export class AppService {
 
   CONSOLE_STATE: ConsoleState = {
     server: computeServerPath(),
-    timeOffset: 0,
     init: appInitState.UN_INIT,
   };
 

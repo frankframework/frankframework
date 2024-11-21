@@ -20,24 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Debugger;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -52,6 +35,24 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.UUIDUtil;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
+import nl.nn.testtool.Debugger;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.StubType;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.run.ReportRunner;
 
 /**
  * @author Jaco de Groot
@@ -210,7 +211,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 	// Called by TestTool
 	@Override
 	public boolean stub(Checkpoint checkpoint, String strategy) {
-		return stub(checkpoint.getName(), checkpoint.getType() == Checkpoint.TYPE_ENDPOINT, strategy);
+		return stub(checkpoint.getName(), checkpoint.getType() == CheckpointType.ENDPOINT.toInt(), strategy);
 	}
 
 	/**
@@ -242,11 +243,11 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 				Report reportInProgress = testtool.getReportInProgress(correlationId);
 				return stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
 			} else {
-				if (originalEndpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
+				if (originalEndpoint.getStub() == StubType.FOLLOW_REPORT_STRATEGY.toInt()) {
 					return stub(originalEndpoint, originalEndpoint.getReport().getStubStrategy());
-				} else if (originalEndpoint.getStub() == Checkpoint.STUB_NO) {
+				} else if (originalEndpoint.getStub() == StubType.NO.toInt()) {
 					return false;
-				} else if (originalEndpoint.getStub() == Checkpoint.STUB_YES) {
+				} else if (originalEndpoint.getStub() == StubType.YES.toInt()) {
 					return true;
 				}
 			}
