@@ -350,11 +350,8 @@ export class AppService {
     this.configurationLengths = {};
     for (const adapter of Object.values(this.adapters)) {
       const configuration = adapter.configuration;
-      if (this.configurationLengths[configuration]) {
-        this.configurationLengths[configuration] += 1;
-        continue;
-      }
-      this.configurationLengths[configuration] = 1;
+      this.configurationLengths[configuration] ??= 0;
+      this.configurationLengths[configuration]++;
     }
   }
 
