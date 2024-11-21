@@ -144,8 +144,8 @@ public class IfPipe extends AbstractPipe {
 
 	private @Getter String elseForwardName = "else";
 	private @Getter String thenForwardName = "then";
-	private @Getter PipeForward elseForward;
-	private @Getter PipeForward thenForward;
+	@Getter PipeForward elseForward;
+	@Getter PipeForward thenForward;
 
 	private @Getter String namespaceDefs = null;
 	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
@@ -259,11 +259,11 @@ public class IfPipe extends AbstractPipe {
 			}
 		}
 
-		// if all else fails, this is the legacy behaviour
+		// if all else fails, try to match the expressionValue on the input message (asString)
 		return getForwardForStringInput(message);
 	}
 
-	private boolean transformationNeeded() {
+	boolean transformationNeeded() {
 		return transformerPool != null || StringUtils.isNotBlank(jsonPathExpression);
 	}
 
@@ -316,14 +316,12 @@ public class IfPipe extends AbstractPipe {
 		return null;
 	}
 
-	private PipeForward getForwardForStringInput(Message message) throws PipeRunException {
+	PipeForward getForwardForStringInput(Message message) throws PipeRunException {
 		// if all else fails, this is the legacy behaviour
 		try {
 			String inputString = message.asString();
 
-			if (StringUtils.isNotEmpty(regex)) {
-				return inputString.matches(regex) ? thenForward : elseForward;
-			} else if (StringUtils.isNotEmpty(expressionValue)) {
+			if (StringUtils.isNotEmpty(expressionValue)) {
 				return inputString.equals(expressionValue) ? thenForward : elseForward;
 			}
 
@@ -379,16 +377,6 @@ public class IfPipe extends AbstractPipe {
 	/** jsonPath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype JSON */
 	public void setJsonPathExpression(String jsonPathExpression) {
 		this.jsonPathExpression = jsonPathExpression;
-	}
-
-	/**
-	 * Regular expression to be applied to the input-message (ignored if either <code>xpathExpression</code> or <code>jsonPathExpression</code> is specified).
-	 * The input-message <b>fully</b> matching the given regular expression leads to the 'then'-forward
-	 */
-	@Deprecated(forRemoval = true, since = "9.0")
-	@ConfigurationWarning(value = "Use RegExPipe instead")
-	public void setRegex(String regex) {
-		this.regex = regex;
 	}
 
 	/**

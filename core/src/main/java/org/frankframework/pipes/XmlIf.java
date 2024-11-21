@@ -15,13 +15,13 @@
 */
 package org.frankframework.pipes;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -36,20 +36,45 @@ import org.frankframework.stream.Message;
  *
  * @author Peter Leeuwenburgh
  * @since 4.3
+ * @deprecated please use the {@link IfPipe} for if (else/then) behaviour. If you need regular expresssions, see the @{@link RegExPipe} as well.
  */
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
 @Forward(name = "else", description = "the configured condition is not met")
 @EnterpriseIntegrationPattern(Type.ROUTER)
-@Deprecated
+@Deprecated(since = "9.0.0", forRemoval = true)
 public class XmlIf extends IfPipe {
-
-	private @Getter String sessionKey = null;
-//	private @Getter String regex = null;
+	private String sessionKey = null;
+	private String regex = null;
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException { // TODO regex
-		return super.doPipe(getMessageToUse(message, session), session);
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		if (transformationNeeded()) {
+			return super.doPipe(getMessageToUse(message, session), session);
+		}
+
+		return new PipeRunResult(getForwardForStringInput(message), session);
+	}
+
+	/**
+	 * Works slightly different compared to super() when using a regex.
+	 */
+	@Override
+	PipeForward getForwardForStringInput(Message message) throws PipeRunException {
+		try {
+			String inputString = message.asString();
+
+			if (StringUtils.isNotEmpty(regex)) {
+				return inputString.matches(regex) ? thenForward : elseForward;
+			} else if (StringUtils.isNotEmpty(getExpressionValue())) {
+				return inputString.equals(getExpressionValue()) ? thenForward : elseForward;
+			}
+
+			// If the input is not empty, use then forward.
+			return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
+		} catch (IOException e) {
+			throw new PipeRunException(this, "error reading message");
+		}
 	}
 
 	private Message getMessageToUse(Message message, PipeLineSession session) throws PipeRunException {
@@ -68,10 +93,10 @@ public class XmlIf extends IfPipe {
 
 	private Optional<String> getInputFromSessionKey(PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(sessionKey)) {
-			log.debug("taking input from sessionKey [{}]", getSessionKey());
-			String sessionString = session.getString(getSessionKey());
+			log.debug("taking input from sessionKey [{}]", sessionKey);
+			String sessionString = session.getString(sessionKey);
 			if (sessionString == null) {
-				throw new PipeRunException(this, "unable to resolve session key [" + getSessionKey() + "]");
+				throw new PipeRunException(this, "unable to resolve session key [" + sessionKey + "]");
 			}
 
 			return Optional.of(sessionString);
@@ -82,7 +107,17 @@ public class XmlIf extends IfPipe {
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(sessionKey);
+	}
+
+	/**
+	 * Regular expression to be applied to the input-message (ignored if either <code>xpathExpression</code> or <code>jsonPathExpression</code> is specified).
+	 * The input-message <b>fully</b> matching the given regular expression leads to the 'then'-forward
+	 */
+	@Deprecated(forRemoval = true, since = "9.0")
+	@ConfigurationWarning(value = "Please use the RegExPipe instead")
+	public void setRegex(String regex) {
+		this.regex = regex;
 	}
 
 	/** name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code> */
