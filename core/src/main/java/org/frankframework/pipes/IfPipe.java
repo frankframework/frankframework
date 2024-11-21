@@ -25,6 +25,7 @@ import org.springframework.util.MimeType;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import lombok.Getter;
 import net.minidev.json.JSONArray;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -141,20 +142,20 @@ import org.frankframework.util.XmlUtils;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class IfPipe extends AbstractPipe {
 
-	private String elseForwardName = "else";
-	private String thenForwardName = "then";
-	private PipeForward elseForward;
-	private PipeForward thenForward;
+	private @Getter String elseForwardName = "else";
+	private @Getter String thenForwardName = "then";
+	private @Getter PipeForward elseForward;
+	private @Getter PipeForward thenForward;
 
-	private String namespaceDefs = null;
-	private boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
+	private @Getter String namespaceDefs = null;
+	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 	private TransformerPool transformerPool;
 	private String jsonPathExpression = null;
-	private String xpathExpression = null;
-	private String expressionValue = null;
+	private @Getter String xpathExpression = null;
+	private @Getter String expressionValue = null;
 
-	private String regex = null;
-	private int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
+	private @Getter String regex = null;
+	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
 
 	private SupportedMediaType defaultMediaType = SupportedMediaType.XML;
 
