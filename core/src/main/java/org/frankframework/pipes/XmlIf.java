@@ -49,11 +49,13 @@ public class XmlIf extends IfPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		Message messageToUse = getMessageToUse(message, session);
+
 		if (transformationNeeded()) {
-			return super.doPipe(getMessageToUse(message, session), session);
+			return super.doPipe(messageToUse, session);
 		}
 
-		return new PipeRunResult(getForwardForStringInput(message), session);
+		return new PipeRunResult(getForwardForStringInput(messageToUse), session);
 	}
 
 	/**
@@ -65,13 +67,13 @@ public class XmlIf extends IfPipe {
 			String inputString = message.asString();
 
 			if (StringUtils.isNotEmpty(regex)) {
-				return inputString.matches(regex) ? thenForward : elseForward;
+				return inputString.matches(regex) ? getThenForward() : getElseForward();
 			} else if (StringUtils.isNotEmpty(getExpressionValue())) {
-				return inputString.equals(getExpressionValue()) ? thenForward : elseForward;
+				return inputString.equals(getExpressionValue()) ? getThenForward() : getElseForward();
 			}
 
 			// If the input is not empty, use then forward.
-			return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
+			return StringUtils.isNotEmpty(inputString) ? getThenForward() : getElseForward();
 		} catch (IOException e) {
 			throw new PipeRunException(this, "error reading message");
 		}

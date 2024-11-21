@@ -144,8 +144,8 @@ public class IfPipe extends AbstractPipe {
 
 	private @Getter String elseForwardName = "else";
 	private @Getter String thenForwardName = "then";
-	@Getter PipeForward elseForward;
-	@Getter PipeForward thenForward;
+	private @Getter PipeForward elseForward;
+	private @Getter PipeForward thenForward;
 
 	private @Getter String namespaceDefs = null;
 	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
@@ -154,7 +154,6 @@ public class IfPipe extends AbstractPipe {
 	private @Getter String xpathExpression = null;
 	private @Getter String expressionValue = null;
 
-	private @Getter String regex = null;
 	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
 
 	private SupportedMediaType defaultMediaType = SupportedMediaType.XML;
@@ -317,10 +316,10 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	PipeForward getForwardForStringInput(Message message) throws PipeRunException {
-		// if all else fails, this is the legacy behaviour
 		try {
 			String inputString = message.asString();
 
+			// If expressionValue is set, try to match it on the input
 			if (StringUtils.isNotEmpty(expressionValue)) {
 				return inputString.equals(expressionValue) ? thenForward : elseForward;
 			}
