@@ -141,7 +141,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 		}
 
 		Serializable messageToStore;
-		if (sessionKeys == null) {
+		if (StringUtils.isBlank(sessionKeys)) {
 			messageToStore = message; // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
 		} else {
 			Map<String, Object> sessionValuesToStore = StringUtil.splitToStream(sessionKeys)

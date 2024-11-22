@@ -11,7 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -32,7 +33,7 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 			@Override public void start() { } // Suppress start as it's will do a JNDI lookup
 
 			@Override
-			public @NotNull String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) {
+			public @Nonnull String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) {
 				mockMessageStore.put(messageId, message);
 				return messageId;
 			}
