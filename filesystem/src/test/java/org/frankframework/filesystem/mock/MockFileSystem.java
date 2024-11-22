@@ -257,6 +257,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		source.getOwner().getFiles().remove(sourceName);
 		destination.getOwner().getFiles().put(destinationName,destination);
 		destination.setContents(source.getContents());
+		destination.setLastModified(source.getLastModified());
 		return destination;
 	}
 

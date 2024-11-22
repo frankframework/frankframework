@@ -15,6 +15,11 @@
 */
 package org.frankframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -22,6 +27,7 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.RawMessageWrapper;
 
 public abstract class FileSystemListenerExtraTest<F,S extends IWritableFileSystem<F>> extends WritableFileSystemListenerTest<F, S> {
@@ -55,4 +61,53 @@ public abstract class FileSystemListenerExtraTest<F,S extends IWritableFileSyste
 		assertNotNull(rawMessage, "raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms");
 	}
 
+	@Test
+	public void changeProcessStateForTwoFilesWithTheSameNameAndSameModTime() throws Exception {
+		String inProcessFolder = "inProcessFolder";
+
+		String filename = "rawMessageFile";
+		String extension = ".txt";
+		String fullName = filename + extension;
+		String contents = "Test Message Contents";
+
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + inProcessFolder);
+		_createFolder(inProcessFolder);
+
+		waitForActionToFinish();
+
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertNull(rawMessage, "raw message must be null when not available");
+
+		// Act 1 -- create and move 1st file
+		createFile(null, fullName, contents);
+
+		rawMessage = fileSystemListener.getRawMessage(threadContext);
+		Date modificationTime = fileSystemListener.getFileSystem().getModificationTime(rawMessage.getRawMessage());
+
+		assertNotNull(rawMessage, "raw message must be not null when a file is available");
+
+		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertThat(fileSystemListener.getFileSystem().getCanonicalName(movedFile.getRawMessage()), containsString(inProcessFolder));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), endsWith(extension));
+
+		// Act 2 -- create and move 2nd file
+		createFile(null, fullName, contents);
+		// Update file modification time
+		setFileDate(null, fullName, modificationTime);
+
+		RawMessageWrapper<F> rawMessage2 = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> movedFile2 = fileSystemListener.changeProcessState(rawMessage2, ProcessState.INPROCESS, null);
+		assertThat(fileSystemListener.getFileSystem().getCanonicalName(movedFile2.getRawMessage()), containsString(inProcessFolder));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()), startsWith(filename + "-"));
+		assertThat(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()), endsWith("-1" + extension));
+
+		assertNotEquals(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), fileSystemListener.getFileSystem()
+				.getName(movedFile2.getRawMessage()));
+	}
 }
