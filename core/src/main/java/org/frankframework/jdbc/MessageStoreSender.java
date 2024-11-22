@@ -15,7 +15,6 @@
 */
 package org.frankframework.jdbc;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
@@ -26,7 +25,6 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
@@ -113,18 +111,6 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 		return paramList;
 	}
 
-	/**
-	 * Helper method to convert a message to a string from Stream.map, without hitting the exception thrown
-	 * and without the issue of ambiguous method overload for lambda reference.
-	 *
-	 * @param message Message to convert
-	 * @return String of the message.
-	 */
-	@SneakyThrows(IOException.class)
-	private String messageAsString(Message message) {
-		return message.asString();
-	}
-
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		// the messageId to be inserted in the messageStore defaults to the messageId of the session
@@ -145,6 +131,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 			messageToStore = message; // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
 		} else {
 			Map<String, Object> sessionValuesToStore = StringUtil.splitToStream(sessionKeys)
+					.filter(session::containsKey)
 					.map(key -> Map.entry(key, session.get(key)))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 

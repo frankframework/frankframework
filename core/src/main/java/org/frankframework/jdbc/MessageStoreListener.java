@@ -121,9 +121,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (sessionKeys != null) {
-			extractSessionKeyList();
-		}
+		extractSessionKeyList();
 		if (isMoveToMessageLog()) {
 			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
@@ -134,16 +132,11 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	public void extractSessionKeyList() {
-		if (sessionKeys != null) {
-			sessionKeysList = StringUtil.split(sessionKeys);
-		}
+		sessionKeysList = StringUtil.split(sessionKeys);
 	}
 
 	@Override
 	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
-		if (StringUtils.isEmpty(getMessageField())) {
-			return super.extractRawMessage(rs);
-		}
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 		 ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
 			String key = getStringFieldOrNull(rs, getKeyField());
@@ -194,7 +187,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			return message;
 		}
 		// Handle the Legacy CSV format
-		if (sessionKeys != null && rawMessage instanceof String messageData) {
+		if (sessionKeysList != null && !sessionKeysList.isEmpty() && rawMessage instanceof String messageData) {
 			return convertFromCsv(messageData, context);
 		}
 		return Message.asMessage(rawMessage);
@@ -205,9 +198,9 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
 			CSVRecord csvRecord = parser.getRecords().get(0);
 			message = new Message(csvRecord.get(0));
-			for (int i=1; i<csvRecord.size();i++) {
-				if (sessionKeysList.size()>=i) {
-					threadContext.put(sessionKeysList.get(i-1), csvRecord.get(i));
+			for (int i = 1; i < csvRecord.size(); i++) {
+				if (sessionKeysList.size() >= i) {
+					threadContext.put(sessionKeysList.get(i - 1), csvRecord.get(i));
 				}
 			}
 		} catch (IOException e) {

@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
@@ -30,21 +29,21 @@ public class MessageStoreListenerTest {
 	private MessageStoreListener listener;
 	private JdbcTransactionalStorage<String> storage;
 	static final String TEST_TABLE_NAME = "JDBCTRANSACTIONALSTORAGETEST";
-	private final String slotId = "slot";
-	private final String messageIdField = "MESSAGEID";
+	private static final String SLOT_ID = "slot";
+	private static final String MESSAGE_ID_FIELD = "MESSAGEID";
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
 		listener = env.createBean(MessageStoreListener.class);
 		listener.setTableName(TEST_TABLE_NAME);
-		listener.setMessageIdField(messageIdField);
-		listener.setSlotId(slotId);
+		listener.setMessageIdField(MESSAGE_ID_FIELD);
+		listener.setSlotId(SLOT_ID);
 
 		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setTableName(TEST_TABLE_NAME);
-		storage.setIdField(messageIdField);
-		storage.setSlotId(slotId);
+		storage.setIdField(MESSAGE_ID_FIELD);
+		storage.setSlotId(SLOT_ID);
 	}
 
 	@AfterEach
@@ -62,7 +61,7 @@ public class MessageStoreListenerTest {
 
 
 	@DatabaseTest
-	public void testSetup() throws ConfigurationException, ListenerException {
+	public void testSetup() throws ConfigurationException {
 		listener.configure();
 		listener.start();
 	}
