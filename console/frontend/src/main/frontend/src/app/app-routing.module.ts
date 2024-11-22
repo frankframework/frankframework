@@ -295,19 +295,19 @@ export const routes: Routes = [
     },
   },
   {
-    path: 'monitors/:monitor/triggers/:trigger',
-    component: MonitorsAddEditComponent,
-    title: 'Edit Trigger',
-    data: {
-      breadcrumbs: 'Monitors > Triggers > Edit',
-    },
-  },
-  {
     path: 'monitors/:monitor/triggers/new',
     component: MonitorsAddEditComponent,
     title: 'Add Trigger',
     data: {
       breadcrumbs: 'Monitors > Triggers > Add',
+    },
+  },
+  {
+    path: 'monitors/:monitor/triggers/:trigger',
+    component: MonitorsAddEditComponent,
+    title: 'Edit Trigger',
+    data: {
+      breadcrumbs: 'Monitors > Triggers > Edit',
     },
   },
   {
