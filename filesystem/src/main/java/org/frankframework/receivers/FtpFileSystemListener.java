@@ -20,6 +20,11 @@ import org.frankframework.filesystem.ftp.FTPFileRef;
 import org.frankframework.filesystem.ftp.FtpFileSystem;
 import org.frankframework.filesystem.ftp.FtpFileSystemDelegator;
 
+/**
+ * File listener for an FTP connection.
+ *
+ * {@inheritDoc}
+ */
 public class FtpFileSystemListener extends AbstractFileSystemListener<FTPFileRef, FtpFileSystem> implements FtpFileSystemDelegator {
 
 	@Override

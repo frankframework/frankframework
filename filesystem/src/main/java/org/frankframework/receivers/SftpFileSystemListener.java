@@ -20,6 +20,11 @@ import org.frankframework.filesystem.sftp.SftpFileRef;
 import org.frankframework.filesystem.sftp.SftpFileSystem;
 import org.frankframework.filesystem.sftp.SftpFileSystemDelegator;
 
+/**
+ * File listener for an SFTP connection.
+ *
+ * {@inheritDoc}
+ */
 public class SftpFileSystemListener extends AbstractFileSystemListener<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
 
 	@Override
