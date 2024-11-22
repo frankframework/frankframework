@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -61,10 +62,18 @@ import org.frankframework.xml.XmlWriter;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
- * When a file is found, it is moved to a process-folder, so that it isn't found more than once.
- * The name of the moved file is passed to the pipeline.
+ * When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
+ * <br/>
+ * The information specified by {@link #setMessageType(IMessageType)} is then passed to the pipeline.
  *
- * @author Gerrit van Brakel
+ * @ff.info To avoid problems with duplicate filenames in folders like the {@code errorFolder} or {@code processedFolder},
+ * you should configure either {@code overwrite="true"}, configure {@code numberOfBackups} to a value larger than 0, or
+ * configure an {@code inProcessFolder} and {@code fileTimeSensitive="true"}.
+ * These options can be used together as well.
+ *
+ * @ff.warning In addition to the above, prior to release 9.0 it was not sufficient to configure {@code inProcessFolder} and {@code fileTimeSensitive}
+ * to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure {@code numberOfBackups} to avoid these issues.
+ *
  */
 public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -140,6 +149,9 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
 			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
 		}
+		if (isFileTimeSensitive() && !(fileSystem instanceof IWritableFileSystem)) {
+			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'fileTimeSensitive'");
+		}
 		knownProcessStates = ProcessState.getMandatoryKnownStates();
 		for (ProcessState state: ProcessState.values()) {
 			if (StringUtils.isNotEmpty(getStateFolder(state))) {
@@ -147,6 +159,12 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			}
 		}
 		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
+		if (!(knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) && !(isOverwrite() || getNumberOfBackups() > 0)) {
+			ConfigurationWarnings.add(this, log, "It is recommended to configure either an in-process folder and to set 'fileTimeSensitive', or configure 'overwrite' or 'numberOfBackups' to avoid problems when files with the same name are processed.");
+		}
+		if (!knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) {
+			ConfigurationWarnings.add(this, log, "Configuring 'fileTimeSensitive' has no effect when no 'In Process' folder is configured.");
+		}
 	}
 
 	@Override
@@ -158,7 +176,6 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
 		return targetProcessStates;
 	}
-
 
 	@Override
 	public void start() {
@@ -213,12 +230,12 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	@Nonnull
 	@Override
-	public Map<String,Object> openThread() throws ListenerException {
+	public Map<String,Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) {
 		// nothing special here
 	}
 
@@ -290,7 +307,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
-		if (rawMessage instanceof MessageWrapper wrapper) {
+		if (rawMessage instanceof MessageWrapper<?> wrapper) {
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
 				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", wrapper.getId());
 			}
@@ -330,29 +347,11 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	public @Nonnull Map<String, Object> extractMessageProperties(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
 		Map<String, Object> messageProperties = new HashMap<>();
-		String filename=null;
+		FS fs = getFileSystem();
+		String filename = fs.getName(rawMessage);
 		try {
-			FS fs = getFileSystem();
-			filename = fs.getName(rawMessage);
 			Map <String,Object> attributes = fs.getAdditionalFileProperties(rawMessage);
-			String messageId = null;
-			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
-				if (attributes != null) {
-					messageId = (String)attributes.get(getMessageIdPropertyKey());
-				}
-				if (StringUtils.isEmpty(messageId)) {
-					log.warn("no attribute [{}] found, will use filename as messageId", getMessageIdPropertyKey());
-				}
-			}
-			if (StringUtils.isEmpty(messageId)) {
-				messageId = originalFilename;
-			}
-			if (StringUtils.isEmpty(messageId)) {
-				messageId = fs.getName(rawMessage);
-			}
-			if (isFileTimeSensitive()) {
-				messageId += "-" + DateFormatUtils.format(fs.getModificationTime(rawMessage), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
-			}
+			String messageId = deriveMessageId(rawMessage, originalFilename, attributes);
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId);
 			if (attributes!=null) {
 				messageProperties.putAll(attributes);
@@ -364,31 +363,55 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				messageProperties.put(FILENAME_KEY, fs.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
-				XmlWriter writer = new XmlWriter();
-				try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("metadata", writer, true)) {
-					if (attributes != null) {
-						ObjectBuilder metadataBuilder = xmlBuilder.startObject();
-						attributes.forEach((k,v) -> {
-							try {
-								metadataBuilder.add(k, v == null ? null : v.toString());
-							} catch (SAXException e) {
-								log.warn("cannot add property [{}] value [{}]", k, v, e);
-							}
-						});
-					}
-				}
-
-				messageProperties.put(getStoreMetadataInSessionKey(), writer.toString());
+				String xml = buildAttributeXml(attributes);
+				messageProperties.put(getStoreMetadataInSessionKey(), xml);
 			}
 			return messageProperties;
 		} catch (Exception e) {
-			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
+			throw new ListenerException("Could not get properties for filename ["+filename+"]",e);
 		}
 	}
 
-	// result is guaranteed if toState==ProcessState.INPROCESS
+	private String deriveMessageId(@Nonnull F rawMessage, @Nullable String originalFilename, Map<String, Object> attributes) throws FileSystemException {
+		String messageId = null;
+		if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
+			if (attributes != null) {
+				messageId = (String) attributes.get(getMessageIdPropertyKey());
+			}
+			if (StringUtils.isEmpty(messageId)) {
+				log.warn("no attribute [{}] found, will use filename as messageId", getMessageIdPropertyKey());
+			}
+		}
+		if (StringUtils.isEmpty(messageId)) {
+			messageId = originalFilename;
+		}
+		if (StringUtils.isEmpty(messageId)) {
+			messageId = getFileSystem().getName(rawMessage);
+		}
+		if (isFileTimeSensitive()) {
+			messageId += "-" + getFormatFileModificationDate(rawMessage);
+		}
+		return messageId;
+	}
+
+	private String buildAttributeXml(Map<String, Object> attributes) throws SAXException {
+		XmlWriter writer = new XmlWriter();
+		try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("metadata", writer, true)) {
+			if (attributes != null) {
+				ObjectBuilder metadataBuilder = xmlBuilder.startObject();
+				attributes.forEach((k, v) -> {
+					try {
+						metadataBuilder.add(k, v == null ? null : v.toString());
+					} catch (SAXException e) {
+						log.warn("cannot add property [{}] value [{}]", k, v, e);
+					}
+				});
+			}
+		}
+		return writer.toString();
+	}
+
 	@Override
-	@SuppressWarnings("unchecked")
 	public RawMessageWrapper<F> changeProcessState(RawMessageWrapper<F> message, ProcessState toState, String reason) throws ListenerException {
 		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
@@ -400,23 +423,48 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
-				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).replace(":", "_"));
-				F renamedFile = getFileSystem().toFile(newName);
-				int i=1;
-				while(getFileSystem().exists(renamedFile)) {
-					renamedFile=getFileSystem().toFile(newName+"-"+i);
-					if(i>5) {
-						log.warn("Cannot rename file [{}] with the timestamp suffix. File moved to [{}] folder with the original name", ()->message, ()->getStateFolder(toState));
-						return wrap(movedFile, message);
-					}
-					i++;
-				}
-				return wrap(FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0), message);
+				return wrap(renameFileWithTimeStamp(message, toState, movedFile), message);
 			}
 			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false), message);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message.getRawMessage())+"]", e);
 		}
+	}
+
+	@Nonnull
+	@SuppressWarnings("unchecked")
+	private F renameFileWithTimeStamp(RawMessageWrapper<F> message, ProcessState toState, F movedFile) throws FileSystemException {
+
+		String fileModificationDate = getFormatFileModificationDate(movedFile).replace(":", "_");
+
+		String fullName = getFileSystem().getName(movedFile);
+		if (fullName.contains(fileModificationDate)) {
+			return movedFile;
+		}
+		String extension = FilenameUtils.getExtension(fullName);
+		if (StringUtils.isNotEmpty(extension)) {
+			extension = "." + extension;
+		}
+		String newName = FilenameUtils.getBaseName(fullName) + "-" + fileModificationDate;
+
+		String parentFolder = getFileSystem().getParentFolder(movedFile);
+		F renamedFile = getFileSystem().toFile(parentFolder, newName + extension);
+		int i=1;
+		int maxNrInBackups = getNumberOfBackups() > 0 ? getNumberOfBackups() : 5; // This should not fail when numberOfBackups is not configured but numberOfBackups originally did not apply here
+		while(getFileSystem().exists(renamedFile)) {
+			renamedFile=getFileSystem().toFile(parentFolder, newName+"-"+i + extension);
+			if (i > maxNrInBackups) {
+				log.warn("Cannot rename file [{}] with the timestamp suffix. File moved to [{}] folder with the original name", ()-> message, ()->getStateFolder(toState));
+				return movedFile;
+			}
+			i++;
+		}
+		return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
+	}
+
+	@Nonnull
+	private String getFormatFileModificationDate(F movedFile) throws FileSystemException {
+		return DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
@@ -437,20 +485,13 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	public String getStateFolder(ProcessState state) {
-		switch (state) {
-		case AVAILABLE:
-			return getInputFolder();
-		case INPROCESS:
-			return getInProcessFolder();
-		case DONE:
-			return getProcessedFolder();
-		case ERROR:
-			return getErrorFolder();
-		case HOLD:
-			return getHoldFolder();
-		default:
-			throw new IllegalStateException("Unknown state ["+state+"]");
-		}
+		return switch (state) {
+			case AVAILABLE -> getInputFolder();
+			case INPROCESS -> getInProcessFolder();
+			case DONE -> getProcessedFolder();
+			case ERROR -> getErrorFolder();
+			case HOLD -> getHoldFolder();
+		};
 	}
 
 	@Override
@@ -530,7 +571,12 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	/**
-	 * If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before
+	 * If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen previously.
+	 * <br/>
+	 * This setting is only supported for filesystem listeners that implement {@link IWritableFileSystem}.
+	 *
+	 * @ff.info This setting is only effective when an {@code inProcessFolder} has been configured.
+	 *
 	 * @ff.default false
 	 */
 	public void setFileTimeSensitive(boolean b) {

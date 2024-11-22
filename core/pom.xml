@@ -606,7 +606,7 @@
 		<dependency>
 			<groupId>com.datasonnet</groupId>
 			<artifactId>datasonnet-mapper</artifactId>
-			<version>3.0.0-RC3</version>
+			<version>3.0.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>ch.qos.logback</groupId>
