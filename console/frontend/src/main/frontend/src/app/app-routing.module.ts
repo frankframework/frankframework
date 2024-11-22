@@ -41,6 +41,7 @@ import { TestServiceListenerComponent } from './views/test-service-listener/test
 import { LoginComponent } from './views/login/login.component';
 import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
 import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
+import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
 
 export const routes: Routes = [
   {
@@ -294,6 +295,14 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'monitors/:monitor/triggers/new',
+    component: MonitorsAddEditComponent,
+    title: 'Add Trigger',
+    data: {
+      breadcrumbs: 'Monitors > Triggers > Add',
+    },
+  },
+  {
     path: 'monitors/:monitor/triggers/:trigger',
     component: MonitorsAddEditComponent,
     title: 'Edit Trigger',
@@ -302,11 +311,11 @@ export const routes: Routes = [
     },
   },
   {
-    path: 'monitors/:monitor/triggers/new',
-    component: MonitorsAddEditComponent,
-    title: 'Add Trigger',
+    path: 'monitors/new',
+    component: MonitorsNewComponent,
+    title: 'New Monitor',
     data: {
-      breadcrumbs: 'Monitors > Triggers > Add',
+      breadcrumbs: 'Monitors > New',
     },
   },
   {

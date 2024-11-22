@@ -405,7 +405,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.1.114.Final</version>
+				<version>4.1.115.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -541,7 +541,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.34</version>
+				<version>1.18.36</version>
 				<scope>provided</scope>
 			</dependency>
 
@@ -834,7 +834,7 @@
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.34</version>
+							<version>1.18.36</version>
 						</dependency>
 					</dependencies>
 					<executions>

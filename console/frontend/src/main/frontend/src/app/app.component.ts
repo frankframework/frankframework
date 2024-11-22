@@ -1,4 +1,4 @@
-import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
@@ -21,7 +21,6 @@ import {
   ParamMap,
   Router,
 } from '@angular/router';
-import { formatDate } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
@@ -38,6 +37,7 @@ import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
+import { ServerTimeService } from './services/server-time.service';
 
 @Component({
   selector: 'app-root',
@@ -48,7 +48,6 @@ export class AppComponent implements OnInit, OnDestroy {
   protected loading = true;
   protected dtapStage = '';
   protected dtapSide = '';
-  protected serverTime = '';
   protected startupError: string | null = null;
   protected userName?: string;
   protected routeData: Data = {};
@@ -87,7 +86,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     private serverInfoService: ServerInfoService,
     private websocketService: WebsocketService,
-    @Inject(LOCALE_ID) private locale: string,
+    private serverTimeService: ServerTimeService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     this.consoleState = this.appService.CONSOLE_STATE;
@@ -246,22 +245,9 @@ export class AppComponent implements OnInit, OnDestroy {
         // appService.userName = data["userName"];
         this.userName = data['userName'];
 
-        const serverTime = Date.parse(new Date(data.serverTime).toUTCString());
-        const localTime = Date.parse(new Date().toUTCString());
-        this.consoleState.timeOffset = serverTime - localTime;
-        // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
-        this.appConstants['timezoneOffset'] = 0;
-        //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
-
-        const updateTime = (): void => {
-          const serverDate = new Date();
-          serverDate.setTime(serverDate.getTime() - this.consoleState.timeOffset);
-          this.serverTime = formatDate(serverDate, this.appConstants['console.dateFormat'] as string, this.locale);
-        };
-        window.setInterval(updateTime, 1000);
-        updateTime();
-
         this.appService.updateInstanceName(data.instance.name);
+
+        this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone']);
 
         const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
         if (iafInfoElement)

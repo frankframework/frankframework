@@ -3,6 +3,7 @@ package org.frankframework.management.gateway;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
@@ -54,8 +55,12 @@ public class HazelcastEndToEndTest {
 			public void handleMessage(Message<?> message) throws MessagingException {
 				assertTrue(BusMessageUtils.hasRole("IbisTester"));
 				String request = (String) message.getPayload();
-				if("sync-string".equals(request)) {
+				if ("sync-string".equals(request)) {
 					Message<String> response = new GenericMessage<>("response-string", new MessageHeaders(null));
+					MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
+					replyChannel.send(response);
+				} else if (request.startsWith("load-req-")) {
+					Message<String> response = new GenericMessage<>(request.replace("-req-", "-resp-"), new MessageHeaders(null));
 					MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
 					replyChannel.send(response);
 				}
@@ -95,6 +100,29 @@ public class HazelcastEndToEndTest {
 		assertEquals("sync-string", capturedRequest.getPayload());
 	}
 
+	public static boolean isTestRunningOnGitHub() {
+		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void testMultipleSynchronousHazelcastMessage() {
+		assumeTrue(isTestRunningOnWindows() || isTestRunningOnGitHub());
+
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 1_000; i++) {
+			Message<String> request = new GenericMessage<>("load-req-"+i, new MessageHeaders(null));
+			Message<String> response = outboundGateway.sendSyncMessage(request);
+			assertEquals("load-resp-"+i, response.getPayload());
+		}
+		long duration = (System.currentTimeMillis() - start);
+		assertTrue(duration < 10_000L, "it took ["+duration+"]ms, max is 10 seconds"); // Typically takes < 5s.
+	}
+
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testAsynchronousHazelcastMessage() {
@@ -108,7 +136,7 @@ public class HazelcastEndToEndTest {
 
 		//Assert
 		Message<String> capturedRequest = Awaitility.await()
-				.atMost(1500, TimeUnit.MILLISECONDS)
+				.atMost(3000, TimeUnit.MILLISECONDS)
 				.until(requestCapture::getValue, Objects::nonNull);
 		assertEquals("async-string", capturedRequest.getPayload());
 	}

@@ -6,13 +6,13 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="org.frankframework" level="debug" additivity="false">
+    <Logger name="org.frankframework" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Logger name="org.frankframework.management.gateway" level="trace" additivity="false">
+    <Logger name="org.frankframework.management.gateway" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Root level="info">
+    <Root level="INFO">
       <AppenderRef ref="Console"/>
     </Root>
   </Loggers>

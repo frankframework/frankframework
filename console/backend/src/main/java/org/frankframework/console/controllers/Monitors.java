@@ -71,15 +71,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody CreateMonitorJson json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-
-		// Map 'monitor' to 'name', so it matches the DTO.
-		String monitor = String.valueOf(json.remove("monitor"));
-		json.put("name", monitor);
 		builder.setJsonPayload(json);
-
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -187,4 +182,6 @@ public class Monitors {
 		builder.addHeader(TRIGGER_HEADER, id);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record CreateMonitorJson(String name) {}
 }

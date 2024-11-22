@@ -187,7 +187,7 @@ public class GetSchedules extends BusEndpointBase {
 		if (StringUtils.isNotEmpty(job.getDescription()))
 			description = job.getDescription();
 		jobData.put("description", description);
-		jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
+		jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExecutionDisallowed());
 		jobData.put("durable",job.isDurable());
 		jobData.put("jobClass", job.getJobClass().getSimpleName());
 

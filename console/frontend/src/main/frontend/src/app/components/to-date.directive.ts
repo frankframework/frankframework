@@ -1,45 +1,19 @@
-import { Directive, ElementRef, Inject, Input, LOCALE_ID, OnChanges, OnDestroy } from '@angular/core';
-import { formatDate } from '@angular/common';
-import { AppConstants, AppService, ConsoleState } from '../app.service';
-import { Subscription } from 'rxjs';
+import { Directive, ElementRef, inject, Input, OnChanges } from '@angular/core';
+import { ServerTimeService } from '../services/server-time.service';
 
 @Directive({
   selector: '[appToDate]',
   standalone: true,
 })
-export class ToDateDirective implements OnChanges, OnDestroy {
+export class ToDateDirective implements OnChanges {
   @Input() time: string | number = '';
 
-  private appConstants: AppConstants;
-  private consoleState: ConsoleState;
-  private _subscriptions = new Subscription();
-
-  constructor(
-    private element: ElementRef,
-    private appService: AppService,
-    @Inject(LOCALE_ID) private locale: string,
-  ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
-    this._subscriptions.add(appConstantsSubscription);
-    this.consoleState = this.appService.CONSOLE_STATE;
-  }
+  private element: ElementRef = inject(ElementRef);
+  private serverTimeService: ServerTimeService = inject(ServerTimeService);
 
   ngOnChanges(): void {
     if (this.time === undefined || Number.isNaN(this.time)) return;
     if (Number.isNaN(Number(this.time))) this.time = new Date(this.time).getTime();
-
-    const toDate = new Date((this.time as number) - this.consoleState.timeOffset);
-    this.element.nativeElement.textContent = formatDate(
-      toDate,
-      this.appConstants['console.dateFormat'] as string,
-      this.locale,
-    );
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this.element.nativeElement.textContent = this.serverTimeService.toServerTime(this.time as number);
   }
 }

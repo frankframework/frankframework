@@ -27,11 +27,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Writes to an in-memory buffer until it 'overflows', after which a file on disk will be created and the in-memory buffer will be flushed to it.
@@ -46,7 +48,6 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private Path fileLocation;
 	private boolean closed = false;
 
-	private static final Cleaner CLEANER = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
 	private CleanupFileAction cleanupFileAction;
 
 	/**
@@ -87,7 +88,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 */
 	private void createCleanerAction(final Path path, final Closeable closable) {
 		cleanupFileAction = new CleanupFileAction(path, closable);
-		CLEANER.register(this, cleanupFileAction);
+		CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
@@ -103,7 +104,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		@Override
 		public void run() {
 			if (shouldClean) {
-				log.info("Leak detection: File [{}] was never converted to a Message", fileToClean);
+				LogManager.getLogger("LEAK_LOG").info("Leak detection: File [{}] was never converted to a Message", fileToClean);
 
 				CloseUtils.closeSilently(closable);
 				try {
@@ -203,6 +204,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			} finally {
 				//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
 				cleanupFileAction.shouldClean = false;
+				CleanerProvider.clean(cleanupFileAction);
 			}
 		} else {
 			log.trace("creating message from in-memory buffer");

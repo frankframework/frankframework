@@ -88,6 +88,7 @@ import { ConfigurationSummaryComponent } from './views/status/configuration-summ
 import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
 import { DatatableComponent } from './components/datatable/datatable.component';
 import { DtContentDirective } from './components/datatable/dt-content.directive';
+import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -192,6 +193,7 @@ const windowProvider: ValueProvider = {
     MonacoEditorComponent,
     DatatableComponent,
     DtContentDirective,
+    MonitorsNewComponent,
 
     // standalone pipes
     TruncatePipe,
