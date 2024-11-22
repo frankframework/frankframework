@@ -92,12 +92,25 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	}
 
 	@Test
-	void invalidXPathExpressionTest() throws Exception {
+	void invalidXMLInputTest() throws Exception {
+		// xpath expression is set, XmlIf treats the input as xml
 		pipe.setXpathExpression("someexpression");
 		configureAndStartPipe();
 
+		// but will fail because "test" is not valid xml (SaxParseException wrapped in PipeRunException)
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "test", session));
 		assertThat(e.getMessage(), Matchers.containsString("cannot evaluate expression"));
+	}
+
+	@Test
+	void invalidXPathExpressionTest() throws Exception {
+		// xpath expression is set, but will not match anything in the xml
+		pipe.setXpathExpression("someexpression");
+		configureAndStartPipe();
+
+		// No match, assert the 'else' is returned
+		pipeRunResult = doPipe(pipe, "<test/>", session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test

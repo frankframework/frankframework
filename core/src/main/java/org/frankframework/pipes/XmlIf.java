@@ -20,8 +20,10 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
@@ -62,13 +64,13 @@ public class XmlIf extends AbstractPipe {
 
 	private TransformerPool tp = null;
 
-	protected String makeStylesheet(String xpathExpression, String resultVal) {
+	protected String makeStylesheet(String xpathExpression, String expressionValue) {
 		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
 		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
 						"<xsl:when " + namespaceClause + " test=\"" + XmlEncodingUtils.encodeChars(x) + "\">" + getThenForwardName() + "</xsl:when>" +
 						"<xsl:otherwise>" + getElseForwardName() + "</xsl:otherwise>" +
 						"</xsl:choose>",
-				xpathExpression + (StringUtils.isEmpty(resultVal) ? "" : "='" + resultVal + "'"),
+				xpathExpression + (StringUtils.isEmpty(expressionValue) ? "" : "='" + expressionValue + "'"),
 				OutputType.TEXT, false, getParameterList(), true, !isNamespaceAware(), xsltVersion
 		);
 	}
