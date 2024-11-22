@@ -16,8 +16,8 @@
 package org.frankframework.receivers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Map;
@@ -34,15 +34,18 @@ import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.stream.Message;
 
 @SuppressWarnings("unchecked")
-public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStoreListener<M>> {
+public class MessageStoreListenerTest extends ListenerTestBase<Serializable, MessageStoreListener> {
 
 	@Override
-	public MessageStoreListener<M> createListener() throws Exception {
+	public MessageStoreListener createListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
-			protected MessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) {
-				//super class JdbcListener always wraps this in a MessageWrapper
-				return new MessageWrapper<>(Message.asMessage(threadContext.get(STUB_RESULT_KEY)), String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
+			protected RawMessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) {
+				Object o = threadContext.get(STUB_RESULT_KEY);
+				if (o instanceof MessageWrapper<?>) {
+					return (RawMessageWrapper<Object>) o;
+				}
+				return new RawMessageWrapper<>(o, String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
 			}
 		});
 		DatabaseMetaData md = mock(DatabaseMetaData.class);
@@ -75,20 +78,44 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		listener.start();
 
 		String input = "test-message";
-		RawMessageWrapper<M> rawMessage = getRawMessage(input);
-		assertTrue(rawMessage instanceof MessageWrapper);
-		assertEquals(input, ((MessageWrapper<Object>)rawMessage).getMessage().asString(), "MessageStoreListener should not manipulate the rawMessage");
+		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
+		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
+
+		Message message = listener.extractMessage(rawMessage, threadContext);
+		assertEquals(input, message.asString());
 	}
 
 	@Test
-	void withSessionKeys() throws Exception {
+	void withSessionKeysLegacyCsvFormat() throws Exception {
 		listener.setSessionKeys("sessionKey1,sessionKey2,sessionKey3");
 		listener.configure();
 		listener.start();
 
 		String input = "test-message,\"value1\",value2,value3";
-		RawMessageWrapper<M> rawMessage = getRawMessage(input);
-		assertTrue(rawMessage instanceof MessageWrapper);
+		Message inputMessage = Message.asMessage(input);
+		MessageWrapper<Serializable> wrapper = new MessageWrapper<>(inputMessage, null, null);
+		wrapper.getContext().put("sessionKey1", "value1");
+		wrapper.getContext().put("sessionKey2", "value2");
+		wrapper.getContext().put("sessionKey3", "value3");
+
+		RawMessageWrapper<Serializable> rawMessage = getRawMessage(wrapper);
+		Message message = listener.extractMessage(rawMessage, threadContext);
+		assertEquals(input, message.asString());
+
+		assertEquals("value1", threadContext.get("sessionKey1"));
+		assertEquals("value2", threadContext.get("sessionKey2"));
+		assertEquals("value3", threadContext.get("sessionKey3"));
+	}
+
+	@Test
+	void withSessionKeysBinaryFormat() throws Exception {
+		listener.setSessionKeys("sessionKey1,sessionKey2,sessionKey3");
+		listener.configure();
+		listener.start();
+
+		String input = "test-message,\"value1\",value2,value3";
+
+		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
 		Message message = listener.extractMessage(rawMessage, threadContext);
 		assertEquals("test-message", message.asString());
 

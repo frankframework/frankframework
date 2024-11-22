@@ -54,8 +54,8 @@ public class MessageStoreListenerTest {
 		}
 	}
 
-	private JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
-		JdbcTableMessageBrowser browser = (JdbcTableMessageBrowser) listener.getMessageBrowser(state);
+	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
+		JdbcTableMessageBrowser<?> browser = (JdbcTableMessageBrowser<?>) listener.getMessageBrowser(state);
 		browser.configure();
 		return browser;
 	}
@@ -159,7 +159,7 @@ public class MessageStoreListenerTest {
 	public void testGetMessageCountQueryAvailable() throws Exception {
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='M' AND (SLOTID='slot'))";
 
@@ -170,7 +170,7 @@ public class MessageStoreListenerTest {
 	public void testGetMessageCountQueryError() throws Exception {
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.ERROR);
 
 		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='E' AND (SLOTID='slot'))";
 
@@ -182,7 +182,7 @@ public class MessageStoreListenerTest {
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
 
@@ -194,7 +194,7 @@ public class MessageStoreListenerTest {
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.ERROR);
 
 		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
 
@@ -209,7 +209,7 @@ public class MessageStoreListenerTest {
 		String message ="fakeMessage";
 		insertARecord(message, 'M');
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		assertTrue(browser.containsMessageId("fakeMid"));
 	}
@@ -222,7 +222,7 @@ public class MessageStoreListenerTest {
 		String message ="fakeMessage";
 		insertARecord(message, 'M');
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		assertTrue(browser.containsCorrelationId("fakeCid"));
 	}
@@ -238,12 +238,12 @@ public class MessageStoreListenerTest {
 			storageKey = storageKey.substring(4, storageKey.length()-5);
 		}
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		RawMessageWrapper<?> ro = browser.browseMessage(storageKey);
 		assertEquals(storageKey, ro.getId());
 		Object o = ro.getRawMessage();
-		if (o instanceof MessageWrapper mw) {
+		if (o instanceof MessageWrapper<?> mw) {
 			assertEquals(message, mw.getMessage().asString());
 		} else {
 			assertEquals(message, o);
@@ -261,7 +261,7 @@ public class MessageStoreListenerTest {
 			storageKey = storageKey.substring(4, storageKey.length()-5);
 		}
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<?> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		IMessageBrowsingIterator iterator = browser.getIterator();
 		assertTrue(iterator.hasNext());

@@ -16,16 +16,17 @@
 package org.frankframework.jdbc;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
@@ -39,6 +40,7 @@ import org.frankframework.doc.ExcludeFromType;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
@@ -71,7 +73,7 @@ import org.frankframework.util.StringUtil;
  * @author Jaco de Groot
  */
 @ExcludeFromType(ITransactionalStorage.class)
-public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
+public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
 	public static final String PARAM_MESSAGEID = "messageId";
 
 	private ParameterList paramList = null;
@@ -125,35 +127,32 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		try {
-			String messageToStore;
-			if (sessionKeys == null) {
-				messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
-			} else {
-				List<String> list = new ArrayList<>();
-				list.add(StringEscapeUtils.escapeCsv(message.asString()));
-				StringUtil.splitToStream(sessionKeys)
-						.map(session::getMessage)
-						.map(this::messageAsString)
-						.map(StringEscapeUtils::escapeCsv)
-						.forEachOrdered(list::add);
-				messageToStore = String.join(",", list);
+		// the messageId to be inserted in the messageStore defaults to the messageId of the session
+		String messageId = session.getMessageId();
+		String correlationID = session.getCorrelationId();
+
+		if (paramList != null && paramList.hasParameter(PARAM_MESSAGEID)) {
+			try {
+				// the messageId to be inserted can also be specified via the parameter messageId
+				messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
+			} catch (ParameterException e) {
+				throw new SenderException("Could not resolve parameter messageId", e);
 			}
-			// the messageId to be inserted in the messageStore defaults to the messageId of the session
-			String messageId = session.getMessageId();
-			String correlationID = session.getCorrelationId();
-			if (paramList != null && paramList.hasParameter(PARAM_MESSAGEID)) {
-				try {
-					// the messageId to be inserted can also be specified via the parameter messageId
-					messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
-				} catch (ParameterException e) {
-					throw new SenderException("Could not resolve parameter messageId", e);
-				}
-			}
-			return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
-		} catch (IOException e) {
-			throw new SenderException("JdbcTableMessageBrowser ["+getName()+"] ",e);
 		}
+
+		Serializable messageToStore;
+		if (sessionKeys == null) {
+			messageToStore = message; // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
+		} else {
+			Map<String, Object> sessionValuesToStore = StringUtil.splitToStream(sessionKeys)
+					.map(key -> Map.entry(key, session.get(key)))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(message, messageId, correlationID);
+			messageWrapper.getContext().putAll(sessionValuesToStore);
+			messageToStore = messageWrapper;
+		}
+		return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 	}
 
 	/**

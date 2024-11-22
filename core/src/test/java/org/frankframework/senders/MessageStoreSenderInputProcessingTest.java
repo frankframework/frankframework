@@ -1,19 +1,29 @@
 package org.frankframework.senders;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.MessageStoreSender;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 
 public class MessageStoreSenderInputProcessingTest extends SenderTestBase<MessageStoreSender> {
+
+	Map<String, Serializable> mockMessageStore = new HashMap<>();
 
 	@Override
 	public MessageStoreSender createSender() throws Exception {
@@ -22,8 +32,9 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 			@Override public void start() { } // Suppress start as it's will do a JNDI lookup
 
 			@Override
-			public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, String message) throws SenderException {
-				return message; // We don't actually want/need to store anything, return the input to validate the message 'to-store'
+			public @NotNull String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) {
+				mockMessageStore.put(messageId, message);
+				return messageId;
 			}
 		};
 	}
@@ -36,7 +47,10 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 		String input = "<dummy/>";
 		Message message = new Message(input);
 		String result = sender.sendMessageOrThrow(message, session).asString();
-		assertEquals(input, result);
+		Serializable data = mockMessageStore.get(result);
+		assertInstanceOf(Message.class, data);
+		Message resultMessage = (Message) data;
+		assertEquals(input, resultMessage.asString());
 	}
 
 	@Test
@@ -52,6 +66,23 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 		String input = "<dummy/>";
 		Message message = new Message(input);
 		String result = sender.sendMessageOrThrow(message, session).asString();
-		assertEquals(input+",value1,value2,value3", result);
+		Serializable data = mockMessageStore.get(result);
+		assertInstanceOf(MessageWrapper.class, data);
+		MessageWrapper<Serializable> messageWrapper = (MessageWrapper<Serializable>) data;
+		Message resultMessage = messageWrapper.getMessage();
+		assertEquals(input, resultMessage.asString());
+
+		assertTrue(messageWrapper.getContext().containsKey("sessionKey1"), "Result should contain sessionKey1");
+		assertTrue(messageWrapper.getContext().containsKey("sessionKey2"), "Result should contain sessionKey2");
+		assertTrue(messageWrapper.getContext().containsKey("sessionKey3"), "Result should contain sessionKey3");
+
+		assertEquals("value1", messageWrapper.getContext().get("sessionKey1"));
+
+		assertInstanceOf(Message.class, messageWrapper.getContext().get("sessionKey2"));
+		Message message2 = (Message) messageWrapper.getContext().get("sessionKey2");
+		assertEquals("value2", message2.asString());
+
+		byte[] k3 = (byte[]) messageWrapper.getContext().get("sessionKey3");
+		assertArrayEquals("value3".getBytes(), k3);
 	}
 }
