@@ -15,22 +15,21 @@
   <rowset>
     <row number="0">
       <field name="MESSAGEKEY">768</field>
-      <field name="TYPE">A</field>
+      <field name="TYPE">M</field>
       <field name="SLOTID">TestMessageStoreSenderAndListener-Queue</field>
       <field name="HOST">LPZWNL000040524</field>
       <field name="MESSAGEID">1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>
       <field name="MESSAGEDATE">2022-03-29 08:53:24</field>
       <field name="COMMENTS" null="true"/>
-      <field name="MESSAGE">"&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+      <field name="MESSAGE">&lt;?xml version='1.0' encoding='UTF-8'?&gt;
 &lt;Envelope&gt;
 	&lt;Header&gt;
 		&lt;MessageID&gt;1&lt;/MessageID&gt;
-		&lt;Message contentType=""application/xml"" encoding=""UTF-8""&gt;test, with comma&lt;/Message&gt;
+		&lt;Message contentType="application/xml" encoding="UTF-8"&gt;test, with comma&lt;/Message&gt;
 	&lt;/Header&gt;
-&lt;/Envelope&gt;
-","a,b,c","double quote: [""] single quote [']"</field>
-      <field name="EXPIRYDATE">2022-04-28 08:53:24</field>
+&lt;/Envelope&gt;</field>
+      <field name="EXPIRYDATE" null="true"/>
       <field name="LABEL" null="true"/>
     </row>
   </rowset>
