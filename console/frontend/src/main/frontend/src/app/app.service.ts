@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, catchError, of } from 'rxjs';
+import { Observable, Subject, catchError, of, BehaviorSubject, ReplaySubject } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
 import { computeServerPath, deepMerge } from './utils';
@@ -234,40 +234,41 @@ export type ConsoleState = {
   providedIn: 'root',
 })
 export class AppService {
-  private loadingSubject = new Subject<boolean>();
-  private reloadSubject = new Subject<void>();
-  private customBreadcrumbsSubject = new Subject<string>();
-  private appConstantsSubject = new Subject<void>();
-  private adaptersSubject = new Subject<Record<string, Adapter>>();
-  private alertsSubject = new Subject<Alert[]>();
-  private startupErrorSubject = new Subject<string | null>();
-  private configurationsSubject = new Subject<Configuration[]>();
-  private messageLogSubject = new Subject<Record<string, MessageLog>>();
-  private instanceNameSubject = new Subject<string>();
-  private dtapStageSubject = new Subject<string>();
-  private databaseSchedulesEnabledSubject = new Subject<boolean>();
-  private summariesSubject = new Subject<void>();
-  private iframePopoutUrlSubject = new Subject<string>();
-  private toggleSidebarSubject = new Subject<void>();
+  private loadingSubject: Subject<boolean> = new Subject();
+  private reloadSubject: Subject<void> = new Subject();
+  private customBreadcrumbsSubject: Subject<string> = new Subject();
+  private appConstantsSubject: Subject<void> = new Subject();
+  private adaptersSubject: Subject<Record<string, Adapter>> = new Subject();
+  private alertsSubject: Subject<Alert[]> = new Subject();
+  private startupErrorSubject: Subject<string | null> = new Subject();
+  private configurationsSubject: Subject<Configuration[]> = new Subject();
+  private messageLogSubject: Subject<Record<string, MessageLog>> = new Subject();
+  private instanceNameSubject: Subject<string> = new Subject();
+  private dtapStageSubject: Subject<string> = new Subject();
+  private databaseSchedulesEnabledSubject: Subject<boolean> = new Subject();
+  private summariesSubject: Subject<void> = new Subject();
+  private iframePopoutUrlSubject: Subject<string> = new Subject();
+  private toggleSidebarSubject: Subject<void> = new Subject();
+  private selectedConfigurationTab: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
-  public loading$ = this.loadingSubject.asObservable();
-  public reload$ = this.reloadSubject.asObservable();
-  public customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
-  public appConstants$ = this.appConstantsSubject.asObservable();
-  public adapters$ = this.adaptersSubject.asObservable();
-  public alerts$ = this.alertsSubject.asObservable();
-  public startupError$ = this.startupErrorSubject.asObservable();
-  public configurations$ = this.configurationsSubject.asObservable();
-  public messageLog$ = this.messageLogSubject.asObservable();
-  public instanceName$ = this.instanceNameSubject.asObservable();
-  public dtapStage$ = this.dtapStageSubject.asObservable();
-  public databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
-  public summaries$ = this.summariesSubject.asObservable();
-  public iframePopoutUrl$ = this.iframePopoutUrlSubject.asObservable();
-  public toggleSidebar$ = this.toggleSidebarSubject.asObservable();
+  public loading$: Observable<boolean> = this.loadingSubject.asObservable();
+  public reload$: Observable<void> = this.reloadSubject.asObservable();
+  public customBreadscrumb$: Observable<string> = this.customBreadcrumbsSubject.asObservable();
+  public appConstants$: Observable<void> = this.appConstantsSubject.asObservable();
+  public adapters$: Observable<Record<string, Adapter>> = this.adaptersSubject.asObservable();
+  public alerts$: Observable<Alert[]> = this.alertsSubject.asObservable();
+  public startupError$: Observable<string | null> = this.startupErrorSubject.asObservable();
+  public configurations$: Observable<Configuration[]> = this.configurationsSubject.asObservable();
+  public messageLog$: Observable<Record<string, MessageLog>> = this.messageLogSubject.asObservable();
+  public databaseSchedulesEnabled$: Observable<boolean> = this.databaseSchedulesEnabledSubject.asObservable();
+  public summaries$: Observable<void> = this.summariesSubject.asObservable();
+  public iframePopoutUrl$: Observable<string> = this.iframePopoutUrlSubject.asObservable();
+  public toggleSidebar$: Observable<void> = this.toggleSidebarSubject.asObservable();
+  public selectedConfigurationTab$: Observable<string | null> = this.selectedConfigurationTab.asObservable();
 
   adapters: Record<string, Adapter> = {};
   alerts: Alert[] = [];
+  configurationLengths: Record<string, number> = {};
 
   adapterSummary: Summary = {
     started: 0,
@@ -345,8 +346,18 @@ export class AppService {
     this.appConstantsSubject.next();
   }
 
+  updateConfigurationLengths(): void {
+    this.configurationLengths = {};
+    for (const adapter of Object.values(this.adapters)) {
+      const configuration = adapter.configuration;
+      this.configurationLengths[configuration] ??= 0;
+      this.configurationLengths[configuration]++;
+    }
+  }
+
   updateAdapters(adapters: Record<string, Partial<Adapter>>): void {
     this.adapters = deepMerge({}, this.adapters, adapters);
+    this.updateConfigurationLengths();
     this.adaptersSubject.next({ ...this.adapters });
   }
 
@@ -426,6 +437,10 @@ export class AppService {
 
   toggleSidebar(): void {
     this.toggleSidebarSubject.next();
+  }
+
+  updateSelectedConfigurationTab(tab: string): void {
+    this.selectedConfigurationTab.next(tab);
   }
 
   addAlert(type: string, configuration: string, message: string): void {
