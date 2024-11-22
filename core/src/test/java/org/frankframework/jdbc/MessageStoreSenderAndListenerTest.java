@@ -55,7 +55,7 @@ public class MessageStoreSenderAndListenerTest {
 
 
 	@AfterEach
-	public void teardown() throws Exception {
+	public void teardown() {
 		CloseUtils.closeSilently(session, input, result);
 		if (listener != null) {
 			listener.stop(); //does this trigger an exception

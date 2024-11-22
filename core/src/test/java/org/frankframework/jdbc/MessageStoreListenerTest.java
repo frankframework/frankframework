@@ -16,7 +16,6 @@ import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -47,13 +46,13 @@ public class MessageStoreListenerTest {
 	}
 
 	@AfterEach
-	public void teardown() throws Exception {
+	public void teardown() {
 		if(listener != null) {
 			listener.stop(); //does this trigger an exception
 		}
 	}
 
-	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
+	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
 		JdbcTableMessageBrowser<?> browser = (JdbcTableMessageBrowser<?>) listener.getMessageBrowser(state);
 		browser.configure();
 		return browser;
@@ -284,5 +283,4 @@ public class MessageStoreListenerTest {
 			storage.stop();
 		}
 	}
-
 }
