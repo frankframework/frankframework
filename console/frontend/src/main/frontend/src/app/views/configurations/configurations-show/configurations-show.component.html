@@ -1,18 +1,10 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu">
-        <li [ngClass]="{ active: selectedConfiguration === 'All' }">
-          <a (click)="changeConfiguration('All')">All</a>
-        </li>
-        <li
-          *ngFor="let configuration of configurations"
-          [ngClass]="{ active: selectedConfiguration === configuration.name }"
-        >
-          <a (click)="changeConfiguration(configuration.name)">{{ configuration.name }}</a>
-        </li>
-      </ul>
-    </div>
+    <app-configuration-tab-list
+      [configurations]="configurations"
+      [showAll]="true"
+      (selectedTabChange)="changeConfiguration($event)"
+    ></app-configuration-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">
