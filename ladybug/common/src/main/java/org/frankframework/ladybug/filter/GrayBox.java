@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 
 /**
@@ -29,8 +30,9 @@ import nl.nn.testtool.Report;
 public class GrayBox extends AbstractBox {
 	@Override
 	public boolean match(Report report, Checkpoint checkpoint) {
-		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
-				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
+		if (checkpoint.getType() == CheckpointType.INPUTPOINT.toInt()
+				|| checkpoint.getType() == CheckpointType.OUTPUTPOINT.toInt()
+				|| checkpoint.getType() == CheckpointType.INFOPOINT.toInt()) {
 			if (hasStartPointOnLevel(report, checkpoint)) {
 				return false;
 			}
@@ -38,7 +40,8 @@ public class GrayBox extends AbstractBox {
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			while (iterator.hasPrevious()) {
 				Checkpoint previous = iterator.previous();
-				if (previous.getType() == Checkpoint.TYPE_STARTPOINT && previous.getLevel() < checkpoint.getLevel()) {
+				if (previous.getType() == CheckpointType.STARTPOINT.toInt()
+						&& previous.getLevel() < checkpoint.getLevel()) {
 					return isSender(previous);
 				}
 			}
@@ -54,10 +57,11 @@ public class GrayBox extends AbstractBox {
 		int currentLevel = checkpoint.getLevel();
 		while (iterator.hasNext()) {
 			Checkpoint nextCheckpoint = iterator.next();
-			if (nextCheckpoint.getLevel() < currentLevel || nextCheckpoint.getType() == Checkpoint.TYPE_ENDPOINT) {
+			if (nextCheckpoint.getLevel() < currentLevel
+					|| nextCheckpoint.getType() == CheckpointType.ENDPOINT.toInt()) {
 				break;
 			}
-			if (nextCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
+			if (nextCheckpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
 				return true;
 			}
 		}
@@ -66,7 +70,7 @@ public class GrayBox extends AbstractBox {
 			if (previousCheckpoint.getLevel() < currentLevel) {
 				break;
 			}
-			if (previousCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
+			if (previousCheckpoint.getType() == CheckpointType.STARTPOINT.toInt()) {
 				return true;
 			}
 		}
