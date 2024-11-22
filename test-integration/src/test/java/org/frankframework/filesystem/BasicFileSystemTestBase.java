@@ -15,14 +15,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
@@ -37,6 +38,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	protected abstract FS createFileSystem() throws ConfigurationException;
 
 
+	@Override
 	@BeforeEach
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		log.debug("setUp start");
@@ -49,11 +51,11 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		log.debug("setUp finished");
 	}
 
+	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
-		log.debug("tearDown start");
-		fileSystem.close();
-		log.debug("tearDown finished");
+	public void tearDown() {
+		CloseUtils.closeSilently(fileSystem);
+		super.tearDown();
 	}
 
 	@Test
@@ -62,7 +64,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	}
 
 	protected F getFirstFileFromFolder(String folder) throws Exception {
-		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try (DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			if (it == null) {
 				return null;
@@ -81,7 +83,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		Set<F> files = new HashSet<>();
 		Set<String> filenames = new HashSet<>();
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {

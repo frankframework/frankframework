@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!, 2018 Nationale-Nederlanden
+   Copyright 2023-2024 WeAreFrank!, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,25 @@
 */
 package org.frankframework.ladybug.filter;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.filter.CheckpointMatcher;
-
 import java.util.List;
 import java.util.ListIterator;
 
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.filter.CheckpointMatcher;
+
 public abstract class AbstractBox implements CheckpointMatcher {
 	public boolean match(Report report, Checkpoint checkpoint) {
-		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
-				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
+		if (checkpoint.getType() == CheckpointType.INPUTPOINT.toInt()
+				|| checkpoint.getType() == CheckpointType.OUTPUTPOINT.toInt()
+				|| checkpoint.getType() == CheckpointType.INFOPOINT.toInt()) {
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			while (iterator.hasPrevious()) {
 				Checkpoint previous = iterator.previous();
-				if (previous.getType() == Checkpoint.TYPE_STARTPOINT && previous.getLevel() < checkpoint.getLevel()) {
+				if (previous.getType() == CheckpointType.STARTPOINT.toInt()
+						&& previous.getLevel() < checkpoint.getLevel()) {
 					return isSender(previous);
 				}
 			}

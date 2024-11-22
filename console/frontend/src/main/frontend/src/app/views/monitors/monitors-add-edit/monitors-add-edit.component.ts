@@ -28,7 +28,7 @@ export class MonitorsAddEditComponent implements OnInit {
     changedSources: [],
     threshold: 0,
     id: 0,
-    type: '',
+    type: 'ALARM',
     events: [],
     adapters: [],
   };
@@ -46,19 +46,18 @@ export class MonitorsAddEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.title.subscribe((title) => {
-      this.pageTitle = title ?? '';
-    });
-
     this.route.paramMap.pipe(combineLatestWith(this.route.queryParamMap)).subscribe(([parameters, queryParameters]) => {
       if (queryParameters.has('configuration')) {
         this.selectedConfiguration = queryParameters.get('configuration')!;
         this.monitor = parameters.get('monitor')!;
         const triggerParameter = parameters.get('trigger')!;
-        this.triggerId = triggerParameter === 'new' ? -1 : +triggerParameter;
+        this.triggerId = triggerParameter === null ? -1 : +triggerParameter;
       } else {
         this.router.navigate(['/monitors']);
       }
+    });
+    this.route.title.subscribe((title) => {
+      this.pageTitle = title ?? '';
     });
 
     this.monitorsService.getTrigger(this.selectedConfiguration, this.monitor, this.triggerId).subscribe({

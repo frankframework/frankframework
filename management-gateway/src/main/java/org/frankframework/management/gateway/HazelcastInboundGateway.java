@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.gateway;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +40,7 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 import com.hazelcast.topic.MessageListener;
 
@@ -46,6 +48,7 @@ import lombok.Lombok;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.security.JwtVerifier;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -57,6 +60,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
+	private JwtVerifier jwtVerifier;
 
 	@Value("${instance.name:}")
 	private String instanceName;
@@ -67,6 +71,9 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		hzInstance = HazelcastConfig.newHazelcastInstance("worker", attributes);
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
+
+		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+		jwtVerifier = new JwtVerifier(() -> config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET));
 
 		setRequestChannel(getRequestChannel(getApplicationContext()));
 		setErrorChannel(null); // no ErrorChannel means throw the exception, we catch it later in #processMessage(Message, String)
@@ -114,9 +121,9 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	 */
 	private void processMessage(@Nonnull Message<?> incomingMessage, @Nullable String tempReplyChannel) {
 		MessageHeaders headers = incomingMessage.getHeaders();
-		propagateAuthenticationContext(headers);
-
 		try {
+			propagateAuthenticationContext(headers);
+
 			if (tempReplyChannel == null) { // send async
 				log.trace("processing message id [{}] asynchronous", headers::getId);
 				super.send(incomingMessage);
@@ -163,11 +170,22 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	 * Register the auth object in the current {@link SecurityContext} so Spring-Security can apply JSR250 authentication.
 	 * @param headers Request MessageHeaders which should contain the {@link Authentication} object.
 	 */
-	private void propagateAuthenticationContext(@Nonnull MessageHeaders headers) {
-		Authentication authentication = headers.get(HazelcastConfig.AUTHENTICATION_HEADER_KEY, Authentication.class);
+	private void propagateAuthenticationContext(@Nonnull MessageHeaders headers) throws IOException {
+		Object auth = headers.get(HazelcastConfig.AUTHENTICATION_HEADER_KEY);
+		Authentication authentication = createAuthenticationToken(auth);
 
 		SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
 		context.setAuthentication(authentication);
 		this.securityContextHolderStrategy.setContext(context);
+	}
+
+	private Authentication createAuthenticationToken(Object authenticationObject) throws IOException {
+		if(authenticationObject instanceof Authentication authentication) {
+			return authentication;
+		} else if(authenticationObject instanceof String jwt) {
+			return jwtVerifier.verify(jwt);
+		}
+
+		throw new IOException("no authentication object found");
 	}
 }

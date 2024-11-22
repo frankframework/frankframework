@@ -1,82 +1,103 @@
-package org.frankframework.mailsenders;
+package org.frankframework.senders.mail;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
+import com.icegreen.greenmail.util.ServerSetup;
+import com.icegreen.greenmail.util.ServerSetupTest;
+
 import org.frankframework.core.SenderException;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.senders.MailSender;
+import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 
-/**
- *
- * @author alisihab
- *
- */
-public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTestBase<IMailSender> {
-	private final String correlationID = "fakeCorrelationID";
+public class MailSender3Test extends SenderTestBase<MailSender> {
+
+	private final String toAddress="testUser@localhost";
+	private final String testUser="testUser";
+	private final String testPassword="testPassword";
+
 	private final String examplesMainFolder = "/MailSender/";
 
-	@Override
-	public abstract M createSender();
+	private static final ServerSetup serverSetup = ServerSetupTest.SMTP;
+
+	@RegisterExtension
+	static GreenMailExtension greenMail = new GreenMailExtension(serverSetup);
+
+	static {
+		// Increase the timeout for the GreenMail server to start; default of 2000L fails on GitHub Actions
+		serverSetup.setServerStartupTimeout(5_000L);
+		serverSetup.dynamicPort();
+	}
+
+	@BeforeEach
+	public void setup() {
+		greenMail.setUser(testUser, testPassword);
+	}
 
 	@Override
-		public void setup() throws Exception {
-			super.setup();
-			session = new PipeLineSession();
-			session.put("messageId", correlationID);
-		}
+	public MailSender createSender() throws Exception {
+		MailSender mailSender = new MailSender();
+		mailSender.setSmtpHost("localhost");
+		mailSender.setSmtpPort(greenMail.getSmtp().getPort());
+		mailSender.setUserId(testUser);
+		mailSender.setPassword(testPassword);
+		return mailSender;
+	}
 
 	@Test
 	public void testCompleteXMLFile() throws Exception {
-		sendMessage(examplesMainFolder + "emailSample.xml");
+		sendMailXml(examplesMainFolder + "emailSample.xml");
 	}
 
 	@Test
 	public void testEmptySubject() throws Exception {
-		sendMessage(examplesMainFolder + "emailSampleEmptySubject.xml");
+		sendMailXml(examplesMainFolder + "emailSampleEmptySubject.xml");
 	}
 
 	@Test
 	public void testEmptySubjectUseDefault() throws Exception {
 		sender.setDefaultSubject("subject ");
-		sendMessage(examplesMainFolder + "emailSampleEmptySubject.xml");
+		sendMailXml(examplesMainFolder + "emailSampleEmptySubject.xml");
 	}
 
 	@Test
 	public void testEmptyFrom() throws Exception {
-		assertThrows(SenderException.class, () -> sendMessage(examplesMainFolder + "emailSampleEmptyFrom.xml"));
+		assertThrows(SenderException.class, () -> sendMailXml(examplesMainFolder + "emailSampleEmptyFrom.xml"));
 	}
 
 	@Test
 	public void testEmptyMessage() throws Exception {
-		assertThrows(SenderException.class, () -> sendMessage(examplesMainFolder + "emailSampleEmptyMessage.xml"));
+		assertThrows(SenderException.class, () -> sendMailXml(examplesMainFolder + "emailSampleEmptyMessage.xml"));
 	}
 
 	@Test
 	public void testHeader() throws Exception {
-		sendMessage(examplesMainFolder + "emailSampleWithHeaders.xml");
+		sendMailXml(examplesMainFolder + "emailSampleWithHeaders.xml");
 	}
 
 	@Test
 	public void testEmptyRecipients() throws Exception {
-		SenderException thrown = assertThrows(SenderException.class, () -> sendMessage(examplesMainFolder + "emailSampleEmptyRecipients.xml"));
+		SenderException thrown = assertThrows(SenderException.class, () -> sendMailXml(examplesMainFolder + "emailSampleEmptyRecipients.xml"));
 		assertTrue(thrown.getMessage().contains("no recipients for message"));
 	}
 
 	@Test
 	public void testWithAttachments() throws Exception {
-		sendMessage(examplesMainFolder + "emailSampleWithAttachment.xml");
+		sendMailXml(examplesMainFolder + "emailSampleWithAttachment.xml");
 	}
 
 	@Test
-	public void testNullXMLFile() {
+	public void testNullXMLFile() throws Exception {
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
 		pFrom.setValue("dummy@dummy.com");
@@ -123,14 +144,14 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.addParameter(pAttachments);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("<dummy><a>s</a></dummy>"), session).asString();
-		assertEquals(correlationID, result);
+		assertEquals(testMessageId, result);
 	}
 
 	@Test
-	public void testParametersEmptyRecipients() {
+	public void testParametersEmptyRecipients() throws Exception {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -178,13 +199,13 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.addParameter(pAttachments);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(null, session));
 	}
 
 	@Test
-	public void testAttachmentsFromSessionKey() throws SenderException, ConfigurationException {
+	public void testAttachmentsFromSessionKey() throws Exception {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -234,14 +255,14 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.addParameter(pAttachments);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(null, session).asString();
-		assertEquals(correlationID, result);
+		assertEquals(testMessageId, result);
 	}
 
 	@Test
-	public void testAttachmentsContentBase64() throws ConfigurationException, SenderException {
+	public void testAttachmentsContentBase64() throws Exception {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -280,17 +301,17 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.addParameter(pAttachments);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(null, session).asString();
-		assertEquals(correlationID, result);
+		assertEquals(testMessageId, result);
 	}
 
-	public void sendMessage(String filePath) {
+	public void sendMailXml(String filePath) throws Exception {
 		sender.configure();
-		sender.open();
+		sender.start();
 		Message sampleMailXML = MessageTestUtils.getMessage(filePath);
 		String result = sender.sendMessageOrThrow(sampleMailXML, session).asString();
-		assertEquals(correlationID, result);
+		assertEquals(testMessageId, result);
 	}
 }

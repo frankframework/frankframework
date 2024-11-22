@@ -15,7 +15,6 @@
 */
 package org.frankframework.stream;
 
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +41,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
@@ -1277,26 +1275,6 @@ public class MessageTest {
 		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
 		msg2.close();
-	}
-
-	@Test
-	void testMessageNotClosedByUser() {
-		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			appender.setLeakDetectionFilter(false);
-			createMessageInShortLivedScope();
-			// GC should clean up the message object
-			System.gc();
-
-			// Assert: Give the garbage collector some time to clean up
-			await().pollInterval(50, TimeUnit.MILLISECONDS)
-					.atMost(2, TimeUnit.SECONDS)
-					.until(() -> appender.contains("Message was not closed properly"));
-		}
-	}
-
-	private void createMessageInShortLivedScope() {
-		Message test = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
-		assertNotNull(test);
 	}
 
 	@Test

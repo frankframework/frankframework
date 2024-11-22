@@ -131,20 +131,11 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     this.refreshing = true;
     this.statisticsService.getStatistics(this.configuration!, this.adapterName!).subscribe((data) => {
       this.stats = data;
-
       const labels: string[] = [];
       const chartData: number[] = [];
-      for (const index in data['hourly']) {
-        let hour = data['hourly'][index];
-        labels.push(hour['time']);
-        if (this.appConstants['timezoneOffset'] != 0) {
-          const offsetInHours = (this.appConstants['timezoneOffset'] as number) / 60;
-          const offsetIndex = +index + offsetInHours;
-          const wrapCutoff = 24;
-          const wrappedOffsetIndex = (wrapCutoff + (offsetIndex % wrapCutoff)) % wrapCutoff;
-          hour = data['hourly'][wrappedOffsetIndex];
-        }
-        chartData.push(hour['count']);
+      for (const hour of data['hourly']) {
+        labels.push(hour.time);
+        chartData.push(hour.count);
       }
       this.hourlyStatistics.labels = labels;
       this.hourlyStatistics.datasets = [
