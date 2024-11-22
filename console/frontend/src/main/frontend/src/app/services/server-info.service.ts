@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, ReplaySubject } from 'rxjs';
+import { Observable, ReplaySubject, tap } from 'rxjs';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { HumanFileSizePipe } from '../pipes/human-file-size.pipe';
@@ -52,13 +52,15 @@ export class ServerInfoService {
     return this.http.get<ServerInfo>(`${this.appService.absoluteApiPath}server/info`);
   }
 
-  refresh(): void {
-    this.fetchServerInfo().subscribe({
-      next: (data) => {
-        this.serverInfo = data;
-        this.serverInfoSubject.next(data);
-      },
-    });
+  refresh(): Observable<ServerInfo> {
+    return this.fetchServerInfo().pipe(
+      tap({
+        next: (data) => {
+          this.serverInfo = data;
+          this.serverInfoSubject.next(data);
+        },
+      }),
+    );
   }
 
   getMarkdownFormatedServerInfo(): string {

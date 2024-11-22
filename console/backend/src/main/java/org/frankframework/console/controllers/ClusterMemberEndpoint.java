@@ -19,19 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.console.ApiException;
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
-import org.frankframework.console.configuration.ClientSession;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.console.util.ResponseUtils;
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.OutboundGateway.ClusterMember;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.management.gateway.events.ClusterMemberEvent;
-import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.util.JacksonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
@@ -46,7 +36,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.frankframework.console.ApiException;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
+import org.frankframework.console.configuration.ClientSession;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.console.util.ResponseUtils;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
+import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
+import org.frankframework.util.JacksonUtils;
 
 /**
  * Cluster in this sense does not directly mean a Kubernetes or similar cluster, but a Hazelcast cluster.
@@ -83,8 +84,21 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 			return ResponseUtils.convertToSpringResponse(response);
 		}
 
+		boolean hasSelectedMember = false;
+
 		for(ClusterMember member : members) {
-			member.setSelectedMember(session.getMemberTarget().equals(member.getId()));
+			if (member.getId().equals(session.getMemberTarget())) {
+				hasSelectedMember = true;
+				member.setSelectedMember(true);
+			}
+		}
+
+		if(!hasSelectedMember) {
+			ClusterMember firstWorker = members.stream().filter(m -> "worker".equals(m.getType())).findFirst().orElse(null);
+			if (firstWorker != null) {
+				setMemberTarget(String.valueOf(firstWorker.getId()));
+				firstWorker.setSelectedMember(true);
+			}
 		}
 
 		JsonMessage response = new JsonMessage(members);
@@ -101,22 +115,22 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		return ResponseEntity.accepted().build();
 	}
 
-	private void setMemberTarget(String id) {
-		List<ClusterMember> members = outboundGateway.getMembers();
-		UUID uuid = UUID.fromString(id);
-		members.stream()
-			.filter(m -> "worker".equals(m.getType()))
-			.filter(m -> uuid.equals(m.getId()))
-			.findAny()
-			.orElseThrow(() -> new ApiException("member target with id ["+id+"] not found"));
-
-		session.setMemberTarget(uuid);
-	}
-
 	@Override
 	public void onApplicationEvent(ClusterMemberEvent event) {
 		String jsonResponse = JacksonUtils.convertToJson(new EventWrapper(event.getType(), event.getMember()));
 		this.messagingTemplate.convertAndSend("/event/cluster", jsonResponse);
+	}
+
+	private void setMemberTarget(String id) {
+		List<ClusterMember> members = outboundGateway.getMembers();
+		UUID uuid = UUID.fromString(id);
+		members.stream()
+				.filter(m -> "worker".equals(m.getType()))
+				.filter(m -> uuid.equals(m.getId()))
+				.findAny()
+				.orElseThrow(() -> new ApiException("member target with id ["+id+"] not found"));
+
+		session.setMemberTarget(uuid);
 	}
 
 	private static record EventWrapper(EventType type, ClusterMember member) {}
