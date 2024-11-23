@@ -83,6 +83,7 @@ import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
 import org.frankframework.larva.queues.Queue;
+import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.larva.queues.QueueWrapper;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -1001,7 +1002,7 @@ public class LarvaTool {
 
 	private static Entry<Object, Object> rewriteClassName(Entry<Object, Object> e) {
 		Object propertyName = e.getKey();
-		if (e.getValue() == null || !propertyName.toString().endsWith(".className")) {
+		if (e.getValue() == null || !propertyName.toString().endsWith(QueueCreator.CLASS_NAME_PROPERTY_SUFFIX)) {
 			return e;
 		}
 		String newClassName = e.getValue()
@@ -1068,7 +1069,7 @@ public class LarvaTool {
 		debugMessage("Close jms senders");
 		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String queueName = entry.getKey();
-			if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
+			if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
 				jmsSender.stop();
 				debugMessage("Closed jms sender '" + queueName + "'");
@@ -1077,7 +1078,7 @@ public class LarvaTool {
 		debugMessage("Close jms listeners");
 		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String queueName = entry.getKey();
-			if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
+			if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)(entry.getValue()).get("jmsListener");
 				if (jmsCleanUp(queueName, pullingJmsListener)) {
 					remainingMessagesFound = true;
@@ -1089,7 +1090,7 @@ public class LarvaTool {
 		debugMessage("Close jdbc connections");
 		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String name = entry.getKey();
-			if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
+			if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(name + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 				Queue querySendersInfo = entry.getValue();
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
 				if (prePostFixedQuerySender != null) {
@@ -1237,13 +1238,17 @@ public class LarvaTool {
 	private int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map<?, ?> jmsSenderInfo = queues.get(queueName);
+		Queue jmsSenderInfo = queues.get(queueName);
+		if (jmsSenderInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
 			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
 			if (useCorrelationIdFrom != null) {
-				Map<?, ?> listenerInfo = queues.get(useCorrelationIdFrom);
+				Queue listenerInfo = queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
 					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from");
 				} else {
@@ -1280,7 +1285,7 @@ public class LarvaTool {
 	private int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		Queue queue = queues.get(queueName);
 		if (queue==null) {
-			errorMessage("Property '" + queueName + ".className' not found or not valid");
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
 		int result = RESULT_ERROR;
@@ -1302,7 +1307,11 @@ public class LarvaTool {
 	private int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map<String, Object> jmsListenerInfo = queues.get(queueName);
+		Queue jmsListenerInfo = queues.get(queueName);
+		if (jmsListenerInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
 		Map<String, Object> threadContext = null;
 		Message message = null;
@@ -1350,8 +1359,8 @@ public class LarvaTool {
 		int result = RESULT_ERROR;
 
 		Queue queue = queues.get(queueName);
-		if (queue==null) {
-			errorMessage("Property '" + queueName + ".className' not found or not valid");
+		if (queue == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
 		try {
@@ -1378,53 +1387,57 @@ public class LarvaTool {
 
 
 	private int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, int parameterTimeout) {
-		int result = RESULT_ERROR;
 
 		Queue listenerInfo = queues.get(queueName);
+		if (listenerInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		ListenerMessageHandler<?> listenerMessageHandler = (ListenerMessageHandler<?>)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found");
-		} else {
-			String message = null;
-			ListenerMessage listenerMessage;
-			long timeout;
-			try {
-				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
-				debugMessage("Timeout set to '" + timeout + "'");
-			} catch (Exception e) {
-				timeout = parameterTimeout;
-			}
-			try {
-				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
-			} catch (TimeoutException e) {
-				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)");
-				return RESULT_ERROR;
-			}
+			return RESULT_ERROR;
+		}
 
-			if (listenerMessage != null) {
-				message = listenerMessage.getMessage();
-				listenerInfo.put("listenerMessage", listenerMessage);
-			}
-			if (message == null) {
-				if ("".equals(fileName)) {
-					result = RESULT_OK;
-				} else {
-					errorMessage("Could not read listenerMessageHandler message (null returned)");
-				}
+		String message = null;
+		ListenerMessage listenerMessage;
+		long timeout;
+		try {
+			timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+			debugMessage("Timeout set to '" + timeout + "'");
+		} catch (Exception e) {
+			timeout = parameterTimeout;
+		}
+		try {
+			listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
+		} catch (TimeoutException e) {
+			errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)");
+			return RESULT_ERROR;
+		}
+
+		if (listenerMessage != null) {
+			message = listenerMessage.getMessage();
+			listenerInfo.put("listenerMessage", listenerMessage);
+		}
+		int result = RESULT_ERROR;
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = RESULT_OK;
 			} else {
-				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
-				} else {
-					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
-					if (result!=RESULT_OK) {
-						// Send a cleanup reply because there is probably a thread waiting for a reply
-						listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, new PipeLineSession());
-						listenerMessageHandler.putResponseMessage(listenerMessage);
-					}
+				errorMessage("Could not read listenerMessageHandler message (null returned)");
+			}
+		} else {
+			if ("".equals(fileName)) {
+				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
+			} else {
+				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
+				if (result!=RESULT_OK) {
+					// Send a cleanup reply because there is probably a thread waiting for a reply
+					listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, new PipeLineSession());
+					listenerMessageHandler.putResponseMessage(listenerMessage);
 				}
 			}
 		}
-
 		return result;
 	}
 
@@ -1432,6 +1445,10 @@ public class LarvaTool {
 		int result = RESULT_ERROR;
 
 		Queue querySendersInfo = queues.get(queueName);
+		if (querySendersInfo == null) {
+			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			return RESULT_ERROR;
+		}
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
 		if (waitBeforeRead != null) {
@@ -1530,15 +1547,15 @@ public class LarvaTool {
 			} else {
 				queueName = step.substring(i + 1, step.lastIndexOf("."));
 				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
-					if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
+					if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
-					} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, correlationId);
-					} else if ("org.frankframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.http.WebServiceListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-					} else if ("org.frankframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.receivers.JavaListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step);
 						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 					} else {
@@ -1552,9 +1569,9 @@ public class LarvaTool {
 						fileContent = StringResolver.substVars(fileContent, appConstants);
 					}
 
-					if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
+					if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, queueName, fileContent, correlationId);
-					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 					} else {
 						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
