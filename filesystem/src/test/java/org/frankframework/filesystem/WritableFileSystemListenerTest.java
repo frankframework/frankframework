@@ -412,7 +412,8 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
 	}
 
-	private static <F> @Nonnull String getUpdatedFilename(String originalFilename, RawMessageWrapper<F> fileMessage) {
+	@Nonnull
+	private static <F> String getUpdatedFilename(String originalFilename, RawMessageWrapper<F> fileMessage) {
 		String extension = FilenameUtils.getExtension(originalFilename);
 		String baseName = FilenameUtils.getBaseName(originalFilename);
 		String timeStamp = fileMessage.getId().replace(':', '_').replace(originalFilename, "");
