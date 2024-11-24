@@ -110,7 +110,7 @@ public class MessageStoreSenderAndListenerTest {
 		assertEquals(TEST_DATA, result.asString());
 
 		assertTrue(threadContext.containsKey("key1"), "ThreadContext should key1");
-		assertFalse(threadContext.containsKey("key2"), "ThreadContext should not key2"); // Key not specified
-		assertFalse(threadContext.containsKey("key3"), "ThreadContext should not key3"); // Key does not exist in session
+		assertFalse(threadContext.containsKey("key2"), "ThreadContext should not contain key2"); // Key not specified
+		assertFalse(threadContext.containsKey("key3"), "ThreadContext should not contain key3"); // Key does not exist in session
 	}
 }
