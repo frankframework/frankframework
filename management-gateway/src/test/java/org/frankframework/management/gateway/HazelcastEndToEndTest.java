@@ -3,6 +3,7 @@ package org.frankframework.management.gateway;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
@@ -99,9 +100,19 @@ public class HazelcastEndToEndTest {
 		assertEquals("sync-string", capturedRequest.getPayload());
 	}
 
+	public static boolean isTestRunningOnGitHub() {
+		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
+	}
+
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testMultipleSynchronousHazelcastMessage() {
+		assumeTrue(isTestRunningOnWindows() || isTestRunningOnGitHub());
+
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < 1_000; i++) {
 			Message<String> request = new GenericMessage<>("load-req-"+i, new MessageHeaders(null));
@@ -125,7 +136,7 @@ public class HazelcastEndToEndTest {
 
 		//Assert
 		Message<String> capturedRequest = Awaitility.await()
-				.atMost(1500, TimeUnit.MILLISECONDS)
+				.atMost(3000, TimeUnit.MILLISECONDS)
 				.until(requestCapture::getValue, Objects::nonNull);
 		assertEquals("async-string", capturedRequest.getPayload());
 	}

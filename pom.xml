@@ -21,16 +21,16 @@
 
 		<jackson.version>2.18.1</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
-		<spring.version>6.1.14</spring.version>
-		<spring-security.version>6.3.4</spring-security.version>
-		<spring-integration.version>6.3.5</spring-integration.version>
+		<spring.version>6.2.0</spring.version>
+		<spring-security.version>6.4.1</spring-security.version>
+		<spring-integration.version>6.4.0</spring-integration.version>
 		<spring.boot.version>3.3.5</spring.boot.version>
 		<tomcat.version>10.1.33</tomcat.version>
 		<bouncycastle.version>1.79</bouncycastle.version>
 
 		<narayana.version>7.1.0.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.0</micrometer.version>
+		<micrometer.version>1.14.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2</frankdoc.version>
@@ -171,7 +171,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.46</version>
+				<version>9.47</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -526,7 +526,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.17.0</version>
+				<version>2.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.mail</groupId>
