@@ -84,8 +84,8 @@ public class MessageStoreSenderAndListenerTest {
 		assertNotNull(result);
 		assertEquals(TEST_DATA, result.asString());
 
-		assertFalse(threadContext.containsKey("key1"), "ThreadContext should not key1");
-		assertFalse(threadContext.containsKey("key2"), "ThreadContext should not key2");
+		assertFalse(threadContext.containsKey("key1"), "ThreadContext should not contain key1");
+		assertFalse(threadContext.containsKey("key2"), "ThreadContext should not contain key2");
 	}
 
 	@DatabaseTest
