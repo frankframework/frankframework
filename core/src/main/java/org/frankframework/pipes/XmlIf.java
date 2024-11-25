@@ -109,7 +109,7 @@ public class XmlIf extends IfPipe {
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(sessionKey);
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(this.sessionKey);
 	}
 
 	/**
