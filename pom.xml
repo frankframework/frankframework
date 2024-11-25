@@ -23,7 +23,7 @@
 		<cxf.version>4.0.5</cxf.version>
 		<spring.version>6.2.0</spring.version>
 		<spring-security.version>6.4.1</spring-security.version>
-		<spring-integration.version>6.3.5</spring-integration.version>
+		<spring-integration.version>6.4.0</spring-integration.version>
 		<spring.boot.version>3.3.5</spring.boot.version>
 		<tomcat.version>10.1.33</tomcat.version>
 		<bouncycastle.version>1.79</bouncycastle.version>
