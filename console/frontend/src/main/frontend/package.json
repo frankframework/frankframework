@@ -54,13 +54,11 @@
     "@angular-eslint/template-parser": "^17.3.12",
     "@angular/cli": "^17.3.11",
     "@angular/compiler-cli": "^17.3.12",
-    "@types/d3": "^7.4.3",
-    "@types/dompurify": "^3.0.5",
     "@types/jasmine": "~4.6.4",
     "@types/lodash": "^4.17.13",
     "@types/markdown-it": "^13.0.7",
     "@types/sockjs-client": "^1.5.4",
-    "@types/tinycon": "^0.6.7",
+    "@types/tinycon": "^0.6.6",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
@@ -75,6 +73,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.3.3"
+    "typescript": "5.4.x"
   }
 }
