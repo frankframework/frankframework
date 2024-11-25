@@ -222,9 +222,9 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) {
+	public Receiver<Serializable> setupReceiverWithMessageStoreListener(MessageStoreListener listener, ITransactionalStorage<Serializable> errorStorage) {
 		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
+		Receiver<Serializable> receiver = spy(configuration.createBean(Receiver.class));
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		DummySender sender = configuration.createBean(DummySender.class);
@@ -236,9 +236,9 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public MessageStoreListener<String> setupMessageStoreListener() throws Exception {
+	public MessageStoreListener setupMessageStoreListener() throws Exception {
 		Connection connection = mock(Connection.class);
-		MessageStoreListener<String> listener = spy(new MessageStoreListener<>());
+		MessageStoreListener listener = spy(new MessageStoreListener());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
 		listener.setConnectionsArePooled(true);
 		doReturn(connection).when(listener).getConnection();
@@ -741,13 +741,13 @@ public class ReceiverTest {
 	public void testProcessRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		RawMessageWrapper<String> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
+		RawMessageWrapper<Serializable> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
 		Message testMessage = new Message(new StringReader(rawTestMessage));
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener<String> listener = setupMessageStoreListener();
-		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		MessageStoreListener listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		PipeLine pipeLine = adapter.getPipeLine();
@@ -786,8 +786,8 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener<String> listener = setupMessageStoreListener();
-		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		MessageStoreListener listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		when(errorStorage.getMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
@@ -821,10 +821,10 @@ public class ReceiverTest {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
-		MessageStoreListener<String> listener = setupMessageStoreListener();
-		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		MessageStoreListener listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, null);
 		Adapter adapter = setupAdapter(receiver);
-		IMessageBrowser<String> messageBrowser = mock();
+		IMessageBrowser<Serializable> messageBrowser = mock();
 
 		when(messageBrowser.browseMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
 		when(listener.getMessageBrowser(ProcessState.ERROR)).thenReturn(messageBrowser);
@@ -862,8 +862,8 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener<String> listener = setupMessageStoreListener();
-		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		MessageStoreListener listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
@@ -891,8 +891,8 @@ public class ReceiverTest {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
-		MessageStoreListener<String> listener = setupMessageStoreListener();
-		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		MessageStoreListener listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, null);
 		Adapter adapter = setupAdapter(receiver);
 		IMessageBrowser<String> messageBrowser = mock();
 
@@ -1306,8 +1306,8 @@ public class ReceiverTest {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener<String> listener = setupMessageStoreListener();
-		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		MessageStoreListener listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		// The actual size of a message as string can be shorter than the reported size. This could be due to incorrect
