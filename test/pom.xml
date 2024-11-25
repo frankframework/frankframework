@@ -248,7 +248,7 @@
 		<profile>
 			<id>spring-boot</id>
 			<activation>
-				<!-- since this totally optional profile only forces all maven modules to be on the classpath it may alway be enabled -->
+				<!-- since this totally optional profile only forces all maven modules to be on the classpath it may always be enabled -->
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<dependencies>

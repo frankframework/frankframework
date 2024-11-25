@@ -36,7 +36,7 @@ import org.frankframework.stream.Message;
  *
  * @author Peter Leeuwenburgh
  * @since 4.3
- * @deprecated please use the {@link IfPipe} for if (else/then) behaviour. If you need regular expresssions, see the @{@link RegExPipe} as well.
+ * @deprecated please use the {@link IfPipe} for if (else/then) behaviour. If you need regular expressions, see the @{@link RegExPipe} as well.
  */
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
@@ -55,7 +55,7 @@ public class XmlIf extends IfPipe {
 			return super.doPipe(messageToUse, session);
 		}
 
-		return new PipeRunResult(getForwardForStringInput(messageToUse), session);
+		return new PipeRunResult(getForwardForStringInput(messageToUse), messageToUse);
 	}
 
 	/**
