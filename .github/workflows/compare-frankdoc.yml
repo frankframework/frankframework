@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Retrieve target XSD from commit
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: maven-build.yml
         commit:  ${{ github.event.inputs.target }}
@@ -23,7 +23,7 @@ jobs:
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
 
     - name: Retrieve base Frank!Doc XSD
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: maven-build.yml
         branch: master
