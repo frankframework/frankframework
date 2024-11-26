@@ -11,6 +11,7 @@ on:
 
 jobs:
   compare-frank-doc:
+    name: Check FrankDoc Changes
     runs-on: ubuntu-latest
 
     steps:

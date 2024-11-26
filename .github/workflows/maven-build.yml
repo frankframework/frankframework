@@ -41,7 +41,7 @@ on:
 
 jobs:
   build-maven-artefacts:
-
+    name: Build and Test Maven Artefacts
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
