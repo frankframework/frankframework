@@ -15,10 +15,13 @@
 */
 package org.frankframework.http.authentication;
 
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import org.apache.http.message.BasicHeader;
+
+import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -54,15 +57,15 @@ public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
-		List<BasicHeader> parameters = new ArrayList<>();
-		parameters.add(new BasicHeader("grant_type", "client_credentials"));
+		List<NameValuePair> parameters = new ArrayList<>();
+		parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));
 
 		if (session.getScope() != null) {
 			parameters.add(new BasicHeader("scope", session.getScope().replace(',', ' ')));
 		}
 
-		parameters.add(new BasicHeader("client_secret", session.getClientSecret()));
-		parameters.add(new BasicHeader("client_id", session.getClientId()));
+		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
+		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
 
 		return createPostRequestWithForm(authorizationEndpoint, parameters);
 	}

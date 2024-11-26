@@ -15,6 +15,7 @@
 */
 package org.frankframework.http.authentication;
 
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -24,7 +25,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -65,7 +65,7 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 
 	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
 
-	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<BasicHeader> formParameters) throws HttpAuthenticationException {
+	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) throws HttpAuthenticationException {
 		try {
 			UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, DEFAULT_INPUT_STREAM_ENCODING);
 

@@ -749,7 +749,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	public void setScope(String string) {
 		scope = string;
 	}
+
 	/** if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters */
+	@Deprecated(forRemoval = true, since = "9.0")
+	@ConfigurationWarning("Use authenticationMethod to set this behaviour")
 	public void setAuthenticatedTokenRequest(boolean authenticatedTokenRequest) {
 		this.authenticatedTokenRequest = authenticatedTokenRequest;
 	}

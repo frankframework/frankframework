@@ -15,10 +15,11 @@
 */
 package org.frankframework.http.authentication;
 
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
@@ -45,18 +46,18 @@ public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractOau
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
-		List<BasicHeader> parameters = new ArrayList<>();
-		parameters.add(new BasicHeader("grant_type", "password"));
+		List<NameValuePair> parameters = new ArrayList<>();
+		parameters.add(new BasicNameValuePair("grant_type", "password"));
 
 		if (session.getScope() != null) {
-			parameters.add(new BasicHeader("scope", session.getScope().replace(',', ' ')));
+			parameters.add(new BasicNameValuePair("scope", session.getScope().replace(',', ' ')));
 		}
 
-		parameters.add(new BasicHeader("username", credentials.getUserPrincipal().getName()));
-		parameters.add(new BasicHeader("password", credentials.getPassword()));
+		parameters.add(new BasicNameValuePair("username", credentials.getUserPrincipal().getName()));
+		parameters.add(new BasicNameValuePair("password", credentials.getPassword()));
 
-		parameters.add(new BasicHeader("client_id", session.getClientId()));
-		parameters.add(new BasicHeader("client_secret", session.getClientSecret()));
+		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
+		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
 
 		return createPostRequestWithForm(authorizationEndpoint, parameters);
 	}
