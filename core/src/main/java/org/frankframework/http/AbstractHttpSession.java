@@ -755,7 +755,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	}
 
 	/**
-	 * Sets the authentication method. This controls which authentication flow should be used. Currently automatically determined, but that behaviour will be removed.
+	 * Only used when {@literal tokenEndpoint} has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.
 	 */
 	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
 		this.authenticationMethod = authenticationMethod;
