@@ -79,7 +79,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
     if (!this.showAll) {
       this.tabs = this.configurationsList.filter((configuration) => {
         if (configuration === 'IAF_Util' && this.filterIAF_Util) return false;
-        return this.appService.configurationLengths[configuration] > 1;
+        return this.appService.configurationLengths[configuration] > 0;
       });
     }
   }
