@@ -40,7 +40,7 @@ on:
       - "docker/**"
 
 jobs:
-  build:
+  build-maven-artefacts:
 
     runs-on: ubuntu-latest
     strategy:

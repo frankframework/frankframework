@@ -10,7 +10,7 @@ on:
         required: true
 
 jobs:
-  build:
+  compare-frank-doc:
     runs-on: ubuntu-latest
 
     steps:
