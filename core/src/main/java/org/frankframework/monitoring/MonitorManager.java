@@ -17,10 +17,10 @@ package org.frankframework.monitoring;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -53,7 +53,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private final List<Monitor> monitors = new ArrayList<>();                            // All monitors managed by this MonitorManager
-	private final Map<String, Event> events = Collections.synchronizedMap(new HashMap<>());                           // All events that can be thrown
+	private final Map<String, Event> events = new ConcurrentHashMap<>();                 // All events that can be thrown
 	private final Map<String, IMonitorDestination> destinations = new LinkedHashMap<>(); // All destinations (that can receive status messages) managed by this MonitorManager
 
 	/**
@@ -131,8 +131,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 			return null;
 		}
 
-		for (int i=0; i<monitors.size(); i++) {
-			Monitor monitor = monitors.get(i);
+		for (Monitor monitor : monitors) {
 			if (name.equals(monitor.getName())) {
 				return monitor;
 			}
