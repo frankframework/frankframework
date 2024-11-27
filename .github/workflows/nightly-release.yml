@@ -9,6 +9,7 @@ on:
 
 jobs:
   nightly-release:
+    name: Nightly Release Build
     runs-on: ubuntu-latest
     steps:
       - uses: bluwy/substitute-string-action@v3
