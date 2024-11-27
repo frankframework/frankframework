@@ -83,6 +83,8 @@ import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBa
 
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
 
+import org.frankframework.http.authentication.SamlAssertionOauth;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -199,6 +201,13 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String clientSecret;
 	private @Getter String scope;
 
+	private @Getter String privateKey;
+	private @Getter String certificate;
+	private @Getter String nameId;
+	private @Getter String issuer;
+	private @Getter String audience;
+	private @Getter int samlAssertionExpiry;
+
 	private @Getter AuthenticationMethod authenticationMethod;
 	private @Getter IAuthenticator authenticator;
 
@@ -231,7 +240,9 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		 * and {@literal password} are sent in the form body to the authorization server.
 		 * The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
 		 */
-		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS;
+		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS,
+
+		SAML_ASSERTION;
 
 		public IAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
 			return switch (this) {
@@ -239,6 +250,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				case CLIENT_CREDENTIALS_QUERY_PARAMETERS -> new ClientCredentialsQueryParameters(session);
 				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH -> new ResourceOwnerPasswordCredentialsBasicAuth(session);
 				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS -> new ResourceOwnerPasswordCredentialsQueryParameters(session);
+				case SAML_ASSERTION -> new SamlAssertionOauth(session);
 			};
 		}
 
@@ -762,6 +774,33 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 */
 	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
 		this.authenticationMethod = authenticationMethod;
+	}
+
+	/**
+	 *
+	 */
+	public void setPrivateKey(String privateKey) {
+		this.privateKey = privateKey;
+	}
+
+	public void setCertificate2(String certificate) {
+		this.certificate = certificate;
+	}
+
+	public void setNameId(String nameId) {
+		this.nameId = nameId;
+	}
+
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
+	}
+
+	public void setAudience(String audience) {
+		this.audience = audience;
+	}
+
+	public void setSamlAssertionExpiry(int expiry) {
+		this.samlAssertionExpiry = expiry;
 	}
 
 	/** Proxy host */

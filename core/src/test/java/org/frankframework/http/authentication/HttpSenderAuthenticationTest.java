@@ -540,4 +540,45 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
+
+	@Test
+	void testSamlAssertion() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setAuthenticationMethod(AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION);
+
+		sender.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" +
+				"MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGAa5meBF/8w4RETkBj\n" +
+				"JgQeexBRPsR4JrrKYUjptS020Kyld9MSz1UOCuyPiFsjArpJPWs93mbSdCR89TwP\n" +
+				"9knZmJFQZk3wM5mkcEA+WJ6xjDH8/7zIJIQqzCGGT8UfMBeFqIhufQC4jYwTBRDW\n" +
+				"b2GHaLqrq+3nnHEmg1i6L8WRLXUCAwEAAQKBgCqcNfBjlrRSj74xT1JBtVRkvNfP\n" +
+				"dAlaVUS7XBmsYxW2GPzfsIY8l4gJ8Dk+ZhnxbYmOC30kWNk3jeiLtYKB8lIrvoBV\n" +
+				"fNXe4IJB39t7U8JbdUsQSa2nzVoUFjjeaI3LiJ6z1l/hzyhl70KSrXi5ycGVJrh5\n" +
+				"s9v3EROO99R/y1lNAkEAypss5gtI4dr6k+ElweeArftqL0MIgqYngamW3HGheglh\n" +
+				"qZlqU1uL3Fga5xwBlecq5FxiowNABOTES5YvzD5AxwJBAIf02yVM/4OXxgB2mE1G\n" +
+				"lzyiQ2tnKbPHrgzToM4SFDZN2EBOtWG+4AABsZLtXM6cJ3n1yMAze7tdlg5hMQLx\n" +
+				"W+MCQQCBkrYnNUZaM0qX8qDMHrscCbNCIJO7wnl3ojb6Kq3Dt2Y/Kf9m6iBLPgmO\n" +
+				"jkmxTdMPksn+SODTgF7NnHJbI+EXAkAYcZ6hEznxZ+1SkgAKDMIORcJHYjHuP918\n" +
+				"MuR7iGaX6OETltMnstDFT4ikuQZxo0O5usYQQHFjm4zqIvFT7R8vAkA2ntBhvJbQ\n" +
+				"AlNvCCvBjlTbsdp7A2LnIwddBZvi0ekQKMW9709HTkvcysbBTYHGV6qG6IOj3/AI\n" +
+				"36qWDXImqowl\n" +
+				"-----END PRIVATE KEY-----");
+
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.setIssuer("www.successfactors.com");
+		sender.setAudience("www.successfactors.com");
+
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTimeout(100000);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
 }

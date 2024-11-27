@@ -73,7 +73,7 @@ public class ClientCredentialsBasicAuth extends AbstractOauthAuthenticator {
 		parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));
 
 		if (session.getScope() != null) {
-			parameters.add(new BasicNameValuePair("scope", session.getScope().replace(',', ' ')));
+			parameters.add(getScopeHeader());
 		}
 
 		HttpEntityEnclosingRequestBase request = createPostRequestWithForm(authorizationEndpoint, parameters);

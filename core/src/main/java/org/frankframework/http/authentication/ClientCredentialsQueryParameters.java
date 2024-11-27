@@ -19,8 +19,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import org.apache.http.message.BasicHeader;
-
 import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -61,7 +59,7 @@ public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator
 		parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));
 
 		if (session.getScope() != null) {
-			parameters.add(new BasicHeader("scope", session.getScope().replace(',', ' ')));
+			parameters.add(getScopeHeader());
 		}
 
 		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));

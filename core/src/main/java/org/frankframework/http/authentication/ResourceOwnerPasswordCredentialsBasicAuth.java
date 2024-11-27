@@ -64,7 +64,7 @@ public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractOauthAuth
 		parameters.add(new BasicNameValuePair("grant_type", "password"));
 
 		if (session.getScope() != null) {
-			parameters.add(new BasicNameValuePair("scope", session.getScope().replace(',', ' ')));
+			parameters.add(getScopeHeader());
 		}
 
 		parameters.add(new BasicNameValuePair("username", credentials.getUserPrincipal().getName()));
